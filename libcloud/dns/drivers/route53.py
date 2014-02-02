@@ -276,11 +276,14 @@ class Route53DNSDriver(DNSDriver):
             fixxpath(xpath='ResourceRecordSets/ResourceRecordSet',
                      namespace=NAMESPACE))
         for elem in elems:
-            records.append(self._to_record(elem, zone))
-
+            record_set = elem.findall(fixxpath(
+                                      xpath='ResourceRecords/ResourceRecord',
+                                      namespace=NAMESPACE))
+            for index, record in enumerate(record_set):
+                records.append(self._to_record(elem, zone, index))
         return records
 
-    def _to_record(self, elem, zone):
+    def _to_record(self, elem, zone, index=0):
         name = findtext(element=elem, xpath='Name',
                         namespace=NAMESPACE)
         name = name[:-len(zone.domain) - 1]
@@ -289,19 +292,18 @@ class Route53DNSDriver(DNSDriver):
                                                     namespace=NAMESPACE))
         ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
 
-        data = ''
-        for record_elem in elem.findall(fixxpath(
-                                        xpath='ResourceRecords/ResourceRecord',
-                                        namespace=NAMESPACE)):
-
-            data += findtext(element=(record_elem),
-                             xpath='Value',
-                             namespace=NAMESPACE) + ' '
-
-        # Strip off the trailing space
-        data = data.rstrip(' ')
+        value_elem = elem.findall(
+            fixxpath(xpath='ResourceRecords/ResourceRecord',
+                     namespace=NAMESPACE))[index]
+        data = findtext(element=(value_elem), xpath='Value',
+                        namespace=NAMESPACE)
 
         extra = {'ttl': ttl}
+
+        if type == 'MX':
+            priority = int(data.split()[0])
+            data = data.split()[1]
+            extra['priority'] = priority
 
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
         record = Record(id=id, name=name, type=type, data=data, zone=zone,
