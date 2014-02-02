@@ -485,6 +485,17 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(rule.private_end_port, private_end_port)
         self.assertEqual(len(node.extra['port_forwarding_rules']), 2)
 
+    def test_ex_limits(self):
+        limits = self.driver.ex_limits()
+        self.assertEqual(limits['max_images'], 20)
+        self.assertEqual(limits['max_networks'], 20)
+        self.assertEqual(limits['max_public_ips'], -1)
+        self.assertEqual(limits['max_vpc'], 20)
+        self.assertEqual(limits['max_instances'], 20)
+        self.assertEqual(limits['max_projects'], -1)
+        self.assertEqual(limits['max_volumes'], 20)
+        self.assertEqual(limits['max_snapshots'], 20)
+
 
 class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
     def test_driver_instantiation(self):
