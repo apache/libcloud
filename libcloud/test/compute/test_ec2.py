@@ -474,6 +474,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_destroy_image(image)
         self.assertTrue(resp)
 
+    def ex_register_image(self):
+        mapping = [{'DeviceName': '/dev/sda1',
+                    'Ebs': {'SnapshotId': 'snap-5ade3e4e'}}]
+        image = self.driver.ex_register_image(name='Test Image',
+                                              root_device_name='/dev/sda1',
+                                              description='My Image',
+                                              architecture='x86_64',
+                                              block_device_mapping=mapping)
+        self.assertEqual(image.id, 'ami-57c2fb3e')
+
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
         availability_zone = availability_zones[0]
@@ -1093,6 +1103,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeImages(self, method, url, body, headers):
         body = self.fixtures.load('describe_images.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _RegisterImages(self, method, url, body, headers):
+        body = self.fixtures.load('register_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_imageids_DescribeImages(self, method, url, body, headers):

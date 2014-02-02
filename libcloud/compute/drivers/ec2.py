@@ -1682,6 +1682,77 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    def ex_register_image(self, name, description=None, architecture=None,
+                          image_location=None, root_device_name=None,
+                          block_device_mapping=None, kernel_id=None,
+                          ramdisk_id=None):
+        """
+        Registers an Amazon Machine Image based off of an EBS-backed instance.
+        Can also be used to create images from snapshots. More information
+        can be found at http://goo.gl/hqZq0a.
+
+        :param      name:  The name for the AMI being registered
+        :type       name: ``str``
+
+        :param      description: The description of the AMI (optional)
+        :type       description: ``str``
+
+        :param      architecture: The architecture of the AMI (i386/x86_64)
+                                  (optional)
+        :type       architecture: ``str``
+
+        :param      image_location: The location of the AMI within Amazon S3
+                                    Required if registering an instance
+                                    store-backed AMI
+        :type       image_location: ``str``
+
+        :param      root_device_name: The device name for the root device
+                                      Required if registering a EBS-backed AMI
+        :type       root_device_name: ``str``
+
+        :param      block_device_mapping: A dictionary of the disk layout
+                                          (optional)
+        :type       block_device_mapping: ``dict``
+
+        :param      kernel_id: Kernel id for AMI (optional)
+        :type       kernel_id: ``str``
+
+        :param      ramdisk_id: RAM disk for AMI (optional)
+        :type       ramdisk_id: ``str``
+
+        :rtype:     :class:`NodeImage`
+        """
+
+        params = {'Action': 'RegisterImage',
+                  'Name': name}
+
+        if description is not None:
+            params['Description'] = description
+
+        if architecture is not None:
+            params['Architecture'] = architecture
+
+        if image_location is not None:
+            params['ImageLocation'] = image_location
+
+        if root_device_name is not None:
+            params['RootDeviceName'] = root_device_name
+
+        if block_device_mapping is not None:
+            params.update(self._get_block_device_mapping_params(
+                          block_device_mapping))
+
+        if kernel_id is not None:
+            params['KernelId'] = kernel_id
+
+        if ramdisk_id is not None:
+            params['RamDiskId'] = ramdisk_id
+
+        image = self._to_image(
+            self.connection.request(self.path, params=params).object
+        )
+        return image
+
     def ex_list_networks(self):
         """
         Return a list of :class:`EC2Network` objects for the
