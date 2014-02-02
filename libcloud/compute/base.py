@@ -272,7 +272,8 @@ class NodeSize(UuidMixin):
     4
     """
 
-    def __init__(self, id, name, ram, disk, bandwidth, price, driver):
+    def __init__(self, id, name, ram, disk, bandwidth, price,
+                 driver, extra=None):
         """
         :param id: Size ID.
         :type id: ``str``
@@ -294,6 +295,10 @@ class NodeSize(UuidMixin):
 
         :param driver: Driver this image belongs to.
         :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provider specific attributes associated with
+                      this node.
+        :type  extra: ``dict``
         """
         self.id = str(id)
         self.name = name
@@ -302,6 +307,7 @@ class NodeSize(UuidMixin):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):

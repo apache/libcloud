@@ -589,8 +589,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                  method='GET')
         sizes = []
         for sz in szs['serviceoffering']:
+            extra = {'cpu': sz['cpunumber']}
             sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
-                                  0, self))
+                                  0, self, extra=extra))
         return sizes
 
     def create_node(self, **kwargs):
