@@ -289,12 +289,17 @@ class Route53DNSDriver(DNSDriver):
                                                     namespace=NAMESPACE))
         ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
 
-        # TODO: Support records with multiple values
-        value_elem = elem.findall(
-            fixxpath(xpath='ResourceRecords/ResourceRecord',
-                     namespace=NAMESPACE))[0]
-        data = findtext(element=(value_elem), xpath='Value',
-                        namespace=NAMESPACE)
+        data = ''
+        for record_elem in elem.findall(fixxpath(
+                                        xpath='ResourceRecords/ResourceRecord',
+                                        namespace=NAMESPACE)):
+
+            data += findtext(element=(record_elem),
+                             xpath='Value',
+                             namespace=NAMESPACE) + ' '
+
+        # Strip off the trailing space
+        data = data.rstrip(' ')
 
         extra = {'ttl': ttl}
 
