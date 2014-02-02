@@ -1482,6 +1482,39 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   zoneid=location.id,
                                   params=params)
 
+    def ex_limits(self):
+        """
+        Extra call to get account's resource limits, such as
+        the amount of instances, volumes, snapshots and networks.
+
+        CloudStack uses integers as the resource type so we will convert
+        them to a more human readable string using the resource map
+
+        :return: dict
+        :rtype: ``dict``
+        """
+
+        result = self._sync_request(command='listResourceLimits',
+                                    method='GET')
+
+        limits = {}
+        resource_map = {
+            0: 'max_instances',
+            1: 'max_public_ips',
+            2: 'max_volumes',
+            3: 'max_snapshots',
+            4: 'max_images',
+            5: 'max_projects',
+            6: 'max_networks',
+            7: 'max_vpc'
+        }
+
+        for limit in result.get('resourcelimit', []):
+            resource = resource_map[int(limit['resourcetype'])]
+            limits[resource] = int(limit['max'])
+
+        return limits
+
     def _to_node(self, data, public_ips=None):
         """
         :param data: Node data object.
