@@ -1492,6 +1492,38 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(metadata['My Server Name'], 'Apache1')
         self.assertEqual(len(metadata), 1)
 
+    def test_ex_pause_node(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        ret = self.driver.ex_pause_node(node)
+        self.assertTrue(ret is True)
+
+    def test_ex_unpause_node(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        ret = self.driver.ex_unpause_node(node)
+        self.assertTrue(ret is True)
+
+    def test_ex_suspend_node(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        ret = self.driver.ex_suspend_node(node)
+        self.assertTrue(ret is True)
+
+    def test_ex_resume_node(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        ret = self.driver.ex_resume_node(node)
+        self.assertTrue(ret is True)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1811,6 +1843,24 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             body = ''
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
+
+    def _v1_1_slug_servers_72258_action(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_servers_suspend.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12063_action(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_servers_unpause.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.

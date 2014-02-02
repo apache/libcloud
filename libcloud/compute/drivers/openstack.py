@@ -2092,6 +2092,30 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         return node.extra['metadata']
 
+    def ex_pause_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'pause': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_unpause_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'pause': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_suspend_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'suspend': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_resume_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'resume': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
