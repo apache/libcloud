@@ -64,6 +64,21 @@ method.
 For more information and examples on how to use the installation CD drives, see
 the `Create a server using an installation CD`_ example bellow.
 
+Library drives vs user drives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As noted above, CloudSigma has a concept called library drives. You can use
+library drives either by cloning them (pre-installed library drives) or by
+directly mounting them to the server (installer CD drives).
+
+Besides library drives, CloudSigma also has a concept of user drives. User
+drives are drives which belong to your account. Those drives have either been
+cloned from the library drives or created from scratch.
+
+To view all the drives which belong to your account, you can use the
+:meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_user_drives`
+method.
+
 Server creation work-flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
