@@ -1315,6 +1315,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_iamprofile: Name or ARN of IAM profile
         :type       ex_iamprofile: ``str``
+
+        :keyword    ex_addressingtype: Name of the addressing scheme that should be used
+        			for launching the node. It should be either ``public`` or ``private``.
+        :type       ex_addressingtype: ``str``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1383,11 +1387,11 @@ class BaseEC2NodeDriver(NodeDriver):
             else:
                 params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
-        if 'ex_addressingtype' in kwargs and kwargs['ex_addressingtype'] not in ["private", "public"]:
+        if 'ex_addressingtype' in kwargs and kwargs['ex_addressingtype'] not in ['private', 'public']:
             raise AttributeError('Unsupported addressing type')
 
         if 'ex_addressingtype' in kwargs:
-            params['AddressingType'] = kwargs["ex_addressingtype"]
+            params['AddressingType'] = kwargs['ex_addressingtype']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
