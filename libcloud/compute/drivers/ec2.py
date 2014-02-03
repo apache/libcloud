@@ -1316,8 +1316,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_iamprofile: Name or ARN of IAM profile
         :type       ex_iamprofile: ``str``
 
-        :keyword    ex_addressingtype: Name of the addressing scheme that should be used
-        			for launching the node. It should be either ``public`` or ``private``.
+        :keyword    ex_addressingtype: Name of the addressing scheme used.
+                                       It should be ``public`` or ``private``.
         :type       ex_addressingtype: ``str``
         """
         image = kwargs["image"]
