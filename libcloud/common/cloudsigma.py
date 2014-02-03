@@ -47,7 +47,7 @@ API_ENDPOINTS_2_0 = {
         'host': 'lvs.cloudsigma.com'
     },
     'wdc': {
-        'name': 'Las Vegas',
+        'name': 'Washington DC',
         'country': 'United States',
         'host': 'wdc.cloudsigma.com'
     }
