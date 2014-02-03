@@ -1383,6 +1383,12 @@ class BaseEC2NodeDriver(NodeDriver):
             else:
                 params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
+        if 'ex_addressingtype' in kwargs and kwargs['ex_addressingtype'] not in ["private", "public"]:
+            raise AttributeError('Unsupported addressing type')
+
+        if 'ex_addressingtype' in kwargs:
+            params['AddressingType'] = kwargs["ex_addressingtype"]
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
