@@ -1572,6 +1572,31 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
 
+    def ex_get_console_output(self, node, length=None):
+        """
+        Get console output
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      length: Optional number of lines to fetch from the
+                            console log
+        :type       length: ``int``
+
+        :return: Dictionary with the output
+        :rtype: ``dict``
+        """
+
+        data = {
+            "os-getConsoleOutput": {
+                "length": length
+            }
+        }
+
+        resp = self.connection.request('/servers/%s/action' % node.id,
+                                       method='POST', data=data).object
+        return resp
+
     def _to_security_group_rules(self, obj):
         return [self._to_security_group_rule(security_group_rule) for
                 security_group_rule in obj]

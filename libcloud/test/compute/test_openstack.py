@@ -1524,6 +1524,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_resume_node(node)
         self.assertTrue(ret is True)
 
+    def test_ex_get_console_output(self):
+        node = Node(
+            id='12086', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        resp = self.driver.ex_get_console_output(node)
+        expected_output = 'FAKE CONSOLE OUTPUT\nANOTHER\nLAST LINE'
+        self.assertEqual(resp['output'], expected_output)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1861,6 +1870,13 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             raise NotImplementedError()
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12086_action(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_servers_12086_console_output.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
