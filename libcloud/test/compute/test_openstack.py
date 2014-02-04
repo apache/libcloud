@@ -1524,6 +1524,23 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_resume_node(node)
         self.assertTrue(ret is True)
 
+    def test_ex_list_snapshots(self):
+        snapshots = self.driver.ex_list_snapshots()
+        self.assertEqual(len(snapshots), 2)
+        self.assertEqual(snapshots[0].extra['name'], 'snap-001')
+
+    def test_ex_create_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        ret = self.driver.ex_create_snapshot(volume,
+                                             'Test Volume',
+                                             'This is a test')
+        self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+
+    def test_ex_delete_snapshot(self):
+        snapshot = self.driver.ex_list_snapshots()[0]
+        ret = self.driver.ex_delete_snapshot(snapshot)
+        self.assertTrue(ret is True)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1857,6 +1874,24 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         if method == "POST":
             body = self.fixtures.load('_servers_unpause.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_snapshots.json')
+        elif method == "POST":
+            body = self.fixtures.load('_os_snapshots_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
+        if method == "DELETE":
+            body = ''
         else:
             raise NotImplementedError()
 
