@@ -58,10 +58,15 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
 
-        mx_record = records[3]
-        self.assertEqual(mx_record.type, RecordType.MX)
-        self.assertEqual(mx_record.data, 'ASPMX.L.GOOGLE.COM.')
-        self.assertEqual(mx_record.extra['priority'], 1)
+        record = records[3]
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'ASPMX.L.GOOGLE.COM.')
+        self.assertEqual(record.extra['priority'], 1)
+
+        record = records[4]
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'ALT1.ASPMX.L.GOOGLE.COM.')
+        self.assertEqual(record.extra['priority'], 5)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')
