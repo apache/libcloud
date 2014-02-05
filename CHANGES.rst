@@ -70,6 +70,11 @@ DNS
   (GITHUB-230)
   [Roy Wellington]
 
+- Update Route53 driver so it supports handling records with multiple values
+  (e.g. MX).
+  (LIBCLOUD-504, GITHUB-237)
+  [Chris DeRamus]
+
 Changes with Apache Libcloud 0.14.0
 -----------------------------------
 
