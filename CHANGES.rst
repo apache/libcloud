@@ -75,6 +75,13 @@ DNS
   (LIBCLOUD-504, GITHUB-237)
   [Chris DeRamus]
 
+- Update Route53 driver to better handle SRV records.
+  [Tomaz Muraus]
+
+- Update Route53 driver, make sure "ttl" attribute in the Record extra
+  dictionary is always an int.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0
 -----------------------------------
 
