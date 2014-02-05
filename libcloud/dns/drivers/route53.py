@@ -301,8 +301,8 @@ class Route53DNSDriver(DNSDriver):
         extra = {'ttl': ttl}
 
         if type == 'MX':
-            priority = int(data.split()[0])
-            data = data.split()[1]
+            split = data.split()
+            priority, data = int(split[0]), split[1]
             extra['priority'] = priority
 
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
