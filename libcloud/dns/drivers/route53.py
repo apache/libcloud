@@ -290,7 +290,7 @@ class Route53DNSDriver(DNSDriver):
 
         type = self._string_to_record_type(findtext(element=elem, xpath='Type',
                                                     namespace=NAMESPACE))
-        ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
+        ttl = int(findtext(element=elem, xpath='TTL', namespace=NAMESPACE))
 
         value_elem = elem.findall(
             fixxpath(xpath='ResourceRecords/ResourceRecord',

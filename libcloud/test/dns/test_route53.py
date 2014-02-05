@@ -57,6 +57,7 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
+        self.assertEqual(record.extra['ttl'], 86400)
 
         record = records[3]
         self.assertEqual(record.type, RecordType.MX)
