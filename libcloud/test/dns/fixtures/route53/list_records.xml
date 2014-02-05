@@ -56,7 +56,21 @@
                <Value>10 ASPMX3.GOOGLEMAIL.COM.</Value>
             </ResourceRecord>
          </ResourceRecords>
-      </ResourceRecordSet>
+    </ResourceRecordSet>
+
+    <ResourceRecordSet>
+      <Name>foo.test.com.</Name>
+      <Type>SRV</Type>
+      <TTL>300</TTL>
+      <ResourceRecords>
+        <ResourceRecord>
+          <Value>1 10 5269 xmpp-server.example.com.</Value>
+        </ResourceRecord>
+        <ResourceRecord>
+          <Value>2 12 5060 sip-server.example.com.</Value>
+        </ResourceRecord>
+      </ResourceRecords>
+    </ResourceRecordSet>
 
   </ResourceRecordSets>
 </ListResourceRecordSetsResponse>

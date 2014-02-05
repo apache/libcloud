@@ -302,8 +302,14 @@ class Route53DNSDriver(DNSDriver):
 
         if type == 'MX':
             split = data.split()
-            priority, data = int(split[0]), split[1]
-            extra['priority'] = priority
+            priority, data = split
+            extra['priority'] = int(priority)
+        elif type == 'SRV':
+            split = data.split()
+            priority, weight, port, data = split
+            extra['priority'] = int(priority)
+            extra['weight'] = int(weight)
+            extra['port'] = int(port)
 
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
         record = Record(id=id, name=name, type=type, data=data, zone=zone,
