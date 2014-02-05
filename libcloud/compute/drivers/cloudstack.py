@@ -516,13 +516,24 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return locations
 
-    def list_nodes(self):
+    def list_nodes(self, ex_listall=True):
         """
         @inherits: :class:`NodeDriver.list_nodes`
+
+        :param    ex_listall: If set to False, list only resources
+                               belonging to calling user
+                               Else list all he is authorized to see
+        :type     ex_listall: ``bool``
+
         :rtype: ``list`` of :class:`CloudStackNode`
         """
-        vms = self._sync_request('listVirtualMachines')
-        addrs = self._sync_request('listPublicIpAddresses')
+        #Manage list filtering
+        extra_args = {}
+
+        extra_args['listall'] = ex_listall
+
+        vms = self._sync_request('listVirtualMachines', params=extra_args)
+        addrs = self._sync_request('listPublicIpAddresses', params=extra_args)
 
         public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
