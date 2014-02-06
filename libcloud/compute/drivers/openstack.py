@@ -1642,8 +1642,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype:     ``bool``
         """
-        return self.connection.request('/os-snapshots/%s' % snapshot.id,
-                                       method='DELETE').success()
+        resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
+                                       method='DELETE')
+
+        return resp.status == httplib.NO_CONTENT
 
     def _to_security_group_rules(self, obj):
         return [self._to_security_group_rule(security_group_rule) for
@@ -2035,32 +2037,25 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'snapshot' in api_node:
             api_node = api_node['snapshot']
 
-        # RackSpace vs. OpenStack
-        if 'displayName' in api_node:
-            return VolumeSnapshot(
-                id=api_node['id'],
-                driver=self,
-                size=api_node['size'],
-                extra={
-                    'volume_id': api_node['volumeId'],
-                    'name': api_node['displayName'],
-                    'created': api_node['createdAt'],
-                    'description': api_node['displayDescription'],
-                    'status': api_node['status'],
-                })
+        if 'rackspace' in self.name.lower():
+            extra = {'volume_id': api_node['volumeId'],
+                     'name': api_node['displayName'],
+                     'created': api_node['createdAt'],
+                     'description': api_node['displayDescription'],
+                     'status': api_node['status']}
 
         else:
-            return VolumeSnapshot(
-                id=api_node['id'],
-                driver=self,
-                size=api_node['size'],
-                extra={
-                    'volume_id': api_node['volume_id'],
-                    'name': api_node['display_name'],
-                    'created': api_node['created_at'],
-                    'description': api_node['display_description'],
-                    'status': api_node['status'],
-                })
+            extra = {'volume_id': api_node['volume_id'],
+                     'name': api_node['display_name'],
+                     'created': api_node['created_at'],
+                     'description': api_node['display_description'],
+                     'status': api_node['status']}
+
+        return VolumeSnapshot(
+            id=api_node['id'],
+            driver=self,
+            size=api_node['size'],
+            extra=extra)
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
         # if provider-specific subclasses can get better values for
