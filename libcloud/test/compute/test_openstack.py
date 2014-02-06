@@ -1906,12 +1906,17 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers_12086_action(self, method, url, body, headers):
+<<<<<<< HEAD
         if method == 'POST':
+=======
+        if method == "POST":
+>>>>>>> e0a979725b05a6f2bae851b75145356d3dfbce0e
             body = self.fixtures.load('_servers_12086_console_output.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
+<<<<<<< HEAD
     def _v1_1_slug_os_snapshots(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_os_snapshots.json')
@@ -1951,6 +1956,8 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
+=======
+>>>>>>> e0a979725b05a6f2bae851b75145356d3dfbce0e
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
