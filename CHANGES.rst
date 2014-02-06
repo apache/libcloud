@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Changes with Apache Libcloud in development
--------------------------------------------
+Changes with Apache 0.14.1
+--------------------------
 
 Compute
 ~~~~~~~
