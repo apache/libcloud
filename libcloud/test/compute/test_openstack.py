@@ -1533,6 +1533,34 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         expected_output = 'FAKE CONSOLE OUTPUT\nANOTHER\nLAST LINE'
         self.assertEqual(resp['output'], expected_output)
 
+    def test_ex_list_snapshots(self):
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        snapshots = self.driver.ex_list_snapshots()
+        self.assertEqual(len(snapshots), 2)
+        self.assertEqual(snapshots[0].extra['name'], 'snap-001')
+
+    def test_ex_create_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        ret = self.driver.ex_create_snapshot(volume,
+                                             'Test Volume',
+                                             'This is a test')
+        self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+
+    def test_ex_delete_snapshot(self):
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+        snapshot = self.driver.ex_list_snapshots()[0]
+        ret = self.driver.ex_delete_snapshot(snapshot)
+        self.assertTrue(ret)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1854,7 +1882,7 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         raise NotImplementedError()
 
     def _v1_1_slug_servers_72258_action(self, method, url, body, headers):
-        if method == "POST":
+        if method == 'POST':
             body = self.fixtures.load('_servers_suspend.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
@@ -1863,7 +1891,7 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers_12063_action(self, method, url, body, headers):
-        if method == "POST":
+        if method == 'POST':
             body = self.fixtures.load('_servers_unpause.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
@@ -1872,11 +1900,50 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers_12086_action(self, method, url, body, headers):
-        if method == "POST":
+        if method == 'POST':
             body = self.fixtures.load('_servers_12086_console_output.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
+
+    def _v1_1_slug_os_snapshots(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_snapshots.json')
+        elif method == 'POST':
+            body = self.fixtures.load('_os_snapshots_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots_RACKSPACE(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_snapshots_rackspace.json')
+        elif method == 'POST':
+            body = self.fixtures.load('_os_snapshots_create_rackspace.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            status_code = httplib.NO_CONTENT
+        else:
+            raise NotImplementedError()
+
+        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5_RACKSPACE(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            status_code = httplib.NO_CONTENT
+        else:
+            raise NotImplementedError()
+
+        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
+
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.

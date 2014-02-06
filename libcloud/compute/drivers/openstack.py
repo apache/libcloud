@@ -35,7 +35,8 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, ProviderError
 from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
+from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.types import KeyPairDoesNotExistError
@@ -1275,6 +1276,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         volumes = obj['volumes']
         return [self._to_volume(volume) for volume in volumes]
 
+    def _to_snapshots(self, obj):
+        snapshots = obj['snapshots']
+        return [self._to_snapshot(snapshot) for snapshot in snapshots]
+
     def _to_sizes(self, obj):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
@@ -1596,6 +1601,50 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('/servers/%s/action' % node.id,
                                        method='POST', data=data).object
         return resp
+
+    def ex_list_snapshots(self):
+        return self._to_snapshots(
+            self.connection.request('/os-snapshots').object)
+
+    def ex_create_snapshot(self, volume, name, description=None, force=False):
+        """
+        Create a snapshot based off of a volume.
+
+        :param      node: volume
+        :type       node: :class:`StorageVolume`
+
+        :keyword    name: New name for the volume snapshot
+        :type       name: ``str``
+
+        :keyword    description: Description of the snapshot (optional)
+        :type       description: ``str``
+
+        :keyword    force: Whether to force creation (optional)
+        :type       force: ``bool``
+
+        :rtype:     :class:`VolumeSnapshot`
+        """
+        data = {'snapshot': {'display_name': name,
+                             'display_description': description,
+                             'volume_id': volume.id,
+                             'force': force}}
+
+        return self._to_snapshot(self.connection.request('/os-snapshots',
+                                                         method='POST',
+                                                         data=data).object)
+
+    def ex_delete_snapshot(self, snapshot):
+        """
+        Delete a VolumeSnapshot
+
+        :param      node: snapshot
+        :type       node: :class:`VolumeSnapshot`
+
+        :rtype:     ``bool``
+        """
+        resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
 
     def _to_security_group_rules(self, obj):
         return [self._to_security_group_rule(security_group_rule) for
@@ -1982,6 +2031,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 'attachments': [att for att in api_node['attachments'] if att],
             }
         )
+
+    def _to_snapshot(self, api_node):
+        if 'snapshot' in api_node:
+            api_node = api_node['snapshot']
+
+        extra = {'volume_id': api_node['volume_id'],
+                 'name': api_node['display_name'],
+                 'created': api_node['created_at'],
+                 'description': api_node['display_description'],
+                 'status': api_node['status']}
+
+        snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
+                                  size=api_node['size'], extra=extra)
+        return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
         # if provider-specific subclasses can get better values for
