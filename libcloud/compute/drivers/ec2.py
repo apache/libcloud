@@ -1315,6 +1315,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_iamprofile: Name or ARN of IAM profile
         :type       ex_iamprofile: ``str``
+
+        :keyword    ex_params: Extra user defined parameters
+        :type       ex_params: ``dict``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1325,6 +1328,12 @@ class BaseEC2NodeDriver(NodeDriver):
             'MaxCount': str(kwargs.get('ex_maxcount', '1')),
             'InstanceType': size.id
         }
+
+        ex_params = kwargs.get('ex_params', None)
+        if ex_params:
+            if not isinstance(ex_params, dict):
+                raise ValueError('Supplied ex_params should be a dictionary')
+            params.update(ex_params)
 
         if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
             raise ValueError('You can only supply ex_security_groups or'
@@ -3870,6 +3879,28 @@ class EucNodeDriver(BaseEC2NodeDriver):
     def list_locations(self):
         raise NotImplementedError(
             'list_locations not implemented for this driver')
+
+    def create_node(self, **kwargs):
+        """
+        Create a new Eucalyptus node
+
+        @inherits: :class:`BaseEC2NodeDriver.create_node`
+
+        :keyword    ex_addressingtype: Name of the addressing scheme used.
+                                       It should be ``public`` or ``private``.
+
+        """
+        ex_addressingtype = kwargs.pop('ex_addressingtype', None)
+
+        if ex_addressingtype:
+            ex_params = {}
+            if ex_addressingtype not in ['private', 'public']:
+                raise AttributeError('Unsupported addressing type')
+            ex_params['AddressingType'] = ex_addressingtype
+            kwargs["ex_params"] = ex_params
+
+        return super(EucNodeDriver, self).create_node(**kwargs)
+
 
     def _add_instance_filter(self, params, node):
         """
