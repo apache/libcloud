@@ -422,8 +422,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
-        'Stopped': NodeState.TERMINATED,
-        'Stopping': NodeState.TERMINATED,
+        'Stopped': NodeState.STOPPED,
+        'Stopping': NodeState.STOPPED,
         'Destroyed': NodeState.TERMINATED,
         'Expunging': NodeState.TERMINATED,
         'Error': NodeState.TERMINATED
