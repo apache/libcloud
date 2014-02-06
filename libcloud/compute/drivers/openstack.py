@@ -1644,7 +1644,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
                                        method='DELETE')
-
         return resp.status == httplib.NO_CONTENT
 
     def _to_security_group_rules(self, obj):
@@ -2037,25 +2036,15 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'snapshot' in api_node:
             api_node = api_node['snapshot']
 
-        if 'rackspace' in self.name.lower():
-            extra = {'volume_id': api_node['volumeId'],
-                     'name': api_node['displayName'],
-                     'created': api_node['createdAt'],
-                     'description': api_node['displayDescription'],
-                     'status': api_node['status']}
+        extra = {'volume_id': api_node['volume_id'],
+                 'name': api_node['display_name'],
+                 'created': api_node['created_at'],
+                 'description': api_node['display_description'],
+                 'status': api_node['status']}
 
-        else:
-            extra = {'volume_id': api_node['volume_id'],
-                     'name': api_node['display_name'],
-                     'created': api_node['created_at'],
-                     'description': api_node['display_description'],
-                     'status': api_node['status']}
-
-        return VolumeSnapshot(
-            id=api_node['id'],
-            driver=self,
-            size=api_node['size'],
-            extra=extra)
+        snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
+                                  size=api_node['size'], extra=extra)
+        return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
         # if provider-specific subclasses can get better values for
