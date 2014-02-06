@@ -1892,7 +1892,6 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-<<<<<<< HEAD
     def _v1_1_slug_servers_12086_action(self, method, url, body, headers):
         if method == "POST":
             body = self.fixtures.load('_servers_12086_console_output.json')
@@ -1900,11 +1899,10 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         else:
             raise NotImplementedError()
 
-=======
     def _v1_1_slug_os_snapshots(self, method, url, body, headers):
-        if method == 'GET':
+        if method == "GET":
             body = self.fixtures.load('_os_snapshots.json')
-        elif method == 'POST':
+        elif method == "POST":
             body = self.fixtures.load('_os_snapshots_create.json')
         else:
             raise NotImplementedError()
@@ -1922,14 +1920,13 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
-        if method == 'DELETE':
+        if method == "DELETE":
             body = ''
         else:
             raise NotImplementedError()
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
->>>>>>> LIBCLOUD-512: Added snapshot lifecycle support and fixture tests to support snapshot listing, creation and deletion.
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
