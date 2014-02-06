@@ -55,6 +55,9 @@ __all__ = [
     'OpenStack_1_1_NodeDriver',
     'OpenStack_1_1_FloatingIpPool',
     'OpenStack_1_1_FloatingIpAddress',
+    'OpenStack_2_0_Response',
+    'OpenStack_2_0_Connection',
+    'OpenStack_2_0_NodeDriver',
     'OpenStackNodeDriver'
 ]
 
@@ -2296,3 +2299,36 @@ class OpenStack_1_1_FloatingIpAddress(object):
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s, pool=%s>'
                 % (self.id, self.ip_address, self.pool))
+
+
+class OpenStack_2_0_Response(OpenStackResponse):
+    def __init__(self, *args, **kwargs):
+        # done because of a circular reference from
+        # NodeDriver -> Connection -> Response
+        self.node_driver = OpenStack_1_1_NodeDriver
+        super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
+
+
+class OpenStack_2_0_Connection(OpenStackComputeConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class OpenStack_2_0_NodeDriver(OpenStackNodeDriver):
+    """
+    OpenStack 2.0 node driver.
+    """
+    connectionCls = OpenStack_2_0_Connection
+    type = Provider.OPENSTACK
+
+    features = {"create_node": ["generates_password"]}
+    _networks_url_prefix = '/os-networks'
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
+                                                    None))
+        super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)

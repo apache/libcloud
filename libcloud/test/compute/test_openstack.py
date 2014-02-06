@@ -1529,9 +1529,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             id='12086', name=None, state=None,
             public_ips=None, private_ips=None, driver=self.driver,
         )
-        resp = self.driver.ex_get_console_output(node)
-        expected_output = 'FAKE CONSOLE OUTPUT\nANOTHER\nLAST LINE'
-        self.assertEqual(resp['output'], expected_output)
+        if self.driver_type.type == 'rackspace':
+            self.assertRaises(NotImplementedError,
+                              self.driver.ex_get_console_output,
+                              node)
+        else:
+            resp = self.driver.ex_get_console_output(node)
+            expected_output = 'FAKE CONSOLE OUTPUT\nANOTHER\nLAST LINE'
+            self.assertEqual(resp['output'], expected_output)
 
     def test_ex_list_snapshots(self):
         if self.driver_type.type == 'rackspace':
