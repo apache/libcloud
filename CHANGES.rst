@@ -36,6 +36,10 @@ Compute
   (LIBCLOUD-508, GITHUB-241)
   [Chris DeRamus]
 
+- Add methods for managing volume snapshots to the OpenStack driver.
+  (LIBCLOUD-512, GITHUB-245)
+  [Chris DeRamus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
