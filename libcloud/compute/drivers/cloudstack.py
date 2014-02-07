@@ -423,9 +423,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.STOPPED,
-        'Stopping': NodeState.STOPPED,
+        'Stopping': NodeState.PENDING,
         'Destroyed': NodeState.TERMINATED,
-        'Expunging': NodeState.TERMINATED,
+        'Expunging': NodeState.PENDING,
         'Error': NodeState.TERMINATED
     }
 
