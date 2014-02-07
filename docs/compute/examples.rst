@@ -122,7 +122,7 @@ Created node also gets added to the provided security groups.
 .. literalinclude:: /examples/compute/cloudstack/create_cloudstack_node_keypair_secgroup.py
    :language: python
 
-Create flaoting IP and attach it to a node using a local OpenStack provider
+Create floating IP and attach it to a node using a local OpenStack provider
 ---------------------------------------------------------------------------
 
 This example demonstrates how to use OpenStack's floating IPs.
