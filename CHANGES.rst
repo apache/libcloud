@@ -1,8 +1,18 @@
 Changelog
 =========
 
-Changes with Apache 0.14.1
---------------------------
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+- Map "Stopped" node state in the CloudStack driver to NodeState.STOPPED
+  instead of NodeState.TERMINATED, "Stopping" to NodeState.PENDING instead of
+  NodeState.TERMINATED and "Expunging" to NodeState.PENDING instead of
+  NodeState.TERMINATED.
+  (GITHUB-246)
+  [Chris DeRamus, Tomaz Muraus]
+
+Changes with Apache Libcloud 0.14.1
+-----------------------------------
 
 Compute
 ~~~~~~~
