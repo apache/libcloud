@@ -20,6 +20,7 @@ import hmac
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import b
 
 from libcloud.common.types import ProviderError
@@ -71,7 +72,16 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     def _make_signature(self, params):
         signature = [(k.lower(), v) for k, v in list(params.items())]
         signature.sort(key=lambda x: x[0])
-        signature = urlencode(signature)
+
+        pairs = []
+        for pair in signature:
+            key = urlquote(str(pair[0]), safe='[]')
+            value = urlquote(str(pair[1]), safe='[]')
+            item = '%s=%s' % (key, value)
+            pairs .append(item)
+
+        signature = '&'.join(pairs)
+
         signature = signature.lower().replace('+', '%20')
         signature = hmac.new(b(self.key), msg=b(signature),
                              digestmod=hashlib.sha1)
