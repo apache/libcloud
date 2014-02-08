@@ -498,14 +498,14 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
     def test_ex_create_tags(self):
         node = self.driver.list_nodes()[0]
-        tags = {'Region': 'Candada'}
+        tags = {'Region': 'Canada'}
         resp = self.driver.ex_create_tags([node.id], 'UserVm', tags)
         self.assertTrue(resp)
 
     def test_ex_delete_tags(self):
         node = self.driver.list_nodes()[0]
-        tags = {'Region': 'Candada'}
-        resp = self.driver.ex_create_tags([node.id], 'UserVm', tags)
+        tag_keys = ['Region']
+        resp = self.driver.ex_delete_tags([node.id], 'UserVm', tag_keys)
         self.assertTrue(resp)
 
 
