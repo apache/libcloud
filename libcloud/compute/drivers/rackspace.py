@@ -228,3 +228,7 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         kwargs['region'] = self.region
         kwargs['get_endpoint_args'] = endpoint_args
         return kwargs
+
+    def ex_get_console_output(self, node, length=None):
+        raise NotImplementedError(
+            'ex_get_console_output not implemented for this driver')
