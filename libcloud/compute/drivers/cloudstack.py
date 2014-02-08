@@ -1697,8 +1697,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         Create tags for a resource (Node/StorageVolume/etc).
         A list of resource types can be found at http://goo.gl/6OKphH
 
-        :param resource: Resource IDs to be tagged
-        :type  resource: ``list`` of resource IDs
+        :param resource_ids: Resource IDs to be tagged. The resource IDs must
+                             all be associated with the resource_type.
+                             For example, for virtual machines (UserVm) you
+                             can only specify a list of virtual machine IDs.
+        :type  resource_ids: ``list`` of resource IDs
 
         :param resource_type: Resource type (eg: UserVm)
         :type  resource_type: ``str``
@@ -1710,7 +1713,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``bool``
         """
         params = {'resourcetype': resource_type,
-                  'resourceids': ",".join(resource_ids)}
+                  'resourceids': ','.join(resource_ids)}
 
         for i, key in enumerate(tags):
             params['tags[%d].key' % i] = key
@@ -1721,28 +1724,30 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
         return True
 
-    def ex_delete_tags(self, resource_ids, resource_type, tags):
+    def ex_delete_tags(self, resource_ids, resource_type, tag_keys):
         """
         Delete tags from a resource.
 
-        :param resource: Resource IDs to be tagged
-        :type  resource: ``list`` of resource IDs
+        :param resource_ids: Resource IDs to be tagged. The resource IDs must
+                             all be associated with the resource_type.
+                             For example, for virtual machines (UserVm) you
+                             can only specify a list of virtual machine IDs.
+        :type  resource_ids: ``list`` of resource IDs
 
         :param resource_type: Resource type (eg: UserVm)
         :type  resource_type: ``str``
 
-        :param tags: A dictionary or other mapping of strings to strings,
-                     associating tag names with tag values.
-        :type tags: ``dict``
+        :param tag_keys: A list of keys to delete. CloudStack only requires
+                         the keys from the key/value pair.
+        :type  tag_keys: ``list``
 
         :rtype: ``bool``
         """
-        params = {'resourceType': resource_type,
-                  'resourceIds': ",".join(resource_ids)}
+        params = {'resourcetype': resource_type,
+                  'resourceids': ','.join(resource_ids)}
 
-        for i, key in enumerate(tags):
+        for i, key in enumerate(tag_keys):
             params['tags[%s].key' % i] = key
-            params['tags[%s].value' % i] = tags[key]
 
         self._async_request(command='deleteTags',
                             params=params,
