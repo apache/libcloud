@@ -5,8 +5,8 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
-Libcloud in development
------------------------
+Libcloud 0.14.1
+---------------
 
 Fix record name inconsistencies in the Rackspace DNS driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
