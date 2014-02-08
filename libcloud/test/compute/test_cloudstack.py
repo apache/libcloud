@@ -496,6 +496,18 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(limits['max_volumes'], 20)
         self.assertEqual(limits['max_snapshots'], 20)
 
+    def test_ex_create_tags(self):
+        node = self.driver.list_nodes()[0]
+        tags = {'Region': 'Candada'}
+        resp = self.driver.ex_create_tags([node.id], 'UserVm', tags)
+        self.assertTrue(resp)
+
+    def test_ex_delete_tags(self):
+        node = self.driver.list_nodes()[0]
+        tags = {'Region': 'Candada'}
+        resp = self.driver.ex_create_tags([node.id], 'UserVm', tags)
+        self.assertTrue(resp)
+
 
 class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
     def test_driver_instantiation(self):
