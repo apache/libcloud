@@ -1375,6 +1375,11 @@ class EucMockHttp(EC2MockHttp):
                                         headers):
         return self._CreateTags(method, url, body, headers)
 
+    def _services_Eucalyptus_DescribeInstanceTypes(self, method, url, body,
+                                                   headers):
+        body = self.fixtures.load('describe_instance_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class NimbusTests(EC2Tests):
 
@@ -1453,6 +1458,14 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
 
     def test_list_location(self):
         pass
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        ids = [s.id for s in sizes]
+        self.assertEqual(len(ids), 18)
+        self.assertTrue('t1.micro' in ids)
+        self.assertTrue('m1.medium' in ids)
+        self.assertTrue('m3.xlarge' in ids)
 
 
 if __name__ == '__main__':
