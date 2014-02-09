@@ -4,12 +4,19 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+Compute
+~~~~~~~
+
 - Map "Stopped" node state in the CloudStack driver to NodeState.STOPPED
   instead of NodeState.TERMINATED, "Stopping" to NodeState.PENDING instead of
   NodeState.TERMINATED and "Expunging" to NodeState.PENDING instead of
   NodeState.TERMINATED.
   (GITHUB-246)
   [Chris DeRamus, Tomaz Muraus]
+
+- Add ex_create_tags and ex_delete_tags method to the CloudStack driver.
+  (LIBCLOUD-514, GITHUB-248)
+  [Chris DeRamus]
 
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
