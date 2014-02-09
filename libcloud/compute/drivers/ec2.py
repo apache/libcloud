@@ -44,6 +44,8 @@ __all__ = [
     'API_VERSION',
     'NAMESPACE',
     'INSTANCE_TYPES',
+    'DEFAULT_EUCA_API_VERSION',
+    'EUCA_NAMESPACE',
 
     'EC2NodeDriver',
     'BaseEC2NodeDriver',
@@ -63,6 +65,10 @@ __all__ = [
 
 API_VERSION = '2013-10-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
+
+# Eucalyptus Constants
+DEFAULT_EUCA_API_VERSION = '3.3.0'
+EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
@@ -3875,21 +3881,69 @@ class EucNodeDriver(BaseEC2NodeDriver):
     connectionCls = EucConnection
 
     def __init__(self, key, secret=None, secure=True, host=None,
-                 path=None, port=None):
+                 path=None, port=None, api_version=DEFAULT_EUCA_API_VERSION):
         """
         @inherits: :class:`EC2NodeDriver.__init__`
 
         :param    path: The host where the API can be reached.
         :type     path: ``str``
+
+        :param    api_version: The API version to extend support for
+                               Eucalyptus proprietary API calls
+        :type     api_version: ``str``
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
+
         if path is None:
             path = '/services/Eucalyptus'
+
         self.path = path
+        self.EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (api_version)
 
     def list_locations(self):
         raise NotImplementedError(
             'list_locations not implemented for this driver')
+
+    def _to_sizes(self, response):
+        return [self._to_size(el) for el in response.findall(
+            fixxpath(xpath='instanceTypeDetails/item',
+                     namespace=self.EUCA_NAMESPACE))]
+
+    def _to_size(self, el):
+        name = findtext(element=el,
+                        xpath='name',
+                        namespace=self.EUCA_NAMESPACE)
+        cpu = findtext(element=el,
+                       xpath='cpu',
+                       namespace=self.EUCA_NAMESPACE)
+        disk = findtext(element=el,
+                        xpath='disk',
+                        namespace=self.EUCA_NAMESPACE)
+        memory = findtext(element=el,
+                          xpath='memory',
+                          namespace=self.EUCA_NAMESPACE)
+
+        return NodeSize(id=name,
+                        name=name,
+                        ram=int(memory),
+                        disk=int(disk),
+                        bandwidth=None,
+                        price=None,
+                        driver=EucNodeDriver,
+                        extra={
+                            'cpu': int(cpu)
+                        })
+
+    def list_sizes(self):
+        """
+        List available instance flavors/sizes
+
+        :rtype: ``list`` of :class:`NodeSize`
+        """
+        params = {'Action': 'DescribeInstanceTypes'}
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_sizes(response)
 
     def _add_instance_filter(self, params, node):
         """
