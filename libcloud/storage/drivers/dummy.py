@@ -438,6 +438,8 @@ class DummyStorageDriver(StorageDriver):
         @inherits: :class:`StorageDriver.upload_object_via_stream`
         """
 
+        # Unpack the iterator
+        iterator = list(iterator)
         size = len(iterator)
         return self._add_object(container=container, object_name=object_name,
                                 size=size, extra=extra)
