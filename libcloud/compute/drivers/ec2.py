@@ -44,6 +44,8 @@ __all__ = [
     'API_VERSION',
     'NAMESPACE',
     'INSTANCE_TYPES',
+    'DEFAULT_EUCA_API_VERSION',
+    'EUCA_NAMESPACE',
 
     'EC2NodeDriver',
     'BaseEC2NodeDriver',
@@ -63,6 +65,10 @@ __all__ = [
 
 API_VERSION = '2013-10-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
+
+# Eucalyptus Constants
+DEFAULT_EUCA_API_VERSION = '3.3.0'
+EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
@@ -3855,20 +3861,26 @@ class EucNodeDriver(BaseEC2NodeDriver):
     connectionCls = EucConnection
 
     def __init__(self, key, secret=None, secure=True, host=None,
-                 path=None, port=None):
+                 path=None, port=None, api_version=None):
         """
         @inherits: :class:`EC2NodeDriver.__init__`
 
         :param    path: The host where the API can be reached.
         :type     path: ``str``
+
+        :param    api_version: The API version to extend support for
+                               Eucalyptus proprietary API calls
+        :type     api_version: ``str``
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
             path = '/services/Eucalyptus'
         self.path = path
-        self.EUCA_API_VERSION = '3.4.1'
-        self.EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s'
-                               % (self.EUCA_API_VERSION)
+        if api_version is not None:
+            self.EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (
+                api_version)
+        else:
+            self.EUCA_NAMESPACE = EUCA_NAMESPACE
 
     def list_locations(self):
         raise NotImplementedError(
@@ -3877,8 +3889,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     def _to_sizes(self, response):
         return [self._to_size(el) for el in response.findall(
             fixxpath(xpath='instanceTypeDetails/item',
-                     namespace=self.EUCA_NAMESPACE))
-        ]
+                     namespace=self.EUCA_NAMESPACE))]
 
     def _to_size(self, el):
         name = findtext(element=el,

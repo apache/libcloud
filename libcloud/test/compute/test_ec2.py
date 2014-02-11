@@ -1446,7 +1446,7 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EucNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
-                                    host='some.eucalyptus.com')
+                                    host='some.eucalyptus.com', api_version='3.4.1')
 
     def test_list_locations_response(self):
         try:
