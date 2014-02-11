@@ -1,0 +1,7 @@
+Host *.host.org
+	IdentityFile /dir/host_org_rsa
+	User root
+	Proxycommand ssh -q -W ssh -q -W %h:%p
+
+Host dummy.host.org
+	Hostname realname.dummy.host.org

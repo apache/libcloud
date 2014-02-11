@@ -23,9 +23,12 @@ import tempfile
 import unittest
 
 from libcloud import _init_once
+from libcloud.compute import ssh
+ssh.SSH_CONFIG_FILES = []
 from libcloud.compute.ssh import ParamikoSSHClient
 from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from mock import patch, Mock
 
@@ -34,6 +37,7 @@ if not have_paramiko:
 
 
 class ParamikoSSHClientTests(unittest.TestCase):
+    fixtures = ComputeFileFixtures('ssh')
 
     @patch('paramiko.SSHClient', Mock)
     def setUp(self):
@@ -183,6 +187,49 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         self.assertTrue(content.find(expected_msg) != -1)
 
+    @patch('paramiko.SSHClient', Mock)
+    @patch('paramiko.ProxyCommand', Mock)
+    def test_create_with_ssh_config(self):
+        filename = os.path.join(self.fixtures.root, 'ssh_config')
+        ssh.SSH_CONFIG_FILES = [filename]
+
+        conn_params = {'hostname': 'dummy.host.org'}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+        ssh.SSH_CONFIG_FILES = []
+
+        expected_conn = {'username': 'root',
+                         'allow_agent': True,
+                         'hostname': 'realname.dummy.host.org',
+                         'look_for_keys': True,
+                         'key_filename': ['/dir/host_org_rsa'],
+                         'sock': mock.sock,
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
+
+    @patch('paramiko.SSHClient', Mock)
+    @patch('paramiko.ProxyCommand', Mock)
+    def test_create_with_ssh_config_and_forced_cred(self):
+        filename = os.path.join(self.fixtures.root, 'ssh_config')
+        ssh.SSH_CONFIG_FILES = [filename]
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'password': 'ubuntu'}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+        ssh.SSH_CONFIG_FILES = []
+
+        expected_conn = {'username': 'ubuntu',
+                         'password': 'ubuntu',
+                         'allow_agent': False,
+                         'hostname': 'realname.dummy.host.org',
+                         'look_for_keys': False,
+                         'sock': mock.sock,
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
 
 if not ParamikoSSHClient:
     class ParamikoSSHClientTests(unittest.TestCase):  # NOQA
