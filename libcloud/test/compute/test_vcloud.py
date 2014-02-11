@@ -208,13 +208,13 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployTest', 'testNode', state=0,
                  public_ips=[], private_ips=[], driver=self.driver))
-        self.assertEqual(node.state, NodeState.TERMINATED)
+        self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_ex_undeploy_with_error(self):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployErrorTest', 'testNode',
                  state=0, public_ips=[], private_ips=[], driver=self.driver))
-        self.assertEqual(node.state, NodeState.TERMINATED)
+        self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_ex_find_node(self):
         node = self.driver.ex_find_node('testNode')
