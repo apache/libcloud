@@ -26,6 +26,10 @@ Compute
   (LIBCLOUD-516, GITHUB-249)
   [Chris DeRamus]
 
+- Map "Powered Off" state in the vCloud driver from "TERMINATED" to "STOPPED".
+  (GITHUB-251)
+  [Ash Berlin]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
