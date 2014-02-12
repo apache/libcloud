@@ -18,6 +18,9 @@ Compute
   (LIBCLOUD-514, GITHUB-248)
   [Chris DeRamus]
 
+- Add new G2 instances to the EC2 driver.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 

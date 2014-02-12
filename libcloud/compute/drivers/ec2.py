@@ -174,6 +174,13 @@ INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'g2.2xlarge': {
+        'id': 'g2.2xlarge',
+        'name': 'Cluster GPU G2 Double Extra Large Instance',
+        'ram': 15000,
+        'disk': 60,
+        'bandwidth': None,
+    },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
         'name': 'Cluster Compute Quadruple Extra Large Instance',
@@ -270,6 +277,7 @@ INSTANCE_TYPES = {
 }
 
 REGION_DETAILS = {
+    # US East (Northern Virginia) Region
     'us-east-1': {
         'endpoint': 'ec2.us-east-1.amazonaws.com',
         'api_name': 'ec2_us_east',
@@ -297,6 +305,7 @@ REGION_DETAILS = {
             'c3.4xlarge',
             'c3.8xlarge',
             'cg1.4xlarge',
+            'g2.2xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -305,6 +314,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # US West (Northern California) Region
     'us-west-1': {
         'endpoint': 'ec2.us-west-1.amazonaws.com',
         'api_name': 'ec2_us_west',
@@ -324,6 +334,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            'g2.2xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -335,6 +346,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # US West (Oregon) Region
     'us-west-2': {
         'endpoint': 'ec2.us-west-2.amazonaws.com',
         'api_name': 'ec2_us_west_oregon',
@@ -350,6 +362,7 @@ REGION_DETAILS = {
             'm2.4xlarge',
             'c1.medium',
             'c1.xlarge',
+            'g2.2xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -362,6 +375,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # EU (Ireland) Region
     'eu-west-1': {
         'endpoint': 'ec2.eu-west-1.amazonaws.com',
         'api_name': 'ec2_eu_west',
@@ -381,6 +395,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            'g2.2xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -393,6 +408,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # Asia Pacific (Singapore) Region
     'ap-southeast-1': {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
         'api_name': 'ec2_ap_southeast',
@@ -424,6 +440,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # Asia Pacific (Tokyo) Region
     'ap-northeast-1': {
         'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
         'api_name': 'ec2_ap_northeast',
@@ -442,6 +459,7 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
+            'g2.2xlarge',
             'c1.xlarge',
             'c3.large',
             'c3.xlarge',
@@ -454,6 +472,7 @@ REGION_DETAILS = {
             'i2.8xlarge',
         ]
     },
+    # South America (Sao Paulo) Region
     'sa-east-1': {
         'endpoint': 'ec2.sa-east-1.amazonaws.com',
         'api_name': 'ec2_sa_east',
@@ -475,6 +494,7 @@ REGION_DETAILS = {
             'c1.xlarge'
         ]
     },
+    # Asia Pacific (Sydney) Region
     'ap-southeast-2': {
         'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
         'api_name': 'ec2_ap_southeast_2',
