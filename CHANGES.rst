@@ -21,6 +21,11 @@ Compute
 - Add new G2 instances to the EC2 driver.
   [Tomaz Muraus]
 
+- Add support for multiple API versions to the Eucalyptus driver and allows
+  user to pass "api_version" argument to the driver constructor.
+  (LIBCLOUD-516, GITHUB-249)
+  [Chris DeRamus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
