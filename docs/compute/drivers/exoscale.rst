@@ -13,6 +13,11 @@ Exoscale driver is based on the CloudStack one and uses basic zones. For more
 information and CloudStack specific documentation, please refer to
 :doc:`CloudStack Compute Driver Documentation <cloudstack>` page.
 
+Other Resources
+---------------
+
+* `Libcloud 0.14 and Exoscale`_ - Exoscale blog
+
 API Docs
 --------
 
@@ -20,5 +25,5 @@ API Docs
     :members:
     :inherited-members:
 
-
 .. _`Exoscale`: https://www.exoscale.ch
+.. _`Libcloud 0.14 and Exoscale`: https://www.exoscale.ch/syslog/2014/01/27/licloud-guest-post/
