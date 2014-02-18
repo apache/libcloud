@@ -89,6 +89,11 @@ class DigitalOceanTests(unittest.TestCase):
         result = self.driver.destroy_node(node)
         self.assertTrue(result)
 
+    def test_ex_rename_node_success(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_rename_node(node, 'fedora helios')
+        self.assertTrue(result)
+
     def test_ex_list_ssh_keys(self):
         keys = self.driver.ex_list_ssh_keys()
         self.assertEqual(len(keys), 1)
@@ -131,6 +136,12 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         # destroy_node
         self.assertUrlContainsQueryParams(url, {'scrub_data': '1'})
         body = self.fixtures.load('destroy_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _droplets_119461_rename(self, method, url, body, headers):
+        # reboot_node
+        self.assertUrlContainsQueryParams(url, {'name': 'fedora helios'})
+        body = self.fixtures.load('ex_rename_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ssh_keys(self, method, url, body, headers):
