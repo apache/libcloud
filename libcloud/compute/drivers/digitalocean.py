@@ -127,6 +127,12 @@ class DigitalOceanNodeDriver(NodeDriver):
                                       params=params)
         return res.status == httplib.OK
 
+    def ex_rename_node(self, node, name):
+        params = {'name': name}
+        res = self.connection.request('/droplets/%s/rename/' % (node.id),
+                                      params=params)
+        return res.status == httplib.OK
+
     def ex_list_ssh_keys(self):
         """
         List all the available SSH keys.
