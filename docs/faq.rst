@@ -84,3 +84,23 @@ our :ref:`mailing list <mailing-lists>` where we can discuss it further.
 Ideally, the proposal should also contain a prototype of a driver for at least
 two different providers. This helps us make sure that the API you have designed
 is not biased towards a single provider.
+
+How do I obtain Libcloud version?
+---------------------------------
+
+You can obtain currently active Libcloud version by accessing the
+``libcloud.__version__`` variable.
+
+Example #1 (command line):
+
+.. sourcecode:: bash
+
+    python -c "import libcloud ; print libcloud.__version__"
+
+Example #2 (code):
+
+.. sourcecode:: python
+
+    import libcloud
+    libcloud.__version__
+
