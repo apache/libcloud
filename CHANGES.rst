@@ -30,6 +30,10 @@ Compute
   (GITHUB-251)
   [Ash Berlin]
 
+- Add ex_rename_node method to the DigitalOcean driver.
+  (GITHUB-252)
+  [Rahul Ranjan]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 

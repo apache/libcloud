@@ -43,3 +43,9 @@ Contributing
 For information on how to contribute, please see the Contributing
 chapter in our documentation
 <https://libcloud.readthedocs.org/en/latest/development.html#contributing>
+
+License
+=======
+
+Apache Libcloud is licensed under the Apache 2.0 license. For more information,
+please see LICENSE and NOTICE file.

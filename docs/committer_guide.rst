@@ -55,6 +55,20 @@ use the following command:
 ``--signoff`` argument signs the patch and lets others know that you have
 reviewed and merged a patch.
 
+If you are merging a patch from the Github pull request, don't forget to
+update the commit message during rebase (or use git commit --amend if the
+rebase was not necessary) to include the "Closes #prnumber" message. This way,
+the corresponding Github pull request will get automatically closed once the
+Github mirror is updated.
+
+For example::
+
+    ...
+    Original message
+    ...
+
+    Closes #prnumber
+
 After the patch has been applied, make sure to update ``CHANGES`` file.
 
 Making a release (for release managers)
