@@ -34,6 +34,11 @@ Compute
   (GITHUB-252)
   [Rahul Ranjan]
 
+- Improve error parsing in the DigitalOcean driver.
+
+  Reported by Deni Bertovic.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 

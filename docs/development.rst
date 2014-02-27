@@ -14,6 +14,9 @@ If you need help or get stuck at any point during this process, stop by on our
 IRC channel (:ref:`#libcloud on freenode <irc>`) and we will do our best to
 assist you.
 
+Getting started with contributing to Libcloud
+---------------------------------------------
+
 General contribution guidelines
 -------------------------------
 

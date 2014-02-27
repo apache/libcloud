@@ -32,6 +32,14 @@ class DigitalOceanResponse(JsonResponse):
         elif self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
             raise InvalidCredsError(body['message'])
+        else:
+            body = self.parse_body()
+
+            if 'error_message' in body:
+                error = '%s (code: %s)' % (body['error_message'], self.status)
+            else:
+                error = body
+            return error
 
 
 class SSHKey(object):
