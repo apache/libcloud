@@ -1171,6 +1171,24 @@ class ElasticIP(object):
                 % (self.ip, self.domain, self.instance_id))
 
 
+class VPCInternetGateway(object):
+    """
+    Class which stores information about VPC Internet Gateways.
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, id, name, vpc_id, state, driver, extra=None):
+        self.id = id
+        self.name = name
+        self.vpc_id = vpc_id
+        self.state = state
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<VPCInternetGateway: id=%s>') % (self.id))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -3171,6 +3189,105 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return result
 
+    def ex_list_internet_gateways(self):
+        """
+        Describes available Internet gateways and whether or not they are
+        attached to a VPC. These are required for VPC nodes to communicate
+        over the Internet.
+
+        :rtype: ``list`` of :class:`.VPCInternetGateway`
+        """
+        params = {'Action': 'DescribeInternetGateways'}
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_internet_gateways(response, 'internetGatewaySet/item')
+
+    def ex_create_internet_gateway(self, name=None):
+        """
+        Delete a VPC Internet gateway
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'CreateInternetGateway'}
+
+        resp = self.connection.request(self.path, params=params).object
+
+        element = resp.findall(fixxpath(xpath='internetGateway',
+                                        namespace=NAMESPACE))
+
+        gateway = self._to_internet_gateway(element[0], name)
+
+        if name is not None:
+            self.ex_create_tags(gateway, {'Name': name})
+
+        return gateway
+
+    def ex_delete_internet_gateway(self, gateway):
+        """
+        Delete a VPC Internet gateway
+
+        :param      gateway: The gateway to delete
+        :type       gateway: :class:`.VPCInternetGateway`
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteInternetGateway',
+                  'InternetGatewayId': gateway.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_attach_internet_gateway(self, gateway, network):
+        """
+        Attach a Internet gateway to a VPC
+
+        :param      gateway: The gateway to attach
+        :type       gateway: :class:`.VPCInternetGateway`
+
+        :param      network: The VPC network to attach to
+        :type       network: :class:`.EC2Network`
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'AttachInternetGateway',
+                  'InternetGatewayId': gateway.id,
+                  'VpcId': network.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_detach_internet_gateway(self, gateway, network):
+        """
+        Detach a Internet gateway from a VPC
+
+        :param      gateway: The gateway to detach
+        :type       gateway: :class:`.VPCInternetGateway`
+
+        :param      network: The VPC network to detach from
+        :type       network: :class:`.EC2Network`
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DetachInternetGateway',
+                  'InternetGatewayId': gateway.id,
+                  'VpcId': network.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -3556,6 +3673,40 @@ class BaseEC2NodeDriver(NodeDriver):
                 element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
 
         return mapping
+
+    def _to_internet_gateways(self, object, xpath):
+        return [self._to_internet_gateway(el)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_internet_gateway(self, element, name=None):
+        id = findtext(element=element,
+                      xpath='internetGatewayId',
+                      namespace=NAMESPACE)
+
+        vpc_id = findtext(element=element,
+                          xpath='attachmentSet/item/vpcId',
+                          namespace=NAMESPACE)
+
+        state = findtext(element=element,
+                         xpath='attachmentSet/item/state',
+                         namespace=NAMESPACE)
+
+        # If there's no attachment state, let's
+        # set it to available
+        if not state:
+            state = 'available'
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If name was not passed into the method then
+        # fall back then use the gateway id
+        name = name if name else tags.get('Name', id)
+
+        return VPCInternetGateway(id=id, name=name, vpc_id=vpc_id,
+                                  state=state, driver=self.connection.driver,
+                                  extra={'tags': tags})
 
     def _pathlist(self, key, arr):
         """
