@@ -39,6 +39,11 @@ Compute
   Reported by Deni Bertovic.
   [Tomaz Muraus]
 
+- Add extension methods for the VPC internet gateway management to the EC2
+  driver.
+  (LIBCLOUD-525, GITHUB-255)
+  [Chris DeRamus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
