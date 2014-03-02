@@ -1171,7 +1171,7 @@ class ElasticIP(object):
                 % (self.ip, self.domain, self.instance_id))
 
 
-class VPCInternetGateway(Node):
+class VPCInternetGateway(object):
     """
     Class which stores information about VPC Internet Gateways.
 
@@ -3267,7 +3267,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_detach_internet_gateway(self, gateway, network):
         """
-        Detach a Internet gateway to a VPC
+        Detach a Internet gateway from a VPC
 
         :param      gateway: The gateway to detach
         :type       gateway: :class:`.VPCInternetGateway`
@@ -3694,7 +3694,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         # If there's no attachment state, let's
         # set it to available
-        if state is None:
+        if not state:
             state = 'available'
 
         # Get our tags
