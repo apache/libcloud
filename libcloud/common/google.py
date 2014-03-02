@@ -36,14 +36,14 @@ package installed to use this):
       the PEM format.
     - Convert the key using OpenSSL (the default password is 'notasecret'):
       ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-      | openssl rsa -out PRIV.pem``
+      -passin pass:notasecret | openssl rsa -out PRIV.pem``
     - Move the .pem file to a safe location.
     - To Authenticate, you will need to pass the Service Account's "Email
       address" in as the user_id and the path to the .pem file as the key.
 
 Setting up Installed Application authentication:
-    - Go to the Connsole
-    - Go to your projcet and then to "APIs & auth" on the left
+    - Go to the Console
+    - Go to your project and then to "APIs & auth" on the left
     - Click on "Credentials"
     - Select "Installed application" and "Other" then click on
       "Create Client ID"
