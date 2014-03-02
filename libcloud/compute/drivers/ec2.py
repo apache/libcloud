@@ -231,6 +231,13 @@ INSTANCE_TYPES = {
         'disk': 240,
         'bandwidth': None
     },
+    'hs1.4xlarge': {
+        'id': 'hs1.4xlarge',
+        'name': 'High Storage Quadruple Extra Large Instance',
+        'ram': 61952,
+        'disk': 2048,
+        'bandwidth': None
+    },
     'hs1.8xlarge': {
         'id': 'hs1.8xlarge',
         'name': 'High Storage Eight Extra Large Instance',
@@ -298,6 +305,7 @@ REGION_DETAILS = {
             'c3.8xlarge',
             'cg1.4xlarge',
             'cr1.8xlarge',
+            'hs1.4xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
@@ -355,6 +363,8 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
+            'hs1.4xlarge',
+            'hs1.8xlarge',
             'cc2.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
@@ -386,6 +396,8 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
+            'hs1.4xlarge',
+            'hs1.8xlarge',
             'cc2.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
@@ -448,6 +460,8 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
+            'hs1.4xlarge',
+            'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
