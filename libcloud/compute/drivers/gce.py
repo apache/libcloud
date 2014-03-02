@@ -1699,7 +1699,7 @@ class GCENodeDriver(NodeDriver):
             on_host_maintenance = on_host_maintenance.upper()
             ohm_values = ['MIGRATE', 'TERMINATE']
             if on_host_maintenance not in ohm_values:
-                raise ValueError('on_host_maintenence must be one of %s' %
+                raise ValueError('on_host_maintenance must be one of %s' %
                                  ','.join(ohm_values))
 
         request = '/zones/%s/instances/%s/setScheduling' % (
