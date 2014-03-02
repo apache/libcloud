@@ -995,6 +995,38 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_detach_network_interface('eni-attach-2b588b47')
         self.assertTrue(resp)
 
+    def test_ex_list_internet_gateways(self):
+        gateways = self.driver.ex_list_internet_gateways()
+
+        self.assertEqual(len(gateways), 2)
+
+        self.assertEqual('igw-84dd3ae1', gateways[0].id)
+        self.assertEqual('igw-7fdae215', gateways[1].id)
+        self.assertEqual('available', gateways[1].state)
+        self.assertEqual('vpc-62cad41e', gateways[1].vpc_id)
+
+    def test_ex_create_internet_gateway(self):
+        gateway = self.driver.ex_create_internet_gateway()
+
+        self.assertEqual('igw-13ac2b36', gateway.id)
+
+    def test_ex_delete_internet_gateway(self):
+        gateway = self.driver.ex_list_internet_gateways()[0]
+        resp = self.driver.ex_delete_internet_gateway(gateway)
+        self.assertTrue(resp)
+
+    def test_ex_attach_internet_gateway(self):
+        gateway = self.driver.ex_list_internet_gateways()[0]
+        network = self.driver.ex_list_networks()[0]
+        resp = self.driver.ex_attach_internet_gateway(gateway, network)
+        self.assertTrue(resp)
+
+    def test_ex_detach_internet_gateway(self):
+        gateway = self.driver.ex_list_internet_gateways()[0]
+        network = self.driver.ex_list_networks()[0]
+        resp = self.driver.ex_detach_internet_gateway(gateway, network)
+        self.assertTrue(resp)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -1344,6 +1376,26 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DetachNetworkInterface(self, method, url, body, headers):
         body = self.fixtures.load('detach_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeInternetGateways(self, method, url, body, headers):
+        body = self.fixtures.load('describe_internet_gateways.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateInternetGateway(self, method, url, body, headers):
+        body = self.fixtures.load('create_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteInternetGateway(self, method, url, body, headers):
+        body = self.fixtures.load('delete_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _AttachInternetGateway(self, method, url, body, headers):
+        body = self.fixtures.load('attach_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DetachInternetGateway(self, method, url, body, headers):
+        body = self.fixtures.load('detach_internet_gateway.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
