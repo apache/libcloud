@@ -44,6 +44,13 @@ Compute
   (LIBCLOUD-525, GITHUB-255)
   [Chris DeRamus]
 
+Load Balancer
+~~~~~~~~~~~~~
+
+- Add extension methods for policy managagement to the ELB driver.
+  (LIBCLOUD-522, GITHUB-253)
+  [Rahul Ranjan]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
