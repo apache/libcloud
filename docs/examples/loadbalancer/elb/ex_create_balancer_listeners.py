@@ -5,9 +5,7 @@ ACCESS_ID = 'your access id'
 SECRET_KEY = 'your secret key'
 
 cls = get_driver(Provider.ELB)
-driver = cls(key=ACCESS_ID, secret=SECRET_KEY, region='')
-
-print driver.list_balancers()
+driver = cls(key=ACCESS_ID, secret=SECRET_KEY)
 
 driver.ex_create_balancer_listeners(
     name='MyLB',

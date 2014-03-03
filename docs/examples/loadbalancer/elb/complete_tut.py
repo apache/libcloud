@@ -9,9 +9,9 @@ SECRET_KEY = 'your secret key'
 
 def main():
     cls = get_driver(Provider.ELB)
-    driver = cls(key=ACCESS_ID, secret=SECRET_KEY, region='')
+    driver = cls(key=ACCESS_ID, secret=SECRET_KEY)
 
-    print driver.list_balancers()
+    print(driver.list_balancers())
 
     # members associated with the load balancer
     members = (Member(None, '192.168.88.1', 8000),
@@ -23,7 +23,7 @@ def main():
         port=80,
         protocol='http',
         members=members)
-    print new_balancer
+    print(new_balancer)
 
     # create load balancer policy
     print driver.ex_create_balancer_policy(
