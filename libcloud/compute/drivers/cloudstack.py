@@ -188,6 +188,53 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'key_name': 'zonename',
             'transform_func': str
         }
+    },
+    'project': {
+        'account': {'key_name': 'account', 'transform_func': str},
+        'cpuavailable': {'key_name': 'cpuavailable', 'transform_func': int},
+        'cpulimit': {'key_name': 'cpulimit', 'transform_func': int},
+        'cputotal': {'key_name': 'cputotal', 'transform_func': int},
+        'domain': {'key_name': 'domain', 'transform_func': str},
+        'domainid': {'key_name': 'domainid', 'transform_func': str},
+        'ipavailable': {'key_name': 'ipavailable', 'transform_func': int},
+        'iplimit': {'key_name': 'iplimit', 'transform_func': int},
+        'iptotal': {'key_name': 'iptotal', 'transform_func': int},
+        'memoryavailable': {'key_name': 'memoryavailable', 'transform_func': int},
+        'memorylimit': {'key_name': 'memorylimit', 'transform_func': int},
+        'memorytotal': {'key_name': 'memorytotal', 'transform_func': int},
+        'networkavailable': {'key_name': 'networkavailable', 'transform_func': int},
+        'networklimit': {'key_name': 'networklimit', 'transform_func': int},
+        'networktotal': {'key_name': 'networktotal', 'transform_func': int},
+        'primarystorageavailable': {'key_name': 'primarystorageavailable',
+                                    'transform_func': int},
+        'primarystoragelimit': {'key_name': 'primarystoragelimit',
+                                'transform_func': int},
+        'primarystoragetotal': {'key_name': 'primarystoragetotal',
+                                'transform_func': int},
+        'secondarystorageavailable': {'key_name': 'secondarystorageavailable',
+                                      'transform_func': int},
+        'secondarystoragelimit': {'key_name': 'secondarystoragelimit',
+                                  'transform_func': int},
+        'secondarystoragetotal': {'key_name': 'secondarystoragetotal',
+                                  'transform_func': int},
+        'snapshotavailable': {'key_name': 'snapshotavailable', 'transform_func': int},
+        'snapshotlimit': {'key_name': 'snapshotlimit', 'transform_func': int},
+        'snapshottotal': {'key_name': 'snapshottotal', 'transform_func': int},
+        'state': {'key_name': 'state', 'transform_func': str},
+        'tags': {'key_name': 'tags', 'transform_func': str},
+        'templateavailable': {'key_name': 'templateavailable', 'transform_func': int},
+        'templatelimit': {'key_name': 'templatelimit', 'transform_func': int},
+        'templatetotal': {'key_name': 'templatetotal', 'transform_func': int},
+        'vmavailable': {'key_name': 'vmavailable', 'transform_func': int},
+        'vmlimit': {'key_name': 'vmlimit', 'transform_func': int},
+        'vmrunning': {'key_name': 'vmrunning', 'transform_func': int},
+        'vmtotal': {'key_name': 'vmtotal', 'transform_func': int},
+        'volumeavailable': {'key_name': 'volumeavailable', 'transform_func': int},
+        'volumelimit': {'key_name': 'volumelimit', 'transform_func': int},
+        'volumetotal': {'key_name': 'volumetotal', 'transform_func': int},
+        'vpcavailable': {'key_name': 'vpcavailable', 'transform_func': int},
+        'vpclimit': {'key_name': 'vpclimit', 'transform_func': int},
+        'vpctotal': {'key_name': 'vpctotal', 'transform_func': int}
     }
 }
 
@@ -402,6 +449,26 @@ class CloudStackNetwork(object):
                    self.networkofferingid, self.zoneid, self.driver.name))
 
 
+class CloudStackProject(object):
+    """
+    Class representing a CloudStack Project.
+    """
+
+    def __init__(self, displaytext, name, id,
+                 driver, extra=None):
+        self.displaytext = displaytext
+        self.name = name
+        self.id = id
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackProject: id=%s, displaytext=%s, name=%s, '
+                 'driver=%s>')
+                % (self.id, self.displaytext, self.name,
+                   self.driver.name))
+
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """
     Driver for the CloudStack API.
@@ -516,13 +583,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return locations
 
-    def list_nodes(self):
+    def list_nodes(self, project=None):
         """
         @inherits: :class:`NodeDriver.list_nodes`
+
+        :keyword    project: Limit nodes returned to those configured under the defined project.
+        :type       project: :class:`.CloudStackProject`
+
         :rtype: ``list`` of :class:`CloudStackNode`
         """
-        vms = self._sync_request('listVirtualMachines')
-        addrs = self._sync_request('listPublicIpAddresses')
+
+        args = {}
+        if project:
+            args['projectid'] = project.id
+        vms = self._sync_request('listVirtualMachines', params=args)
+        addrs = self._sync_request('listPublicIpAddresses', params=args)
 
         public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
@@ -604,6 +679,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                               into.
         :type       networks: ``list`` of :class:`.CloudStackNetwork`
 
+        :keyword    project: Optional project to create the new node under.
+        :type       project: :class:`.CloudStackProject`
+
+        :keyword    diskoffering:  Optional disk offering to add to the new node.
+        :type       diskoffering:  :class:`.CloudStackDiskOffering`
+
         :keyword    ex_keyname:  Name of existing keypair
         :type       ex_keyname:  ``str``
 
@@ -636,6 +717,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         image = kwargs.get('image', None)
         location = kwargs.get('location', None)
         networks = kwargs.get('networks', None)
+        project = kwargs.get('project', None)
+        diskoffering = kwargs.get('diskoffering', None)
         ex_key_name = kwargs.get('ex_keyname', None)
         ex_user_data = kwargs.get('ex_userdata', None)
         ex_security_groups = kwargs.get('ex_security_groups', None)
@@ -658,6 +741,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if networks:
             networks = ','.join([network.id for network in networks])
             server_params['networkids'] = networks
+
+        if project:
+            server_params['projectid'] = project.id
+
+        if diskoffering:
+            server_params['diskofferingid'] = diskoffering.id
 
         if ex_key_name:
             server_params['keypair'] = ex_key_name
@@ -780,6 +869,34 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra=extra))
 
         return networks
+
+    def ex_list_projects(self):
+        """
+        List the available projects
+
+        :rtype ``list`` of :class:`CloudStackProject`
+        """
+
+        res = self._sync_request(command='listProjects',
+                                 method='GET')
+        projs = res.get('project', [])
+
+        projects = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['project']
+        for proj in projs:
+            extra = self._get_extra_dict(proj, extra_map)
+
+            if 'tags' in proj:
+                extra['tags'] = self._get_resource_tags(proj['tags'])
+
+            projects.append(CloudStackProject(
+                proj['displaytext'],
+                proj['name'],
+                proj['id'],
+                self,
+                extra=extra))
+
+        return projects
 
     def create_volume(self, size, name, location=None, snapshot=None):
         """
