@@ -650,7 +650,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': str
         },
         'ramdisk_id': {
-            'xpath': 'ramdisk_id',
+            'xpath': 'ramdiskId',
             'transform_func': str
         }
     },
