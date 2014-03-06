@@ -157,6 +157,14 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'hypervisor': {
             'key_name': 'hypervisor',
             'transform_func': str
+        },
+        'project': {
+            'key_name': 'project',
+            'transform_func': str
+        },
+        'project_id': {
+            'key_name': 'projectid',
+            'transform_func': str
         }
     },
     'volume': {
@@ -199,10 +207,12 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'ipavailable': {'key_name': 'ipavailable', 'transform_func': int},
         'iplimit': {'key_name': 'iplimit', 'transform_func': int},
         'iptotal': {'key_name': 'iptotal', 'transform_func': int},
-        'memoryavailable': {'key_name': 'memoryavailable', 'transform_func': int},
+        'memoryavailable': {'key_name': 'memoryavailable',
+                            'transform_func': int},
         'memorylimit': {'key_name': 'memorylimit', 'transform_func': int},
         'memorytotal': {'key_name': 'memorytotal', 'transform_func': int},
-        'networkavailable': {'key_name': 'networkavailable', 'transform_func': int},
+        'networkavailable': {'key_name': 'networkavailable',
+                             'transform_func': int},
         'networklimit': {'key_name': 'networklimit', 'transform_func': int},
         'networktotal': {'key_name': 'networktotal', 'transform_func': int},
         'primarystorageavailable': {'key_name': 'primarystorageavailable',
@@ -217,19 +227,22 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
                                   'transform_func': int},
         'secondarystoragetotal': {'key_name': 'secondarystoragetotal',
                                   'transform_func': int},
-        'snapshotavailable': {'key_name': 'snapshotavailable', 'transform_func': int},
+        'snapshotavailable': {'key_name': 'snapshotavailable',
+                              'transform_func': int},
         'snapshotlimit': {'key_name': 'snapshotlimit', 'transform_func': int},
         'snapshottotal': {'key_name': 'snapshottotal', 'transform_func': int},
         'state': {'key_name': 'state', 'transform_func': str},
         'tags': {'key_name': 'tags', 'transform_func': str},
-        'templateavailable': {'key_name': 'templateavailable', 'transform_func': int},
+        'templateavailable': {'key_name': 'templateavailable',
+                              'transform_func': int},
         'templatelimit': {'key_name': 'templatelimit', 'transform_func': int},
         'templatetotal': {'key_name': 'templatetotal', 'transform_func': int},
         'vmavailable': {'key_name': 'vmavailable', 'transform_func': int},
         'vmlimit': {'key_name': 'vmlimit', 'transform_func': int},
         'vmrunning': {'key_name': 'vmrunning', 'transform_func': int},
         'vmtotal': {'key_name': 'vmtotal', 'transform_func': int},
-        'volumeavailable': {'key_name': 'volumeavailable', 'transform_func': int},
+        'volumeavailable': {'key_name': 'volumeavailable',
+                            'transform_func': int},
         'volumelimit': {'key_name': 'volumelimit', 'transform_func': int},
         'volumetotal': {'key_name': 'volumetotal', 'transform_func': int},
         'vpcavailable': {'key_name': 'vpcavailable', 'transform_func': int},
@@ -587,7 +600,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         @inherits: :class:`NodeDriver.list_nodes`
 
-        :keyword    project: Limit nodes returned to those configured under the defined project.
+        :keyword    project: Limit nodes returned to those configured under
+        the defined project.
         :type       project: :class:`.CloudStackProject`
 
         :rtype: ``list`` of :class:`CloudStackNode`
@@ -682,7 +696,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :keyword    project: Optional project to create the new node under.
         :type       project: :class:`.CloudStackProject`
 
-        :keyword    diskoffering:  Optional disk offering to add to the new node.
+        :keyword    diskoffering:  Optional disk offering to add to the new
+        node.
         :type       diskoffering:  :class:`.CloudStackDiskOffering`
 
         :keyword    ex_keyname:  Name of existing keypair
@@ -990,10 +1005,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra['tags'] = self._get_resource_tags(vol['tags'])
 
             list_volumes.append(StorageVolume(id=vol['id'],
-                                name=vol['name'],
-                                size=vol['size'],
-                                driver=self,
-                                extra=extra))
+                                              name=vol['name'],
+                                              size=vol['size'],
+                                              driver=self,
+                                              extra=extra))
         return list_volumes
 
     def list_key_pairs(self, **kwargs):
@@ -1220,14 +1235,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 addr = [a for a in public_ips if
                         a.address == rule['ipaddress']]
                 rules.append(CloudStackPortForwardingRule
-                             (node[0],
-                              rule['id'],
-                              addr[0],
-                              rule['protocol'],
-                              rule['publicport'],
-                              rule['privateport'],
-                              rule['publicendport'],
-                              rule['privateendport']))
+                    (node[0],
+                     rule['id'],
+                     addr[0],
+                     rule['protocol'],
+                     rule['publicport'],
+                     rule['privateport'],
+                     rule['publicendport'],
+                     rule['privateendport']))
 
         return rules
 

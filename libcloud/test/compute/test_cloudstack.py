@@ -135,6 +135,20 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.name, 'test')
         self.assertEqual(node.extra['key_name'], 'foobar')
 
+    def test_create_node_project(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+        project = self.driver.ex_list_projects()[0]
+        CloudStackMockHttp.fixture_tag = 'deployproject'
+        node = self.driver.create_node(name='test',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       project=project)
+        self.assertEqual(node.name, 'TestNode')
+        self.assertEqual(node.extra['project'], 'Test Project')
+
     def test_list_images_no_images_available(self):
         CloudStackMockHttp.fixture_tag = 'notemplates'
 
@@ -181,6 +195,25 @@ class CloudStackCommonTestCase(TestCaseMixin):
                 network.networkofferingid,
                 fixture_networks[i]['networkofferingid'])
             self.assertEqual(network.zoneid, fixture_networks[i]['zoneid'])
+
+    def test_ex_list_projects(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listProjects_default.json')
+        fixture_projects = fixture['listprojectsresponse']['project']
+
+        projects = self.driver.ex_list_projects()
+
+        for i, project in enumerate(projects):
+            self.assertEqual(project.id, fixture_projects[i]['id'])
+            self.assertEqual(
+                project.displaytext, fixture_projects[i]['displaytext'])
+            self.assertEqual(project.name, fixture_projects[i]['name'])
+            self.assertEqual(
+                project.extra['domainid'],
+                fixture_projects[i]['domainid'])
+            self.assertEqual(
+                project.extra['cpulimit'],
+                fixture_projects[i]['cpulimit'])
 
     def test_create_volume(self):
         volumeName = 'vol-0'
