@@ -600,7 +600,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @inherits: :class:`NodeDriver.list_nodes`
 
         :keyword    project: Limit nodes returned to those configured under
-        the defined project.
+                             the defined project.
         :type       project: :class:`.CloudStackProject`
 
         :rtype: ``list`` of :class:`CloudStackNode`
