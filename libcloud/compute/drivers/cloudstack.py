@@ -696,7 +696,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type       project: :class:`.CloudStackProject`
 
         :keyword    diskoffering:  Optional disk offering to add to the new
-        node.
+                                   node.
         :type       diskoffering:  :class:`.CloudStackDiskOffering`
 
         :keyword    ex_keyname:  Name of existing keypair
