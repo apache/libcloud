@@ -467,18 +467,17 @@ class CloudStackProject(object):
     Class representing a CloudStack Project.
     """
 
-    def __init__(self, displaytext, name, id,
-                 driver, extra=None):
-        self.displaytext = displaytext
-        self.name = name
+    def __init__(self, id, name, display_text, driver, extra=None):
         self.id = id
+        self.name = name
+        self.display_text = display_text
         self.driver = driver
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackProject: id=%s, displaytext=%s, name=%s, '
+        return (('<CloudStackProject: id=%s, display_text=%s, name=%s, '
                  'driver=%s>')
-                % (self.id, self.displaytext, self.name,
+                % (self.id, self.display_text, self.name,
                    self.driver.name))
 
 
@@ -875,13 +874,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra['tags'] = self._get_resource_tags(net['tags'])
 
             networks.append(CloudStackNetwork(
-                net['displaytext'],
-                net['name'],
-                net['networkofferingid'],
-                net['id'],
-                net['zoneid'],
-                self,
-                extra=extra))
+                            net['displaytext'],
+                            net['name'],
+                            net['networkofferingid'],
+                            net['id'],
+                            net['zoneid'],
+                            self,
+                            extra=extra))
 
         return networks
 
@@ -905,11 +904,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra['tags'] = self._get_resource_tags(proj['tags'])
 
             projects.append(CloudStackProject(
-                proj['displaytext'],
-                proj['name'],
-                proj['id'],
-                self,
-                extra=extra))
+                            id=proj['id'],
+                            name=proj['name'],
+                            display_text=proj['displaytext'],
+                            driver=self,
+                            extra=extra))
 
         return projects
 
@@ -1235,14 +1234,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 addr = [a for a in public_ips if
                         a.address == rule['ipaddress']]
                 rules.append(CloudStackPortForwardingRule
-                    (node[0],
-                     rule['id'],
-                     addr[0],
-                     rule['protocol'],
-                     rule['publicport'],
-                     rule['privateport'],
-                     rule['publicendport'],
-                     rule['privateendport']))
+                             (node[0],
+                              rule['id'],
+                              addr[0],
+                              rule['protocol'],
+                              rule['publicport'],
+                              rule['privateport'],
+                              rule['publicendport'],
+                              rule['privateendport']))
 
         return rules
 

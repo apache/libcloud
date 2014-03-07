@@ -206,7 +206,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         for i, project in enumerate(projects):
             self.assertEqual(project.id, fixture_projects[i]['id'])
             self.assertEqual(
-                project.displaytext, fixture_projects[i]['displaytext'])
+                project.display_text, fixture_projects[i]['displaytext'])
             self.assertEqual(project.name, fixture_projects[i]['name'])
             self.assertEqual(
                 project.extra['domainid'],
