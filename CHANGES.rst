@@ -44,6 +44,11 @@ Compute
   (LIBCLOUD-525, GITHUB-255)
   [Chris DeRamus]
 
+- Add CloudStackProject class to the CloudStack driver and add option to select
+  project and disk offering on node creation.
+  (LIBCLOUD-526, GITHUB-257)
+  [Jim Divine]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
