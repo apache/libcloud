@@ -15,7 +15,12 @@
 """
 Opsource Driver
 """
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from base64 import b64encode
 
 from libcloud.utils.py3 import httplib

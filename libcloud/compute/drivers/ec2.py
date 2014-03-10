@@ -23,7 +23,10 @@ import base64
 import copy
 import warnings
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import b, basestring
 

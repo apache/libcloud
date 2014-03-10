@@ -22,9 +22,13 @@ OpenNebula.org driver.
 
 __docformat__ = 'epytext'
 
-from xml.etree import ElementTree as ET
 from base64 import b64encode
 import hashlib
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next

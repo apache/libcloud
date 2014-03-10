@@ -17,7 +17,11 @@ import base64
 import hmac
 import time
 from hashlib import sha256
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.types import InvalidCredsError, MalformedResponseError

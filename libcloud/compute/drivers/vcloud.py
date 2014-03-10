@@ -30,7 +30,11 @@ urlparse = urlparse.urlparse
 
 import time
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from xml.parsers.expat import ExpatError
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey

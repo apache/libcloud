@@ -4,6 +4,14 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Use lxml library (if available) for parsing XML. This should substantially
+  reduce parsing time and memory usage for large XML responses (e.g. retrieving
+  all the available images in the EC2 driver).
+  [Andrew Mann]
+
 Compute
 ~~~~~~~
 
