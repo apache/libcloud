@@ -2436,6 +2436,42 @@ class GCENodeDriver(NodeDriver):
             return None
         return self._to_zone(response)
 
+    def ex_copy_image(self, name, url, description=None):
+        """
+        Copy an image to your image collection.
+
+        :param  name: The name of the image
+        :type   name: ``str``
+
+        :param  url: The URL to the image. The URL can start with `gs://`
+        :param  url: ``str``
+
+        :param  description: The description of the image
+        :type   description: ``str``
+
+        :return:  NodeImage object based on provided information or None if an
+                  image with that name is not found.
+        :rtype:   :class:`NodeImage` or ``None``
+        """
+
+        # the URL for an image can start with gs://
+        if url.startswith('gs://'):
+            url = url.replace('gs://', 'https://storage.googleapis.com/', 1)
+
+        image_data = {
+            'name': name,
+            'description': description,
+            'sourceType': 'RAW',
+            'rawDisk': {
+                'source': url,
+            },
+        }
+
+        request = '/global/images'
+        self.connection.async_request(request, method='POST',
+                                      data=image_data)
+        return self.ex_get_image(name)
+
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project}

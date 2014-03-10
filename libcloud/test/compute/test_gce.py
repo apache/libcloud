@@ -136,7 +136,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_list_images(self):
         local_images = self.driver.list_images()
         debian_images = self.driver.list_images(ex_project='debian-cloud')
-        self.assertEqual(len(local_images), 2)
+        self.assertEqual(len(local_images), 3)
         self.assertEqual(len(debian_images), 19)
         self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
         self.assertEqual(local_images[1].name, 'centos-6-v20131118')
@@ -511,6 +511,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
         self.assertTrue(image.extra['description'].startswith('Debian'))
 
+    def test_ex_copy_image(self):
+        name = 'coreos'
+        url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
+        description = 'CoreOS test image'
+        image = self.driver.ex_copy_image(name, url, description)
+        self.assertEqual(image.name, name)
+        self.assertEqual(image.extra['description'], description)
+
     def test_ex_get_network(self):
         network_name = 'lcnetwork'
         network = self.driver.ex_get_network(network_name)
@@ -679,7 +687,10 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_images(self, method, url, body, headers):
-        body = self.fixtures.load('global_images.json')
+        if method == 'POST':
+            body = self.fixtures.load('global_images_post.json')
+        else:
+            body = self.fixtures.load('global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_images_debian_7_wheezy_v20130617(
@@ -791,6 +802,12 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_global_snapshots_lcsnapshot_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_image_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_image_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(

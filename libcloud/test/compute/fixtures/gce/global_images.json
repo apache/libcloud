@@ -29,6 +29,21 @@
       "selfLink": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/centos-6-v20131118",
       "sourceType": "RAW",
       "status": "READY"
+    },
+    {
+      "creationTimestamp": "2014-03-09T21:04:31.291-07:00",
+      "description": "CoreOS test image",
+      "id": "15196339658718959621",
+      "kind": "compute#image",
+      "name": "coreos",
+      "preferredKernel": "https://www.googleapis.com/compute/v1/projects/google/global/kernels/gce-v20130603",
+      "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+      },
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/coreos",
+      "sourceType": "RAW",
+      "status": "READY"
     }
   ],
   "kind": "compute#imageList",
