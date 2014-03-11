@@ -64,7 +64,7 @@ For example:
 
 .. sourcecode:: bash
 
-    PYTHONPATH=. python libcloud/test/libcloud/test/compute/test_ec2.py
+    PYTHONPATH=. python libcloud/test/compute/test_ec2.py
 
 Generating Test Coverage Report
 -------------------------------
