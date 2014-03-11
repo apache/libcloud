@@ -416,6 +416,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = hc.destroy()
         self.assertTrue(destroyed)
 
+    def test_ex_delete_image(self):
+        image = self.driver.ex_get_image('debian-7')
+        deleted = self.driver.ex_delete_image(image)
+        self.assertTrue(deleted)
+
+    def test_ex_deprecate_image(self):
+        image = self.driver.ex_get_image('debian-6')
+        deprecated = image.deprecate('debian-7', 'DEPRECATED')
+        self.assertTrue(deprecated)
+
     def test_ex_destroy_firewall(self):
         firewall = self.driver.ex_get_firewall('lcfirewall')
         destroyed = firewall.destroy()
@@ -672,6 +682,16 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_images_debian_7_wheezy_v20130617(
+            self, method, url, body, headers):
+        body = self.fixtures.load('global_images_debian_7_wheezy_v20130617_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_images_debian_6_squeeze_v20130926_deprecate(
+            self, method, url, body, headers):
+        body = self.fixtures.load('global_images_debian_6_squeeze_v20130926_deprecate.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_networks(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('global_networks_post.json')
@@ -717,6 +737,12 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_global_httpHealthChecks_lchealthcheck_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_images_debian7_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_images_debian7_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_put(

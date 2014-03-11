@@ -229,6 +229,37 @@ class GCEForwardingRule(UuidMixin):
             self.id, self.name, self.address)
 
 
+class GCENodeImage(NodeImage):
+    """A GCE Node Image class."""
+    def __init__(self, id, name, driver, extra=None):
+        super(GCENodeImage, self).__init__(id, name, driver, extra=extra)
+
+    def delete(self):
+        """
+        Delete this image
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_delete_image(image=self)
+
+    def deprecate(self, replacement, state):
+        """
+        Deprecate this image
+
+        :param  replacement: Image to use as a replacement
+        :type   replacement: ``str`` or :class: `GCENodeImage`
+
+        :param  state: Deprecation state of this image. Possible values include
+                       \'DELETED\', \'DEPRECATED\' or \'OBSOLETE\'.
+        :type   state: ``str``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_deprecate_image(self, replacement, state)
+
+
 class GCENetwork(UuidMixin):
     """A GCE Network object class."""
     def __init__(self, id, name, cidr, driver, extra=None):
@@ -661,10 +692,9 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_project: Optional alternate project name.
         :type     ex_project: ``str`` or ``None``
 
-        :return:  List of NodeImage objects
-        :rtype:   ``list`` of :class:`NodeImage`
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
         """
-        list_images = []
         request = '/global/images'
         if ex_project is None:
             response = self.connection.request(request, method='GET').object
@@ -1109,7 +1139,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the node (or, if attaching
                        a persistent disk, the image used to create the disk)
-        :type   image: ``str`` or :class:`NodeImage`
+        :type   image: ``str`` or :class:`GCENodeImage`
 
         :keyword  location: The location (zone) to create the node in.
         :type     location: ``str`` or :class:`NodeLocation` or
@@ -1189,7 +1219,7 @@ class GCENodeDriver(NodeDriver):
         :type   size: ``str`` or :class:`GCENodeSize`
 
         :param  image: The image to use to create the nodes.
-        :type   image: ``str`` or :class:`NodeImage`
+        :type   image: ``str`` or :class:`GCENodeImage`
 
         :param  number: The number of nodes to create.
         :type   number: ``int``
@@ -1372,7 +1402,7 @@ class GCENodeDriver(NodeDriver):
         :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
 
         :keyword  image: Image to create disk from.
-        :type     image: :class:`NodeImage` or ``str`` or ``None``
+        :type     image: :class:`GCENodeImage` or ``str`` or ``None``
 
         :keyword  use_existing: If True and a disk with the given name already
                                 exists, return an object for that disk instead
@@ -1740,7 +1770,7 @@ class GCENodeDriver(NodeDriver):
         :type   size: ``str`` or :class:`GCENodeSize`
 
         :param  image: The image to use to create the node.
-        :type   image: ``str`` or :class:`NodeImage`
+        :type   image: ``str`` or :class:`GCENodeImage`
 
         :param  script: File path to start-up script
         :type   script: ``str``
@@ -1852,6 +1882,66 @@ class GCENodeDriver(NodeDriver):
                                                 address.name)
 
         self.connection.async_request(request, method='DELETE')
+        return True
+
+    def ex_delete_image(self, image):
+        """
+        Delete a specific image resource.
+
+        :param  image: Image object to delete
+        :type   image: ``str`` or :class:`GCENodeImage`
+
+        :return: True if successfull
+        :rtype:  ``bool``
+        """
+        if not hasattr(image, 'name'):
+            image = self.ex_get_image(image)
+
+        request = '/global/images/%s' % (image.name)
+        self.connection.async_request(request, method='DELETE')
+        return True
+
+    def ex_deprecate_image(self, image, replacement, state=None):
+        """
+        Deprecate a specific image resource.
+
+        :param  image: Image object to deprecate
+        :type   image: ``str`` or :class: `GCENodeImage`
+
+        :param  replacement: Image object to use as a replacement
+        :type   replacement: ``str`` or :class: `GCENodeImage`
+
+        :param  state: State of the image
+        :type   state: ``str``
+
+        :return: True if successfull
+        :rtype:  ``bool``
+        """
+        if not hasattr(image, 'name'):
+            image = self.ex_get_image(image)
+
+        if not hasattr(replacement, 'name'):
+            replacement = self.ex_get_image(replacement)
+
+        if state is None:
+            state = 'DEPRECATED'
+
+        possible_states = ['DELETED', 'DEPRECATED', 'OBSOLETE']
+
+        if state not in possible_states:
+            raise ValueError('state must be one of %s'
+                             % ','.join(possible_states))
+
+        image_data = {
+            'state': state,
+            'replacement': replacement.extra['selfLink'],
+        }
+
+        request = '/global/images/%s/deprecate' % (image.name)
+
+        self.connection.request(
+            request, method='POST', data=image_data).object
+
         return True
 
     def ex_destroy_healthcheck(self, healthcheck):
@@ -2154,15 +2244,15 @@ class GCENodeDriver(NodeDriver):
 
     def ex_get_image(self, partial_name):
         """
-        Return an NodeImage object based on the name or link provided.
+        Return an GCENodeImage object based on the name or link provided.
 
         :param  partial_name: The name, partial name, or full path of a GCE
                               image.
         :type   partial_name: ``str``
 
-        :return:  NodeImage object based on provided information or None if an
-                  image with that name is not found.
-        :rtype:   :class:`NodeImage` or ``None``
+        :return:  GCENodeImage object based on provided information or None if
+                  an image with that name is not found.
+        :rtype:   :class:`GCENodeImage` or ``None``
         """
         if partial_name.startswith('https://'):
             response = self.connection.request(partial_name, method='GET')
@@ -2469,7 +2559,7 @@ class GCENodeDriver(NodeDriver):
 
         :return:  The latest image object that maches the partial name or None
                   if no matching image is found.
-        :rtype:   :class:`NodeImage` or ``None``
+        :rtype:   :class:`GCENodeImage` or ``None``
         """
         project_images = self.list_images(project)
         partial_match = []
@@ -2538,7 +2628,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the node (or, if using a
                        persistent disk, the image the disk was created from).
-        :type   image: :class:`NodeImage`
+        :type   image: :class:`GCENodeImage`
 
         :param  location: The location (zone) to create the node in.
         :type   location: :class:`NodeLocation` or :class:`GCEZone`
@@ -2755,7 +2845,7 @@ class GCENodeDriver(NodeDriver):
         :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
 
         :keyword  image: Image to create disk from.
-        :type     image: :class:`NodeImage` or ``str`` or ``None``
+        :type     image: :class:`GCENodeImage` or ``str`` or ``None``
 
         :return:  Tuple containg the request string, the data dictionary and
                   the URL parameters
@@ -2918,15 +3008,17 @@ class GCENodeDriver(NodeDriver):
         :type   image: ``dict``
 
         :return: Image object
-        :rtype: :class:`NodeImage`
+        :rtype: :class:`GCENodeImage`
         """
         extra = {}
         extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
         extra['creationTimestamp'] = image.get('creationTimestamp')
         extra['selfLink'] = image.get('selfLink')
-        return NodeImage(id=image['id'], name=image['name'], driver=self,
-                         extra=extra)
+        extra['deprecated'] = image.get('deprecated', None)
+
+        return GCENodeImage(id=image['id'], name=image['name'], driver=self,
+                            extra=extra)
 
     def _to_node_location(self, location):
         """
