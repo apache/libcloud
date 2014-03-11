@@ -57,6 +57,10 @@ Compute
   (LIBCLOUD-526, GITHUB-257)
   [Jim Divine]
 
+- Fix IP address handling in the OpenStack driver.
+  (LIBCLOUD-503, GITHUB-235)
+  [Markos Gogoulos]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
