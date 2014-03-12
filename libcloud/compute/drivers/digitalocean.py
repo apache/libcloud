@@ -32,6 +32,14 @@ class DigitalOceanResponse(JsonResponse):
         elif self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
             raise InvalidCredsError(body['message'])
+        else:
+            body = self.parse_body()
+
+            if 'error_message' in body:
+                error = '%s (code: %s)' % (body['error_message'], self.status)
+            else:
+                error = body
+            return error
 
 
 class SSHKey(object):
@@ -124,6 +132,12 @@ class DigitalOceanNodeDriver(NodeDriver):
     def destroy_node(self, node):
         params = {'scrub_data': '1'}
         res = self.connection.request('/droplets/%s/destroy/' % (node.id),
+                                      params=params)
+        return res.status == httplib.OK
+
+    def ex_rename_node(self, node, name):
+        params = {'name': name}
+        res = self.connection.request('/droplets/%s/rename/' % (node.id),
                                       params=params)
         return res.status == httplib.OK
 

@@ -3,7 +3,7 @@ Provider                               Documentation                            
 ====================================== ======================================== ================= =============================================== ============================
 `Brightbox`_                                                                    BRIGHTBOX         :mod:`libcloud.loadbalancer.drivers.brightbox`  :class:`BrightboxLBDriver`  
 `CloudStack`_                                                                   CLOUDSTACK        :mod:`libcloud.loadbalancer.drivers.cloudstack` :class:`CloudStackLBDriver` 
-`Amazon Elastic Load Balancing`_                                                ELB               :mod:`libcloud.loadbalancer.drivers.elb`        :class:`ElasticLBDriver`    
+`Amazon Elastic Load Balancing`_       :doc:`Click </loadbalancer/drivers/elb>` ELB               :mod:`libcloud.loadbalancer.drivers.elb`        :class:`ElasticLBDriver`    
 `Google Compute Engine Load Balancer`_ :doc:`Click </loadbalancer/drivers/gce>` GCE               :mod:`libcloud.loadbalancer.drivers.gce`        :class:`GCELBDriver`        
 `GoGrid LB`_                                                                    GOGRID            :mod:`libcloud.loadbalancer.drivers.gogrid`     :class:`GoGridLBDriver`     
 `Ninefold LB`_                                                                  NINEFOLD          :mod:`libcloud.loadbalancer.drivers.ninefold`   :class:`NinefoldLBDriver`   

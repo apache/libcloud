@@ -20,7 +20,11 @@ import hmac
 import sys
 
 from hashlib import sha1
-from xml.etree.ElementTree import Element, SubElement
+
+try:
+    from lxml.etree import Element, SubElement
+except ImportError:
+    from xml.etree.ElementTree import Element, SubElement
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote

@@ -4,6 +4,14 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Use lxml library (if available) for parsing XML. This should substantially
+  reduce parsing time and memory usage for large XML responses (e.g. retrieving
+  all the available images in the EC2 driver).
+  [Andrew Mann]
+
 Compute
 ~~~~~~~
 
@@ -29,6 +37,36 @@ Compute
 - Map "Powered Off" state in the vCloud driver from "TERMINATED" to "STOPPED".
   (GITHUB-251)
   [Ash Berlin]
+
+- Add ex_rename_node method to the DigitalOcean driver.
+  (GITHUB-252)
+  [Rahul Ranjan]
+
+- Improve error parsing in the DigitalOcean driver.
+
+  Reported by Deni Bertovic.
+  [Tomaz Muraus]
+
+- Add extension methods for the VPC internet gateway management to the EC2
+  driver.
+  (LIBCLOUD-525, GITHUB-255)
+  [Chris DeRamus]
+
+- Add CloudStackProject class to the CloudStack driver and add option to select
+  project and disk offering on node creation.
+  (LIBCLOUD-526, GITHUB-257)
+  [Jim Divine]
+
+- Fix IP address handling in the OpenStack driver.
+  (LIBCLOUD-503, GITHUB-235)
+  [Markos Gogoulos]
+
+Load Balancer
+~~~~~~~~~~~~~
+
+- Add extension methods for policy managagement to the ELB driver.
+  (LIBCLOUD-522, GITHUB-253)
+  [Rahul Ranjan]
 
 Changes with Apache Libcloud 0.14.1
 -----------------------------------

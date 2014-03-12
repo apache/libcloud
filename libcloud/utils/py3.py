@@ -22,7 +22,11 @@ from __future__ import absolute_import
 
 import sys
 import types
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 PY2 = False
 PY25 = False

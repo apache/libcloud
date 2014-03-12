@@ -24,7 +24,11 @@ import uuid
 from libcloud.utils.py3 import httplib
 
 from hashlib import sha1
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import b, urlencode
 

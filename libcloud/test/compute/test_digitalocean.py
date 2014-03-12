@@ -23,15 +23,16 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import NodeImage
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttpTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITAL_OCEAN_PARAMS
 
 
 # class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
-class DigitalOceanTests(unittest.TestCase):
+class DigitalOceanTests(LibcloudTestCase):
 
     def setUp(self):
         DigitalOceanNodeDriver.connectionCls.conn_classes = \
@@ -79,6 +80,18 @@ class DigitalOceanTests(unittest.TestCase):
         self.assertEqual(nodes[0].name, 'test-2')
         self.assertEqual(nodes[0].public_ips, [])
 
+    def test_create_node_invalid_size(self):
+        image = NodeImage(id='invalid', name=None, driver=self.driver)
+        size = self.driver.list_sizes()[0]
+        location = self.driver.list_locations()[0]
+
+        DigitalOceanMockHttp.type = 'INVALID_IMAGE'
+        expected_msg = r'You specified an invalid image for Droplet creation. \(code: 404\)'
+        self.assertRaisesRegexp(Exception, expected_msg,
+                                self.driver.create_node,
+                                name='test', size=size, image=image,
+                                location=location)
+
     def test_reboot_node_success(self):
         node = self.driver.list_nodes()[0]
         result = self.driver.reboot_node(node)
@@ -87,6 +100,11 @@ class DigitalOceanTests(unittest.TestCase):
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         result = self.driver.destroy_node(node)
+        self.assertTrue(result)
+
+    def test_ex_rename_node_success(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_rename_node(node, 'fedora helios')
         self.assertTrue(result)
 
     def test_ex_list_ssh_keys(self):
@@ -122,6 +140,11 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         body = self.fixtures.load('list_nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _droplets_new_INVALID_IMAGE(self, method, url, body, headers):
+        # reboot_node
+        body = self.fixtures.load('error_invalid_image.json')
+        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+
     def _droplets_119461_reboot(self, method, url, body, headers):
         # reboot_node
         body = self.fixtures.load('reboot_node.json')
@@ -131,6 +154,12 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         # destroy_node
         self.assertUrlContainsQueryParams(url, {'scrub_data': '1'})
         body = self.fixtures.load('destroy_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _droplets_119461_rename(self, method, url, body, headers):
+        # reboot_node
+        self.assertUrlContainsQueryParams(url, {'name': 'fedora helios'})
+        body = self.fixtures.load('ex_rename_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ssh_keys(self, method, url, body, headers):

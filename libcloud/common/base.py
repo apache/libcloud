@@ -20,7 +20,11 @@ import copy
 import binascii
 import time
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from pipes import quote as pquote
 
 try:

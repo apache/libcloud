@@ -324,6 +324,11 @@ dictionary with two keys - ``balance`` and ``currency``.
 .. literalinclude:: /examples/compute/cloudsigma/get_account_balance.py
    :language: python
 
+Other Resources
+---------------
+
+* `CloudSigma API V2.0 is now supported in Libcloud`_ - CloudSigma Blog
+
 API Docs
 --------
 
@@ -349,3 +354,4 @@ API Docs
 .. _`API v1.0`: https://www.cloudsigma.com/legacy/cloudsigma-api-1-0/
 .. _`API v2.0`: https://zrh.cloudsigma.com/docs/
 .. _`VNC`: http://en.wikipedia.org/wiki/Virtual_Network_Computing
+.. _`CloudSigma API V2.0 is now supported in Libcloud`: https://www.cloudsigma.com/2014/02/11/cloudsigma-api-v2-0-is-now-supported-in-libcloud/

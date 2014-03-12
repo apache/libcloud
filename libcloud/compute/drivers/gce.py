@@ -241,7 +241,7 @@ class GCENetwork(UuidMixin):
 
     def destroy(self):
         """
-        Destroy this newtwork
+        Destroy this network
 
         :return: True if successful
         :rtype:  ``bool``
@@ -422,7 +422,7 @@ class GCEZone(NodeLocation):
         :return:  A dictionary containing maintenance window info (or None if
                   no maintenance windows are scheduled)
                   The dictionary contains 4 keys with values of type ``str``
-                      - name: The name of the maintence window
+                      - name: The name of the maintenance window
                       - description: Description of the maintenance window
                       - beginTime: RFC3339 Timestamp
                       - endTime: RFC3339 Timestamp
@@ -910,8 +910,8 @@ class GCENodeDriver(NodeDriver):
         :param  name: Name of health check
         :type   name: ``str``
 
-        :keyword  host: Hostname of health check requst.  Defaults to empty and
-                        public IP is used instead.
+        :keyword  host: Hostname of health check request.  Defaults to empty
+                        and public IP is used instead.
         :type     host: ``str``
 
         :keyword  path: The request path for the check.  Defaults to /.
@@ -1118,7 +1118,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        :keyword  ex_tags: A list of tags to assiciate with the node.
+        :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
 
         :keyword  ex_metadata: Metadata dictionary for instance.
@@ -1699,7 +1699,7 @@ class GCENodeDriver(NodeDriver):
             on_host_maintenance = on_host_maintenance.upper()
             ohm_values = ['MIGRATE', 'TERMINATE']
             if on_host_maintenance not in ohm_values:
-                raise ValueError('on_host_maintenence must be one of %s' %
+                raise ValueError('on_host_maintenance must be one of %s' %
                                  ','.join(ohm_values))
 
         request = '/zones/%s/instances/%s/setScheduling' % (
@@ -1752,7 +1752,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        :keyword  ex_tags: A list of tags to assiciate with the node.
+        :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
 
         :return:  A Node object for the new node.
@@ -2077,7 +2077,7 @@ class GCENodeDriver(NodeDriver):
         :param  snapshot: Snapshot object to destroy
         :type   snapshot: :class:`GCESnapshot`
 
-        :return:  True if successfull
+        :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/global/snapshots/%s' % (snapshot.name)
@@ -2467,7 +2467,7 @@ class GCENodeDriver(NodeDriver):
                               image.
         :type   partial_name: ``str``
 
-        :return:  The latest image object that maches the partial name or None
+        :return:  The latest image object that matches the partial name or None
                   if no matching image is found.
         :rtype:   :class:`NodeImage` or ``None``
         """
@@ -2527,7 +2527,7 @@ class GCENodeDriver(NodeDriver):
                          external_ip='ephemeral'):
         """
         Returns a request and body to create a new node.  This is a helper
-        method to suppor both :class:`create_node` and
+        method to support both :class:`create_node` and
         :class:`ex_create_multiple_nodes`.
 
         :param  name: The name of the node to create.
@@ -2546,7 +2546,7 @@ class GCENodeDriver(NodeDriver):
         :param  network: The network to associate with the node.
         :type   network: :class:`GCENetwork`
 
-        :keyword  tags: A list of tags to assiciate with the node.
+        :keyword  tags: A list of tags to associate with the node.
         :type     tags: ``list`` of ``str``
 
         :keyword  metadata: Metadata dictionary for instance.
@@ -2757,7 +2757,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  image: Image to create disk from.
         :type     image: :class:`NodeImage` or ``str`` or ``None``
 
-        :return:  Tuple containg the request string, the data dictionary and
+        :return:  Tuple containing the request string, the data dictionary and
                   the URL parameters
         :rtype:   ``tuple``
         """
