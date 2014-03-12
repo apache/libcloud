@@ -107,7 +107,7 @@ token before the currently used one is about to expire.
 5. HP Cloud (www.hpcloud.com)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Connecting to HP Cloud US West AZ 1-3 (OpenStack Havana) and US East (OpenStack Horizon).
+Connecting to HP Cloud US West and US East (OpenStack Havana).
 
 .. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
