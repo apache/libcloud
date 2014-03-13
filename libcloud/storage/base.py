@@ -63,7 +63,7 @@ class Object(object):
         :param size: Object size in bytes.
         :type  size: ``int``
 
-        :param hash Object hash.
+        :param hash: Object hash.
         :type  hash: ``str``
 
         :param container: Object container.
