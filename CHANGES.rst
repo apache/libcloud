@@ -61,6 +61,14 @@ Compute
   (LIBCLOUD-503, GITHUB-235)
   [Markos Gogoulos]
 
+- Ad new ex_delete_image and ex_deprecate_image method to the GCE driver,
+  (GITHUB-260)
+  [Franck Cuny]
+
+- Ad new ex_copy_image method to the GCE driver,
+  (GITHUB-258)
+  [Franck Cuny]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
