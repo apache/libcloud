@@ -65,6 +65,10 @@ Compute
   (GITHUB-260)
   [Franck Cuny]
 
+- Ad new ex_copy_image method to the GCE driver,
+  (GITHUB-258)
+  [Franck Cuny]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
