@@ -16,7 +16,7 @@ driver = OpenStack('your_auth_username', 'your_auth_password',
                    ex_force_service_region='region-a.geo-1',
                    ex_force_service_name='Compute')
 
-#HP Cloud US East 
+#HP Cloud US East
 driver = OpenStack('your_auth_username', 'your_auth_password',
                    ex_force_auth_version='2.0_password',
                    ex_force_auth_url=HPCLOUD_AUTH_URL_USEAST,
