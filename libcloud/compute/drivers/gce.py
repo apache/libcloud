@@ -1097,7 +1097,7 @@ class GCENodeDriver(NodeDriver):
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
-                    external_ip='ephemeral'):
+                    external_ip='ephemeral', auto_delete_disk=False):
         """
         Create a new node and return a node object for the node.
 
@@ -1139,6 +1139,10 @@ class GCENodeDriver(NodeDriver):
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
+        :keyword  auto_delete_disk: If True, the boot disk of the node will be
+                                    deleted with the node is deleted.
+        :type     auto_delete_disk: ``bool``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1152,16 +1156,32 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(image, 'name'):
             image = self.ex_get_image(image)
 
-        if not ex_boot_disk:
-            ex_boot_disk = self.create_volume(None, name, location=location,
-                                              image=image,
-                                              use_existing=use_existing_disk)
-
+        retry = False
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
-                                                   ex_boot_disk, external_ip)
-        self.connection.async_request(request, method='POST', data=node_data)
+                                                   ex_boot_disk, external_ip,
+                                                   auto_delete_disk)
+        try:
+            self.connection.async_request(request, method='POST',
+                                          data=node_data)
+        except ResourceExistsError:
+            e = sys.exc_info()[1]
+            if '/disks/' in e.value and use_existing_disk:
+                retry = True
+            else:
+                raise e
+
+        if retry:
+            ex_boot_disk = self.ex_get_volume(name, location)
+            request, node_data = self._create_node_req(name, size, image,
+                                                       location, ex_network,
+                                                       ex_tags, ex_metadata,
+                                                       ex_boot_disk,
+                                                       external_ip,
+                                                       auto_delete_disk)
+            self.connection.async_request(request, method='POST',
+                                          data=node_data)
 
         return self.ex_get_node(name, location.name)
 
@@ -1170,6 +1190,7 @@ class GCENodeDriver(NodeDriver):
                                  ex_tags=None, ex_metadata=None,
                                  ignore_errors=True, use_existing_disk=True,
                                  poll_interval=2, external_ip='ephemeral',
+                                 auto_delete_disk=False,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1226,6 +1247,10 @@ class GCENodeDriver(NodeDriver):
                                multiple node creation.)
         :type     external_ip: ``str`` or None
 
+        :keyword  auto_delete_disk: If True, the boot disk of the node will be
+                                    deleted with the node is deleted.
+        :type     auto_delete_disk: ``bool``
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
         :type     timeout: ``int``
@@ -1251,7 +1276,8 @@ class GCENodeDriver(NodeDriver):
                       'metadata': ex_metadata,
                       'ignore_errors': ignore_errors,
                       'use_existing_disk': use_existing_disk,
-                      'external_ip': external_ip}
+                      'external_ip': external_ip,
+                      'auto_delete_disk': auto_delete_disk}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -1267,9 +1293,14 @@ class GCENodeDriver(NodeDriver):
 
             status_list.append(status)
 
-        # Create disks for nodes
-        for status in status_list:
-            self._multi_create_disk(status, node_attrs)
+        # Get existing disks for nodes
+        if use_existing_disk:
+            all_disks = self.list_volumes(ex_zone=location)
+            disk_dict = {}
+            for disk in all_disks:
+                disk_dict[disk.name] = disk
+            for status in status_list:
+                status['disk'] = disk_dict.get(status['name'], None)
 
         start_time = time.time()
         complete = False
@@ -1280,13 +1311,9 @@ class GCENodeDriver(NodeDriver):
             complete = True
             time.sleep(poll_interval)
             for status in status_list:
-                # If disk does not yet exist, check on its status
-                if not status['disk']:
-                    self._multi_check_disk(status, node_attrs)
-
-                # If disk exists, but node does not, create the node or check
+                # If node does not exist, create the node or check
                 # on its status if already in progress.
-                if status['disk'] and not status['node']:
+                if not status['node']:
                     if not status['node_response']:
                         self._multi_create_node(status, node_attrs)
                     else:
@@ -1948,7 +1975,9 @@ class GCENodeDriver(NodeDriver):
         :type     ignore_errors: ``bool``
 
         :keyword  destroy_boot_disk: If true, also destroy the nodes' boot
-                                     disks.
+                                     disks. Note that if boot disks are set to
+                                     auto-delete, they will be deleted even if
+                                     this is set to false.
         :type     destroy_boot_disk: ``bool``
 
         :keyword  poll_interval: Number of seconds between status checks.
@@ -2524,7 +2553,7 @@ class GCENodeDriver(NodeDriver):
 
     def _create_node_req(self, name, size, image, location, network,
                          tags=None, metadata=None, boot_disk=None,
-                         external_ip='ephemeral'):
+                         external_ip='ephemeral', auto_delete_disk=False):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -2562,6 +2591,10 @@ class GCENodeDriver(NodeDriver):
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
+        :keyword  auto_delete_disk: If True, the boot disk of the node will be
+                                    deleted with the node is deleted.
+        :type     auto_delete_disk: ``bool``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -2573,18 +2606,22 @@ class GCENodeDriver(NodeDriver):
         if metadata:
             node_data['metadata'] = metadata
 
-        if boot_disk:
-            disks = [{'kind': 'compute#attachedDisk',
-                      'boot': True,
-                      'type': 'PERSISTENT',
-                      'mode': 'READ_WRITE',
-                      'deviceName': boot_disk.name,
-                      'zone': boot_disk.extra['zone'].extra['selfLink'],
-                      'source': boot_disk.extra['selfLink']}]
-            node_data['disks'] = disks
-        else:
-            node_data['image'] = image.extra['selfLink']
+        disks = [{'kind': 'compute#attachedDisk',
+                  'boot': True,
+                  'type': 'PERSISTENT',
+                  'mode': 'READ_WRITE'}]
 
+        if boot_disk:
+            disks[0]['deviceName'] = boot_disk.name
+            disks[0]['zone'] = boot_disk.extra['zone'].extra['selfLink']
+            disks[0]['source'] = boot_disk.extra['selfLink']
+        else:
+            disks[0]['initializeParams'] = {
+                'sourceImage': image.extra['selfLink']}
+
+        disks[0]['autoDelete'] = auto_delete_disk
+
+        node_data['disks'] = disks
         ni = [{'kind': 'compute#instanceNetworkInterface',
                'network': network.extra['selfLink']}]
         if external_ip:
@@ -2598,76 +2635,6 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/instances' % (location.name)
 
         return request, node_data
-
-    def _multi_create_disk(self, status, node_attrs):
-        """Create disk for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        disk = None
-        # Check for existing disk
-        if node_attrs['use_existing_disk']:
-            try:
-                disk = self.ex_get_volume(status['name'],
-                                          node_attrs['location'])
-            except ResourceNotFoundError:
-                pass
-
-        if disk:
-            status['disk'] = disk
-        else:
-            # Create disk and return response object back in the status dict.
-            # Or, if there is an error, mark as failed.
-            disk_req, disk_data, disk_params = self._create_vol_req(
-                None, status['name'], location=node_attrs['location'],
-                image=node_attrs['image'])
-            try:
-                disk_res = self.connection.request(
-                    disk_req, method='POST', data=disk_data,
-                    params=disk_params).object
-            except GoogleBaseError:
-                e = self._catch_error(
-                    ignore_errors=node_attrs['ignore_errors'])
-                error = e.value
-                code = e.code
-                disk_res = None
-                status['disk'] = GCEFailedDisk(status['name'],
-                                               error, code)
-            status['disk_response'] = disk_res
-
-    def _multi_check_disk(self, status, node_attrs):
-        """Check disk status for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        error = None
-        try:
-            response = self.connection.request(
-                status['disk_response']['selfLink']).object
-        except GoogleBaseError:
-            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
-            error = e.value
-            code = e.code
-            response = {'status': 'DONE'}
-        if response['status'] == 'DONE':
-            status['disk_response'] = None
-            if error:
-                status['disk'] = GCEFailedDisk(status['name'], error, code)
-            else:
-                status['disk'] = self.ex_get_volume(status['name'],
-                                                    node_attrs['location'])
 
     def _multi_create_node(self, status, node_attrs):
         """Create node for ex_create_multiple_nodes.
@@ -2691,7 +2658,8 @@ class GCENodeDriver(NodeDriver):
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
             node_attrs['metadata'], boot_disk=status['disk'],
-            external_ip=node_attrs['external_ip'])
+            external_ip=node_attrs['external_ip'],
+            auto_delete_disk=node_attrs['auto_delete_disk'])
         try:
             node_res = self.connection.request(
                 request, method='POST', data=node_data).object
@@ -2970,11 +2938,22 @@ class GCENodeDriver(NodeDriver):
         extra['tags_fingerprint'] = node['tags']['fingerprint']
         extra['scheduling'] = node.get('scheduling', {})
 
+        # Get the boot disk for the node.  For efficiency, we don't make an
+        # extra call to get the disk information, we only use the information
+        # returned in the node object.  This means that some information is
+        # missing.
         extra['boot_disk'] = None
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
                 bd = self._get_components_from_path(disk['source'])
-                extra['boot_disk'] = self.ex_get_volume(bd['name'], bd['zone'])
+                disk['name'] = bd['name']
+                disk['zone'] = bd['zone']
+                disk['selfLink'] = disk['source']
+                # These two are not true values
+                disk['id'] = disk['name']
+                disk['sizeGb'] = 0
+
+                extra['boot_disk'] = self._to_storage_volume(disk)
 
         if 'items' in node['tags']:
             tags = node['tags']['items']
