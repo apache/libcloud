@@ -497,7 +497,12 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                                    information.
         :type     credential_file: ``str``
         """
-        self.credential_file = credential_file or '~/.gce_libcloud_auth'
+
+        if isinstance(credential_file, dict):
+            self.token_info = credential_file
+        else:
+            self.credential_file = credential_file or '~/.gce_libcloud_auth'
+            self.token_info = self._get_token_info_from_file()
 
         if auth_type is None:
             # Try to guess.  Service accounts use an email address
@@ -509,7 +514,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         if 'scope' in kwargs:
             self.scope = kwargs['scope']
             kwargs.pop('scope', None)
-        self.token_info = self._get_token_info_from_file()
+
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
                 user_id, key, self.scope, **kwargs)
