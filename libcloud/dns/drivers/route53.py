@@ -190,7 +190,18 @@ class Route53DNSDriver(DNSDriver):
         return Record(id=id, name=name, type=type, data=data, zone=zone,
                       driver=self, extra=extra)
 
-    def update_record(self, record, name, type, data, extra):
+    def update_record(self, record, name=None, type=None, data=None,
+                      extra=None):
+
+        if not name:
+            name = record.name
+
+        if not type:
+            type = record.type
+
+        if not extra:
+            extra = record.extra
+
         batch = [
             ('DELETE', record.name, record.type, record.data, record.extra),
             ('CREATE', name, type, data, extra)]
