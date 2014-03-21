@@ -229,6 +229,53 @@ class Route53DNSDriver(DNSDriver):
                                           record_id=r.id)
         return True
 
+    def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
+        """
+        Create a record with multiple values with a single call.
+
+        :return: A list of created records.
+        :rtype: ``list`` of :class:`libcloud.dns.base.Record`
+        """
+        extra = extra or {}
+
+        attrs = {'xmlns': NAMESPACE}
+        changeset = ET.Element('ChangeResourceRecordSetsRequest', attrs)
+        batch = ET.SubElement(changeset, 'ChangeBatch')
+        changes = ET.SubElement(batch, 'Changes')
+
+        change = ET.SubElement(changes, 'Change')
+        ET.SubElement(change, 'Action').text = 'CREATE'
+
+        rrs = ET.SubElement(change, 'ResourceRecordSet')
+        ET.SubElement(rrs, 'Name').text = name + '.' + zone.domain
+        ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type]
+        ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
+
+        rrecs = ET.SubElement(rrs, 'ResourceRecords')
+
+        # Value is provided as a multi line string
+        values = [value.strip() for value in data.split('\n') if
+                  value.strip()]
+
+        for value in values:
+            rrec = ET.SubElement(rrecs, 'ResourceRecord')
+            ET.SubElement(rrec, 'Value').text = value
+
+        uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
+        data = ET.tostring(changeset)
+        self.connection.set_context({'zone_id': zone.id})
+        self.connection.request(uri, method='POST', data=data)
+
+        id = ':'.join((self.RECORD_TYPE_MAP[type], name))
+
+        records = []
+        for value in values:
+            record = Record(id=id, name=name, type=type, data=value, zone=zone,
+                            driver=self, extra=extra)
+            records.append(record)
+
+        return record
+
     def ex_delete_all_records(self, zone):
         """
         Remove all the records for the provided zone.

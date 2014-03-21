@@ -87,6 +87,10 @@ DNS
   records with multiple values.
   [Tomaz Muraus]
 
+- Add ex_create_multi_value_record method to the Route53 driver which allows
+  user to create a record with multiple values with a single call.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
