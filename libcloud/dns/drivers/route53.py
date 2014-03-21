@@ -192,6 +192,59 @@ class Route53DNSDriver(DNSDriver):
         return Record(id=id, name=name, type=type, data=data, zone=zone,
                       driver=self, extra=extra)
 
+    def update_record(self, record, name=None, type=None, data=None,
+                      extra=None):
+        name = name or record.name
+        type = type or record.type
+        extra = extra or record.extra
+
+        if not extra:
+            extra = record.extra
+
+        # Multiple value records need to be handled specially - we need to
+        # pass values for other records as well
+        multiple_value_record = record.extra.get('_multi_value', False)
+        other_records = record.extra.get('_other_records', [])
+
+        if multiple_value_record and other_records:
+            self._update_multi_value_record(record=record, name=name,
+                                            type=type, data=data,
+                                            extra=extra)
+        else:
+            self._update_single_value_record(record=record, name=name,
+                                             type=type, data=data,
+                                             extra=extra)
+
+        id = ':'.join((self.RECORD_TYPE_MAP[type], name))
+        return Record(id=id, name=name, type=type, data=data, zone=record.zone,
+                      driver=self, extra=extra)
+
+    def delete_record(self, record):
+        try:
+            r = record
+            batch = [('DELETE', r.name, r.type, r.data, r.extra)]
+            self._post_changeset(record.zone, batch)
+        except InvalidChangeBatch:
+            raise RecordDoesNotExistError(value='', driver=self,
+                                          record_id=r.id)
+        return True
+
+    def ex_delete_all_records(self, zone):
+        """
+        Remove all the records for the provided zone.
+
+        :param zone: Zone to delete records for.
+        :type  zone: :class:`Zone`
+        """
+        deletions = []
+        for r in zone.list_records():
+            if r.type in (RecordType.NS, RecordType.SOA):
+                continue
+            deletions.append(('DELETE', r.name, r.type, r.data, r.extra))
+
+        if deletions:
+            self._post_changeset(zone, deletions)
+
     def _update_single_value_record(self, record, name=None, type=None,
                                     data=None, extra=None):
         batch = [
@@ -254,59 +307,6 @@ class Route53DNSDriver(DNSDriver):
         response = self.connection.request(uri, method='POST', data=data)
 
         return response.status == httplib.OK
-
-    def update_record(self, record, name=None, type=None, data=None,
-                      extra=None):
-        name = name or record.name
-        type = type or record.type
-        extra = extra or record.extra
-
-        if not extra:
-            extra = record.extra
-
-        # Multiple value records need to be handled specially - we need to
-        # pass values for other records as well
-        multiple_value_record = record.extra.get('_multi_value', False)
-        other_records = record.extra.get('_other_records', [])
-
-        if multiple_value_record and other_records:
-            self._update_multi_value_record(record=record, name=name,
-                                            type=type, data=data,
-                                            extra=extra)
-        else:
-            self._update_single_value_record(record=record, name=name,
-                                             type=type, data=data,
-                                             extra=extra)
-
-        id = ':'.join((self.RECORD_TYPE_MAP[type], name))
-        return Record(id=id, name=name, type=type, data=data, zone=record.zone,
-                      driver=self, extra=extra)
-
-    def delete_record(self, record):
-        try:
-            r = record
-            batch = [('DELETE', r.name, r.type, r.data, r.extra)]
-            self._post_changeset(record.zone, batch)
-        except InvalidChangeBatch:
-            raise RecordDoesNotExistError(value='', driver=self,
-                                          record_id=r.id)
-        return True
-
-    def ex_delete_all_records(self, zone):
-        """
-        Remove all the records for the provided zone.
-
-        :param zone: Zone to delete records for.
-        :type  zone: :class:`Zone`
-        """
-        deletions = []
-        for r in zone.list_records():
-            if r.type in (RecordType.NS, RecordType.SOA):
-                continue
-            deletions.append(('DELETE', r.name, r.type, r.data, r.extra))
-
-        if deletions:
-            self._post_changeset(zone, deletions)
 
     def _post_changeset(self, zone, changes_list):
         attrs = {'xmlns': NAMESPACE}
