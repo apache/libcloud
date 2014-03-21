@@ -80,6 +80,13 @@ Load Balancer
   (LIBCLOUD-522, GITHUB-253)
   [Rahul Ranjan]
 
+DNS
+~~~
+
+- Fix update_record method in the Route56 driver so it works correctly for
+  records with multiple values.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
