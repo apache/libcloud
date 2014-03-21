@@ -185,6 +185,7 @@ class Route53DNSDriver(DNSDriver):
         return response.status in [httplib.OK]
 
     def create_record(self, name, zone, type, data, extra=None):
+        extra = extra or {}
         batch = [('CREATE', name, type, data, extra)]
         self._post_changeset(zone, batch)
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
@@ -256,11 +257,9 @@ class Route53DNSDriver(DNSDriver):
 
     def update_record(self, record, name=None, type=None, data=None,
                       extra=None):
-        if not name:
-            name = record.name
-
-        if not type:
-            type = record.type
+        name = name or record.name
+        type = type or record.type
+        extra = extra or record.extra
 
         if not extra:
             extra = record.extra
