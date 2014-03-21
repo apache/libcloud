@@ -69,6 +69,10 @@ Compute
   (GITHUB-258)
   [Franck Cuny]
 
+- Ad new ex_set_volume_auto_delete method to the GCE driver,
+  (GITHUB-264)
+  [Franck Cuny]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
