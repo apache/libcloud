@@ -4,17 +4,17 @@ this file will have been created the first time you followed the
 setup instructions.
 
 To avoid using this static file on disk you can use the following
-example code. Use this if you wish to store the tokens in a 
+example code. Use this if you wish to store the tokens in a
 database or use tokens for multiple accounts.
 
 The token will be refreshed every 60 minutes using the
 refresh_token. The new access_token will not be stored in
 .gce_libcloud_auth.
 
-To avoid using the .gce_libcloud_auth file, you can handle the 
+To avoid using the .gce_libcloud_auth file, you can handle the
 code exchange yourself. Once you have the code from visiting
 the link provided when first setting up the driver. Use the code
-from 
+from
 
 https://github.com/apache/libcloud/blob/trunk/libcloud/common/google.py#L359
 and
@@ -43,9 +43,9 @@ CREDENTIALS = {
 # Create the DRIVER with the credentials directly so it won't access
 # the .gce_libcloud_auth file.
 DRIVER = COMPUTE_ENGINE('CLIENT_ID',
-                    'CLIENT_SECRET',
-                    project='PROJECT_NAME',
-                    credential_file=CREDENTIALS)
+                        'CLIENT_SECRET',
+                        project='PROJECT_NAME',
+                        credential_file=CREDENTIALS)
 
 print "Created DRIVER"
 
