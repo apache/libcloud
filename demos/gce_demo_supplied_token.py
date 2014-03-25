@@ -29,11 +29,11 @@ CREDENTIALS = {
 # Create the DRIVER with the credentials directly so it won't access
 # the .gce_libcloud_auth file.
 DRIVER = COMPUTE_ENGINE('CLIENT_ID',
-                    'CLIENT_SECRET',
-                    project='PROJECT_NAME',
-                    credential_file=CREDENTIALS)
+                        'CLIENT_SECRET',
+                        project='PROJECT_NAME',
+                        credential_file=CREDENTIALS)
 
-print "Created DRIVER"
+print "Created driver"
 
 print "Listing zones:"
 print DRIVER.list_locations()
