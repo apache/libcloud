@@ -69,12 +69,27 @@ Compute
   (GITHUB-258)
   [Franck Cuny]
 
+- Ad new ex_set_volume_auto_delete method to the GCE driver,
+  (GITHUB-264)
+  [Franck Cuny]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
 - Add extension methods for policy managagement to the ELB driver.
   (LIBCLOUD-522, GITHUB-253)
   [Rahul Ranjan]
+
+DNS
+~~~
+
+- Fix update_record method in the Route56 driver so it works correctly for
+  records with multiple values.
+  [Tomaz Muraus]
+
+- Add ex_create_multi_value_record method to the Route53 driver which allows
+  user to create a record with multiple values with a single call.
+  [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.14.1
 -----------------------------------

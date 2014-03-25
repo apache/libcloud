@@ -464,6 +464,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = disk.destroy()
         self.assertTrue(destroyed)
 
+    def test_ex_set_volume_auto_delete(self):
+        node = self.driver.ex_get_node('node-name')
+        volume = node.extra['boot_disk']
+        auto_delete = self.driver.ex_set_volume_auto_delete(
+            volume, node)
+        self.assertTrue(auto_delete)
+
     def test_destroy_volume_snapshot(self):
         snapshot = self.driver.ex_get_snapshot('lcsnapshot')
         destroyed = snapshot.destroy()
@@ -874,6 +881,18 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_zones_us-central1-a_disks_lcdisk_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_setDiskAutoDelete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us_central1_a_instances_node_name_setDiskAutoDelete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_volume_auto_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us_central1_a_operations_operation_volume_auto_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_createSnapshot_post(

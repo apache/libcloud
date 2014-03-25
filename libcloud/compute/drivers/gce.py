@@ -1872,6 +1872,33 @@ class GCENodeDriver(NodeDriver):
                                       data='ignored')
         return True
 
+    def ex_set_volume_auto_delete(self, volume, node, auto_delete=True):
+        """
+        Sets the auto-delete flag for a volume attached to a node.
+
+        :param  volume: Volume object to auto-delete
+        :type   volume: :class:`StorageVolume`
+
+        :param   ex_node: Node object to auto-delete volume from
+        :type    ex_node: :class:`Node`
+
+        :keyword auto_delete: Flag to set for the auto-delete value
+        :type    auto_delete: ``bool`` (default True)
+
+        :return:  True if successfull
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/instances/%s/setDiskAutoDelete' % (
+            node.extra['zone'].name, node.name
+        )
+        delete_params = {
+            'deviceName': volume,
+            'autoDelete': auto_delete,
+        }
+        self.connection.async_request(request, method='POST',
+                                      params=delete_params)
+        return True
+
     def ex_destroy_address(self, address):
         """
         Destroy a static address.
