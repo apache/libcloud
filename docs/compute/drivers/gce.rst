@@ -95,6 +95,11 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo_supplied_token.py
 
 .. literalinclude:: /examples/compute/gce/gce_datacenter.py
 
+4. Getting Driver using existing token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/gce/gce_existing_token.py
+
 API Docs
 --------
 

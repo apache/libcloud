@@ -1,14 +1,28 @@
 """
-The access_token is contained in your existing .gce_libcloud_auth file
-that file will have been created the first time you followed the
+Existing credentials are contained in the .gce_libcloud_auth file,
+this file will have been created the first time you followed the
 setup instructions.
 
-The example below bypasses the need for this file.
+To avoid using this static file on disk you can use the following
+example code. Use this if you wish to store the tokens in a 
+database or use tokens for multiple accounts.
 
 The token will be refreshed every 60 minutes using the
 refresh_token. The new access_token will not be stored in
-.gce_libcloud_auth, it will only existing in the running
-code.
+.gce_libcloud_auth.
+
+To avoid using the .gce_libcloud_auth file, you can handle the 
+code exchange yourself. Once you have the code from visiting
+the link provided when first setting up the driver. Use the code
+from 
+
+https://github.com/apache/libcloud/blob/trunk/libcloud/common/google.py#L359
+and
+https://github.com/apache/libcloud/blob/trunk/libcloud/common/google.py#L297
+
+Make the request to Google manually and store the details, the most important
+is the refresh_token as this is used to refresh the access_token
+after 60 minutes.
 
 """
 
