@@ -2505,8 +2505,8 @@ class GCENodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kw = {'auth_type': self.auth_type,
-                'project': self.project,
-                }
+              'project': self.project,
+              }
 
         if hasattr(self, 'credential_file'):
             kw['credential_file'] = self.credential_file
