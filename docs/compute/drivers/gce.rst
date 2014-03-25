@@ -74,6 +74,12 @@ Examples
 Additional example code can be found in the "demos" directory of Libcloud here:
 https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 
+The driver can also be instantiated by passing the token details directly into
+the constructor. By default the driver will use the contents of .gce_libcloud_auth
+usually located in your home directory. To bypass this you can pass the contents 
+of this file in as a dict, see below for an example:
+https://github.com/apache/libcloud/blob/trunk/demos/gce_demo_supplied_token.py
+
 1. Getting Driver with Service Account authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
