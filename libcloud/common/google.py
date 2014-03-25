@@ -497,7 +497,14 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                                    information.
         :type     credential_file: ``str``
         """
-        self.credential_file = credential_file or '~/.gce_libcloud_auth'
+
+        if isinstance(credential_file, dict):
+            self.token_info = credential_file
+            self.bypass_storage = True
+        else:
+            self.credential_file = credential_file or '~/.gce_libcloud_auth'
+            self.token_info = self._get_token_info_from_file()
+            self.bypass_storage = False
 
         if auth_type is None:
             # Try to guess.  Service accounts use an email address
@@ -509,7 +516,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         if 'scope' in kwargs:
             self.scope = kwargs['scope']
             kwargs.pop('scope', None)
-        self.token_info = self._get_token_info_from_file()
+
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
                 user_id, key, self.scope, **kwargs)
@@ -521,7 +528,8 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         if self.token_info is None:
             self.token_info = self.auth_conn.get_new_token()
-            self._write_token_info_to_file()
+            if not self.bypass_storage:
+                self._write_token_info_to_file()
 
         self.token_expire_time = datetime.datetime.strptime(
             self.token_info['expire_time'], TIMESTAMP_FORMAT)
@@ -556,7 +564,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             self.token_info = self.auth_conn.refresh_token(self.token_info)
             self.token_expire_time = datetime.datetime.strptime(
                 self.token_info['expire_time'], TIMESTAMP_FORMAT)
-            self._write_token_info_to_file()
+
+            # update a file on disk with new credentials
+            if not self.bypass_storage:
+                self._write_token_info_to_file()
         headers['Authorization'] = 'Bearer %s' % (
             self.token_info['access_token'])
 
@@ -609,6 +620,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         Write token_info to credential file.
         """
+
+        if self.bypass_storage:
+            return
+
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
         data = json.dumps(self.token_info)
         with open(filename, 'w') as f:

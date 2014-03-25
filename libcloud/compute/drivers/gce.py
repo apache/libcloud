@@ -561,6 +561,10 @@ class GCENodeDriver(NodeDriver):
         """
         self.auth_type = auth_type
         self.project = project
+
+        if kwargs.get('credential_file', False):
+            self.credential_file = kwargs.get('credential_file')
+
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
@@ -2500,8 +2504,14 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_image(name)
 
     def _ex_connection_class_kwargs(self):
-        return {'auth_type': self.auth_type,
-                'project': self.project}
+        kw = {'auth_type': self.auth_type,
+              'project': self.project,
+              }
+
+        if hasattr(self, 'credential_file'):
+            kw['credential_file'] = self.credential_file
+
+        return kw
 
     def _catch_error(self, ignore_errors=False):
         """
