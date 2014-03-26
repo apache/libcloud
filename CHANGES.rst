@@ -119,6 +119,10 @@ DNS
   user to create a record with multiple values with a single call.
   [Tomaz Muraus]
 
+- Add new driver for Google DNS.
+  (GITHUB-269)
+  [Franck Cuny]
+
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
 
