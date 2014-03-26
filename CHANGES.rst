@@ -73,6 +73,9 @@ Compute
   (GITHUB-264)
   [Franck Cuny]
 
+- Add ex_revoke_security_group_ingress method to the CloudStack driver.
+  [Chris DeRamus, Tomaz Muraus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

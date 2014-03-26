@@ -1752,6 +1752,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                    params=args,
                                    method='GET')['securitygroup']
 
+    def ex_revoke_security_group_ingress(self, rule_id):
+        """
+        Revoke/delete an ingress security rule
+
+        :param id: The ID of the ingress security rule
+        :type  id: ``str``
+
+        :rtype: ``bool``
+        """
+
+        self._async_request(command='revokeSecurityGroupIngress',
+                            params={'id': rule_id},
+                            method='GET')
+        return True
+
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """
         Registers an existing ISO by URL.

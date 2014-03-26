@@ -156,7 +156,10 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         result = self.request(action=self.driver.path, params=params,
                               data=data, headers=headers, method=method)
 
-        command = command.lower() + 'response'
+        command = command.lower()
+
+        if command not in ['revokesecuritygroupingress']:
+            command = command + 'response'
 
         if command not in result.object:
             raise MalformedResponseError(
