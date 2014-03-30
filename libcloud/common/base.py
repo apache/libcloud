@@ -259,7 +259,7 @@ class RawResponse(Response):
         return self._reason
 
 
-#TODO: Move this to a better location/package
+# TODO: Move this to a better location/package
 class LoggingConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
@@ -402,7 +402,7 @@ class Connection(object):
     """
     A Base Connection class to derive from.
     """
-    #conn_classes = (LoggingHTTPSConnection)
+    # conn_classes = (LoggingHTTPSConnection)
     conn_classes = (LibcloudHTTPConnection, LibcloudHTTPSConnection)
 
     responseCls = Response
@@ -523,7 +523,7 @@ class Connection(object):
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
-        #connection = self.conn_classes[False]("127.0.0.1", 8080)
+        # connection = self.conn_classes[False]("127.0.0.1", 8080)
 
         self.connection = connection
 

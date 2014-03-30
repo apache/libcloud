@@ -817,8 +817,8 @@ class BaseS3StorageDriver(StorageDriver):
 
         # TODO: Let the underlying exceptions bubble up and capture the SIGPIPE
         # here.
-        #SIGPIPE is thrown if the provided container does not exist or the user
-        # does not have correct permission
+        # SIGPIPE is thrown if the provided container does not exist or the
+        # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
             upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,

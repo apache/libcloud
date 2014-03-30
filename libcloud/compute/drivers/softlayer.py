@@ -341,7 +341,7 @@ class SoftLayerNodeDriver(NodeDriver):
                                            price=None,
                                            driver=self.connection.driver))
         ex_size_data = SL_TEMPLATES.get(int(size.id)) or {}
-        #plan keys are ints
+        # plan keys are ints
         cpu_count = kwargs.get('ex_cpus') or ex_size_data.get('cpus') or \
             DEFAULT_CPU_SIZE
         ram = kwargs.get('ex_ram') or ex_size_data.get('ram') or \

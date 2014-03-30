@@ -301,7 +301,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     driver_klass = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
     driver_kwargs = {}
-    #driver_kwargs = {'ex_force_auth_version': '1.0'}
+    # driver_kwargs = {'ex_force_auth_version': '1.0'}
 
     @classmethod
     def create_driver(self):
@@ -961,15 +961,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
 
         self.assertEqual('12065', node.id)
-        #test public IPv4
+        # test public IPv4
         self.assertTrue('12.16.18.28' in node.public_ips)
         self.assertTrue('50.57.94.35' in node.public_ips)
-        #test public IPv6
+        # test public IPv6
         self.assertTrue(
             '2001:4801:7808:52:16:3eff:fe47:788a' in node.public_ips)
-        #test private IPv4
+        # test private IPv4
         self.assertTrue('10.182.64.34' in node.private_ips)
-        #test private IPv6
+        # test private IPv6
         self.assertTrue(
             'fec0:4801:7808:52:16:3eff:fe60:187d' in node.private_ips)
 
