@@ -244,7 +244,7 @@ class LinodeNodeDriver(NodeDriver):
 
         if not ssh and not root:
             raise LinodeException(0xFB, "Need SSH key or root password")
-        if not root is None and len(root) < 6:
+        if root is not None and len(root) < 6:
             raise LinodeException(0xFB, "Root password is too short")
 
         # Swap size

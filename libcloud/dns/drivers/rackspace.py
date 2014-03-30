@@ -210,7 +210,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         extra = extra if extra else {}
 
         # Email address is required
-        if not 'email' in extra:
+        if 'email' not in extra:
             raise ValueError('"email" key must be present in extra dictionary')
 
         payload = {'name': domain, 'emailAddress': extra['email'],

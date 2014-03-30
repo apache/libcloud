@@ -865,7 +865,7 @@ class NodeDriver(BaseDriver):
             pass
         elif 'create_node' in self.features:
             f = self.features['create_node']
-            if not 'generates_password' in f and not "password" in f:
+            if 'generates_password' not in f and "password" not in f:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
         else:
