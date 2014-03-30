@@ -103,17 +103,16 @@ class Route53DNSDriver(DNSDriver):
     connectionCls = Route53Connection
 
     RECORD_TYPE_MAP = {
-        RecordType.NS: 'NS',
-        RecordType.MX: 'MX',
         RecordType.A: 'A',
         RecordType.AAAA: 'AAAA',
         RecordType.CNAME: 'CNAME',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
+        RecordType.MX: 'MX',
+        RecordType.NS: 'NS',
         RecordType.PTR: 'PTR',
         RecordType.SOA: 'SOA',
         RecordType.SPF: 'SPF',
-        RecordType.TXT: 'TXT'
+        RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
 
     def iterate_zones(self):

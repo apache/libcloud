@@ -145,9 +145,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.CNAME: 'CNAME',
         RecordType.MX: 'MX',
         RecordType.NS: 'NS',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
         RecordType.PTR: 'PTR',
+        RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
 
     def iterate_zones(self):
