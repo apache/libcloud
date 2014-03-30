@@ -290,7 +290,7 @@ class AbiquoNodeDriver(NodeDriver):
 
         if location is None:
             location = self.list_locations()[0]
-        elif not location in self.list_locations():
+        elif location not in self.list_locations():
             raise LibcloudError('Location does not exist')
 
         link_vdc = self.connection.cache['locations'][location]
@@ -630,7 +630,7 @@ class AbiquoNodeDriver(NodeDriver):
         location will be created.
         """
         # First, get image location
-        if not 'image' in kwargs:
+        if 'image' not in kwargs:
             error = "'image' parameter is mandatory"
             raise LibcloudError(error, self)
 
@@ -640,7 +640,7 @@ class AbiquoNodeDriver(NodeDriver):
         location = None
         if 'location' in kwargs:
             location = kwargs['location']
-            if not location in self.list_locations():
+            if location not in self.list_locations():
                 raise LibcloudError('Location does not exist')
 
         # Check if the image is compatible with any of the locations or
@@ -669,7 +669,7 @@ class AbiquoNodeDriver(NodeDriver):
 
         If we can not find any group, create it into argument 'location'
         """
-        if not 'group_name' in kwargs:
+        if 'group_name' not in kwargs:
             group_name = NodeGroup.DEFAULT_GROUP_NAME
         else:
             group_name = kwargs['group_name']

@@ -90,10 +90,10 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             elif key.lower().startswith('x-goog-'):
                 extension_header_values[key.lower()] = value.strip()
 
-        if not 'content-md5' in special_header_values:
+        if 'content-md5' not in special_header_values:
             special_header_values['content-md5'] = ''
 
-        if not 'content-type' in special_header_values:
+        if 'content-type' not in special_header_values:
             special_header_values['content-type'] = ''
 
         keys_sorted = list(special_header_values.keys())

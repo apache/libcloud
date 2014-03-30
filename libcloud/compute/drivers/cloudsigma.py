@@ -918,7 +918,7 @@ class CloudSigma_2_0_Response(JsonResponse):
             return None
 
         for item in body:
-            if not 'error_type' in item:
+            if 'error_type' not in item:
                 # Unrecognized error
                 continue
 
@@ -991,7 +991,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def __init__(self, key, secret, secure=True, host=None, port=None,
                  region=DEFAULT_REGION, **kwargs):
-        if not region in API_ENDPOINTS_2_0:
+        if region not in API_ENDPOINTS_2_0:
             raise ValueError('Invalid region: %s' % (region))
 
         if not secure:
