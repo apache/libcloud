@@ -861,8 +861,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      'uri': "https://%s%s/servers/%s" % (
                          self.connection.host,
                          self.connection.request_path, el.get('id')),
-                     'metadata': metadata,
-                 })
+                     'metadata': metadata})
         return n
 
     def _to_sizes(self, object):
@@ -1022,7 +1021,8 @@ class OpenStackNetwork(object):
 
     def __repr__(self):
         return '<OpenStackNetwork id="%s" name="%s" cidr="%s">' % (self.id,
-               self.name, self.cidr,)
+                                                                   self.name,
+                                                                   self.cidr,)
 
 
 class OpenStackSecurityGroup(object):

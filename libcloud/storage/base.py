@@ -742,7 +742,7 @@ class StorageDriver(BaseDriver):
             chunk = ''
             if chunked:
                 response.connection.connection.send(b('%X\r\n' %
-                                                   (len(chunk))))
+                                                      (len(chunk))))
                 response.connection.connection.send(chunk)
                 response.connection.connection.send(b('\r\n'))
                 response.connection.connection.send(b('0\r\n\r\n'))
@@ -754,7 +754,7 @@ class StorageDriver(BaseDriver):
             try:
                 if chunked:
                     response.connection.connection.send(b('%X\r\n' %
-                                                       (len(chunk))))
+                                                          (len(chunk))))
                     response.connection.connection.send(b(chunk))
                     response.connection.connection.send(b('\r\n'))
                 else:

@@ -189,7 +189,7 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL,
     if not os.path.exists(dir_name):
         # Verify a valid path is provided
         msg = ('Can\'t write to %s, directory %s, doesn\'t exist' %
-              (file_path, dir_name))
+               (file_path, dir_name))
         raise ValueError(msg)
 
     if os.path.exists(file_path) and os.path.isdir(file_path):

@@ -145,7 +145,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
     connectionCls = CloudSigma_1_0_Connection
 
     IMAGING_TIMEOUT = 20 * 60  # Default timeout (in seconds) for the drive
-                               # imaging process
+    # imaging process
 
     NODE_STATE_MAP = {
         'active': NodeState.RUNNING,
@@ -974,11 +974,12 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
     website = 'http://www.cloudsigma.com/'
     connectionCls = CloudSigma_2_0_Connection
 
-    DRIVE_TRANSITION_TIMEOUT = 500  # Default drive transition timeout in
-                                    # seconds
-    DRIVE_TRANSITION_SLEEP_INTERVAL = 5  # How long to sleep between different
-                                         # polling periods while waiting for
-                                         # drive transition
+    # Default drive transition timeout in seconds
+    DRIVE_TRANSITION_TIMEOUT = 500
+
+    # How long to sleep between different polling periods while waiting for
+    # drive transition
+    DRIVE_TRANSITION_SLEEP_INTERVAL = 5
 
     NODE_STATE_MAP = {
         'starting': NodeState.PENDING,
@@ -1106,8 +1107,9 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             vnc_password = get_secure_random_string(size=12)
 
         drive_name = '%s-drive' % (name)
-        drive_size = (size.disk * 1024 * 1024 * 1024)  # size is specified in
-                                                       # GB
+
+        # size is specified in GB
+        drive_size = (size.disk * 1024 * 1024 * 1024)
 
         if not is_installation_cd:
             # 1. Clone library drive so we can use it

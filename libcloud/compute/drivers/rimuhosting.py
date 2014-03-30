@@ -159,8 +159,7 @@ class RimuHostingNodeDriver(NodeDriver):
                  state=NodeState.RUNNING,
                  public_ips=(
                      [order['allocated_ips']['primary_ip']]
-                     + order['allocated_ips']['secondary_ips']
-                 ),
+                     + order['allocated_ips']['secondary_ips']),
                  private_ips=[],
                  driver=self.connection.driver,
                  extra={
