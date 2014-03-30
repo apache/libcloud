@@ -288,7 +288,7 @@ class RimuHostingNodeDriver(NodeDriver):
         data['instantiation_options']['password'] = auth.password
 
         if 'ex_billing_oid' in kwargs:
-            #TODO check for valid oid.
+            # TODO check for valid oid.
             data['billing_oid'] = kwargs['ex_billing_oid']
 
         if 'ex_host_server_oid' in kwargs:

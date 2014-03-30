@@ -52,7 +52,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         con = Connection()
         con.connection = Mock()
 
-        ## GET method
+        # GET method
         # No data, no content length should be present
         con.request('/test', method='GET', data=None)
         call_kwargs = con.connection.request.call_args[1]
@@ -69,7 +69,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         call_kwargs = con.connection.request.call_args[1]
         self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
 
-        ## POST, PUT method
+        # POST, PUT method
         # No data, content length should be present
         for method in ['POST', 'PUT', 'post', 'put']:
             con.request('/test', method=method, data=None)

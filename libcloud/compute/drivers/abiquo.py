@@ -573,7 +573,7 @@ class AbiquoNodeDriver(NodeDriver):
         repo_link = get_href(image_element, 'datacenterrepository')
         image = self._to_nodeimage(image_element, self, repo_link)
 
-        ## Fill the 'ips' data
+        # Fill the 'ips' data
         private_ips = []
         public_ips = []
         nics_element = self.connection.request(get_href(vm, 'nics')).object

@@ -1989,7 +1989,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 public_ips.extend(ips)
             else:
                 for ip in ips:
-                    #is_private_subnet does not check for ipv6
+                    # is_private_subnet does not check for ipv6
                     try:
                         if is_private_subnet(ip):
                             private_ips.append(ip)

@@ -46,7 +46,7 @@ from libcloud.compute.types import NodeState, Provider
 #   x implement list_images()   (only support Base OS images,
 #                                 no customer images yet)
 #   x implement list_locations()
-#	x implement ex_* extension functions for opsource-specific featurebody =s
+#       x implement ex_* extension functions for opsource-specific featurebody
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
@@ -67,7 +67,8 @@ from libcloud.compute.types import NodeState, Provider
 #       - delete customer images
 #       - modify customer images
 #   - add "pending-servers" in list_nodes()
-#	- implement various ex_* extension functions for opsource-specific features
+#       - implement various ex_* extension functions for opsource-specific
+#         features
 #       - ex_modify_server()
 #       - ex_add_storage_to_server()
 #       - ex_snapshot_server()  (create's customer image)
