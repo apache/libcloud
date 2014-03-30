@@ -359,8 +359,8 @@ class OpsourceNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_images`
         """
-        return self._to_base_images(self.connection.request('base/image')
-                   .object)
+        return self._to_base_images(
+            self.connection.request('base/image').object)
 
     def list_sizes(self, location=None):
         return [

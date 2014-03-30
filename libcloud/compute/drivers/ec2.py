@@ -3593,9 +3593,9 @@ class BaseEC2NodeDriver(NodeDriver):
                             'private_dns': findtext(element=item,
                                                     xpath='privateDnsName',
                                                     namespace=NAMESPACE),
-                            'primary': findtext(element=item,
-                                                xpath='primary',
-                                                namespace=NAMESPACE)})
+                             'primary': findtext(element=item,
+                                                 xpath='primary',
+                                                 namespace=NAMESPACE)})
 
         # Build our attachment dictionary which we will add into extra later
         attributes_map = \
