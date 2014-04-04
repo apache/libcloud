@@ -1430,6 +1430,9 @@ class BaseEC2NodeDriver(NodeDriver):
             else:
                 params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
+        if 'EbsOptimized' in kwargs:
+            params['EbsOptimized'] = kwargs['EbsOptimized']
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
