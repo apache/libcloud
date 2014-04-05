@@ -388,8 +388,8 @@ class CloudSigmaAPI20BaseTestCase(object):
 
     def test_ex_toggle_subscription_auto_renew(self):
         subscription = self.driver.ex_list_subscriptions()[0]
-        status = self.driver.ex_toggle_subscription_auto_renew(subscription=
-                                                               subscription)
+        status = self.driver.ex_toggle_subscription_auto_renew(
+            subscription=subscription)
         self.assertTrue(status)
 
     def test_ex_list_capabilities(self):

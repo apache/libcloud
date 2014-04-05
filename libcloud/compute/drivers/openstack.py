@@ -1662,16 +1662,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             group = obj['group'].get('name', None)
             tenant_id = obj['group'].get('tenant_id', None)
 
-        return OpenStackSecurityGroupRule(id=obj['id'],
-                                          parent_group_id=
-                                          obj['parent_group_id'],
-                                          ip_protocol=obj['ip_protocol'],
-                                          from_port=obj['from_port'],
-                                          to_port=obj['to_port'],
-                                          driver=self,
-                                          ip_range=ip_range,
-                                          group=group,
-                                          tenant_id=tenant_id)
+        return OpenStackSecurityGroupRule(
+            id=obj['id'], parent_group_id=obj['parent_group_id'],
+            ip_protocol=obj['ip_protocol'], from_port=obj['from_port'],
+            to_port=obj['to_port'], driver=self, ip_range=ip_range,
+            group=group, tenant_id=tenant_id)
 
     def _to_security_groups(self, obj):
         security_groups = obj['security_groups']

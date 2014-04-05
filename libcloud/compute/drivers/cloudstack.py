@@ -289,20 +289,11 @@ class CloudStackNode(Node):
         """
         Add a port forwarding rule for port or ports.
         """
-        return self.driver.ex_create_port_forwarding_rule(node=self,
-                                                          address=
-                                                          address,
-                                                          private_port=
-                                                          private_port,
-                                                          public_port=
-                                                          public_port,
-                                                          protocol=protocol,
-                                                          public_end_port=
-                                                          public_end_port,
-                                                          private_end_port=
-                                                          private_end_port,
-                                                          openfirewall=
-                                                          openfirewall)
+        return self.driver.ex_create_port_forwarding_rule(
+            node=self, address=address, private_port=private_port,
+            public_port=public_port, protocol=protocol,
+            public_end_port=public_end_port, private_end_port=private_end_port,
+            openfirewall=openfirewall)
 
     def ex_delete_ip_forwarding_rule(self, rule):
         """

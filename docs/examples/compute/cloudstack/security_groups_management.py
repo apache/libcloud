@@ -17,11 +17,11 @@ pprint(security_group)
 # Authorize an ingress rule on a security group
 # If `startport` is used alone, this will be the only port open
 # If `endport` is also used then the entire range will be authorized
-sg = driver.ex_authorize_security_group_ingress(securitygroupname=
-                                                'test-security-group',
-                                                protocol='tcp',
-                                                startport='22',
-                                                cidrlist='0.0.0.0/0')
+sg = driver.ex_authorize_security_group_ingress(
+    securitygroupname='test-security-group', protocol='tcp', startport='22',
+    cidrlist='0.0.0.0/0'
+)
+
 pprint(sg)
 
 # Delete a security group we have previously created

@@ -604,8 +604,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_user_info = osa.auth_user_info
 
             # Pull out and parse the service catalog
-            osc = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=
-                                          self._auth_version)
+            osc = OpenStackServiceCatalog(
+                osa.urls, ex_force_auth_version=self._auth_version)
             self.service_catalog = osc
 
         url = self._ex_force_base_url or self.get_endpoint()

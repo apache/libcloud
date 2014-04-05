@@ -107,14 +107,9 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         # Command is specified as part of GET call
         context['command'] = command
-        result = super(CloudStackConnection, self).async_request(action=action,
-                                                                 params=params,
-                                                                 data=data,
-                                                                 headers=
-                                                                 headers,
-                                                                 method=method,
-                                                                 context=
-                                                                 context)
+        result = super(CloudStackConnection, self).async_request(
+            action=action, params=params, data=data, headers=headers,
+            method=method, context=context)
         return result['jobresult']
 
     def get_request_kwargs(self, action, params=None, data='', headers=None,
