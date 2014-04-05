@@ -166,7 +166,7 @@ def str2dicts(data):
         value = line[whitespace + 1:]
         d.update({key: value})
 
-    list_data = [value for value in list_data if value != {}]
+    list_data = [val for val in list_data if val != {}]
     return list_data
 
 
