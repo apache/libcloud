@@ -76,6 +76,11 @@ Compute
 - Add ex_revoke_security_group_ingress method to the CloudStack driver.
   [Chris DeRamus, Tomaz Muraus]
 
+- Allow user to pass ex_ebs_optimized argument to the create_node method
+  in the EC2 driver.
+  (GITHUB-272)
+  [zerthimon]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
