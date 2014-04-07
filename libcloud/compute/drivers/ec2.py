@@ -1362,6 +1362,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_iamprofile: Name or ARN of IAM profile
         :type       ex_iamprofile: ``str``
+
+        :keyword    ex_ebs_optimized: EBS-Optimized if True
+        :type       ex_ebs_optimized: ``bool``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1430,8 +1433,8 @@ class BaseEC2NodeDriver(NodeDriver):
             else:
                 params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
-        if 'EbsOptimized' in kwargs:
-            params['EbsOptimized'] = kwargs['EbsOptimized']
+        if 'ex_ebs_optimized' in kwargs:
+            params['EbsOptimized'] = kwargs['ex_ebs_optimized']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
