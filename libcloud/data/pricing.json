@@ -73,8 +73,8 @@
             "m1.xlarge": 0.52,
             "c1.medium": 0.17,
             "c1.xlarge": 0.68,
-            "c3.large": 0.150,
-            "c3.xlarge": 0.300,
+            "c3.large": 0.150
+,            "c3.xlarge": 0.300,
             "c3.2xlarge": 0.600,
             "c3.4xlarge": 1.200,
             "c3.8xlarge": 2.400,
