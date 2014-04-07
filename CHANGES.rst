@@ -61,15 +61,15 @@ Compute
   (LIBCLOUD-503, GITHUB-235)
   [Markos Gogoulos]
 
-- Ad new ex_delete_image and ex_deprecate_image method to the GCE driver,
+- Ad new ex_delete_image and ex_deprecate_image method to the GCE driver.
   (GITHUB-260)
   [Franck Cuny]
 
-- Ad new ex_copy_image method to the GCE driver,
+- Ad new ex_copy_image method to the GCE driver.
   (GITHUB-258)
   [Franck Cuny]
 
-- Ad new ex_set_volume_auto_delete method to the GCE driver,
+- Ad new ex_set_volume_auto_delete method to the GCE driver.
   (GITHUB-264)
   [Franck Cuny]
 
