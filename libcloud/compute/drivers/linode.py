@@ -89,8 +89,8 @@ class LinodeNodeDriver(NodeDriver):
 
     # Converts Linode's state from DB to a NodeState constant.
     LINODE_STATES = {
-        -2: NodeState.UNKNOWN,    # Boot Failed
-        -1: NodeState.PENDING,    # Being Created
+        (-2): NodeState.UNKNOWN,    # Boot Failed
+        (-1): NodeState.PENDING,    # Being Created
         0: NodeState.PENDING,     # Brand New
         1: NodeState.RUNNING,     # Running
         2: NodeState.TERMINATED,  # Powered Off
