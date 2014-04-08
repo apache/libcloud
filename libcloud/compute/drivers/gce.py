@@ -708,10 +708,10 @@ class GCENodeDriver(NodeDriver):
             try:
                 response = self.connection.request(request, method='GET').object
             except:
-                self.connection.request_path = save_request_path
-                raise
+                response = {}
             # Restore the connection request_path
-            self.connection.request_path = save_request_path
+            finally:
+                self.connection.request_path = save_request_path
         list_images = [self._to_node_image(i) for i in
                        response.get('items', [])]
         return list_images
