@@ -18,6 +18,7 @@ from __future__ import with_statement
 import os
 import sys
 from datetime import datetime
+import warnings
 
 from libcloud.utils.py3 import httplib
 
@@ -672,12 +673,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.type = ''
         ret = self.driver.ex_release_address(elastic_ips[2])
         self.assertTrue(ret)
-        ret = self.driver.ex_release_address(elastic_ips[0], domain='vpc')
+        ret = self.driver.ex_release_address(elastic_ips[0])
         self.assertTrue(ret)
-        self.assertRaises(AttributeError,
-                          self.driver.ex_release_address,
-                          elastic_ips[0],
-                          domain='bogus')
+
+        with warnings.catch_warnings(record=True) as reported_warnings:
+            warnings.filterwarnings('always')
+            self.driver.ex_release_address(elastic_ips[0], domain='bogus')
+        self.assertEqual(reported_warnings[0].message.args[0],
+            "The domain is automatically detected now.")
+        self.assertIn("libcloud/test/compute/test_ec2.py", reported_warnings[0].filename)
 
     def test_ex_associate_address_with_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -697,11 +701,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             node, elastic_ips[3], domain='vpc')
         self.assertEqual('eipassoc-167a8073', ret3)
         self.assertEqual('eipassoc-167a8073', ret4)
-        self.assertRaises(AttributeError,
-                          self.driver.ex_associate_address_with_node,
-                          node,
-                          elastic_ips[1],
-                          domain='bogus')
+
+        with warnings.catch_warnings(record=True) as reported_warnings:
+            warnings.filterwarnings('always')
+            self.driver.ex_associate_address_with_node(node, elastic_ips[1], domain='bogus')
+        self.assertEqual(reported_warnings[0].message.args[0],
+            "The domain is automatically detected now.")
+        self.assertIn("libcloud/test/compute/test_ec2.py", reported_warnings[0].filename)
 
     def test_ex_disassociate_address(self):
         EC2MockHttp.type = 'all_addresses'
@@ -713,10 +719,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         ret = self.driver.ex_disassociate_address(elastic_ips[1],
                                                   domain='vpc')
         self.assertTrue(ret)
-        self.assertRaises(AttributeError,
-                          self.driver.ex_disassociate_address,
-                          elastic_ips[1],
-                          domain='bogus')
+        with warnings.catch_warnings(record=True) as reported_warnings:
+            warnings.filterwarnings('always')
+            self.driver.ex_disassociate_address(elastic_ips[1], domain='bogus')
+        self.assertEqual(reported_warnings[0].message.args[0],
+            "The domain is automatically detected now.")
+        self.assertIn("libcloud/test/compute/test_ec2.py", reported_warnings[0].filename)
 
     def test_ex_change_node_size_same_size(self):
         size = NodeSize('m1.small', 'Small Instance',
