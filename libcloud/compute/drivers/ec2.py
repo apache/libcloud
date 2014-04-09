@@ -1962,8 +1962,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
-            params['KeyName'] = \
-                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            params['KeyName'] = key['keyName']
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
