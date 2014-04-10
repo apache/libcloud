@@ -24,6 +24,7 @@ import struct
 from libcloud.common.base import ConnectionKey
 from libcloud.compute.base import NodeImage, NodeSize, Node
 from libcloud.compute.base import NodeDriver, NodeLocation
+from libcloud.compute.base import KeyPair
 from libcloud.compute.types import Provider, NodeState
 
 
@@ -325,6 +326,14 @@ class DummyNodeDriver(NodeDriver):
                  extra={'foo': 'bar'})
         self.nl.append(n)
         return n
+
+    def import_key_pair_from_string(self, name, key_material):
+        key_pair = KeyPair(name=name,
+                           public_key=key_material,
+                           fingerprint='fingerprint',
+                           private_key='private_key',
+                           driver=self)
+        return key_pair
 
 
 def _ip_to_int(ip):

@@ -135,7 +135,7 @@ class Node(UuidMixin):
     >>> node.name
     'dummy-1'
 
-    the node keeps a reference to its own driver which means that we
+    The node keeps a reference to its own driver which means that we
     can work on nodes from different providers without having to know
     which is which.
 
@@ -146,7 +146,7 @@ class Node(UuidMixin):
     >>> node2.driver.creds
     72
 
-    Althrough Node objects can be subclassed, this isn't normally
+    Although Node objects can be subclassed, this isn't normally
     done.  Instead, any driver specific information is stored in the
     "extra" attribute of the node.
 

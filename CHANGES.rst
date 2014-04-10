@@ -19,6 +19,14 @@ General
   (LIBCLOUD-552)
   [Tomaz Muraus]
 
+- Fix Python 3 compatibility bugs in the following functions:
+
+  * import_key_pair_from_string in the EC2 driver
+  * publickey._to_md5_fingerprint
+  * publickey.get_pubkey_ssh2_fingerprint
+  (GITHUB-301)
+  [Csaba Hoch]
+
 Compute
 ~~~~~~~
 
@@ -173,6 +181,16 @@ Compute
   [Tomaz Muraus]
 
   Note #2: "timeout" argument is only available in the Paramiko SSH client.
+
+- Make "cidrs_ips" argument in the ex_authorize_security_group_egress method in
+  the EC2 driver mandatory.
+  (GITHUB-301)
+  [Csaba Hoch]
+
+- Add extension methods for manging floating IPs (ex_get_floating_ip,
+  ex_create_floating_ip, ex_delete_floating_ip) to the Openstack 1.1 driver.
+  (GITHUB-301)
+  [Csaba Hoch]
 
 Storage
 ~~~~~~~
