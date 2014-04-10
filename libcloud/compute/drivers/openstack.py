@@ -2276,7 +2276,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         """
         Get specified floating IP from the pool
 
-        :param      ip: floating IP to remove
+        :param      ip: floating IP to get
         :type       ip: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`

@@ -2600,8 +2600,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                  Group.
         :type       description: ``str``
 
-        :param      description: Optional identifier for VPC networks
-        :type       description: ``str``
+        :param      vpc_id:      Optional identifier for VPC networks
+        :type       vpc_id:      ``str``
 
         :rtype: ``dict``
         """
