@@ -290,6 +290,42 @@ INSTANCE_TYPES = {
         'disk': 6400,
         'bandwidth': None
     },
+    # 1x SSD
+    'r3.large': {
+        'id': 'r3.large',
+        'name': 'Memory Optimized Large instance',
+        'ram': 15000,
+        'disk': 32,
+        'bandwidth': None
+    },
+    'r3.xlarge': {
+        'id': 'r3.xlarge',
+        'name': 'Memory Optimized Extra Large instance',
+        'ram': 30500,
+        'disk': 80,
+        'bandwidth': None
+    },
+    'r3.2xlarge': {
+        'id': 'r3.2xlarge',
+        'name': 'Memory Optimized Double Extra Large instance',
+        'ram': 61000,
+        'disk': 160,
+        'bandwidth': None
+    },
+    'r3.4xlarge': {
+        'id': 'r3.4xlarge',
+        'name': 'Memory Optimized Quadruple Extra Large instance',
+        'ram': 122000,
+        'disk': 320,
+        'bandwidth': None
+    },
+    'r3.8xlarge': {
+        'id': 'r3.8xlarge',
+        'name': 'Memory Optimized Eight Extra Large instance',
+        'ram': 244000,
+        'disk': 320,  # x2
+        'bandwidth': None
+    }
 }
 
 REGION_DETAILS = {
@@ -327,6 +363,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     # US West (Northern California) Region
@@ -359,6 +400,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     # US West (Oregon) Region
@@ -389,6 +435,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     # EU (Ireland) Region
@@ -423,6 +474,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -488,6 +544,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     # South America (Sao Paulo) Region
@@ -542,6 +603,11 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge'
         ]
     },
     'nimbus': {
