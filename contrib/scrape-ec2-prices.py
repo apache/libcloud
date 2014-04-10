@@ -122,7 +122,6 @@ def update_pricing_file(pricing_file_path, pricing_data):
 
     content = json.dumps(data, indent=4)
     lines = content.splitlines()
-    print lines
     lines = [line.rstrip() for line in lines]
     content = '\n'.join(lines)
 
