@@ -4590,7 +4590,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        params = {'GroupId': id,
+        params = {'GroupId': group_id,
                   'IpPermissions.1.IpProtocol': protocol,
                   'IpPermissions.1.FromPort': from_port,
                   'IpPermissions.1.ToPort': to_port}
