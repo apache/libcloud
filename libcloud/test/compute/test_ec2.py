@@ -447,14 +447,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(images), 2)
 
-    def test_ex_copy_image(self):
+    def test_get_image(self):
+        image = self.driver.get_image('ami-57ba933a')
+        self.assertEqual(image.id, 'ami-57ba933a')
+        self.assertEqual(image.name, 'Test Image')
+        self.assertEqual(image.extra['architecture'], 'x86_64')
+        self.assertEqual(len(image.extra['block_device_mapping']), 2)
+
+    def test_copy_image(self):
         image = self.driver.list_images()[0]
-        resp = self.driver.ex_copy_image('us-east-1', image,
-                                         name='Faux Image',
-                                         description='Test Image Copy')
+        resp = self.driver.copy_image('us-east-1', image,
+                                      name='Faux Image',
+                                      description='Test Image Copy')
         self.assertEqual(resp.id, 'ami-4db38224')
 
-    def test_ex_create_image_from_node(self):
+    def test_create_image(self):
         node = self.driver.list_nodes()[0]
 
         mapping = [{'VirtualName': None,
@@ -463,17 +470,25 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                             'DeleteOnTermination': 'true'},
                     'DeviceName': '/dev/sda1'}]
 
-        resp = self.driver.ex_create_image_from_node(node,
-                                                     'New Image',
-                                                     mapping,
-                                                     description='New EBS Image')
+        resp = self.driver.create_image(node,
+                                        'New Image',
+                                        description='New EBS Image',
+                                        block_device_mapping=mapping)
         self.assertEqual(resp.id, 'ami-e9b38280')
 
-    def ex_destroy_image(self):
+    def test_create_image_no_mapping(self):
+        node = self.driver.list_nodes()[0]
+
+        resp = self.driver.create_image(node,
+                                        'New Image',
+                                        description='New EBS Image')
+        self.assertEqual(resp.id, 'ami-e9b38280')
+
+    def delete_image(self):
         images = self.driver.list_images()
         image = images[0]
 
-        resp = self.driver.ex_destroy_image(image)
+        resp = self.driver.delete_image(image)
         self.assertTrue(resp)
 
     def ex_register_image(self):

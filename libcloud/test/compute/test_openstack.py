@@ -537,17 +537,17 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue("rate" in limits)
         self.assertTrue("absolute" in limits)
 
-    def test_ex_save_image(self):
+    def test_create_image(self):
         node = Node(id=444222, name=None, state=None, public_ips=None,
                     private_ips=None, driver=self.driver)
-        image = self.driver.ex_save_image(node, "imgtest")
+        image = self.driver.create_image(node, "imgtest")
         self.assertEqual(image.name, "imgtest")
         self.assertEqual(image.id, "12345")
 
-    def test_ex_delete_image(self):
+    def test_delete_image(self):
         image = NodeImage(id=333111, name='Ubuntu 8.10 (intrepid)',
                           driver=self.driver)
-        ret = self.driver.ex_delete_image(image)
+        ret = self.driver.delete_image(image)
         self.assertTrue(ret)
 
     def test_ex_list_ip_addresses(self):
@@ -1158,8 +1158,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
-    def test_ex_save_image(self):
-        image = self.driver.ex_save_image(self.node, 'new_image')
+    def test_create_image(self):
+        image = self.driver.create_image(self.node, 'new_image')
         self.assertEqual(image.name, 'new_image')
         self.assertEqual(image.id, '4949f9ee-2421-4c81-8b49-13119446008b')
 
@@ -1214,19 +1214,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(size.id, size_id)
         self.assertEqual(size.name, '15.5GB slice')
 
-    def test_ex_get_image(self):
+    def test_get_image(self):
         image_id = '13'
-        image = self.driver.ex_get_image(image_id)
+        image = self.driver.get_image(image_id)
         self.assertEqual(image.id, image_id)
         self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
         self.assertEqual(image.extra['serverId'], None)
         self.assertEqual(image.extra['minDisk'], "5")
         self.assertEqual(image.extra['minRam'], "256")
 
-    def test_ex_delete_image(self):
+    def test_delete_image(self):
         image = NodeImage(
             id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
-        result = self.driver.ex_delete_image(image)
+        result = self.driver.delete_image(image)
         self.assertTrue(result)
 
     def test_extract_image_id_from_url(self):
