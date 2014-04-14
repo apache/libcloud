@@ -96,6 +96,11 @@ Compute
   (GITHUB-278)
   [zerthimon]
 
+- Add new standard API for image management and initial implementation for the
+  EC2 and Rackspace driver.
+  (GITHUB-277)
+  [Matt Lehman]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

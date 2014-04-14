@@ -645,19 +645,6 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_nodes not implemented for this driver')
 
-    def list_images(self, location=None):
-        """
-        List images on a provider
-
-        :param location: The location at which to list images
-        :type location: :class:`.NodeLocation`
-
-        :return: list of node image objects
-        :rtype: ``list`` of :class:`.NodeImage`
-        """
-        raise NotImplementedError(
-            'list_images not implemented for this driver')
-
     def list_sizes(self, location=None):
         """
         List sizes on a provider
@@ -1064,6 +1051,92 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'destroy_volume_snapshot not implemented for this driver')
+
+    ##
+    # Image management methods
+    ##
+
+    def list_images(self, location=None):
+        """
+        List images on a provider.
+
+        :param location: The location at which to list images.
+        :type location: :class:`.NodeLocation`
+
+        :return: list of node image objects.
+        :rtype: ``list`` of :class:`.NodeImage`
+        """
+        raise NotImplementedError(
+            'list_images not implemented for this driver')
+
+    def create_image(self, node, name, description=None):
+        """
+        Creates an image from a node object.
+
+        :param node: Node to run the task on.
+        :type node: :class:`.Node`
+
+        :param name: name for new image.
+        :type name: ``str``
+
+        :param description: description for new image.
+        :type name: ``description``
+
+        :rtype: :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+
+        """
+        raise NotImplementedError(
+            'create_image not implemented for this driver')
+
+    def delete_image(self, node_image):
+        """
+        Deletes a node image from a provider.
+
+        :param node_image: Node image object.
+        :type node_image: :class:`.NodeImage`
+
+        :return: ``True`` if delete_image was successful, ``False`` otherwise.
+        :rtype: ``bool``
+        """
+
+        raise NotImplementedError(
+            'delete_image not implemented for this driver')
+
+    def get_image(self, image_id):
+        """
+        Returns a single node image from a provider.
+
+        :param image_id: Node to run the task on.
+        :type image_id: ``str``
+
+        :rtype :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+        """
+        raise NotImplementedError(
+            'get_image not implemented for this driver')
+
+    def copy_image(self, source_region, node_image, name, description=None):
+        """
+        Copies an image from a source region to the current region.
+
+        :param source_region: Region to copy the node from.
+        :type source_region: ``str``
+
+        :param node_image: NodeImage to copy.
+        :type node_image: :class`.NodeImage`:
+
+        :param name: name for new image.
+        :type name: ``str``
+
+        :param description: description for new image.
+        :type name: ``str``
+
+        :rtype: :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+        """
+        raise NotImplementedError(
+            'copy_image not implemented for this driver')
 
     ##
     # SSH key pair management methods
