@@ -123,6 +123,10 @@ Compute
   (GITHUB-287)
   [earthgecko]
 
+- Add a new driver for Outscale cloud (http://www.outscale.com).
+  (GITHUB-285)
+  [Benoit Canet]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

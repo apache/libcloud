@@ -74,6 +74,7 @@ class Provider(object):
     :cvar NEPHOSCALE: NephoScale driver
     :cvar EXOSCALE: Exoscale driver.
     :cvar IKOULA: Ikoula driver.
+    :cvar OUTSCALE_SAS: Outscale SAS driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -117,6 +118,7 @@ class Provider(object):
     CLOUDFRAMES = 'cloudframes'
     EXOSCALE = 'exoscale'
     IKOULA = 'ikoula'
+    OUTSCALE_SAS = 'outscale_sas'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
