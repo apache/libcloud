@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Amazon EC2, Eucalyptus and Nimbus drivers.
+Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
 import re
@@ -47,6 +47,8 @@ __all__ = [
     'API_VERSION',
     'NAMESPACE',
     'INSTANCE_TYPES',
+    'OUTSCALE_INSTANCE_TYPES',
+    'OUTSCALE_SAS_REGION_DETAILS',
     'DEFAULT_EUCA_API_VERSION',
     'EUCA_NAMESPACE',
 
@@ -55,6 +57,8 @@ __all__ = [
 
     'NimbusNodeDriver',
     'EucNodeDriver',
+
+    'OutscaleSASNodeDriver',
 
     'EC2NodeLocation',
     'EC2ReservedNode',
@@ -621,6 +625,340 @@ REGION_DETAILS = {
         ]
     }
 }
+
+
+"""
+Sizes must be hardcoded because Outscale doesn't provide an API to fetch them.
+Outscale cloud instances share some names with EC2 but have differents
+specifications so declare them in another constant.
+"""
+OUTSCALE_INSTANCE_TYPES = {
+    't1.micro': {
+        'id': 't1.micro',
+        'name': 'Micro Instance',
+        'ram': 615,
+        'disk': 0,
+        'bandwidth': None
+    },
+    'm1.small': {
+        'id': 'm1.small',
+        'name': 'Standard Small Instance',
+        'ram': 1740,
+        'disk': 150,
+        'bandwidth': None
+    },
+    'm1.medium': {
+        'id': 'm1.medium',
+        'name': 'Standard Medium Instance',
+        'ram': 3840,
+        'disk': 420,
+        'bandwidth': None
+    },
+    'm1.large': {
+        'id': 'm1.large',
+        'name': 'Standard Large Instance',
+        'ram': 7680,
+        'disk': 840,
+        'bandwidth': None
+    },
+    'm1.xlarge': {
+        'id': 'm1.xlarge',
+        'name': 'Standard Extra Large Instance',
+        'ram': 15360,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'c1.medium': {
+        'id': 'c1.medium',
+        'name': 'Compute Optimized Medium Instance',
+        'ram': 1740,
+        'disk': 340,
+        'bandwidth': None
+    },
+    'c1.xlarge': {
+        'id': 'c1.xlarge',
+        'name': 'Compute Optimized Extra Large Instance',
+        'ram': 7168,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'c3.large': {
+        'id': 'c3.large',
+        'name': 'Compute Optimized Large Instance',
+        'ram': 3840,
+        'disk': 32,
+        'bandwidth': None
+    },
+    'c3.xlarge': {
+        'id': 'c3.xlarge',
+        'name': 'Compute Optimized Extra Large Instance',
+        'ram': 7168,
+        'disk': 80,
+        'bandwidth': None
+    },
+    'c3.2xlarge': {
+        'id': 'c3.2xlarge',
+        'name': 'Compute Optimized Double Extra Large Instance',
+        'ram': 15359,
+        'disk': 160,
+        'bandwidth': None
+    },
+    'c3.4xlarge': {
+        'id': 'c3.4xlarge',
+        'name': 'Compute Optimized Quadruple Extra Large Instance',
+        'ram': 30720,
+        'disk': 320,
+        'bandwidth': None
+    },
+    'c3.8xlarge': {
+        'id': 'c3.8xlarge',
+        'name': 'Compute Optimized Eight Extra Large Instance',
+        'ram': 61440,
+        'disk': 640,
+        'bandwidth': None
+    },
+    'm2.xlarge': {
+        'id': 'm2.xlarge',
+        'name': 'High Memory Extra Large Instance',
+        'ram': 17510,
+        'disk': 420,
+        'bandwidth': None
+    },
+    'm2.2xlarge': {
+        'id': 'm2.2xlarge',
+        'name': 'High Memory Double Extra Large Instance',
+        'ram': 35020,
+        'disk': 840,
+        'bandwidth': None
+    },
+    'm2.4xlarge': {
+        'id': 'm2.4xlarge',
+        'name': 'High Memory Quadruple Extra Large Instance',
+        'ram': 70042,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'nv1.small': {
+        'id': 'nv1.small',
+        'name': 'GPU Small Instance',
+        'ram': 1739,
+        'disk': 150,
+        'bandwidth': None
+    },
+    'nv1.medium': {
+        'id': 'nv1.medium',
+        'name': 'GPU Medium Instance',
+        'ram': 3839,
+        'disk': 420,
+        'bandwidth': None
+    },
+    'nv1.large': {
+        'id': 'nv1.large',
+        'name': 'GPU Large Instance',
+        'ram': 7679,
+        'disk': 840,
+        'bandwidth': None
+    },
+    'nv1.xlarge': {
+        'id': 'nv1.xlarge',
+        'name': 'GPU Extra Large Instance',
+        'ram': 15358,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'g2.2xlarge': {
+        'id': 'g2.2xlarge',
+        'name': 'GPU Double Extra Large Instance',
+        'ram': 15360,
+        'disk': 60,
+        'bandwidth': None
+    },
+    'cc1.4xlarge': {
+        'id': 'cc1.4xlarge',
+        'name': 'Cluster Compute Quadruple Extra Large Instance',
+        'ram': 24576,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'cc2.8xlarge': {
+        'id': 'cc2.8xlarge',
+        'name': 'Cluster Compute Eight Extra Large Instance',
+        'ram': 65536,
+        'disk': 3360,
+        'bandwidth': None
+    },
+    'hi1.xlarge': {
+        'id': 'hi1.xlarge',
+        'name': 'High Storage Extra Large Instance',
+        'ram': 15361,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'm3.xlarge': {
+        'id': 'm3.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 15357,
+        'disk': 0,
+        'bandwidth': None
+    },
+    'm3.2xlarge': {
+        'id': 'm3.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 30720,
+        'disk': 0,
+        'bandwidth': None
+    },
+    'm3s.xlarge': {
+        'id': 'm3s.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 15359,
+        'disk': 0,
+        'bandwidth': None
+    },
+    'm3s.2xlarge': {
+        'id': 'm3s.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 30719,
+        'disk': 0,
+        'bandwidth': None
+    },
+    'cr1.8xlarge': {
+        'id': 'cr1.8xlarge',
+        'name': 'Memory Optimized Eight Extra Large Instance',
+        'ram': 249855,
+        'disk': 240,
+        'bandwidth': None
+    },
+    'os1.2xlarge': {
+        'id': 'os1.2xlarge',
+        'name': 'Memory Optimized, High Storage, Passthrough NIC Double Extra '
+                'Large Instance',
+        'ram': 65536,
+        'disk': 60,
+        'bandwidth': None
+    },
+    'os1.4xlarge': {
+        'id': 'os1.4xlarge',
+        'name': 'Memory Optimized, High Storage, Passthrough NIC Quadruple Ext'
+                'ra Large Instance',
+        'ram': 131072,
+        'disk': 120,
+        'bandwidth': None
+    },
+    'os1.8xlarge': {
+        'id': 'os1.8xlarge',
+        'name': 'Memory Optimized, High Storage, Passthrough NIC Eight Extra L'
+                'arge Instance',
+        'ram': 249856,
+        'disk': 500,
+        'bandwidth': None
+    },
+    'oc1.4xlarge': {
+        'id': 'oc1.4xlarge',
+        'name': 'Outscale Quadruple Extra Large Instance',
+        'ram': 24575,
+        'disk': 1680,
+        'bandwidth': None
+    },
+    'oc2.8xlarge': {
+        'id': 'oc2.8xlarge',
+        'name': 'Outscale Eight Extra Large Instance',
+        'ram': 65535,
+        'disk': 3360,
+        'bandwidth': None
+    }
+}
+
+
+"""
+The function manipulating Outscale cloud regions will be overriden because
+Outscale instances types are in a separate dict so also declare Outscale cloud
+regions in another constant.
+"""
+OUTSCALE_SAS_REGION_DETAILS = {
+    'eu-west-3': {
+        'endpoint': 'api-ppd.outscale.com',
+        'api_name': 'osc_sas_eu_west_3',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'eu-west-1': {
+        'endpoint': 'api.eu-west-1.outscale.com',
+        'api_name': 'osc_sas_eu_west_1',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-1': {
+        'endpoint': 'api.us-east-1.outscale.com',
+        'api_name': 'osc_sas_us_east_1',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    }
+}
+
 
 """
 Define the extra dictionary for specific resources
@@ -4229,3 +4567,259 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
         @inherits: :class:`EC2NodeDriver.ex_create_tags`
         """
         pass
+
+
+class OutscaleConnection(EC2Connection):
+    """
+    Connection class for Outscale
+    """
+
+    host = None
+
+
+class OutscaleNodeDriver(BaseEC2NodeDriver):
+    """
+    Base Outscale FCU node driver.
+
+    Outscale per provider driver classes inherit from it.
+    """
+
+    connectionCls = OutscaleConnection
+    name = 'Outscale'
+    website = 'http://www.outscale.com'
+    path = '/'
+
+    NODE_STATE_MAP = {
+        'pending': NodeState.PENDING,
+        'running': NodeState.RUNNING,
+        'shutting-down': NodeState.UNKNOWN,
+        'terminated': NodeState.TERMINATED,
+        'stopped': NodeState.STOPPED
+    }
+
+    def create_node(self, **kwargs):
+        """
+        Create a new Outscale node. The ex_iamprofile keyword is not supported.
+
+        @inherits: :class:`BaseEC2NodeDriver.create_node`
+
+        :keyword    ex_keyname: The name of the key pair
+        :type       ex_keyname: ``str``
+
+        :keyword    ex_userdata: User data
+        :type       ex_userdata: ``str``
+
+        :keyword    ex_security_groups: A list of names of security groups to
+                                        assign to the node.
+        :type       ex_security_groups:   ``list``
+
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
+        :keyword    ex_mincount: Minimum number of instances to launch
+        :type       ex_mincount: ``int``
+
+        :keyword    ex_maxcount: Maximum number of instances to launch
+        :type       ex_maxcount: ``int``
+
+        :keyword    ex_clienttoken: Unique identifier to ensure idempotency
+        :type       ex_clienttoken: ``str``
+
+        :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
+                    mappings.
+        :type       ex_blockdevicemappings: ``list`` of ``dict``
+
+        :keyword    ex_ebs_optimized: EBS-Optimized if True
+        :type       ex_ebs_optimized: ``bool``
+        """
+        if 'ex_iamprofile' in kwargs:
+            raise NotImplementedError("ex_iamprofile not implemented")
+        return super(OutscaleNodeDriver, self).create_node(**kwargs)
+
+    def ex_create_network(self, cidr_block, name=None):
+        """
+        Create a network/VPC. Outscale does not support instance_tenancy.
+
+        :param      cidr_block: The CIDR block assigned to the network
+        :type       cidr_block: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :return:    Dictionary of network properties
+        :rtype:     ``dict``
+        """
+        return super(OutscaleNodeDriver, self).ex_create_network(cidr_block,
+                                                                 name=name)
+
+    def ex_modify_instance_attribute(self, node, disable_api_termination=None,
+                                     ebs_optimized=None, group_id=None,
+                                     source_dest_check=None, user_data=None,
+                                     instance_type=None):
+        """
+        Modify node attributes.
+        Ouscale support the following attributes:
+        'DisableApiTermination.Value', 'EbsOptimized', 'GroupId.n',
+        'SourceDestCheck.Value', 'UserData.Value',
+        'InstanceType.Value'
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :param      attributes: Dictionary with node attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = {}
+
+        if disable_api_termination is not None:
+            attributes['DisableApiTermination.Value'] = disable_api_termination
+        if ebs_optimized is not None:
+            attributes['EbsOptimized'] = ebs_optimized
+        if group_id is not None:
+            attributes['GroupId.n'] = group_id
+        if source_dest_check is not None:
+            attributes['SourceDestCheck.Value'] = source_dest_check
+        if user_data is not None:
+            attributes['UserData.Value'] = user_data
+        if instance_type is not None:
+            attributes['InstanceType.Value'] = instance_type
+
+        return super(OutscaleNodeDriver, self).ex_modify_instance_attribute(
+            node, attributes)
+
+    def ex_register_image(self, name, description=None, architecture=None,
+                          root_device_name=None, block_device_mapping=None):
+        """
+        Registers a Machine Image based off of an EBS-backed instance.
+        Can also be used to create images from snapshots.
+
+        Outscale does not support image_location, kernel_id and ramdisk_id.
+
+        :param      name:  The name for the AMI being registered
+        :type       name: ``str``
+
+        :param      description: The description of the AMI (optional)
+        :type       description: ``str``
+
+        :param      architecture: The architecture of the AMI (i386/x86_64)
+                                  (optional)
+        :type       architecture: ``str``
+
+        :param      root_device_name: The device name for the root device
+                                      Required if registering a EBS-backed AMI
+        :type       root_device_name: ``str``
+
+        :param      block_device_mapping: A dictionary of the disk layout
+                                          (optional)
+        :type       block_device_mapping: ``dict``
+
+        :rtype:     :class:`NodeImage`
+        """
+        return super(OutscaleNodeDriver, self).ex_register_image(
+            name, description=description, architecture=architecture,
+            root_device_name=root_device_name,
+            block_device_mapping=block_device_mapping)
+
+    def ex_copy_image(self, source_region, image, name=None, description=None):
+        """
+        Outscale does not support copying images.
+
+        @inherits: :class:`EC2NodeDriver.ex_copy_image`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+    def ex_get_limits(self):
+        """
+        Outscale does not support getting limits.
+
+        @inherits: :class:`EC2NodeDriver.ex_get_limits`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+    def ex_create_network_interface(self, subnet, name=None,
+                                    description=None,
+                                    private_ip_address=None):
+        """
+        Outscale does not support creating a network interface within a VPC.
+
+        @inherits: :class:`EC2NodeDriver.ex_create_network_interface`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+    def ex_delete_network_interface(self, network_interface):
+        """
+        Outscale does not support deleting a network interface within a VPC.
+
+        @inherits: :class:`EC2NodeDriver.ex_delete_network_interface`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+    def ex_attach_network_interface_to_node(self, network_interface,
+                                            node, device_index):
+        """
+        Outscale does not support attaching a network interface.
+
+        @inherits: :class:`EC2NodeDriver.ex_attach_network_interface_to_node`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+    def ex_detach_network_interface(self, attachment_id, force=False):
+        """
+        Outscale does not support detaching a network interface
+
+        @inherits: :class:`EC2NodeDriver.ex_detach_network_interface`
+        """
+        raise NotImplementedError(self._not_implemented_msg)
+
+
+class OutscaleSASNodeDriver(OutscaleNodeDriver):
+    """
+    Outscale SAS node driver
+    """
+    name = 'Outscale SAS'
+    type = Provider.OUTSCALE_SAS
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us-east-1', **kwargs):
+        if hasattr(self, '_region'):
+            region = self._region
+
+        if region not in OUTSCALE_SAS_REGION_DETAILS.keys():
+            raise ValueError('Invalid region: %s' % (region))
+
+        details = OUTSCALE_SAS_REGION_DETAILS[region]
+        self.region_name = region
+        self.api_name = details['api_name']
+        self.country = details['country']
+
+        self.connectionCls.host = details['endpoint']
+
+        self._not_implemented_msg =\
+            'This method is not supported in the Outscale driver'
+
+        super(OutscaleNodeDriver, self).__init__(key=key, secret=secret,
+                                                 secure=secure, host=host,
+                                                 port=port, **kwargs)
+
+    def list_sizes(self, location=None):
+        """
+        List available instance flavors/sizes
+
+        This override the EC2 default method in order to use Outscale infos.
+
+        :rtype: ``list`` of :class:`NodeSize`
+        """
+        available_types =\
+            OUTSCALE_SAS_REGION_DETAILS[self.region_name]['instance_types']
+        sizes = []
+
+        for instance_type in available_types:
+            attributes = OUTSCALE_INSTANCE_TYPES[instance_type]
+            attributes = copy.deepcopy(attributes)
+            price = self._get_size_price(size_id=instance_type)
+            attributes.update({'price': price})
+            sizes.append(NodeSize(driver=self, **attributes))
+        return sizes

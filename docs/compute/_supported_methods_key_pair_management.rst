@@ -47,6 +47,7 @@ Provider                              list key pairs get key pair create key pai
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Opsource`_                           no             no           no              no                            no                          no             
+`Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
 `RimuHosting`_                        no             no           no              no                            no                          no             
@@ -106,6 +107,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale SAS`: http://www.outscale.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/

@@ -30,6 +30,7 @@ from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
 from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
+from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
@@ -1520,6 +1521,98 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('t1.micro' in ids)
         self.assertTrue('m1.medium' in ids)
         self.assertTrue('m3.xlarge' in ids)
+
+
+class OutscaleTests(EC2Tests):
+
+    def setUp(self):
+        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
+                                            secret=EC2_PARAMS[1],
+                                            host='some.outscalecloud.com')
+
+    def test_ex_create_network(self):
+        # overridden from EC2Tests -- Outscale don't support instance_tenancy
+        vpc = self.driver.ex_create_network('192.168.55.0/24',
+                                            name='Test VPC')
+
+        self.assertEqual('vpc-ad3527cf', vpc.id)
+        self.assertEqual('192.168.55.0/24', vpc.cidr_block)
+        self.assertEqual('pending', vpc.extra['state'])
+
+    def test_ex_copy_image(self):
+        # overridden from EC2Tests -- Outscale does not support copying images
+        image = self.driver.list_images()[0]
+        try:
+            self.driver.ex_copy_image('us-east-1', image,
+                                      name='Faux Image',
+                                      description='Test Image Copy')
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_get_limits(self):
+        # overridden from EC2Tests -- Outscale does not support getting limits
+        try:
+            self.driver.ex_get_limits()
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_create_network_interface(self):
+        # overridden from EC2Tests -- Outscale don't allow creating interfaces
+        subnet = self.driver.ex_list_subnets()[0]
+        try:
+            self.driver.ex_create_network_interface(
+                subnet,
+                name='Test Interface',
+                description='My Test')
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_delete_network_interface(self):
+        # overridden from EC2Tests -- Outscale don't allow deleting interfaces
+        interface = self.driver.ex_list_network_interfaces()[0]
+        try:
+            self.driver.ex_delete_network_interface(interface)
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_attach_network_interface_to_node(self):
+        # overridden from EC2Tests -- Outscale don't allow attaching interfaces
+        node = self.driver.list_nodes()[0]
+        interface = self.driver.ex_list_network_interfaces()[0]
+        try:
+            self.driver.ex_attach_network_interface_to_node(interface, node, 1)
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_detach_network_interface(self):
+        # overridden from EC2Tests -- Outscale don't allow detaching interfaces
+        try:
+            self.driver.ex_detach_network_interface('eni-attach-2b588b47')
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+
+        ids = [s.id for s in sizes]
+        self.assertTrue('m1.small' in ids)
+        self.assertTrue('m1.large' in ids)
+        self.assertTrue('m1.xlarge' in ids)
 
 
 if __name__ == '__main__':
