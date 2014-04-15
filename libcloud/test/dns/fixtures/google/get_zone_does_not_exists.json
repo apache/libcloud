@@ -1,0 +1,13 @@
+{
+ "error": {
+  "errors": [
+   {
+    "domain": "global",
+    "reason": "notFound",
+    "message": "The 'parameters.managedZone' resource named '2' does not exist."
+   }
+  ],
+  "code": 404,
+  "message": "The 'parameters.managedZone' resource named '2' does not exist."
+ }
+}
