@@ -2760,7 +2760,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return element == 'true'
 
     def ex_authorize_security_group_egress(self, id, from_port, to_port,
-                                           cidr_ips=None, group_pairs=None,
+                                           cidr_ips, group_pairs=None,
                                            protocol='tcp'):
         """
         Edit a Security Group to allow specific egress traffic using
