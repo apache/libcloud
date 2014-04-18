@@ -584,6 +584,29 @@ class StorageDriver(BaseDriver):
 
         return True
 
+    def copy_object(self, src_container_name, src_object_name,
+                    dst_container_name, dst_object_name):
+        """
+        Copy object from one container to another (or the same container with a
+        new name).
+
+        :param src_container_name: Source container name
+        :type src_container_name: ``str``
+
+        :param src_object_name: Source object name
+        :type src_object_name: ``str``
+
+        :param dst_container_name: Destination container name
+        :type dst_container_name: ``str``
+
+        :param dst_object_name: Destination object name
+        :type dst_object_name: ``str``
+
+        :rtype: :class:`Object`
+        """
+        raise NotImplementedError(
+            'copy_object not implemented for this driver')
+
     def _upload_object(self, object_name, content_type, upload_func,
                        upload_func_kwargs, request_path, request_method='PUT',
                        headers=None, file_path=None, iterator=None):
