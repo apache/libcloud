@@ -354,6 +354,20 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             raise ContainerIsNotEmptyError(value='',
                                            container_name=name, driver=self)
 
+    def copy_object(self, src_container_name, src_object_name,
+                    dst_container_name, dst_object_name):
+        # Using Copy Method 2 from OpenStack Object Storage Copy Object Docs
+        # TODO Handle Static Large Object Manifest
+        headers = {"Destination": "/%s/%s" % (dst_container_name,
+                                              dst_object_name)}
+
+        response = self.connection.request('/%s/%s' % (src_container_name,
+                                                       src_object_name),
+                                           method='COPY', headers=headers,
+                                           raw=True)
+
+        return response.status in [httplib.OK, httplib.CREATED]
+
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
         container_name = obj.container.name
