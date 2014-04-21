@@ -168,13 +168,14 @@ class GCEHealthCheck(UuidMixin):
 class GCEFirewall(UuidMixin):
     """A GCE Firewall rule class."""
     def __init__(self, id, name, allowed, network, source_ranges, source_tags,
-                 driver, extra=None):
+                 target_tags, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.network = network
         self.allowed = allowed
         self.source_ranges = source_ranges
         self.source_tags = source_tags
+        self.target_tags = target_tags
         self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
@@ -986,7 +987,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_healthcheck(name)
 
     def ex_create_firewall(self, name, allowed, network='default',
-                           source_ranges=None, source_tags=None):
+                           source_ranges=None, source_tags=None,
+                           target_tags=None):
         """
         Create a firewall on a network.
 
@@ -1020,8 +1022,11 @@ class GCENodeDriver(NodeDriver):
                                  ['0.0.0.0/0']
         :type     source_ranges: ``list`` of ``str``
 
-        :keyword  source_tags: A list of instance tags which the rules apply
+        :keyword  source_tags: A list of source instance tags the rules apply to
         :type     source_tags: ``list`` of ``str``
+
+        :keyword  target_tags: A list of target instance tags the rules apply to
+        :type     target_tags: ``list`` of ``str``
 
         :return:  Firewall object
         :rtype:   :class:`GCEFirewall`
@@ -1038,6 +1043,8 @@ class GCENodeDriver(NodeDriver):
         firewall_data['sourceRanges'] = source_ranges or ['0.0.0.0/0']
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
+        if target_tags is not None:
+            firewall_data['targetTags'] = target_tags
 
         request = '/global/firewalls'
 
@@ -1519,6 +1526,8 @@ class GCENodeDriver(NodeDriver):
             firewall_data['sourceRanges'] = firewall.source_ranges
         if firewall.source_tags:
             firewall_data['sourceTags'] = firewall.source_tags
+        if firewall.target_tags:
+            firewall_data['targetTags'] = firewall.target_tags
         if firewall.extra['description']:
             firewall_data['description'] = firewall.extra['description']
 
@@ -3008,11 +3017,13 @@ class GCENodeDriver(NodeDriver):
         network = self.ex_get_network(extra['network_name'])
         source_ranges = firewall.get('sourceRanges')
         source_tags = firewall.get('sourceTags')
+        target_tags = firewall.get('targetTags')
 
         return GCEFirewall(id=firewall['id'], name=firewall['name'],
                            allowed=firewall.get('allowed'), network=network,
                            source_ranges=source_ranges,
                            source_tags=source_tags,
+                           target_tags=target_tags,
                            driver=self, extra=extra)
 
     def _to_forwarding_rule(self, forwarding_rule):
