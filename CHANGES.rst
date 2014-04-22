@@ -86,6 +86,11 @@ Compute
   (GITHUB-276)
   [Chris / bassdread]
 
+- Update Softlayer driver to use "fullyQualifiedDomainName" instead of
+  "hostname" attribute for the node name.
+  (GITHUB-280)
+  [RoelVanNyen]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

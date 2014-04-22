@@ -242,12 +242,14 @@ class SoftLayerNodeDriver(NodeDriver):
 
         return Node(
             id=host['id'],
-            name=host['hostname'],
+            name=host['fullyQualifiedDomainName'],
             state=state,
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self,
             extra={
+                'hostname': host['hostname'],
+                'fullyQualifiedDomainName': host['fullyQualifiedDomainName'],
                 'password': password,
                 'maxCpu': host.get('maxCpu', None),
                 'datacenter': host.get('datacenter', {}).get('longName', None),
