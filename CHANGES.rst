@@ -81,6 +81,11 @@ Compute
   (GITHUB-272)
   [zerthimon]
 
+- Add "deprecated" attribute to the Node object in the Google Compute Engine
+  driver.
+  (GITHUB-276)
+  [Chris / bassdread]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

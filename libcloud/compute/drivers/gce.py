@@ -3124,11 +3124,8 @@ class GCENodeDriver(NodeDriver):
         extra['metadata'] = node.get('metadata', {})
         extra['tags_fingerprint'] = node['tags']['fingerprint']
         extra['scheduling'] = node.get('scheduling', {})
+        extra['deprecated'] = True if node.get('deprecated', None) else False
 
-        if (machine_type.get('deprecated')):
-            extra['deprecated'] = True
-
-        extra['boot_disk'] = None
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
                 bd = self._get_components_from_path(disk['source'])
