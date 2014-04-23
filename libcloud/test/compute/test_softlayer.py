@@ -43,7 +43,7 @@ class SoftLayerTests(unittest.TestCase):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         node = nodes[0]
-        self.assertEqual(node.name, 'libcloud-testing1')
+        self.assertEqual(node.name, 'libcloud-testing1.example.com')
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.extra['password'], 'L3TJVubf')
 
@@ -73,7 +73,7 @@ class SoftLayerTests(unittest.TestCase):
                                        location=self.driver.list_locations()[0],
                                        size=self.driver.list_sizes()[0],
                                        image=self.driver.list_images()[0])
-        self.assertEqual(node.name, 'libcloud-testing')
+        self.assertEqual(node.name, 'libcloud-testing.example.com')
         self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
 
     def test_create_fail(self):
