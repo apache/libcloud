@@ -456,7 +456,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_copy_image(self):
         image = self.driver.list_images()[0]
-        resp = self.driver.copy_image('us-east-1', image,
+        resp = self.driver.copy_image(image, 'us-east-1', 
                                       name='Faux Image',
                                       description='Test Image Copy')
         self.assertEqual(resp.id, 'ami-4db38224')
