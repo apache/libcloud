@@ -1069,7 +1069,7 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_images not implemented for this driver')
 
-    def create_image(self, node, name, description=None, reboot=False):
+    def create_image(self, node, name, description=None):
         """
         Creates an image from a node object.
 

@@ -1388,7 +1388,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: :class:`NodeImage`
 
         """
-        images = self.list_images(ex_image_ids=[image_id, ])
+        images = self.list_images(ex_image_ids=[image_id])
         image = images[0]
 
         return image
@@ -1733,7 +1733,7 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
-    def copy_image(self, source_region, image, name=None, description=None):
+    def copy_image(self, image, source_region, name=None, description=None):
         """
         Copy an Amazon Machine Image from the specified source region
         to the current region.
@@ -1770,7 +1770,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def create_image(self, node, name, description=None, reboot=True,
+    def create_image(self, node, name, description=None, reboot=False,
                      block_device_mapping=None):
         """
         Create an Amazon Machine Image based off of an EBS-backed instance.
@@ -1811,7 +1811,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'CreateImage',
                   'InstanceId': node.id,
                   'Name': name,
-                  'NoReboot': not reboot}
+                  'Reboot': reboot}
 
         if description is not None:
             params['Description'] = description
