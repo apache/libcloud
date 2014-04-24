@@ -287,6 +287,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def list_images(self, location=None, ex_only_active=True):
         """
+        Lists all active images
+
         @inherits: :class:`NodeDriver.list_images`
 
         :param ex_only_active: True if list only active
@@ -295,6 +297,22 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         return self._to_images(
             self.connection.request('/images/detail').object, ex_only_active)
+
+    def get_image(self, image_id):
+        """
+        Get an image based on a image_id
+
+        @inherits: :class:`NodeDriver.get_image`
+
+        :param image_id: Image identifier
+        :type image_id: ``str``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+
+        """
+        return self._to_image(self.connection.request(
+            '/images/%s' % (image_id,)).object['image'])
 
     def list_sizes(self, location=None):
         return self._to_sizes(
@@ -912,8 +930,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return {"rate": rate, "absolute": absolute}
 
-    def ex_save_image(self, node, name):
+    def create_image(self, node, name, description=None, reboot=True):
         """Create an image for node.
+
+        @inherits: :class:`NodeDriver.create_image`
 
         :param      node: node to use as a base for image
         :type       node: :class:`Node`
@@ -935,8 +955,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images", method="POST",
                                     data=ET.tostring(image_elm)).object)
 
-    def ex_delete_image(self, image):
+    def delete_image(self, image):
         """Delete an image for node.
+
+        @inherits: :class:`NodeDriver.delete_image`
 
         :param      image: the image to be deleted
         :type       image: :class:`NodeImage`
@@ -1444,7 +1466,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, 'revertResize')
         return resp.status == httplib.ACCEPTED
 
-    def ex_save_image(self, node, name, metadata=None):
+    def create_image(self, node, name, metadata=None):
         """
         Creates a new image.
 
@@ -1465,7 +1487,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
         image_id = self._extract_image_id_from_url(resp.headers['location'])
-        return self.ex_get_image(image_id=image_id)
+        return self.get_image(image_id=image_id)
 
     def ex_set_server_name(self, node, name):
         """
@@ -1927,9 +1949,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_size(self.connection.request(
             '/flavors/%s' % (size_id,)) .object['flavor'])
 
-    def ex_get_image(self, image_id):
+    def get_image(self, image_id):
         """
         Get a NodeImage
+
+        @inherits: :class:`NodeDriver.get_image`
 
         :param      image_id: ID of the image which should be used
         :type       image_id: ``str``
@@ -1939,9 +1963,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_image(self.connection.request(
             '/images/%s' % (image_id,)).object['image'])
 
-    def ex_delete_image(self, image):
+    def delete_image(self, image):
         """
         Delete a NodeImage
+
+        @inherits: :class:`NodeDriver.delete_image`
 
         :param      image: image witch should be used
         :type       image: :class:`NodeImage`

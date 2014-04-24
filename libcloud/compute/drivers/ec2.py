@@ -1329,6 +1329,7 @@ class BaseEC2NodeDriver(NodeDriver):
                     ex_executableby=None):
         """
         List all images
+        @inherits: :class:`NodeDriver.list_images`
 
         Ex_image_ids parameter is used to filter the list of
         images that should be returned. Only the images
@@ -1375,6 +1376,22 @@ class BaseEC2NodeDriver(NodeDriver):
             self.connection.request(self.path, params=params).object
         )
         return images
+
+    def get_image(self, image_id):
+        """
+        Get an image based on a image_id
+
+        :param image_id: Image identifier
+        :type image_id: ``str``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+
+        """
+        images = self.list_images(ex_image_ids=[image_id])
+        image = images[0]
+
+        return image
 
     def list_locations(self):
         locations = []
@@ -1716,10 +1733,12 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
-    def ex_copy_image(self, source_region, image, name=None, description=None):
+    def copy_image(self, image, source_region, name=None, description=None):
         """
         Copy an Amazon Machine Image from the specified source region
         to the current region.
+
+        @inherits: :class:`NodeDriver.copy_image`
 
         :param      source_region: The region where the image resides
         :type       source_region: ``str``
@@ -1751,10 +1770,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def ex_create_image_from_node(self, node, name, block_device_mapping,
-                                  reboot=False, description=None):
+    def create_image(self, node, name, description=None, reboot=False,
+                     block_device_mapping=None):
         """
         Create an Amazon Machine Image based off of an EBS-backed instance.
+
+        @inherits: :class:`NodeDriver.create_image`
 
         :param      node: Instance of ``Node``
         :type       node: :class: `Node`
@@ -1768,8 +1789,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :type       block_device_mapping: ``list`` of ``dict``
 
         :param      reboot: Whether or not to shutdown the instance before
-                               creation. By default Amazon sets this to false
-                               to ensure a clean image.
+                               creation. Amazon calls this NoReboot and
+                               sets it to false by default to ensure a
+                               clean image.
         :type       reboot: ``bool``
 
         :param      description: An optional description for the new image
@@ -1794,19 +1816,29 @@ class BaseEC2NodeDriver(NodeDriver):
         if description is not None:
             params['Description'] = description
 
-        params.update(self._get_block_device_mapping_params(
-                      block_device_mapping))
+        if block_device_mapping is not None:
+            params.update(self._get_block_device_mapping_params(
+                block_device_mapping))
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object)
 
         return image
 
-    def ex_destroy_image(self, image):
-        params = {
-            'Action': 'DeregisterImage',
-            'ImageId': image.id
-        }
+    def delete_image(self, image):
+        """
+        Deletes an image at Amazon given a NodeImage object
+
+        @inherits: :class:`NodeDriver.delete_image`
+
+        :param image: Instance of ``NodeImage``
+        :type image: :class: `NodeImage`
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeregisterImage',
+                  'ImageId': image.id}
+
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
