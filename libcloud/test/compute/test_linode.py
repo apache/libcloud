@@ -43,7 +43,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.id, "8098")
         self.assertEqual(node.name, 'api-node3')
-        self.assertEqual(node.extra['PLANID'], '3')
+        self.assertEqual(node.extra['PLANID'], '1')
         self.assertTrue('75.127.96.245' in node.public_ips)
         self.assertEqual(node.private_ips, [])
 
