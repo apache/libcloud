@@ -96,7 +96,7 @@ def get_gce_driver():
 def get_gcelb_driver(gce_driver=None):
     # The GCE Load Balancer driver uses the GCE Compute driver for all of its
     # API calls.  You can either provide the driver directly, or provide the
-    # same authentication information so the the LB driver can get its own
+    # same authentication information so the LB driver can get its own
     # Compute driver.
     if gce_driver:
         driver = get_driver_lb(Provider_lb.GCE)(gce_driver=gce_driver)

@@ -136,7 +136,7 @@ class ScriptDeployment(Deployment):
 
         :type name: ``str``
         :keyword name: Name of the script to upload it as, if not specified,
-                       a random name will be choosen.
+                       a random name will be chosen.
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.
@@ -210,7 +210,7 @@ class ScriptFileDeployment(ScriptDeployment):
 
         :type name: ``str``
         :keyword name: Name of the script to upload it as, if not specified,
-                       a random name will be choosen.
+                       a random name will be chosen.
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.

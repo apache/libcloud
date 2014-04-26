@@ -790,7 +790,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return name
 
     def _to_container_list(self, response):
-        # @TODO: Handle more then 10k containers - use "lazy list"?
+        # @TODO: Handle more than 10k containers - use "lazy list"?
         for container in response:
             extra = {'object_count': int(container['count']),
                      'size': int(container['bytes'])}

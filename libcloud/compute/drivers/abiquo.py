@@ -99,7 +99,7 @@ class AbiquoNodeDriver(NodeDriver):
         :type       image:  :class:`NodeImage`
 
         :keyword    location: Which data center to create a node in. If empty,
-                              undefined behavoir will be selected. (optional)
+                              undefined behavior will be selected. (optional)
         :type       location: :class:`NodeLocation`
 
         :keyword   group_name:  Which group this node belongs to. If empty,

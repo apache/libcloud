@@ -253,7 +253,7 @@ class LocalStorageDriver(StorageDriver):
         :param container: Container instance
         :type  container: :class:`Container`
 
-        :param check: Indicates if the path's existance must be checked
+        :param check: Indicates if the path's existence must be checked
         :type check: ``bool``
 
         :return: A CDN URL for this container.

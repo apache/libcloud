@@ -36,7 +36,7 @@ from libcloud.compute.types import NodeState, Provider
 # Roadmap / TODO:
 #
 # 0.1 - Basic functionality:  create, delete, start, stop, reboot - servers
-#                      (base OS images only, no customer images suported yet)
+#                      (base OS images only, no customer images supported yet)
 #   x implement list_nodes()
 #   x implement create_node()  (only support Base OS images,
 #                                no customer images yet)

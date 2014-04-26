@@ -592,7 +592,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_list_addresses(self, region=None):
         """
-        Return a list of static addreses for a region or all.
+        Return a list of static addresses for a region or all.
 
         :keyword  region: The region to return addresses from. For example:
                           'us-central1'.  If None, will return addresses from
