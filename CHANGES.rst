@@ -91,6 +91,11 @@ Compute
   (GITHUB-280)
   [RoelVanNyen]
 
+- Allow user to specify target tags using target_tags attribute when creating
+  a firewall rule in the GCE driver.
+  (GITHUB-278)
+  [zerthimon]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
