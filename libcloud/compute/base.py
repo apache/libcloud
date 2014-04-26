@@ -751,7 +751,7 @@ class NodeDriver(BaseDriver):
         :type image:  :class:`.NodeImage`
 
         :param location: Which data center to create a node in. If empty,
-                              undefined behavoir will be selected. (optional)
+                              undefined behavior will be selected. (optional)
         :type location: :class:`.NodeLocation`
 
         :param auth:   Initial authentication information for the node
@@ -810,7 +810,7 @@ class NodeDriver(BaseDriver):
         existing implementation should be able to handle most such.
 
         :param deploy: Deployment to run once machine is online and
-                            availble to SSH.
+                            available to SSH.
         :type deploy: :class:`Deployment`
 
         :param ssh_username: Optional name of the account which is used
@@ -919,7 +919,7 @@ class NodeDriver(BaseDriver):
                 e = sys.exc_info()[1]
                 deploy_error = e
             else:
-                # Script sucesfully executed, don't try alternate username
+                # Script successfully executed, don't try alternate username
                 deploy_error = None
                 break
 
@@ -991,7 +991,7 @@ class NodeDriver(BaseDriver):
         :type name: ``str``
 
         :param location: Which data center to create a volume in. If
-                               empty, undefined behavoir will be selected.
+                               empty, undefined behavior will be selected.
                                (optional)
         :type location: :class:`.NodeLocation`
 

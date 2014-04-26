@@ -1219,7 +1219,7 @@ class EC2NetworkInterface(object):
 
 class ElasticIP(object):
     """
-    Represents information about an elastic IP adddress
+    Represents information about an elastic IP address
 
     :param      ip: The elastic IP address
     :type       ip: ``str``
@@ -2035,7 +2035,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_create_security_group(self, name, description, vpc_id=None):
         """
-        Creates a new Security Group in EC2-Classic or a targetted VPC.
+        Creates a new Security Group in EC2-Classic or a targeted VPC.
 
         :param      name:        The name of the security group to Create.
                                  This must be unique.

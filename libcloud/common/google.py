@@ -403,7 +403,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         """
         if SHA256 is None:
             raise GoogleAuthError('PyCrypto library required for '
-                                  'Service Accout Authentication.')
+                                  'Service Account Authentication.')
         # Check to see if 'key' is a file and read the file if it is.
         keypath = os.path.expanduser(key)
         is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
@@ -454,7 +454,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         Service Account authentication doesn't supply a "refresh token" so
         this simply gets a new token using the email address/key.
 
-        :param  token_info: Dictionary contining token information.
+        :param  token_info: Dictionary containing token information.
                             (Not used, but here for compatibility)
         :type   token_info: ``dict``
 

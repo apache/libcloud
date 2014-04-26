@@ -18,7 +18,7 @@ CloudFrames Driver
 
 """
 
-# (name, ram, disk, bandwith, price, vcpus)
+# (name, ram, disk, bandwidth, price, vcpus)
 SIZES = [
     ('512mb_1core_10gb', 512, 10, 512, 0.025, 1),
     ('1024mb_1core_20gb', 1024, 20, 512, 0.05, 1),

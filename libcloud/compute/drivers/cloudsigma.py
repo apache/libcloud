@@ -673,7 +673,7 @@ class CloudSigmaError(ProviderError):
         :param error_msg: A description of the error that occurred.
         :type error_msg: ``str``
 
-        :param error_point: Point at which the error occured. Can be None.
+        :param error_point: Point at which the error occurred. Can be None.
         :type error_point: ``str`` or ``None``
         """
         super(CloudSigmaError, self).__init__(http_code=http_code,

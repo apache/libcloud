@@ -157,7 +157,7 @@ class RackspaceConnectionThrottle(object):
                             before applying throttling.
     :type min_connections: ``int``
 
-    :param max_connections: Maximum number of of connections per IP address.
+    :param max_connections: Maximum number of connections per IP address.
                             (Must be between 0 and 100000, 0 allows an
                             unlimited number of connections.)
     :type max_connections: ``int``
