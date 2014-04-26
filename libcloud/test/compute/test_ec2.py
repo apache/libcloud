@@ -849,7 +849,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.driver.create_node(name='foo', image=image, size=size,
                                 ex_security_groups=security_groups)
 
-        # Test old and new arguments are mutally exclusive
+        # Test old and new arguments are mutually exclusive
         self.assertRaises(ValueError, self.driver.create_node,
                           name='foo', image=image, size=size,
                           ex_securitygroup=security_groups,

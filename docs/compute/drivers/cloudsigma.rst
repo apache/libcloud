@@ -217,7 +217,7 @@ server. This examples shows how to do that upon server creation.
 Add a tag to the server
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-CloudSigma allows you to ogranize resources such as servers and drivers by
+CloudSigma allows you to organize resources such as servers and drivers by
 tagging them. This example shows how to do that.
 
 .. literalinclude:: /examples/compute/cloudsigma/tag_server.py

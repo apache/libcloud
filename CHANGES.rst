@@ -226,7 +226,7 @@ Compute
   authentication to not allow insecure connections (secure constructor
   kwarg being set to False) by default.
 
-  This way credentials can't accidentaly be sent in plain text over the
+  This way credentials can't accidentally be sent in plain text over the
   write.
 
   Affected drivers: Bluebox, Joyent, NephoScale, OpSource, VPSNet
@@ -1609,7 +1609,7 @@ Storage
   CloudFiles driver.
   [Tomaz Muraus]
 
-- Fix a bug with content_type and and encoding of object and path names in
+- Fix a bug with content_type and encoding of object and path names in
   the Atmos driver.
   [Russell Keith-Magee]
 
@@ -1787,7 +1787,7 @@ Compute
   Node extra dictionary. (LIBCLOUD-163)
   [Chris Gilmer]
 
-- Alow users to use a list of tuples for the query string parameters inside
+- Allow users to use a list of tuples for the query string parameters inside
   the OpenStack connection classes. This way same key can be specified
   multiple times (LIBCLOUD-153)
   [Dave King]
@@ -2273,7 +2273,7 @@ Compute
   available
   [Tomaz Muraus]
 
-- Fix chmod argument value which is pased to the sftpclient.put
+- Fix chmod argument value which is passed to the sftpclient.put
   method; GITHUB-17
   [John Carr]
 
@@ -2437,7 +2437,7 @@ Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
   [Peter Herndon]
 
 - EC2 Driver availability zones, via ex_list_availability_zones;
-  list_locations rewrite to include availablity zones
+  list_locations rewrite to include availability zones
   [Tomaz Muraus]
 
 - EC2 Driver Idempotency capability in create_node; LIBCLOUD-69

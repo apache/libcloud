@@ -544,7 +544,7 @@ class Connection(object):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier
+        Users of the library should call this to uniquely identify their
         requests to a provider.
 
         :type token: ``str``

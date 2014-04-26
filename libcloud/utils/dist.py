@@ -20,7 +20,7 @@
 import os
 import fnmatch
 
-# Names that are exluded from globbing results:
+# Names that are excluded from globbing results:
 EXCLUDE_NAMES = ['{arch}', 'CVS', '.cvsignore', '_darcs',
                  'RCS', 'SCCS', '.svn']
 EXCLUDE_PATTERNS = ['*.py[cdo]', '*.s[ol]', '.#*', '*~', '*.py']

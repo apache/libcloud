@@ -254,7 +254,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         if nic_model not in ('e1000', 'rtl8139', 'virtio'):
             raise ElasticStackException('Invalid NIC model specified')
 
-        # check that drive size is not smaller then pre installed image size
+        # check that drive size is not smaller than pre installed image size
 
         # First we create a drive with the specified size
         drive_data = {}

@@ -667,7 +667,7 @@ class StorageDriver(BaseDriver):
         :param data: Data to upload.
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :rtype: ``tuple``
@@ -713,7 +713,7 @@ class StorageDriver(BaseDriver):
                         (defauls to False).
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :type chunk_size: ``int``

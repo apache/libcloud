@@ -64,7 +64,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         self.assertTrue('Content-Length' not in call_kwargs['headers'])
 
         # 'a' as data, content length should be present (data in GET is not
-        # corect, but anyways)
+        # correct, but anyways)
         con.request('/test', method='GET', data='a')
         call_kwargs = con.connection.request.call_args[1]
         self.assertEqual(call_kwargs['headers']['Content-Length'], '1')

@@ -80,8 +80,8 @@ class BaseSSHClient(object):
         """
         Connect to the remote node over SSH.
 
-        :return: True if the connection has been successfuly established, False
-                 otherwise.
+        :return: True if the connection has been successfully established,
+                 False otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -116,7 +116,7 @@ class BaseSSHClient(object):
         :type path: ``str``
         :keyword path: File path on the remote node.
 
-        :return: True if the file has been successfuly deleted, False
+        :return: True if the file has been successfully deleted, False
                  otherwise.
         :rtype: ``bool``
         """
@@ -139,7 +139,7 @@ class BaseSSHClient(object):
         """
         Shutdown connection to the remote node.
 
-        :return: True if the connection has been successfuly closed, False
+        :return: True if the connection has been successfully closed, False
                  otherwise.
         :rtype: ``bool``
         """
