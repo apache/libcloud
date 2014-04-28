@@ -1196,6 +1196,10 @@ class GCENodeDriver(NodeDriver):
                                               image=image,
                                               use_existing=use_existing_disk)
 
+        if ex_metadata is not None:
+            ex_metadata = {"items": [{"key": k, "value": v}
+                                     for k, v in ex_metadata.items()]}
+
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
