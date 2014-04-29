@@ -14,27 +14,42 @@
 # limitations under the License.
 
 from libcloud.utils.misc import get_driver as get_provider_driver
+from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.loadbalancer.types import Provider
 
 __all__ = [
-        "Provider",
-        "DRIVERS",
-        "get_driver",
-        ]
+    "Provider",
+    "DRIVERS",
+    "get_driver",
+]
 
 DRIVERS = {
-        Provider.RACKSPACE_US:
-            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
-        Provider.RACKSPACE_UK:
-            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
-        Provider.GOGRID:
-            ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
-        Provider.NINEFOLD:
-            ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
-        Provider.BRIGHTBOX:
-            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver')
+    Provider.RACKSPACE:
+    ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
+    Provider.GOGRID:
+    ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
+    Provider.NINEFOLD:
+    ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
+    Provider.BRIGHTBOX:
+    ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
+    Provider.ELB:
+    ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
+    Provider.CLOUDSTACK:
+    ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
+    Provider.GCE:
+    ('libcloud.loadbalancer.drivers.gce', 'GCELBDriver'),
+
+    # Deprecated
+    Provider.RACKSPACE_US:
+    ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
+    Provider.RACKSPACE_UK:
+    ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
 }
 
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
+
+
+def set_driver(provider, module, klass):
+    return set_provider_driver(DRIVERS, provider, module, klass)

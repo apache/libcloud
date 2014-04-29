@@ -20,14 +20,12 @@ import time
 import hashlib
 import sys
 
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 
 # Global constants
-API_VERSION = '2.0'
-API_PREFIX = "https://rpc.gandi.net/xmlrpc/%s/" % API_VERSION
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -38,62 +36,38 @@ class GandiException(Exception):
     Exception class for Gandi driver
     """
     def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
+        return '(%u) %s' % (self.args[0], self.args[1])
 
     def __repr__(self):
-        return "<GandiException code %u '%s'>" % (self.args[0], self.args[1])
+        return '<GandiException code %u "%s">' % (self.args[0], self.args[1])
 
 
-class GandiSafeTransport(xmlrpclib.SafeTransport):
-    pass
+class GandiResponse(XMLRPCResponse):
+    """
+    A Base Gandi Response class to derive from.
+    """
 
 
-class GandiTransport(xmlrpclib.Transport):
-    pass
-
-
-class GandiProxy(xmlrpclib.ServerProxy):
-    transportCls = (GandiTransport, GandiSafeTransport)
-
-    def __init__(self, user_agent, verbose=0):
-        cls = self.transportCls[0]
-        if API_PREFIX.startswith("https://"):
-            cls = self.transportCls[1]
-        t = cls(use_datetime=0)
-        t.user_agent = user_agent
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri="%s" % (API_PREFIX),
-            transport=t,
-            verbose=verbose,
-            allow_none=True
-        )
-
-
-class GandiConnection(ConnectionKey):
+class GandiConnection(XMLRPCConnection, ConnectionKey):
     """
     Connection class for the Gandi driver
     """
 
-    proxyCls = GandiProxy
+    responseCls = GandiResponse
+    host = 'rpc.gandi.net'
+    endpoint = '/xmlrpc/'
 
-    def __init__(self, key, password=None):
-        super(GandiConnection, self).__init__(key)
+    def __init__(self, key, secure=True):
+        # Note: Method resolution order in this case is
+        # XMLRPCConnection -> Connection and Connection doesn't take key as the
+        # first argument so we specify a keyword argument instead.
+        # Previously it was GandiConnection -> ConnectionKey so it worked fine.
+        super(GandiConnection, self).__init__(key=key, secure=secure)
         self.driver = BaseGandiDriver
 
-        try:
-            self._proxy = self.proxyCls(self._user_agent())
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            raise GandiException(1000, e)
-
     def request(self, method, *args):
-        """ Request xmlrpc method with given args"""
-        try:
-            return getattr(self._proxy, method)(self.key, *args)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            raise GandiException(1001, e)
+        args = (self.key, ) + args
+        return super(GandiConnection, self).request(method, *args)
 
 
 class BaseGandiDriver(object):
@@ -104,24 +78,18 @@ class BaseGandiDriver(object):
     connectionCls = GandiConnection
     name = 'Gandi'
 
-    def __init__(self, key, secret=None, secure=False):
-        self.key = key
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret)
-        self.connection.driver = self
-
     # Specific methods for gandi
-    def _wait_operation(self, id, \
-        timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL):
+    def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT,
+                        check_interval=DEFAULT_INTERVAL):
         """ Wait for an operation to succeed"""
 
         for i in range(0, timeout, check_interval):
             try:
-                op = self.connection.request('operation.info', int(id))
+                op = self.connection.request('operation.info', int(id)).object
 
                 if op['step'] == 'DONE':
                     return True
-                if op['step'] in  ['ERROR', 'CANCEL']:
+                if op['step'] in ['ERROR', 'CANCEL']:
                     return False
             except (KeyError, IndexError):
                 pass
@@ -147,7 +115,7 @@ class BaseObject(object):
     def get_uuid(self):
         """Unique hash for this object
 
-        @return: C{string}
+        :return: ``str``
 
         The hash is a function of an SHA1 hash of prefix, the object's ID and
         its driver which means that it should be unique between all
@@ -162,8 +130,9 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1(b("%s:%s:%d" % \
-            (self.uuid_prefix, self.id, self.driver.type))).hexdigest()
+        hashstring = '%s:%s:%s' % \
+            (self.uuid_prefix, self.id, self.driver.type)
+        return hashlib.sha1(b(hashstring)).hexdigest()
 
 
 class IPAddress(BaseObject):
@@ -192,7 +161,7 @@ class NetworkInterface(BaseObject):
     uuid_prefix = 'if:'
 
     def __init__(self, id, state, mac_address, driver,
-            ips=None, node_id=None, extra=None):
+                 ips=None, node_id=None, extra=None):
         super(NetworkInterface, self).__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}
@@ -215,5 +184,6 @@ class Disk(BaseObject):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
+        return (
+            ('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
             % (self.id, self.name, self.state, self.size, self.driver.name))

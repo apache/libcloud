@@ -19,6 +19,7 @@ from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.types import InvalidCredsError
 
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
@@ -28,10 +29,10 @@ except ImportError:
 
 class BrightboxResponse(JsonResponse):
     def success(self):
-        return self.status >= 200 and self.status < 400
+        return self.status >= httplib.OK and self.status < httplib.BAD_REQUEST
 
     def parse_body(self):
-        if self.headers['content-type'].split('; ')[0] == 'application/json':
+        if self.headers['content-type'].split(';')[0] == 'application/json':
             return super(BrightboxResponse, self).parse_body()
         else:
             return self.body
@@ -39,7 +40,15 @@ class BrightboxResponse(JsonResponse):
     def parse_error(self):
         response = super(BrightboxResponse, self).parse_body()
 
-        return '%s: %s' % (response['error_name'], response['errors'][0])
+        if 'error' in response:
+            if response['error'] in ['invalid_client', 'unauthorized_client']:
+                raise InvalidCredsError(response['error'])
+
+            return response['error']
+        elif 'error_name' in response:
+            return '%s: %s' % (response['error_name'], response['errors'][0])
+
+        return self.body
 
 
 class BrightboxConnection(ConnectionUserAndKey):
@@ -54,27 +63,28 @@ class BrightboxConnection(ConnectionUserAndKey):
         body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
 
         authorization = 'Basic ' + str(base64.encodestring(b('%s:%s' %
-                                        (self.user_id, self.key)))).rstrip()
+                                       (self.user_id, self.key)))).rstrip()
 
         self.connect()
 
-        response = self.connection.request(method='POST', url='/token',
-                                           body=body, headers={
+        headers = {
             'Host': self.host,
             'User-Agent': self._user_agent(),
             'Authorization': authorization,
             'Content-Type': 'application/json',
             'Content-Length': str(len(body))
-        })
+        }
+
+        response = self.connection.request(method='POST', url='/token',
+                                           body=body, headers=headers)
 
         response = self.connection.getresponse()
 
-        if response.status == 200:
+        if response.status == httplib.OK:
             return json.loads(response.read())['access_token']
         else:
-            message = '%s (%s)' % (json.loads(response.read())['error'],
-                                   response.status)
-
+            responseCls = BrightboxResponse(response=response, connection=self)
+            message = responseCls.parse_error()
             raise InvalidCredsError(message)
 
     def add_default_headers(self, headers):

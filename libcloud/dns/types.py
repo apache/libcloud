@@ -28,41 +28,47 @@ __all__ = [
 
 
 class Provider(object):
-    DUMMY = 0
-    LINODE = 1
-    ZERIGO = 2
-    RACKSPACE_US = 3
-    RACKSPACE_UK = 4
-    ROUTE53 = 5
+    DUMMY = 'dummy'
+    LINODE = 'linode'
+    RACKSPACE = 'rackspace'
+    ZERIGO = 'zerigo'
+    ROUTE53 = 'route53'
+    HOSTVIRTUAL = 'hostvirtual'
+    GANDI = 'gandi'
+    GOOGLE = 'google'
+
+    # Deprecated
+    RACKSPACE_US = 'rackspace_us'
+    RACKSPACE_UK = 'rackspace_uk'
 
 
 class RecordType(object):
     """
     DNS record type.
     """
-    A = 0
-    AAAA = 1
-    MX = 2
-    NS = 3
-    CNAME = 4
-    DNAME = 5
-    TXT = 6
-    PTR = 7
-    SOA = 8
-    SPF = 9
-    SRV = 10
-    PTR = 11
-    NAPTR = 12
-    REDIRECT = 13
-
-    @classmethod
-    def __repr__(self, value):
-        reverse = dict((v, k) for k, v in list(RecordType.__dict__.items()))
-        return reverse[value]
+    A = 'A'
+    AAAA = 'AAAA'
+    MX = 'MX'
+    NS = 'NS'
+    CNAME = 'CNAME'
+    DNAME = 'DNAME'
+    TXT = 'TXT'
+    PTR = 'PTR'
+    SOA = 'SOA'
+    SPF = 'SPF'
+    SRV = 'SRV'
+    PTR = 'PTR'
+    NAPTR = 'NAPTR'
+    REDIRECT = 'REDIRECT'
+    GEO = 'GEO'
+    URL = 'URL'
+    WKS = 'WKS'
+    LOC = 'LOC'
 
 
 class ZoneError(LibcloudError):
     error_type = 'ZoneError'
+    kwargs = ('zone_id', )
 
     def __init__(self, value, driver, zone_id):
         self.zone_id = zone_id

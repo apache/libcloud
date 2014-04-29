@@ -31,15 +31,27 @@ class DummyDNSDriver(DNSDriver):
     """
 
     name = 'Dummy DNS Provider'
+    website = 'http://example.com'
 
     def __init__(self, api_key, api_secret):
+        """
+        :param    api_key:    API key or username to used (required)
+        :type     api_key:    ``str``
+
+        :param    api_secret: Secret password to be used (required)
+        :type     api_secret: ``str``
+
+        :rtype: ``None``
+        """
         self._zones = {}
 
     def list_record_types(self):
         """
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_record_types()
-        [0]
+        ['A']
+
+        @inherits: :class:`DNSDriver.list_record_types`
         """
         return [RecordType.A]
 
@@ -48,12 +60,25 @@ class DummyDNSDriver(DNSDriver):
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_zones()
         []
+
+        @inherits: :class:`DNSDriver.list_zones`
         """
 
         return [zone['zone'] for zone in list(self._zones.values())]
 
     def list_records(self, zone):
-        return self.get_zone(zone_id=zone.id).records
+        """
+        >>> driver = DummyDNSDriver('key', 'secret')
+        >>> zone = driver.create_zone(domain='apache.org', type='master',
+        ...                           ttl=100)
+        >>> list(zone.list_records())
+        []
+        >>> record = driver.create_record(name='libcloud', zone=zone,
+        ...                               type=RecordType.A, data='127.0.0.1')
+        >>> list(zone.list_records()) #doctest: +ELLIPSIS
+        [<Record: zone=id-apache.org, name=libcloud, type=A...>]
+        """
+        return self._zones[zone.id]['records'].values()
 
     def get_zone(self, zone_id):
         """
@@ -62,6 +87,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: :class:`DNSDriver.get_zone`
         """
 
         if zone_id not in self._zones:
@@ -77,6 +104,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: :class:`DNSDriver.get_record`
         """
 
         self.get_zone(zone_id=zone_id)
@@ -100,6 +129,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneAlreadyExistsError:
+
+        @inherits: :class:`DNSDriver.create_zone`
         """
 
         id = 'id-%s' % (domain)
@@ -110,7 +141,7 @@ class DummyDNSDriver(DNSDriver):
         zone = Zone(id=id, domain=domain, type=type, ttl=ttl, extra={},
                     driver=self)
         self._zones[id] = {'zone': zone,
-                            'records': {}}
+                           'records': {}}
         return zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -127,6 +158,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         RecordAlreadyExistsError:
+
+        @inherits: :class:`DNSDriver.create_record`
         """
         id = 'id-%s' % (name)
 
@@ -151,6 +184,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver.delete_zone(zone) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: :class:`DNSDriver.delete_zone`
         """
         self.get_zone(zone_id=zone.id)
 
@@ -169,6 +204,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver.delete_record(record) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         RecordDoesNotExistError:
+
+        @inherits: :class:`DNSDriver.delete_record`
         """
         self.get_record(zone_id=record.zone.id, record_id=record.id)
 

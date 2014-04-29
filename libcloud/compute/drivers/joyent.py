@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Joyent Cloud (http://www.joyentcloud.com) driver.
+"""
+
 import base64
 
 try:
@@ -26,9 +30,9 @@ from libcloud.utils.py3 import b
 from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import Provider
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.base import is_private_subnet
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize
+from libcloud.utils.networking import is_private_subnet
 
 API_HOST_SUFFIX = '.api.joyentcloud.com'
 API_VERSION = '~6.5'
@@ -42,16 +46,20 @@ NODE_STATE_MAP = {
     'deleted': NodeState.TERMINATED
 }
 
-LOCATIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
-DEFAULT_LOCATION = LOCATIONS[0]
+VALID_REGIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
+DEFAULT_REGION = 'us-east-1'
 
 
 class JoyentResponse(JsonResponse):
+    """
+    Joyent response class.
+    """
+
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                             httplib.NO_CONTENT]
+                            httplib.NO_CONTENT]
 
     def parse_error(self):
-        if self.status == 401:
+        if self.status == httplib.UNAUTHORIZED:
             data = self.parse_body()
             raise InvalidCredsError(data['code'] + ': ' + data['message'])
         return self.body
@@ -61,7 +69,13 @@ class JoyentResponse(JsonResponse):
 
 
 class JoyentConnection(ConnectionUserAndKey):
+    """
+    Joyent connection class.
+    """
+
     responseCls = JoyentResponse
+
+    allow_insecure = False
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
@@ -69,27 +83,37 @@ class JoyentConnection(ConnectionUserAndKey):
         headers['X-Api-Version'] = API_VERSION
 
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (user_b64)
+        headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
 
 
 class JoyentNodeDriver(NodeDriver):
+    """
+    Joyent node driver class.
+    """
+
     type = Provider.JOYENT
     name = 'Joyent'
+    website = 'http://www.joyentcloud.com'
     connectionCls = JoyentConnection
     features = {'create_node': ['generates_password']}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region=DEFAULT_REGION, **kwargs):
+        # Location is here for backward compatibility reasons
         if 'location' in kwargs:
-            if kwargs['location'] not in LOCATIONS:
-                msg = 'Invalid location: "%s". Valid locations: %s'
-                raise LibcloudError(msg % (kwargs['location'],
-                                ', '.join(LOCATIONS)), driver=self)
-        else:
-            kwargs['location'] = DEFAULT_LOCATION
+            region = kwargs['location']
 
-        super(JoyentNodeDriver, self).__init__(*args, **kwargs)
-        self.connection.host = kwargs['location'] + API_HOST_SUFFIX
+        if region not in VALID_REGIONS:
+            msg = 'Invalid region: "%s". Valid region: %s'
+            raise LibcloudError(msg % (region,
+                                ', '.join(VALID_REGIONS)), driver=self)
+
+        super(JoyentNodeDriver, self).__init__(key=key, secret=secret,
+                                               secure=secure, host=host,
+                                               port=port, region=region,
+                                               **kwargs)
+        self.connection.host = region + API_HOST_SUFFIX
 
     def list_images(self):
         result = self.connection.request('/my/datasets').object
@@ -99,7 +123,7 @@ class JoyentNodeDriver(NodeDriver):
             extra = {'type': value['type'], 'urn': value['urn'],
                      'os': value['os'], 'default': value['default']}
             image = NodeImage(id=value['id'], name=value['name'],
-                    driver=self.connection.driver, extra=extra)
+                              driver=self.connection.driver, extra=extra)
             images.append(image)
 
         return images
@@ -150,7 +174,29 @@ class JoyentNodeDriver(NodeDriver):
         return self._to_node(result.object)
 
     def ex_stop_node(self, node):
+        """
+        Stop node
+
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         data = json.dumps({'action': 'stop'})
+        result = self.connection.request('/my/machines/%s' % (node.id),
+                                         data=data, method='POST')
+        return result.status == httplib.ACCEPTED
+
+    def ex_start_node(self, node):
+        """
+        Start node
+
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        data = json.dumps({'action': 'start'})
         result = self.connection.request('/my/machines/%s' % (node.id),
                                          data=data, method='POST')
         return result.status == httplib.ACCEPTED

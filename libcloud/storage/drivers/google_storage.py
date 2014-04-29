@@ -24,7 +24,7 @@ from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey
 
-from libcloud.storage.drivers.s3 import S3StorageDriver, S3Response
+from libcloud.storage.drivers.s3 import BaseS3StorageDriver, S3Response
 from libcloud.storage.drivers.s3 import S3RawResponse
 
 SIGNATURE_IDENTIFIER = 'GOOG1'
@@ -90,10 +90,10 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             elif key.lower().startswith('x-goog-'):
                 extension_header_values[key.lower()] = value.strip()
 
-        if not 'content-md5' in special_header_values:
+        if 'content-md5' not in special_header_values:
             special_header_values['content-md5'] = ''
 
-        if not 'content-type' in special_header_values:
+        if 'content-type' not in special_header_values:
             special_header_values['content-type'] = ''
 
         keys_sorted = list(special_header_values.keys())
@@ -123,12 +123,14 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         b64_hmac = base64.b64encode(
             hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
-class GoogleStorageDriver(S3StorageDriver):
+class GoogleStorageDriver(BaseS3StorageDriver):
     name = 'Google Storage'
+    website = 'http://cloud.google.com/'
     connectionCls = GoogleStorageConnection
     hash_type = 'md5'
     namespace = NAMESPACE
     supports_chunked_encoding = False
+    supports_s3_multipart_upload = False

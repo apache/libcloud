@@ -154,14 +154,15 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
-        headers['Authorization'] = ('Basic %s'
-                                    % (base64.b64encode(b('%s:%s'
-                                                        % (self.user_id,
-                                                           self.key)))))
+        headers['Authorization'] = \
+            ('Basic %s' % (base64.b64encode(b('%s:%s' % (self.user_id,
+                                                         self.key))))
+                .decode('utf-8'))
         return headers
 
 
 class ElasticStackBaseNodeDriver(NodeDriver):
+    website = 'http://www.elasticstack.com'
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 
@@ -225,24 +226,24 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Creates a ElasticStack instance
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    name: String with a name for this new node (required)
-        @type       name: C{string}
+        :keyword    name: String with a name for this new node (required)
+        :type       name: ``str``
 
-        @keyword    smp: Number of virtual processors or None to calculate
+        :keyword    smp: Number of virtual processors or None to calculate
                          based on the cpu speed
-        @type       smp: C{int}
+        :type       smp: ``int``
 
-        @keyword    nic_model: e1000, rtl8139 or virtio
+        :keyword    nic_model: e1000, rtl8139 or virtio
                                (if not specified, e1000 is used)
-        @type       nic_model: C{string}
+        :type       nic_model: ``str``
 
-        @keyword    vnc_password: If set, the same password is also used for
+        :keyword    vnc_password: If set, the same password is also used for
                                   SSH access with user toor,
                                   otherwise VNC access is disabled and
                                   no SSH login is possible.
-        @type       vnc_password: C{string}
+        :type       vnc_password: ``str``
         """
         size = kwargs['size']
         image = kwargs['image']
@@ -253,7 +254,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         if nic_model not in ('e1000', 'rtl8139', 'virtio'):
             raise ElasticStackException('Invalid NIC model specified')
 
-        # check that drive size is not smaller then pre installed image size
+        # check that drive size is not smaller than pre installed image size
 
         # First we create a drive with the specified size
         drive_data = {}
@@ -275,7 +276,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             method='POST'
         )
 
-        if response.status != 204:
+        if response.status not in (200, 204):
             raise ElasticStackException('Drive imaging failed')
 
         # We wait until the drive is imaged and then boot up the node
@@ -292,8 +293,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             ).object
 
             elapsed_time = time.time() - imaging_start
-            if ('imaging' in response
-                and elapsed_time >= IMAGING_TIMEOUT):
+            if ('imaging' in response and elapsed_time >= IMAGING_TIMEOUT):
                 raise ElasticStackException('Drive imaging timed out')
 
             time.sleep(1)
@@ -308,7 +308,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 
         if vnc_password:
-            node_data.update({'vnc:ip': 'auto', 'vnc:password': vnc_password})
+            node_data.update({'vnc': 'auto', 'vnc:password': vnc_password})
 
         response = self.connection.request(
             action='/servers/create', data=json.dumps(node_data),
@@ -324,7 +324,17 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     # Extension methods
     def ex_set_node_configuration(self, node, **kwargs):
-        # Changes the configuration of the running server
+        """
+        Changes the configuration of the running server
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      kwargs: keyword arguments
+        :type       kwargs: ``dict``
+
+        :rtype: ``bool``
+        """
         valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$',
                       '^boot$', '^nic:0:model$', '^nic:0:dhcp',
                       '^nic:1:model$', '^nic:1:vlan$', '^nic:1:mac$',
@@ -360,13 +370,12 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         """
         Create a new node, and start deployment.
 
-        @keyword    enable_root: If true, root password will be set to
+        @inherits: :class:`NodeDriver.deploy_node`
+
+        :keyword    enable_root: If true, root password will be set to
                                  vnc_password (this will enable SSH access)
                                  and default 'toor' account will be deleted.
-        @type       enable_root: C{bool}
-
-        For detailed description and keywords args, see
-        L{NodeDriver.deploy_node}.
+        :type       enable_root: ``bool``
         """
         image = kwargs['image']
         vnc_password = kwargs.get('vnc_password', None)
@@ -376,8 +385,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             raise ValueError('You need to provide vnc_password argument '
                              'if you want to use deployment')
 
-        if (image in self._standard_drives
-            and not self._standard_drives[image]['supports_deployment']):
+        if (image in self._standard_drives and
+                not self._standard_drives[image]['supports_deployment']):
             raise ValueError('Image %s does not support deployment'
                              % (image.id))
 
@@ -390,8 +399,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                                                   delete=True)
             deploy = kwargs.get('deploy', None)
             if deploy:
-                if (isinstance(deploy, ScriptDeployment)
-                    or isinstance(deploy, SSHKeyDeployment)):
+                if (isinstance(deploy, ScriptDeployment) or
+                        isinstance(deploy, SSHKeyDeployment)):
                     deployment = MultiStepDeployment([deploy,
                                                       root_enable_script])
                 elif isinstance(deploy, MultiStepDeployment):
@@ -408,7 +417,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return super(ElasticStackBaseNodeDriver, self).deploy_node(**kwargs)
 
     def ex_shutdown_node(self, node):
-        # Sends the ACPI power-down event
+        """
+        Sends the ACPI power-down event
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         response = self.connection.request(
             action='/servers/%s/shutdown' % (node.id),
             method='POST'
@@ -416,7 +432,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return response.status == 204
 
     def ex_destroy_drive(self, drive_uuid):
-        # Deletes a drive
+        """
+        Deletes a drive
+
+        :param      drive_uuid: Drive uuid which should be used
+        :type       drive_uuid: ``str``
+
+        :rtype: ``bool``
+        """
         response = self.connection.request(
             action='/drives/%s/destroy' % (drive_uuid),
             method='POST'
@@ -440,9 +463,19 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                  'mem': data['mem'],
                  'started': data['started']}
 
-        if 'vnc:ip' in data and 'vnc:password' in data:
-            extra.update({'vnc_ip': data['vnc:ip'],
-                          'vnc_password': data['vnc:password']})
+        if 'vnc:ip' in data:
+            extra['vnc:ip'] = data['vnc:ip']
+
+        if 'vnc:password' in data:
+            extra['vnc:password'] = data['vnc:password']
+
+        boot_device = data['boot']
+
+        if isinstance(boot_device, list):
+            for device in boot_device:
+                extra[device] = data[device]
+        else:
+            extra[boot_device] = data[boot_device]
 
         if ssh_password:
             extra.update({'password': ssh_password})

@@ -30,45 +30,44 @@ from libcloud.compute.types import Provider, NodeState
 
 DH_PS_SIZES = {
     'minimum': {
-        'id' : 'minimum',
-        'name' : 'Minimum DH PS size',
-        'ram' : 300,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'minimum',
+        'name': 'Minimum DH PS size',
+        'ram': 300,
+        'disk': None,
+        'bandwidth': None
     },
     'maximum': {
-        'id' : 'maximum',
-        'name' : 'Maximum DH PS size',
-        'ram' : 4000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'maximum',
+        'name': 'Maximum DH PS size',
+        'ram': 4000,
+        'disk': None,
+        'bandwidth': None
     },
     'default': {
-        'id' : 'default',
-        'name' : 'Default DH PS size',
-        'ram' : 2300,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'default',
+        'name': 'Default DH PS size',
+        'ram': 2300,
+        'disk': None,
+        'bandwidth': None
     },
     'low': {
-        'id' : 'low',
-        'name' : 'DH PS with 1GB RAM',
-        'ram' : 1000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'low',
+        'name': 'DH PS with 1GB RAM',
+        'ram': 1000,
+        'disk': None,
+        'bandwidth': None
     },
     'high': {
-        'id' : 'high',
-        'name' : 'DH PS with 3GB RAM',
-        'ram' : 3000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'high',
+        'name': 'DH PS with 3GB RAM',
+        'ram': 3000,
+        'disk': None,
+        'bandwidth': None
     },
 }
 
 
 class DreamhostAPIException(Exception):
-
     def __str__(self):
         return self.args[0]
 
@@ -117,7 +116,7 @@ class DreamhostConnection(ConnectionKey):
         """
         params['key'] = self.key
         params['format'] = self.format
-        #params['unique_id'] = generate_unique_id()
+        # params['unique_id'] = generate_unique_id()
         return params
 
 
@@ -128,6 +127,7 @@ class DreamhostNodeDriver(NodeDriver):
     type = Provider.DREAMHOST
     api_name = 'dreamhost'
     name = "Dreamhost"
+    website = 'http://dreamhost.com/'
     connectionCls = DreamhostConnection
 
     _sizes = DH_PS_SIZES
@@ -135,17 +135,17 @@ class DreamhostNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new Dreamhost node
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_movedata: Copy all your existing users to this new PS
-        @type       ex_movedata: C{str}
+        :keyword    ex_movedata: Copy all your existing users to this new PS
+        :type       ex_movedata: ``str``
         """
         size = kwargs['size'].ram
         params = {
-            'cmd' : 'dreamhost_ps-add_ps',
-            'movedata' : kwargs.get('movedata', 'no'),
-            'type' : kwargs['image'].name,
-            'size' : size
+            'cmd': 'dreamhost_ps-add_ps',
+            'movedata': kwargs.get('movedata', 'no'),
+            'type': kwargs['image'].name,
+            'size': size
         }
         data = self.connection.request('/', params).object
         return Node(
@@ -156,14 +156,14 @@ class DreamhostNodeDriver(NodeDriver):
             private_ips=[],
             driver=self.connection.driver,
             extra={
-                'type' : kwargs['image'].name
+                'type': kwargs['image'].name
             }
         )
 
     def destroy_node(self, node):
         params = {
-            'cmd' : 'dreamhost_ps-remove_ps',
-            'ps' : node.id
+            'cmd': 'dreamhost_ps-remove_ps',
+            'ps': node.id
         }
         try:
             return self.connection.request('/', params).success()
@@ -172,8 +172,8 @@ class DreamhostNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         params = {
-            'cmd' : 'dreamhost_ps-reboot',
-            'ps' : node.id
+            'cmd': 'dreamhost_ps-reboot',
+            'ps': node.id
         }
         try:
             return self.connection.request('/', params).success()
@@ -211,17 +211,14 @@ class DreamhostNodeDriver(NodeDriver):
             'You cannot select a location for '
             'DreamHost Private Servers at this time.')
 
-    ############################################
-    # Private Methods (helpers and extensions) #
-    ############################################
     def _resize_node(self, node, size):
         if (size < 300 or size > 4000):
             return False
 
         params = {
-            'cmd' : 'dreamhost_ps-set_size',
-            'ps' : node.id,
-            'size' : size
+            'cmd': 'dreamhost_ps-set_size',
+            'ps': node.id,
+            'size': size
         }
         try:
             return self.connection.request('/', params).success()

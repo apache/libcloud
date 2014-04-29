@@ -40,7 +40,6 @@ BANDWIDTH_PER_NODE = 250
 
 
 class VPSNetResponse(JsonResponse):
-
     def parse_body(self):
         try:
             return super(VPSNetResponse, self).parse_body()
@@ -61,6 +60,7 @@ class VPSNetResponse(JsonResponse):
         else:
             return "\n".join(errors)
 
+
 class VPSNetConnection(ConnectionUserAndKey):
     """
     Connection class for the VPS.net driver
@@ -69,10 +69,13 @@ class VPSNetConnection(ConnectionUserAndKey):
     host = API_HOST
     responseCls = VPSNetResponse
 
+    allow_insecure = False
+
     def add_default_headers(self, headers):
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (user_b64)
+        headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
+
 
 class VPSNetNodeDriver(NodeDriver):
     """
@@ -82,6 +85,7 @@ class VPSNetNodeDriver(NodeDriver):
     type = Provider.VPSNET
     api_name = 'vps_net'
     name = "vps.net"
+    website = 'http://vps.net/'
     connectionCls = VPSNetConnection
 
     def _to_node(self, vm):
@@ -95,7 +99,8 @@ class VPSNetNodeDriver(NodeDriver):
                  state=state,
                  public_ips=[vm.get('primary_ip_address', None)],
                  private_ips=[],
-                 extra={'slices_count':vm['slices_count']}, # Number of nodes consumed by VM
+                 extra={'slices_count': vm['slices_count']},
+                 # Number of nodes consumed by VM
                  driver=self.connection.driver)
         return n
 
@@ -123,39 +128,42 @@ class VPSNetNodeDriver(NodeDriver):
     def create_node(self, name, image, size, **kwargs):
         """Create a new VPS.net node
 
-        See L{NodeDriver.create_node} for more keyword args.
-        @keyword    ex_backups_enabled: Enable automatic backups
-        @type       ex_backups_enabled: C{bool}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_fqdn:   Fully Qualified domain of the node
-        @type       ex_fqdn:   C{string}
+        :keyword    ex_backups_enabled: Enable automatic backups
+        :type       ex_backups_enabled: ``bool``
+
+        :keyword    ex_fqdn:   Fully Qualified domain of the node
+        :type       ex_fqdn:   ``str``
         """
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
-                        {'label': name,
-                         'fqdn': kwargs.get('ex_fqdn', ''),
-                         'system_template_id': image.id,
-                         'backups_enabled': kwargs.get('ex_backups_enabled', 0),
-                         'slices_required': size.id}}
+                   {'label': name,
+                    'fqdn': kwargs.get('ex_fqdn', ''),
+                    'system_template_id': image.id,
+                    'backups_enabled': kwargs.get('ex_backups_enabled', 0),
+                    'slices_required': size.id}}
 
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
-                                    data=json.dumps(request),
-                                    headers=headers,
-                                    method='POST')
+                                      data=json.dumps(request),
+                                      headers=headers,
+                                      method='POST')
         node = self._to_node(res.object['virtual_machine'])
         return node
 
     def reboot_node(self, node):
-        res = self.connection.request('/virtual_machines/%s/%s.%s' %
-                                        (node.id, 'reboot', API_VERSION),
-                                        method="POST")
+        res = self.connection.request(
+            '/virtual_machines/%s/%s.%s' % (node.id,
+                                            'reboot',
+                                            API_VERSION),
+            method="POST")
         node = self._to_node(res.object['virtual_machine'])
         return True
 
     def list_sizes(self, location=None):
         res = self.connection.request('/nodes.%s' % (API_VERSION,))
         available_nodes = len([size for size in res.object
-                            if size['slice']['virtual_machine_id']])
+                               if size['slice']['virtual_machine_id']])
         sizes = [self._to_size(i) for i in range(1, available_nodes + 1)]
         return sizes
 

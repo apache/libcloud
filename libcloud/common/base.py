@@ -13,11 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import ssl
+import copy
+import binascii
 import time
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from pipes import quote as pquote
 
 try:
@@ -44,33 +51,66 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 LibcloudHTTPConnection = httplib.HTTPConnection
 
 
+class HTTPResponse(httplib.HTTPResponse):
+    # On python 2.6 some calls can hang because HEAD isn't quite properly
+    # supported.
+    # In particular this happens on S3 when calls are made to get_object to
+    # objects that don't exist.
+    # This applies the behaviour from 2.7, fixing the hangs.
+    def read(self, amt=None):
+        if self.fp is None:
+            return ''
+
+        if self._method == 'HEAD':
+            self.close()
+            return ''
+
+        return httplib.HTTPResponse.read(self, amt)
+
+
 class Response(object):
     """
-    A Base Response class to derive from.
+    A base Response class to derive from.
     """
-    NODE_STATE_MAP = {}
 
-    object = None
-    body = None
-    status = httplib.OK
-    headers = {}
-    error = None
-    connection = None
+    status = httplib.OK  # Response status code
+    headers = {}  # Response headers
+    body = None  # Raw response body
+    object = None  # Parsed response body
+
+    error = None  # Reason returned by the server.
+    connection = None  # Parent connection class
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = self._decompress_response(response=response)
+        """
+        :param response: HTTP response object. (optional)
+        :type response: :class:`httplib.HTTPResponse`
 
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-
-        self.status = response.status
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
+        self.connection = connection
 
         # http.client In Python 3 doesn't automatically lowercase the header
         # names
         self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
-        self.connection = connection
+        self.status = response.status
+
+        # This attribute is set when using LoggingConnection.
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data:
+            # LoggingConnection already decompresses data so it can log it
+            # which means we don't need to decompress it here.
+            self.body = response._original_data
+        else:
+            self.body = self._decompress_response(body=response.read(),
+                                                  headers=self.headers)
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -83,7 +123,8 @@ class Response(object):
 
         Override in a provider's subclass.
 
-        @return: Parsed body.
+        :return: Parsed body.
+        :rtype: ``str``
         """
         return self.body
 
@@ -93,7 +134,8 @@ class Response(object):
 
         Override in a provider's subclass.
 
-        @return: Parsed error.
+        :return: Parsed error.
+        :rtype: ``str``
         """
         return self.body
 
@@ -104,27 +146,27 @@ class Response(object):
         The meaning of this can be arbitrary; did we receive OK status? Did
         the node get created? Were we authenticated?
 
-        @return: C{True} or C{False}
+        :rtype: ``bool``
+        :return: ``True`` or ``False``
         """
-        return self.status == httplib.OK or self.status == httplib.CREATED
+        return self.status in [httplib.OK, httplib.CREATED]
 
-    def _decompress_response(self, response):
+    def _decompress_response(self, body, headers):
         """
         Decompress a response body if it is using deflate or gzip encoding.
 
-        @return: Decompressed response
+        :param body: Response body.
+        :type body: ``str``
+
+        :param headers: Response headers.
+        :type headers: ``dict``
+
+        :return: Decompressed response
+        :rtype: ``str``
         """
-        headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
 
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data is not None:
-            return original_data
-
-        body = response.read()
-
-        if encoding in  ['zlib', 'deflate']:
+        if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
@@ -138,6 +180,7 @@ class JsonResponse(Response):
     """
     A Base JSON Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -146,7 +189,7 @@ class JsonResponse(Response):
             body = json.loads(self.body)
         except:
             raise MalformedResponseError(
-                "Failed to parse JSON",
+                'Failed to parse JSON',
                 body=self.body,
                 driver=self.connection.driver)
         return body
@@ -158,6 +201,7 @@ class XmlResponse(Response):
     """
     A Base XML Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -165,9 +209,9 @@ class XmlResponse(Response):
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML",
-                                       body=self.body,
-                                       driver=self.connection.driver)
+            raise MalformedResponseError('Failed to parse XML',
+                                         body=self.body,
+                                         driver=self.connection.driver)
         return body
 
     parse_error = parse_body
@@ -176,6 +220,10 @@ class XmlResponse(Response):
 class RawResponse(Response):
 
     def __init__(self, connection):
+        """
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
         self._status = None
         self._response = None
         self._headers = {}
@@ -211,13 +259,13 @@ class RawResponse(Response):
         return self._reason
 
 
-#TODO: Move this to a better location/package
+# TODO: Move this to a better location/package
 class LoggingConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
-    with the C{curl} command.
+    with the curl command.
 
-    @cvar log: file-like object that logs entries are written to.
+    :cvar log: file-like object that logs entries are written to.
     """
     log = None
 
@@ -249,12 +297,11 @@ class LoggingConnection():
 
                 return cls(b(self.s))
         rr = r
-        original_data = body
         headers = lowercase_keys(dict(r.getheaders()))
 
         encoding = headers.get('content-encoding', None)
 
-        if encoding in  ['zlib', 'deflate']:
+        if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
@@ -265,9 +312,14 @@ class LoggingConnection():
             ht += "\r\n0\r\n"
         else:
             ht += u(body)
-        rr = httplib.HTTPResponse(sock=fakesock(ht),
-                                  method=r._method,
-                                  debuglevel=r.debuglevel)
+
+        if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+            cls = HTTPResponse
+        else:
+            cls = httplib.HTTPResponse
+
+        rr = cls(sock=fakesock(ht), method=r._method,
+                 debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
@@ -338,19 +390,19 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n" % id(self)
+            pre = '# -------- begin %d request ----------\n' % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPConnection.request(self, method, url,
-                                               body, headers)
+                                              body, headers)
 
 
 class Connection(object):
     """
     A Base Connection class to derive from.
     """
-    #conn_classes = (LoggingHTTPSConnection)
+    # conn_classes = (LoggingHTTPSConnection)
     conn_classes = (LibcloudHTTPConnection, LibcloudHTTPSConnection)
 
     responseCls = Response
@@ -362,6 +414,9 @@ class Connection(object):
     secure = 1
     driver = None
     action = None
+    cache_busting = False
+
+    allow_insecure = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None):
@@ -369,12 +424,18 @@ class Connection(object):
         self.ua = []
         self.context = {}
 
+        if not self.allow_insecure and not secure:
+            # TODO: We should eventually switch to whitelist instead of
+            # blacklist approach
+            raise ValueError('Non https connections are not allowed (use '
+                             'secure=True)')
+
         self.request_path = ''
 
         if host:
             self.host = host
 
-        if port != None:
+        if port is not None:
             self.port = port
         else:
             if self.secure == 1:
@@ -390,7 +451,13 @@ class Connection(object):
             self.timeout = timeout
 
     def set_context(self, context):
+        if not isinstance(context, dict):
+            raise TypeError('context needs to be a dictionary')
+
         self.context = context
+
+    def reset_context(self):
+        self.context = {}
 
     def _tuple_from_url(self, url):
         secure = 1
@@ -422,22 +489,22 @@ class Connection(object):
         """
         Establish a connection with the API server.
 
-        @type host: C{str}
-        @param host: Optional host to override our default
+        :type host: ``str``
+        :param host: Optional host to override our default
 
-        @type port: C{int}
-        @param port: Optional port to override our default
+        :type port: ``int``
+        :param port: Optional port to override our default
 
-        @returns: A connection
+        :returns: A connection
         """
         # prefer the attribute base_url if its set or sent
         connection = None
         secure = self.secure
 
-        if getattr(self, 'base_url', None) and base_url == None:
+        if getattr(self, 'base_url', None) and base_url is None:
             (host, port,
              secure, request_path) = self._tuple_from_url(self.base_url)
-        elif base_url != None:
+        elif base_url is not None:
             (host, port,
              secure, request_path) = self._tuple_from_url(base_url)
         else:
@@ -456,101 +523,126 @@ class Connection(object):
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
-        #connection = self.conn_classes[False]("127.0.0.1", 8080)
+        # connection = self.conn_classes[False]("127.0.0.1", 8080)
 
         self.connection = connection
 
     def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
-                  libcloud.__version__,
-                  self.driver.name,
-                  "".join([" (%s)" % x for x in self.ua]))
+        user_agent_suffix = ' '.join(['(%s)' % x for x in self.ua])
+
+        if self.driver:
+            user_agent = 'libcloud/%s (%s) %s' % (
+                libcloud.__version__,
+                self.driver.name, user_agent_suffix)
+        else:
+            user_agent = 'libcloud/%s %s' % (
+                libcloud.__version__, user_agent_suffix)
+
+        return user_agent
 
     def user_agent_append(self, token):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier
+        Users of the library should call this to uniquely identify their
         requests to a provider.
 
-        @type token: C{str}
-        @param token: Token to add to the user agent.
+        :type token: ``str``
+        :param token: Token to add to the user agent.
         """
         self.ua.append(token)
 
-    def request(self,
-                action,
-                params=None,
-                data='',
-                headers=None,
-                method='GET',
-                raw=False):
+    def request(self, action, params=None, data=None, headers=None,
+                method='GET', raw=False):
         """
         Request a given `action`.
 
         Basically a wrapper around the connection
         object's `request` that does some helpful pre-processing.
 
-        @type action: C{str}
-        @param action: A path
+        :type action: ``str``
+        :param action: A path. This can include arguments. If included,
+            any extra parameters are appended to the existing ones.
 
-        @type params: C{dict}
-        @param params: Optional mapping of additional parameters to send. If
-            None, leave as an empty C{dict}.
+        :type params: ``dict``
+        :param params: Optional mapping of additional parameters to send. If
+            None, leave as an empty ``dict``.
 
-        @type data: C{unicode}
-        @param data: A body of data to send with the request.
+        :type data: ``unicode``
+        :param data: A body of data to send with the request.
 
-        @type headers: C{dict}
-        @param headers: Extra headers to add to the request
-            None, leave as an empty C{dict}.
+        :type headers: ``dict``
+        :param headers: Extra headers to add to the request
+            None, leave as an empty ``dict``.
 
-        @type method: C{str}
-        @param method: An HTTP method such as "GET" or "POST".
+        :type method: ``str``
+        :param method: An HTTP method such as "GET" or "POST".
 
-        @type raw: C{bool}
-        @param raw: True to perform a "raw" request aka only send the headers
+        :type raw: ``bool``
+        :param raw: True to perform a "raw" request aka only send the headers
                      and use the rawResponseCls class. This is used with
                      storage API when uploading a file.
 
-        @return: An instance of type I{responseCls}
+        :return: An :class:`Response` instance.
+        :rtype: :class:`Response` instance
+
         """
         if params is None:
             params = {}
+        else:
+            params = copy.copy(params)
+
         if headers is None:
             headers = {}
+        else:
+            headers = copy.copy(headers)
 
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
+
         # Extend default parameters
         params = self.add_default_params(params)
+
+        # Add cache busting parameters (if enabled)
+        if self.cache_busting and method == 'GET':
+            params = self._add_cache_busting_to_params(params=params)
+
         # Extend default headers
         headers = self.add_default_headers(headers)
+
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
 
-        # Indicate that support gzip and deflate compression
+        # Indicate that we support gzip and deflate compression
         headers.update({'Accept-Encoding': 'gzip,deflate'})
 
-        p = int(self.port)
+        port = int(self.port)
 
-        if p not in (80, 443):
-            headers.update({'Host': "%s:%d" % (self.host, p)})
+        if port not in (80, 443):
+            headers.update({'Host': "%s:%d" % (self.host, port)})
         else:
             headers.update({'Host': self.host})
 
-        # Encode data if necessary
-        if data != '' and data != None:
+        if data:
             data = self.encode_data(data)
-
-        if data is not None:
-            headers.update({'Content-Length': str(len(data))})
+            headers['Content-Length'] = str(len(data))
+        elif method.upper() in ['POST', 'PUT'] and not raw:
+            # Only send Content-Length 0 with POST and PUT request.
+            #
+            # Note: Content-Length is not added when using "raw" mode means
+            # means that headers are upfront and the body is sent at some point
+            # later on. With raw mode user can specify Content-Length with
+            # "data" not being set.
+            headers['Content-Length'] = '0'
 
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urlencode(params)))
+            if '?' in action:
+                url = '&'.join((action, urlencode(params, doseq=True)))
+            else:
+                url = '?'.join((action, urlencode(params, doseq=True)))
         else:
             url = action
 
@@ -572,13 +664,22 @@ class Connection(object):
                                         headers=headers)
         except ssl.SSLError:
             e = sys.exc_info()[1]
+            self.reset_context()
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls(connection=self)
+            responseCls = self.rawResponseCls
+            kwargs = {'connection': self}
         else:
-            response = self.responseCls(response=self.connection.getresponse(),
-                                        connection=self)
+            responseCls = self.responseCls
+            kwargs = {'connection': self,
+                      'response': self.connection.getresponse()}
+
+        try:
+            response = responseCls(**kwargs)
+        finally:
+            # Always reset the context after the request has completed
+            self.reset_context()
 
         return response
 
@@ -609,11 +710,11 @@ class Connection(object):
         This hook can perform a final manipulation on the params, headers and
         url parameters.
 
-        @type params: C{dict}
-        @param params: Request parameters.
+        :type params: ``dict``
+        :param params: Request parameters.
 
-        @type headers: C{dict}
-        @param headers: Request headers.
+        :type headers: ``dict``
+        :param headers: Request headers.
         """
         return params, headers
 
@@ -624,6 +725,25 @@ class Connection(object):
         Override in a provider's subclass.
         """
         return data
+
+    def _add_cache_busting_to_params(self, params):
+        """
+        Add cache busting parameter to the query parameters of a GET request.
+
+        Parameters are only added if "cache_busting" class attribute is set to
+        True.
+
+        Note: This should only be used with *naughty* providers which use
+        excessive caching of responses.
+        """
+        cache_busting_value = binascii.hexlify(os.urandom(8)).decode('ascii')
+
+        if isinstance(params, dict):
+            params['cache-busting'] = cache_busting_value
+        else:
+            params.append(('cache-busting', cache_busting_value))
+
+        return params
 
 
 class PollingConnection(Connection):
@@ -638,7 +758,7 @@ class PollingConnection(Connection):
     timeout = 200
     request_method = 'request'
 
-    def async_request(self, action, params=None, data='', headers=None,
+    def async_request(self, action, params=None, data=None, headers=None,
                       method='GET', context=None):
         """
         Perform an 'async' request to the specified path. Keep in mind that
@@ -653,31 +773,32 @@ class PollingConnection(Connection):
 
         - Returned 'job_id' is then used to construct a URL which is used for
           retrieving job status. Constructed URL is then periodically polled
-          until the response indicates that the job has completed or the timeout
-          of 'self.timeout' seconds has been reached.
+          until the response indicates that the job has completed or the
+          timeout of 'self.timeout' seconds has been reached.
 
-        @type action: C{str}
-        @param action: A path
+        :type action: ``str``
+        :param action: A path
 
-        @type params: C{dict}
-        @param params: Optional mapping of additional parameters to send. If
-            None, leave as an empty C{dict}.
+        :type params: ``dict``
+        :param params: Optional mapping of additional parameters to send. If
+            None, leave as an empty ``dict``.
 
-        @type data: C{unicode}
-        @param data: A body of data to send with the request.
+        :type data: ``unicode``
+        :param data: A body of data to send with the request.
 
-        @type headers: C{dict}
-        @param headers: Extra headers to add to the request
-            None, leave as an empty C{dict}.
+        :type headers: ``dict``
+        :param headers: Extra headers to add to the request
+            None, leave as an empty ``dict``.
 
-        @type method: C{str}
-        @param method: An HTTP method such as "GET" or "POST".
+        :type method: ``str``
+        :param method: An HTTP method such as "GET" or "POST".
 
-        @type context: C{dict}
-        @param context: Context dictionary which is passed to the functions
+        :type context: ``dict``
+        :param context: Context dictionary which is passed to the functions
         which construct initial and poll URL.
 
-        @return: An instance of type I{responseCls}
+        :return: An :class:`Response` instance.
+        :rtype: :class:`Response` instance
         """
 
         request = getattr(self, self.request_method)
@@ -704,7 +825,7 @@ class PollingConnection(Connection):
 
         return response
 
-    def get_request_kwargs(self, action, params=None, data='', headers=None,
+    def get_request_kwargs(self, action, params=None, data=None, headers=None,
                            method='GET', context=None):
         """
         Arguments which are passed to the initial request() call inside
@@ -719,14 +840,14 @@ class PollingConnection(Connection):
         Return keyword arguments which are passed to the request() method when
         polling for the job status.
 
-        @param response: Response object returned by poll request.
-        @type response: C{HTTPResponse}
+        :param response: Response object returned by poll request.
+        :type response: :class:`HTTPResponse`
 
-        @param request_kwargs: Kwargs previously used to initiate the
+        :param request_kwargs: Kwargs previously used to initiate the
                                   poll request.
-        @type response: C{dict}
+        :type response: ``dict``
 
-        @return C{dict} Keyword arguments
+        :return ``dict`` Keyword arguments
         """
         raise NotImplementedError('get_poll_request_kwargs not implemented')
 
@@ -734,32 +855,33 @@ class PollingConnection(Connection):
         """
         Return job completion status.
 
-        @param response: Response object returned by poll request.
-        @type response: C{HTTPResponse}
+        :param response: Response object returned by poll request.
+        :type response: :class:`HTTPResponse`
 
-        @return C{bool} True if the job has completed, False otherwise.
+        :return ``bool`` True if the job has completed, False otherwise.
         """
         raise NotImplementedError('has_completed not implemented')
 
 
 class ConnectionKey(Connection):
     """
-    A Base Connection class to derive from, which includes a
+    Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None):
         """
-        Initialize `user_id` and `key`; set `secure` to an C{int} based on
+        Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
         super(ConnectionKey, self).__init__(secure=secure, host=host,
-                                            port=port, url=url, timeout=timeout)
+                                            port=port, url=url,
+                                            timeout=timeout)
         self.key = key
 
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key.
+    Base connection class which accepts a ``user_id`` and ``key`` argument.
     """
 
     user_id = None
@@ -780,29 +902,35 @@ class BaseDriver(object):
     connectionCls = ConnectionKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, **kwargs):
+                 api_version=None, region=None, **kwargs):
         """
-        @keyword    key:    API key or username to used
-        @type       key:    str
+        :param    key:    API key or username to be used (required)
+        :type     key:    ``str``
 
-        @keyword    secret: Secret password to be used
-        @type       secret: str
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
 
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
-        @type       secure: bool
+        :type     secure: ``bool``
 
-        @keyword    host: Override hostname used for connections.
-        @type       host: str
+        :param    host: Override hostname used for connections.
+        :type     host: ``str``
 
-        @keyword    port: Override port used for connections.
-        @type       port: int
+        :param    port: Override port used for connections.
+        :type     port: ``int``
 
-        @keyword    api_version: Optional API version. Only used by drivers
+        :param    api_version: Optional API version. Only used by drivers
                                  which support multiple API versions.
-        @type       api_version: str
+        :type     api_version: ``str``
 
+        :param region: Optional driver region. Only used by drivers which
+                       support multiple regions.
+        :type region: ``str``
+
+        :rtype: ``None``
         """
+
         self.key = key
         self.secret = secret
         self.secure = secure
@@ -820,8 +948,10 @@ class BaseDriver(object):
             args.append(port)
 
         self.api_version = api_version
+        self.region = region
 
-        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
+        conn_kwargs = self._ex_connection_class_kwargs()
+        self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self
         self.connection.connect()

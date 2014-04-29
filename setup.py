@@ -16,24 +16,34 @@ import os
 import sys
 import doctest
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
 from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
+try:
+    import epydoc
+    has_epydoc = True
+except ImportError:
+    has_epydoc = False
+
 import libcloud.utils.misc
+from libcloud.utils.dist import get_packages, get_data_files
+from libcloud.utils.py3 import unittest2_required
+
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
-TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
-              'test/loadbalancer', 'test/dns']
+TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
+              'libcloud/test/storage', 'libcloud/test/loadbalancer',
+              'libcloud/test/dns']
 DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
-                     'libcloud.storage.drivers.dummy',
-                     'libcloud.dns.drivers.dummy']
+                    'libcloud.storage.drivers.dummy',
+                    'libcloud.dns.drivers.dummy']
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
@@ -43,6 +53,9 @@ if sys.version_info <= (2, 4):
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
+# pre-2.6 will need the ssl PyPI package
+pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+
 
 def read_version_string():
     version = None
@@ -51,6 +64,17 @@ def read_version_string():
     version = __version__
     sys.path.pop(0)
     return version
+
+
+def forbid_publish():
+    argv = sys.argv
+    if 'upload'in argv:
+        print('You shouldn\'t use upload command to upload a release to PyPi. '
+              'You need to manually upload files generated using release.sh '
+              'script.\n'
+              'For more information, see "Making a release section" in the '
+              'documentation')
+        sys.exit(1)
 
 
 class TestCommand(Command):
@@ -73,21 +97,32 @@ class TestCommand(Command):
             mock
         except ImportError:
             print('Missing "mock" library. mock is library is needed '
-                 'to run the tests. You can install it using pip: '
-                 'pip install mock')
+                  'to run the tests. You can install it using pip: '
+                  'pip install mock')
             sys.exit(1)
+
+        if unittest2_required:
+            try:
+                import unittest2
+                unittest2
+            except ImportError:
+                print('Python version: %s' % (sys.version))
+                print('Missing "unittest2" library. unittest2 is library is '
+                      'needed to run the tests. You can install it using pip: '
+                      'pip install unittest2')
+                sys.exit(1)
 
         status = self._run_tests()
         sys.exit(status)
 
     def _run_tests(self):
-        secrets_current = pjoin(self._dir, 'test', 'secrets.py')
-        secrets_dist = pjoin(self._dir, 'test', 'secrets.py-dist')
+        secrets_current = pjoin(self._dir, 'libcloud/test', 'secrets.py')
+        secrets_dist = pjoin(self._dir, 'libcloud/test', 'secrets.py-dist')
 
         if not os.path.isfile(secrets_current):
             print("Missing " + secrets_current)
             print("Maybe you forgot to copy it from -dist:")
-            print("cp test/secrets.py-dist test/secrets.py")
+            print("cp libcloud/test/secrets.py-dist libcloud/test/secrets.py")
             sys.exit(1)
 
         mtime_current = os.path.getmtime(secrets_current)
@@ -95,11 +130,9 @@ class TestCommand(Command):
 
         if mtime_dist > mtime_current:
             print("It looks like test/secrets.py file is out of date.")
-            print("Please copy the new secret.py-dist file over otherwise" +
+            print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
-        pre_python26 = (sys.version_info[0] == 2
-                        and sys.version_info[1] < 6)
         if pre_python26:
             missing = []
             # test for dependencies
@@ -135,31 +168,6 @@ class TestCommand(Command):
         return not res.wasSuccessful()
 
 
-class Pep8Command(Command):
-    description = "run pep8 script"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            import pep8
-            pep8
-        except ImportError:
-            print ('Missing "pep8" library. You can install it using pip: '
-                  'pip install pep8')
-            sys.exit(1)
-
-        cwd = os.getcwd()
-        retcode = call(('pep8 %s/libcloud/ %s/test/' %
-                (cwd, cwd)).split(' '))
-        sys.exit(retcode)
-
-
 class ApiDocsCommand(Command):
     description = "generate API documentation"
     user_options = []
@@ -171,6 +179,9 @@ class ApiDocsCommand(Command):
         pass
 
     def run(self):
+        if not has_epydoc:
+            raise RuntimeError('Missing "epydoc" package!')
+
         os.system(
             'pydoctor'
             ' --add-package=libcloud'
@@ -204,8 +215,7 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+forbid_publish()
 
 setup(
     name='apache-libcloud',
@@ -216,32 +226,19 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
-    packages=[
-        'libcloud',
-        'libcloud.utils',
-        'libcloud.common',
-        'libcloud.compute',
-        'libcloud.compute.drivers',
-        'libcloud.storage',
-        'libcloud.storage.drivers',
-        'libcloud.loadbalancer',
-        'libcloud.loadbalancer.drivers',
-        'libcloud.dns',
-        'libcloud.dns.drivers'],
+    packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
     },
-    package_data={
-        'libcloud': ['data/*.json']
-    },
+    package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
     cmdclass={
         'test': TestCommand,
-        'pep8': Pep8Command,
         'apidocs': ApiDocsCommand,
         'coverage': CoverageCommand
     },
+    zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -257,4 +254,6 @@ setup(
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation :: PyPy'])

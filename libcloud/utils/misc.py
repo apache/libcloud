@@ -13,14 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import binascii
+
+
+__all__ = [
+    'get_driver',
+    'set_driver',
+    'merge_valid_keys',
+    'get_new_obj',
+    'str2dicts',
+    'dict2str',
+    'reverse_dict',
+    'lowercase_keys',
+    'get_secure_random_string'
+]
+
 
 def get_driver(drivers, provider):
     """
     Get a driver.
 
-    @param drivers: Dictionary containing valid providers.
-    @param provider: Id of provider to get driver
-    @type provider: L{libcloud.types.Provider}
+    :param drivers: Dictionary containing valid providers.
+    :param provider: Id of provider to get driver
+    :type provider: :class:`libcloud.types.Provider`
     """
     if provider in drivers:
         mod_name, driver_name = drivers[provider]
@@ -28,6 +45,35 @@ def get_driver(drivers, provider):
         return getattr(_mod, driver_name)
 
     raise AttributeError('Provider %s does not exist' % (provider))
+
+
+def set_driver(drivers, provider, module, klass):
+    """
+    Sets a driver.
+
+    :param drivers: Dictionary to store providers.
+    :param provider: Id of provider to set driver for
+    :type provider: :class:`libcloud.types.Provider`
+    :param module: The module which contains the driver
+    :type module: L
+    :param klass: The driver class name
+    :type klass:
+    """
+
+    if provider in drivers:
+        raise AttributeError('Provider %s already registered' % (provider))
+
+    drivers[provider] = (module, klass)
+
+    # Check if this driver is valid
+    try:
+        driver = get_driver(drivers, provider)
+    except (ImportError, AttributeError):
+        exp = sys.exc_info()[1]
+        drivers.pop(provider)
+        raise exp
+
+    return driver
 
 
 def merge_valid_keys(params, valid_keys, extra):
@@ -120,7 +166,7 @@ def str2dicts(data):
         value = line[whitespace + 1:]
         d.update({key: value})
 
-    list_data = [value for value in list_data if value != {}]
+    list_data = [val for val in list_data if val != {}]
     return list_data
 
 
@@ -175,7 +221,7 @@ def dict2str(data):
     """
     result = ''
     for k in data:
-        if data[k] != None:
+        if data[k] is not None:
             result += '%s %s\n' % (str(k), str(data[k]))
         else:
             result += '%s\n' % str(k)
@@ -189,3 +235,20 @@ def reverse_dict(dictionary):
 
 def lowercase_keys(dictionary):
     return dict(((k.lower(), v) for k, v in dictionary.items()))
+
+
+def get_secure_random_string(size):
+    """
+    Return a string of ``size`` random bytes. Returned string is suitable for
+    cryptographic use.
+
+    :param size: Size of the generated string.
+    :type size: ``int``
+
+    :return: Random string.
+    :rtype: ``str``
+    """
+    value = os.urandom(size)
+    value = binascii.hexlify(value)
+    value = value.decode('utf-8')[:size]
+    return value

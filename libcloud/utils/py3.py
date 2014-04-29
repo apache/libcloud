@@ -23,27 +23,58 @@ from __future__ import absolute_import
 import sys
 import types
 
-PY3 = False
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 PY2 = False
 PY25 = False
+PY27 = False
+PY3 = False
+PY32 = False
+
+if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
+    PY2 = True
+
+if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+    PY25 = True
+
+if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+    PY27 = True
 
 if sys.version_info >= (3, 0):
     PY3 = True
+
+if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
+    PY32 = True
+
+if PY3:
     import http.client as httplib
     from io import StringIO
     import urllib
     import urllib as urllib2
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
+
     from urllib.parse import quote as urlquote
+    from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
+    from os.path import relpath
+
+    from imp import reload
+
+    from builtins import bytes
+    from builtins import next
+
+    parse_qs = urlparse.parse_qs
+    parse_qsl = urlparse.parse_qsl
 
     basestring = str
 
     def method_type(callable, instance, klass):
         return types.MethodType(callable, instance or klass())
 
-    bytes = __builtins__['bytes']
     def b(s):
         if isinstance(s, str):
             return s.encode('utf-8')
@@ -51,36 +82,89 @@ if sys.version_info >= (3, 0):
             return s
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
     u = str
-    next = __builtins__['next']
+
     def dictvalues(d):
         return list(d.values())
-else:
-    PY2 = True
-    import httplib
-    from StringIO import StringIO
-    import urllib
-    import urllib2
-    import urlparse
-    import xmlrpclib
-    from urllib import quote as urlquote
-    from urllib import urlencode as urlencode
 
+    def tostring(node):
+        return ET.tostring(node, encoding='unicode')
+else:
+    import httplib  # NOQA
+    from StringIO import StringIO  # NOQA
+    import urllib  # NOQA
+    import urllib2  # NOQA
+    import urlparse  # NOQA
+    import xmlrpclib  # NOQA
+    from urllib import quote as _urlquote  # NOQA
+    from urllib import unquote as urlunquote  # NOQA
+    from urllib import urlencode as urlencode  # NOQA
+
+    from __builtin__ import reload  # NOQA
+
+    if PY25:
+        import cgi
+
+        parse_qs = cgi.parse_qs
+        parse_qsl = cgi.parse_qsl
+    else:
+        parse_qs = urlparse.parse_qs
+        parse_qsl = urlparse.parse_qsl
+
+    if not PY25:
+        from os.path import relpath  # NOQA
+
+    # Save the real value of unicode because urlquote needs it to tell the
+    # difference between a unicode string and a byte string.
+    _real_unicode = unicode
     basestring = unicode = str
 
     method_type = types.MethodType
 
     b = bytes = str
+
     def byte(n):
         return n
+
     u = unicode
+
     def next(i):
         return i.next()
+
     def dictvalues(d):
         return d.values()
 
-if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-    PY25 = True
+    tostring = ET.tostring
+
+    def urlquote(s, safe='/'):
+        if isinstance(s, _real_unicode):
+            # Pretend to be py3 by encoding the URI automatically.
+            s = s.encode('utf8')
+        return _urlquote(s, safe)
+
+if PY25:
+    import posixpath
+
+    # Taken from http://jimmyg.org/work/code/barenecessities/index.html
+    # (MIT license)
+    def relpath(path, start=posixpath.curdir):   # NOQA
+        """Return a relative version of a path"""
+        if not path:
+            raise ValueError("no path specified")
+        start_list = posixpath.abspath(start).split(posixpath.sep)
+        path_list = posixpath.abspath(path).split(posixpath.sep)
+        # Work out how much of the filepath is shared by start and path.
+        i = len(posixpath.commonprefix([start_list, path_list]))
+        rel_list = [posixpath.pardir] * (len(start_list) - i) + path_list[i:]
+        if not rel_list:
+            return posixpath.curdir
+        return posixpath.join(*rel_list)
+
+if PY27 or PY3:
+    unittest2_required = False
+else:
+    unittest2_required = True

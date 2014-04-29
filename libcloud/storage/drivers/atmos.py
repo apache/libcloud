@@ -20,32 +20,36 @@ import hmac
 import time
 
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import urlunquote
 
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import read_in_chunks, guess_file_mime_type
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import LazyList
+from libcloud.common.types import LibcloudError
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
-                                   ContainerDoesNotExistError, \
-                                   ContainerIsNotEmptyError, \
-                                   ObjectDoesNotExistError
+    ContainerDoesNotExistError, ContainerIsNotEmptyError, \
+    ObjectDoesNotExistError
+
 
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
-class AtmosError(Exception):
-    def __init__(self, code, message):
+
+class AtmosError(LibcloudError):
+    def __init__(self, code, message, driver=None):
+        super(AtmosError, self).__init__(value=message, driver=driver)
         self.code = code
-        self.message = message
+
 
 class AtmosResponse(XmlResponse):
     def success(self):
@@ -60,7 +64,9 @@ class AtmosResponse(XmlResponse):
 
         code = int(tree.find('Code').text)
         message = tree.find('Message').text
-        raise AtmosError(code, message)
+        raise AtmosError(code=code, message=message,
+                         driver=self.connection.driver)
+
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
@@ -84,7 +90,7 @@ class AtmosConnection(ConnectionUserAndKey):
         return params, headers
 
     def _calculate_signature(self, params, headers):
-        pathstring = self.action
+        pathstring = urlunquote(self.action)
         if pathstring.startswith(self.driver.path):
             pathstring = pathstring[len(self.driver.path):]
         if params:
@@ -108,7 +114,8 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
-        return base64.b64encode(b(signature))
+        return base64.b64encode(b(signature)).decode('utf-8')
+
 
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
@@ -117,26 +124,26 @@ class AtmosDriver(StorageDriver):
     path = None
     api_name = 'atmos'
     supports_chunked_encoding = True
+    website = 'http://atmosonline.com/'
+    name = 'atmos'
 
-    DEFAULT_CDN_TTL = 60 * 60 * 24 * 7 # 1 week
+    DEFAULT_CDN_TTL = 60 * 60 * 24 * 7  # 1 week
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
         host = host or self.host
         super(AtmosDriver, self).__init__(key, secret, secure, host, port)
 
-    def list_containers(self):
+    def iterate_containers(self):
         result = self.connection.request(self._namespace_path(''))
         entries = self._list_objects(result.object, object_type='directory')
-        containers = []
         for entry in entries:
             extra = {
                 'object_id': entry['id']
             }
-            containers.append(Container(entry['name'], extra, self))
-        return containers
+            yield Container(entry['name'], extra, self)
 
     def get_container(self, container_name):
-        path = self._namespace_path(container_name + '/?metadata/system')
+        path = self._namespace_path(container_name) + '/?metadata/system'
         try:
             result = self.connection.request(path)
         except AtmosError:
@@ -151,7 +158,7 @@ class AtmosDriver(StorageDriver):
         return Container(container_name, extra, self)
 
     def create_container(self, container_name):
-        path = self._namespace_path(container_name + '/')
+        path = self._namespace_path(container_name) + '/'
         try:
             self.connection.request(path, method='POST')
         except AtmosError:
@@ -163,7 +170,7 @@ class AtmosDriver(StorageDriver):
 
     def delete_container(self, container):
         try:
-            self.connection.request(self._namespace_path(container.name + '/'),
+            self.connection.request(self._namespace_path(container.name) + '/',
                                     method='DELETE')
         except AtmosError:
             e = sys.exc_info()[1]
@@ -175,8 +182,8 @@ class AtmosDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name)
-        path = container_name + '/' + object_name
-        path = self._namespace_path(path)
+        object_name_cleaned = self._clean_object_name(object_name)
+        path = self._namespace_path(container_name) + '/' + object_name_cleaned
 
         try:
             result = self.connection.request(path + '?metadata/system')
@@ -205,12 +212,13 @@ class AtmosDriver(StorageDriver):
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
         upload_func = self._upload_file
-        upload_func_kwargs = { 'file_path': file_path }
+        upload_func_kwargs = {'file_path': file_path}
         method = 'PUT'
 
         extra = extra or {}
-        request_path = container.name + '/' + object_name
-        request_path = self._namespace_path(request_path)
+        object_name_cleaned = self._clean_object_name(object_name)
+        request_path = self._namespace_path(container.name) + '/' +\
+            object_name_cleaned
         content_type = extra.get('content_type', None)
 
         try:
@@ -221,13 +229,14 @@ class AtmosDriver(StorageDriver):
                 raise
             method = 'POST'
 
-        result_dict = self._upload_object(object_name=object_name,
-                                          content_type=content_type,
-                                          upload_func=upload_func,
-                                          upload_func_kwargs=upload_func_kwargs,
-                                          request_path=request_path,
-                                          request_method=method,
-                                          headers={}, file_path=file_path)
+        result_dict = self._upload_object(
+            object_name=object_name,
+            content_type=content_type,
+            upload_func=upload_func,
+            upload_func_kwargs=upload_func_kwargs,
+            request_path=request_path,
+            request_method=method,
+            headers={}, file_path=file_path)
 
         bytes_transferred = result_dict['bytes_transferred']
 
@@ -265,16 +274,41 @@ class AtmosDriver(StorageDriver):
             chunk = ''
 
         path = self._namespace_path(container.name + '/' + object_name)
+        method = 'PUT'
+
+        if extra is not None:
+            content_type = extra.get('content_type', None)
+        else:
+            content_type = None
+        if not content_type:
+            content_type, _ = guess_file_mime_type(object_name)
+
+            if not content_type:
+                raise AttributeError(
+                    'File content-type could not be guessed and' +
+                    ' no content_type value provided')
+
+        try:
+            self.connection.request(path + '?metadata/system')
+        except AtmosError:
+            e = sys.exc_info()[1]
+            if e.code != 1003:
+                raise
+            method = 'POST'
 
         while True:
             end = bytes_transferred + len(chunk) - 1
             data_hash.update(b(chunk))
             headers = {
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
+                'Content-Type': content_type,
             }
-            if len(chunk) > 0:
+
+            if len(chunk) > 0 and bytes_transferred > 0:
                 headers['Range'] = 'Bytes=%d-%d' % (bytes_transferred, end)
-            result = self.connection.request(path, method='PUT', data=chunk,
+                method = 'PUT'
+
+            result = self.connection.request(path, method=method, data=chunk,
                                              headers=headers)
             bytes_transferred += len(chunk)
 
@@ -309,7 +343,7 @@ class AtmosDriver(StorageDriver):
                       meta_data, container, self)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
-                      delete_on_failure=True):
+                        delete_on_failure=True):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         response = self.connection.request(path, method='GET', raw=True)
 
@@ -337,7 +371,8 @@ class AtmosDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def delete_object(self, obj):
-        path = self._namespace_path(obj.container.name + '/' + obj.name)
+        path = self._namespace_path(obj.container.name) + '/' +\
+            self._clean_object_name(obj.name)
         try:
             self.connection.request(path, method='DELETE')
         except AtmosError:
@@ -347,14 +382,24 @@ class AtmosDriver(StorageDriver):
             raise ObjectDoesNotExistError(e, self, obj.name)
         return True
 
-    def list_container_objects(self, container):
-        value_dict = {'container': container}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
-
     def enable_object_cdn(self, obj):
         return True
 
     def get_object_cdn_url(self, obj, expiry=None, use_object=False):
+        """
+        Return a object CDN URL.
+
+        :param obj: Object instance
+        :type  obj: :class:`Object`
+
+        :param expiry: Expiry
+        :type expiry: ``str``
+
+        :param use_object: Use object
+        :type use_object: ``bool``
+
+        :rtype: ``str``
+        """
         if use_object:
             path = '/rest/objects' + obj.meta_data['object_id']
         else:
@@ -397,11 +442,14 @@ class AtmosDriver(StorageDriver):
             })
         return entries
 
+    def _clean_object_name(self, name):
+        return urlquote(name.encode('ascii'))
+
     def _namespace_path(self, path):
-        return self.path + '/rest/namespace/' + path
+        return self.path + '/rest/namespace/' + urlquote(path.encode('ascii'))
 
     def _object_path(self, object_id):
-        return self.path + '/rest/objects/' + object_id
+        return self.path + '/rest/objects/' + object_id.encode('ascii')
 
     @staticmethod
     def _emc_tag(tag):
@@ -414,15 +462,11 @@ class AtmosDriver(StorageDriver):
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
 
-    def _get_more(self, last_key, value_dict):
-        container = value_dict['container']
+    def iterate_container_objects(self, container):
         headers = {'x-emc-include-meta': '1'}
-        path = self._namespace_path(container.name + '/')
+        path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
-        objects = []
         for entry in entries:
             metadata = {'object_id': entry['id']}
-            objects.append(Object(entry['name'], 0, '', {}, metadata, container,
-                                  self))
-        return objects, None, True
+            yield Object(entry['name'], 0, '', {}, metadata, container, self)

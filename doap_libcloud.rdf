@@ -26,7 +26,8 @@
     <license rdf:resource="http://usefulinc.com/doap/licenses/asl20" />
     <name>Apache Libcloud</name>
     <homepage rdf:resource="http://libcloud.apache.org" />
-    <asfext:pmc rdf:resource="http://logging.apache.org" />
+    <asfext:pmc rdf:resource="http://libcloud.apache.org" />
+    <category rdf:resource="http://projects.apache.org/category/cloud" />
     <shortdesc>Apache Libcloud is a standard Python library that abstracts away differences among multiple cloud provider APIs.</shortdesc>
     <description>Apache Libcloud is a standard Python library that abstracts away differences among multiple cloud provider APIs. It allows users to manage cloud servers, cloud storage and load-balancers.</description>
     <bug-database rdf:resource="https://issues.apache.org/jira/browse/LIBCLOUD" />
@@ -123,6 +124,76 @@
         <name>0.10.1</name>
         <created>2012-05-24</created>
         <revision>0.10.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.11.0</name>
+        <created>2012-07-30</created>
+        <revision>0.11.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.11.1</name>
+        <created>2012-08-01</created>
+        <revision>0.11.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.11.3</name>
+        <created>2012-09-25</created>
+        <revision>0.11.3</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.11.4</name>
+        <created>2012-11-19</created>
+        <revision>0.11.4</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.12.1</name>
+        <created>2013-02-19</created>
+        <revision>0.12.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.12.3</name>
+        <created>2013-03-11</created>
+        <revision>0.12.3</revision>
+      </Version>
+  </release>
+   <release>
+      <Version>
+        <name>0.12.4</name>
+        <created>2013-04-22</created>
+        <revision>0.12.3</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.0</name>
+        <created>2013-07-01</created>
+        <revision>0.13.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.1</name>
+        <created>2013-09-05</created>
+        <revision>0.13.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.2</name>
+        <created>2013-09-18</created>
+        <revision>0.13.2</revision>
       </Version>
   </release>
     <repository>

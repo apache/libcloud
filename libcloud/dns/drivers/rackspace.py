@@ -25,7 +25,7 @@ import copy
 from libcloud.common.base import PollingConnection
 from libcloud.common.types import LibcloudError
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 
@@ -34,7 +34,7 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
-VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment']
+VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'priority']
 
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
@@ -77,10 +77,17 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     poll_interval = 2.5
     timeout = 30
 
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
+
+    def __init__(self, *args, **kwargs):
+            self.region = kwargs.pop('region', None)
+            super(RackspaceDNSConnection, self).__init__(*args, **kwargs)
+
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object['jobId']
         kwargs = {'action': '/status/%s' % (job_id),
-                'params': {'showDetails': True}}
+                  'params': {'showDetails': True}}
         return kwargs
 
     def has_completed(self, response):
@@ -92,49 +99,45 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
         return status == 'COMPLETED'
 
     def get_endpoint(self):
-        """
-        FIXME:
-        Dirty, dirty hack. DNS doesn't get returned in the auth 1.1 service
-        catalog, so we build it from the servers url.
-        """
-
-        if self._auth_version == "1.1":
-            ep = self.service_catalog.get_endpoint(name="cloudServers")
-
-            return self._construct_dns_endpoint_from_servers_endpoint(ep)
-        elif "2.0" in self._auth_version:
-            ep = self.service_catalog.get_endpoint(name="cloudServers",
-                service_type="compute",
-                region=None)
-
-            return self._construct_dns_endpoint_from_servers_endpoint(ep)
+        if '2.0' in self._auth_version:
+            ep = self.service_catalog.get_endpoint(name='cloudDNS',
+                                                   service_type='rax:dns',
+                                                   region=None)
         else:
-            raise LibcloudError("Auth version %s not supported" % \
-                self._auth_version)
+            raise LibcloudError("Auth version %s not supported" %
+                                (self._auth_version))
 
-    def _construct_dns_endpoint_from_servers_endpoint(self, ep):
-        if 'publicURL' in ep:
-            return ep['publicURL'].replace("servers", "dns")
-        else:
-            raise LibcloudError('Could not find specified endpoint')
+        public_url = ep.get('publicURL', None)
 
+        # This is a nasty hack, but because of how global auth and old accounts
+        # work, there is no way around it.
+        if self.region == 'us':
+            # Old UK account, which only has us endpoint in the catalog
+            public_url = public_url.replace('https://lon.dns.api',
+                                            'https://dns.api')
+        if self.region == 'uk':
+            # Old US account, which only has uk endpoint in the catalog
+            public_url = public_url.replace('https://dns.api',
+                                            'https://lon.dns.api')
 
-class RackspaceUSDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_US
-
-
-class RackspaceUKDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_UK
+        return public_url
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
+    name = 'Rackspace DNS'
+    website = 'http://www.rackspace.com/'
+    type = Provider.RACKSPACE
+    connectionCls = RackspaceDNSConnection
 
-    def __init__(self, *args, **kwargs):
-        OpenStackDriverMixin.__init__(self, *args, **kwargs)
-        super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us', **kwargs):
+        if region not in ['us', 'uk']:
+            raise ValueError('Invalid region: %s' % (region))
 
-    def _ex_connection_class_kwargs(self):
-        return self.openstack_connection_kwargs()
+        OpenStackDriverMixin.__init__(self, **kwargs)
+        super(RackspaceDNSDriver, self).__init__(key=key, secret=secret,
+                                                 host=host, port=port,
+                                                 region=region)
 
     RECORD_TYPE_MAP = {
         RecordType.A: 'A',
@@ -142,22 +145,52 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.CNAME: 'CNAME',
         RecordType.MX: 'MX',
         RecordType.NS: 'NS',
-        RecordType.TXT: 'TXT',
+        RecordType.PTR: 'PTR',
         RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
 
-    def list_zones(self):
-        response = self.connection.request(action='/domains')
-        zones = self._to_zones(data=response.object['domains'])
-        return zones
+    def iterate_zones(self):
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains', params=params).object
+            zones_list = response['domains']
+            for item in zones_list:
+                yield self._to_zone(item)
 
-    def list_records(self, zone):
+            if _rackspace_result_has_more(response, len(zones_list), limit):
+                offset += limit
+            else:
+                break
+
+    def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        response = self.connection.request(action='/domains/%s' % (zone.id),
-                                           params={'showRecord': True}).object
-        records = self._to_records(data=response['recordsList']['records'],
-                                   zone=zone)
-        return records
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'showRecord': True,
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains/%s' % (zone.id), params=params).object
+            records_list = response['recordsList']
+            records = records_list['records']
+            for item in records:
+                record = self._to_record(data=item, zone=zone)
+                yield record
+
+            if _rackspace_result_has_more(records_list, len(records), limit):
+                offset += limit
+            else:
+                break
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -177,7 +210,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         extra = extra if extra else {}
 
         # Email address is required
-        if not 'email' in extra:
+        if 'email' not in extra:
             raise ValueError('"email" key must be present in extra dictionary')
 
         payload = {'name': domain, 'emailAddress': extra['email'],
@@ -240,6 +273,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
 
+        if 'priority' in extra:
+            data['priority'] = int(extra['priority'])
+
         payload = {'records': [data]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         response = self.connection.async_request(action='/domains/%s/records'
@@ -268,7 +304,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         if 'comment' in extra:
             payload['comment'] = extra['comment']
 
-        type = type if type else record.type
+        type = type if type is not None else record.type
         data = data if data else record.data
 
         self.connection.set_context({'resource': 'record', 'id': record.id})
@@ -298,14 +334,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                                       method='DELETE')
         return True
 
-    def _to_zones(self, data):
-        zones = []
-        for item in data:
-            zone = self._to_zone(data=item)
-            zones.append(zone)
-
-        return zones
-
     def _to_zone(self, data):
         id = data['id']
         domain = data['name']
@@ -323,14 +351,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                     driver=self, extra=extra)
         return zone
 
-    def _to_records(self, data, zone):
-        records = []
-        for item in data:
-            record = self._to_record(data=item, zone=zone)
-            records.append(record)
-
-        return records
-
     def _to_record(self, data, zone):
         id = data['id']
         fqdn = data['name']
@@ -339,11 +359,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         record_data = data['data']
         extra = {'fqdn': fqdn}
 
-        if 'ttl' in data:
-            extra['ttl'] = data['ttl']
-
-        if 'comment' in data:
-            extra['comment'] = data['comment']
+        for key in VALID_RECORD_EXTRA_PARAMS:
+            if key in data:
+                extra[key] = data[key]
 
         record = Record(id=str(id), name=name, type=type, data=record_data,
                         zone=zone, driver=self, extra=extra)
@@ -353,36 +371,71 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         """
         Build a FQDN from a domain and record name.
 
-        @param domain: Domain name.
-        @type domain: C{str}
+        :param domain: Domain name.
+        :type domain: ``str``
 
-        @param name: Record name.
-        @type name: C{str}
+        :param name: Record name.
+        :type name: ``str``
         """
-        name = '%s.%s' % (name, domain)
+        if name:
+            name = '%s.%s' % (name, domain)
+        else:
+            name = domain
+
         return name
 
     def _to_partial_record_name(self, domain, name):
         """
-        Strip domain portion from the record name.
+        Remove domain portion from the record name.
 
-        @param domain: Domain name.
-        @type domain: C{str}
+        :param domain: Domain name.
+        :type domain: ``str``
 
-        @param name: Full record name (fqdn).
-        @type name: C{str}
+        :param name: Full record name (fqdn).
+        :type name: ``str``
         """
+        if name == domain:
+            # Map "root" record names to None to be consistent with other
+            # drivers
+            return None
+
+        # Strip domain portion
         name = name.replace('.%s' % (domain), '')
         return name
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = self.openstack_connection_kwargs()
+        kwargs['region'] = self.region
+        return kwargs
 
 
 class RackspaceUSDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (US)'
     type = Provider.RACKSPACE_US
-    connectionCls = RackspaceUSDNSConnection
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'us'
+        super(RackspaceUSDNSDriver, self).__init__(*args, **kwargs)
 
 
 class RackspaceUKDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (UK)'
     type = Provider.RACKSPACE_UK
-    connectionCls = RackspaceUKDNSConnection
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'uk'
+        super(RackspaceUKDNSDriver, self).__init__(*args, **kwargs)
+
+
+def _rackspace_result_has_more(response, result_length, limit):
+    # If rackspace returns less than the limit, then we've reached the end of
+    # the result set.
+    if result_length < limit:
+        return False
+
+    # Paginated results return links to the previous and next sets of data, but
+    # 'next' only exists when there is more to get.
+    for item in response.get('links', ()):
+        if item['rel'] == 'next':
+            return True
+    return False

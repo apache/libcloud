@@ -16,97 +16,38 @@
 VCL driver
 """
 
-import sys
 import time
 
-from libcloud.utils.py3 import xmlrpclib
-
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage
 
 
-class VCLSafeTransport(xmlrpclib.SafeTransport):
-    def __init__(self, datetime, user, passwd, host):
-
-        self._pass = passwd
-        self._use_datetime = datetime
-        self._connection = (None, None)
-        self._extra_headers = []
-
-    def send_content(self, connection, request_body):
-        connection.putheader('Content-Type', 'text/xml')
-        connection.putheader('X-APIVERSION', '2')
-        connection.putheader('X-User', self._user)
-        connection.putheader('X-Pass', self._pass)
-        connection.putheader('Content-Length', str(len(request_body)))
-        connection.endheaders(request_body)
+class VCLResponse(XMLRPCResponse):
+    exceptions = {
+        'VCL_Account': InvalidCredsError,
+    }
 
 
-class VCLProxy(xmlrpclib.ServerProxy):
-    API_POSTFIX = '/index.php?mode=xmlrpccall'
-    transportCls = VCLSafeTransport
+class VCLConnection(XMLRPCConnection, ConnectionUserAndKey):
+    endpoint = '/index.php?mode=xmlrpccall'
 
-    def __init__(self, user, key, secure, host, port, driver, verbose=False):
-        url = ''
-        cls = self.transportCls
-
-        if secure:
-            url = 'https://'
-            port = port or 443
-        else:
-            url = 'http://'
-            port = port or 80
-
-        url += host + ':' + str(port)
-        url += VCLProxy.API_POSTFIX
-
-        self.API = url
-        t = cls(0, user, key, self.API)
-
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri=self.API,
-            transport=t,
-            verbose=verbose
-        )
-
-
-class VCLConnection(object):
-    """
-    Connection class for the VCL driver
-    """
-
-    proxyCls = VCLProxy
-    driver = None
-
-    def __init__(self, user, key, secure, host, port):
-        self.user = user
-        self.key = key
-        self.secure = secure
-        self.host = host
-        self.port = port
-
-    def request(self, method, *args, **kwargs):
-        sl = self.proxyCls(user=self.user, key=self.key, secure=self.secure,
-                           host=self.host, port=self.port, driver=self.driver)
-
-        try:
-            return getattr(sl, method)(*args)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            if e.faultCode == 'VCL_Account':
-                raise InvalidCredsError(e.faultString)
-            raise LibcloudError(e, driver=self.driver)
+    def add_default_headers(self, headers):
+        headers['X-APIVERSION'] = '2'
+        headers['X-User'] = self.user_id
+        headers['X-Pass'] = self.key
+        return headers
 
 
 class VCLNodeDriver(NodeDriver):
     """
     VCL node driver
 
-    @keyword:   host: The VCL host to which you make requests(required)
-    @type:      host: C{string}
+    :keyword   host: The VCL host to which you make requests(required)
+    :type      host: ``str``
     """
 
     NODE_STATE_MAP = {
@@ -124,39 +65,60 @@ class VCLNodeDriver(NodeDriver):
 
     connectionCls = VCLConnection
     name = 'VCL'
+    website = 'http://incubator.apache.org/vcl/'
     type = Provider.VCL
 
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,
                  **kwargs):
+        """
+        :param    key:    API key or username to used (required)
+        :type     key:    ``str``
+
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
+
+        :param    secure: Weither to use HTTPS or HTTP.
+        :type     secure: ``bool``
+
+        :param    host: Override hostname used for connections. (required)
+        :type     host: ``str``
+
+        :param    port: Override port used for connections.
+        :type     port: ``int``
+
+        :rtype: ``None``
+        """
         if not host:
             raise Exception('When instantiating VCL driver directly ' +
                             'you also need to provide host')
 
-        self.key = key
-        self.host = host
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret, secure, host, port)
-        self.connection.driver = self
+        super(VCLNodeDriver, self).__init__(key, secret, secure=True,
+                                            host=None, port=None, *args,
+                                            **kwargs)
 
     def _vcl_request(self, method, *args):
         res = self.connection.request(
             method,
             *args
-        )
+        ).object
         if(res['status'] == 'error'):
             raise LibcloudError(res['errormsg'], driver=self)
         return res
 
     def create_node(self, **kwargs):
         """Create a new VCL reservation
+        size and name ignored, image is the id from list_image
 
-        See L{NodeDriver.create_node} for more keyword args.
-        size and name ignored, image is the id from list_images
-        @keyword    start: start time as unix timestamp
-        @type       start: C{string}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    length: length of time in minutes
-        @type       length: C{string}
+        :keyword    image: image is the id from list_image
+        :type       image: ``str``
+
+        :keyword    start: start time as unix timestamp
+        :type       start: ``str``
+
+        :keyword    length: length of time in minutes
+        :type       length: ``str``
         """
 
         image = kwargs["image"]
@@ -184,6 +146,11 @@ class VCLNodeDriver(NodeDriver):
         """
         End VCL reservation for the node passed in.
         Throws error if request fails.
+
+        :param  node: The node to be destroyed
+        :type   node: :class:`Node`
+
+        :rtype: ``bool``
         """
         try:
             self._vcl_request(
@@ -204,16 +171,20 @@ class VCLNodeDriver(NodeDriver):
     def list_images(self, location=None):
         """
         List images available to the user provided credentials
+
+        @inherits: :class:`NodeDriver.list_images`
         """
         res = self.connection.request(
             "XMLRPCgetImages"
-        )
+        ).object
         return [self._to_image(i) for i in res]
 
     def list_sizes(self, location=None):
         """
         VCL does not choosing sizes for node creation.
         Size of images are statically set by administrators.
+
+        @inherits: :class:`NodeDriver.list_sizes`
         """
         return [NodeSize(
             't1.micro',
@@ -264,6 +235,14 @@ class VCLNodeDriver(NodeDriver):
         ) for h in res]
 
     def list_nodes(self, ipaddr):
+        """
+        List nodes
+
+        :param  ipaddr: IP address which should be used
+        :type   ipaddr: ``str``
+
+        :rtype: ``list`` of :class:`Node`
+        """
         res = self._vcl_request(
             "XMLRPCgetRequestIds"
         )
@@ -273,13 +252,14 @@ class VCLNodeDriver(NodeDriver):
         """
         Update the remote ip accessing the node.
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        :param node: the reservation node to update
+        :type  node: :class:`Node`
 
-        @param: ipaddr: the ipaddr used to access the node
-        @type:  ipaddr: C{string}
+        :param ipaddr: the ipaddr used to access the node
+        :type  ipaddr: ``str``
 
-        @return: node with updated information
+        :return: node with updated information
+        :rtype: :class:`Node`
         """
         return self._to_status(node.id, node.image, ipaddr)
 
@@ -287,13 +267,14 @@ class VCLNodeDriver(NodeDriver):
         """
         Time in minutes to extend the requested node's reservation time
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        :param node: the reservation node to update
+        :type  node: :class:`Node`
 
-        @param: minutes: the number of mintes to update
-        @type:  minutes: C{string}
+        :param minutes: the number of mintes to update
+        :type  minutes: ``str``
 
-        @return: true on success, throws error on failure
+        :return: true on success, throws error on failure
+        :rtype: ``bool``
         """
         return self._vcl_request(
             "XMLRPCextendRequest",
@@ -305,10 +286,11 @@ class VCLNodeDriver(NodeDriver):
         """
         Get the ending time of the node reservation.
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        :param node: the reservation node to update
+        :type  node: :class:`Node`
 
-        @return: unix timestamp
+        :return: unix timestamp
+        :rtype: ``int``
         """
         res = self._vcl_request(
             "XMLRPCgetRequestIds"
