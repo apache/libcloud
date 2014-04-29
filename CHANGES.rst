@@ -118,6 +118,11 @@ Compute
   Note 1: "key_files" and "key_material" arguments are mutually exclusive.
   Note 2: "key_material" argument is not supported in the ShellOutSSHClient.
 
+- Use node id attribute instead of the name for the "lconfig" label in the
+  Linode driver. This way the label is never longer than 48 characters.
+  (GITHUB-287)
+  [earthgecko]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
