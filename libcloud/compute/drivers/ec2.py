@@ -1811,7 +1811,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'CreateImage',
                   'InstanceId': node.id,
                   'Name': name,
-                  'Reboot': reboot}
+                  'NoReboot': not reboot}
 
         if description is not None:
             params['Description'] = description
