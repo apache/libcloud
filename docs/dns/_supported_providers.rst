@@ -2,6 +2,7 @@
 Provider              Documentation                           Provider constant Module                                  Class Name                   
 ===================== ======================================= ================= ======================================= =============================
 `Gandi DNS`_                                                  GANDI             :mod:`libcloud.dns.drivers.gandi`       :class:`GandiDNSDriver`      
+`Google DNS`_                                                 GOOGLE            :mod:`libcloud.dns.drivers.google`      :class:`GoogleDNSDriver`     
 `Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>` HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual` :class:`HostVirtualDNSDriver`
 `Linode DNS`_                                                 LINODE            :mod:`libcloud.dns.drivers.linode`      :class:`LinodeDNSDriver`     
 `Rackspace DNS`_                                              RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceDNSDriver`  
@@ -12,6 +13,7 @@ Provider              Documentation                           Provider constant 
 ===================== ======================================= ================= ======================================= =============================
 
 .. _`Gandi DNS`: http://www.gandi.net/domain
+.. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: http://www.vr.org/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
