@@ -284,16 +284,6 @@ class LinodeNodeDriver(NodeDriver):
         comments = "Created by Apache libcloud <http://www.libcloud.org>" if\
             "ex_comment" not in kwargs else kwargs["ex_comment"]
 
-        # Labels
-        label = {
-            "lconfig": "[%s] Configuration Profile" % name,
-            "lroot": "[%s] %s Disk Image" % (name, image.name),
-            "lswap": "[%s] Swap Space" % name
-        }
-        for what in ["lconfig", "lroot", "lswap"]:
-            if what in kwargs:
-                label[what] = kwargs[what]
-
         # Step 1: linode.create
         params = {
             "api_action": "linode.create",
@@ -319,6 +309,18 @@ class LinodeNodeDriver(NodeDriver):
                 "LinodeID": linode["id"]
             }
             self.connection.request(API_ROOT, params=params)
+
+        # Step 1d. Labels
+        # use the linode id as the name can be up to 63 chars and the labels
+        # are limited to 48 chars
+        label = {
+            "lconfig": "[%s] Configuration Profile" % linode["id"],
+            "lroot": "[%s] %s Disk Image" % (linode["id"], image.name),
+            "lswap": "[%s] Swap Space" % linode["id"]
+        }
+        for what in ["lconfig", "lroot", "lswap"]:
+            if what in kwargs:
+                label[what] = kwargs[what]
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
