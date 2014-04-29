@@ -311,7 +311,7 @@ class LinodeNodeDriver(NodeDriver):
             self.connection.request(API_ROOT, params=params)
 
         # Step 1d. Labels
-        # use the linode id as the name can be up to 63 chars and the labels
+        # Use the linode id as the name can be up to 63 chars and the labels
         # are limited to 48 chars
         label = {
             "lconfig": "[%s] Configuration Profile" % linode["id"],
