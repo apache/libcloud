@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Azure driver
+Azure Compute driver
 """
 import uuid
 import re
@@ -41,7 +41,7 @@ from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 from libcloud.common.base import ConnectionUserAndKey
 
 """
-Sizes must be hardcoded, because Microsoft doesn't provide an API to fetch them.
+Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
 """
 AZURE_COMPUTE_INSTANCE_TYPES = {
@@ -271,176 +271,6 @@ class AzureNodeDriver(NodeDriver):
         volumes = [self._to_volume(volume=v,node=node) for v in data]
 
         return volumes
-
-    def create_volume(self, **kwargs):
-        """
-        Adds a data disk to a virtual machine.
-
-        """
-
-        name = kwargs['name'] # Role Name in Azure
-        size = kwargs['size']
-
-        if "ex_cloud_service_name" in kwargs:
-            ex_cloud_service_name = kwargs['ex_cloud_service_name']
-        else:
-            raise
-
-        if "ex_storage_service_name" in kwargs:
-            ex_storage_service_name = kwargs['ex_storage_service_name']
-        else:
-            # create a new storage service name based upon the cloud service name.
-            ex_storage_service_name = ex_cloud_service_name
-
-        if "ex_deployment_slot" in kwargs:
-            ex_deployment_slot = kwargs['ex_deployment_slot']
-        else:
-            ex_deployment_slot = "production"
-
-        if "ex_disk_lun" in kwargs:
-            ex_disk_lun = kwargs['ex_disk_lun']
-        else:
-            # should identify the best candidate
-            ex_disk_lun = 1 
-
-        if "ex_host_caching" in kwargs:
-            ex_host_caching = kwargs['ex_host_caching']
-        else:
-            ex_host_caching = "ReadWrite"
-
-        _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-
-        blob_url = "http://" + ex_storage_service_name + self._blob_url
-        disk_name = "{0}-{1}-LUN{2}-{3}.vhd".format(ex_storage_service_name,name,ex_disk_lun,time.strftime("%Y-%m-%d")) # Azure's pattern in the UI.
-        media_link = blob_url + "/vhds/" + disk_name
-
-        response = self.sms.add_data_disk(service_name=ex_cloud_service_name,
-            deployment_name=_deployment_name,
-            role_name=name,
-            lun=ex_disk_lun,
-            host_caching=ex_host_caching,
-            logical_disk_size_in_gb=size,
-            media_link=media_link)
-        print('Response' + response.request_id)
-        return
-
-    def detach_volume(self, **kwargs):
-        '''detach_volume
-
-        Removes a volume from ''name''. 
-
-        The node will continue to maintain a lease to the blob. 
-        '''
-        name = kwargs['name']
-        volume_id = kwargs['volume_id']
-
-        if "ex_cloud_service_name" in kwargs:
-            ex_cloud_service_name = kwargs['ex_cloud_service_name']
-        else:
-            raise
-
-        if "ex_deployment_slot" in kwargs:
-            ex_deployment_slot = kwargs['ex_deployment_slot']
-        else:
-            ex_deployment_slot = "production"
-
-        #if "ex_disk_lun" in kwargs:
-        #   ex_disk_lun = kwargs['ex_disk_lun']
-        #else:
-        #   raise
-
-        _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-        
-        response = self.sms.delete_data_disk(service_name=ex_cloud_service_name,deployment_name=_deployment_name,role_name=name,lun=volume_id)
-        print('Detach Volume Response')
-        print response
-        return
-
-    def attach_volume(self, **kwargs):
-        #name = kwargs['name'] # Role Name in Azure
-
-        if "ex_cloud_service_name" in kwargs:
-            ex_cloud_service_name = kwargs['ex_cloud_service_name']
-        else:
-            raise
-
-        if "ex_storage_service_name" in kwargs:
-            ex_storage_service_name = kwargs['ex_storage_service_name']
-        else:
-            # create a new storage service name based upon the cloud service name.
-            ex_storage_service_name = ex_cloud_service_name
-
-        if "ex_deployment_slot" in kwargs:
-            ex_deployment_slot = kwargs['ex_deployment_slot']
-        else:
-            ex_deployment_slot = "production"
-
-        if "ex_disk_lun" in kwargs:
-            ex_disk_lun = kwargs['ex_disk_lun']
-        else:
-            # should identify the best candidate
-            ex_disk_lun = 1 
-
-        if "ex_host_caching" in kwargs:
-            ex_host_caching = kwargs['ex_host_caching']
-        else:
-            ex_host_caching = "ReadWrite"
-
-        _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-
-        #blob_url = "http://" + ex_storage_service_name + ".blob.core.windows.net"
-        #disk_name = "{0}-{1}-LUN{2}-{3}.vhd".format(ex_storage_service_name,name,ex_disk_lun,time.strftime("%Y-%m-%d")) # Azure's pattern in the UI.
-        #media_link = blob_url + "/vhds/" + disk_name
-        media_link = "http://spcwestus.blob.core.windows.net/vhds/SPCWestUS-node001-LUN1-2014-03-19.vhd"
-
-        #response = self.sms.add_disk(has_operating_system=False, label="test", media_link=media_link)
-        response = self.sms.update_data_disk(service_name=ex_cloud_service_name, 
-            deployment_name=_deployment_name,
-            role_name="node001",
-            disk_name="SPCWestUS-node001-1-201403191752470817",
-            lun=1,
-            host_caching="ReadWrite",
-            media_link=media_link)
-
-        #response = self.sms.add_data_disk(service_name=ex_cloud_service_name, 
-        #   deployment_name=_deployment_name, 
-        #   role_name="node001",
-        #   lun=1,
-        #   media_link=media_link,
-        #   disk_name="testtest",
-        #   host_caching="ReadWrite",
-        #   source_media_link=media_link)
-        
-        print response.request_id
-
-        operation_status = self.sms.get_operation_status(response.request_id)
-        print('Request ID: ' + response.request_id)
-        print('Op Stats: ' + operation_status.status)
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5  
-
-        while operation_status.status == "InProgress" and waittime < timeout:
-            operation_status = self.sms.get_operation_status(response.request_id)
-            print('Operation Status: ' + operation_status.status)
-            if operation_status.status == "Succeeded":
-                break
-
-            waittime += interval
-            time.sleep(interval)
-
-        if operation_status.status == "Failed":
-            raise Exception(operation_status.error.message)
-
-        return
-
-    def destroy_volume(self, **kwargs):
-        disk_name = kwargs['disk_name']
-
-        response = self.sms.delete_disk(disk_name=disk_name)
-
-        return
 
     def create_node(self, ex_cloud_service_name=None, **kwargs):
         """Create Azure Virtual Machine
@@ -697,53 +527,18 @@ class AzureNodeDriver(NodeDriver):
 
         sms = ServiceManagementService(subscription_id, certificate_path)
 
-        for r in _deployment.role_list:
-            if r.role_name == node.id:
-                print "Hello"
-                print r.data_virtual_hard_disk
-
-        #print _deployment.role_list[0].role_name
-
-        return True
-
-        if _server_deployment_count > 1:
-            data = sms.delete_role(service_name=ex_cloud_service_name, deployment_name=_deployment_name,role_name=node.id)
-
-            # We need to wait before we can remove the disk itself. 
-            #operation_status = sms.get_operation_status(data.request_id)
-
-            #timeout = 60 * 5
-            #waittime = 0
-            #interval = 5 # Creating a storage service should take no longer than 30 seconds. 
-
-            #while operation_status.status == "InProgress" and waittime < timeout:
-            #    status = sms.get_operation_status(data.request_id)
-            #    if operation_status.status == "Succeeded":
-            #        break
-
-            #    waittime += interval
-            #    time.sleep(interval)
-
-            #_delete_disk = sms.delete_data_disk(service_name=ex_cloud_service_name,deployment_name=_deployment_name,role_name=node.id,lun=0)
-        else:
-            data = sms.delete_deployment(service_name=ex_cloud_service_name, deployment_name=_deployment_name)
-            
-            operation_status = sms.get_operation_status(data.request_id)
-
-            timeout = 60 * 5
-            waittime = 0
-            interval = 5 # Creating a storage service should take no longer than 30 seconds. 
-
-            while operation_status.status == "InProgress" and waittime < timeout:
-                status = sms.get_operation_status(data.request_id)
-                if operation_status.status == "Succeeded":
-                    break
-
-                waittime += interval
-                time.sleep(interval)
-
-            _delete_disk = sms.delete_data_disk(service_name=ex_cloud_service_name,deployment_name=_deployment_name,role_name=node.id,lun=0)
-        return True
+        try:
+            if _server_deployment_count > 1:
+                data = sms.delete_role(service_name=ex_cloud_service_name,
+                    deployment_name=_deployment_name,
+                    role_name=node.id,
+                    delete_attached_disks=True)
+                return True
+            else:
+                data = sms.delete_deployment(service_name=ex_cloud_service_name,deployment_name=_deployment_name,delete_attached_disks=True)
+                return True
+        except Exception:
+            return False
 
     """ Functions not implemented
     """
@@ -752,23 +547,27 @@ class AzureNodeDriver(NodeDriver):
             'You cannot create snapshots of '
             'Azure VMs at this time.')
 
-#    def attach_volume(self):
-#        raise NotImplementedError(
-#            'attach_volume is not supported '
-#            'at this time.')
+    def attach_volume(self):
+        raise NotImplementedError(
+            'attach_volume is not supported '
+            'at this time.')
 
+    def create_volume(self):
+        raise NotImplementedError(
+            'create_volume is not supported '
+            'at this time.')
 
-    """ External Functions
+    def detach_volume(self):
+        raise NotImplementedError(
+            'detach_volume is not supported '
+            'at this time.')
 
-    """
-
-    def ex_list_storage_services(self, **kwargs):
-        res = self.sms.get_storage_account_properties(kwargs['service_name'])
-        print(res.storage_service_properties.status)
-        return
+    def destroy_volume(self):
+        raise NotImplementedError(
+            'destroy_volume is not supported '
+            'at this time.')
 
     """Private Functions
-
     """
 
     def _to_node(self, data):
@@ -972,40 +771,4 @@ class AzureNodeDriver(NodeDriver):
 
             waittime += interval
             time.sleep(interval)
-        return
-
-    # items below this line are being refactored
-
-    def _get_available_lun(self, **kwargs):
-        service_name = kwargs['service_name']
-
-        response = self.sms.get_hosted_service_properties(service_name=service_name,embed_detail=True)
-        deployments = response.deployments[0].role_instance_list
-        roles = response.deployments[0].role_list.roles
-        print roles
-
-        for r in roles:
-            print('#############')
-            print r
-            print r.__dict__
-            print('#############')
-            print r
-            print dir(r)    
-
-#        d = res.deployments[0].role_list.roles[0].__dict__
-#        print d
-        #for i in res.deployments[0].role_list:
-        #   l = dir(i)
-        #   print l
-
-        #_affinity_group = res.hosted_service_properties.affinity_group
-        #_cloud_service_location = res.hosted_service_properties.location
-
-        #if _affinity_group is not None:
-        #   return service_location(True, _affinity_group)
-        #elif _cloud_service_location is not None:
-        #   return service_location(False, _cloud_service_location)
-        #else:
-        #   return None
-
         return
