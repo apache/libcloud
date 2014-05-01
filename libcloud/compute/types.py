@@ -78,6 +78,7 @@ class Provider(object):
     :cvar OUTSCALE_INC: Outscale INC driver.
     :cvar PROFIT_BRICKS: ProfitBricks driver.
     :cvar VULTR: vultr driver.
+    :cvar AZURE: Azure driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -126,6 +127,7 @@ class Provider(object):
     VSPHERE = 'vsphere'
     PROFIT_BRICKS = 'profitbricks'
     VULTR = 'vultr'
+    AZURE_COMPUTE = 'azure_compute'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
