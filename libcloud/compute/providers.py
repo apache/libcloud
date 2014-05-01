@@ -139,6 +139,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
     Provider.IKOULA:
     ('libcloud.compute.drivers.ikoula', 'IkoulaNodeDriver'),
+    Provider.AZURE_COMPUTE:
+    ('libcloud.compute.drivers.azure_compute', 'AzureNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
