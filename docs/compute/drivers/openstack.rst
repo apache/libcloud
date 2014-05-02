@@ -188,6 +188,21 @@ service are two different services which listen on different ports.
 API Docs
 --------
 
+Please note that there are two API versions of the OpenStack Compute API, which
+are supported by two different subclasses of the OpenStackNodeDriver. The
+default is the 1.1 API. The 1.0 API is supported to be able to connect to
+OpenStack instances which do not yet support the version 1.1 API.
+
+Compute 1.1 API version (current)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_1_NodeDriver
+    :members:
+    :inherited-members:
+
+Compute 1.0 API version (old installations)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_0_NodeDriver
     :members:
     :inherited-members:
