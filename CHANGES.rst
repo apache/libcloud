@@ -101,6 +101,14 @@ Compute
   (GITHUB-277)
   [Matt Lehman]
 
+- Allow user to specify "displayname" attribute when creating a CloudStack node
+  by passing "ex_displayname" argument to the method.
+
+  Also allow "name" argument to be empty (None). This way CloudStack
+  automatically uses Node's UUID for the name.
+  (GITHUB-289)
+  [Jeff Moody]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
