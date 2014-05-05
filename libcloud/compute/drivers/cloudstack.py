@@ -700,6 +700,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                         the node
         :type       ex_security_groups: ``list`` of ``str``
 
+        :keyword    ex_displayname: String containing instance display name
+        :type       ex_displayname: ``str``
+
         :rtype:     :class:`.CloudStackNode`
         """
 
@@ -727,9 +730,16 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         ex_key_name = kwargs.get('ex_keyname', None)
         ex_user_data = kwargs.get('ex_userdata', None)
         ex_security_groups = kwargs.get('ex_security_groups', None)
+        ex_displayname = kwargs.get('ex_displayname', None)
 
         if name:
             server_params['name'] = name
+
+        if name is None:
+            del server_params['name']
+
+        if ex_displayname:
+            server_params['displayname'] = ex_displayname
 
         if size:
             server_params['serviceofferingid'] = size.id
