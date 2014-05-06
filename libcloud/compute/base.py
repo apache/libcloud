@@ -1394,7 +1394,7 @@ class NodeDriver(BaseDriver):
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
                                password=ssh_password,
-                               key=ssh_key_file,
+                               key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
         # Connect to the SSH server running on the node

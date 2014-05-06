@@ -109,6 +109,15 @@ Compute
   (GITHUB-289)
   [Jeff Moody]
 
+- Deprecate "key" argument in the SSHClient class in favor of new "key_files"
+  argument.
+
+  Also add a new "key_material" argument. This argument can contain raw string
+  version of a private key.
+
+  Note 1: "key_files" and "key_material" arguments are mutually exclusive.
+  Note 2: "key_material" argument is not supported in the ShellOutSSHClient.
+
 Load Balancer
 ~~~~~~~~~~~~~
 
