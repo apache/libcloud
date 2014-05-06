@@ -2168,6 +2168,62 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_floating_ip_pools(
             self.connection.request('/os-floating-ip-pools').object)
 
+    def _to_floating_ips(self, obj):
+        ip_elements = obj['floating_ips']
+        return [self._to_floating_ip(ip) for ip in ip_elements]
+
+    def _to_floating_ip(self, obj):
+        return OpenStack_1_1_FloatingIpAddress(obj['id'], obj['ip'], self,
+                                               obj['instance_id'])
+
+    def ex_list_floating_ips(self):
+        """
+        List floating IPs
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self.connection.request('/os-floating-ips').object)
+
+    def ex_get_floating_ip(self, ip):
+        """
+        Get specified floating IP
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        ip_obj, = [x for x in self.ex_list_floating_ips() if x.ip_address == ip]
+        return ip_obj
+
+    def ex_create_floating_ip(self):
+        """
+        Create new floating IP
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        resp = self.connection.request('/os-floating-ips',
+                                       method='POST',
+                                       data={})
+        data = resp.object['floating_ip']
+        id = data['id']
+        ip_address = data['ip']
+        return OpenStack_1_1_FloatingIpAddress(id, ip_address, self)
+
+    def ex_delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP
+
+        :param      ip: floating IP to remove
+        :type       ip::class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/os-floating-ips/%s' % ip.id,
+                                       method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
     def ex_attach_floating_ip_to_node(self, node, ip):
         """
         Attach the floating IP to the node
@@ -2320,11 +2376,12 @@ class OpenStack_1_1_FloatingIpAddress(object):
     Floating IP info.
     """
 
-    def __init__(self, id, ip_address, pool, node_id=None):
+    def __init__(self, id, ip_address, pool, node_id=None, driver=None):
         self.id = str(id)
         self.ip_address = ip_address
         self.pool = pool
         self.node_id = node_id
+        self.driver = driver
 
     def delete(self):
         """
@@ -2332,8 +2389,12 @@ class OpenStack_1_1_FloatingIpAddress(object):
 
         :rtype: ``bool``
         """
-        return self.pool.delete_floating_ip(self)
+        if self.pool is not None:
+            return self.pool.delete_floating_ip(self)
+        elif self.driver is not None:
+            return self.driver.ex_delete_floating_ip(self)
 
     def __repr__(self):
-        return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s, pool=%s>'
-                % (self.id, self.ip_address, self.pool))
+        return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
+                ' pool=%s, driver=%s>'
+                % (self.id, self.ip_address, self.pool, self.driver))
