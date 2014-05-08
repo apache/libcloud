@@ -260,7 +260,7 @@ class GoogleDNSDriver(DNSDriver):
                 }
             ]
         }
-        request = '/managedZones/%s/changes' % (record.zone.id)
+        request = '/managedZones/%s/changes' % (record.zone)
         response = self.connection.request(request, method='POST',
                                            data=data)
         return response.success()
