@@ -124,7 +124,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        (record_name, record_type) = record_id.split('-')
+        (record_type, record_name) = record_id.split(':', 1)
 
         params = {
             'name': record_name,
@@ -142,7 +142,8 @@ class GoogleDNSDriver(DNSDriver):
                                         zone_id=zone_id)
 
         if len(response['rrsets']) > 0:
-            return self._to_record(response['rrsets'][0], zone_id)
+            zone = self.get_zone(zone_id)
+            return self._to_record(response['rrsets'][0], zone)
 
         raise RecordDoesNotExistError(value='', driver=self.connection.driver,
                                       record_id=record_id)
@@ -319,8 +320,9 @@ class GoogleDNSDriver(DNSDriver):
 
         extra['creationTime'] = r.get('creationTime')
         extra['nameServers'] = r.get('nameServers')
+        extra['id'] = r.get('id')
 
-        return Zone(id=r['id'], domain=r['dnsName'],
+        return Zone(id=r['name'], domain=r['dnsName'],
                     type='master', ttl=0, driver=self, extra=extra)
 
     def _to_records(self, response, zone):
@@ -330,7 +332,7 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = '%s-%s' % (r['name'], r['type'])
+        record_id = '%s:%s' % (r['type'], r['name'])
         return Record(id=record_id, name=r['name'],
                       type=r['type'], data=r, zone=zone,
                       driver=self, extra={})
