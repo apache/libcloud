@@ -74,7 +74,7 @@ class GoogleTests(LibcloudTestCase):
     def test_get_record(self):
         GoogleDNSMockHttp.type = 'FILTER_ZONES'
         zone = self.driver.list_zones()[0]
-        record = self.driver.get_record(zone.id, "foo.example.com.-A")
+        record = self.driver.get_record(zone.id, "A:foo.example.com.")
         self.assertEqual(record.name, 'foo.example.com.')
         self.assertEqual(record.type, 'A')
 
@@ -82,7 +82,7 @@ class GoogleTests(LibcloudTestCase):
         GoogleDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_record(2, 'a-a')
+            self.driver.get_record(2, 'a:a')
         except ZoneDoesNotExistError:
             e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, 2)
@@ -92,10 +92,10 @@ class GoogleTests(LibcloudTestCase):
     def test_get_record_record_does_not_exist(self):
         GoogleDNSMockHttp.type = 'RECORD_DOES_NOT_EXIST'
         try:
-            self.driver.get_record(1, "foo-A")
+            self.driver.get_record(1, "A:foo")
         except RecordDoesNotExistError:
             e = sys.exc_info()[1]
-            self.assertEqual(e.record_id, 'foo-A')
+            self.assertEqual(e.record_id, 'A:foo')
         else:
             self.fail('Exception not thrown')
 
