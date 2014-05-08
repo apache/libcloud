@@ -330,7 +330,7 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = '%s-%s' % (r['name'], r['type'])
+        record_id = '%s:%s' % (r['type'], r['name'])
         return Record(id=record_id, name=r['name'],
                       type=r['type'], data=r, zone=zone,
                       driver=self, extra={})
