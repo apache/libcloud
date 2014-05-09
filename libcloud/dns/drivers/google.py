@@ -142,7 +142,8 @@ class GoogleDNSDriver(DNSDriver):
                                         zone_id=zone_id)
 
         if len(response['rrsets']) > 0:
-            return self._to_record(response['rrsets'][0], zone_id)
+            zone = self.get_zone(zone_id)
+            return self._to_record(response['rrsets'][0], zone)
 
         raise RecordDoesNotExistError(value='', driver=self.connection.driver,
                                       record_id=record_id)
@@ -260,7 +261,7 @@ class GoogleDNSDriver(DNSDriver):
                 }
             ]
         }
-        request = '/managedZones/%s/changes' % (record.zone)
+        request = '/managedZones/%s/changes' % (record.zone.id)
         response = self.connection.request(request, method='POST',
                                            data=data)
         return response.success()
@@ -319,8 +320,9 @@ class GoogleDNSDriver(DNSDriver):
 
         extra['creationTime'] = r.get('creationTime')
         extra['nameServers'] = r.get('nameServers')
+        extra['id'] = r.get('id')
 
-        return Zone(id=r['id'], domain=r['dnsName'],
+        return Zone(id=r['name'], domain=r['dnsName'],
                     type='master', ttl=0, driver=self, extra=extra)
 
     def _to_records(self, response, zone):
