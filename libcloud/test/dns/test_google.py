@@ -140,20 +140,13 @@ class GoogleDNSMockHttp(MockHttpTestCase):
         body = self.fixtures.load('records_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _dns_v1beta1_projects_project_name_managedZones_example_com(self, method,
-                                                          url, body,
-                                                          headers):
+    def _dns_v1beta1_projects_project_name_managedZones_example_com(
+            self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('managed_zones_1.json')
         elif method == 'DELETE':
             body = None
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _dns_v1beta1_projects_project_name_managedZones_example_com_ZONE_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_does_not_exists.json')
-        return (httplib.NOT_FOUND, body, {},
-                httplib.responses[httplib.NOT_FOUND])
 
     def _dns_v1beta1_projects_project_name_managedZones_example_com_ZONE_DOES_NOT_EXIST(
             self, method, url, body, headers):
