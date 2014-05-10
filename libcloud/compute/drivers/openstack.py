@@ -1758,7 +1758,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('/os-security-groups/%s' %
                                        (security_group.id),
                                        method='DELETE')
-        return resp.status == httplib.NO_CONTENT
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_create_security_group_rule(self, security_group, ip_protocol,
                                       from_port, to_port, cidr=None,
