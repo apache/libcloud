@@ -2009,13 +2009,15 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             if label in public_networks_labels:
                 public_ips.extend(ips)
             else:
-                for ip in ips:
-                    # is_private_subnet does not check for ipv6
+                for v in values:
+                    ip = v['addr']
+                    ip_type = v.get('OS-EXT-IPS:type')  # added in grizzly
                     try:
-                        if is_private_subnet(ip):
-                            private_ips.append(ip)
-                        else:
+                        # is_private_subnet does not check for ipv6
+                        if ip_type == 'floating' or not is_private_subnet(ip):
                             public_ips.append(ip)
+                        else:
+                            private_ips.append(ip)
                     except:
                         private_ips.append(ip)
 
