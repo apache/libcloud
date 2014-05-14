@@ -134,6 +134,10 @@ Compute
   (GITHUB-285)
   [Benoit Canet]
 
+- Add new driver for HP Public Cloud (Helion) available via Provider.HPCLOUD
+  constant.
+  [Tomaz Muraus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 

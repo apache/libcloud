@@ -120,6 +120,9 @@ class Provider(object):
     IKOULA = 'ikoula'
     OUTSCALE_SAS = 'outscale_sas'
 
+    # OpenStack based providers
+    HPCLOUD = 'hpcloud'
+
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name

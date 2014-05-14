@@ -79,6 +79,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_FIRST_GEN:
     ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
+    Provider.HPCLOUD:
+    ('libcloud.compute.drivers.hpcloud', 'HPCloudNodeDriver'),
     Provider.VPSNET:
     ('libcloud.compute.drivers.vpsnet', 'VPSNetNodeDriver'),
     Provider.LINODE:
