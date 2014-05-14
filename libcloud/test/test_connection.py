@@ -21,6 +21,7 @@ from mock import Mock, call
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection
+from libcloud.common.base import LoggingConnection
 
 
 class ConnectionClassTestCase(unittest.TestCase):
@@ -181,6 +182,26 @@ class ConnectionClassTestCase(unittest.TestCase):
             pass
 
         self.assertEqual(con.context, {})
+
+    def test_log_curl(self):
+        url = '/test/path'
+        body = None
+        headers = {}
+
+        con = LoggingConnection()
+        con.protocol = 'http'
+        con.host = 'example.com'
+        con.port = 80
+
+        for method in ['GET', 'POST', 'PUT', 'DELETE']:
+            cmd = con._log_curl(method=method, url=url, body=body,
+                                headers=headers)
+            self.assertEqual(cmd, 'curl -i -X %s --compress http://example.com:80/test/path' %
+                             (method))
+
+        # Should use --head for head requests
+        cmd = con._log_curl(method='HEAD', url=url, body=body, headers=headers)
+        self.assertEqual(cmd, 'curl -i --head --compress http://example.com:80/test/path')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

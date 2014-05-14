@@ -12,6 +12,13 @@ General
   all the available images in the EC2 driver).
   [Andrew Mann]
 
+- Use --head flag instead of -X HEAD when logging curl lines for HEAD requests
+  in debug mode.
+
+  Reported by Brian Metzler.
+  (LIBCLOUD-552)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 

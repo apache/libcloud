@@ -331,7 +331,11 @@ class LoggingConnection():
     def _log_curl(self, method, url, body, headers):
         cmd = ["curl", "-i"]
 
-        cmd.extend(["-X", pquote(method)])
+        if method.lower() == 'head':
+            # HEAD method need special handling
+            cmd.extend(["--head"])
+        else:
+            cmd.extend(["-X", pquote(method)])
 
         for h in headers:
             cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
