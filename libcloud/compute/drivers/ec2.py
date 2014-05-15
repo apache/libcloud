@@ -2251,14 +2251,41 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return image
 
-    def ex_list_networks(self):
+    def ex_list_networks(self, network_ids=None, filters=None):
         """
         Return a list of :class:`EC2Network` objects for the
         current region.
 
+        :param      network_ids: One or more VPC IDs
+        :type       network_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain VPCs
+        :type       filters: ``dict``
+
         :rtype:     ``list`` of :class:`EC2Network`
         """
         params = {'Action': 'DescribeVpcs'}
+
+        if network_ids is not None:
+            for network_idx, network_id in enumerate(network_ids, 1):
+                network_key = 'VpcId.%s' % network_idx
+                params[network_key] = network_id
+
+        if filters is not None:
+            for filter_idx, filter_data in enumerate(filters.items(), 1):
+                filter_name, filter_values = filter_data
+                filter_key = 'Filter.%s.Name' % filter_idx
+                params[filter_key] = filter_name
+
+                if isinstance(filter_values, list):
+                    for value_idx, value in enumerate(filter_values, 1):
+                        value_key = 'Filter.%s.Value.%s' % (filter_idx,
+                                                            value_idx)
+                        params[value_key] = value
+                else:
+                    value_key = 'Filter.%s.Value.1' % filter_idx
+                    params[value_key] = filter_values
 
         return self._to_networks(
             self.connection.request(self.path, params=params).object
