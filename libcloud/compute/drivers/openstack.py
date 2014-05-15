@@ -1318,6 +1318,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                                                  {}))
         }
 
+        if 'availability_zone' in kwargs:
+            server_params['availability_zone'] = kwargs['availability_zone']
+
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
 
@@ -2048,6 +2051,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone', None),
             ),
         )
 
