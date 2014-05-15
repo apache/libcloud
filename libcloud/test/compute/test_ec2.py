@@ -919,6 +919,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('available', vpcs[1].extra['state'])
         self.assertEqual('dopt-7eded312', vpcs[1].extra['dhcp_options_id'])
 
+    def test_ex_list_networks_network_ids(self):
+        EC2MockHttp.type = 'network_ids'
+        network_ids = ['vpc-532335e1']
+
+        # We assert in the mock http method
+        self.driver.ex_list_networks(network_ids=network_ids)
+
+    def test_ex_list_networks_filters(self):
+        EC2MockHttp.type = 'filters'
+        filters = {'dhcp-options-id': 'dopt-7eded312',  # matches two networks
+                   'cidr': '192.168.51.0/24'}  # matches one network
+
+        # We assert in the mock http method
+        self.driver.ex_list_networks(filters=filters)
+
     def test_ex_create_network(self):
         vpc = self.driver.ex_create_network('192.168.55.0/24',
                                             name='Test VPC',
@@ -1346,6 +1361,39 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeVpcs(self, method, url, body, headers):
+        body = self.fixtures.load('describe_vpcs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _network_ids_DescribeVpcs(self, method, url, body, headers):
+        expected_params = {
+            'VpcId.1': 'vpc-532335e1'
+        }
+        self.assertUrlContainsQueryParams(url, expected_params)
+
+        body = self.fixtures.load('describe_vpcs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _filters_DescribeVpcs(self, method, url, body, headers):
+        expected_params_1 = {
+            'Filter.1.Name': 'dhcp-options-id',
+            'Filter.1.Value.1': 'dopt-7eded312',
+            'Filter.2.Name': 'cidr',
+            'Filter.2.Value.1': '192.168.51.0/24'
+        }
+
+        expected_params_2 = {
+            'Filter.1.Name': 'cidr',
+            'Filter.1.Value.1': '192.168.51.0/24',
+            'Filter.2.Name': 'dhcp-options-id',
+            'Filter.2.Value.1': 'dopt-7eded312'
+        }
+
+        try:
+            self.assertUrlContainsQueryParams(url, expected_params_1)
+        except AssertionError:
+            # dict ordering is not guaranteed
+            self.assertUrlContainsQueryParams(url, expected_params_2)
+
         body = self.fixtures.load('describe_vpcs.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

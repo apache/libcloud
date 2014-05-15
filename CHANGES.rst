@@ -146,6 +146,10 @@ Compute
   (GITHUB-295, LIBCLOUD-555)
   [syndicut]
 
+- Allow user to pass filters to ex_list_networks method in the EC2 driver.
+  (GITHUB-294)
+  [zerthimon]
+
 Storage
 ~~~~~~~
 
