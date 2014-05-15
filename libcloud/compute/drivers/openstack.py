@@ -1247,6 +1247,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_availability_zone: Nova availability zone for the node
+        :type       ex_availability_zone: ``str``
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1317,6 +1320,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             'personality': self._files_to_personality(kwargs.get("ex_files",
                                                                  {}))
         }
+
+        if 'ex_availability_zone' in kwargs:
+            server_params['availability_zone'] = kwargs['ex_availability_zone']
 
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
@@ -2048,6 +2054,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
+                                               None),
             ),
         )
 

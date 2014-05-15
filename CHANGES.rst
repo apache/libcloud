@@ -138,6 +138,13 @@ Compute
   constant.
   [Tomaz Muraus]
 
+- Allow user to specify availability zone when creating an OpenStack node by
+  passing "ex_availability_zone" argument to the create_node method.
+  Note: This will only work if the OpenStack installation is running
+  availability zones extension.
+  (GITHUB-295)
+  [syndicut]
+
 Storage
 ~~~~~~~
 
