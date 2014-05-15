@@ -1,7 +1,7 @@
-Outscale SAS Driver Documentation
+Outscale INC Driver Documentation
 =================================
 
-`Outscale SAS`_ provides an IaaS platform allowing
+`Outscale INC`_ provides an IaaS platform allowing
 developers to benefit from all the flexibility of the Cloud.
 This IaaS platform relies on TINA OS, its Cloud manager which purpose is to
 provide great performances on the Cloud.
@@ -19,13 +19,13 @@ Outscale users can start virtual machines in the following regions:
 * (Soon) US East (New Jersey) Region
 * (Soon) Asia (Hong Kong) Region
 
-Outscale SAS is an european company: prices are in €.
+Outscale INC is an american company: prices are in $.
 
 API Docs
 --------
 
-.. autoclass:: libcloud.compute.drivers.ec2.OutscaleSASNodeDriver
+.. autoclass:: libcloud.compute.drivers.ec2.OutscaleINCNodeDriver
     :members:
     :inherited-members:
 
-.. _`Outscale SAS`: https://www.outscale.com/
+.. _`Outscale INC`: https://www.outscale.com/
