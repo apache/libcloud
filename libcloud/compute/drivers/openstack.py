@@ -2051,7 +2051,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
-                availability_zone=api_node.get('OS-EXT-AZ:availability_zone', None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
+                                               None),
             ),
         )
 
