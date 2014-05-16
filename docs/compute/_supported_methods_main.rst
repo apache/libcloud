@@ -35,6 +35,7 @@ Provider                              list nodes create node reboot node destroy
 `Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no         
 `GoGrid`_                             yes        yes         yes         yes          yes         yes        yes        
 `HostVirtual`_                        yes        yes         yes         yes          yes         yes        yes        
+`HP Public Cloud (Helion)`_           yes        yes         yes         yes          yes         yes        yes        
 `IBM SmartCloud Enterprise`_          yes        yes         yes         yes          yes         yes        no         
 `Ikoula`_                             yes        yes         yes         yes          yes         yes        yes        
 `Joyent`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -96,6 +97,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com

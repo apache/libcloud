@@ -35,6 +35,7 @@ Provider                              list images get image create image delete 
 `Google Compute Engine`_              yes         no        no           no           no        
 `GoGrid`_                             yes         no        no           no           no        
 `HostVirtual`_                        yes         no        no           no           no        
+`HP Public Cloud (Helion)`_           yes         yes       yes          yes          no        
 `IBM SmartCloud Enterprise`_          yes         no        yes          no           no        
 `Ikoula`_                             yes         no        no           no           no        
 `Joyent`_                             yes         no        no           no           no        
@@ -96,6 +97,7 @@ Provider                              list images get image create image delete 
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com

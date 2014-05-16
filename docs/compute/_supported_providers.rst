@@ -35,6 +35,7 @@ Provider                              Documentation                             
 `Google Compute Engine`_              :doc:`Click </compute/drivers/gce>`          GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
 `GoGrid`_                                                                          GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                     HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`    :class:`HostVirtualNodeDriver`      
+`HP Public Cloud (Helion)`_           :doc:`Click </compute/drivers/hpcloud>`      HPCLOUD             :mod:`libcloud.compute.drivers.hpcloud`        :class:`HPCloudNodeDriver`          
 `IBM SmartCloud Enterprise`_                                                       IBM                 :mod:`libcloud.compute.drivers.ibm_sce`        :class:`IBMNodeDriver`              
 `Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`       IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
 `Joyent`_                                                                          JOYENT              :mod:`libcloud.compute.drivers.joyent`         :class:`JoyentNodeDriver`           
@@ -96,6 +97,7 @@ Provider                              Documentation                             
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com

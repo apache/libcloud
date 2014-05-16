@@ -35,6 +35,7 @@ Provider                              list key pairs get key pair create key pai
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
+`HP Public Cloud (Helion)`_           yes            yes          yes             yes                           no                          yes            
 `IBM SmartCloud Enterprise`_          no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Joyent`_                             no             no           no              no                            no                          no             
@@ -96,6 +97,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
