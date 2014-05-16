@@ -142,7 +142,7 @@ Compute
   passing "ex_availability_zone" argument to the create_node method.
   Note: This will only work if the OpenStack installation is running
   availability zones extension.
-  (GITHUB-295)
+  (GITHUB-295, LIBCLOUD-555)
   [syndicut]
 
 Storage
