@@ -47,6 +47,7 @@ Provider                              Documentation                             
 `OpenNebula (v3.8)`_                                                               OPENNEBULA          :mod:`libcloud.compute.drivers.opennebula`     :class:`OpenNebulaNodeDriver`       
 `OpenStack`_                          :doc:`Click </compute/drivers/openstack>`    OPENSTACK           :mod:`libcloud.compute.drivers.openstack`      :class:`OpenStackNodeDriver`        
 `Opsource`_                                                                        OPSOURCE            :mod:`libcloud.compute.drivers.opsource`       :class:`OpsourceNodeDriver`         
+`Outscale INC`_                       :doc:`Click </compute/drivers/outscale_inc>` OUTSCALE_INC        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleINCNodeDriver`      
 `Outscale SAS`_                       :doc:`Click </compute/drivers/outscale_sas>` OUTSCALE_SAS        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleSASNodeDriver`      
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`    RACKSPACE           :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceNodeDriver`        
 `Rackspace Cloud (First Gen)`_                                                     RACKSPACE_FIRST_GEN :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceFirstGenNodeDriver`
@@ -107,6 +108,7 @@ Provider                              Documentation                             
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

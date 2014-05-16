@@ -49,6 +49,7 @@ __all__ = [
     'INSTANCE_TYPES',
     'OUTSCALE_INSTANCE_TYPES',
     'OUTSCALE_SAS_REGION_DETAILS',
+    'OUTSCALE_INC_REGION_DETAILS',
     'DEFAULT_EUCA_API_VERSION',
     'EUCA_NAMESPACE',
 
@@ -59,6 +60,7 @@ __all__ = [
     'EucNodeDriver',
 
     'OutscaleSASNodeDriver',
+    'OutscaleINCNodeDriver',
 
     'EC2NodeLocation',
     'EC2ReservedNode',
@@ -877,7 +879,7 @@ OUTSCALE_INSTANCE_TYPES = {
 """
 The function manipulating Outscale cloud regions will be overriden because
 Outscale instances types are in a separate dict so also declare Outscale cloud
-regions in another constant.
+regions in some other constants.
 """
 OUTSCALE_SAS_REGION_DETAILS = {
     'eu-west-3': {
@@ -937,6 +939,91 @@ OUTSCALE_SAS_REGION_DETAILS = {
     'us-east-1': {
         'endpoint': 'api.us-east-1.outscale.com',
         'api_name': 'osc_sas_us_east_1',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    }
+}
+
+
+OUTSCALE_INC_REGION_DETAILS = {
+    'eu-west-1': {
+        'endpoint': 'api.eu-west-1.outscale.com',
+        'api_name': 'osc_inc_eu_west_1',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'eu-west-3': {
+        'endpoint': 'api-ppd.outscale.com',
+        'api_name': 'osc_inc_eu_west_3',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-1': {
+        'endpoint': 'api.us-east-1.outscale.com',
+        'api_name': 'osc_inc_us_east_1',
         'country': 'USA',
         'instance_types': [
             't1.micro',
@@ -4633,6 +4720,32 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         'stopped': NodeState.STOPPED
     }
 
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us-east-1', region_details=None, **kwargs):
+        if hasattr(self, '_region'):
+            region = self._region
+
+        if region_details is None:
+            raise ValueError('Invalid region_details argument')
+
+        if region not in region_details.keys():
+            raise ValueError('Invalid region: %s' % (region))
+
+        self.region_name = region
+        self.region_details = region_details
+        details = self.region_details[region]
+        self.api_name = details['api_name']
+        self.country = details['country']
+
+        self.connectionCls.host = details['endpoint']
+
+        self._not_implemented_msg =\
+            'This method is not supported in the Outscale driver'
+
+        super(BaseEC2NodeDriver, self).__init__(key=key, secret=secret,
+                                                secure=secure, host=host,
+                                                port=port, **kwargs)
+
     def create_node(self, **kwargs):
         """
         Create a new Outscale node. The ex_iamprofile keyword is not supported.
@@ -4810,36 +4923,6 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         raise NotImplementedError(self._not_implemented_msg)
 
-
-class OutscaleSASNodeDriver(OutscaleNodeDriver):
-    """
-    Outscale SAS node driver
-    """
-    name = 'Outscale SAS'
-    type = Provider.OUTSCALE_SAS
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='us-east-1', **kwargs):
-        if hasattr(self, '_region'):
-            region = self._region
-
-        if region not in OUTSCALE_SAS_REGION_DETAILS.keys():
-            raise ValueError('Invalid region: %s' % (region))
-
-        details = OUTSCALE_SAS_REGION_DETAILS[region]
-        self.region_name = region
-        self.api_name = details['api_name']
-        self.country = details['country']
-
-        self.connectionCls.host = details['endpoint']
-
-        self._not_implemented_msg =\
-            'This method is not supported in the Outscale driver'
-
-        super(OutscaleNodeDriver, self).__init__(key=key, secret=secret,
-                                                 secure=secure, host=host,
-                                                 port=port, **kwargs)
-
     def list_sizes(self, location=None):
         """
         List available instance flavors/sizes
@@ -4849,7 +4932,7 @@ class OutscaleSASNodeDriver(OutscaleNodeDriver):
         :rtype: ``list`` of :class:`NodeSize`
         """
         available_types =\
-            OUTSCALE_SAS_REGION_DETAILS[self.region_name]['instance_types']
+            self.region_details[self.region_name]['instance_types']
         sizes = []
 
         for instance_type in available_types:
@@ -4859,3 +4942,33 @@ class OutscaleSASNodeDriver(OutscaleNodeDriver):
             attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
+
+
+class OutscaleSASNodeDriver(OutscaleNodeDriver):
+    """
+    Outscale SAS node driver
+    """
+    name = 'Outscale SAS'
+    type = Provider.OUTSCALE_SAS
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us-east-1', region_details=None, **kwargs):
+        super(OutscaleSASNodeDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port,
+            region=region, region_details=OUTSCALE_SAS_REGION_DETAILS,
+            **kwargs)
+
+
+class OutscaleINCNodeDriver(OutscaleNodeDriver):
+    """
+    Outscale INC node driver
+    """
+    name = 'Outscale INC'
+    type = Provider.OUTSCALE_INC
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us-east-1', region_details=None, **kwargs):
+        super(OutscaleINCNodeDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port,
+            region=region, region_details=OUTSCALE_INC_REGION_DETAILS,
+            **kwargs)

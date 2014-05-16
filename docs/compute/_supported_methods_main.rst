@@ -47,6 +47,7 @@ Provider                              list nodes create node reboot node destroy
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
+`Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
@@ -107,6 +108,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

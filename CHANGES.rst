@@ -130,8 +130,9 @@ Compute
   (GITHUB-287)
   [earthgecko]
 
-- Add a new driver for Outscale cloud (http://www.outscale.com).
-  (GITHUB-285)
+- Add a new driver for Outscale SAS and Outscale INC cloud
+  (http://www.outscale.com).
+  (GITHUB-285, GITHUB-293, LIBCLOUD-536, LIBCLOUD-553)
   [Benoit Canet]
 
 - Add new driver for HP Public Cloud (Helion) available via Provider.HPCLOUD

@@ -47,6 +47,7 @@ Provider                              list volumes create volume destroy volume 
 `OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Opsource`_                           no           no            no             no            no            no             no             
+`Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           no             no             
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
@@ -107,6 +108,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

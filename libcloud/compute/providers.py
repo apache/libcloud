@@ -143,6 +143,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.ikoula', 'IkoulaNodeDriver'),
     Provider.OUTSCALE_SAS:
     ('libcloud.compute.drivers.ec2', 'OutscaleSASNodeDriver'),
+    Provider.OUTSCALE_INC:
+    ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
