@@ -1247,6 +1247,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_availability_zone: Nova availability zone for the node
+        :type       ex_availability_zone: ``str``
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
