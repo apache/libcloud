@@ -919,6 +919,25 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('available', vpcs[1].extra['state'])
         self.assertEqual('dopt-7eded312', vpcs[1].extra['dhcp_options_id'])
 
+    def test_ex_list_networks_network_ids(self):
+        network_ids = ['vpc-532335e1']
+        vpcs = self.driver.ex_list_networks(network_ids=network_ids)
+
+        # result should be one object
+        self.assertEqual(len(vpcs), 1)
+        # object id should match network id we requested
+        self.assertEqual('vpc-532335e1', vpcs[0].id)
+
+    def test_ex_list_networks_network_filters(self):
+        filters = {'dhcp-options-id':'dopt-7eded312', # matches two networks
+                   'cidr': '192.168.51.0/24'} # matches one network
+        vpcs = self.driver.ex_list_networks(filters=filters)
+
+        # result should be one object
+        self.assertEqual(len(vpcs), 1)
+        # object id should match network id with cidr we requested
+        self.assertEqual('vpc-532335e1', vpcs[0].id)
+
     def test_ex_create_network(self):
         vpc = self.driver.ex_create_network('192.168.55.0/24',
                                             name='Test VPC',
