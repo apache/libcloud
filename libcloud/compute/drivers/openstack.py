@@ -1318,8 +1318,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                                                  {}))
         }
 
-        if 'availability_zone' in kwargs:
-            server_params['availability_zone'] = kwargs['availability_zone']
+        if 'ex_availability_zone' in kwargs:
+            server_params['availability_zone'] = kwargs['ex_availability_zone']
 
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
