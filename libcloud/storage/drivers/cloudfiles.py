@@ -280,8 +280,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
-        container_name = container.name
-        response = self.connection.request('/%s' % (container_name),
+        container_name_encoded = self._encode_container_name(container.name)
+        response = self.connection.request('/%s' % (container_name_encoded),
                                            method='HEAD',
                                            cdn_request=True)
 
@@ -290,7 +290,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             return cdn_url
         elif response.status == httplib.NOT_FOUND:
             raise ContainerDoesNotExistError(value='',
-                                             container_name=container_name,
+                                             container_name=container.name,
                                              driver=self)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
@@ -691,7 +691,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             params['prefix'] = ex_prefix
 
         while True:
-            response = self.connection.request('/%s' % (container.name),
+            container_name_encoded = \
+                self._encode_container_name(container.name)
+            response = self.connection.request('/%s' %
+                                               (container_name_encoded),
                                                params=params)
 
             if response.status == httplib.NO_CONTENT:

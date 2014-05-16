@@ -177,6 +177,13 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(obj.size, 1160520)
         self.assertEqual(obj.container.name, 'test_container')
 
+    def test_list_container_object_name_encoding(self):
+        CloudFilesMockHttp.type = 'EMPTY'
+        container = Container(name='test container 1', extra={},
+                              driver=self.driver)
+        objects = self.driver.list_container_objects(container=container)
+        self.assertEqual(len(objects), 0)
+
     def test_list_container_objects_with_prefix(self):
         CloudFilesMockHttp.type = 'EMPTY'
         container = Container(
@@ -835,6 +842,13 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
                 httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_container_EMPTY(self, method, url, body, headers):
+        body = self.fixtures.load('list_container_objects_empty.json')
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_test_20container_201_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('list_container_objects_empty.json')
         return (httplib.OK,
                 body,

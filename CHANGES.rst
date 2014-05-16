@@ -138,6 +138,18 @@ Compute
   constant.
   [Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- Fix container name encoding in the iterate_container_objects and
+  get_container_cdn_url method in the CloudFiles driver. Previously, those
+  methods would throw an exception if user passed in a container name which
+  contained a whitespace.
+
+  Reported by Brian Metzler.
+  (LIBCLOUD-552)
+  [Tomaz MUraus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
