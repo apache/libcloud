@@ -14,7 +14,7 @@
 # limitations under the License.
 """
 Azure Compute driver
-Version: 1.0
+Version: 2.0
 """
 import uuid
 import re
