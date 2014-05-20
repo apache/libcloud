@@ -26,9 +26,6 @@ import os
 import copy
 import base64
 
-from azure import *
-from azure.servicemanagement import *
-
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
@@ -194,7 +191,6 @@ class AzureNodeDriver(NodeDriver):
     _blob_url = ".blob.core.windows.net"
     features = {'create_node': ['password']}
     service_location = collections.namedtuple('service_location',['is_affinity_group', 'service_location'])
-    sms = ServiceManagementService(subscription_id, certificate_path)
 
     def list_sizes(self):
         """
@@ -364,8 +360,6 @@ class AzureNodeDriver(NodeDriver):
         auth = self._get_and_check_auth(kwargs["auth"])        
         password = auth.password
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
@@ -470,18 +464,23 @@ class AzureNodeDriver(NodeDriver):
             disk_name = "{0}-{1}-{2}.vhd".format(ex_cloud_service_name,name,time.strftime("%Y-%m-%d")) # Azure's pattern in the UI.
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
-            
-            result = sms.create_virtual_machine_deployment(
-                service_name=ex_cloud_service_name,
-                deployment_name=ex_deployment_name,
-                deployment_slot=ex_deployment_slot,
-                label=name,
-                role_name=name,
-                system_config=machine_config,
-                os_virtual_hard_disk=disk_config,
-                network_config=network_config,
-                role_size=size
-                )
+
+            result = self._perform_post(
+                self._get_deployment_path_using_name(ex_cloud_service_name),
+                AzureXmlSerializer.virtual_machine_deployment_to_xml(
+                    ex_deployment_name,
+                    ex_deployment_slot,
+                    name,
+                    name,
+                    machine_config,
+                    disk_config,
+                    'PersistentVMRole',
+                    network_config,
+                    None,
+                    None,
+                    size,
+                    None),
+                async=True)
         else:
             _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
@@ -503,15 +502,19 @@ class AzureNodeDriver(NodeDriver):
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
 
-            result = self.sms.add_role(
-                service_name=ex_cloud_service_name,
-                deployment_name=_deployment_name,
-                role_name=name,
-                system_config=machine_config,
-                os_virtual_hard_disk=disk_config,
-                network_config=network_config,
-                role_size=size
-            )
+            result = self._perform_post(
+                self._get_role_path(ex_cloud_service_name, 
+                    _deployment_name),
+                AzureXmlSerializer.add_role_to_xml(
+                    name, # role_name
+                    machine_config, # system_config 
+                    disk_config, # os_virtual_hard_disk
+                    'PersistentVMRole', # role_type
+                    network_config, # network_config
+                    None, # availability_set_name
+                    None, # data_virtual_hard_disks
+                    size), # role_size
+                async=True)
 
         return Node(
             id=name,
@@ -755,9 +758,10 @@ class AzureNodeDriver(NodeDriver):
         if not service_name:
             raise ValueError("service_name is required.")
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        res = sms.get_hosted_service_properties(service_name=service_name,embed_detail=False)
+        res = self._perform_get(
+            self._get_hosted_service_path(service_name) +
+            '?embed-detail=False',
+            HostedService)
 
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
@@ -773,45 +777,62 @@ class AzureNodeDriver(NodeDriver):
         if not service_name:
             raise ValueError("service_name is required.")
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-        
-        _check_availability = sms.check_storage_account_name_availability(service_name=service_name)
-        
+        _check_availability = self._perform_get(
+            self._get_storage_service_path() +
+            '/operations/isavailable/' +
+            _str(service_name) + '',
+            AvailabilityResponse)
+                
         return _check_availability.result
 
     def _create_storage_account(self, **kwargs):
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
         if kwargs['is_affinity_group'] is True:
-            result = sms.create_storage_account(
-                service_name=kwargs['service_name'],
-                description=kwargs['service_name'],
-                label=kwargs['service_name'],
-                affinity_group=kwargs['location'])
+            result = self._perform_post(
+                self._get_storage_service_path(),
+                AzureXmlSerializer.create_storage_service_input_to_xml(
+                    kwargs['service_name'],
+                    kwargs['service_name'],
+                    kwargs['service_name'],
+                    kwargs['location'],
+                    None,  # Location
+                    True,  # geo_replication_enabled
+                    None), # extended_properties
+            async=True)
         else:
-            result = sms.create_storage_account(
-                service_name=kwargs['service_name'],
-                description=kwargs['service_name'],
-                label=kwargs['service_name'],
-                location=kwargs['location'])
+            result = self._perform_post(
+                self._get_storage_service_path(),
+                AzureXmlSerializer.create_storage_service_input_to_xml(
+                    kwargs['service_name'],
+                    kwargs['service_name'],
+                    kwargs['service_name'],
+                    None,  # Affinity Group
+                    kwargs['location'],  # Location
+                    True,  # geo_replication_enabled
+                    None), # extended_properties
+            async=True)
 
         # We need to wait for this to be created before we can 
         # create the storage container and the instance. 
 
-        operation_status = sms.get_operation_status(result.request_id)
+        operation_status = self._get_operation_status(result.request_id)
 
         timeout = 60 * 5
         waittime = 0
         interval = 5  
 
         while operation_status.status == "InProgress" and waittime < timeout:
-            operation_status = sms.get_operation_status(result.request_id)
+            operation_status = self._get_operation_status(result.request_id)
             if operation_status.status == "Succeeded":
                 break
 
             waittime += interval
             time.sleep(interval)
         return
+
+    def _get_operation_status(self, request_id):
+        return self._perform_get(
+            '/' + subscription_id + '/operations/' + _str(request_id),
+            Operation)
 
     def _perform_get(self, path, response_type):
         request = AzureHTTPRequest()
@@ -1216,9 +1237,6 @@ class AzureNodeDriver(NodeDriver):
                 path += '/' + _str(name)
             return path
 
-    def _lower(self, text):
-        return text.lower()
-
     def _get_image_path(self, image_name=None):
         return self._get_path('services/images', image_name)
 
@@ -1237,6 +1255,9 @@ class AzureNodeDriver(NodeDriver):
                               '/deployments/' + deployment_name +
                               '/roles', role_name)
 
+    def _get_storage_service_path(self, service_name=None):
+        return self._get_path('services/storageservices', service_name)
+
     def get_connection(self):
         certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
         port = HTTPS_PORT
@@ -1251,6 +1272,9 @@ class AzureNodeDriver(NodeDriver):
 """
 XML Serializer
 """
+def _lower(text):
+    return text.lower()
+
 class AzureXmlSerializer():
 
     @staticmethod
@@ -1488,6 +1512,9 @@ class AzureXmlSerializer():
                      ('Thumbprint', cert.thumbprint)])
                 xml += '</CertificateSetting>'
             xml += '</StoredCertificateSettings>'
+
+        #xml += AzureXmlSerializer.data_to_xml(
+        #    [('AdminUsername', configuration.admin_user_name)])
         return xml
 
     @staticmethod
@@ -1765,7 +1792,7 @@ class AzureXmlSerializer():
                                '</Value>',
                                '</ExtendedProperty>'])
             xml += '</ExtendedProperties>'
-        return xm
+        return xml
 
 """
 Data Classes
@@ -1866,6 +1893,20 @@ class LoadBalancerProbe(WindowsAzureData):
         self.path = u''
         self.port = u''
         self.protocol = u''
+
+class ConfigurationSets(WindowsAzureData):
+
+    def __init__(self):
+        self.configuration_sets = _list_of(ConfigurationSet)
+
+    def __iter__(self):
+        return iter(self.configuration_sets)
+
+    def __len__(self):
+        return len(self.configuration_sets)
+
+    def __getitem__(self, index):
+        return self.configuration_sets[index]
 
 class ConfigurationSet(WindowsAzureData):
 
@@ -2011,6 +2052,13 @@ class Deployment(WindowsAzureData):
         self.extended_properties = _dict_of(
             'ExtendedProperty', 'Name', 'Value')
 
+class UpgradeStatus(WindowsAzureData):
+
+    def __init__(self):
+        self.upgrade_type = u''
+        self.current_upgrade_domain_state = u''
+        self.current_upgrade_domain = u''
+
 class RoleInstanceList(WindowsAzureData):
 
     def __init__(self):
@@ -2153,6 +2201,20 @@ class AttachedTo(WindowsAzureData):
         self.hosted_service_name = u''
         self.deployment_name = u''
         self.role_name = u''
+
+class OperationError(WindowsAzureData):
+
+    def __init__(self):
+        self.code = u''
+        self.message = u''
+
+class Operation(WindowsAzureData):
+
+    def __init__(self):
+        self.id = u''
+        self.status = u''
+        self.http_status_code = u''
+        self.error = OperationError()
 
 class AzureHTTPRequest(object):
     def __init__(self):
