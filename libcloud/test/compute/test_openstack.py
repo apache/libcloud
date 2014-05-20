@@ -959,7 +959,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)
         node = nodes[0]
-
         self.assertEqual('12065', node.id)
         # test public IPv4
         self.assertTrue('12.16.18.28' in node.public_ips)
