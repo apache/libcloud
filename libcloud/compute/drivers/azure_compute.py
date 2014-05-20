@@ -188,6 +188,1040 @@ class AzureConnection(ConnectionUserAndKey):
     Connection class for Azure Compute Driver.
     """
 
+class AzureNodeDriver(NodeDriver):
+    
+    _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
+    _blob_url = ".blob.core.windows.net"
+    features = {'create_node': ['password']}
+    service_location = collections.namedtuple('service_location',['is_affinity_group', 'service_location'])
+    sms = ServiceManagementService(subscription_id, certificate_path)
+
+    def list_sizes(self):
+        """
+        Lists all sizes
+
+        :rtype: ``list`` of :class:`NodeSize`
+        """
+        sizes = []
+
+        for key, values in self._instance_types.items():
+            node_size = self._to_node_size(copy.deepcopy(values))
+            sizes.append(node_size)
+
+        return sizes
+
+    def list_images(self):
+        """
+        Lists all images
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """        
+        data = self._perform_get(self._get_image_path(), Images)
+
+        return [self._to_image(i) for i in data]
+
+    def list_locations(self):
+        """
+        Lists all locations
+
+        :rtype: ``list`` of :class:`NodeLocation`
+        """
+        data = self._perform_get('/' + subscription_id + '/locations', Locations)
+
+        return [self._to_location(l) for l in data]
+
+    def list_nodes(self, ex_cloud_service_name=None):
+        """
+        List all nodes
+
+        ex_cloud_service_name parameter is used to scope the request 
+        to a specific Cloud Service. This is a required parameter as
+        nodes cannot exist outside of a Cloud Service nor be shared
+        between a Cloud Service within Azure. 
+
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :rtype: ``list`` of :class:`Node`
+        """
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        data = self._perform_get(
+            self._get_hosted_service_path(ex_cloud_service_name) +
+            '?embed-detail=True',
+            HostedService)
+
+        try:
+            return [self._to_node(n) for n in data.deployments[0].role_instance_list]
+        except IndexError:
+            return None
+
+    def reboot_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+        """
+        Reboots a node.
+
+        ex_cloud_service_name parameter is used to scope the request 
+        to a specific Cloud Service. This is a required parameter as
+        nodes cannot exist outside of a Cloud Service nor be shared
+        between a Cloud Service within Azure. 
+
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :param      ex_deployment_name: Options are "production" (default)
+                                         or "Staging". (Optional)
+        :type       ex_deployment_name: ``str``
+
+        :rtype: ``list`` of :class:`Node`
+        """
+
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if not ex_deployment_slot:
+            ex_deployment_slot = "production"
+
+        _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
+        print _deployment_name
+
+        try:
+            result = self._perform_post(
+            self._get_deployment_path_using_name(
+                ex_cloud_service_name, _deployment_name) + \
+                    '/roleinstances/' + _str(node.id) + \
+                    '?comp=reboot', '', async=True)
+            if result.request_id:
+                return True
+            else:
+                return False
+        except Exception, e:
+            return False
+
+    def list_volumes(self, node=None):
+        """
+        Lists volumes of the disks in the image repository that are
+        associated with the specificed subscription.
+
+        Pass Node object to scope the list of volumes to a single
+        instance.
+
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
+
+        data = self._perform_get(self._get_disk_path(), Disks)
+
+        volumes = [self._to_volume(volume=v,node=node) for v in data]
+
+        return volumes
+
+    def create_node(self, ex_cloud_service_name=None, **kwargs):
+        """Create Azure Virtual Machine
+
+           Reference: http://bit.ly/1fIsCb7 [www.windowsazure.com/en-us/documentation/]
+
+           We default to: 
+
+           + 3389/TCP - RDP - 1st Microsoft instance.
+           + RANDOM/TCP - RDP - All succeeding Microsoft instances. 
+
+           + 22/TCP - SSH - 1st Linux instance 
+           + RANDOM/TCP - SSH - All succeeding Linux instances.
+
+          The above replicates the standard behavior of the Azure UI. 
+          You can retrieve the assigned ports to each instance by 
+          using the following private function:
+
+          _get_endpoint_ports(service_name)
+            Returns public,private port key pair.
+
+           @inherits: :class:`NodeDriver.create_node`
+
+           :keyword     ex_cloud_service_name: Required. Name of the Azure Cloud Service.
+           :type        ex_cloud_service_name:  ``str``
+
+           :keyword     ex_storage_service_name: Optional: Name of the Azure Storage Service.
+           :type        ex_cloud_service_name:  ``str``
+
+           :keyword     ex_deployment_name: Optional. The name of the deployment. 
+                                            If this is not passed in we default to
+                                            using the Cloud Service name.
+            :type       ex_deployment_name: ``str``
+
+           :keyword     ex_deployment_slot: Optional: Valid values: production|staging. 
+                                            Defaults to production.
+           :type        ex_cloud_service_name:  ``str``
+
+           :keyword     ex_linux_user_id: Optional. Defaults to 'azureuser'.
+           :type        ex_cloud_service_name:  ``str``
+
+        """
+        name = kwargs['name']
+        size = kwargs['size']
+        image = kwargs['image']
+
+        password = None
+        auth = self._get_and_check_auth(kwargs["auth"])        
+        password = auth.password
+
+        sms = ServiceManagementService(subscription_id, certificate_path)
+
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if "ex_deployment_slot" in kwargs:
+            ex_deployment_slot = kwargs['ex_deployment_slot']
+        else:
+            ex_deployment_slot = "production" # We assume production if this is not provided. 
+
+        if "ex_linux_user_id" in kwargs:
+            ex_linux_user_id = kwargs['ex_linux_user_id']
+        else:
+            # This mimics the Azure UI behavior.
+            ex_linux_user_id = "azureuser"
+
+        node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
+        network_config = ConfigurationSet()
+        network_config.configuration_set_type = 'NetworkConfiguration'
+
+        # We do this because we need to pass a Configuration to the 
+        # method. This will be either Linux or Windows. 
+        if re.search("Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk", image, re.I): 
+            machine_config = WindowsConfigurationSet(name, password)
+            machine_config.domain_join = None
+
+            if node_list is None:
+                port = "3389"
+            else:
+                port = random.randint(41952,65535)
+                endpoints = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
+
+                for instances in endpoints.role_instance_list:
+                    ports = []
+                    for ep in instances.instance_endpoints:
+                        ports += [ep.public_port]
+
+                    while port in ports:
+                        port = random.randint(41952,65535)
+
+            endpoint = ConfigurationSetInputEndpoint(
+                name='Remote Desktop',
+                protocol='tcp',
+                port=port,
+                local_port='3389',
+                load_balanced_endpoint_set_name=None,
+                enable_direct_server_return=False
+            )
+        else:
+            if node_list is None:
+                port = "22"
+            else:
+                port = random.randint(41952,65535)
+                endpoints = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
+
+                for instances in endpoints.role_instance_list:
+                    ports = []
+                    for ep in instances.instance_endpoints:
+                        ports += [ep.public_port]
+
+                    while port in ports:
+                        port = random.randint(41952,65535)
+
+            endpoint = ConfigurationSetInputEndpoint(
+                name='SSH',
+                protocol='tcp',
+                port=port,
+                local_port='22',
+                load_balanced_endpoint_set_name=None,
+                enable_direct_server_return=False
+            )
+            machine_config = LinuxConfigurationSet(name, ex_linux_user_id, password, False)
+
+        network_config.input_endpoints.input_endpoints.append(endpoint)
+
+        _storage_location = self._get_cloud_service_location(service_name=ex_cloud_service_name)
+        
+        # OK, bit annoying here. You must create a deployment before
+        # you can create an instance; however, the deployment function
+        # creates the first instance, but all subsequent instances
+        # must be created using the add_role function. 
+        #
+        # So, yeah, annoying.
+        if node_list is None:
+            # This is the first node in this cloud service.
+            if "ex_storage_service_name" in kwargs:
+                ex_storage_service_name = kwargs['ex_storage_service_name'] 
+            else:
+                ex_storage_service_name = ex_cloud_service_name
+                ex_storage_service_name = re.sub(ur'[\W_]+', u'', ex_storage_service_name.lower(), flags=re.UNICODE)
+                if self._is_storage_service_unique(service_name=ex_storage_service_name):
+                    self._create_storage_account(
+                        service_name=ex_storage_service_name,
+                        location=_storage_location.service_location,
+                        is_affinity_group=_storage_location.is_affinity_group
+                        )
+
+            if "ex_deployment_name" in kwargs:
+                ex_deployment_name = kwargs['ex_deployment_name']
+            else:
+                ex_deployment_name = ex_cloud_service_name
+
+            blob_url = "http://" + ex_storage_service_name + ".blob.core.windows.net"
+            disk_name = "{0}-{1}-{2}.vhd".format(ex_cloud_service_name,name,time.strftime("%Y-%m-%d")) # Azure's pattern in the UI.
+            media_link = blob_url + "/vhds/" + disk_name
+            disk_config = OSVirtualHardDisk(image, media_link)
+            
+            result = sms.create_virtual_machine_deployment(
+                service_name=ex_cloud_service_name,
+                deployment_name=ex_deployment_name,
+                deployment_slot=ex_deployment_slot,
+                label=name,
+                role_name=name,
+                system_config=machine_config,
+                os_virtual_hard_disk=disk_config,
+                network_config=network_config,
+                role_size=size
+                )
+        else:
+            _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
+
+            if "ex_storage_service_name" in kwargs:
+                ex_storage_service_name = kwargs['ex_storage_service_name']
+            else:
+                ex_storage_service_name = ex_cloud_service_name
+                ex_storage_service_name = re.sub(ur'[\W_]+', u'', ex_storage_service_name.lower(), flags=re.UNICODE)
+                
+                if self._is_storage_service_unique(service_name=ex_storage_service_name):
+                    self._create_storage_account(
+                        service_name=ex_storage_service_name,
+                        location=_storage_location.service_location,
+                        is_affinity_group=_storage_location.is_affinity_group
+                        )
+
+            blob_url = "http://" + ex_storage_service_name + ".blob.core.windows.net"
+            disk_name = "{0}-{1}-{2}.vhd".format(ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
+            media_link = blob_url + "/vhds/" + disk_name
+            disk_config = OSVirtualHardDisk(image, media_link)
+
+            result = self.sms.add_role(
+                service_name=ex_cloud_service_name,
+                deployment_name=_deployment_name,
+                role_name=name,
+                system_config=machine_config,
+                os_virtual_hard_disk=disk_config,
+                network_config=network_config,
+                role_size=size
+            )
+
+        return Node(
+            id=name,
+            name=name,
+            state=NodeState.PENDING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.connection.driver
+        )
+
+    def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+        """Remove Azure Virtual Machine
+
+        This removes the instance, but does not 
+        remove the disk. You will need to use destroy_volume. 
+        Azure sometimes has an issue where it will hold onto
+        a blob lease for an extended amount of time. 
+
+        :keyword     ex_cloud_service_name: Required. Name of the Azure Cloud Service.
+        :type        ex_cloud_service_name:  ``str``
+
+        :keyword     ex_deployment_slot: Optional: The name of the deployment
+                                         slot. If this is not passed in we 
+                                         default to production. 
+        :type        ex_deployment_slot:  ``str``
+        """
+
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if not ex_deployment_slot:
+            ex_deployment_slot = "production"
+
+        _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
+        _deployment_name = _deployment.name
+
+        _server_deployment_count = len(_deployment.role_instance_list)
+
+        sms = ServiceManagementService(subscription_id, certificate_path)
+
+        try:
+            if _server_deployment_count > 1:
+                data = sms.delete_role(service_name=ex_cloud_service_name,
+                    deployment_name=_deployment_name,
+                    role_name=node.id,
+                    delete_attached_disks=True)
+                return True
+            else:
+                data = sms.delete_deployment(service_name=ex_cloud_service_name,deployment_name=_deployment_name,delete_attached_disks=True)
+                return True
+        except Exception:
+            return False
+
+    """ Functions not implemented
+    """
+    def create_volume_snapshot(self):
+        raise NotImplementedError(
+            'You cannot create snapshots of '
+            'Azure VMs at this time.')
+
+    def attach_volume(self):
+        raise NotImplementedError(
+            'attach_volume is not supported '
+            'at this time.')
+
+    def create_volume(self):
+        raise NotImplementedError(
+            'create_volume is not supported '
+            'at this time.')
+
+    def detach_volume(self):
+        raise NotImplementedError(
+            'detach_volume is not supported '
+            'at this time.')
+
+    def destroy_volume(self):
+        raise NotImplementedError(
+            'destroy_volume is not supported '
+            'at this time.')
+
+    """Private Functions
+    """
+
+    def _to_node(self, data):
+        """
+        Convert the data from a Azure response object into a Node
+        """
+
+        if len(data.instance_endpoints) >= 1:
+            public_ip = data.instance_endpoints[0].vip
+        else:
+            public_ip = []
+
+        for port in data.instance_endpoints:
+            if port.name == 'Remote Desktop':
+                remote_desktop_port = port.public_port
+            else:
+                remote_desktop_port = []
+
+            if port.name == "SSH":
+                ssh_port = port.public_port
+            else:
+                ssh_port = []
+
+        # When servers are Linux, this fails due to the remote_desktop_port 
+        # therefore we need to add a check in here. 
+        return Node(
+            id=data.instance_name,
+            name=data.instance_name,
+            state=data.instance_status,
+            public_ips=[public_ip],
+            private_ips=[data.ip_address],
+            driver=self.connection.driver,
+            extra={
+                'remote_desktop_port': remote_desktop_port,
+                'ssh_port': ssh_port,
+                'power_state': data.power_state,
+                'instance_size': data.instance_size})
+
+    def _to_location(self, data):
+        """
+        Convert the data from a Azure resonse object into a location
+        """
+        country = data.display_name
+
+        if "Asia" in data.display_name:
+            country = "Asia"
+
+        if "Europe" in data.display_name:
+            country = "Europe"
+
+        if "US" in data.display_name:
+            country = "US"
+
+        if "Japan" in data.display_name:
+            country = "Japan"
+
+        if "Brazil" in data.display_name:
+            country = "Brazil"
+
+        return NodeLocation(
+            id=data.name,
+            name=data.display_name,
+            country=country,
+            driver=self.connection.driver)
+
+    def _to_node_size(self, data):
+        """
+        Convert the AZURE_COMPUTE_INSTANCE_TYPES into NodeSize
+        """
+        
+        return NodeSize(
+            id=data["id"],
+            name=data["name"],
+            ram=data["ram"],
+            disk=data["disk"],
+            bandwidth=data["bandwidth"],
+            price=data["price"],
+            driver=self.connection.driver,
+            extra={
+                'max_data_disks' : data["max_data_disks"],
+                'cores' : data["cores"]
+            })
+
+    def _to_image(self, data):
+
+        return NodeImage(
+            id=data.name,
+            name=data.label,
+            driver=self.connection.driver,
+            extra={
+                'os' : data.os,
+                'category' : data.category,
+                'description' : data.description,
+                'location' : data.location,
+                'affinity_group' : data.affinity_group,
+                'media_link' : data.media_link
+            })
+
+    def _to_volume(self, volume, node):
+
+        if node: 
+            if hasattr(volume.attached_to, 'role_name'):
+                if volume.attached_to.role_name == node.id:
+                    extra = {}
+                    extra['affinity_group'] = volume.affinity_group
+                    if hasattr(volume.attached_to, 'hosted_service_name'):
+                        extra['hosted_service_name'] = volume.attached_to.hosted_service_name
+                    if hasattr(volume.attached_to, 'role_name'):
+                        extra['role_name'] = volume.attached_to.role_name
+                    if hasattr(volume.attached_to, 'deployment_name'):
+                        extra['deployment_name'] = volume.attached_to.deployment_name
+                    extra['os'] = volume.os
+                    extra['location'] = volume.location
+                    extra['media_link'] = volume.media_link
+                    extra['source_image_name'] = volume.source_image_name
+
+                    return StorageVolume(id=volume.name,
+                        name=volume.name,
+                        size=int(volume.logical_disk_size_in_gb),
+                        driver=self.connection.driver,
+                        extra=extra)
+        else:
+            extra = {}
+            extra['affinity_group'] = volume.affinity_group
+            if hasattr(volume.attached_to, 'hosted_service_name'):
+                extra['hosted_service_name'] = volume.attached_to.hosted_service_name
+            if hasattr(volume.attached_to, 'role_name'):
+                extra['role_name'] = volume.attached_to.role_name
+            if hasattr(volume.attached_to, 'deployment_name'):
+                extra['deployment_name'] = volume.attached_to.deployment_name
+            extra['os'] = volume.os
+            extra['location'] = volume.location
+            extra['media_link'] = volume.media_link
+            extra['source_image_name'] = volume.source_image_name
+
+            return StorageVolume(id=volume.name,
+                name=volume.name,
+                size=int(volume.logical_disk_size_in_gb),
+                driver=self.connection.driver,
+                extra=extra)
+
+    def _get_deployment(self, **kwargs):
+        _service_name = kwargs['service_name']
+        _deployment_slot = kwargs['deployment_slot'] 
+
+        return self._perform_get(
+            self._get_deployment_path_using_slot(
+                _service_name, _deployment_slot),
+            Deployment)
+
+    def _get_cloud_service_location(self, service_name=None):
+
+        if not service_name:
+            raise ValueError("service_name is required.")
+
+        sms = ServiceManagementService(subscription_id, certificate_path)
+
+        res = sms.get_hosted_service_properties(service_name=service_name,embed_detail=False)
+
+        _affinity_group = res.hosted_service_properties.affinity_group
+        _cloud_service_location = res.hosted_service_properties.location
+
+        if _affinity_group is not None:
+            return self.service_location(True, _affinity_group)
+        elif _cloud_service_location is not None:
+            return self.service_location(False, _cloud_service_location)
+        else:
+            return None
+
+    def _is_storage_service_unique(self, service_name=None):
+        if not service_name:
+            raise ValueError("service_name is required.")
+
+        sms = ServiceManagementService(subscription_id, certificate_path)
+        
+        _check_availability = sms.check_storage_account_name_availability(service_name=service_name)
+        
+        return _check_availability.result
+
+    def _create_storage_account(self, **kwargs):
+        sms = ServiceManagementService(subscription_id, certificate_path)
+
+        if kwargs['is_affinity_group'] is True:
+            result = sms.create_storage_account(
+                service_name=kwargs['service_name'],
+                description=kwargs['service_name'],
+                label=kwargs['service_name'],
+                affinity_group=kwargs['location'])
+        else:
+            result = sms.create_storage_account(
+                service_name=kwargs['service_name'],
+                description=kwargs['service_name'],
+                label=kwargs['service_name'],
+                location=kwargs['location'])
+
+        # We need to wait for this to be created before we can 
+        # create the storage container and the instance. 
+
+        operation_status = sms.get_operation_status(result.request_id)
+
+        timeout = 60 * 5
+        waittime = 0
+        interval = 5  
+
+        while operation_status.status == "InProgress" and waittime < timeout:
+            operation_status = sms.get_operation_status(result.request_id)
+            if operation_status.status == "Succeeded":
+                break
+
+            waittime += interval
+            time.sleep(interval)
+        return
+
+    def _perform_get(self, path, response_type):
+        request = AzureHTTPRequest()
+        request.method = 'GET'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        if response_type is not None:
+            return self._parse_response(response, response_type)
+
+        return response
+
+    def _perform_post(self, path, body, response_type=None, async=False):
+            request = AzureHTTPRequest()
+            request.method = 'POST'
+            request.host = azure_service_management_host
+            request.path = path
+            request.body = self._get_request_body(body)
+            request.path, request.query = self._update_request_uri_query(request)
+            request.headers = self._update_management_header(request)
+            response = self._perform_request(request)
+
+            if response_type is not None:
+                return _parse_response(response, response_type)
+
+            if async:
+                return self._parse_response_for_async_op(response)
+
+            return None
+
+    def _perform_request(self, request):
+
+        connection = self.get_connection()
+
+        try:
+            connection.putrequest(request.method, request.path)
+
+            self.send_request_headers(connection, request.headers)
+            self.send_request_body(connection, request.body)
+
+            resp = connection.getresponse()
+            status = int(resp.status)
+            message = resp.reason
+            respheader = headers = resp.getheaders()
+
+            # for consistency across platforms, make header names lowercase
+            for i, value in enumerate(headers):
+                headers[i] = (value[0].lower(), value[1])
+
+            respbody = None
+            if resp.length is None:
+                respbody = resp.read()
+            elif resp.length > 0:
+                respbody = resp.read(resp.length)
+
+            response = AzureHTTPResponse(
+                int(resp.status), resp.reason, headers, respbody)
+            if status >= 300:
+                raise AzureHTTPError(status, message, 
+                    respheader, respbody)
+
+            return response
+
+        finally:
+            connection.close()
+
+    def _update_request_uri_query(self, request):
+        '''pulls the query string out of the URI and moves it into
+        the query portion of the request object.  If there are already
+        query parameters on the request the parameters in the URI will
+        appear after the existing parameters'''
+
+        if '?' in request.path:
+            request.path, _, query_string = request.path.partition('?')
+            if query_string:
+                query_params = query_string.split('&')
+                for query in query_params:
+                    if '=' in query:
+                        name, _, value = query.partition('=')
+                        request.query.append((name, value))
+
+        request.path = url_quote(request.path, '/()$=\',')
+
+        # add encoded queries to request.path.
+        if request.query:
+            request.path += '?'
+            for name, value in request.query:
+                if value is not None:
+                    request.path += name + '=' + url_quote(value, '/()$=\',') + '&'
+            request.path = request.path[:-1]
+
+        return request.path, request.query
+
+    def _update_management_header(self, request):
+        ''' Add additional headers for management. '''
+
+        if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
+            request.headers.append(('Content-Length', str(len(request.body))))
+
+        # append additional headers base on the service
+        request.headers.append(('x-ms-version', X_MS_VERSION))
+
+        # if it is not GET or HEAD request, must set content-type.
+        if not request.method in ['GET', 'HEAD']:
+            for name, _ in request.headers:
+                if 'content-type' == name.lower():
+                    break
+            else:
+                request.headers.append(
+                    ('Content-Type',
+                     'application/atom+xml;type=entry;charset=utf-8'))
+
+        return request.headers
+
+    def send_request_headers(self, connection, request_headers):
+            for name, value in request_headers:
+                if value:
+                    connection.putheader(name, value)
+
+            connection.putheader('User-Agent', _USER_AGENT_STRING)
+            connection.endheaders()
+
+    def send_request_body(self, connection, request_body):
+            if request_body:
+                assert isinstance(request_body, bytes)
+                connection.send(request_body)
+            elif (not isinstance(connection, HTTPSConnection) and
+                  not isinstance(connection, HTTPConnection)):
+                connection.send(None)
+
+    def _parse_response(self, response, return_type):
+        '''
+        Parse the HTTPResponse's body and fill all the data into a class of
+        return_type.
+        '''
+        return self._parse_response_body_from_xml_text(response.body, return_type)
+
+    def _parse_response_body_from_xml_text(self, respbody, return_type):
+        '''
+        parse the xml and fill all the data into a class of return_type
+        '''
+        doc = minidom.parseString(respbody)
+        return_obj = return_type()
+        for node in self._get_child_nodes(doc, return_type.__name__):
+            self._fill_data_to_return_object(node, return_obj)
+
+        return return_obj
+
+    def _get_child_nodes(self, node, tagName):
+        return [childNode for childNode in node.getElementsByTagName(tagName)
+                if childNode.parentNode == node]
+
+    def _fill_data_to_return_object(self, node, return_obj):
+        members = dict(vars(return_obj))
+        for name, value in members.items():
+            if isinstance(value, _list_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_list_of(node,
+                                      value.list_type,
+                                      value.xml_element_name))
+            elif isinstance(value, _scalar_list_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_scalar_list_of(node,
+                                             value.list_type,
+                                             self._get_serialization_name(name),
+                                             value.xml_element_name))
+            elif isinstance(value, _dict_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_dict_of(node,
+                                      self._get_serialization_name(name),
+                                      value.pair_xml_element_name,
+                                      value.key_xml_element_name,
+                                      value.value_xml_element_name))
+            elif isinstance(value, WindowsAzureData):
+                setattr(return_obj,
+                        name,
+                        self._fill_instance_child(node, name, value.__class__))
+            elif isinstance(value, dict):
+                setattr(return_obj,
+                        name,
+                        self._fill_dict(node, self._get_serialization_name(name)))
+            elif isinstance(value, _Base64String):
+                value = self._fill_data_minidom(node, name, '')
+                if value is not None:
+                    value = self._decode_base64_to_text(value)
+                # always set the attribute, so we don't end up returning an object
+                # with type _Base64String
+                setattr(return_obj, name, value)
+            else:
+                value = self._fill_data_minidom(node, name, value)
+                if value is not None:
+                    setattr(return_obj, name, value)
+
+    def _fill_list_of(self, xmldoc, element_type, xml_element_name):
+        xmlelements = self._get_child_nodes(xmldoc, xml_element_name)
+        return [self._parse_response_body_from_xml_node(xmlelement, element_type) \
+            for xmlelement in xmlelements]
+
+    def _parse_response_body_from_xml_node(self, node, return_type):
+        '''
+        parse the xml and fill all the data into a class of return_type
+        '''
+        return_obj = return_type()
+        self._fill_data_to_return_object(node, return_obj)
+
+        return return_obj
+
+    def _fill_scalar_list_of(self, xmldoc, element_type, parent_xml_element_name,
+                             xml_element_name):
+        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
+        if xmlelements:
+            xmlelements = self._get_child_nodes(xmlelements[0], xml_element_name)
+            return [self._get_node_value(xmlelement, element_type) \
+                for xmlelement in xmlelements]
+
+    def _get_node_value(self, xmlelement, data_type):
+        value = xmlelement.firstChild.nodeValue
+        if data_type is datetime:
+            return _to_datetime(value)
+        elif data_type is bool:
+            return value.lower() != 'false'
+        else:
+            return data_type(value)
+
+    def _get_serialization_name(self,element_name):
+        """converts a Python name into a serializable name"""
+        known = _KNOWN_SERIALIZATION_XFORMS.get(element_name)
+        if known is not None:
+            return known
+
+        if element_name.startswith('x_ms_'):
+            return element_name.replace('_', '-')
+        if element_name.endswith('_id'):
+            element_name = element_name.replace('_id', 'ID')
+        for name in ['content_', 'last_modified', 'if_', 'cache_control']:
+            if element_name.startswith(name):
+                element_name = element_name.replace('_', '-_')
+
+        return ''.join(name.capitalize() for name in element_name.split('_'))
+
+    def _fill_dict_of(self, xmldoc, parent_xml_element_name, pair_xml_element_name,
+                      key_xml_element_name, value_xml_element_name):
+        return_obj = {}
+
+        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
+        if xmlelements:
+            xmlelements = self._get_child_nodes(xmlelements[0], pair_xml_element_name)
+            for pair in xmlelements:
+                keys = self._get_child_nodes(pair, key_xml_element_name)
+                values = self._get_child_nodes(pair, value_xml_element_name)
+                if keys and values:
+                    key = keys[0].firstChild.nodeValue
+                    value = values[0].firstChild.nodeValue
+                    return_obj[key] = value
+
+        return return_obj
+
+    def _fill_instance_child(self, xmldoc, element_name, return_type):
+        '''Converts a child of the current dom element to the specified type.
+        '''
+        xmlelements = self._get_child_nodes(
+            xmldoc, self._get_serialization_name(element_name))
+
+        if not xmlelements:
+            return None
+
+        return_obj = return_type()
+        self._fill_data_to_return_object(xmlelements[0], return_obj)
+
+        return return_obj
+
+    def _fill_dict(self, xmldoc, element_name):
+        xmlelements = self._get_child_nodes(xmldoc, element_name)
+        if xmlelements:
+            return_obj = {}
+            for child in xmlelements[0].childNodes:
+                if child.firstChild:
+                    return_obj[child.nodeName] = child.firstChild.nodeValue
+            return return_obj
+
+    def _encode_base64(self, data):
+        if isinstance(data, _unicode_type):
+            data = data.encode('utf-8')
+        encoded = base64.b64encode(data)
+        return encoded.decode('utf-8')
+
+    def _decode_base64_to_bytes(self, data):
+        if isinstance(data, _unicode_type):
+            data = data.encode('utf-8')
+        return base64.b64decode(data)
+
+    def _decode_base64_to_text(self, data):
+        decoded_bytes = self._decode_base64_to_bytes(data)
+        return decoded_bytes.decode('utf-8')
+
+    def _fill_data_minidom(self, xmldoc, element_name, data_member):
+        xmlelements = self._get_child_nodes(
+            xmldoc, self._get_serialization_name(element_name))
+
+        if not xmlelements or not xmlelements[0].childNodes:
+            return None
+
+        value = xmlelements[0].firstChild.nodeValue
+
+        if data_member is None:
+            return value
+        elif isinstance(data_member, datetime):
+            return self._to_datetime(value)
+        elif type(data_member) is bool:
+            return value.lower() != 'false'
+        else:
+            return type(data_member)(value)
+
+    def _to_datetime(self, strtime):
+        return datetime.strptime(strtime, "%Y-%m-%dT%H:%M:%S.%f")
+
+    def _get_request_body(self, request_body):
+        if request_body is None:
+            return b''
+
+        if isinstance(request_body, WindowsAzureData):
+            request_body = _convert_class_to_xml(request_body)
+
+        if isinstance(request_body, bytes):
+            return request_body
+
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        request_body = str(request_body)
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        return request_body
+
+    def _convert_class_to_xml(self, source, xml_prefix=True):
+        if source is None:
+            return ''
+
+        xmlstr = ''
+        if xml_prefix:
+            xmlstr = '<?xml version="1.0" encoding="utf-8"?>'
+
+        if isinstance(source, list):
+            for value in source:
+                xmlstr += _convert_class_to_xml(value, False)
+        elif isinstance(source, WindowsAzureData):
+            class_name = source.__class__.__name__
+            xmlstr += '<' + class_name + '>'
+            for name, value in vars(source).items():
+                if value is not None:
+                    if isinstance(value, list) or \
+                        isinstance(value, WindowsAzureData):
+                        xmlstr += _convert_class_to_xml(value, False)
+                    else:
+                        xmlstr += ('<' + self._get_serialization_name(name) + '>' +
+                                   xml_escape(str(value)) + '</' +
+                                   self._get_serialization_name(name) + '>')
+            xmlstr += '</' + class_name + '>'
+        return xmlstr
+
+    def _parse_response_for_async_op(self, response):
+        if response is None:
+            return None
+
+        result = AsynchronousOperationResult()
+        if response.headers:
+            for name, value in response.headers:
+                if name.lower() == 'x-ms-request-id':
+                    result.request_id = value
+
+        return result
+
+    def _get_deployment_path_using_name(self, service_name,
+                                            deployment_name=None):
+            return self._get_path('services/hostedservices/' + _str(service_name) +
+                                  '/deployments', deployment_name)
+
+    def _get_path(self, resource, name):
+            path = '/' + subscription_id + '/' + resource
+            if name is not None:
+                path += '/' + _str(name)
+            return path
+
+    def _lower(self, text):
+        return text.lower()
+
+    def _get_image_path(self, image_name=None):
+        return self._get_path('services/images', image_name)
+
+    def _get_hosted_service_path(self, service_name=None):
+        return self._get_path('services/hostedservices', service_name)
+
+    def _get_deployment_path_using_slot(self, service_name, slot=None):
+        return self._get_path('services/hostedservices/' + _str(service_name) +
+                              '/deploymentslots', slot)
+
+    def _get_disk_path(self, disk_name=None):
+        return self._get_path('services/disks', disk_name)
+
+    def get_connection(self):
+        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+        port = HTTPS_PORT
+
+        connection = HTTPSConnection(
+            azure_service_management_host,
+            int(port),
+            cert_file=certificate_path)
+
+        return connection
+
 """
 XML Serializer
 """
@@ -1058,22 +2092,43 @@ class AsynchronousOperationResult(WindowsAzureData):
     def __init__(self, request_id=None):
         self.request_id = request_id
 
+class Disks(WindowsAzureData):
+
+    def __init__(self):
+        self.disks = _list_of(Disk)
+
+    def __iter__(self):
+        return iter(self.disks)
+
+    def __len__(self):
+        return len(self.disks)
+
+    def __getitem__(self, index):
+        return self.disks[index]
+
+class Disk(WindowsAzureData):
+
+    def __init__(self):
+        self.affinity_group = u''
+        self.attached_to = AttachedTo()
+        self.has_operating_system = u''
+        self.is_corrupted = u''
+        self.location = u''
+        self.logical_disk_size_in_gb = 0
+        self.label = u''
+        self.media_link = u''
+        self.name = u''
+        self.os = u''
+        self.source_image_name = u''
+
+class AttachedTo(WindowsAzureData):
+
+    def __init__(self):
+        self.hosted_service_name = u''
+        self.deployment_name = u''
+        self.role_name = u''
+
 class AzureHTTPRequest(object):
-
-    '''Represents an HTTP Request.  An HTTP Request consists of the following
-    attributes:
-
-    host: the host name to connect to
-    method: the method to use to connect (string such as GET, POST, PUT, etc.)
-    path: the uri fragment
-    query: query parameters specified as a list of (name, value) pairs
-    headers: header values specified as (name, value) pairs
-    body: the body of the request.
-    protocol_override:
-        specify to use this protocol instead of the global one stored in
-        _HTTPClient.
-    '''
-
     def __init__(self):
         self.host = ''
         self.method = ''
@@ -1084,16 +2139,6 @@ class AzureHTTPRequest(object):
         self.protocol_override = None
 
 class AzureHTTPResponse(object):
-
-    """Represents a response from an HTTP request.  An HTTPResponse has the
-    following attributes:
-
-    status: the status code of the response
-    message: the message
-    headers: the returned headers, as a list of (name, value) pairs
-    body: the body of the response
-    """
-
     def __init__(self, status, message, headers, body):
         self.status = status
         self.message = message
@@ -1101,9 +2146,6 @@ class AzureHTTPResponse(object):
         self.body = body
 
 class AzureHTTPError(Exception):
-
-    ''' HTTP Exception when response status code >= 300 '''
-
     def __init__(self, status, message, respheader, respbody):
         '''Creates a new HTTPError with the specified status, message,
         response headers and body'''
@@ -1113,7 +2155,8 @@ class AzureHTTPError(Exception):
         Exception.__init__(self, message)
 
 """
-Helper classes.
+Helpers
+
 """
 
 class _Base64String(str):
@@ -1154,1040 +2197,3 @@ class _dict_of(dict):
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
         super(_dict_of, self).__init__()
-
-class AzureNodeDriver(NodeDriver):
-    
-    _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
-    _blob_url = ".blob.core.windows.net"
-    features = {'create_node': ['password']}
-    service_location = collections.namedtuple('service_location',['is_affinity_group', 'service_location'])
-    sms = ServiceManagementService(subscription_id, certificate_path)
-
-    def list_sizes(self):
-        """
-        Lists all sizes
-
-        :rtype: ``list`` of :class:`NodeSize`
-        """
-        sizes = []
-
-        for key, values in self._instance_types.items():
-            node_size = self._to_node_size(copy.deepcopy(values))
-            sizes.append(node_size)
-
-        return sizes
-
-    def list_images(self):
-        """
-        Lists all images
-
-        :rtype: ``list`` of :class:`NodeImage`
-        """        
-        data = self._perform_get(self._get_image_path(), Images)
-
-        return [self._to_image(i) for i in data]
-
-    def list_locations(self):
-        """
-        Lists all locations
-
-        :rtype: ``list`` of :class:`NodeLocation`
-        """
-        data = self._perform_get('/' + subscription_id + '/locations', Locations)
-
-        return [self._to_location(l) for l in data]
-
-    def list_nodes(self, ex_cloud_service_name=None):
-        """
-        List all nodes
-
-        ex_cloud_service_name parameter is used to scope the request 
-        to a specific Cloud Service. This is a required parameter as
-        nodes cannot exist outside of a Cloud Service nor be shared
-        between a Cloud Service within Azure. 
-
-        :param      ex_cloud_service_name: Cloud Service name
-        :type       ex_cloud_service_name: ``str``
-
-        :rtype: ``list`` of :class:`Node`
-        """
-        if not ex_cloud_service_name:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        data = self._perform_get(
-            self._get_hosted_service_path(ex_cloud_service_name) +
-            '?embed-detail=True',
-            HostedService)
-
-        try:
-            return [self._to_node(n) for n in data.deployments[0].role_instance_list]
-        except IndexError:
-            return None
-
-    def reboot_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
-        """
-        Reboots a node.
-
-        ex_cloud_service_name parameter is used to scope the request 
-        to a specific Cloud Service. This is a required parameter as
-        nodes cannot exist outside of a Cloud Service nor be shared
-        between a Cloud Service within Azure. 
-
-        :param      ex_cloud_service_name: Cloud Service name
-        :type       ex_cloud_service_name: ``str``
-
-        :param      ex_deployment_name: Options are "production" (default)
-                                         or "Staging". (Optional)
-        :type       ex_deployment_name: ``str``
-
-        :rtype: ``list`` of :class:`Node`
-        """
-
-        if not ex_cloud_service_name:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        if not ex_deployment_slot:
-            ex_deployment_slot = "production"
-
-        _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-        print _deployment_name
-
-        try:
-            result = self._perform_post(
-            self._get_deployment_path_using_name(
-                ex_cloud_service_name, _deployment_name) + \
-                    '/roleinstances/' + _str(node.id) + \
-                    '?comp=reboot', '', async=True)
-            if result.request_id:
-                return True
-            else:
-                return False
-        except Exception, e:
-            print e
-            return False
-
-    def list_volumes(self, node=None):
-        """
-        Lists volumes of the disks in the image repository that are
-        associated with the specificed subscription.
-
-        Pass Node object to scope the list of volumes to a single
-        instance.
-
-        :rtype: ``list`` of :class:`StorageVolume`
-        """
-
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        data = sms.list_disks()
-
-        volumes = [self._to_volume(volume=v,node=node) for v in data]
-
-        return volumes
-
-    def create_node(self, ex_cloud_service_name=None, **kwargs):
-        """Create Azure Virtual Machine
-
-           Reference: http://bit.ly/1fIsCb7 [www.windowsazure.com/en-us/documentation/]
-
-           We default to: 
-
-           + 3389/TCP - RDP - 1st Microsoft instance.
-           + RANDOM/TCP - RDP - All succeeding Microsoft instances. 
-
-           + 22/TCP - SSH - 1st Linux instance 
-           + RANDOM/TCP - SSH - All succeeding Linux instances.
-
-          The above replicates the standard behavior of the Azure UI. 
-          You can retrieve the assigned ports to each instance by 
-          using the following private function:
-
-          _get_endpoint_ports(service_name)
-            Returns public,private port key pair.
-
-           @inherits: :class:`NodeDriver.create_node`
-
-           :keyword     ex_cloud_service_name: Required. Name of the Azure Cloud Service.
-           :type        ex_cloud_service_name:  ``str``
-
-           :keyword     ex_storage_service_name: Optional: Name of the Azure Storage Service.
-           :type        ex_cloud_service_name:  ``str``
-
-           :keyword     ex_deployment_name: Optional. The name of the deployment. 
-                                            If this is not passed in we default to
-                                            using the Cloud Service name.
-            :type       ex_deployment_name: ``str``
-
-           :keyword     ex_deployment_slot: Optional: Valid values: production|staging. 
-                                            Defaults to production.
-           :type        ex_cloud_service_name:  ``str``
-
-           :keyword     ex_linux_user_id: Optional. Defaults to 'azureuser'.
-           :type        ex_cloud_service_name:  ``str``
-
-        """
-        name = kwargs['name']
-        size = kwargs['size']
-        image = kwargs['image']
-
-        password = None
-        auth = self._get_and_check_auth(kwargs["auth"])        
-        password = auth.password
-
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        if not ex_cloud_service_name:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        if "ex_deployment_slot" in kwargs:
-            ex_deployment_slot = kwargs['ex_deployment_slot']
-        else:
-            ex_deployment_slot = "production" # We assume production if this is not provided. 
-
-        if "ex_linux_user_id" in kwargs:
-            ex_linux_user_id = kwargs['ex_linux_user_id']
-        else:
-            # This mimics the Azure UI behavior.
-            ex_linux_user_id = "azureuser"
-
-        node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
-        network_config = ConfigurationSet()
-        network_config.configuration_set_type = 'NetworkConfiguration'
-
-        # We do this because we need to pass a Configuration to the 
-        # method. This will be either Linux or Windows. 
-        if re.search("Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk", image, re.I): 
-            machine_config = WindowsConfigurationSet(name, password)
-            machine_config.domain_join = None
-
-            if node_list is None:
-                port = "3389"
-            else:
-                port = random.randint(41952,65535)
-                endpoints = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
-
-                for instances in endpoints.role_instance_list:
-                    ports = []
-                    for ep in instances.instance_endpoints:
-                        ports += [ep.public_port]
-
-                    while port in ports:
-                        port = random.randint(41952,65535)
-
-            endpoint = ConfigurationSetInputEndpoint(
-                name='Remote Desktop',
-                protocol='tcp',
-                port=port,
-                local_port='3389',
-                load_balanced_endpoint_set_name=None,
-                enable_direct_server_return=False
-            )
-        else:
-            if node_list is None:
-                port = "22"
-            else:
-                port = random.randint(41952,65535)
-                endpoints = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
-
-                for instances in endpoints.role_instance_list:
-                    ports = []
-                    for ep in instances.instance_endpoints:
-                        ports += [ep.public_port]
-
-                    while port in ports:
-                        port = random.randint(41952,65535)
-
-            endpoint = ConfigurationSetInputEndpoint(
-                name='SSH',
-                protocol='tcp',
-                port=port,
-                local_port='22',
-                load_balanced_endpoint_set_name=None,
-                enable_direct_server_return=False
-            )
-            machine_config = LinuxConfigurationSet(name, ex_linux_user_id, password, False)
-
-        network_config.input_endpoints.input_endpoints.append(endpoint)
-
-        _storage_location = self._get_cloud_service_location(service_name=ex_cloud_service_name)
-        
-        # OK, bit annoying here. You must create a deployment before
-        # you can create an instance; however, the deployment function
-        # creates the first instance, but all subsequent instances
-        # must be created using the add_role function. 
-        #
-        # So, yeah, annoying.
-        if node_list is None:
-            # This is the first node in this cloud service.
-            if "ex_storage_service_name" in kwargs:
-                ex_storage_service_name = kwargs['ex_storage_service_name'] 
-            else:
-                ex_storage_service_name = ex_cloud_service_name
-                ex_storage_service_name = re.sub(ur'[\W_]+', u'', ex_storage_service_name.lower(), flags=re.UNICODE)
-                if self._is_storage_service_unique(service_name=ex_storage_service_name):
-                    self._create_storage_account(
-                        service_name=ex_storage_service_name,
-                        location=_storage_location.service_location,
-                        is_affinity_group=_storage_location.is_affinity_group
-                        )
-
-            if "ex_deployment_name" in kwargs:
-                ex_deployment_name = kwargs['ex_deployment_name']
-            else:
-                ex_deployment_name = ex_cloud_service_name
-
-            blob_url = "http://" + ex_storage_service_name + ".blob.core.windows.net"
-            disk_name = "{0}-{1}-{2}.vhd".format(ex_cloud_service_name,name,time.strftime("%Y-%m-%d")) # Azure's pattern in the UI.
-            media_link = blob_url + "/vhds/" + disk_name
-            disk_config = OSVirtualHardDisk(image, media_link)
-            
-            result = sms.create_virtual_machine_deployment(
-                service_name=ex_cloud_service_name,
-                deployment_name=ex_deployment_name,
-                deployment_slot=ex_deployment_slot,
-                label=name,
-                role_name=name,
-                system_config=machine_config,
-                os_virtual_hard_disk=disk_config,
-                network_config=network_config,
-                role_size=size
-                )
-        else:
-            _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-
-            if "ex_storage_service_name" in kwargs:
-                ex_storage_service_name = kwargs['ex_storage_service_name']
-            else:
-                ex_storage_service_name = ex_cloud_service_name
-                ex_storage_service_name = re.sub(ur'[\W_]+', u'', ex_storage_service_name.lower(), flags=re.UNICODE)
-                
-                if self._is_storage_service_unique(service_name=ex_storage_service_name):
-                    self._create_storage_account(
-                        service_name=ex_storage_service_name,
-                        location=_storage_location.service_location,
-                        is_affinity_group=_storage_location.is_affinity_group
-                        )
-
-            blob_url = "http://" + ex_storage_service_name + ".blob.core.windows.net"
-            disk_name = "{0}-{1}-{2}.vhd".format(ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
-            media_link = blob_url + "/vhds/" + disk_name
-            disk_config = OSVirtualHardDisk(image, media_link)
-
-            result = self.sms.add_role(
-                service_name=ex_cloud_service_name,
-                deployment_name=_deployment_name,
-                role_name=name,
-                system_config=machine_config,
-                os_virtual_hard_disk=disk_config,
-                network_config=network_config,
-                role_size=size
-            )
-
-        return Node(
-            id=name,
-            name=name,
-            state=NodeState.PENDING,
-            public_ips=[],
-            private_ips=[],
-            driver=self.connection.driver
-        )
-
-    def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
-        """Remove Azure Virtual Machine
-
-        This removes the instance, but does not 
-        remove the disk. You will need to use destroy_volume. 
-        Azure sometimes has an issue where it will hold onto
-        a blob lease for an extended amount of time. 
-
-        :keyword     ex_cloud_service_name: Required. Name of the Azure Cloud Service.
-        :type        ex_cloud_service_name:  ``str``
-
-        :keyword     ex_deployment_slot: Optional: The name of the deployment
-                                         slot. If this is not passed in we 
-                                         default to production. 
-        :type        ex_deployment_slot:  ``str``
-        """
-
-        if not ex_cloud_service_name:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        if not ex_deployment_slot:
-            ex_deployment_slot = "production"
-
-        _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
-        _deployment_name = _deployment.name
-
-        _server_deployment_count = len(_deployment.role_instance_list)
-
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        try:
-            if _server_deployment_count > 1:
-                data = sms.delete_role(service_name=ex_cloud_service_name,
-                    deployment_name=_deployment_name,
-                    role_name=node.id,
-                    delete_attached_disks=True)
-                return True
-            else:
-                data = sms.delete_deployment(service_name=ex_cloud_service_name,deployment_name=_deployment_name,delete_attached_disks=True)
-                return True
-        except Exception:
-            return False
-
-    """ Functions not implemented
-    """
-    def create_volume_snapshot(self):
-        raise NotImplementedError(
-            'You cannot create snapshots of '
-            'Azure VMs at this time.')
-
-    def attach_volume(self):
-        raise NotImplementedError(
-            'attach_volume is not supported '
-            'at this time.')
-
-    def create_volume(self):
-        raise NotImplementedError(
-            'create_volume is not supported '
-            'at this time.')
-
-    def detach_volume(self):
-        raise NotImplementedError(
-            'detach_volume is not supported '
-            'at this time.')
-
-    def destroy_volume(self):
-        raise NotImplementedError(
-            'destroy_volume is not supported '
-            'at this time.')
-
-    """Private Functions
-    """
-
-    def _to_node(self, data):
-        """
-        Convert the data from a Azure response object into a Node
-        """
-
-        if len(data.instance_endpoints) >= 1:
-            public_ip = data.instance_endpoints[0].vip
-        else:
-            public_ip = []
-
-        for port in data.instance_endpoints:
-            if port.name == 'Remote Desktop':
-                remote_desktop_port = port.public_port
-            else:
-                remote_desktop_port = []
-
-            if port.name == "SSH":
-                ssh_port = port.public_port
-            else:
-                ssh_port = []
-
-        # When servers are Linux, this fails due to the remote_desktop_port 
-        # therefore we need to add a check in here. 
-        return Node(
-            id=data.instance_name,
-            name=data.instance_name,
-            state=data.instance_status,
-            public_ips=[public_ip],
-            private_ips=[data.ip_address],
-            driver=self.connection.driver,
-            extra={
-                'remote_desktop_port': remote_desktop_port,
-                'ssh_port': ssh_port,
-                'power_state': data.power_state,
-                'instance_size': data.instance_size})
-
-    def _to_location(self, data):
-        """
-        Convert the data from a Azure resonse object into a location
-        """
-        country = data.display_name
-
-        if "Asia" in data.display_name:
-            country = "Asia"
-
-        if "Europe" in data.display_name:
-            country = "Europe"
-
-        if "US" in data.display_name:
-            country = "US"
-
-        if "Japan" in data.display_name:
-            country = "Japan"
-
-        if "Brazil" in data.display_name:
-            country = "Brazil"
-
-        return NodeLocation(
-            id=data.name,
-            name=data.display_name,
-            country=country,
-            driver=self.connection.driver)
-
-    def _to_node_size(self, data):
-        """
-        Convert the AZURE_COMPUTE_INSTANCE_TYPES into NodeSize
-        """
-        
-        return NodeSize(
-            id=data["id"],
-            name=data["name"],
-            ram=data["ram"],
-            disk=data["disk"],
-            bandwidth=data["bandwidth"],
-            price=data["price"],
-            driver=self.connection.driver,
-            extra={
-                'max_data_disks' : data["max_data_disks"],
-                'cores' : data["cores"]
-            })
-
-    def _to_image(self, data):
-
-        return NodeImage(
-            id=data.name,
-            name=data.label
-
-
-            ,
-            driver=self.connection.driver,
-            extra={
-                'os' : data.os,
-                'category' : data.category,
-                'description' : data.description,
-                'location' : data.location,
-                'affinity_group' : data.affinity_group,
-                'media_link' : data.media_link
-            })
-
-    def _to_volume(self, volume, node):
-
-        if node: 
-            if hasattr(volume.attached_to, 'role_name'):
-                if volume.attached_to.role_name == node.id:
-                    extra = {}
-                    extra['affinity_group'] = volume.affinity_group
-                    if hasattr(volume.attached_to, 'hosted_service_name'):
-                        extra['hosted_service_name'] = volume.attached_to.hosted_service_name
-                    if hasattr(volume.attached_to, 'role_name'):
-                        extra['role_name'] = volume.attached_to.role_name
-                    if hasattr(volume.attached_to, 'deployment_name'):
-                        extra['deployment_name'] = volume.attached_to.deployment_name
-                    extra['os'] = volume.os
-                    extra['location'] = volume.location
-                    extra['media_link'] = volume.media_link
-                    extra['source_image_name'] = volume.source_image_name
-
-                    return StorageVolume(id=volume.name,
-                        name=volume.name,
-                        size=int(volume.logical_disk_size_in_gb),
-                        driver=self.connection.driver,
-                        extra=extra)
-        else:
-            extra = {}
-            extra['affinity_group'] = volume.affinity_group
-            if hasattr(volume.attached_to, 'hosted_service_name'):
-                extra['hosted_service_name'] = volume.attached_to.hosted_service_name
-            if hasattr(volume.attached_to, 'role_name'):
-                extra['role_name'] = volume.attached_to.role_name
-            if hasattr(volume.attached_to, 'deployment_name'):
-                extra['deployment_name'] = volume.attached_to.deployment_name
-            extra['os'] = volume.os
-            extra['location'] = volume.location
-            extra['media_link'] = volume.media_link
-            extra['source_image_name'] = volume.source_image_name
-
-            return StorageVolume(id=volume.name,
-                name=volume.name,
-                size=int(volume.logical_disk_size_in_gb),
-                driver=self.connection.driver,
-                extra=extra)
-
-    def _get_deployment(self, **kwargs):
-        _service_name = kwargs['service_name']
-        _deployment_slot = kwargs['deployment_slot'] 
-
-        return self._perform_get(
-            self._get_deployment_path_using_slot(
-                _service_name, _deployment_slot),
-            Deployment)
-
-    def _get_cloud_service_location(self, service_name=None):
-
-        if not service_name:
-            raise ValueError("service_name is required.")
-
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        res = sms.get_hosted_service_properties(service_name=service_name,embed_detail=False)
-
-        _affinity_group = res.hosted_service_properties.affinity_group
-        _cloud_service_location = res.hosted_service_properties.location
-
-        if _affinity_group is not None:
-            return self.service_location(True, _affinity_group)
-        elif _cloud_service_location is not None:
-            return self.service_location(False, _cloud_service_location)
-        else:
-            return None
-
-    def _is_storage_service_unique(self, service_name=None):
-        if not service_name:
-            raise ValueError("service_name is required.")
-
-        sms = ServiceManagementService(subscription_id, certificate_path)
-        
-        _check_availability = sms.check_storage_account_name_availability(service_name=service_name)
-        
-        return _check_availability.result
-
-    def _create_storage_account(self, **kwargs):
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        if kwargs['is_affinity_group'] is True:
-            result = sms.create_storage_account(
-                service_name=kwargs['service_name'],
-                description=kwargs['service_name'],
-                label=kwargs['service_name'],
-                affinity_group=kwargs['location'])
-        else:
-            result = sms.create_storage_account(
-                service_name=kwargs['service_name'],
-                description=kwargs['service_name'],
-                label=kwargs['service_name'],
-                location=kwargs['location'])
-
-        # We need to wait for this to be created before we can 
-        # create the storage container and the instance. 
-
-        operation_status = sms.get_operation_status(result.request_id)
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5  
-
-        while operation_status.status == "InProgress" and waittime < timeout:
-            operation_status = sms.get_operation_status(result.request_id)
-            if operation_status.status == "Succeeded":
-                break
-
-            waittime += interval
-            time.sleep(interval)
-        return
-
-    def _perform_get(self, path, response_type):
-        request = AzureHTTPRequest()
-        request.method = 'GET'
-        request.host = azure_service_management_host
-        request.path = path
-        request.path, request.query = self._update_request_uri_query(request)
-        request.headers = self._update_management_header(request)
-        response = self._perform_request(request)
-
-        if response_type is not None:
-            return self._parse_response(response, response_type)
-
-        return response
-
-    def _perform_post(self, path, body, response_type=None, async=False):
-            request = AzureHTTPRequest()
-            request.method = 'POST'
-            request.host = azure_service_management_host
-            request.path = path
-            request.body = self._get_request_body(body)
-            request.path, request.query = self._update_request_uri_query(request)
-            request.headers = self._update_management_header(request)
-            response = self._perform_request(request)
-
-            if response_type is not None:
-                return _parse_response(response, response_type)
-
-            if async:
-                return self._parse_response_for_async_op(response)
-
-            return None
-
-    def _perform_request(self, request):
-
-        connection = self.get_connection()
-
-        try:
-            connection.putrequest(request.method, request.path)
-
-            self.send_request_headers(connection, request.headers)
-            self.send_request_body(connection, request.body)
-
-            resp = connection.getresponse()
-            status = int(resp.status)
-            message = resp.reason
-            respheader = headers = resp.getheaders()
-
-            # for consistency across platforms, make header names lowercase
-            for i, value in enumerate(headers):
-                headers[i] = (value[0].lower(), value[1])
-
-            respbody = None
-            if resp.length is None:
-                respbody = resp.read()
-            elif resp.length > 0:
-                respbody = resp.read(resp.length)
-
-            response = AzureHTTPResponse(
-                int(resp.status), resp.reason, headers, respbody)
-            if status >= 300:
-                raise AzureHTTPError(status, message, 
-                    respheader, respbody)
-
-            return response
-
-        finally:
-            connection.close()
-
-    def _update_request_uri_query(self, request):
-        '''pulls the query string out of the URI and moves it into
-        the query portion of the request object.  If there are already
-        query parameters on the request the parameters in the URI will
-        appear after the existing parameters'''
-
-        if '?' in request.path:
-            request.path, _, query_string = request.path.partition('?')
-            if query_string:
-                query_params = query_string.split('&')
-                for query in query_params:
-                    if '=' in query:
-                        name, _, value = query.partition('=')
-                        request.query.append((name, value))
-
-        request.path = url_quote(request.path, '/()$=\',')
-
-        # add encoded queries to request.path.
-        if request.query:
-            request.path += '?'
-            for name, value in request.query:
-                if value is not None:
-                    request.path += name + '=' + url_quote(value, '/()$=\',') + '&'
-            request.path = request.path[:-1]
-
-        return request.path, request.query
-
-    def _update_management_header(self, request):
-        ''' Add additional headers for management. '''
-
-        if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
-            request.headers.append(('Content-Length', str(len(request.body))))
-
-        # append additional headers base on the service
-        request.headers.append(('x-ms-version', X_MS_VERSION))
-
-        # if it is not GET or HEAD request, must set content-type.
-        if not request.method in ['GET', 'HEAD']:
-            for name, _ in request.headers:
-                if 'content-type' == name.lower():
-                    break
-            else:
-                request.headers.append(
-                    ('Content-Type',
-                     'application/atom+xml;type=entry;charset=utf-8'))
-
-        return request.headers
-
-    def send_request_headers(self, connection, request_headers):
-            for name, value in request_headers:
-                if value:
-                    connection.putheader(name, value)
-
-            connection.putheader('User-Agent', _USER_AGENT_STRING)
-            connection.endheaders()
-
-    def send_request_body(self, connection, request_body):
-            if request_body:
-                assert isinstance(request_body, bytes)
-                connection.send(request_body)
-            elif (not isinstance(connection, HTTPSConnection) and
-                  not isinstance(connection, HTTPConnection)):
-                connection.send(None)
-
-    def _parse_response(self, response, return_type):
-        '''
-        Parse the HTTPResponse's body and fill all the data into a class of
-        return_type.
-        '''
-        return self._parse_response_body_from_xml_text(response.body, return_type)
-
-    def _parse_response_body_from_xml_text(self, respbody, return_type):
-        '''
-        parse the xml and fill all the data into a class of return_type
-        '''
-        doc = minidom.parseString(respbody)
-        return_obj = return_type()
-        for node in self._get_child_nodes(doc, return_type.__name__):
-            self._fill_data_to_return_object(node, return_obj)
-
-        return return_obj
-
-    def _get_child_nodes(self, node, tagName):
-        return [childNode for childNode in node.getElementsByTagName(tagName)
-                if childNode.parentNode == node]
-
-    def _fill_data_to_return_object(self, node, return_obj):
-        members = dict(vars(return_obj))
-        for name, value in members.items():
-            if isinstance(value, _list_of):
-                setattr(return_obj,
-                        name,
-                        self._fill_list_of(node,
-                                      value.list_type,
-                                      value.xml_element_name))
-            elif isinstance(value, _scalar_list_of):
-                setattr(return_obj,
-                        name,
-                        self._fill_scalar_list_of(node,
-                                             value.list_type,
-                                             self._get_serialization_name(name),
-                                             value.xml_element_name))
-            elif isinstance(value, _dict_of):
-                setattr(return_obj,
-                        name,
-                        self._fill_dict_of(node,
-                                      self._get_serialization_name(name),
-                                      value.pair_xml_element_name,
-                                      value.key_xml_element_name,
-                                      value.value_xml_element_name))
-            elif isinstance(value, WindowsAzureData):
-                setattr(return_obj,
-                        name,
-                        self._fill_instance_child(node, name, value.__class__))
-            elif isinstance(value, dict):
-                setattr(return_obj,
-                        name,
-                        self._fill_dict(node, self._get_serialization_name(name)))
-            elif isinstance(value, _Base64String):
-                value = self._fill_data_minidom(node, name, '')
-                if value is not None:
-                    value = self._decode_base64_to_text(value)
-                # always set the attribute, so we don't end up returning an object
-                # with type _Base64String
-                setattr(return_obj, name, value)
-            else:
-                value = self._fill_data_minidom(node, name, value)
-                if value is not None:
-                    setattr(return_obj, name, value)
-
-    def _fill_list_of(self, xmldoc, element_type, xml_element_name):
-        xmlelements = self._get_child_nodes(xmldoc, xml_element_name)
-        return [self._parse_response_body_from_xml_node(xmlelement, element_type) \
-            for xmlelement in xmlelements]
-
-    def _parse_response_body_from_xml_node(self, node, return_type):
-        '''
-        parse the xml and fill all the data into a class of return_type
-        '''
-        return_obj = return_type()
-        self._fill_data_to_return_object(node, return_obj)
-
-        return return_obj
-
-    def _fill_scalar_list_of(self, xmldoc, element_type, parent_xml_element_name,
-                             xml_element_name):
-        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
-        if xmlelements:
-            xmlelements = self._get_child_nodes(xmlelements[0], xml_element_name)
-            return [self._get_node_value(xmlelement, element_type) \
-                for xmlelement in xmlelements]
-
-    def _get_node_value(self, xmlelement, data_type):
-        value = xmlelement.firstChild.nodeValue
-        if data_type is datetime:
-            return _to_datetime(value)
-        elif data_type is bool:
-            return value.lower() != 'false'
-        else:
-            return data_type(value)
-
-    def _get_serialization_name(self,element_name):
-        """converts a Python name into a serializable name"""
-        known = _KNOWN_SERIALIZATION_XFORMS.get(element_name)
-        if known is not None:
-            return known
-
-        if element_name.startswith('x_ms_'):
-            return element_name.replace('_', '-')
-        if element_name.endswith('_id'):
-            element_name = element_name.replace('_id', 'ID')
-        for name in ['content_', 'last_modified', 'if_', 'cache_control']:
-            if element_name.startswith(name):
-                element_name = element_name.replace('_', '-_')
-
-        return ''.join(name.capitalize() for name in element_name.split('_'))
-
-    def _fill_dict_of(self, xmldoc, parent_xml_element_name, pair_xml_element_name,
-                      key_xml_element_name, value_xml_element_name):
-        return_obj = {}
-
-        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
-        if xmlelements:
-            xmlelements = self._get_child_nodes(xmlelements[0], pair_xml_element_name)
-            for pair in xmlelements:
-                keys = self._get_child_nodes(pair, key_xml_element_name)
-                values = self._get_child_nodes(pair, value_xml_element_name)
-                if keys and values:
-                    key = keys[0].firstChild.nodeValue
-                    value = values[0].firstChild.nodeValue
-                    return_obj[key] = value
-
-        return return_obj
-
-    def _fill_instance_child(self, xmldoc, element_name, return_type):
-        '''Converts a child of the current dom element to the specified type.
-        '''
-        xmlelements = self._get_child_nodes(
-            xmldoc, self._get_serialization_name(element_name))
-
-        if not xmlelements:
-            return None
-
-        return_obj = return_type()
-        self._fill_data_to_return_object(xmlelements[0], return_obj)
-
-        return return_obj
-
-    def _fill_dict(self, xmldoc, element_name):
-        xmlelements = self._get_child_nodes(xmldoc, element_name)
-        if xmlelements:
-            return_obj = {}
-            for child in xmlelements[0].childNodes:
-                if child.firstChild:
-                    return_obj[child.nodeName] = child.firstChild.nodeValue
-            return return_obj
-
-    def _encode_base64(dself, ata):
-        if isinstance(data, _unicode_type):
-            data = data.encode('utf-8')
-        encoded = base64.b64encode(data)
-        return encoded.decode('utf-8')
-
-    def _decode_base64_to_bytes(self, data):
-        if isinstance(data, _unicode_type):
-            data = data.encode('utf-8')
-        return base64.b64decode(data)
-
-    def _decode_base64_to_text(self, data):
-        decoded_bytes = self._decode_base64_to_bytes(data)
-        return decoded_bytes.decode('utf-8')
-
-    def _fill_data_minidom(self, xmldoc, element_name, data_member):
-        xmlelements = self._get_child_nodes(
-            xmldoc, self._get_serialization_name(element_name))
-
-        if not xmlelements or not xmlelements[0].childNodes:
-            return None
-
-        value = xmlelements[0].firstChild.nodeValue
-
-        if data_member is None:
-            return value
-        elif isinstance(data_member, datetime):
-            return self._to_datetime(value)
-        elif type(data_member) is bool:
-            return value.lower() != 'false'
-        else:
-            return type(data_member)(value)
-
-    def _to_datetime(self, strtime):
-        return datetime.strptime(strtime, "%Y-%m-%dT%H:%M:%S.%f")
-
-    def _get_request_body(self, request_body):
-        if request_body is None:
-            return b''
-
-        if isinstance(request_body, WindowsAzureData):
-            request_body = _convert_class_to_xml(request_body)
-
-        if isinstance(request_body, bytes):
-            return request_body
-
-        if isinstance(request_body, _unicode_type):
-            return request_body.encode('utf-8')
-
-        request_body = str(request_body)
-        if isinstance(request_body, _unicode_type):
-            return request_body.encode('utf-8')
-
-        return request_body
-
-    def _convert_class_to_xml(self, source, xml_prefix=True):
-        if source is None:
-            return ''
-
-        xmlstr = ''
-        if xml_prefix:
-            xmlstr = '<?xml version="1.0" encoding="utf-8"?>'
-
-        if isinstance(source, list):
-            for value in source:
-                xmlstr += _convert_class_to_xml(value, False)
-        elif isinstance(source, WindowsAzureData):
-            class_name = source.__class__.__name__
-            xmlstr += '<' + class_name + '>'
-            for name, value in vars(source).items():
-                if value is not None:
-                    if isinstance(value, list) or \
-                        isinstance(value, WindowsAzureData):
-                        xmlstr += _convert_class_to_xml(value, False)
-                    else:
-                        xmlstr += ('<' + self._get_serialization_name(name) + '>' +
-                                   xml_escape(str(value)) + '</' +
-                                   self._get_serialization_name(name) + '>')
-            xmlstr += '</' + class_name + '>'
-        return xmlstr
-
-    def _parse_response_for_async_op(self, response):
-        if response is None:
-            return None
-
-        result = AsynchronousOperationResult()
-        if response.headers:
-            for name, value in response.headers:
-                if name.lower() == 'x-ms-request-id':
-                    result.request_id = value
-
-        return result
-
-    def _get_deployment_path_using_name(self, service_name,
-                                            deployment_name=None):
-            return self._get_path('services/hostedservices/' + _str(service_name) +
-                                  '/deployments', deployment_name)
-
-    def _get_path(self, resource, name):
-            path = '/' + subscription_id + '/' + resource
-            if name is not None:
-                path += '/' + _str(name)
-            return path
-
-    def _lower(self, text):
-        return text.lower()
-
-    def _get_image_path(self, image_name=None):
-        return self._get_path('services/images', image_name)
-
-    def _get_hosted_service_path(self, service_name=None):
-        return self._get_path('services/hostedservices', service_name)
-
-    def _get_deployment_path_using_slot(self, service_name, slot=None):
-        return self._get_path('services/hostedservices/' + _str(service_name) +
-                              '/deploymentslots', slot)
-
-    def get_connection(self):
-        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-        port = HTTPS_PORT
-
-        connection = HTTPSConnection(
-            azure_service_management_host,
-            int(port),
-            cert_file=certificate_path)
-
-        return connection
