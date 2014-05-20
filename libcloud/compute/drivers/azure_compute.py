@@ -14,6 +14,7 @@
 # limitations under the License.
 """
 Azure Compute driver
+Version: 1.0
 """
 import uuid
 import re
@@ -23,12 +24,7 @@ import random
 import sys
 import os
 import copy
-
-#import azure
-#import azure.servicemanagement
-#from azure.servicemanagement import ServiceManagementService
-#from azure.servicemanagement import WindowsConfigurationSet, ConfigurationSet, LinuxConfigurationSet
-#from azure.servicemanagement import ConfigurationSetInputEndpoint
+import base64
 
 from azure import *
 from azure.servicemanagement import *
@@ -39,6 +35,36 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair, NodeAuthPassword
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 from libcloud.common.base import ConnectionUserAndKey
+
+from datetime import datetime
+from xml.dom import minidom
+from xml.sax.saxutils import escape as xml_escape
+from httplib import (
+    HTTPSConnection,
+    HTTP_PORT,
+    HTTPS_PORT,
+    )
+
+if sys.version_info < (3,):
+    from urllib2 import quote as url_quote
+    from urllib2 import unquote as url_unquote
+    _strtype = basestring
+else:
+    from urllib.parse import quote as url_quote
+    from urllib.parse import unquote as url_unquote
+    _strtype = str
+
+if sys.version_info < (3,):
+    _unicode_type = unicode
+
+    def _str(value):
+        if isinstance(value, unicode):
+            return value.encode('utf-8')
+
+        return str(value)
+else:
+    _str = str
+    _unicode_type = str
 
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
@@ -127,18 +153,1007 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
     }    
 }
 
+_KNOWN_SERIALIZATION_XFORMS = {
+    'include_apis': 'IncludeAPIs',
+    'message_id': 'MessageId',
+    'content_md5': 'Content-MD5',
+    'last_modified': 'Last-Modified',
+    'cache_control': 'Cache-Control',
+    'account_admin_live_email_id': 'AccountAdminLiveEmailId',
+    'service_admin_live_email_id': 'ServiceAdminLiveEmailId',
+    'subscription_id': 'SubscriptionID',
+    'fqdn': 'FQDN',
+    'private_id': 'PrivateID',
+    'os_virtual_hard_disk': 'OSVirtualHardDisk',
+    'logical_disk_size_in_gb': 'LogicalDiskSizeInGB',
+    'logical_size_in_gb': 'LogicalSizeInGB',
+    'os': 'OS',
+    'persistent_vm_downtime_info': 'PersistentVMDowntimeInfo',
+    'copy_id': 'CopyId',
+    }
+
 subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
 certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
 
+azure_service_management_host = 'management.core.windows.net'
+
+__version__ = '0.8.0'
+_USER_AGENT_STRING = 'pyazure/' + __version__
+X_MS_VERSION = '2012-03-01'
+
+
 class AzureConnection(ConnectionUserAndKey):
-	"""AzureConnection
+    """AzureConnection
 
-	Connection class for Azure Compute Driver.
-	"""
+    Connection class for Azure Compute Driver.
+    """
 
+"""
+XML Serializer
+"""
+class AzureXmlSerializer():
 
-	#def __init__(self, user_id, key, secure):
-	#	super(AzureConnection, self).__init__(user_id, key, secure=secure, **kwargs)
+    @staticmethod
+    def create_storage_service_input_to_xml(service_name, description, label,
+                                            affinity_group, location,
+                                            geo_replication_enabled,
+                                            extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'CreateStorageServiceInput',
+            [('ServiceName', service_name),
+             ('Description', description),
+             ('Label', label, _encode_base64),
+             ('AffinityGroup', affinity_group),
+             ('Location', location),
+             ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
+            extended_properties)
+
+    @staticmethod
+    def update_storage_service_input_to_xml(description, label,
+                                            geo_replication_enabled,
+                                            extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'UpdateStorageServiceInput',
+            [('Description', description),
+             ('Label', label, _encode_base64),
+             ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
+            extended_properties)
+
+    @staticmethod
+    def regenerate_keys_to_xml(key_type):
+        return AzureXmlSerializer.doc_from_data('RegenerateKeys',
+                                            [('KeyType', key_type)])
+
+    @staticmethod
+    def update_hosted_service_to_xml(label, description, extended_properties):
+        return AzureXmlSerializer.doc_from_data('UpdateHostedService',
+                                            [('Label', label, _encode_base64),
+                                             ('Description', description)],
+                                            extended_properties)
+
+    @staticmethod
+    def create_hosted_service_to_xml(service_name, label, description,
+                                     location, affinity_group,
+                                     extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'CreateHostedService',
+            [('ServiceName', service_name),
+             ('Label', label, _encode_base64),
+             ('Description', description),
+             ('Location', location),
+             ('AffinityGroup', affinity_group)],
+            extended_properties)
+
+    @staticmethod
+    def create_deployment_to_xml(name, package_url, label, configuration,
+                                 start_deployment, treat_warnings_as_error,
+                                 extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'CreateDeployment',
+            [('Name', name),
+             ('PackageUrl', package_url),
+             ('Label', label, _encode_base64),
+             ('Configuration', configuration),
+             ('StartDeployment',
+             start_deployment, _lower),
+             ('TreatWarningsAsError', treat_warnings_as_error, _lower)],
+            extended_properties)
+
+    @staticmethod
+    def swap_deployment_to_xml(production, source_deployment):
+        return AzureXmlSerializer.doc_from_data(
+            'Swap',
+            [('Production', production),
+             ('SourceDeployment', source_deployment)])
+
+    @staticmethod
+    def update_deployment_status_to_xml(status):
+        return AzureXmlSerializer.doc_from_data(
+            'UpdateDeploymentStatus',
+            [('Status', status)])
+
+    @staticmethod
+    def change_deployment_to_xml(configuration, treat_warnings_as_error, mode,
+                                 extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'ChangeConfiguration',
+            [('Configuration', configuration),
+             ('TreatWarningsAsError', treat_warnings_as_error, _lower),
+             ('Mode', mode)],
+            extended_properties)
+
+    @staticmethod
+    def upgrade_deployment_to_xml(mode, package_url, configuration, label,
+                                  role_to_upgrade, force, extended_properties):
+        return AzureXmlSerializer.doc_from_data(
+            'UpgradeDeployment',
+            [('Mode', mode),
+             ('PackageUrl', package_url),
+             ('Configuration', configuration),
+             ('Label', label, _encode_base64),
+             ('RoleToUpgrade', role_to_upgrade),
+             ('Force', force, _lower)],
+            extended_properties)
+
+    @staticmethod
+    def rollback_upgrade_to_xml(mode, force):
+        return AzureXmlSerializer.doc_from_data(
+            'RollbackUpdateOrUpgrade',
+            [('Mode', mode),
+             ('Force', force, _lower)])
+
+    @staticmethod
+    def walk_upgrade_domain_to_xml(upgrade_domain):
+        return AzureXmlSerializer.doc_from_data(
+            'WalkUpgradeDomain',
+            [('UpgradeDomain', upgrade_domain)])
+
+    @staticmethod
+    def certificate_file_to_xml(data, certificate_format, password):
+        return AzureXmlSerializer.doc_from_data(
+            'CertificateFile',
+            [('Data', data),
+             ('CertificateFormat', certificate_format),
+             ('Password', password)])
+
+    @staticmethod
+    def create_affinity_group_to_xml(name, label, description, location):
+        return AzureXmlSerializer.doc_from_data(
+            'CreateAffinityGroup',
+            [('Name', name),
+             ('Label', label, _encode_base64),
+             ('Description', description),
+             ('Location', location)])
+
+    @staticmethod
+    def update_affinity_group_to_xml(label, description):
+        return AzureXmlSerializer.doc_from_data(
+            'UpdateAffinityGroup',
+            [('Label', label, _encode_base64),
+             ('Description', description)])
+
+    @staticmethod
+    def subscription_certificate_to_xml(public_key, thumbprint, data):
+        return AzureXmlSerializer.doc_from_data(
+            'SubscriptionCertificate',
+            [('SubscriptionCertificatePublicKey', public_key),
+             ('SubscriptionCertificateThumbprint', thumbprint),
+             ('SubscriptionCertificateData', data)])
+
+    @staticmethod
+    def os_image_to_xml(label, media_link, name, os):
+        return AzureXmlSerializer.doc_from_data(
+            'OSImage',
+            [('Label', label),
+             ('MediaLink', media_link),
+             ('Name', name),
+             ('OS', os)])
+
+    @staticmethod
+    def data_virtual_hard_disk_to_xml(host_caching, disk_label, disk_name, lun,
+                                      logical_disk_size_in_gb, media_link,
+                                      source_media_link):
+        return AzureXmlSerializer.doc_from_data(
+            'DataVirtualHardDisk',
+            [('HostCaching', host_caching),
+             ('DiskLabel', disk_label),
+             ('DiskName', disk_name),
+             ('Lun', lun),
+             ('LogicalDiskSizeInGB', logical_disk_size_in_gb),
+             ('MediaLink', media_link),
+             ('SourceMediaLink', source_media_link)])
+
+    @staticmethod
+    def disk_to_xml(has_operating_system, label, media_link, name, os):
+        return AzureXmlSerializer.doc_from_data(
+            'Disk',
+            [('HasOperatingSystem', has_operating_system, _lower),
+             ('Label', label),
+             ('MediaLink', media_link),
+             ('Name', name),
+             ('OS', os)])
+
+    @staticmethod
+    def restart_role_operation_to_xml():
+        return AzureXmlSerializer.doc_from_xml(
+            'RestartRoleOperation',
+            '<OperationType>RestartRoleOperation</OperationType>')
+
+    @staticmethod
+    def shutdown_role_operation_to_xml():
+        return AzureXmlSerializer.doc_from_xml(
+            'ShutdownRoleOperation',
+            '<OperationType>ShutdownRoleOperation</OperationType>')
+
+    @staticmethod
+    def start_role_operation_to_xml():
+        return AzureXmlSerializer.doc_from_xml(
+            'StartRoleOperation',
+            '<OperationType>StartRoleOperation</OperationType>')
+
+    @staticmethod
+    def windows_configuration_to_xml(configuration):
+        xml = AzureXmlSerializer.data_to_xml(
+            [('ConfigurationSetType', configuration.configuration_set_type),
+             ('ComputerName', configuration.computer_name),
+             ('AdminPassword', configuration.admin_password),
+             ('ResetPasswordOnFirstLogon',
+              configuration.reset_password_on_first_logon,
+              _lower),
+             ('EnableAutomaticUpdates',
+              configuration.enable_automatic_updates,
+              _lower),
+             ('TimeZone', configuration.time_zone)])
+
+        if configuration.domain_join is not None:
+            xml += '<DomainJoin>'
+            xml += '<Credentials>'
+            xml += AzureXmlSerializer.data_to_xml(
+                [('Domain', configuration.domain_join.credentials.domain),
+                 ('Username', configuration.domain_join.credentials.username),
+                 ('Password', configuration.domain_join.credentials.password)])
+            xml += '</Credentials>'
+            xml += AzureXmlSerializer.data_to_xml(
+                [('JoinDomain', configuration.domain_join.join_domain),
+                 ('MachineObjectOU',
+                  configuration.domain_join.machine_object_ou)])
+            xml += '</DomainJoin>'
+        if configuration.stored_certificate_settings is not None:
+            xml += '<StoredCertificateSettings>'
+            for cert in configuration.stored_certificate_settings:
+                xml += '<CertificateSetting>'
+                xml += AzureXmlSerializer.data_to_xml(
+                    [('StoreLocation', cert.store_location),
+                     ('StoreName', cert.store_name),
+                     ('Thumbprint', cert.thumbprint)])
+                xml += '</CertificateSetting>'
+            xml += '</StoredCertificateSettings>'
+        return xml
+
+    @staticmethod
+    def linux_configuration_to_xml(configuration):
+        xml = AzureXmlSerializer.data_to_xml(
+            [('ConfigurationSetType', configuration.configuration_set_type),
+             ('HostName', configuration.host_name),
+             ('UserName', configuration.user_name),
+             ('UserPassword', configuration.user_password),
+             ('DisableSshPasswordAuthentication',
+              configuration.disable_ssh_password_authentication,
+              _lower)])
+
+        if configuration.ssh is not None:
+            xml += '<SSH>'
+            xml += '<PublicKeys>'
+            for key in configuration.ssh.public_keys:
+                xml += '<PublicKey>'
+                xml += AzureXmlSerializer.data_to_xml(
+                    [('Fingerprint', key.fingerprint),
+                     ('Path', key.path)])
+                xml += '</PublicKey>'
+            xml += '</PublicKeys>'
+            xml += '<KeyPairs>'
+            for key in configuration.ssh.key_pairs:
+                xml += '<KeyPair>'
+                xml += AzureXmlSerializer.data_to_xml(
+                    [('Fingerprint', key.fingerprint),
+                     ('Path', key.path)])
+                xml += '</KeyPair>'
+            xml += '</KeyPairs>'
+            xml += '</SSH>'
+        return xml
+
+    @staticmethod
+    def network_configuration_to_xml(configuration):
+        xml = AzureXmlSerializer.data_to_xml(
+            [('ConfigurationSetType', configuration.configuration_set_type)])
+        xml += '<InputEndpoints>'
+        for endpoint in configuration.input_endpoints:
+            xml += '<InputEndpoint>'
+            xml += AzureXmlSerializer.data_to_xml(
+                [('LoadBalancedEndpointSetName',
+                  endpoint.load_balanced_endpoint_set_name),
+                 ('LocalPort', endpoint.local_port),
+                 ('Name', endpoint.name),
+                 ('Port', endpoint.port)])
+
+            if endpoint.load_balancer_probe.path or\
+                endpoint.load_balancer_probe.port or\
+                endpoint.load_balancer_probe.protocol:
+                xml += '<LoadBalancerProbe>'
+                xml += AzureXmlSerializer.data_to_xml(
+                    [('Path', endpoint.load_balancer_probe.path),
+                     ('Port', endpoint.load_balancer_probe.port),
+                     ('Protocol', endpoint.load_balancer_probe.protocol)])
+                xml += '</LoadBalancerProbe>'
+
+            xml += AzureXmlSerializer.data_to_xml(
+                [('Protocol', endpoint.protocol),
+                 ('EnableDirectServerReturn',
+                  endpoint.enable_direct_server_return,
+                  _lower)])
+
+            xml += '</InputEndpoint>'
+        xml += '</InputEndpoints>'
+        xml += '<SubnetNames>'
+        for name in configuration.subnet_names:
+            xml += AzureXmlSerializer.data_to_xml([('SubnetName', name)])
+        xml += '</SubnetNames>'
+        return xml
+
+    @staticmethod
+    def role_to_xml(availability_set_name, data_virtual_hard_disks,
+                    network_configuration_set, os_virtual_hard_disk, role_name,
+                    role_size, role_type, system_configuration_set):
+        xml = AzureXmlSerializer.data_to_xml([('RoleName', role_name),
+                                          ('RoleType', role_type)])
+
+        xml += '<ConfigurationSets>'
+
+        if system_configuration_set is not None:
+            xml += '<ConfigurationSet>'
+            if isinstance(system_configuration_set, WindowsConfigurationSet):
+                xml += AzureXmlSerializer.windows_configuration_to_xml(
+                    system_configuration_set)
+            elif isinstance(system_configuration_set, LinuxConfigurationSet):
+                xml += AzureXmlSerializer.linux_configuration_to_xml(
+                    system_configuration_set)
+            xml += '</ConfigurationSet>'
+
+        if network_configuration_set is not None:
+            xml += '<ConfigurationSet>'
+            xml += AzureXmlSerializer.network_configuration_to_xml(
+                network_configuration_set)
+            xml += '</ConfigurationSet>'
+
+        xml += '</ConfigurationSets>'
+
+        if availability_set_name is not None:
+            xml += AzureXmlSerializer.data_to_xml(
+                [('AvailabilitySetName', availability_set_name)])
+
+        if data_virtual_hard_disks is not None:
+            xml += '<DataVirtualHardDisks>'
+            for hd in data_virtual_hard_disks:
+                xml += '<DataVirtualHardDisk>'
+                xml += AzureXmlSerializer.data_to_xml(
+                    [('HostCaching', hd.host_caching),
+                     ('DiskLabel', hd.disk_label),
+                     ('DiskName', hd.disk_name),
+                     ('Lun', hd.lun),
+                     ('LogicalDiskSizeInGB', hd.logical_disk_size_in_gb),
+                     ('MediaLink', hd.media_link)])
+                xml += '</DataVirtualHardDisk>'
+            xml += '</DataVirtualHardDisks>'
+
+        if os_virtual_hard_disk is not None:
+            xml += '<OSVirtualHardDisk>'
+            xml += AzureXmlSerializer.data_to_xml(
+                [('HostCaching', os_virtual_hard_disk.host_caching),
+                 ('DiskLabel', os_virtual_hard_disk.disk_label),
+                 ('DiskName', os_virtual_hard_disk.disk_name),
+                 ('MediaLink', os_virtual_hard_disk.media_link),
+                 ('SourceImageName', os_virtual_hard_disk.source_image_name)])
+            xml += '</OSVirtualHardDisk>'
+
+        if role_size is not None:
+            xml += AzureXmlSerializer.data_to_xml([('RoleSize', role_size)])
+
+        return xml
+
+    @staticmethod
+    def add_role_to_xml(role_name, system_configuration_set,
+                        os_virtual_hard_disk, role_type,
+                        network_configuration_set, availability_set_name,
+                        data_virtual_hard_disks, role_size):
+        xml = AzureXmlSerializer.role_to_xml(
+            availability_set_name,
+            data_virtual_hard_disks,
+            network_configuration_set,
+            os_virtual_hard_disk,
+            role_name,
+            role_size,
+            role_type,
+            system_configuration_set)
+        return AzureXmlSerializer.doc_from_xml('PersistentVMRole', xml)
+
+    @staticmethod
+    def update_role_to_xml(role_name, os_virtual_hard_disk, role_type,
+                           network_configuration_set, availability_set_name,
+                           data_virtual_hard_disks, role_size):
+        xml = AzureXmlSerializer.role_to_xml(
+            availability_set_name,
+            data_virtual_hard_disks,
+            network_configuration_set,
+            os_virtual_hard_disk,
+            role_name,
+            role_size,
+            role_type,
+            None)
+        return AzureXmlSerializer.doc_from_xml('PersistentVMRole', xml)
+
+    @staticmethod
+    def capture_role_to_xml(post_capture_action, target_image_name,
+                            target_image_label, provisioning_configuration):
+        xml = AzureXmlSerializer.data_to_xml(
+            [('OperationType', 'CaptureRoleOperation'),
+             ('PostCaptureAction', post_capture_action)])
+
+        if provisioning_configuration is not None:
+            xml += '<ProvisioningConfiguration>'
+            if isinstance(provisioning_configuration, WindowsConfigurationSet):
+                xml += AzureXmlSerializer.windows_configuration_to_xml(
+                    provisioning_configuration)
+            elif isinstance(provisioning_configuration, LinuxConfigurationSet):
+                xml += AzureXmlSerializer.linux_configuration_to_xml(
+                    provisioning_configuration)
+            xml += '</ProvisioningConfiguration>'
+
+        xml += AzureXmlSerializer.data_to_xml(
+            [('TargetImageLabel', target_image_label),
+             ('TargetImageName', target_image_name)])
+
+        return AzureXmlSerializer.doc_from_xml('CaptureRoleOperation', xml)
+
+    @staticmethod
+    def virtual_machine_deployment_to_xml(deployment_name, deployment_slot,
+                                          label, role_name,
+                                          system_configuration_set,
+                                          os_virtual_hard_disk, role_type,
+                                          network_configuration_set,
+                                          availability_set_name,
+                                          data_virtual_hard_disks, role_size,
+                                          virtual_network_name):
+        xml = AzureXmlSerializer.data_to_xml([('Name', deployment_name),
+                                          ('DeploymentSlot', deployment_slot),
+                                          ('Label', label)])
+        xml += '<RoleList>'
+        xml += '<Role>'
+        xml += AzureXmlSerializer.role_to_xml(
+            availability_set_name,
+            data_virtual_hard_disks,
+            network_configuration_set,
+            os_virtual_hard_disk,
+            role_name,
+            role_size,
+            role_type,
+            system_configuration_set)
+        xml += '</Role>'
+        xml += '</RoleList>'
+
+        if virtual_network_name is not None:
+            xml += AzureXmlSerializer.data_to_xml(
+                [('VirtualNetworkName', virtual_network_name)])
+
+        return AzureXmlSerializer.doc_from_xml('Deployment', xml)
+
+    @staticmethod
+    def data_to_xml(data):
+        '''Creates an xml fragment from the specified data.
+           data: Array of tuples, where first: xml element name
+                                        second: xml element text
+                                        third: conversion function
+        '''
+        xml = ''
+        for element in data:
+            name = element[0]
+            val = element[1]
+            if len(element) > 2:
+                converter = element[2]
+            else:
+                converter = None
+
+            if val is not None:
+                if converter is not None:
+                    text = _str(converter(_str(val)))
+                else:
+                    text = _str(val)
+
+                xml += ''.join(['<', name, '>', text, '</', name, '>'])
+        return xml
+
+    @staticmethod
+    def doc_from_xml(document_element_name, inner_xml):
+        '''Wraps the specified xml in an xml root element with default azure
+        namespaces'''
+        xml = ''.join(['<', document_element_name,
+                      ' xmlns:i="http://www.w3.org/2001/XMLSchema-instance"',
+                      ' xmlns="http://schemas.microsoft.com/windowsazure">'])
+        xml += inner_xml
+        xml += ''.join(['</', document_element_name, '>'])
+        return xml
+
+    @staticmethod
+    def doc_from_data(document_element_name, data, extended_properties=None):
+        xml = AzureXmlSerializer.data_to_xml(data)
+        if extended_properties is not None:
+            xml += AzureXmlSerializer.extended_properties_dict_to_xml_fragment(
+                extended_properties)
+        return AzureXmlSerializer.doc_from_xml(document_element_name, xml)
+
+    @staticmethod
+    def extended_properties_dict_to_xml_fragment(extended_properties):
+        xml = ''
+        if extended_properties is not None and len(extended_properties) > 0:
+            xml += '<ExtendedProperties>'
+            for key, val in extended_properties.items():
+                xml += ''.join(['<ExtendedProperty>',
+                                '<Name>',
+                                _str(key),
+                                '</Name>',
+                               '<Value>',
+                               _str(val),
+                               '</Value>',
+                               '</ExtendedProperty>'])
+            xml += '</ExtendedProperties>'
+        return xm
+
+"""
+Data Classes
+"""
+
+class WindowsAzureData(object):
+
+    ''' This is the base of data class.
+    It is only used to check whether it is instance or not. '''
+    pass
+
+class OSVirtualHardDisk(WindowsAzureData):
+
+    def __init__(self, source_image_name=None, media_link=None,
+                 host_caching=None, disk_label=None, disk_name=None):
+        self.source_image_name = source_image_name
+        self.media_link = media_link
+        self.host_caching = host_caching
+        self.disk_label = disk_label
+        self.disk_name = disk_name
+        self.os = u''  # undocumented, not used when adding a role
+
+class LinuxConfigurationSet(WindowsAzureData):
+
+    def __init__(self, host_name=None, user_name=None, user_password=None,
+                 disable_ssh_password_authentication=None):
+        self.configuration_set_type = u'LinuxProvisioningConfiguration'
+        self.host_name = host_name
+        self.user_name = user_name
+        self.user_password = user_password
+        self.disable_ssh_password_authentication =\
+            disable_ssh_password_authentication
+        self.ssh = SSH()
+
+class WindowsConfigurationSet(WindowsAzureData):
+
+    def __init__(self, computer_name=None, admin_password=None,
+                 reset_password_on_first_logon=None,
+                 enable_automatic_updates=None, time_zone=None):
+        self.configuration_set_type = u'WindowsProvisioningConfiguration'
+        self.computer_name = computer_name
+        self.admin_password = admin_password
+        self.reset_password_on_first_logon = reset_password_on_first_logon
+        self.enable_automatic_updates = enable_automatic_updates
+        self.time_zone = time_zone
+        self.domain_join = DomainJoin()
+        self.stored_certificate_settings = StoredCertificateSettings()
+
+class SSH(WindowsAzureData):
+
+    def __init__(self):
+        self.public_keys = PublicKeys()
+        self.key_pairs = KeyPairs()
+
+class PublicKeys(WindowsAzureData):
+
+    def __init__(self):
+        self.public_keys = _list_of(PublicKey)
+
+    def __iter__(self):
+        return iter(self.public_keys)
+
+    def __len__(self):
+        return len(self.public_keys)
+
+    def __getitem__(self, index):
+        return self.public_keys[index]
+
+class PublicKey(WindowsAzureData):
+
+    def __init__(self, fingerprint=u'', path=u''):
+        self.fingerprint = fingerprint
+        self.path = path
+
+class KeyPairs(WindowsAzureData):
+
+    def __init__(self):
+        self.key_pairs = _list_of(KeyPair)
+
+    def __iter__(self):
+        return iter(self.key_pairs)
+
+    def __len__(self):
+        return len(self.key_pairs)
+
+    def __getitem__(self, index):
+        return self.key_pairs[index]
+
+class KeyPair(WindowsAzureData):
+
+    def __init__(self, fingerprint=u'', path=u''):
+        self.fingerprint = fingerprint
+        self.path = path
+
+class LoadBalancerProbe(WindowsAzureData):
+
+    def __init__(self):
+        self.path = u''
+        self.port = u''
+        self.protocol = u''
+
+class ConfigurationSet(WindowsAzureData):
+
+    def __init__(self):
+        self.configuration_set_type = u''
+        self.role_type = u''
+        self.input_endpoints = ConfigurationSetInputEndpoints()
+        self.subnet_names = _scalar_list_of(str, 'SubnetName')
+
+class ConfigurationSetInputEndpoints(WindowsAzureData):
+
+    def __init__(self):
+        self.input_endpoints = _list_of(
+            ConfigurationSetInputEndpoint, 'InputEndpoint')
+
+    def __iter__(self):
+        return iter(self.input_endpoints)
+
+    def __len__(self):
+        return len(self.input_endpoints)
+
+    def __getitem__(self, index):
+        return self.input_endpoints[index]
+
+class ConfigurationSetInputEndpoint(WindowsAzureData):
+
+    def __init__(self, name=u'', protocol=u'', port=u'', local_port=u'',
+                 load_balanced_endpoint_set_name=u'',
+                 enable_direct_server_return=False):
+        self.enable_direct_server_return = enable_direct_server_return
+        self.load_balanced_endpoint_set_name = load_balanced_endpoint_set_name
+        self.local_port = local_port
+        self.name = name
+        self.port = port
+        self.load_balancer_probe = LoadBalancerProbe()
+        self.protocol = protocol
+
+class Locations(WindowsAzureData):
+
+    def __init__(self):
+        self.locations = _list_of(Location)
+
+    def __iter__(self):
+        return iter(self.locations)
+
+    def __len__(self):
+        return len(self.locations)
+
+    def __getitem__(self, index):
+        return self.locations[index]
+
+class Location(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.display_name = u''
+        self.available_services = _scalar_list_of(str, 'AvailableService')
+
+class Images(WindowsAzureData):
+
+    def __init__(self):
+        self.images = _list_of(OSImage)
+
+    def __iter__(self):
+        return iter(self.images)
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index):
+        return self.images[index]
+
+class HostedServices(WindowsAzureData):
+
+    def __init__(self):
+        self.hosted_services = _list_of(HostedService)
+
+    def __iter__(self):
+        return iter(self.hosted_services)
+
+    def __len__(self):
+        return len(self.hosted_services)
+
+    def __getitem__(self, index):
+        return self.hosted_services[index]
+
+class HostedService(WindowsAzureData):
+
+    def __init__(self):
+        self.url = u''
+        self.service_name = u''
+        self.hosted_service_properties = HostedServiceProperties()
+        self.deployments = Deployments()
+
+class HostedServiceProperties(WindowsAzureData):
+
+    def __init__(self):
+        self.description = u''
+        self.location = u''
+        self.affinity_group = u''
+        self.label = _Base64String()
+        self.status = u''
+        self.date_created = u''
+        self.date_last_modified = u''
+        self.extended_properties = _dict_of(
+            'ExtendedProperty', 'Name', 'Value')
+
+class Deployments(WindowsAzureData):
+
+    def __init__(self):
+        self.deployments = _list_of(Deployment)
+
+    def __iter__(self):
+        return iter(self.deployments)
+
+    def __len__(self):
+        return len(self.deployments)
+
+    def __getitem__(self, index):
+        return self.deployments[index]
+
+class Deployment(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.deployment_slot = u''
+        self.private_id = u''
+        self.status = u''
+        self.label = _Base64String()
+        self.url = u''
+        self.configuration = _Base64String()
+        self.role_instance_list = RoleInstanceList()
+        self.upgrade_status = UpgradeStatus()
+        self.upgrade_domain_count = u''
+        self.role_list = RoleList()
+        self.sdk_version = u''
+        self.input_endpoint_list = InputEndpoints()
+        self.locked = False
+        self.rollback_allowed = False
+        self.persistent_vm_downtime_info = PersistentVMDowntimeInfo()
+        self.created_time = u''
+        self.last_modified_time = u''
+        self.extended_properties = _dict_of(
+            'ExtendedProperty', 'Name', 'Value')
+
+class RoleInstanceList(WindowsAzureData):
+
+    def __init__(self):
+        self.role_instances = _list_of(RoleInstance)
+
+    def __iter__(self):
+        return iter(self.role_instances)
+
+    def __len__(self):
+        return len(self.role_instances)
+
+    def __getitem__(self, index):
+        return self.role_instances[index]
+
+class RoleInstance(WindowsAzureData):
+
+    def __init__(self):
+        self.role_name = u''
+        self.instance_name = u''
+        self.instance_status = u''
+        self.instance_upgrade_domain = 0
+        self.instance_fault_domain = 0
+        self.instance_size = u''
+        self.instance_state_details = u''
+        self.instance_error_code = u''
+        self.ip_address = u''
+        self.instance_endpoints = InstanceEndpoints()
+        self.power_state = u''
+        self.fqdn = u''
+        self.host_name = u''
+
+class InstanceEndpoints(WindowsAzureData):
+
+    def __init__(self):
+        self.instance_endpoints = _list_of(InstanceEndpoint)
+
+    def __iter__(self):
+        return iter(self.instance_endpoints)
+
+    def __len__(self):
+        return len(self.instance_endpoints)
+
+    def __getitem__(self, index):
+        return self.instance_endpoints[index]
+
+class InstanceEndpoint(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.vip = u''
+        self.public_port = u''
+        self.local_port = u''
+        self.protocol = u''
+
+class InputEndpoints(WindowsAzureData):
+
+    def __init__(self):
+        self.input_endpoints = _list_of(InputEndpoint)
+
+    def __iter__(self):
+        return iter(self.input_endpoints)
+
+    def __len__(self):
+        return len(self.input_endpoints)
+
+    def __getitem__(self, index):
+        return self.input_endpoints[index]
+
+class InputEndpoint(WindowsAzureData):
+
+    def __init__(self):
+        self.role_name = u''
+        self.vip = u''
+        self.port = u''
+
+class RoleList(WindowsAzureData):
+
+    def __init__(self):
+        self.roles = _list_of(Role)
+
+    def __iter__(self):
+        return iter(self.roles)
+
+    def __len__(self):
+        return len(self.roles)
+
+    def __getitem__(self, index):
+        return self.roles[index]
+
+class Role(WindowsAzureData):
+
+    def __init__(self):
+        self.role_name = u''
+        self.os_version = u''
+
+class PersistentVMDowntimeInfo(WindowsAzureData):
+
+    def __init__(self):
+        self.start_time = u''
+        self.end_time = u''
+        self.status = u''
+
+class AsynchronousOperationResult(WindowsAzureData):
+
+    def __init__(self, request_id=None):
+        self.request_id = request_id
+
+class AzureHTTPRequest(object):
+
+    '''Represents an HTTP Request.  An HTTP Request consists of the following
+    attributes:
+
+    host: the host name to connect to
+    method: the method to use to connect (string such as GET, POST, PUT, etc.)
+    path: the uri fragment
+    query: query parameters specified as a list of (name, value) pairs
+    headers: header values specified as (name, value) pairs
+    body: the body of the request.
+    protocol_override:
+        specify to use this protocol instead of the global one stored in
+        _HTTPClient.
+    '''
+
+    def __init__(self):
+        self.host = ''
+        self.method = ''
+        self.path = ''
+        self.query = []      # list of (name, value)
+        self.headers = []    # list of (header name, header value)
+        self.body = ''
+        self.protocol_override = None
+
+class AzureHTTPResponse(object):
+
+    """Represents a response from an HTTP request.  An HTTPResponse has the
+    following attributes:
+
+    status: the status code of the response
+    message: the message
+    headers: the returned headers, as a list of (name, value) pairs
+    body: the body of the response
+    """
+
+    def __init__(self, status, message, headers, body):
+        self.status = status
+        self.message = message
+        self.headers = headers
+        self.body = body
+
+class AzureHTTPError(Exception):
+
+    ''' HTTP Exception when response status code >= 300 '''
+
+    def __init__(self, status, message, respheader, respbody):
+        '''Creates a new HTTPError with the specified status, message,
+        response headers and body'''
+        self.status = status
+        self.respheader = respheader
+        self.respbody = respbody
+        Exception.__init__(self, message)
+
+"""
+Helper classes.
+"""
+
+class _Base64String(str):
+    pass
+
+class _list_of(list):
+
+    """a list which carries with it the type that's expected to go in it.
+    Used for deserializaion and construction of the lists"""
+
+    def __init__(self, list_type, xml_element_name=None):
+        self.list_type = list_type
+        if xml_element_name is None:
+            self.xml_element_name = list_type.__name__
+        else:
+            self.xml_element_name = xml_element_name
+        super(_list_of, self).__init__()
+
+class _scalar_list_of(list):
+
+    """a list of scalar types which carries with it the type that's
+    expected to go in it along with its xml element name.
+    Used for deserializaion and construction of the lists"""
+
+    def __init__(self, list_type, xml_element_name):
+        self.list_type = list_type
+        self.xml_element_name = xml_element_name
+        super(_scalar_list_of, self).__init__()
+
+class _dict_of(dict):
+
+    """a dict which carries with it the xml element names for key,val.
+    Used for deserializaion and construction of the lists"""
+
+    def __init__(self, pair_xml_element_name, key_xml_element_name,
+                 value_xml_element_name):
+        self.pair_xml_element_name = pair_xml_element_name
+        self.key_xml_element_name = key_xml_element_name
+        self.value_xml_element_name = value_xml_element_name
+        super(_dict_of, self).__init__()
 
 class AzureNodeDriver(NodeDriver):
     
@@ -167,10 +1182,8 @@ class AzureNodeDriver(NodeDriver):
         Lists all images
 
         :rtype: ``list`` of :class:`NodeImage`
-        """
-        sms = ServiceManagementService(subscription_id, certificate_path)
-        
-        data = sms.list_os_images()
+        """        
+        data = self._perform_get(self._get_image_path(), Images)
 
         return [self._to_image(i) for i in data]
 
@@ -180,9 +1193,7 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        data = sms.list_locations()
+        data = self._perform_get('/' + subscription_id + '/locations', Locations)
 
         return [self._to_location(l) for l in data]
 
@@ -203,9 +1214,10 @@ class AzureNodeDriver(NodeDriver):
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        data = sms.get_hosted_service_properties(service_name=ex_cloud_service_name,embed_detail=True)
+        data = self._perform_get(
+            self._get_hosted_service_path(ex_cloud_service_name) +
+            '?embed-detail=True',
+            HostedService)
 
         try:
             return [self._to_node(n) for n in data.deployments[0].role_instance_list]
@@ -230,7 +1242,6 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`Node`
         """
-        sms = ServiceManagementService(subscription_id, certificate_path)
 
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
@@ -239,18 +1250,20 @@ class AzureNodeDriver(NodeDriver):
             ex_deployment_slot = "production"
 
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
+        print _deployment_name
 
         try:
-            result = sms.reboot_role_instance(
-                service_name=ex_cloud_service_name,
-                deployment_name=_deployment_name,
-                role_instance_name=node.id
-                )
+            result = self._perform_post(
+            self._get_deployment_path_using_name(
+                ex_cloud_service_name, _deployment_name) + \
+                    '/roleinstances/' + _str(node.id) + \
+                    '?comp=reboot', '', async=True)
             if result.request_id:
                 return True
             else:
                 return False
-        except Exception:
+        except Exception, e:
+            print e
             return False
 
     def list_volumes(self, node=None):
@@ -479,24 +1492,6 @@ class AzureNodeDriver(NodeDriver):
             driver=self.connection.driver
         )
 
-        #operation_status = self.sms.get_operation_status(result.request_id)
-
-        #timeout = 60 * 5
-        #waittime = 0
-        #interval = 5  
-
-        #while operation_status.status == "InProgress" and waittime < timeout:
-        #    operation_status = self.sms.get_operation_status(result.request_id)            
-        #    if operation_status.status == "Succeeded":
-        #        break
-
-        #    waittime += interval
-        #    time.sleep(interval)
-
-        #if operation_status.status == "Failed":
-        #    raise Exception(operation_status.error.message)
-        #return
-
     def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
         """Remove Azure Virtual Machine
 
@@ -583,7 +1578,16 @@ class AzureNodeDriver(NodeDriver):
         for port in data.instance_endpoints:
             if port.name == 'Remote Desktop':
                 remote_desktop_port = port.public_port
+            else:
+                remote_desktop_port = []
 
+            if port.name == "SSH":
+                ssh_port = port.public_port
+            else:
+                ssh_port = []
+
+        # When servers are Linux, this fails due to the remote_desktop_port 
+        # therefore we need to add a check in here. 
         return Node(
             id=data.instance_name,
             name=data.instance_name,
@@ -593,6 +1597,7 @@ class AzureNodeDriver(NodeDriver):
             driver=self.connection.driver,
             extra={
                 'remote_desktop_port': remote_desktop_port,
+                'ssh_port': ssh_port,
                 'power_state': data.power_state,
                 'instance_size': data.instance_size})
 
@@ -706,9 +1711,10 @@ class AzureNodeDriver(NodeDriver):
         _service_name = kwargs['service_name']
         _deployment_slot = kwargs['deployment_slot'] 
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
-        return sms.get_deployment_by_slot(service_name=_service_name,deployment_slot=_deployment_slot)
+        return self._perform_get(
+            self._get_deployment_path_using_slot(
+                _service_name, _deployment_slot),
+            Deployment)
 
     def _get_cloud_service_location(self, service_name=None):
 
@@ -772,3 +1778,416 @@ class AzureNodeDriver(NodeDriver):
             waittime += interval
             time.sleep(interval)
         return
+
+    def _perform_get(self, path, response_type):
+        request = AzureHTTPRequest()
+        request.method = 'GET'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        if response_type is not None:
+            return self._parse_response(response, response_type)
+
+        return response
+
+    def _perform_post(self, path, body, response_type=None, async=False):
+            request = AzureHTTPRequest()
+            request.method = 'POST'
+            request.host = azure_service_management_host
+            request.path = path
+            request.body = self._get_request_body(body)
+            request.path, request.query = self._update_request_uri_query(request)
+            request.headers = self._update_management_header(request)
+            response = self._perform_request(request)
+
+            if response_type is not None:
+                return _parse_response(response, response_type)
+
+            if async:
+                return self._parse_response_for_async_op(response)
+
+            return None
+
+    def _perform_request(self, request):
+
+        connection = self.get_connection()
+
+        try:
+            connection.putrequest(request.method, request.path)
+
+            self.send_request_headers(connection, request.headers)
+            self.send_request_body(connection, request.body)
+
+            resp = connection.getresponse()
+            status = int(resp.status)
+            message = resp.reason
+            respheader = headers = resp.getheaders()
+
+            # for consistency across platforms, make header names lowercase
+            for i, value in enumerate(headers):
+                headers[i] = (value[0].lower(), value[1])
+
+            respbody = None
+            if resp.length is None:
+                respbody = resp.read()
+            elif resp.length > 0:
+                respbody = resp.read(resp.length)
+
+            response = AzureHTTPResponse(
+                int(resp.status), resp.reason, headers, respbody)
+            if status >= 300:
+                raise AzureHTTPError(status, message, 
+                    respheader, respbody)
+
+            return response
+
+        finally:
+            connection.close()
+
+    def _update_request_uri_query(self, request):
+        '''pulls the query string out of the URI and moves it into
+        the query portion of the request object.  If there are already
+        query parameters on the request the parameters in the URI will
+        appear after the existing parameters'''
+
+        if '?' in request.path:
+            request.path, _, query_string = request.path.partition('?')
+            if query_string:
+                query_params = query_string.split('&')
+                for query in query_params:
+                    if '=' in query:
+                        name, _, value = query.partition('=')
+                        request.query.append((name, value))
+
+        request.path = url_quote(request.path, '/()$=\',')
+
+        # add encoded queries to request.path.
+        if request.query:
+            request.path += '?'
+            for name, value in request.query:
+                if value is not None:
+                    request.path += name + '=' + url_quote(value, '/()$=\',') + '&'
+            request.path = request.path[:-1]
+
+        return request.path, request.query
+
+    def _update_management_header(self, request):
+        ''' Add additional headers for management. '''
+
+        if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
+            request.headers.append(('Content-Length', str(len(request.body))))
+
+        # append additional headers base on the service
+        request.headers.append(('x-ms-version', X_MS_VERSION))
+
+        # if it is not GET or HEAD request, must set content-type.
+        if not request.method in ['GET', 'HEAD']:
+            for name, _ in request.headers:
+                if 'content-type' == name.lower():
+                    break
+            else:
+                request.headers.append(
+                    ('Content-Type',
+                     'application/atom+xml;type=entry;charset=utf-8'))
+
+        return request.headers
+
+    def send_request_headers(self, connection, request_headers):
+            for name, value in request_headers:
+                if value:
+                    connection.putheader(name, value)
+
+            connection.putheader('User-Agent', _USER_AGENT_STRING)
+            connection.endheaders()
+
+    def send_request_body(self, connection, request_body):
+            if request_body:
+                assert isinstance(request_body, bytes)
+                connection.send(request_body)
+            elif (not isinstance(connection, HTTPSConnection) and
+                  not isinstance(connection, HTTPConnection)):
+                connection.send(None)
+
+    def _parse_response(self, response, return_type):
+        '''
+        Parse the HTTPResponse's body and fill all the data into a class of
+        return_type.
+        '''
+        return self._parse_response_body_from_xml_text(response.body, return_type)
+
+    def _parse_response_body_from_xml_text(self, respbody, return_type):
+        '''
+        parse the xml and fill all the data into a class of return_type
+        '''
+        doc = minidom.parseString(respbody)
+        return_obj = return_type()
+        for node in self._get_child_nodes(doc, return_type.__name__):
+            self._fill_data_to_return_object(node, return_obj)
+
+        return return_obj
+
+    def _get_child_nodes(self, node, tagName):
+        return [childNode for childNode in node.getElementsByTagName(tagName)
+                if childNode.parentNode == node]
+
+    def _fill_data_to_return_object(self, node, return_obj):
+        members = dict(vars(return_obj))
+        for name, value in members.items():
+            if isinstance(value, _list_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_list_of(node,
+                                      value.list_type,
+                                      value.xml_element_name))
+            elif isinstance(value, _scalar_list_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_scalar_list_of(node,
+                                             value.list_type,
+                                             self._get_serialization_name(name),
+                                             value.xml_element_name))
+            elif isinstance(value, _dict_of):
+                setattr(return_obj,
+                        name,
+                        self._fill_dict_of(node,
+                                      self._get_serialization_name(name),
+                                      value.pair_xml_element_name,
+                                      value.key_xml_element_name,
+                                      value.value_xml_element_name))
+            elif isinstance(value, WindowsAzureData):
+                setattr(return_obj,
+                        name,
+                        self._fill_instance_child(node, name, value.__class__))
+            elif isinstance(value, dict):
+                setattr(return_obj,
+                        name,
+                        self._fill_dict(node, self._get_serialization_name(name)))
+            elif isinstance(value, _Base64String):
+                value = self._fill_data_minidom(node, name, '')
+                if value is not None:
+                    value = self._decode_base64_to_text(value)
+                # always set the attribute, so we don't end up returning an object
+                # with type _Base64String
+                setattr(return_obj, name, value)
+            else:
+                value = self._fill_data_minidom(node, name, value)
+                if value is not None:
+                    setattr(return_obj, name, value)
+
+    def _fill_list_of(self, xmldoc, element_type, xml_element_name):
+        xmlelements = self._get_child_nodes(xmldoc, xml_element_name)
+        return [self._parse_response_body_from_xml_node(xmlelement, element_type) \
+            for xmlelement in xmlelements]
+
+    def _parse_response_body_from_xml_node(self, node, return_type):
+        '''
+        parse the xml and fill all the data into a class of return_type
+        '''
+        return_obj = return_type()
+        self._fill_data_to_return_object(node, return_obj)
+
+        return return_obj
+
+    def _fill_scalar_list_of(self, xmldoc, element_type, parent_xml_element_name,
+                             xml_element_name):
+        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
+        if xmlelements:
+            xmlelements = self._get_child_nodes(xmlelements[0], xml_element_name)
+            return [self._get_node_value(xmlelement, element_type) \
+                for xmlelement in xmlelements]
+
+    def _get_node_value(self, xmlelement, data_type):
+        value = xmlelement.firstChild.nodeValue
+        if data_type is datetime:
+            return _to_datetime(value)
+        elif data_type is bool:
+            return value.lower() != 'false'
+        else:
+            return data_type(value)
+
+    def _get_serialization_name(self,element_name):
+        """converts a Python name into a serializable name"""
+        known = _KNOWN_SERIALIZATION_XFORMS.get(element_name)
+        if known is not None:
+            return known
+
+        if element_name.startswith('x_ms_'):
+            return element_name.replace('_', '-')
+        if element_name.endswith('_id'):
+            element_name = element_name.replace('_id', 'ID')
+        for name in ['content_', 'last_modified', 'if_', 'cache_control']:
+            if element_name.startswith(name):
+                element_name = element_name.replace('_', '-_')
+
+        return ''.join(name.capitalize() for name in element_name.split('_'))
+
+    def _fill_dict_of(self, xmldoc, parent_xml_element_name, pair_xml_element_name,
+                      key_xml_element_name, value_xml_element_name):
+        return_obj = {}
+
+        xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
+        if xmlelements:
+            xmlelements = self._get_child_nodes(xmlelements[0], pair_xml_element_name)
+            for pair in xmlelements:
+                keys = self._get_child_nodes(pair, key_xml_element_name)
+                values = self._get_child_nodes(pair, value_xml_element_name)
+                if keys and values:
+                    key = keys[0].firstChild.nodeValue
+                    value = values[0].firstChild.nodeValue
+                    return_obj[key] = value
+
+        return return_obj
+
+    def _fill_instance_child(self, xmldoc, element_name, return_type):
+        '''Converts a child of the current dom element to the specified type.
+        '''
+        xmlelements = self._get_child_nodes(
+            xmldoc, self._get_serialization_name(element_name))
+
+        if not xmlelements:
+            return None
+
+        return_obj = return_type()
+        self._fill_data_to_return_object(xmlelements[0], return_obj)
+
+        return return_obj
+
+    def _fill_dict(self, xmldoc, element_name):
+        xmlelements = self._get_child_nodes(xmldoc, element_name)
+        if xmlelements:
+            return_obj = {}
+            for child in xmlelements[0].childNodes:
+                if child.firstChild:
+                    return_obj[child.nodeName] = child.firstChild.nodeValue
+            return return_obj
+
+    def _encode_base64(dself, ata):
+        if isinstance(data, _unicode_type):
+            data = data.encode('utf-8')
+        encoded = base64.b64encode(data)
+        return encoded.decode('utf-8')
+
+    def _decode_base64_to_bytes(self, data):
+        if isinstance(data, _unicode_type):
+            data = data.encode('utf-8')
+        return base64.b64decode(data)
+
+    def _decode_base64_to_text(self, data):
+        decoded_bytes = self._decode_base64_to_bytes(data)
+        return decoded_bytes.decode('utf-8')
+
+    def _fill_data_minidom(self, xmldoc, element_name, data_member):
+        xmlelements = self._get_child_nodes(
+            xmldoc, self._get_serialization_name(element_name))
+
+        if not xmlelements or not xmlelements[0].childNodes:
+            return None
+
+        value = xmlelements[0].firstChild.nodeValue
+
+        if data_member is None:
+            return value
+        elif isinstance(data_member, datetime):
+            return self._to_datetime(value)
+        elif type(data_member) is bool:
+            return value.lower() != 'false'
+        else:
+            return type(data_member)(value)
+
+    def _to_datetime(self, strtime):
+        return datetime.strptime(strtime, "%Y-%m-%dT%H:%M:%S.%f")
+
+    def _get_request_body(self, request_body):
+        if request_body is None:
+            return b''
+
+        if isinstance(request_body, WindowsAzureData):
+            request_body = _convert_class_to_xml(request_body)
+
+        if isinstance(request_body, bytes):
+            return request_body
+
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        request_body = str(request_body)
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        return request_body
+
+    def _convert_class_to_xml(self, source, xml_prefix=True):
+        if source is None:
+            return ''
+
+        xmlstr = ''
+        if xml_prefix:
+            xmlstr = '<?xml version="1.0" encoding="utf-8"?>'
+
+        if isinstance(source, list):
+            for value in source:
+                xmlstr += _convert_class_to_xml(value, False)
+        elif isinstance(source, WindowsAzureData):
+            class_name = source.__class__.__name__
+            xmlstr += '<' + class_name + '>'
+            for name, value in vars(source).items():
+                if value is not None:
+                    if isinstance(value, list) or \
+                        isinstance(value, WindowsAzureData):
+                        xmlstr += _convert_class_to_xml(value, False)
+                    else:
+                        xmlstr += ('<' + self._get_serialization_name(name) + '>' +
+                                   xml_escape(str(value)) + '</' +
+                                   self._get_serialization_name(name) + '>')
+            xmlstr += '</' + class_name + '>'
+        return xmlstr
+
+    def _parse_response_for_async_op(self, response):
+        if response is None:
+            return None
+
+        result = AsynchronousOperationResult()
+        if response.headers:
+            for name, value in response.headers:
+                if name.lower() == 'x-ms-request-id':
+                    result.request_id = value
+
+        return result
+
+    def _get_deployment_path_using_name(self, service_name,
+                                            deployment_name=None):
+            return self._get_path('services/hostedservices/' + _str(service_name) +
+                                  '/deployments', deployment_name)
+
+    def _get_path(self, resource, name):
+            path = '/' + subscription_id + '/' + resource
+            if name is not None:
+                path += '/' + _str(name)
+            return path
+
+    def _lower(self, text):
+        return text.lower()
+
+    def _get_image_path(self, image_name=None):
+        return self._get_path('services/images', image_name)
+
+    def _get_hosted_service_path(self, service_name=None):
+        return self._get_path('services/hostedservices', service_name)
+
+    def _get_deployment_path_using_slot(self, service_name, slot=None):
+        return self._get_path('services/hostedservices/' + _str(service_name) +
+                              '/deploymentslots', slot)
+
+    def get_connection(self):
+        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+        port = HTTPS_PORT
+
+        connection = HTTPSConnection(
+            azure_service_management_host,
+            int(port),
+            cert_file=certificate_path)
+
+        return connection
