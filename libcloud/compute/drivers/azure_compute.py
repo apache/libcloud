@@ -179,7 +179,7 @@ azure_service_management_host = 'management.core.windows.net'
 
 __version__ = '0.8.0'
 _USER_AGENT_STRING = 'pyazure/' + __version__
-X_MS_VERSION = '2012-03-01'
+X_MS_VERSION = '2013-08-01'
 
 
 class AzureConnection(ConnectionUserAndKey):
@@ -550,19 +550,26 @@ class AzureNodeDriver(NodeDriver):
 
         _server_deployment_count = len(_deployment.role_instance_list)
 
-        sms = ServiceManagementService(subscription_id, certificate_path)
-
         try:
             if _server_deployment_count > 1:
-                data = sms.delete_role(service_name=ex_cloud_service_name,
-                    deployment_name=_deployment_name,
-                    role_name=node.id,
-                    delete_attached_disks=True)
+                path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
+                path += '?comp=media' # forces deletion of attached disks
+
+                data = self._perform_delete(path, async=True)
+
                 return True
             else:
-                data = sms.delete_deployment(service_name=ex_cloud_service_name,deployment_name=_deployment_name,delete_attached_disks=True)
+                path = self._get_deployment_path_using_name(
+                    ex_cloud_service_name, 
+                    _deployment_name)
+
+                path += '?comp=media'
+
+                data = self._perform_delete(path,async=True)
+
                 return True
-        except Exception:
+        except Exception, e:
+            print e
             return False
 
     """ Functions not implemented
@@ -831,12 +838,26 @@ class AzureNodeDriver(NodeDriver):
             response = self._perform_request(request)
 
             if response_type is not None:
-                return _parse_response(response, response_type)
+                return self._parse_response(response, response_type)
 
             if async:
                 return self._parse_response_for_async_op(response)
 
             return None
+
+    def _perform_delete(self, path, async=False):
+        request = AzureHTTPRequest()
+        request.method = 'DELETE'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        if async:
+            return self._parse_response_for_async_op(response)
+
+        return None
 
     def _perform_request(self, request):
 
@@ -1210,6 +1231,11 @@ class AzureNodeDriver(NodeDriver):
 
     def _get_disk_path(self, disk_name=None):
         return self._get_path('services/disks', disk_name)
+
+    def _get_role_path(self, service_name, deployment_name, role_name=None):
+        return self._get_path('services/hostedservices/' + _str(service_name) +
+                              '/deployments/' + deployment_name +
+                              '/roles', role_name)
 
     def get_connection(self):
         certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
