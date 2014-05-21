@@ -62,6 +62,16 @@ else:
     _str = str
     _unicode_type = str
 
+__version__ = '1.0.0'
+
+# To be removed once auth has been refactored. 
+subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
+certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+
+azure_service_management_host = 'management.core.windows.net'
+_USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
+X_MS_VERSION = '2013-08-01'
+
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
@@ -167,16 +177,6 @@ _KNOWN_SERIALIZATION_XFORMS = {
     'persistent_vm_downtime_info': 'PersistentVMDowntimeInfo',
     'copy_id': 'CopyId',
     }
-
-# To be removed once auth has been refactored. 
-subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
-certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-
-azure_service_management_host = 'management.core.windows.net'
-
-__version__ = '1.0.0'
-_USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
-X_MS_VERSION = '2013-08-01'
 
 class AzureConnection(ConnectionUserAndKey):
     """AzureConnection
