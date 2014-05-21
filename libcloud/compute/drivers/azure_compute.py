@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Azure Compute driver
-Version: 2.0
+"""Azure Compute driver
+
 """
 import uuid
 import re
@@ -31,6 +30,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair, NodeAuthPassword
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionUserAndKey
 
 from datetime import datetime
@@ -38,7 +38,6 @@ from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
 from httplib import (
     HTTPSConnection,
-    HTTP_PORT,
     HTTPS_PORT,
     )
 
@@ -169,15 +168,15 @@ _KNOWN_SERIALIZATION_XFORMS = {
     'copy_id': 'CopyId',
     }
 
+# To be removed once auth has been refactored. 
 subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
 certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
 
 azure_service_management_host = 'management.core.windows.net'
 
-__version__ = '0.8.0'
-_USER_AGENT_STRING = 'pyazure/' + __version__
+__version__ = '1.0.0'
+_USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
 X_MS_VERSION = '2013-08-01'
-
 
 class AzureConnection(ConnectionUserAndKey):
     """AzureConnection
@@ -191,6 +190,26 @@ class AzureNodeDriver(NodeDriver):
     _blob_url = ".blob.core.windows.net"
     features = {'create_node': ['password']}
     service_location = collections.namedtuple('service_location',['is_affinity_group', 'service_location'])
+
+    NODE_STATE_MAP = {
+        'RoleStateUnknown': NodeState.UNKNOWN,
+        'CreatingVM': NodeState.PENDING,
+        'StartingVM': NodeState.PENDING,
+        'CreatingRole': NodeState.PENDING,
+        'StartingRole': NodeState.PENDING,
+        'ReadyRole': NodeState.RUNNING,
+        'BusyRole': NodeState.PENDING,
+        'StoppingRole': NodeState.PENDING,
+        'StoppingVM': NodeState.PENDING,
+        'DeletingVM': NodeState.PENDING,
+        'StoppedVM': NodeState.STOPPED,
+        'RestartingRole': NodeState.REBOOTING,
+        'CyclingRole': NodeState.TERMINATED,
+        'FailedStartingRole': NodeState.TERMINATED,
+        'FailedStartingVM': NodeState.TERMINATED,
+        'UnresponsiveRole': NodeState.TERMINATED,
+        'StoppedDeallocated': NodeState.TERMINATED,
+    }
 
     def list_sizes(self):
         """
@@ -337,7 +356,7 @@ class AzureNodeDriver(NodeDriver):
            :type        ex_cloud_service_name:  ``str``
 
            :keyword     ex_storage_service_name: Optional: Name of the Azure Storage Service.
-           :type        ex_cloud_service_name:  ``str``
+           :type        ex_storage_service_name:  ``str``
 
            :keyword     ex_deployment_name: Optional. The name of the deployment. 
                                             If this is not passed in we default to
@@ -346,10 +365,10 @@ class AzureNodeDriver(NodeDriver):
 
            :keyword     ex_deployment_slot: Optional: Valid values: production|staging. 
                                             Defaults to production.
-           :type        ex_cloud_service_name:  ``str``
+           :type        ex_deployment_slot:  ``str``
 
-           :keyword     ex_linux_user_id: Optional. Defaults to 'azureuser'.
-           :type        ex_cloud_service_name:  ``str``
+           :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
+           :type        ex_admin_user_id:  ``str``
 
         """
         name = kwargs['name']
@@ -368,11 +387,11 @@ class AzureNodeDriver(NodeDriver):
         else:
             ex_deployment_slot = "production" # We assume production if this is not provided. 
 
-        if "ex_linux_user_id" in kwargs:
-            ex_linux_user_id = kwargs['ex_linux_user_id']
+        if "ex_admin_user_id" in kwargs:
+            ex_admin_user_id = kwargs['ex_admin_user_id']
         else:
             # This mimics the Azure UI behavior.
-            ex_linux_user_id = "azureuser"
+            ex_admin_user_id = "azureuser"
 
         node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
         network_config = ConfigurationSet()
@@ -381,7 +400,7 @@ class AzureNodeDriver(NodeDriver):
         # We do this because we need to pass a Configuration to the 
         # method. This will be either Linux or Windows. 
         if re.search("Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk", image, re.I): 
-            machine_config = WindowsConfigurationSet(name, password)
+            machine_config = WindowsConfigurationSet(computer_name=name, admin_password=password, admin_user_name=ex_admin_user_id)
             machine_config.domain_join = None
 
             if node_list is None:
@@ -429,7 +448,7 @@ class AzureNodeDriver(NodeDriver):
                 load_balanced_endpoint_set_name=None,
                 enable_direct_server_return=False
             )
-            machine_config = LinuxConfigurationSet(name, ex_linux_user_id, password, False)
+            machine_config = LinuxConfigurationSet(name, ex_admin_user_id, password, False)
 
         network_config.input_endpoints.input_endpoints.append(endpoint)
 
@@ -626,12 +645,11 @@ class AzureNodeDriver(NodeDriver):
             else:
                 ssh_port = []
 
-        # When servers are Linux, this fails due to the remote_desktop_port 
-        # therefore we need to add a check in here. 
         return Node(
-            id=data.instance_name,
-            name=data.instance_name,
-            state=data.instance_status,
+            id=data.role_name,
+            name=data.role_name,
+            state=self.NODE_STATE_MAP.get(
+                data.instance_status, NodeState.UNKNOWN),
             public_ips=[public_ip],
             private_ips=[data.ip_address],
             driver=self.connection.driver,
@@ -908,8 +926,8 @@ class AzureNodeDriver(NodeDriver):
             response = AzureHTTPResponse(
                 int(resp.status), resp.reason, headers, respbody)
             if status >= 300:
-                raise AzureHTTPError(status, message, 
-                    respheader, respbody)
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (message, respbody, status),
+                    driver=self)
 
             return response
 
@@ -1269,8 +1287,9 @@ class AzureNodeDriver(NodeDriver):
 
         return connection
 
-"""
-XML Serializer
+"""XML Serializer
+
+Borrowed from the Azure SDK for Python. 
 """
 def _lower(text):
     return text.lower()
@@ -1513,8 +1532,8 @@ class AzureXmlSerializer():
                 xml += '</CertificateSetting>'
             xml += '</StoredCertificateSettings>'
 
-        #xml += AzureXmlSerializer.data_to_xml(
-        #    [('AdminUsername', configuration.admin_user_name)])
+        xml += AzureXmlSerializer.data_to_xml(
+            [('AdminUsername', configuration.admin_user_name)])
         return xml
 
     @staticmethod
@@ -1794,8 +1813,9 @@ class AzureXmlSerializer():
             xml += '</ExtendedProperties>'
         return xml
 
-"""
-Data Classes
+"""Data Classes
+
+Borrowed from the Azure SDK for Python. 
 """
 
 class WindowsAzureData(object):
@@ -1831,15 +1851,65 @@ class WindowsConfigurationSet(WindowsAzureData):
 
     def __init__(self, computer_name=None, admin_password=None,
                  reset_password_on_first_logon=None,
-                 enable_automatic_updates=None, time_zone=None):
+                 enable_automatic_updates=None, time_zone=None, admin_user_name=None):
         self.configuration_set_type = u'WindowsProvisioningConfiguration'
         self.computer_name = computer_name
         self.admin_password = admin_password
         self.reset_password_on_first_logon = reset_password_on_first_logon
         self.enable_automatic_updates = enable_automatic_updates
         self.time_zone = time_zone
+        self.admin_user_name = admin_user_name
         self.domain_join = DomainJoin()
         self.stored_certificate_settings = StoredCertificateSettings()
+
+class DomainJoin(WindowsAzureData):
+
+    def __init__(self):
+        self.credentials = Credentials()
+        self.join_domain = u''
+        self.machine_object_ou = u''
+
+class Credentials(WindowsAzureData):
+
+    def __init__(self):
+        self.domain = u''
+        self.username = u''
+        self.password = u''
+
+class StoredCertificateSettings(WindowsAzureData):
+
+    def __init__(self):
+        self.stored_certificate_settings = _list_of(CertificateSetting)
+
+    def __iter__(self):
+        return iter(self.stored_certificate_settings)
+
+    def __len__(self):
+        return len(self.stored_certificate_settings)
+
+    def __getitem__(self, index):
+        return self.stored_certificate_settings[index]
+
+class CertificateSetting(WindowsAzureData):
+
+    '''
+    Initializes a certificate setting.
+
+    thumbprint:
+        Specifies the thumbprint of the certificate to be provisioned. The
+        thumbprint must specify an existing service certificate.
+    store_name:
+        Specifies the name of the certificate store from which retrieve
+        certificate.
+    store_location:
+        Specifies the target certificate store location on the virtual machine.
+        The only supported value is LocalMachine.
+    '''
+
+    def __init__(self, thumbprint=u'', store_name=u'', store_location=u''):
+        self.thumbprint = thumbprint
+        self.store_name = store_name
+        self.store_location = store_location
 
 class SSH(WindowsAzureData):
 
@@ -1978,6 +2048,20 @@ class Images(WindowsAzureData):
 
     def __getitem__(self, index):
         return self.images[index]
+
+class OSImage(WindowsAzureData):
+
+    def __init__(self):
+        self.affinity_group = u''
+        self.category = u''
+        self.location = u''
+        self.logical_size_in_gb = 0
+        self.label = u''
+        self.media_link = u''
+        self.name = u''
+        self.os = u''
+        self.eula = u''
+        self.description = u''
 
 class HostedServices(WindowsAzureData):
 
@@ -2216,6 +2300,96 @@ class Operation(WindowsAzureData):
         self.http_status_code = u''
         self.error = OperationError()
 
+class OperatingSystem(WindowsAzureData):
+
+    def __init__(self):
+        self.version = u''
+        self.label = _Base64String()
+        self.is_default = True
+        self.is_active = True
+        self.family = 0
+        self.family_label = _Base64String()
+
+class OperatingSystems(WindowsAzureData):
+
+    def __init__(self):
+        self.operating_systems = _list_of(OperatingSystem)
+
+    def __iter__(self):
+        return iter(self.operating_systems)
+
+    def __len__(self):
+        return len(self.operating_systems)
+
+    def __getitem__(self, index):
+        return self.operating_systems[index]
+
+class OperatingSystemFamily(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.label = _Base64String()
+        self.operating_systems = OperatingSystems()
+
+class OperatingSystemFamilies(WindowsAzureData):
+
+    def __init__(self):
+        self.operating_system_families = _list_of(OperatingSystemFamily)
+
+    def __iter__(self):
+        return iter(self.operating_system_families)
+
+    def __len__(self):
+        return len(self.operating_system_families)
+
+    def __getitem__(self, index):
+        return self.operating_system_families[index]
+
+class Subscription(WindowsAzureData):
+
+    def __init__(self):
+        self.subscription_id = u''
+        self.subscription_name = u''
+        self.subscription_status = u''
+        self.account_admin_live_email_id = u''
+        self.service_admin_live_email_id = u''
+        self.max_core_count = 0
+        self.max_storage_accounts = 0
+        self.max_hosted_services = 0
+        self.current_core_count = 0
+        self.current_hosted_services = 0
+        self.current_storage_accounts = 0
+        self.max_virtual_network_sites = 0
+        self.max_local_network_sites = 0
+        self.max_dns_servers = 0
+
+class AvailabilityResponse(WindowsAzureData):
+
+    def __init__(self):
+        self.result = False
+
+class SubscriptionCertificates(WindowsAzureData):
+
+    def __init__(self):
+        self.subscription_certificates = _list_of(SubscriptionCertificate)
+
+    def __iter__(self):
+        return iter(self.subscription_certificates)
+
+    def __len__(self):
+        return len(self.subscription_certificates)
+
+    def __getitem__(self, index):
+        return self.subscription_certificates[index]
+
+class SubscriptionCertificate(WindowsAzureData):
+
+    def __init__(self):
+        self.subscription_certificate_public_key = u''
+        self.subscription_certificate_thumbprint = u''
+        self.subscription_certificate_data = u''
+        self.created = u''
+
 class AzureHTTPRequest(object):
     def __init__(self):
         self.host = ''
@@ -2233,18 +2407,7 @@ class AzureHTTPResponse(object):
         self.headers = headers
         self.body = body
 
-class AzureHTTPError(Exception):
-    def __init__(self, status, message, respheader, respbody):
-        '''Creates a new HTTPError with the specified status, message,
-        response headers and body'''
-        self.status = status
-        self.respheader = respheader
-        self.respbody = respbody
-        Exception.__init__(self, message)
-
-"""
-Helpers
-
+"""Helper Functions
 """
 
 class _Base64String(str):
