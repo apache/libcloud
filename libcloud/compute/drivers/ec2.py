@@ -64,6 +64,7 @@ __all__ = [
 
     'EC2NodeLocation',
     'EC2ReservedNode',
+    'EC2SecurityGroup',
     'EC2Network',
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
@@ -1403,6 +1404,20 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': str
         }
     },
+    'security_group': {
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        },
+        'description': {
+            'xpath': 'groupDescription',
+            'transform_func': str
+        },
+        'owner_id': {
+            'xpath': 'ownerId',
+            'transform_func': str
+        }
+    },
     'snapshot': {
         'volume_id': {
             'xpath': 'volumeId',
@@ -1589,6 +1604,25 @@ class EC2ReservedNode(Node):
 
     def __repr__(self):
         return (('<EC2ReservedNode: id=%s>') % (self.id))
+
+
+class EC2SecurityGroup(object):
+    """
+    Represents information about a Security group
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, ingress_rules, egress_rules, extra=None):
+        self.id = id
+        self.name = name
+        self.ingress_rules = ingress_rules
+        self.egress_rules = egress_rules
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2SecurityGroup: id=%s, name=%s')
+                % (self.id, self.name))
 
 
 class EC2Network(object):
@@ -2368,21 +2402,7 @@ class BaseEC2NodeDriver(NodeDriver):
                 params[network_key] = network_id
 
         if filters:
-            for filter_idx, filter_data in enumerate(filters.items()):
-                filter_idx += 1  # We want 1-based indexes
-                filter_name, filter_values = filter_data
-                filter_key = 'Filter.%s.Name' % filter_idx
-                params[filter_key] = filter_name
-
-                if isinstance(filter_values, (list, tuple)):
-                    for value_idx, value in enumerate(filter_values):
-                        value_idx += 1  # We want 1-based indexes
-                        value_key = 'Filter.%s.Value.%s' % (filter_idx,
-                                                            value_idx)
-                        params[value_key] = value
-                else:
-                    value_key = 'Filter.%s.Value.1' % filter_idx
-                    params[value_key] = filter_values
+            params.update(self._build_filters(filters))
 
         return self._to_networks(
             self.connection.request(self.path, params=params).object
@@ -2526,6 +2546,50 @@ class BaseEC2NodeDriver(NodeDriver):
             groups.append(name)
 
         return groups
+
+    def ex_get_security_groups(self, group_ids=None,
+                               group_names=None, filters=None):
+        """
+        Return a list of :class:`EC2SecurityGroup` objects for the
+        current region.
+
+        :param      group_ids: Return only groups matching the provided
+                               group IDs.
+        :type       group_ids: ``list``
+
+        :param      group_names: Return only groups matching the provided
+                                 group names.
+        :type       group_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only specific security groups.
+        :type       filters: ``dict``
+
+        :rtype:     ``list`` of :class:`EC2SecurityGroup`
+        """
+
+        params = {'Action': 'DescribeSecurityGroups'}
+
+        if group_ids:
+            for id_idx, group_id in enumerate(group_ids):
+                id_idx += 1 # We want 1-based indexes
+                id_key = 'GroupId.%s' % id_idx
+                params[id_key] = group_id
+
+        if group_names:
+            for name_idx, group_name in enumerate(group_names):
+                name_idx += 1 # We want 1-based indexes
+                name_key = 'GroupName.%s' % name_idx
+                params[name_key] = group_name
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params)
+
+        return self._to_security_groups(
+            self.connection.request(self.path, params=params).object
+        )
 
     def ex_create_security_group(self, name, description, vpc_id=None):
         """
@@ -4019,6 +4083,106 @@ class BaseEC2NodeDriver(NodeDriver):
                            driver=self)
         return key_pair
 
+    def _to_security_groups(self, response):
+        return [self._to_security_group(el) for el in response.findall(
+            fixxpath(xpath='securityGroupInfo/item', namespace=NAMESPACE))
+        ]
+
+    def _to_security_group(self, element):
+        # security group id
+        sg_id = findtext(element=element,
+                         xpath='groupId',
+                         namespace=NAMESPACE)
+
+        # security group name
+        name = findtext(element=element,
+                        xpath='groupName',
+                        namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['security_group'])
+
+        # Add tags to the extra dict
+        extra['tags'] = tags
+
+        # Get ingress rules
+        ingress_rules = self._to_security_group_rules(
+            element, 'ipPermissions/item'
+        )
+
+        # Get egress rules
+        egress_rules = self._to_security_group_rules(
+            element, 'ipPermissionsEgress/item'
+        )
+
+        return EC2SecurityGroup(sg_id, name, ingress_rules,
+                                egress_rules, extra=extra)
+
+    def _to_security_group_rules(self, element, xpath):
+        return [self._to_security_group_rule(el) for el in element.findall(
+            fixxpath(xpath=xpath, namespace=NAMESPACE))
+        ]
+
+    def _to_security_group_rule(self, element):
+        """
+        Parse the XML element and return a SecurityGroup object.
+
+        :rtype:     :class:`EC2SecurityGroup`
+        """
+
+        rule = {}
+        rule['protocol'] = findtext(element=element,
+                                    xpath='ipProtocol',
+                                    namespace=NAMESPACE)
+
+        rule['from_port'] = findtext(element=element,
+                                     xpath='fromPort',
+                                     namespace=NAMESPACE)
+
+        rule['to_port'] = findtext(element=element,
+                                   xpath='toPort',
+                                   namespace=NAMESPACE)
+
+       # get security groups
+        elements = element.findall(fixxpath(
+            xpath='groups/item',
+            namespace=NAMESPACE
+        ))
+
+        rule['group_pairs'] = [{
+            'user_id': findtext(
+                element=element,
+                xpath='userId',
+                namespace=NAMESPACE),
+            'group_id': findtext(
+                element=element,
+                xpath='groupId',
+                namespace=NAMESPACE),
+            'group_name': findtext(
+                element=element,
+                xpath='groupName',
+                namespace=NAMESPACE)
+            } for element in elements]
+
+        # get ip ranges
+        elements = element.findall(fixxpath(
+            xpath='ipRanges/item',
+            namespace=NAMESPACE
+        ))
+
+        rule['cidr_ips'] = [
+            findtext(
+                element=element,
+                xpath='cidrIp',
+                namespace=NAMESPACE
+            ) for element in elements]
+
+        return rule
+
     def _to_networks(self, response):
         return [self._to_network(el) for el in response.findall(
             fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
@@ -4483,6 +4647,37 @@ class BaseEC2NodeDriver(NodeDriver):
             })
 
         return groups
+
+    def _build_filters(self, filters):
+        """
+        Return a dictionary with filter query parameters which are used when
+        listing networks, security groups, etc.
+
+        :param      filters: Dict of filter names and filter values
+        :type       filters: ``dict``
+
+        :rtype:     ``dict``
+        """
+
+        filter_entries = {}
+
+        for filter_idx, filter_data in enumerate(filters.items()):
+            filter_idx += 1 # We want 1-based indexes
+            filter_name, filter_values = filter_data
+            filter_key = 'Filter.%s.Name' % filter_idx
+            filter_entries[filter_key] = filter_name
+
+            if isinstance(filter_values, list):
+                for value_idx, value in enumerate(filter_values):
+                    value_idx += 1 # We want 1-based indexes
+                    value_key = 'Filter.%s.Value.%s' % (filter_idx,
+                                                        value_idx)
+                    filter_entries[value_key] = value
+            else:
+                value_key = 'Filter.%s.Value.1' % filter_idx
+                filter_entries[value_key] = filter_values
+
+        return filter_entries
 
 
 class EC2NodeDriver(BaseEC2NodeDriver):
