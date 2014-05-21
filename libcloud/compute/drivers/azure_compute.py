@@ -298,7 +298,6 @@ class AzureNodeDriver(NodeDriver):
             ex_deployment_slot = "production"
 
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
-        print _deployment_name
 
         try:
             result = self._perform_post(
@@ -591,7 +590,6 @@ class AzureNodeDriver(NodeDriver):
 
                 return True
         except Exception, e:
-            print e
             return False
 
     """ Functions not implemented
@@ -652,7 +650,7 @@ class AzureNodeDriver(NodeDriver):
                 data.instance_status, NodeState.UNKNOWN),
             public_ips=[public_ip],
             private_ips=[data.ip_address],
-            driver=self.connection.driver,
+            driver=AzureNodeDriver,
             extra={
                 'remote_desktop_port': remote_desktop_port,
                 'ssh_port': ssh_port,
