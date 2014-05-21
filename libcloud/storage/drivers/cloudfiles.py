@@ -186,11 +186,17 @@ class OpenStackSwiftConnection(CloudFilesConnection):
     Connection class for the OpenStack Swift endpoint.
     """
 
+    # TODO: Reverse the relationship - Swift -> CloudFiles
+
     def __init__(self, *args, **kwargs):
         super(OpenStackSwiftConnection, self).__init__(*args, **kwargs)
         self._service_type = self._ex_force_service_type or 'object-store'
         self._service_name = self._ex_force_service_name or 'swift'
-        self._service_region = self._ex_force_service_region.upper()
+
+        if self._ex_force_service_region:
+            self._service_region = self._ex_force_service_region.upper()
+        else:
+            self._service_region = None
 
     def get_endpoint(self, *args, **kwargs):
         if '2.0' in self._auth_version:
@@ -200,10 +206,10 @@ class OpenStackSwiftConnection(CloudFilesConnection):
                 region=self._service_region)
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoint = self.service_catalog.get_endpoint(
-                name=self._service_name, region=self._region_name)
+                name=self._service_name, region=self._service_region)
 
-        if self.endpoint_url in endpoint:
-            return endpoint[self.endpoint_url]
+        if PUBLIC_ENDPOINT_KEY in endpoint:
+            return endpoint[PUBLIC_ENDPOINT_KEY]
         else:
             raise LibcloudError('Could not find specified endpoint')
 
