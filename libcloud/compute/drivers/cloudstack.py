@@ -1809,6 +1809,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         CloudStack uses integers as the resource type so we will convert
         them to a more human readable string using the resource map
 
+        A list of the resource type mappings can be found at
+        http://goo.gl/17C6Gk
+
         :return: dict
         :rtype: ``dict``
         """
@@ -1825,11 +1828,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             4: 'max_images',
             5: 'max_projects',
             6: 'max_networks',
-            7: 'max_vpc'
+            7: 'max_vpc',
+            8: 'max_cpu',
+            9: 'max_memory',
+            10: 'max_primary_storage',
+            11: 'max_secondary_storage'
         }
 
         for limit in result.get('resourcelimit', []):
-            resource = resource_map[int(limit['resourcetype'])]
+            # We will ignore unknown types
+            resource = resource_map.get(int(limit['resourcetype']), None)
+            if not resource:
+                continue
             limits[resource] = int(limit['max'])
 
         return limits
