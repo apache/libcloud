@@ -80,6 +80,7 @@ class Provider(object):
     :cvar VULTR: vultr driver.
     :cvar AZURE: Azure driver.
     """
+    AZURE = 'azure'
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'

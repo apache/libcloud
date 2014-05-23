@@ -539,7 +539,7 @@ class Connection(object):
 
         return (host, port, secure, request_path)
 
-    def connect(self, host=None, port=None, base_url=None):
+    def connect(self, host=None, port=None, base_url=None, **kwargs):
         """
         Establish a connection with the API server.
 
@@ -565,7 +565,19 @@ class Connection(object):
             host = host or self.host
             port = port or self.port
 
-        kwargs = {'host': host, 'port': int(port)}
+        if not hasattr(kwargs, 'host'):
+            kwargs.update({'host': host})
+
+        if not hasattr(kwargs, 'port'):
+            kwargs.update({'port': port})
+
+        if not hasattr(kwargs, 'key_file'):
+            kwargs.update({'key_file': self.key_file})
+
+        if not hasattr(kwargs, 'cert_file'):
+            kwargs.update({'cert_file': self.cert_file})
+
+        #kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
@@ -936,6 +948,21 @@ class ConnectionKey(Connection):
                                             proxy_url=proxy_url)
         self.key = key
 
+class CertificateConnection(Connection):
+    """
+    Base connection class which accepts a single ``key`` argument.
+    """
+    def __init__(self, subscription_id, cert_file, secure=True, host=None, port=None, url=None,
+                 timeout=None):
+        """
+        Initialize `user_id` and `key`; set `secure` to an ``int`` based on
+        passed value.
+        """
+        super(CertificateConnection, self).__init__(secure=secure, host=host,
+                                            port=port, url=url, timeout=timeout)
+
+        self.cert_file = cert_file
+        self.subscription_id = subscription_id
 
 class ConnectionUserAndKey(ConnectionKey):
     """

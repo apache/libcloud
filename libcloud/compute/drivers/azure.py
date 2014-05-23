@@ -24,6 +24,7 @@ import sys
 import os
 import copy
 import base64
+from libcloud.common.azure import AzureServiceManagementConnection
 
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
@@ -64,9 +65,6 @@ else:
 
 __version__ = '1.0.0'
 
-# To be removed once auth has been refactored. 
-subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
-certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
 
 azure_service_management_host = 'management.core.windows.net'
 _USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
@@ -178,14 +176,14 @@ _KNOWN_SERIALIZATION_XFORMS = {
     'copy_id': 'CopyId',
     }
 
-class AzureConnection(ConnectionUserAndKey):
-    """AzureConnection
 
-    Connection class for Azure Compute Driver.
-    """
 
 class AzureNodeDriver(NodeDriver):
-    
+    connectionCls = AzureServiceManagementConnection
+    name = "Azure Node Provider"
+    website = 'http://windowsazure.com'
+    type = Provider.AZURE
+
     _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
     _blob_url = ".blob.core.windows.net"
     features = {'create_node': ['password']}
@@ -210,6 +208,16 @@ class AzureNodeDriver(NodeDriver):
         'UnresponsiveRole': NodeState.TERMINATED,
         'StoppedDeallocated': NodeState.TERMINATED,
     }
+
+    def __init__(self, subscription_id=None, key_file=None, **kwargs):
+        """
+        subscription_id contains the Azure subscription id in the form of GUID
+        key_file contains the Azure X509 certificate in .pem form
+        """
+        self.subscription_id = subscription_id
+        self.key_file = key_file
+        super(AzureNodeDriver, self).__init__(self.subscription_id, self.key_file,
+                                           secure=True, **kwargs)
 
     def list_sizes(self):
         """
@@ -241,7 +249,7 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        data = self._perform_get('/' + subscription_id + '/locations', Locations)
+        data = self._perform_get('/' + self.subscription_id + '/locations', Locations)
 
         return [self._to_location(l) for l in data]
 
@@ -300,11 +308,8 @@ class AzureNodeDriver(NodeDriver):
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
         try:
-            result = self._perform_post(
-            self._get_deployment_path_using_name(
-                ex_cloud_service_name, _deployment_name) + \
-                    '/roleinstances/' + _str(node.id) + \
-                    '?comp=reboot', '', async=True)
+            result = self._perform_post(self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name) + '/roleinstances/' + _str(node.id) + '?comp=reboot'
+            , '', async=True)
             if result.request_id:
                 return True
             else:
@@ -898,39 +903,14 @@ class AzureNodeDriver(NodeDriver):
 
     def _perform_request(self, request):
 
-        connection = self.get_connection()
-
         try:
-            connection.putrequest(request.method, request.path)
+            return self.connection.request(action="https://%s/%s" % (request.host, request.path), data=request.body, method=request.method)
+        except Exception, e:
+            print e.message
 
-            self.send_request_headers(connection, request.headers)
-            self.send_request_body(connection, request.body)
 
-            resp = connection.getresponse()
-            status = int(resp.status)
-            message = resp.reason
-            respheader = headers = resp.getheaders()
 
-            # for consistency across platforms, make header names lowercase
-            for i, value in enumerate(headers):
-                headers[i] = (value[0].lower(), value[1])
 
-            respbody = None
-            if resp.length is None:
-                respbody = resp.read()
-            elif resp.length > 0:
-                respbody = resp.read(resp.length)
-
-            response = AzureHTTPResponse(
-                int(resp.status), resp.reason, headers, respbody)
-            if status >= 300:
-                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (message, respbody, status),
-                    driver=self)
-
-            return response
-
-        finally:
-            connection.close()
 
     def _update_request_uri_query(self, request):
         '''pulls the query string out of the URI and moves it into
@@ -1236,7 +1216,7 @@ class AzureNodeDriver(NodeDriver):
 
         result = AsynchronousOperationResult()
         if response.headers:
-            for name, value in response.headers:
+            for name, value in response.headers.items():
                 if name.lower() == 'x-ms-request-id':
                     result.request_id = value
 
@@ -1248,7 +1228,7 @@ class AzureNodeDriver(NodeDriver):
                                   '/deployments', deployment_name)
 
     def _get_path(self, resource, name):
-            path = '/' + subscription_id + '/' + resource
+            path = '/' + self.subscription_id + '/' + resource
             if name is not None:
                 path += '/' + _str(name)
             return path
@@ -1274,16 +1254,16 @@ class AzureNodeDriver(NodeDriver):
     def _get_storage_service_path(self, service_name=None):
         return self._get_path('services/storageservices', service_name)
 
-    def get_connection(self):
-        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-        port = HTTPS_PORT
+    #def get_connection(self):
+    #    certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+    #    port = HTTPS_PORT
 
-        connection = HTTPSConnection(
-            azure_service_management_host,
-            int(port),
-            cert_file=certificate_path)
+    #    connection = HTTPSConnection(
+    #        azure_service_management_host,
+    #        int(port),
+    #        cert_file=certificate_path)
 
-        return connection
+    #    return connection
 
 """XML Serializer
 
