@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Libcloud Python 2.x and 3.x compatibility layer
-# Some methods bellow are taken from Django PYK3 port which is licensed under 3
+# Some methods below are taken from Django PYK3 port which is licensed under 3
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
