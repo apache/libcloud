@@ -28,7 +28,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b, basestring
+from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
@@ -2173,7 +2173,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return key_pair
 
     def import_key_pair_from_string(self, name, key_material):
-        base64key = base64.b64encode(b(key_material))
+        base64key = ensure_string(base64.b64encode(b(key_material)))
 
         params = {
             'Action': 'ImportKeyPair',

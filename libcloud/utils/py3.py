@@ -83,6 +83,14 @@ if PY3:
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
 
+    def ensure_string(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode('utf-8')
+        else:
+            raise TypeError("Invalid argument %r for ensure_string()" % (s,))
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
@@ -125,7 +133,7 @@ else:
 
     method_type = types.MethodType
 
-    b = bytes = str
+    b = bytes = ensure_string = str
 
     def byte(n):
         return n
