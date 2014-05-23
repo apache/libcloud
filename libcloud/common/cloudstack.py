@@ -153,7 +153,12 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         command = command.lower()
 
-        if command not in ['revokesecuritygroupingress']:
+        # Work around for older verions which don't return "response" suffix
+        # in delete ingress rule response command name
+        if command == 'revokesecuritygroupingress' and \
+           not 'revokesecuritygroupingressresponse' in result.object:
+           command = command
+        else:
             command = command + 'response'
 
         if command not in result.object:
