@@ -27,6 +27,8 @@ __all__ = [
     "get_driver"]
 
 DRIVERS = {
+    Provider.AZURE:
+    ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2_US_EAST:
