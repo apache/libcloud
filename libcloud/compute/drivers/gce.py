@@ -2305,6 +2305,8 @@ class GCENodeDriver(NodeDriver):
                 image = self._match_images('debian-cloud', partial_name)
             elif partial_name.startswith('centos'):
                 image = self._match_images('centos-cloud', partial_name)
+            elif partial_name.startswith('container-vm'):
+                image = self._match_images('google-containers', partial_name)
 
         return image
 
