@@ -150,6 +150,11 @@ Compute
   (GITHUB-294)
   [zerthimon]
 
+- Allow user to retrieve container images using ex_get_image method in the
+  Google Compute Engine driver.
+  (GITHUB-299, LIBCLOUD-562)
+  [Magnus Andersson]
+
 Storage
 ~~~~~~~
 
