@@ -22,6 +22,10 @@ General
 Compute
 ~~~~~~~
 
+- Fix create_key_pair method which was not returning private key. 
+  (LIBCLOUD-566)
+  [Sebastien Goasguen]
+
 - Map "Stopped" node state in the CloudStack driver to NodeState.STOPPED
   instead of NodeState.TERMINATED, "Stopping" to NodeState.PENDING instead of
   NodeState.TERMINATED and "Expunging" to NodeState.PENDING instead of
