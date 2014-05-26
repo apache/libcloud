@@ -1968,8 +1968,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def _to_key_pair(self, data):
         key_pair = KeyPair(name=data['name'],
                            fingerprint=data['fingerprint'],
-                           public_key=data.get('publicKey', None),
-                           private_key=data.get('privateKey', None),
+                           public_key=data.get('publickey', None),
+                           private_key=data.get('privatekey', None),
                            driver=self)
         return key_pair
 
