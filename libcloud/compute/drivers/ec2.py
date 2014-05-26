@@ -4144,7 +4144,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                    xpath='toPort',
                                    namespace=NAMESPACE)
 
-       # get security groups
+        # get security groups
         elements = element.findall(fixxpath(
             xpath='groups/item',
             namespace=NAMESPACE
