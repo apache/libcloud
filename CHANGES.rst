@@ -159,6 +159,9 @@ Compute
   (GITHUB-299, LIBCLOUD-562)
   [Magnus Andersson]
 
+- Add new driver for Kili public cloud (http://kili.io/)
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 

@@ -39,6 +39,7 @@ Provider                              Documentation                             
 `IBM SmartCloud Enterprise`_                                                       IBM                 :mod:`libcloud.compute.drivers.ibm_sce`        :class:`IBMNodeDriver`              
 `Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`       IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
 `Joyent`_                                                                          JOYENT              :mod:`libcloud.compute.drivers.joyent`         :class:`JoyentNodeDriver`           
+`Kili Public Cloud`_                  :doc:`Click </compute/drivers/kili>`         KILI                :mod:`libcloud.compute.drivers.kili`           :class:`KiliCloudNodeDriver`        
 `KTUCloud`_                                                                        KTUCLOUD            :mod:`libcloud.compute.drivers.ktucloud`       :class:`KTUCloudNodeDriver`         
 `Libvirt`_                            :doc:`Click </compute/drivers/libvirt>`      LIBVIRT             :mod:`libcloud.compute.drivers.libvirt_driver` :class:`LibvirtNodeDriver`          
 `Linode`_                                                                          LINODE              :mod:`libcloud.compute.drivers.linode`         :class:`LinodeNodeDriver`           
@@ -101,6 +102,7 @@ Provider                              Documentation                             
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/

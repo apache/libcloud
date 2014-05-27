@@ -39,6 +39,7 @@ Provider                              list nodes create node reboot node destroy
 `IBM SmartCloud Enterprise`_          yes        yes         yes         yes          yes         yes        no         
 `Ikoula`_                             yes        yes         yes         yes          yes         yes        yes        
 `Joyent`_                             yes        yes         yes         yes          yes         yes        yes        
+`Kili Public Cloud`_                  yes        yes         yes         yes          yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
 `Libvirt`_                            yes        no          yes         yes          no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -101,6 +102,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/

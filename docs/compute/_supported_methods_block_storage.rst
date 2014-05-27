@@ -39,6 +39,7 @@ Provider                              list volumes create volume destroy volume 
 `IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
 `Ikoula`_                             yes          yes           yes            yes           yes           no             no             
 `Joyent`_                             no           no            no             no            no            no             no             
+`Kili Public Cloud`_                  yes          yes           yes            yes           yes           no             no             
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             no             
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            no             no            no            no             no             
@@ -101,6 +102,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
