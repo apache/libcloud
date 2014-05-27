@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from libcloud.compute.base import NodeAuthPassword
 
 import libcloud.security
 
@@ -37,15 +38,19 @@ kwargs
 #node["deployment_name"]="dcoddkinztest01"
 kwargs = {}
 #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
-kwargs["ex_storage_service_name"]="mlytics"
+kwargs["ex_storage_service_name"]="mtlytics"
 kwargs["ex_deployment_name"]="dcoddkinztest02"
-kwargs["ex_deployment_slot"]="dcoddkinztest02"
+kwargs["ex_deployment_slot"]="Production"
 kwargs["ex_admin_user_id"]="azurecoder"
-kwargs["auth"]= type('Auth', (object,), dict(password="Pa55w0rd"))
-kwargs["size"]= "A1"
-kwargs["image"] = u"RightImage CentOS 6.5 x64 v13.5.3"
-kwargs["name"] = "dcoddkinztest02"
+auth = NodeAuthPassword("Pa55w0rd", False)
 
+kwargs["auth"]= auth
+
+kwargs["size"]= "ExtraSmall"
+kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+kwargs["name"] = "dcoddkinztest03"
+
+#result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
 result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
 #result=driver.list_images()
 print(result.__repr__())
