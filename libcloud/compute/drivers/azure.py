@@ -552,7 +552,7 @@ class AzureNodeDriver(NodeDriver):
         """Remove Azure Virtual Machine
 
         This removes the instance, but does not 
-        remove the disk. You will need to use destroy_volume. 
+        remove the disk. You will need to use destroy_volume.
         Azure sometimes has an issue where it will hold onto
         a blob lease for an extended amount of time. 
 
@@ -904,7 +904,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_request(self, request):
 
         try:
-            return self.connection.request(action="https://%s/%s" % (request.host, request.path), data=request.body, method=request.method)
+            return self.connection.request(action="https://%s%s" % (request.host, request.path), data=request.body, headers=request.headers, method=request.method)
         except Exception, e:
             print e.message
 
@@ -943,20 +943,18 @@ class AzureNodeDriver(NodeDriver):
         ''' Add additional headers for management. '''
 
         if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
-            request.headers.append(('Content-Length', str(len(request.body))))
+            request.headers['Content-Length'] = str(len(request.body))
 
         # append additional headers base on the service
-        request.headers.append(('x-ms-version', X_MS_VERSION))
+        #request.headers.append(('x-ms-version', X_MS_VERSION))
 
         # if it is not GET or HEAD request, must set content-type.
         if not request.method in ['GET', 'HEAD']:
-            for name, _ in request.headers:
-                if 'content-type' == name.lower():
+            for key in request.headers:
+                if 'content-type' == key.lower():
                     break
             else:
-                request.headers.append(
-                    ('Content-Type',
-                     'application/atom+xml;type=entry;charset=utf-8'))
+                request.headers['Content-Type']='application/xml'
 
         return request.headers
 
@@ -2374,7 +2372,7 @@ class AzureHTTPRequest(object):
         self.method = ''
         self.path = ''
         self.query = []      # list of (name, value)
-        self.headers = []    # list of (header name, header value)
+        self.headers = {}    # list of (header name, header value)
         self.body = ''
         self.protocol_override = None
 
