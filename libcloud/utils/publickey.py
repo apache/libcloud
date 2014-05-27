@@ -17,6 +17,7 @@ import base64
 import hashlib
 
 from libcloud.utils.py3 import hexadigits
+from libcloud.utils.py3 import bchr
 
 __all__ = [
     'get_pubkey_openssh_fingerprint',
@@ -55,7 +56,7 @@ def get_pubkey_ssh2_fingerprint(pubkey):
     k = importKey(pubkey)
     derPK = DerSequence([k.n, k.e])
     bitmap = DerObject('BIT STRING')
-    bitmap.payload = chr(0x00) + derPK.encode()
+    bitmap.payload = bchr(0x00) + derPK.encode()
     der = DerSequence([algorithmIdentifier, bitmap.encode()])
     return _to_md5_fingerprint(der.encode())
 

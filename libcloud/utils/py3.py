@@ -96,6 +96,10 @@ if PY3:
         return ord(n)
     u = str
 
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return bytes([s])
+
     def dictvalues(d):
         return list(d.values())
 
@@ -144,6 +148,10 @@ else:
         return n
 
     u = unicode
+
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return chr(s)
 
     def next(i):
         return i.next()
