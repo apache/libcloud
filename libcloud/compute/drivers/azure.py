@@ -15,6 +15,7 @@
 """Azure Compute driver
 
 """
+import httplib
 import uuid
 import re
 import time
@@ -571,12 +572,12 @@ class AzureNodeDriver(NodeDriver):
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
 
-        _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
-        _deployment_name = _deployment.name
-
-        _server_deployment_count = len(_deployment.role_instance_list)
-
         try:
+            _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
+            _deployment_name = _deployment.name
+
+            _server_deployment_count = len(_deployment.role_instance_list)
+
             if _server_deployment_count > 1:
                 path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
                 path += '?comp=media' # forces deletion of attached disks
@@ -864,6 +865,11 @@ class AzureNodeDriver(NodeDriver):
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
 
+        #prob not the best way to do this.  but there is no point parsing
+        #the response as a particular type if it is not the expected type of response
+        if response.status >= 400: # or resp is not 'OK' or response.error is not None:
+            raise Exception(response.error)
+
         if response_type is not None:
             return self._parse_response(response, response_type)
 
@@ -895,6 +901,10 @@ class AzureNodeDriver(NodeDriver):
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
+
+        #ensure we raise an exception if the response was an error
+        if response.status >= 400:
+            raise Exception(response.error)
 
         if async:
             return self._parse_response_for_async_op(response)
