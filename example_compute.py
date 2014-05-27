@@ -50,8 +50,9 @@ kwargs["size"]= "ExtraSmall"
 kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
 kwargs["name"] = "dcoddkinztest03"
 
+node = type('Node', (object,), dict(id="oddkinz5"))
 #result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
-result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
-#result=driver.list_images()
+#result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
+result = driver.destroy_node(node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
 print(result.__repr__())
 # reboot "test"
