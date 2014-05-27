@@ -33,6 +33,7 @@ from libcloud.utils.misc import get_driver, set_driver
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
@@ -262,6 +263,11 @@ class TestUtils(unittest.TestCase):
             value = get_secure_random_string(size=i)
             self.assertEqual(len(value), i)
 
+    def test_hexadigits(self):
+        self.assertEqual(hexadigits(b('')), [])
+        self.assertEqual(hexadigits(b('a')), ['61'])
+        self.assertEqual(hexadigits(b('AZaz09-')),
+                         ['41', '5a', '61', '7a', '30', '39', '2d'])
 
 class NetworkingUtilsTestCase(unittest.TestCase):
     def test_is_public_and_is_private_subnet(self):

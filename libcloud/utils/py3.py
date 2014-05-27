@@ -101,6 +101,11 @@ if PY3:
 
     def tostring(node):
         return ET.tostring(node, encoding='unicode')
+
+    def hexadigits(s):
+        # s needs to be a byte string.
+        return [format(x, "x") for x in s]
+
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA
@@ -153,6 +158,10 @@ else:
             # Pretend to be py3 by encoding the URI automatically.
             s = s.encode('utf8')
         return _urlquote(s, safe)
+
+    def hexadigits(s):
+        # s needs to be a string.
+        return [x.encode("hex") for x in s]
 
 if PY25:
     import posixpath

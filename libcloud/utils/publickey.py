@@ -16,6 +16,8 @@
 import base64
 import hashlib
 
+from libcloud.utils.py3 import hexadigits
+
 __all__ = [
     'get_pubkey_openssh_fingerprint',
     'get_pubkey_ssh2_fingerprint',
@@ -32,7 +34,7 @@ except ImportError:
 
 def _to_md5_fingerprint(data):
     hashed = hashlib.md5(data).digest()
-    return ":".join(x.encode("hex") for x in hashed)
+    return ":".join(hexadigits(hashed))
 
 
 def get_pubkey_openssh_fingerprint(pubkey):
