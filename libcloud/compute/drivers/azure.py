@@ -234,7 +234,7 @@ class AzureNodeDriver(NodeDriver):
 
         return sizes
 
-    def list_images(self):
+    def list_images(self, location=None):
         """
         Lists all images
 
@@ -242,7 +242,12 @@ class AzureNodeDriver(NodeDriver):
         """        
         data = self._perform_get(self._get_image_path(), Images)
 
-        return [self._to_image(i) for i in data]
+        images = [self._to_image(i) for i in data]
+
+        if location != None:
+            images = [image for image in images if location in image.extra["location"]]
+
+        return images
 
     def list_locations(self):
         """
@@ -271,10 +276,14 @@ class AzureNodeDriver(NodeDriver):
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
-        data = self._perform_get(
+        response = self._perform_get(
             self._get_hosted_service_path(ex_cloud_service_name) +
             '?embed-detail=True',
-            HostedService)
+            None)
+        if response.status != 200 :
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        data =  self._parse_response(response, HostedService)
 
         try:
             return [self._to_node(n) for n in data.deployments[0].role_instance_list]
@@ -311,6 +320,8 @@ class AzureNodeDriver(NodeDriver):
         try:
             result = self._perform_post(self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name) + '/roleinstances/' + _str(node.id) + '?comp=reboot'
             , '', async=True)
+
+
             if result.request_id:
                 return True
             else:
@@ -684,11 +695,13 @@ class AzureNodeDriver(NodeDriver):
         if "Brazil" in data.display_name:
             country = "Brazil"
 
-        return NodeLocation(
+        return AzureNodeLocation(
             id=data.name,
             name=data.display_name,
             country=country,
-            driver=self.connection.driver)
+            driver=self.connection.driver,
+            available_services =data.available_services,
+            virtual_machine_role_sizes = (data.compute_capabilities).virtual_machines_role_sizes)
 
     def _to_node_size(self, data):
         """
@@ -768,12 +781,17 @@ class AzureNodeDriver(NodeDriver):
 
     def _get_deployment(self, **kwargs):
         _service_name = kwargs['service_name']
-        _deployment_slot = kwargs['deployment_slot'] 
+        _deployment_slot = kwargs['deployment_slot']
 
-        return self._perform_get(
+        response = self._perform_get(
             self._get_deployment_path_using_slot(
-                _service_name, _deployment_slot),
-            Deployment)
+                _service_name, _deployment_slot), None)
+
+        if response.status != 200:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return self._parse_response(response, Deployment)
+
 
     def _get_cloud_service_location(self, service_name=None):
 
@@ -865,11 +883,6 @@ class AzureNodeDriver(NodeDriver):
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
 
-        #prob not the best way to do this.  but there is no point parsing
-        #the response as a particular type if it is not the expected type of response
-        if response.status >= 400: # or resp is not 'OK' or response.error is not None:
-            raise Exception(response.error)
-
         if response_type is not None:
             return self._parse_response(response, response_type)
 
@@ -902,9 +915,8 @@ class AzureNodeDriver(NodeDriver):
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
 
-        #ensure we raise an exception if the response was an error
-        if response.status >= 400:
-            raise Exception(response.error)
+        if response.status != 202:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
         if async:
             return self._parse_response_for_async_op(response)
@@ -2020,6 +2032,19 @@ class Location(WindowsAzureData):
         self.name = u''
         self.display_name = u''
         self.available_services = _scalar_list_of(str, 'AvailableService')
+        self.compute_capabilities = ComputeCapability()
+
+
+
+class ComputeCapability(WindowsAzureData):
+
+    def __init__(self):
+        self.virtual_machines_role_sizes = _scalar_list_of(str, 'RoleSize')
+
+class VirtualMachinesRoleSizes(WindowsAzureData):
+
+    def __init__(self):
+        self.role_size = _scalar_list_of(str, 'RoleSize')
 
 class Images(WindowsAzureData):
 
@@ -2434,3 +2459,17 @@ class _dict_of(dict):
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
         super(_dict_of, self).__init__()
+
+class AzureNodeLocation(NodeLocation):
+
+    # we can also have something in here for available services which is an extra to the API with Azure
+    def __init__(self, id, name, country, driver, available_services, virtual_machine_role_sizes):
+        super(AzureNodeLocation, self).__init__(id, name, country, driver)
+        self.available_services = available_services
+        self.virtual_machine_role_sizes = virtual_machine_role_sizes
+
+    def __repr__(self):
+        return (('<AzureNodeLocation: id=%s, name=%s, country=%s, '
+                 'driver=%s services=%s virtualMachineRoleSizes=%s >')
+                % (self.id, self.name, self.country,
+                   self.driver.name, ','.join(self.available_service), ','.join(self.virtual_machine_role_sizes)))

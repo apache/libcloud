@@ -1,4 +1,5 @@
 import libcloud
+from libcloud.common.types import LibcloudError
 
 __author__ = 'david'
 
@@ -35,62 +36,76 @@ class AzureNodeDriverTests(unittest.TestCase) :
         self.assertListEqual(locationNamesResult, locationNamesExpected)
 
         matchedLocation = next(location for location in locations if location.name == 'Southeast Asia')
-        servicesResult = matchedLocation.services
+        servicesResult = matchedLocation.available_services
         servicesExpected = ['Compute','Storage','PersistentVMRole','HighMemory']
         self.assertListEqual(servicesResult, servicesExpected)
 
-        vmRoleSizesResult = matchedLocation.vmRoleSizes
+        vmRoleSizesResult = matchedLocation.virtual_machine_role_sizes
 
         vmRoleSizesExpected = ['A5','A6','A7','Basic_A0','Basic_A1','Basic_A2','Basic_A3','Basic_A4','ExtraLarge','ExtraSmall','Large','Medium','Small']
         self.assertListEqual(vmRoleSizesResult, vmRoleSizesExpected)
 
     def test_images_returned_successfully(self):
         images = self.driver.list_images()
-        self.assertEquals(len(images), 212 )
+        self.assertEquals(len(images), 215 )
 
     def test_images_returned_successfully_filter_by_location(self):
         images = self.driver.list_images("West US")
-        self.assertEquals(len(images), 206 )
+        self.assertEquals(len(images), 207 )
 
-    def test_vmimages_returned_successfully(self):
-        vmimages = self.driver.list_nodes(cloudServiceName="oddkinz")
-        self.assertEqual(len(vmimages), 5)
+    def test_list_nodes_returned_successfully(self):
+        vmimages = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest01")
+        self.assertEqual(len(vmimages), 2)
 
         img0 = vmimages[0]
-        self.assertEquals(img0.id,"c3Rvcm0x")
-        self.assertEquals(img0.image,"Linux")
-        self.assertEquals(img0.location,"North Europe")
-        self.assertEquals(img0.name,"cloudredis")
-        self.assertListEqual(img0.public_ips,["100.86.90.81"])
-        self.assertEquals(img0.serviceName,"oddkinz")
-        self.assertEquals(img0.size,"Medium")
-        self.assertEquals(img0.state,"ReadyRole")
-        self.assertEquals(img0.deploymentName,"storm1")
+        self.assertEquals(img0.id,"dc03")
+        self.assertEquals(img0.name,u"dc03")
+        self.assertListEqual(img0.public_ips,["191.235.135.62"])
+        self.assertListEqual(img0.private_ips,["100.92.66.69"])
+        self.assertEquals(img0.size,None)
+        self.assertEquals(img0.state,0)
         self.assertTrue(isinstance(img0.extra,dict))
+        extra = img0.extra
+        self.assertEquals(extra["instance_size"], u'Small')
+        self.assertEquals(extra["power_state"], u'Started')
+        self.assertEquals(extra["ssh_port"], u'22')
 
-    def test_list_nodes_cloud_service_not_found(self):
-        with self.assertRaises(ValueError):
-            self.driver.list_nodes(cloudServiceName="424324")
+    def test_list_nodes_returned_no_deployments(self):
+        vmimages = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest03")
+        self.assertIsNone(vmimages)
 
-    def test_vmimages_restart_node_success(self):
-        node = dict()
-        node["name"]="cloudredis"
-        node["serviceName"]="oddkinz"
-        node["deploymentName"]="storm1"
+    def test_list_nodes_returned_no_cloud_service(self):
+        with self.assertRaises(LibcloudError):
+           self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest04")
 
-        result = self.driver.reboot_node(node)
+    def test_restart_node_success(self):
+
+        node = type('Node', (object,), dict(id="dc03"))
+        result = self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
 
         self.assertTrue(result)
 
     #simulating attempting to reboot a node that ifas already rebooting
-    def test_vmimages_restart_node_fail(self):
-        node = dict()
-        node["name"]="cloudredis"
-        node["serviceName"]="oddkinz"
-        node["deploymentName"]="oddkinz1"
+    def test_restart_node_fail_no_deployment(self):
 
-        result = self.driver.reboot_node(node)
+        node = type('Node', (object,), dict(id="dc03"))
 
+        with self.assertRaises(LibcloudError):
+            self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest02", ex_deployment_slot="Production")
+
+    def test_restart_node_fail_no_cloud_service(self):
+
+        node = type('Node', (object,), dict(id="dc03"))
+
+        with self.assertRaises(LibcloudError):
+            self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest03", ex_deployment_slot="Production")
+
+    def test_restart_node_fail_node_not_found(self):
+
+        node = type('Node', (object,), dict(id="dc13"))
+
+
+        result = self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
         self.assertFalse(result)
 
     def test_destroy_node_success_single_node_in_cloud_service(self):
@@ -119,9 +134,9 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = dict()
         node["name"]="cloudredis"
 
-        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production" )
+        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
+        self.assertFalse(result)
 
-        print result
 
 class AzureMockHttp(MockHttp):
 
@@ -148,5 +163,68 @@ class AzureMockHttp(MockHttp):
     def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz2(self, method, url, body, headers):
          return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz5_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz5_deploymentslots_Production.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deploymentslots_Production.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(self, method, url, body, headers):
+        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest02_deploymentslots_Production.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03_deploymentslots_Production.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest04(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest04.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_images(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_images.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_locations(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_locations.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 if __name__ == '__main__':
     sys.exit(unittest.main())
