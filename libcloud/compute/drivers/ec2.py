@@ -28,7 +28,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b, basestring
+from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
@@ -1962,8 +1962,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
-            params['KeyName'] = \
-                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            params['KeyName'] = key['keyName']
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
@@ -2173,7 +2173,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return key_pair
 
     def import_key_pair_from_string(self, name, key_material):
-        base64key = base64.b64encode(b(key_material))
+        base64key = ensure_string(base64.b64encode(b(key_material)))
 
         params = {
             'Action': 'ImportKeyPair',
@@ -2600,8 +2600,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                  Group.
         :type       description: ``str``
 
-        :param      description: Optional identifier for VPC networks
-        :type       description: ``str``
+        :param      vpc_id:      Optional identifier for VPC networks
+        :type       vpc_id:      ``str``
 
         :rtype: ``dict``
         """
@@ -2760,7 +2760,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return element == 'true'
 
     def ex_authorize_security_group_egress(self, id, from_port, to_port,
-                                           cidr_ips=None, group_pairs=None,
+                                           cidr_ips, group_pairs=None,
                                            protocol='tcp'):
         """
         Edit a Security Group to allow specific egress traffic using
@@ -4590,7 +4590,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        params = {'GroupId': id,
+        params = {'GroupId': group_id,
                   'IpPermissions.1.IpProtocol': protocol,
                   'IpPermissions.1.FromPort': from_port,
                   'IpPermissions.1.ToPort': to_port}
