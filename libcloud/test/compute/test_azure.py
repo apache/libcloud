@@ -126,16 +126,17 @@ class AzureNodeDriverTests(unittest.TestCase) :
 
         node = type('Node', (object,), dict(id="oddkinz2"))
 
-        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
-        self.assertFalse(result)
+        with self.assertRaises(LibcloudError):
+            self.driver.destroy_node(node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
 
     def test_destroy_node_success_cloud_service_not_found(self):
 
         node = dict()
         node["name"]="cloudredis"
 
-        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
-        self.assertFalse(result)
+        with self.assertRaises(LibcloudError):
+            self.driver.destroy_node(node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
+
 
 
 class AzureMockHttp(MockHttp):
