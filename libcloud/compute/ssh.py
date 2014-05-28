@@ -41,9 +41,28 @@ from os.path import join as pjoin
 from libcloud.utils.logging import ExtraLogFormatter
 from libcloud.utils.py3 import StringIO
 
+__all__ = [
+    'BaseSSHClient',
+    'ParamikoSSHClient',
+    'ShellOutSSHClient',
+
+    'SSHCommandTimeoutError'
+]
+
 
 # Maximum number of bytes to read at once from a socket
 CHUNK_SIZE = 1024
+
+
+class SSHCommandTimeoutError(Exception):
+    """
+    Exception which is raised when an SSH command times out.
+    """
+    def __init__(self, cmd, timeout):
+        self.cmd = cmd
+        self.timeout = timeout
+        message = 'Command didn\'t finish in %s seconds' % (timeout)
+        super(SSHCommandTimeoutError, self).__init__(message)
 
 
 class BaseSSHClient(object):
@@ -92,8 +111,8 @@ class BaseSSHClient(object):
         """
         Connect to the remote node over SSH.
 
-        :return: True if the connection has been successfully established,
-                 False otherwise.
+        :return: True if the connection has been successfuly established, False
+                 otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -128,8 +147,8 @@ class BaseSSHClient(object):
         :type path: ``str``
         :keyword path: File path on the remote node.
 
-        :return: True if the file has been successfully deleted,
-                 False otherwise.
+        :return: True if the file has been successfuly deleted, False
+                 otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -151,8 +170,8 @@ class BaseSSHClient(object):
         """
         Shutdown connection to the remote node.
 
-        :return: True if the connection has been successfully closed,
-                 False otherwise.
+        :return: True if the connection has been successfuly closed, False
+                 otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -285,10 +304,14 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
         return True
 
-    def run(self, cmd):
+    def run(self, cmd, timeout=None):
         """
         Note: This function is based on paramiko's exec_command()
         method.
+
+        :param timeout: How long to wait (in seconds) for the command to
+                        finish (optional).
+        :type timeout: ``float``
         """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
@@ -299,6 +322,7 @@ class ParamikoSSHClient(BaseSSHClient):
         transport = self.client.get_transport()
         chan = transport.open_session()
 
+        start_time = time.time()
         chan.exec_command(cmd)
 
         stdout = StringIO()
@@ -320,6 +344,15 @@ class ParamikoSSHClient(BaseSSHClient):
         exit_status_ready = chan.exit_status_ready()
 
         while not exit_status_ready:
+            current_time = time.time()
+            elapsed_time = (current_time - start_time)
+
+            if timeout and (elapsed_time > timeout):
+                # TODO: Is this the right way to clean up?
+                chan.close()
+
+                raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
+
             if chan.recv_ready():
                 data = chan.recv(CHUNK_SIZE)
 

@@ -162,6 +162,18 @@ Compute
 - Add new driver for Kili public cloud (http://kili.io/)
   [Tomaz Muraus]
 
+- Add "timeout" argument to the ParamikoSSHClient.run method. If this argument
+  is specified and the command passed to run method doesn't finish in the
+  defined timeout, `SSHCommandTimeoutError` is throw and the connection to the
+  remote server is closed.
+
+  Note #1: If timed out happens, this functionality doesn't guarantee that the
+  underlying command will be stopped / killed. The way it works it simply
+  closes a connect to the remote server.
+  [Tomaz Muraus]
+
+  Note #2: "timeout" argument is only available in the Paramiko SSH client.
+
 Storage
 ~~~~~~~
 
