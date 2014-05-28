@@ -64,6 +64,13 @@ class SSHCommandTimeoutError(Exception):
         message = 'Command didn\'t finish in %s seconds' % (timeout)
         super(SSHCommandTimeoutError, self).__init__(message)
 
+    def __repr__(self):
+        return ('<SSHCommandTimeoutError: cmd="%s",timeout=%s)>' %
+                (self.cmd, self.timeout))
+
+    def __str__(self):
+        return self.message
+
 
 class BaseSSHClient(object):
     """
