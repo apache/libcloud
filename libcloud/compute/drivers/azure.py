@@ -583,31 +583,29 @@ class AzureNodeDriver(NodeDriver):
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
 
-        try:
-            _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
-            _deployment_name = _deployment.name
+        _deployment = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot)
+        _deployment_name = _deployment.name
 
-            _server_deployment_count = len(_deployment.role_instance_list)
+        _server_deployment_count = len(_deployment.role_instance_list)
 
-            if _server_deployment_count > 1:
-                path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
-                path += '?comp=media' # forces deletion of attached disks
+        if _server_deployment_count > 1:
+            path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
+            path += '?comp=media' # forces deletion of attached disks
 
-                data = self._perform_delete(path, async=True)
+            data = self._perform_delete(path, async=True)
 
-                return True
-            else:
-                path = self._get_deployment_path_using_name(
-                    ex_cloud_service_name, 
-                    _deployment_name)
+            return True
+        else:
+            path = self._get_deployment_path_using_name(
+                ex_cloud_service_name,
+                _deployment_name)
 
-                path += '?comp=media'
+            path += '?comp=media'
 
-                data = self._perform_delete(path,async=True)
+            data = self._perform_delete(path,async=True)
 
-                return True
-        except Exception, e:
-            return False
+            return True
+
 
     """ Functions not implemented
     """
