@@ -318,11 +318,13 @@ class AzureNodeDriver(NodeDriver):
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
         try:
-            result = self._perform_post(self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name) + '/roleinstances/' + _str(node.id) + '?comp=reboot'
-            , '', async=True)
+            response = self._perform_post(self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name) + '/roleinstances/' + _str(node.id) + '?comp=reboot'
+            , '')
 
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-            if result.request_id:
+            if self._parse_response_for_async_op(response):
                 return True
             else:
                 return False
@@ -500,7 +502,7 @@ class AzureNodeDriver(NodeDriver):
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
 
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_deployment_path_using_name(ex_cloud_service_name),
                 AzureXmlSerializer.virtual_machine_deployment_to_xml(
                     ex_deployment_name,
@@ -514,8 +516,12 @@ class AzureNodeDriver(NodeDriver):
                     None,
                     None,
                     size,
-                    None),
-                async=True)
+                    None))
+
+            if response.status != 200:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            result = self._parse_response_for_async_op(response)
         else:
             _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
@@ -537,7 +543,7 @@ class AzureNodeDriver(NodeDriver):
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
 
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_role_path(ex_cloud_service_name, 
                     _deployment_name),
                 AzureXmlSerializer.add_role_to_xml(
@@ -548,8 +554,12 @@ class AzureNodeDriver(NodeDriver):
                     network_config, # network_config
                     None, # availability_set_name
                     None, # data_virtual_hard_disks
-                    size), # role_size
-                async=True)
+                    size)) # role_size)
+
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            result = self._parse_response_for_async_op(response)
 
         return Node(
             id=name,
@@ -592,7 +602,7 @@ class AzureNodeDriver(NodeDriver):
             path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
             path += '?comp=media' # forces deletion of attached disks
 
-            data = self._perform_delete(path, async=True)
+            data = self._perform_delete(path)
 
             return True
         else:
@@ -602,7 +612,7 @@ class AzureNodeDriver(NodeDriver):
 
             path += '?comp=media'
 
-            data = self._perform_delete(path,async=True)
+            data = self._perform_delete(path)
 
             return True
 
@@ -877,7 +887,7 @@ class AzureNodeDriver(NodeDriver):
 
     def _create_storage_account(self, **kwargs):
         if kwargs['is_affinity_group'] is True:
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_storage_service_path(),
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
@@ -886,10 +896,14 @@ class AzureNodeDriver(NodeDriver):
                     kwargs['location'],
                     None,  # Location
                     True,  # geo_replication_enabled
-                    None), # extended_properties
-            async=True)
+                    None)) # extended_properties
+
+            if response.status != 200:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            result = self._parse_response_for_async_op(response)
         else:
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_storage_service_path(),
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
@@ -898,8 +912,12 @@ class AzureNodeDriver(NodeDriver):
                     None,  # Affinity Group
                     kwargs['location'],  # Location
                     True,  # geo_replication_enabled
-                    None), # extended_properties
-            async=True)
+                    None)) # extended_properties
+
+            if response.status != 200:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            result = self._parse_response_for_async_op(response)
 
         # We need to wait for this to be created before we can 
         # create the storage container and the instance. 
@@ -948,13 +966,13 @@ class AzureNodeDriver(NodeDriver):
             request.headers = self._update_management_header(request)
             response = self._perform_request(request)
 
-            if response_type is not None:
-                return self._parse_response(response, response_type)
+            #if response_type is not None:
+            #    return self._parse_response(response, response_type)
 
-            if async:
-                return self._parse_response_for_async_op(response)
+            #if async:
+            #    return self._parse_response_for_async_op(response)
 
-            return None
+            return response
 
     def _perform_delete(self, path, async=False):
         request = AzureHTTPRequest()
