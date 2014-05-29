@@ -606,6 +606,58 @@ class AzureNodeDriver(NodeDriver):
 
             return True
 
+    def create_cloud_service(self, ex_cloud_service_name, location, description=None, extended_properties=None):
+
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if not location:
+            raise ValueError("location is required.")
+
+        response =  self._perform_cloud_service_create(
+            self._get_hosted_service_path(),
+            AzureXmlSerializer.create_hosted_service_to_xml(ex_cloud_service_name, self._encode_base64(ex_cloud_service_name), description,
+                                     location, None,
+                                     extended_properties))
+
+        if response.status != 201:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return True
+
+    def _perform_cloud_service_create(self, path, data):
+        request = AzureHTTPRequest()
+        request.method = 'POST'
+        request.host = azure_service_management_host
+        request.path = path
+        request.body = data
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def destroy_cloud_service(self, ex_cloud_service_name):
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+        #add check to ensure all nodes have been deleted
+        response = self._perform_cloud_service_delete(self._get_hosted_service_path(ex_cloud_service_name))
+
+        if response.status != 200:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return True
+
+    def _perform_cloud_service_delete(self, path):
+        request = AzureHTTPRequest()
+        request.method = 'DELETE'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
 
     """ Functions not implemented
     """
@@ -869,7 +921,7 @@ class AzureNodeDriver(NodeDriver):
 
     def _get_operation_status(self, request_id):
         return self._perform_get(
-            '/' + subscription_id + '/operations/' + _str(request_id),
+            '/' + self.subscription_id + '/operations/' + _str(request_id),
             Operation)
 
     def _perform_get(self, path, response_type):
@@ -991,7 +1043,7 @@ class AzureNodeDriver(NodeDriver):
                 assert isinstance(request_body, bytes)
                 connection.send(request_body)
             elif (not isinstance(connection, HTTPSConnection) and
-                  not isinstance(connection, HTTPConnection)):
+                  not isinstance(connection, httplib.HTTPConnection)):
                 connection.send(None)
 
     def _parse_response(self, response, return_type):
@@ -1085,7 +1137,7 @@ class AzureNodeDriver(NodeDriver):
     def _get_node_value(self, xmlelement, data_type):
         value = xmlelement.firstChild.nodeValue
         if data_type is datetime:
-            return _to_datetime(value)
+            return self._to_datetime(value)
         elif data_type is bool:
             return value.lower() != 'false'
         else:
@@ -1188,7 +1240,7 @@ class AzureNodeDriver(NodeDriver):
             return b''
 
         if isinstance(request_body, WindowsAzureData):
-            request_body = _convert_class_to_xml(request_body)
+            request_body = self._convert_class_to_xml(request_body)
 
         if isinstance(request_body, bytes):
             return request_body
@@ -1212,7 +1264,7 @@ class AzureNodeDriver(NodeDriver):
 
         if isinstance(source, list):
             for value in source:
-                xmlstr += _convert_class_to_xml(value, False)
+                xmlstr += self._convert_class_to_xml(value, False)
         elif isinstance(source, WindowsAzureData):
             class_name = source.__class__.__name__
             xmlstr += '<' + class_name + '>'
@@ -1220,7 +1272,7 @@ class AzureNodeDriver(NodeDriver):
                 if value is not None:
                     if isinstance(value, list) or \
                         isinstance(value, WindowsAzureData):
-                        xmlstr += _convert_class_to_xml(value, False)
+                        xmlstr += self._convert_class_to_xml(value, False)
                     else:
                         xmlstr += ('<' + self._get_serialization_name(name) + '>' +
                                    xml_escape(str(value)) + '</' +
@@ -1301,7 +1353,7 @@ class AzureXmlSerializer():
             'CreateStorageServiceInput',
             [('ServiceName', service_name),
              ('Description', description),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('AffinityGroup', affinity_group),
              ('Location', location),
              ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
@@ -1314,7 +1366,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'UpdateStorageServiceInput',
             [('Description', description),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
             extended_properties)
 
@@ -1326,7 +1378,7 @@ class AzureXmlSerializer():
     @staticmethod
     def update_hosted_service_to_xml(label, description, extended_properties):
         return AzureXmlSerializer.doc_from_data('UpdateHostedService',
-                                            [('Label', label, _encode_base64),
+                                            [('Label', label, AzureNodeDriver._encode_base64),
                                              ('Description', description)],
                                             extended_properties)
 
@@ -1337,7 +1389,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'CreateHostedService',
             [('ServiceName', service_name),
-             ('Label', label, _encode_base64),
+             ('Label', label),
              ('Description', description),
              ('Location', location),
              ('AffinityGroup', affinity_group)],
@@ -1351,7 +1403,7 @@ class AzureXmlSerializer():
             'CreateDeployment',
             [('Name', name),
              ('PackageUrl', package_url),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('Configuration', configuration),
              ('StartDeployment',
              start_deployment, _lower),
@@ -1389,7 +1441,7 @@ class AzureXmlSerializer():
             [('Mode', mode),
              ('PackageUrl', package_url),
              ('Configuration', configuration),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('RoleToUpgrade', role_to_upgrade),
              ('Force', force, _lower)],
             extended_properties)
@@ -1420,7 +1472,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'CreateAffinityGroup',
             [('Name', name),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('Description', description),
              ('Location', location)])
 
@@ -1428,7 +1480,7 @@ class AzureXmlSerializer():
     def update_affinity_group_to_xml(label, description):
         return AzureXmlSerializer.doc_from_data(
             'UpdateAffinityGroup',
-            [('Label', label, _encode_base64),
+            [('Label', label, AzureNodeDriver._encode_base64),
              ('Description', description)])
 
     @staticmethod

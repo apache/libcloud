@@ -1,5 +1,6 @@
 import libcloud
 from libcloud.common.types import LibcloudError
+from libcloud.compute.base import NodeAuthPassword
 
 __author__ = 'david'
 
@@ -137,7 +138,60 @@ class AzureNodeDriverTests(unittest.TestCase) :
         with self.assertRaises(LibcloudError):
             self.driver.destroy_node(node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
 
+    def test_create_cloud_service(self):
+        result = self.driver.create_cloud_service("testdc123", "North Europe")
+        self.assertTrue(result)
 
+    def test_create_cloud_service_service_exists(self):
+
+        with self.assertRaises(LibcloudError):
+            self.driver.create_cloud_service("testdc1234", "North Europe")
+
+    def test_destroy_cloud_service(self):
+
+        result = self.driver.destroy_cloud_service("testdc123")
+        self.assertTrue(result)
+
+    def test_destroy_cloud_service_service_does_not_exist(self):
+
+        with self.assertRaises(LibcloudError):
+            self.driver.destroy_cloud_service("testdc1234")
+
+    def test_create_node_and_deployment_one_node(self):
+        kwargs = {}
+        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+        kwargs["ex_storage_service_name"]="mtlytics"
+        kwargs["ex_deployment_name"]="dcoddkinztest02"
+        kwargs["ex_deployment_slot"]="Production"
+        kwargs["ex_admin_user_id"]="azurecoder"
+        auth = NodeAuthPassword("Pa55w0rd", False)
+
+        kwargs["auth"]= auth
+
+        kwargs["size"]= "ExtraSmall"
+        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["name"] = "dcoddkinztest03"
+
+        node = type('Node', (object,), dict(id="dc13"))
+        result = self.driver.create_node(ex_cloud_service_name="testdcabc", **kwargs)
+
+    def test_create_node_and_deployment_second_node(self):
+        kwargs = {}
+        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+        kwargs["ex_storage_service_name"]="mtlytics"
+        kwargs["ex_deployment_name"]="dcoddkinztest02"
+        kwargs["ex_deployment_slot"]="Production"
+        kwargs["ex_admin_user_id"]="azurecoder"
+        auth = NodeAuthPassword("Pa55w0rd", False)
+
+        kwargs["auth"]= auth
+
+        kwargs["size"]= "ExtraSmall"
+        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["name"] = "dcoddkinztest03"
+
+        node = type('Node', (object,), dict(id="dc14"))
+        result = self.driver.create_node(ex_cloud_service_name="testdcabc2", **kwargs)
 
 class AzureMockHttp(MockHttp):
 
@@ -227,5 +281,56 @@ class AzureMockHttp(MockHttp):
                 body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_locations.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices(self, method, url, body, headers):
+        # request url is the same irrespective of serviceName, only way to differentiate
+        if "<ServiceName>testdc123</ServiceName>" in body:
+            return (httplib.CREATED, body, headers, httplib.responses[httplib.CREATED])
+        elif "<ServiceName>testdc1234</ServiceName>" in body:
+            return (httplib.CONFLICT, body, headers, httplib.responses[httplib.CONFLICT])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc123(self, method, url, body, headers):
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc1234(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc1234.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc_deployments.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
