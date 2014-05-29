@@ -48,11 +48,11 @@ kwargs["auth"]= auth
 
 kwargs["size"]= "ExtraSmall"
 kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
-kwargs["name"] = "dcoddkinztest03"
+kwargs["name"] = "dc15"
 
-node = type('Node', (object,), dict(id="dc13"))
+node = type('Node', (object,), dict(id="dc14"))
 #result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
-#result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
-result = driver.list_locations()
-print(result.__repr__())
+result = driver.create_node(ex_cloud_service_name="testdc123", **kwargs)
+#result = driver.create_cloud_service("testdc123", "North Europe")
+#print(result.__repr__())
 # reboot "test"
