@@ -193,6 +193,24 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = type('Node', (object,), dict(id="dc14"))
         result = self.driver.create_node(ex_cloud_service_name="testdcabc2", **kwargs)
 
+    def test_create_node_and_deployment_second_node_307_response(self):
+        kwargs = {}
+        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+        kwargs["ex_storage_service_name"]="mtlytics"
+        kwargs["ex_deployment_name"]="dcoddkinztest04"
+        kwargs["ex_deployment_slot"]="Production"
+        kwargs["ex_admin_user_id"]="azurecoder"
+        auth = NodeAuthPassword("Pa55w0rd", False)
+
+        kwargs["auth"]= auth
+
+        kwargs["size"]= "ExtraSmall"
+        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["name"] = "dcoddkinztest04"
+
+        with self.assertRaises(LibcloudError):
+            self.driver.create_node(ex_cloud_service_name="testdcabc3", **kwargs)
+
 class AzureMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('azure')
@@ -331,6 +349,28 @@ class AzureMockHttp(MockHttp):
     def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
 
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deployments(self, method, url, body, headers):
+        if method == "GET":
+                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+
+        return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

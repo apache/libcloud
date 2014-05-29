@@ -45,7 +45,7 @@ AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 class AzureResponse(XmlResponse):
 
     valid_response_codes = [httplib.NOT_FOUND, httplib.CONFLICT,
-                            httplib.BAD_REQUEST]
+                            httplib.BAD_REQUEST, httplib.TEMPORARY_REDIRECT] # added TEMPORARY_REDIRECT as this can sometimes be sent by azure instead of a success or fail response
 
     def success(self):
         i = int(self.status)
