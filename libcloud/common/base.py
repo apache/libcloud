@@ -517,10 +517,10 @@ class Connection(object):
         if not hasattr(kwargs, 'port'):
             kwargs.update({'port': port})
 
-        if not hasattr(kwargs, 'key_file'):
+        if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file' ):
             kwargs.update({'key_file': self.key_file})
 
-        if not hasattr(kwargs, 'cert_file'):
+        if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file' ):
             kwargs.update({'cert_file': self.cert_file})
 
         #kwargs = {'host': host, 'port': int(port)}

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from libcloud.compute.base import NodeAuthPassword
+from libcloud.compute.drivers.azure import AZURE_DEFAULT_IMAGE_NAME
 
 import libcloud.security
 
@@ -47,10 +48,10 @@ auth = NodeAuthPassword("Pa55w0rd", False)
 kwargs["auth"]= auth
 
 kwargs["size"]= "ExtraSmall"
-kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
-kwargs["name"] = "dc15"
+kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
+kwargs["name"] = "dc17"
 
-node = type('Node', (object,), dict(id="dc14"))
+node = type('Node', (object,), dict(id="dc43"))
 #result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
 result = driver.create_node(ex_cloud_service_name="testdc123", **kwargs)
 #result = driver.create_cloud_service("testdc123", "North Europe")

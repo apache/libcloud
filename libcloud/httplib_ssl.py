@@ -42,11 +42,6 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         """
         self._setup_verify()
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
-        kwargs.update({'port': 8888})
-        kwargs.update({'host': 'localhost'})
-        httplib.HTTPSConnection.__init__(self, *args, **kwargs)
-        httplib.HTTPSConnection.set_tunnel(self, 'management.core.windows.net',
-                                           443)
 
     def _setup_verify(self):
         """
