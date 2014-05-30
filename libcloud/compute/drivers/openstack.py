@@ -2217,7 +2217,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         Delete specified floating IP
 
         :param      ip: floating IP to remove
-        :type       ip::class:`OpenStack_1_1_FloatingIpAddress`
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
 
         :rtype: ``bool``
         """
