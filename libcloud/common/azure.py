@@ -20,7 +20,6 @@ import base64
 import hmac
 
 from hashlib import sha256
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
@@ -223,9 +222,7 @@ class AzureServiceManagementConnection(CertificateConnection):
         if not is_file_path:
             raise InvalidCredsError('pem file needed to authenticate to Microsoft Azure')
         self.key_file = key_file
-        #if is_file_path:
-        #    with open(keypath, 'r') as f:
-        #        key = f.read()
+
         super(AzureServiceManagementConnection, self).__init__(
             subscription_id, key_file, *args, **kwargs)
 
