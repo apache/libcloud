@@ -24,6 +24,7 @@ General
   * import_key_pair_from_string in the EC2 driver
   * publickey._to_md5_fingerprint
   * publickey.get_pubkey_ssh2_fingerprint
+
   (GITHUB-301)
   [Csaba Hoch]
 
