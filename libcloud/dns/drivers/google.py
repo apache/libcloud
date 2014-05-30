@@ -36,13 +36,10 @@ class GoogleDNSConnection(GoogleBaseConnection):
     responseCls = GoogleDNSResponse
 
     def __init__(self, user_id, key, secure, auth_type=None,
-                 credential_file=None, project=None):
-        self.scope = [
-            'https://www.googleapis.com/auth/ndev.clouddns.readwrite'
-        ]
+                 credential_file=None, project=None, **kwargs):
         super(GoogleDNSConnection, self).\
             __init__(user_id, key, secure=secure, auth_type=auth_type,
-                     credential_file=credential_file)
+                     credential_file=credential_file, **kwargs)
         self.request_path = '/dns/%s/projects/%s' % (API_VERSION, project)
 
 
@@ -65,13 +62,15 @@ class GoogleDNSDriver(DNSDriver):
         RecordType.TXT: 'TXT',
     }
 
-    def __init__(self, user_id, key, project=None, auth_type=None):
+    def __init__(self, user_id, key, project=None, auth_type=None, scopes=None,
+                 **kwargs):
         self.auth_type = auth_type
         self.project = project
+        self.scopes = scopes
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
-        super(GoogleDNSDriver, self).__init__(user_id, key)
+        super(GoogleDNSDriver, self).__init__(user_id, key, scopes, **kwargs)
 
     def iterate_zones(self):
         """
@@ -304,7 +303,8 @@ class GoogleDNSDriver(DNSDriver):
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
-                'project': self.project}
+                'project': self.project,
+                'scopes': self.scopes}
 
     def _to_zones(self, response):
         zones = []

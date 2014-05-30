@@ -64,6 +64,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         kwargs['datacenter'] = self.datacenter
         self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
 
+    def test_default_scopes(self):
+        self.assertEqual(self.driver.scopes, None)
+
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
         datetime1 = datetime.datetime(2013, 6, 26, 17, 5, 19)

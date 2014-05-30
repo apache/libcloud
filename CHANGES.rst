@@ -33,6 +33,11 @@ General
   (GITHUB-309)
   [Pedro Romano]
 
+- Update Google drivers to allow simultaneous authornization for all the
+  supported Google Services.
+  (GITHUB-302)
+  [Eric Johnson]
+
 Compute
 ~~~~~~~
 

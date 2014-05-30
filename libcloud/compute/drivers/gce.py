@@ -68,7 +68,6 @@ class GCEConnection(GoogleBaseConnection):
 
     def __init__(self, user_id, key, secure, auth_type=None,
                  credential_file=None, project=None, **kwargs):
-        self.scope = ['https://www.googleapis.com/auth/compute']
         super(GCEConnection, self).__init__(user_id, key, secure=secure,
                                             auth_type=auth_type,
                                             credential_file=credential_file,
@@ -536,7 +535,7 @@ class GCENodeDriver(NodeDriver):
     }
 
     def __init__(self, user_id, key, datacenter=None, project=None,
-                 auth_type=None, **kwargs):
+                 auth_type=None, scopes=None, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -559,9 +558,14 @@ class GCENodeDriver(NodeDriver):
                              If not supplied, auth_type will be guessed based
                              on value of user_id.
         :type     auth_type: ``str``
+
+        :keyword  scopes: List of authorization URLs. Default is empty and
+                          grants read/write to Compute, Storage, DNS.
+        :type     scopes: ``list``
         """
         self.auth_type = auth_type
         self.project = project
+        self.scopes = scopes
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
@@ -2518,7 +2522,8 @@ class GCENodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
-                'project': self.project}
+                'project': self.project,
+                'scopes': self.scopes}
 
     def _catch_error(self, ignore_errors=False):
         """
