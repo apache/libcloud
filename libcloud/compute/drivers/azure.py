@@ -71,6 +71,53 @@ azure_service_management_host = 'management.core.windows.net'
 _USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
 X_MS_VERSION = '2013-08-01'
 
+AZURE_DEFAULT_IMAGE_NAME = {
+    'WinServer2013_JDK6':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.6.0_71-0514-Win-GA',
+    'WinServer2013_JDK7':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.7.0_51-0514-Win-GA',
+    'WinServer2013_JDK8':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.8.0-0514-Win-GA',
+    'OracleDb11gR2Ent_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-EE-0514-Win-GA',
+    'OracleDb11gR2Ent_WL_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-EE-WebLogic-10.3.6-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb11gR2Std_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-SE-0514-Win-GA',
+    'OracleDb11gR2Std_WL_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-SE-WebLogic-10.3.6-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb12cEnt_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-0514-EE-Win-GA',
+    'OracleDb12cStd_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-0514-SE-Win-GA',
+    'OracleDb12cEnt_WL_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-EE-WebLogic-12.1.2.0-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb12cStd_WL_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-SE-WebLogic-12.1.2.0-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL12cEnt_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__WebLogic-12.1.2.0-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL12cStd_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__WebLogic-12.1.2.0-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL11gEnt_WinServer2008R2':'0c0083a6d9a24f2d91800e52cad83950__Weblogic-10.3.6-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL11gStd_WinServer2008R2':'0c0083a6d9a24f2d91800e52cad83950__Weblogic-10.3.6-SE-JDK-1.7.0_51-0514-Win-GA',
+    'BizTalkServer2013Ent_WinServer2012':'2cdc6229df6344129ee553dd3499f0d3__BizTalk-Server-2013-Enterprise',
+    'BizTalkServer2013Std_WinServer2012':'2cdc6229df6344129ee553dd3499f0d3__BizTalk-Server-2013-Standard',
+    'WinServerEssentials_WinServer2012R2':'3a50f22b388a4ff7ab41029918570fa6__Windows-Server-2012-Essentials-20140327-enus',
+    'OpenLogic':'5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415',
+    'WinServer2008R2SP1':'a699494373c04fc0bc8f2bb1389d6106__Win2K8R2SP1-Datacenter-201404.01-en.us-127GB.vhd',
+    'WinServer2012DataCenter':'a699494373c04fc0bc8f2bb1389d6106__Windows-Server-2012-Datacenter-201404.01-en.us-127GB.vhd',
+    'WinServer2012R2DataCenter':'a699494373c04fc0bc8f2bb1389d6106__Windows-Server-2012-R2-201404.01-en.us-127GB.vhd',
+    'WinServerRemoteDskTopSessionHost_WinServer2012R2':'ad072bd3082149369c449ba5832401ae__Windows-Server-Remote-Desktop-Session-Host-on-Windows-Server-2012-R2-20140514-1852',
+    'UbuntuServer13.10':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-13_10-amd64-server-20140507-en-us-30GB',
+    'UnuntuServer12.04.4LTS':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-12_04_4-LTS-amd64-server-20140514-en-us-30GB',
+    'UbuntuServer14.04LTS':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140416.1-en-us-30GB',
+    'SUSELinuxEntServer11SP3Prem':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-Prio-v202',
+    'SUSELinuxEntServer11SP3Sap':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-SAP-CAL-v101,',
+    'SUSELinuxEntServer11SP3':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-v202',
+    'OpenSUSE13.1':'b4590d9e3ed742e4a1d46e5424aa335e__openSUSE-13.1-v101',
+    'OracleDB12.1.0.1Ent_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Database-121010.v1-EE-Lnx',
+    'OracleDB12.1.0.1Std_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Database-121010.v3-SE-Lnx',
+    'OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Linux-6',
+    'OracleWLServer12.1.2_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__WebLogic-Server-12c.v1-Lnx',
+    'PuppetEnt3.2.2':'de89c2ed05c748f5aded3ddc75fdcce4__PuppetEnterpriseMaster-3_2_2-amd64-server-20140408-en-us-30GB',
+    'SQLServer2008R2SP2Ent_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2008R2SP2-Enterprise-CY13SU04-SQL2008-SP2-10.50.4021.0',
+    'SQLServer2008R2SP2Std_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2008R2SP2-Standard-CY13SU04-SQL2008-SP2-10.50.4021.0',
+    'SQLServer2012SP1Ent_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Enterprise-CY13SU04-SQL2012-SP1-11.0.3350.0-Win2012',
+    'SQLServer2012SP1Ent_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Enterprise-CY13SU04-SQL11-SP1-CU3-11.0.3350.0-B',
+    'SQLServer2012SP1Std_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Standard-CY13SU04-SQL2012-SP1-11.0.3350.0-Win2012',
+    'SQLServer2012SP1Std_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Standard-CY13SU04-SQL11-SP1-CU3-11.0.3350.0-B',
+    'SQLServer2012SP1Web_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Web-CY13SU04-SQL11-SP1-CU3-11.0.3350.0',
+     'SQLServer2008R2SP2Web_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__SQL-Server-2008R2SP2-GDR-10.50.4021.0-Web-ENU-Win2K8R2-CY13SU12',
+    'SQLServer2012SP1DataWarehousing_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__SQL-Server-2012SP1-CU5-11.0.3373.0-DataWarehousing-ENU-WS2012-CY13SU12',
+
+}
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
@@ -290,7 +337,7 @@ class AzureNodeDriver(NodeDriver):
         except IndexError:
             return None
 
-    def reboot_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+    def reboot_node(self, node=None, ex_cloud_service_name=None, ex_deployment_slot=None):
         """
         Reboots a node.
 
@@ -314,6 +361,9 @@ class AzureNodeDriver(NodeDriver):
 
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
+
+        if not node:
+            raise ValueError("node is required.")
 
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
@@ -570,7 +620,7 @@ class AzureNodeDriver(NodeDriver):
             driver=self.connection.driver
         )
 
-    def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+    def destroy_node(self, node=None, ex_cloud_service_name=None, ex_deployment_slot=None):
         """Remove Azure Virtual Machine
 
         This removes the instance, but does not 
@@ -589,6 +639,9 @@ class AzureNodeDriver(NodeDriver):
 
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
+
+        if not node:
+            raise ValueError("node is required.")
 
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
@@ -616,7 +669,7 @@ class AzureNodeDriver(NodeDriver):
 
             return True
 
-    def create_cloud_service(self, ex_cloud_service_name, location, description=None, extended_properties=None):
+    def create_cloud_service(self, ex_cloud_service_name=None, location=None, description=None, extended_properties=None):
 
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
@@ -647,7 +700,7 @@ class AzureNodeDriver(NodeDriver):
 
         return response
 
-    def destroy_cloud_service(self, ex_cloud_service_name):
+    def destroy_cloud_service(self, ex_cloud_service_name=None):
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
         #add check to ensure all nodes have been deleted
@@ -965,12 +1018,6 @@ class AzureNodeDriver(NodeDriver):
             request.path, request.query = self._update_request_uri_query(request)
             request.headers = self._update_management_header(request)
             response = self._perform_request(request)
-
-            #if response_type is not None:
-            #    return self._parse_response(response, response_type)
-
-            #if async:
-            #    return self._parse_response_for_async_op(response)
 
             return response
 

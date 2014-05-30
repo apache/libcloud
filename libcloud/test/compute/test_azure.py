@@ -1,6 +1,7 @@
 import libcloud
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword
+from libcloud.compute.drivers.azure import AZURE_DEFAULT_IMAGE_NAME
 
 __author__ = 'david'
 
@@ -8,8 +9,8 @@ import sys
 
 import httplib
 import unittest
-import urlparse
 import libcloud.security
+
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
@@ -51,7 +52,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         self.assertEquals(len(images), 215 )
 
     def test_images_returned_successfully_filter_by_location(self):
-        images = self.driver.list_images("West US")
+        images = self.driver.list_images(location="West US")
         self.assertEquals(len(images), 207 )
 
     def test_list_nodes_returned_successfully(self):
@@ -82,7 +83,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
     def test_restart_node_success(self):
 
         node = type('Node', (object,), dict(id="dc03"))
-        result = self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
+        result = self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
 
         self.assertTrue(result)
 
@@ -92,35 +93,35 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = type('Node', (object,), dict(id="dc03"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest02", ex_deployment_slot="Production")
+            self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest02", ex_deployment_slot="Production")
 
     def test_restart_node_fail_no_cloud_service(self):
 
         node = type('Node', (object,), dict(id="dc03"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest03", ex_deployment_slot="Production")
+            self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest03", ex_deployment_slot="Production")
 
     def test_restart_node_fail_node_not_found(self):
 
         node = type('Node', (object,), dict(id="dc13"))
 
 
-        result = self.driver.reboot_node(node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
+        result = self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
         self.assertFalse(result)
 
     def test_destroy_node_success_single_node_in_cloud_service(self):
 
         node = type('Node', (object,), dict(id="oddkinz1"))
 
-        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz1", ex_deployment_slot="Production")
+        result = self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz1", ex_deployment_slot="Production")
         self.assertTrue(result)
 
     def test_destroy_node_success_multiple_nodes_in_cloud_service(self):
 
         node = type('Node', (object,), dict(id="oddkinz1"))
 
-        result = self.driver.destroy_node(node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
+        result = self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
         self.assertTrue(result)
 
     def test_destroy_node_fail_node_does_not_exist(self):
@@ -128,7 +129,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = type('Node', (object,), dict(id="oddkinz2"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_node(node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
+            self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
 
     def test_destroy_node_success_cloud_service_not_found(self):
 
@@ -136,7 +137,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node["name"]="cloudredis"
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_node(node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
+            self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
 
     def test_create_cloud_service(self):
         result = self.driver.create_cloud_service("testdc123", "North Europe")
@@ -145,67 +146,68 @@ class AzureNodeDriverTests(unittest.TestCase) :
     def test_create_cloud_service_service_exists(self):
 
         with self.assertRaises(LibcloudError):
-            self.driver.create_cloud_service("testdc1234", "North Europe")
+            self.driver.create_cloud_service(ex_cloud_service_name="testdc1234", location="North Europe")
 
     def test_destroy_cloud_service(self):
 
-        result = self.driver.destroy_cloud_service("testdc123")
+        result = self.driver.destroy_cloud_service(ex_cloud_service_name="testdc123")
         self.assertTrue(result)
 
     def test_destroy_cloud_service_service_does_not_exist(self):
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_cloud_service("testdc1234")
+            self.driver.destroy_cloud_service(ex_cloud_service_name="testdc1234")
 
     def test_create_node_and_deployment_one_node(self):
         kwargs = {}
-        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+
         kwargs["ex_storage_service_name"]="mtlytics"
         kwargs["ex_deployment_name"]="dcoddkinztest02"
         kwargs["ex_deployment_slot"]="Production"
         kwargs["ex_admin_user_id"]="azurecoder"
-        auth = NodeAuthPassword("Pa55w0rd", False)
 
+        auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
         kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
         kwargs["name"] = "dcoddkinztest03"
 
-        node = type('Node', (object,), dict(id="dc13"))
         result = self.driver.create_node(ex_cloud_service_name="testdcabc", **kwargs)
+        self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node(self):
         kwargs = {}
-        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+
         kwargs["ex_storage_service_name"]="mtlytics"
         kwargs["ex_deployment_name"]="dcoddkinztest02"
         kwargs["ex_deployment_slot"]="Production"
         kwargs["ex_admin_user_id"]="azurecoder"
-        auth = NodeAuthPassword("Pa55w0rd", False)
 
+        auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
         kwargs["name"] = "dcoddkinztest03"
 
         node = type('Node', (object,), dict(id="dc14"))
         result = self.driver.create_node(ex_cloud_service_name="testdcabc2", **kwargs)
+        self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node_307_response(self):
         kwargs = {}
-        #kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+
         kwargs["ex_storage_service_name"]="mtlytics"
         kwargs["ex_deployment_name"]="dcoddkinztest04"
         kwargs["ex_deployment_slot"]="Production"
         kwargs["ex_admin_user_id"]="azurecoder"
-        auth = NodeAuthPassword("Pa55w0rd", False)
 
+        auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
         kwargs["name"] = "dcoddkinztest04"
 
         with self.assertRaises(LibcloudError):
