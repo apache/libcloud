@@ -16,32 +16,25 @@
 
 """
 import httplib
-import uuid
 import re
 import time
 import collections
 import random
 import sys
-import os
 import copy
 import base64
-from libcloud.common.azure import AzureServiceManagementConnection
 
+from libcloud.common.azure import AzureServiceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair, NodeAuthPassword
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import KeyPair
+from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionUserAndKey
-
 from datetime import datetime
 from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
-from httplib import (
-    HTTPSConnection,
-    HTTPS_PORT,
-    )
+from httplib import (HTTPSConnection)
 
 if sys.version_info < (3,):
     from urllib2 import quote as url_quote
@@ -118,6 +111,7 @@ AZURE_DEFAULT_IMAGE_NAME = {
     'SQLServer2012SP1DataWarehousing_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__SQL-Server-2012SP1-CU5-11.0.3373.0-DataWarehousing-ENU-WS2012-CY13SU12',
 
 }
+
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
@@ -353,7 +347,7 @@ class AzureNodeDriver(NodeDriver):
                                          or "Staging". (Optional)
         :type       ex_deployment_name: ``str``
 
-        :rtype: ``list`` of :class:`Node`
+        :rtype: ``bool``
         """
 
         if not ex_cloud_service_name:
@@ -670,7 +664,23 @@ class AzureNodeDriver(NodeDriver):
             return True
 
     def create_cloud_service(self, ex_cloud_service_name=None, location=None, description=None, extended_properties=None):
+        """
+        creates an azure cloud service.
 
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :param      location: standard azure location string
+        :type       location: ``str``
+
+        :param      description: optional description
+        :type       description: ``str``
+
+        :param      extended_properties: optional extended_properties
+        :type       extended_properties: ``dict``
+
+        :rtype: ``bool``
+        """
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
@@ -688,19 +698,17 @@ class AzureNodeDriver(NodeDriver):
 
         return True
 
-    def _perform_cloud_service_create(self, path, data):
-        request = AzureHTTPRequest()
-        request.method = 'POST'
-        request.host = azure_service_management_host
-        request.path = path
-        request.body = data
-        request.path, request.query = self._update_request_uri_query(request)
-        request.headers = self._update_management_header(request)
-        response = self._perform_request(request)
-
-        return response
-
     def destroy_cloud_service(self, ex_cloud_service_name=None):
+
+        """
+        deletes an azure cloud service.
+
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :rtype: ``bool``
+        """
+
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
         #add check to ensure all nodes have been deleted
@@ -710,17 +718,6 @@ class AzureNodeDriver(NodeDriver):
             raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
         return True
-
-    def _perform_cloud_service_delete(self, path):
-        request = AzureHTTPRequest()
-        request.method = 'DELETE'
-        request.host = azure_service_management_host
-        request.path = path
-        request.path, request.query = self._update_request_uri_query(request)
-        request.headers = self._update_management_header(request)
-        response = self._perform_request(request)
-
-        return response
 
     """ Functions not implemented
     """
@@ -751,6 +748,29 @@ class AzureNodeDriver(NodeDriver):
 
     """Private Functions
     """
+
+    def _perform_cloud_service_create(self, path, data):
+        request = AzureHTTPRequest()
+        request.method = 'POST'
+        request.host = azure_service_management_host
+        request.path = path
+        request.body = data
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def _perform_cloud_service_delete(self, path):
+        request = AzureHTTPRequest()
+        request.method = 'DELETE'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
 
     def _to_node(self, data):
         """
