@@ -68,7 +68,6 @@ class GCEConnection(GoogleBaseConnection):
 
     def __init__(self, user_id, key, secure, auth_type=None,
                  credential_file=None, project=None, **kwargs):
-        self.scope = ['https://www.googleapis.com/auth/compute']
         super(GCEConnection, self).__init__(user_id, key, secure=secure,
                                             auth_type=auth_type,
                                             credential_file=credential_file,
@@ -562,6 +561,9 @@ class GCENodeDriver(NodeDriver):
         """
         self.auth_type = auth_type
         self.project = project
+        self.scope = None
+        if kwargs and type(kwargs) is dict:
+            self.scope = kwargs.get('scope', None)
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
@@ -2518,7 +2520,8 @@ class GCENodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
-                'project': self.project}
+                'project': self.project,
+                'scope': self.scope}
 
     def _catch_error(self, ignore_errors=False):
         """

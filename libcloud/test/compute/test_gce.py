@@ -72,6 +72,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         datetime2 = datetime.datetime(2013, 6, 26, 17, 43, 15)
         self.assertEqual(timestamp_to_datetime(timestamp2), datetime2)
 
+    def test_scope(self):
+        # 'scope' is set in the test/secrets.py file
+        self.assertEqual(self.driver.scope, ['comp', 'blob'])
+
     def test_get_region_from_zone(self):
         zone1 = self.driver.ex_get_zone('us-central1-a')
         expected_region1 = 'us-central1'

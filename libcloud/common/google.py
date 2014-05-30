@@ -506,10 +506,21 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 auth_type = 'SA'
             else:
                 auth_type = 'IA'
-        if 'scope' in kwargs:
-            self.scope = kwargs['scope']
+
+        # Default scopes to read/write for compute, storage, and dns.  Can
+        # override this when calling get_driver() or setting in secrets.py
+        self.scope = None
+        if kwargs and type(kwargs) is dict:
+            self.scope = kwargs.get('scope', None)
             kwargs.pop('scope', None)
+        if not self.scope:
+            self.scope = [
+                'https://www.googleapis.com/auth/compute',
+                'https://www.googleapis.com/auth/devstorage.full_control',
+                'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            ]
         self.token_info = self._get_token_info_from_file()
+
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
                 user_id, key, self.scope, **kwargs)
