@@ -64,6 +64,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         kwargs['datacenter'] = self.datacenter
         self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
 
+    def test_default_scopes(self):
+        self.assertEqual(self.driver.scopes, None)
+
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
         datetime1 = datetime.datetime(2013, 6, 26, 17, 5, 19)
@@ -71,10 +74,6 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         timestamp2 = '2013-06-26T17:43:15.000-00:00'
         datetime2 = datetime.datetime(2013, 6, 26, 17, 43, 15)
         self.assertEqual(timestamp_to_datetime(timestamp2), datetime2)
-
-    def test_scope(self):
-        # 'scope' is set in the test/secrets.py file
-        self.assertEqual(self.driver.scope, ['comp', 'blob'])
 
     def test_get_region_from_zone(self):
         zone1 = self.driver.ex_get_zone('us-central1-a')

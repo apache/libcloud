@@ -46,9 +46,8 @@ class GoogleTests(LibcloudTestCase):
         kwargs['auth_type'] = 'IA'
         self.driver = GoogleDNSDriver(*DNS_PARAMS_GOOGLE, **kwargs)
 
-    def test_scope(self):
-        # 'scope' set in test/secrets.py file
-        self.assertEqual(self.driver.scope, ['dns'])
+    def test_default_scopes(self):
+        self.assertEqual(self.driver.scopes, None)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()

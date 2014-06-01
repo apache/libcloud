@@ -62,16 +62,15 @@ class GoogleDNSDriver(DNSDriver):
         RecordType.TXT: 'TXT',
     }
 
-    def __init__(self, user_id, key, project=None, auth_type=None, **kwargs):
+    def __init__(self, user_id, key, project=None, auth_type=None, scopes=None,
+                 **kwargs):
         self.auth_type = auth_type
         self.project = project
-        self.scope = None
-        if kwargs and type(kwargs) is dict:
-            self.scope = kwargs.get('scope', None)
+        self.scopes = scopes
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
-        super(GoogleDNSDriver, self).__init__(user_id, key, **kwargs)
+        super(GoogleDNSDriver, self).__init__(user_id, key, scopes, **kwargs)
 
     def iterate_zones(self):
         """
@@ -305,7 +304,7 @@ class GoogleDNSDriver(DNSDriver):
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project,
-                'scope': self.scope}
+                'scopes': self.scopes}
 
     def _to_zones(self, response):
         zones = []

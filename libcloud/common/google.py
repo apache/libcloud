@@ -253,7 +253,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     host = 'accounts.google.com'
     auth_path = '/o/oauth2/auth'
 
-    def __init__(self, user_id, key, scope,
+    def __init__(self, user_id, key, scopes=[],
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
         """
@@ -266,9 +266,9 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                      authentication.
         :type   key: ``str``
 
-        :param  scope: A list of urls defining the scope of authentication
+        :param  scopes: A list of urls defining the scope of authentication
                        to grant.
-        :type   scope: ``list``
+        :type   scopes: ``list``
 
         :keyword  redirect_uri: The Redirect URI for the authentication
                                 request.  See Google OAUTH2 documentation for
@@ -280,7 +280,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         :type     login_hint: ``str``
         """
 
-        self.scope = " ".join(scope)
+        self.scopes = " ".join(scopes)
         self.redirect_uri = redirect_uri
         self.login_hint = login_hint
 
@@ -329,7 +329,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         auth_params = {'response_type': 'code',
                        'client_id': self.user_id,
                        'redirect_uri': self.redirect_uri,
-                       'scope': self.scope,
+                       'scope': self.scopes,
                        'state': 'Libcloud Request'}
         if self.login_hint:
             auth_params['login_hint'] = self.login_hint
@@ -426,7 +426,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
         # Construct a claim set
         claim_set = {'iss': self.user_id,
-                     'scope': self.scope,
+                     'scope': self.scopes,
                      'aud': 'https://accounts.google.com/o/oauth2/token',
                      'exp': int(time.time()) + 3600,
                      'iat': int(time.time())}
@@ -473,7 +473,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     timeout = 180
 
     def __init__(self, user_id, key, auth_type=None,
-                 credential_file=None, **kwargs):
+                 credential_file=None, scopes=None, **kwargs):
         """
         Determine authentication type, set up appropriate authentication
         connection and get initial authentication information.
@@ -496,6 +496,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         :keyword  credential_file: Path to file for caching authentication
                                    information.
         :type     credential_file: ``str``
+
+        :keyword  scopes: List of OAuth2 scope URLs. The empty default sets
+                          read/write access to Compute, Storage, and DNS.
+        :type     scopes: ``list``
         """
         self.credential_file = credential_file or '~/.gce_libcloud_auth'
 
@@ -509,12 +513,9 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         # Default scopes to read/write for compute, storage, and dns.  Can
         # override this when calling get_driver() or setting in secrets.py
-        self.scope = None
-        if kwargs and type(kwargs) is dict:
-            self.scope = kwargs.get('scope', None)
-            kwargs.pop('scope', None)
-        if not self.scope:
-            self.scope = [
+        self.scopes = scopes
+        if self.scopes is None or not self.scopes:
+            self.scopes = [
                 'https://www.googleapis.com/auth/compute',
                 'https://www.googleapis.com/auth/devstorage.full_control',
                 'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
@@ -523,10 +524,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
-                user_id, key, self.scope, **kwargs)
+                user_id, key, self.scopes, **kwargs)
         elif auth_type == 'IA':
             self.auth_conn = GoogleInstalledAppAuthConnection(
-                user_id, key, self.scope, **kwargs)
+                user_id, key, self.scopes, **kwargs)
         else:
             raise GoogleAuthError('auth_type should be \'SA\' or \'IA\'')
 
