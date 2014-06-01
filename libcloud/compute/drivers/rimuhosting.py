@@ -43,16 +43,9 @@ class RimuHostingException(Exception):
 
 
 class RimuHostingResponse(JsonResponse):
-    def __init__(self, response, connection):
-        self.body = response.read()
-        self.status = response.status
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.connection = connection
-
-        if self.success():
-            self.object = self.parse_body()
-
+    """
+    Response Class for RimuHosting driver
+    """
     def success(self):
         if self.status == 403:
             raise InvalidCredsError()

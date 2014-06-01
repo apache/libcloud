@@ -193,6 +193,11 @@ Compute
   (GITHUB-301)
   [Csaba Hoch]
 
+- Fix bug in RimuHosting driver which caused driver not to work when the
+  provider returned compressed (gzip'ed) response.
+  (LIBCLOUD-569, GITHUB-303)
+  [amastracci]
+
 Storage
 ~~~~~~~
 
