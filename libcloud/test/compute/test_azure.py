@@ -20,13 +20,13 @@ class AzureNodeDriverTests(unittest.TestCase) :
 
     libcloud.security.VERIFY_SSL_CERT = False
 
-    SUBSCRIPTION_ID = '5191b16a-673d-426c-8c55-fdd912858e4e'
-    KEY_FILE = 'C:\\Users\\david\\Desktop\\libcloud.pem'
+    SUBSCRIPTION_ID = '3761b98b-673d-526c-8d55-fee918758e6e'
+    KEY_FILE = 'fixtures\\azure\\libcloud.pem' #empty file is fine
 
     def setUp(self):
         Azure = get_driver(Provider.AZURE)
         Azure.connectionCls.conn_classes = (None, AzureMockHttp)
-        self.driver = Azure(self.SUBSCRIPTION_ID, self.KEY_FILE, pem_key_file = self.KEY_FILE )
+        self.driver = Azure(self.SUBSCRIPTION_ID, self.KEY_FILE )
 
     def test_locations_returned_successfully(self):
         locations = self.driver.list_locations()
@@ -217,160 +217,160 @@ class AzureMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('azure')
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz1_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production(self, method, url, body, headers):
          if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz1_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production.xml')
 
          return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz1_deployments_dc01(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deployments_dc01(self, method, url, body, headers):
          return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz2_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production(self, method, url, body, headers):
          if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz2_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production.xml')
 
          return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz1(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz1(self, method, url, body, headers):
          return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz2(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz2(self, method, url, body, headers):
          return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz5_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_oddkinz5_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(self, method, url, body, headers):
         headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest02_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest01.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest03.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest04(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_dcoddkinztest04.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_images(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_images(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_images.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_images.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_locations(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_locations(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_locations.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_locations.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices(self, method, url, body, headers):
         # request url is the same irrespective of serviceName, only way to differentiate
         if "<ServiceName>testdc123</ServiceName>" in body:
             return (httplib.CREATED, body, headers, httplib.responses[httplib.CREATED])
         elif "<ServiceName>testdc1234</ServiceName>" in body:
             return (httplib.CONFLICT, body, headers, httplib.responses[httplib.CONFLICT])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc123(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc123(self, method, url, body, headers):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc1234(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdc1234.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234.xml')
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc_deployments.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
 
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deploymentslots_Production(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deployments(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deployments(self, method, url, body, headers):
         if method == "GET":
-                body = self.fixtures.load('_5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc2_deployments.xml')
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _5191b16a_673d_426c_8c55_fdd912858e4e_services_hostedservices_testdcabc3_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
 
         return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
 
