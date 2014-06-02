@@ -12,24 +12,47 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from libcloud.compute.base import NodeAuthPassword
+from libcloud.compute.drivers.azure import AZURE_DEFAULT_IMAGE_NAME
+
+import libcloud.security
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-EC2 = get_driver(Provider.EC2_US_EAST)
-Rackspace = get_driver(Provider.RACKSPACE)
 
-drivers = [EC2('access key id', 'secret key'),
-           Rackspace('username', 'api key')]
+libcloud.security.VERIFY_SSL_CERT = False
 
-nodes = [driver.list_nodes() for driver in drivers]
+SUBSCRIPTION_ID = '5191b16a-673d-426c-8c55-fdd912858e4e'
+KEY_FILE = 'C:\\Users\\david\\Desktop\\libcloud.pem'
 
-print(nodes)
-# [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
-# <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
+Azure = get_driver(Provider.AZURE)
+driver = Azure(SUBSCRIPTION_ID, KEY_FILE )
 
-# grab the node named "test"
-node = [n for n in nodes if n.name == 'test'][0]
+kwargs = dict()
+kwargs["name"] = "oddkinztest2"
+kwargs["size"] = "A0"
+kwargs["image"] = ""
 
+kwargs
+#node["cloud_service_name"]="dcoddkinztest01"
+#node["deployment_name"]="dcoddkinztest01"
+kwargs = {}
+#kwargs["ex_cloud_service_name"]="dcoddkinztest02"
+kwargs["ex_storage_service_name"]="mtlytics"
+kwargs["ex_deployment_name"]="dcoddkinztest02"
+kwargs["ex_deployment_slot"]="Production"
+kwargs["ex_admin_user_id"]="azurecoder"
+auth = NodeAuthPassword("Pa55w0rd", False)
+
+kwargs["auth"]= auth
+
+kwargs["size"]= "ExtraSmall"
+kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
+kwargs["name"] = "dc35"
+
+#result = driver.create_node(ex_cloud_service_name="dcoddkinztest02", **kwargs)
+result = driver.create_node(ex_cloud_service_name="testdc123", **kwargs)
+#result = driver.create_cloud_service("testdc123", "North Europe")
+#print(result.__repr__())
 # reboot "test"
-node.reboot()

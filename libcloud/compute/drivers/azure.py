@@ -600,12 +600,10 @@ class AzureNodeDriver(NodeDriver):
                     None, # data_virtual_hard_disks
                     size)) # role_size)
 
-            self._ex_complete_async_azure_operation(response)
-
             if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-
+            self._ex_complete_async_azure_operation(response)
 
         return Node(
             id=name,
@@ -941,7 +939,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None:
+        if _affinity_group is not None and _affinity_group is not u'':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -967,49 +965,35 @@ class AzureNodeDriver(NodeDriver):
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
                     kwargs['service_name'],
-                    kwargs['service_name'],
+                    self._encode_base64(kwargs['service_name']),
                     kwargs['location'],
                     None,  # Location
                     True,  # geo_replication_enabled
                     None)) # extended_properties
 
-            if response.status != 200:
+            if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-            result = self._parse_response_for_async_op(response)
         else:
             response = self._perform_post(
                 self._get_storage_service_path(),
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
                     kwargs['service_name'],
-                    kwargs['service_name'],
+                    self._encode_base64(kwargs['service_name']),
                     None,  # Affinity Group
                     kwargs['location'],  # Location
                     True,  # geo_replication_enabled
                     None)) # extended_properties
 
-            if response.status != 200:
+            if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-            result = self._parse_response_for_async_op(response)
 
         # We need to wait for this to be created before we can 
-        # create the storage container and the instance. 
+        # create the storage container and the instance.
+        self._ex_complete_async_azure_operation(response, "create_storage_account")
 
-        operation_status = self._get_operation_status(result.request_id)
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5  
-
-        while operation_status.status == "InProgress" and waittime < timeout:
-            operation_status = self._get_operation_status(result.request_id)
-            if operation_status.status == "Succeeded":
-                break
-
-            waittime += interval
-            time.sleep(interval)
         return
 
     def _get_operation_status(self, request_id):
@@ -1414,7 +1398,7 @@ class AzureNodeDriver(NodeDriver):
     def _ex_complete_async_azure_operation(self, response=None, operation_type='create_node'):
 
         request_id = self._parse_response_for_async_op(response)
-        operation_status = self._get_operation_status(request_id)
+        operation_status = self._get_operation_status(request_id.request_id)
 
         timeout = 60 * 5
         waittime = 0
@@ -1460,7 +1444,7 @@ class AzureXmlSerializer():
             'CreateStorageServiceInput',
             [('ServiceName', service_name),
              ('Description', description),
-             ('Label', label, AzureNodeDriver._encode_base64),
+             ('Label', label),
              ('AffinityGroup', affinity_group),
              ('Location', location),
              ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
