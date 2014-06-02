@@ -18,6 +18,7 @@ from libcloud.compute.providers import get_driver
 
 class AzureNodeDriverTests(unittest.TestCase) :
 
+    #required otherwise we get client side SSL verification
     libcloud.security.VERIFY_SSL_CERT = False
 
     SUBSCRIPTION_ID = '3761b98b-673d-526c-8d55-fee918758e6e'
@@ -325,6 +326,7 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
+        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
         if method == "GET":
                 body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments.xml')
 
@@ -337,19 +339,21 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production(self, method, url, body, headers):
+
         if method == "GET":
                 body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments(self, method, url, body, headers):
+
         if method == "GET":
                 body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
-
+        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3(self, method, url, body, headers):
@@ -374,5 +378,11 @@ class AzureMockHttp(MockHttp):
 
         return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
 
+    def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(self, method, url, body, headers):
+
+        if method == "GET":
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 if __name__ == '__main__':
     sys.exit(unittest.main())
