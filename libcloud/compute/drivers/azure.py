@@ -565,7 +565,7 @@ class AzureNodeDriver(NodeDriver):
             if response.status != 200:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-            result = self._parse_response_for_async_op(response)
+            self._ex_complete_async_azure_operation(response)
         else:
             _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
@@ -600,10 +600,12 @@ class AzureNodeDriver(NodeDriver):
                     None, # data_virtual_hard_disks
                     size)) # role_size)
 
+            self._ex_complete_async_azure_operation(response)
+
             if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
 
-            result = self._parse_response_for_async_op(response)
+
 
         return Node(
             id=name,
@@ -1409,6 +1411,26 @@ class AzureNodeDriver(NodeDriver):
     def _get_storage_service_path(self, service_name=None):
         return self._get_path('services/storageservices', service_name)
 
+    def _ex_complete_async_azure_operation(self, response=None, operation_type='create_node'):
+
+        request_id = self._parse_response_for_async_op(response)
+        operation_status = self._get_operation_status(request_id)
+
+        timeout = 60 * 5
+        waittime = 0
+        interval = 5
+
+        while operation_status.status == "InProgress" and waittime < timeout:
+            operation_status = self._get_operation_status(request_id)
+            if operation_status.status == "Succeeded":
+                break
+
+            waittime += interval
+            time.sleep(interval)
+
+        if operation_status.status == 'Failed':
+            raise LibcloudError('Message: Async request for operation %s has failed'% operation_type, driver=self)
+
     #def get_connection(self):
     #    certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
     #    port = HTTPS_PORT
@@ -1945,6 +1967,8 @@ class AzureXmlSerializer():
                                '</ExtendedProperty>'])
             xml += '</ExtendedProperties>'
         return xml
+
+
 
 """Data Classes
 
