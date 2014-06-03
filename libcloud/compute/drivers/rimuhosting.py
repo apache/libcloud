@@ -307,7 +307,7 @@ class RimuHostingNodeDriver(NodeDriver):
             data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
 
         if 'ex_disk_space_mb' in kwargs:
-            if 'ex_vps_parameters' not in data:
+            if 'vps_parameters' not in data:
                 data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_mb'] = \
                 kwargs['ex_disk_space_mb']
