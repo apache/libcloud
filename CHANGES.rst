@@ -203,6 +203,11 @@ Compute
   (LIBCLOUD-569, GITHUB-303)
   [amastracci]
 
+- Fix issue with overwriting the server memory values in the RimuHosting
+  driver.
+  (GUTHUB-308)
+  [Dustin Oberloh]
+
 Storage
 ~~~~~~~
 
