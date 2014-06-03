@@ -2610,14 +2610,30 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
-    def ex_list_subnets(self):
+    def ex_list_subnets(self, subnet_ids=None, filters=None):
         """
         Return a list of :class:`EC2NetworkSubnet` objects for the
         current region.
 
+        :param      subnet_ids: Return only subnets matching the provided
+                                subnet IDs. If not specified, a list of all
+                                the subnets in the corresponding region
+                                is returned.
+        :type       subnet_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain subnets.
+        :type       filters: ``dict``
+
         :rtype:     ``list`` of :class:`EC2NetworkSubnet`
         """
         params = {'Action': 'DescribeSubnets'}
+
+        if subnet_ids:
+            params.update(self._pathlist('SubnetId', subnet_ids))
+
+        if filters:
+            params.update(self._build_filters(filters))
 
         return self._to_subnets(
             self.connection.request(self.path, params=params).object
