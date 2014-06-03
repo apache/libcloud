@@ -15,31 +15,26 @@
 """Azure Compute driver
 
 """
-import uuid
+import httplib
 import re
 import time
 import collections
 import random
 import sys
-import os
 import copy
 import base64
 
+from libcloud.common.azure import AzureServiceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair, NodeAuthPassword
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import KeyPair
+from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionUserAndKey
-
 from datetime import datetime
 from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
-from httplib import (
-    HTTPSConnection,
-    HTTPS_PORT,
-    )
+from httplib import (HTTPSConnection)
 
 if sys.version_info < (3,):
     from urllib2 import quote as url_quote
@@ -64,13 +59,58 @@ else:
 
 __version__ = '1.0.0'
 
-# To be removed once auth has been refactored. 
-subscription_id = "aff4792f-fc2c-4fa8-88f4-bab437747469"
-certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
 
 azure_service_management_host = 'management.core.windows.net'
 _USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
 X_MS_VERSION = '2013-08-01'
+
+AZURE_DEFAULT_IMAGE_NAME = {
+    'WinServer2013_JDK6':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.6.0_71-0514-Win-GA',
+    'WinServer2013_JDK7':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.7.0_51-0514-Win-GA',
+    'WinServer2013_JDK8':'0c0083a6d9a24f2d91800e52cad83950__JDK-1.8.0-0514-Win-GA',
+    'OracleDb11gR2Ent_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-EE-0514-Win-GA',
+    'OracleDb11gR2Ent_WL_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-EE-WebLogic-10.3.6-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb11gR2Std_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-SE-0514-Win-GA',
+    'OracleDb11gR2Std_WL_WinServer2008Rs':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-11.2.0.4.0-SE-WebLogic-10.3.6-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb12cEnt_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-0514-EE-Win-GA',
+    'OracleDb12cStd_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-0514-SE-Win-GA',
+    'OracleDb12cEnt_WL_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-EE-WebLogic-12.1.2.0-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleDb12cStd_WL_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__Oracle-Database-12.1.0.1.0-SE-WebLogic-12.1.2.0-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL12cEnt_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__WebLogic-12.1.2.0-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL12cStd_WinServer2012':'0c0083a6d9a24f2d91800e52cad83950__WebLogic-12.1.2.0-SE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL11gEnt_WinServer2008R2':'0c0083a6d9a24f2d91800e52cad83950__Weblogic-10.3.6-EE-JDK-1.7.0_51-0514-Win-GA',
+    'OracleWL11gStd_WinServer2008R2':'0c0083a6d9a24f2d91800e52cad83950__Weblogic-10.3.6-SE-JDK-1.7.0_51-0514-Win-GA',
+    'BizTalkServer2013Ent_WinServer2012':'2cdc6229df6344129ee553dd3499f0d3__BizTalk-Server-2013-Enterprise',
+    'BizTalkServer2013Std_WinServer2012':'2cdc6229df6344129ee553dd3499f0d3__BizTalk-Server-2013-Standard',
+    'WinServerEssentials_WinServer2012R2':'3a50f22b388a4ff7ab41029918570fa6__Windows-Server-2012-Essentials-20140327-enus',
+    'OpenLogic':'5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415',
+    'WinServer2008R2SP1':'a699494373c04fc0bc8f2bb1389d6106__Win2K8R2SP1-Datacenter-201404.01-en.us-127GB.vhd',
+    'WinServer2012DataCenter':'a699494373c04fc0bc8f2bb1389d6106__Windows-Server-2012-Datacenter-201404.01-en.us-127GB.vhd',
+    'WinServer2012R2DataCenter':'a699494373c04fc0bc8f2bb1389d6106__Windows-Server-2012-R2-201404.01-en.us-127GB.vhd',
+    'WinServerRemoteDskTopSessionHost_WinServer2012R2':'ad072bd3082149369c449ba5832401ae__Windows-Server-Remote-Desktop-Session-Host-on-Windows-Server-2012-R2-20140514-1852',
+    'UbuntuServer13.10':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-13_10-amd64-server-20140507-en-us-30GB',
+    'UnuntuServer12.04.4LTS':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-12_04_4-LTS-amd64-server-20140514-en-us-30GB',
+    'UbuntuServer14.04LTS':'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140416.1-en-us-30GB',
+    'SUSELinuxEntServer11SP3Prem':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-Prio-v202',
+    'SUSELinuxEntServer11SP3Sap':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-SAP-CAL-v101,',
+    'SUSELinuxEntServer11SP3':'b4590d9e3ed742e4a1d46e5424aa335e__SUSE-Linux-Enterprise-Server-11-SP3-v202',
+    'OpenSUSE13.1':'b4590d9e3ed742e4a1d46e5424aa335e__openSUSE-13.1-v101',
+    'OracleDB12.1.0.1Ent_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Database-121010.v1-EE-Lnx',
+    'OracleDB12.1.0.1Std_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Database-121010.v3-SE-Lnx',
+    'OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__Oracle-Linux-6',
+    'OracleWLServer12.1.2_OracleLinux6.4':'c290a6b031d841e09f2da759bbabe71f__WebLogic-Server-12c.v1-Lnx',
+    'PuppetEnt3.2.2':'de89c2ed05c748f5aded3ddc75fdcce4__PuppetEnterpriseMaster-3_2_2-amd64-server-20140408-en-us-30GB',
+    'SQLServer2008R2SP2Ent_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2008R2SP2-Enterprise-CY13SU04-SQL2008-SP2-10.50.4021.0',
+    'SQLServer2008R2SP2Std_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2008R2SP2-Standard-CY13SU04-SQL2008-SP2-10.50.4021.0',
+    'SQLServer2012SP1Ent_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Enterprise-CY13SU04-SQL2012-SP1-11.0.3350.0-Win2012',
+    'SQLServer2012SP1Ent_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Enterprise-CY13SU04-SQL11-SP1-CU3-11.0.3350.0-B',
+    'SQLServer2012SP1Std_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Standard-CY13SU04-SQL2012-SP1-11.0.3350.0-Win2012',
+    'SQLServer2012SP1Std_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Standard-CY13SU04-SQL11-SP1-CU3-11.0.3350.0-B',
+    'SQLServer2012SP1Web_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-Web-CY13SU04-SQL11-SP1-CU3-11.0.3350.0',
+     'SQLServer2008R2SP2Web_WinServer2008R2':'fb83b3509582419d99629ce476bcb5c8__SQL-Server-2008R2SP2-GDR-10.50.4021.0-Web-ENU-Win2K8R2-CY13SU12',
+    'SQLServer2012SP1DataWarehousing_WinServer2012':'fb83b3509582419d99629ce476bcb5c8__SQL-Server-2012SP1-CU5-11.0.3373.0-DataWarehousing-ENU-WS2012-CY13SU12',
+
+}
 
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them.
@@ -178,14 +218,14 @@ _KNOWN_SERIALIZATION_XFORMS = {
     'copy_id': 'CopyId',
     }
 
-class AzureConnection(ConnectionUserAndKey):
-    """AzureConnection
 
-    Connection class for Azure Compute Driver.
-    """
 
 class AzureNodeDriver(NodeDriver):
-    
+    connectionCls = AzureServiceManagementConnection
+    name = "Azure Node Provider"
+    website = 'http://windowsazure.com'
+    type = Provider.AZURE
+
     _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
     _blob_url = ".blob.core.windows.net"
     features = {'create_node': ['password']}
@@ -211,6 +251,16 @@ class AzureNodeDriver(NodeDriver):
         'StoppedDeallocated': NodeState.TERMINATED,
     }
 
+    def __init__(self, subscription_id=None, key_file=None, **kwargs):
+        """
+        subscription_id contains the Azure subscription id in the form of GUID
+        key_file contains the Azure X509 certificate in .pem form
+        """
+        self.subscription_id = subscription_id
+        self.key_file = key_file
+        super(AzureNodeDriver, self).__init__(self.subscription_id, self.key_file,
+                                           secure=True, **kwargs)
+
     def list_sizes(self):
         """
         Lists all sizes
@@ -225,7 +275,7 @@ class AzureNodeDriver(NodeDriver):
 
         return sizes
 
-    def list_images(self):
+    def list_images(self, location=None):
         """
         Lists all images
 
@@ -233,7 +283,12 @@ class AzureNodeDriver(NodeDriver):
         """        
         data = self._perform_get(self._get_image_path(), Images)
 
-        return [self._to_image(i) for i in data]
+        images = [self._to_image(i) for i in data]
+
+        if location != None:
+            images = [image for image in images if location in image.extra["location"]]
+
+        return images
 
     def list_locations(self):
         """
@@ -241,7 +296,7 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        data = self._perform_get('/' + subscription_id + '/locations', Locations)
+        data = self._perform_get('/' + self.subscription_id + '/locations', Locations)
 
         return [self._to_location(l) for l in data]
 
@@ -262,17 +317,21 @@ class AzureNodeDriver(NodeDriver):
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
-        data = self._perform_get(
+        response = self._perform_get(
             self._get_hosted_service_path(ex_cloud_service_name) +
             '?embed-detail=True',
-            HostedService)
+            None)
+        if response.status != 200 :
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        data =  self._parse_response(response, HostedService)
 
         try:
             return [self._to_node(n) for n in data.deployments[0].role_instance_list]
         except IndexError:
             return None
 
-    def reboot_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+    def reboot_node(self, node=None, ex_cloud_service_name=None, ex_deployment_slot=None):
         """
         Reboots a node.
 
@@ -288,7 +347,7 @@ class AzureNodeDriver(NodeDriver):
                                          or "Staging". (Optional)
         :type       ex_deployment_name: ``str``
 
-        :rtype: ``list`` of :class:`Node`
+        :rtype: ``bool``
         """
 
         if not ex_cloud_service_name:
@@ -297,15 +356,19 @@ class AzureNodeDriver(NodeDriver):
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
 
+        if not node:
+            raise ValueError("node is required.")
+
         _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
         try:
-            result = self._perform_post(
-            self._get_deployment_path_using_name(
-                ex_cloud_service_name, _deployment_name) + \
-                    '/roleinstances/' + _str(node.id) + \
-                    '?comp=reboot', '', async=True)
-            if result.request_id:
+            response = self._perform_post(self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name) + '/roleinstances/' + _str(node.id) + '?comp=reboot'
+            , '')
+
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            if self._parse_response_for_async_op(response):
                 return True
             else:
                 return False
@@ -483,7 +546,7 @@ class AzureNodeDriver(NodeDriver):
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
 
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_deployment_path_using_name(ex_cloud_service_name),
                 AzureXmlSerializer.virtual_machine_deployment_to_xml(
                     ex_deployment_name,
@@ -497,8 +560,12 @@ class AzureNodeDriver(NodeDriver):
                     None,
                     None,
                     size,
-                    None),
-                async=True)
+                    None))
+
+            if response.status != 200:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            self._ex_complete_async_azure_operation(response)
         else:
             _deployment_name = self._get_deployment(service_name=ex_cloud_service_name,deployment_slot=ex_deployment_slot).name
 
@@ -520,7 +587,7 @@ class AzureNodeDriver(NodeDriver):
             media_link = blob_url + "/vhds/" + disk_name
             disk_config = OSVirtualHardDisk(image, media_link)
 
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_role_path(ex_cloud_service_name, 
                     _deployment_name),
                 AzureXmlSerializer.add_role_to_xml(
@@ -531,8 +598,12 @@ class AzureNodeDriver(NodeDriver):
                     network_config, # network_config
                     None, # availability_set_name
                     None, # data_virtual_hard_disks
-                    size), # role_size
-                async=True)
+                    size)) # role_size)
+
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+            self._ex_complete_async_azure_operation(response)
 
         return Node(
             id=name,
@@ -543,11 +614,11 @@ class AzureNodeDriver(NodeDriver):
             driver=self.connection.driver
         )
 
-    def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot=None):
+    def destroy_node(self, node=None, ex_cloud_service_name=None, ex_deployment_slot=None):
         """Remove Azure Virtual Machine
 
         This removes the instance, but does not 
-        remove the disk. You will need to use destroy_volume. 
+        remove the disk. You will need to use destroy_volume.
         Azure sometimes has an issue where it will hold onto
         a blob lease for an extended amount of time. 
 
@@ -563,6 +634,9 @@ class AzureNodeDriver(NodeDriver):
         if not ex_cloud_service_name:
             raise ValueError("ex_cloud_service_name is required.")
 
+        if not node:
+            raise ValueError("node is required.")
+
         if not ex_deployment_slot:
             ex_deployment_slot = "production"
 
@@ -571,26 +645,79 @@ class AzureNodeDriver(NodeDriver):
 
         _server_deployment_count = len(_deployment.role_instance_list)
 
-        try:
-            if _server_deployment_count > 1:
-                path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
-                path += '?comp=media' # forces deletion of attached disks
+        if _server_deployment_count > 1:
+            path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
+            path += '?comp=media' # forces deletion of attached disks
 
-                data = self._perform_delete(path, async=True)
+            data = self._perform_delete(path)
 
-                return True
-            else:
-                path = self._get_deployment_path_using_name(
-                    ex_cloud_service_name, 
-                    _deployment_name)
+            return True
+        else:
+            path = self._get_deployment_path_using_name(
+                ex_cloud_service_name,
+                _deployment_name)
 
-                path += '?comp=media'
+            path += '?comp=media'
 
-                data = self._perform_delete(path,async=True)
+            data = self._perform_delete(path)
 
-                return True
-        except Exception, e:
-            return False
+            return True
+
+    def create_cloud_service(self, ex_cloud_service_name=None, location=None, description=None, extended_properties=None):
+        """
+        creates an azure cloud service.
+
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :param      location: standard azure location string
+        :type       location: ``str``
+
+        :param      description: optional description
+        :type       description: ``str``
+
+        :param      extended_properties: optional extended_properties
+        :type       extended_properties: ``dict``
+
+        :rtype: ``bool``
+        """
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if not location:
+            raise ValueError("location is required.")
+
+        response =  self._perform_cloud_service_create(
+            self._get_hosted_service_path(),
+            AzureXmlSerializer.create_hosted_service_to_xml(ex_cloud_service_name, self._encode_base64(ex_cloud_service_name), description,
+                                     location, None,
+                                     extended_properties))
+
+        if response.status != 201:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return True
+
+    def destroy_cloud_service(self, ex_cloud_service_name=None):
+
+        """
+        deletes an azure cloud service.
+
+        :param      ex_cloud_service_name: Cloud Service name
+        :type       ex_cloud_service_name: ``str``
+
+        :rtype: ``bool``
+        """
+
+        if not ex_cloud_service_name:
+            raise ValueError("ex_cloud_service_name is required.")
+        #add check to ensure all nodes have been deleted
+        response = self._perform_cloud_service_delete(self._get_hosted_service_path(ex_cloud_service_name))
+
+        if response.status != 200:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return True
 
     """ Functions not implemented
     """
@@ -621,6 +748,29 @@ class AzureNodeDriver(NodeDriver):
 
     """Private Functions
     """
+
+    def _perform_cloud_service_create(self, path, data):
+        request = AzureHTTPRequest()
+        request.method = 'POST'
+        request.host = azure_service_management_host
+        request.path = path
+        request.body = data
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def _perform_cloud_service_delete(self, path):
+        request = AzureHTTPRequest()
+        request.method = 'DELETE'
+        request.host = azure_service_management_host
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
 
     def _to_node(self, data):
         """
@@ -678,11 +828,13 @@ class AzureNodeDriver(NodeDriver):
         if "Brazil" in data.display_name:
             country = "Brazil"
 
-        return NodeLocation(
+        return AzureNodeLocation(
             id=data.name,
             name=data.display_name,
             country=country,
-            driver=self.connection.driver)
+            driver=self.connection.driver,
+            available_services =data.available_services,
+            virtual_machine_role_sizes = (data.compute_capabilities).virtual_machines_role_sizes)
 
     def _to_node_size(self, data):
         """
@@ -762,12 +914,17 @@ class AzureNodeDriver(NodeDriver):
 
     def _get_deployment(self, **kwargs):
         _service_name = kwargs['service_name']
-        _deployment_slot = kwargs['deployment_slot'] 
+        _deployment_slot = kwargs['deployment_slot']
 
-        return self._perform_get(
+        response = self._perform_get(
             self._get_deployment_path_using_slot(
-                _service_name, _deployment_slot),
-            Deployment)
+                _service_name, _deployment_slot), None)
+
+        if response.status != 200:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
+        return self._parse_response(response, Deployment)
+
 
     def _get_cloud_service_location(self, service_name=None):
 
@@ -782,7 +939,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None:
+        if _affinity_group is not None and _affinity_group is not u'':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -803,51 +960,45 @@ class AzureNodeDriver(NodeDriver):
 
     def _create_storage_account(self, **kwargs):
         if kwargs['is_affinity_group'] is True:
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_storage_service_path(),
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
                     kwargs['service_name'],
-                    kwargs['service_name'],
+                    self._encode_base64(kwargs['service_name']),
                     kwargs['location'],
                     None,  # Location
                     True,  # geo_replication_enabled
-                    None), # extended_properties
-            async=True)
+                    None)) # extended_properties
+
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
         else:
-            result = self._perform_post(
+            response = self._perform_post(
                 self._get_storage_service_path(),
                 AzureXmlSerializer.create_storage_service_input_to_xml(
                     kwargs['service_name'],
                     kwargs['service_name'],
-                    kwargs['service_name'],
+                    self._encode_base64(kwargs['service_name']),
                     None,  # Affinity Group
                     kwargs['location'],  # Location
                     True,  # geo_replication_enabled
-                    None), # extended_properties
-            async=True)
+                    None)) # extended_properties
+
+            if response.status != 202:
+                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
 
         # We need to wait for this to be created before we can 
-        # create the storage container and the instance. 
+        # create the storage container and the instance.
+        self._ex_complete_async_azure_operation(response, "create_storage_account")
 
-        operation_status = self._get_operation_status(result.request_id)
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5  
-
-        while operation_status.status == "InProgress" and waittime < timeout:
-            operation_status = self._get_operation_status(result.request_id)
-            if operation_status.status == "Succeeded":
-                break
-
-            waittime += interval
-            time.sleep(interval)
         return
 
     def _get_operation_status(self, request_id):
         return self._perform_get(
-            '/' + subscription_id + '/operations/' + _str(request_id),
+            '/' + self.subscription_id + '/operations/' + _str(request_id),
             Operation)
 
     def _perform_get(self, path, response_type):
@@ -874,13 +1025,7 @@ class AzureNodeDriver(NodeDriver):
             request.headers = self._update_management_header(request)
             response = self._perform_request(request)
 
-            if response_type is not None:
-                return self._parse_response(response, response_type)
-
-            if async:
-                return self._parse_response_for_async_op(response)
-
-            return None
+            return response
 
     def _perform_delete(self, path, async=False):
         request = AzureHTTPRequest()
@@ -891,6 +1036,9 @@ class AzureNodeDriver(NodeDriver):
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
 
+        if response.status != 202:
+            raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (response.error, response.body, response.status), driver=self)
+
         if async:
             return self._parse_response_for_async_op(response)
 
@@ -898,39 +1046,14 @@ class AzureNodeDriver(NodeDriver):
 
     def _perform_request(self, request):
 
-        connection = self.get_connection()
-
         try:
-            connection.putrequest(request.method, request.path)
+            return self.connection.request(action="https://%s%s" % (request.host, request.path), data=request.body, headers=request.headers, method=request.method)
+        except Exception, e:
+            print e.message
 
-            self.send_request_headers(connection, request.headers)
-            self.send_request_body(connection, request.body)
 
-            resp = connection.getresponse()
-            status = int(resp.status)
-            message = resp.reason
-            respheader = headers = resp.getheaders()
 
-            # for consistency across platforms, make header names lowercase
-            for i, value in enumerate(headers):
-                headers[i] = (value[0].lower(), value[1])
 
-            respbody = None
-            if resp.length is None:
-                respbody = resp.read()
-            elif resp.length > 0:
-                respbody = resp.read(resp.length)
-
-            response = AzureHTTPResponse(
-                int(resp.status), resp.reason, headers, respbody)
-            if status >= 300:
-                raise LibcloudError('Message: %s, Body: %s, Status code: %d' % (message, respbody, status),
-                    driver=self)
-
-            return response
-
-        finally:
-            connection.close()
 
     def _update_request_uri_query(self, request):
         '''pulls the query string out of the URI and moves it into
@@ -963,20 +1086,18 @@ class AzureNodeDriver(NodeDriver):
         ''' Add additional headers for management. '''
 
         if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
-            request.headers.append(('Content-Length', str(len(request.body))))
+            request.headers['Content-Length'] = str(len(request.body))
 
         # append additional headers base on the service
-        request.headers.append(('x-ms-version', X_MS_VERSION))
+        #request.headers.append(('x-ms-version', X_MS_VERSION))
 
         # if it is not GET or HEAD request, must set content-type.
         if not request.method in ['GET', 'HEAD']:
-            for name, _ in request.headers:
-                if 'content-type' == name.lower():
+            for key in request.headers:
+                if 'content-type' == key.lower():
                     break
             else:
-                request.headers.append(
-                    ('Content-Type',
-                     'application/atom+xml;type=entry;charset=utf-8'))
+                request.headers['Content-Type']='application/xml'
 
         return request.headers
 
@@ -993,7 +1114,7 @@ class AzureNodeDriver(NodeDriver):
                 assert isinstance(request_body, bytes)
                 connection.send(request_body)
             elif (not isinstance(connection, HTTPSConnection) and
-                  not isinstance(connection, HTTPConnection)):
+                  not isinstance(connection, httplib.HTTPConnection)):
                 connection.send(None)
 
     def _parse_response(self, response, return_type):
@@ -1087,7 +1208,7 @@ class AzureNodeDriver(NodeDriver):
     def _get_node_value(self, xmlelement, data_type):
         value = xmlelement.firstChild.nodeValue
         if data_type is datetime:
-            return _to_datetime(value)
+            return self._to_datetime(value)
         elif data_type is bool:
             return value.lower() != 'false'
         else:
@@ -1190,7 +1311,7 @@ class AzureNodeDriver(NodeDriver):
             return b''
 
         if isinstance(request_body, WindowsAzureData):
-            request_body = _convert_class_to_xml(request_body)
+            request_body = self._convert_class_to_xml(request_body)
 
         if isinstance(request_body, bytes):
             return request_body
@@ -1214,7 +1335,7 @@ class AzureNodeDriver(NodeDriver):
 
         if isinstance(source, list):
             for value in source:
-                xmlstr += _convert_class_to_xml(value, False)
+                xmlstr += self._convert_class_to_xml(value, False)
         elif isinstance(source, WindowsAzureData):
             class_name = source.__class__.__name__
             xmlstr += '<' + class_name + '>'
@@ -1222,7 +1343,7 @@ class AzureNodeDriver(NodeDriver):
                 if value is not None:
                     if isinstance(value, list) or \
                         isinstance(value, WindowsAzureData):
-                        xmlstr += _convert_class_to_xml(value, False)
+                        xmlstr += self._convert_class_to_xml(value, False)
                     else:
                         xmlstr += ('<' + self._get_serialization_name(name) + '>' +
                                    xml_escape(str(value)) + '</' +
@@ -1236,7 +1357,7 @@ class AzureNodeDriver(NodeDriver):
 
         result = AsynchronousOperationResult()
         if response.headers:
-            for name, value in response.headers:
+            for name, value in response.headers.items():
                 if name.lower() == 'x-ms-request-id':
                     result.request_id = value
 
@@ -1248,7 +1369,7 @@ class AzureNodeDriver(NodeDriver):
                                   '/deployments', deployment_name)
 
     def _get_path(self, resource, name):
-            path = '/' + subscription_id + '/' + resource
+            path = '/' + self.subscription_id + '/' + resource
             if name is not None:
                 path += '/' + _str(name)
             return path
@@ -1274,16 +1395,36 @@ class AzureNodeDriver(NodeDriver):
     def _get_storage_service_path(self, service_name=None):
         return self._get_path('services/storageservices', service_name)
 
-    def get_connection(self):
-        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-        port = HTTPS_PORT
+    def _ex_complete_async_azure_operation(self, response=None, operation_type='create_node'):
 
-        connection = HTTPSConnection(
-            azure_service_management_host,
-            int(port),
-            cert_file=certificate_path)
+        request_id = self._parse_response_for_async_op(response)
+        operation_status = self._get_operation_status(request_id.request_id)
 
-        return connection
+        timeout = 60 * 5
+        waittime = 0
+        interval = 5
+
+        while operation_status.status == "InProgress" and waittime < timeout:
+            operation_status = self._get_operation_status(request_id)
+            if operation_status.status == "Succeeded":
+                break
+
+            waittime += interval
+            time.sleep(interval)
+
+        if operation_status.status == 'Failed':
+            raise LibcloudError('Message: Async request for operation %s has failed'% operation_type, driver=self)
+
+    #def get_connection(self):
+    #    certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+    #    port = HTTPS_PORT
+
+    #    connection = HTTPSConnection(
+    #        azure_service_management_host,
+    #        int(port),
+    #        cert_file=certificate_path)
+
+    #    return connection
 
 """XML Serializer
 
@@ -1303,7 +1444,7 @@ class AzureXmlSerializer():
             'CreateStorageServiceInput',
             [('ServiceName', service_name),
              ('Description', description),
-             ('Label', label, _encode_base64),
+             ('Label', label),
              ('AffinityGroup', affinity_group),
              ('Location', location),
              ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
@@ -1316,7 +1457,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'UpdateStorageServiceInput',
             [('Description', description),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('GeoReplicationEnabled', geo_replication_enabled, _lower)],
             extended_properties)
 
@@ -1328,7 +1469,7 @@ class AzureXmlSerializer():
     @staticmethod
     def update_hosted_service_to_xml(label, description, extended_properties):
         return AzureXmlSerializer.doc_from_data('UpdateHostedService',
-                                            [('Label', label, _encode_base64),
+                                            [('Label', label, AzureNodeDriver._encode_base64),
                                              ('Description', description)],
                                             extended_properties)
 
@@ -1339,7 +1480,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'CreateHostedService',
             [('ServiceName', service_name),
-             ('Label', label, _encode_base64),
+             ('Label', label),
              ('Description', description),
              ('Location', location),
              ('AffinityGroup', affinity_group)],
@@ -1353,7 +1494,7 @@ class AzureXmlSerializer():
             'CreateDeployment',
             [('Name', name),
              ('PackageUrl', package_url),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('Configuration', configuration),
              ('StartDeployment',
              start_deployment, _lower),
@@ -1391,7 +1532,7 @@ class AzureXmlSerializer():
             [('Mode', mode),
              ('PackageUrl', package_url),
              ('Configuration', configuration),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('RoleToUpgrade', role_to_upgrade),
              ('Force', force, _lower)],
             extended_properties)
@@ -1422,7 +1563,7 @@ class AzureXmlSerializer():
         return AzureXmlSerializer.doc_from_data(
             'CreateAffinityGroup',
             [('Name', name),
-             ('Label', label, _encode_base64),
+             ('Label', label, AzureNodeDriver._encode_base64),
              ('Description', description),
              ('Location', location)])
 
@@ -1430,7 +1571,7 @@ class AzureXmlSerializer():
     def update_affinity_group_to_xml(label, description):
         return AzureXmlSerializer.doc_from_data(
             'UpdateAffinityGroup',
-            [('Label', label, _encode_base64),
+            [('Label', label, AzureNodeDriver._encode_base64),
              ('Description', description)])
 
     @staticmethod
@@ -1811,6 +1952,8 @@ class AzureXmlSerializer():
             xml += '</ExtendedProperties>'
         return xml
 
+
+
 """Data Classes
 
 Borrowed from the Azure SDK for Python. 
@@ -2032,6 +2175,19 @@ class Location(WindowsAzureData):
         self.name = u''
         self.display_name = u''
         self.available_services = _scalar_list_of(str, 'AvailableService')
+        self.compute_capabilities = ComputeCapability()
+
+
+
+class ComputeCapability(WindowsAzureData):
+
+    def __init__(self):
+        self.virtual_machines_role_sizes = _scalar_list_of(str, 'RoleSize')
+
+class VirtualMachinesRoleSizes(WindowsAzureData):
+
+    def __init__(self):
+        self.role_size = _scalar_list_of(str, 'RoleSize')
 
 class Images(WindowsAzureData):
 
@@ -2394,7 +2550,7 @@ class AzureHTTPRequest(object):
         self.method = ''
         self.path = ''
         self.query = []      # list of (name, value)
-        self.headers = []    # list of (header name, header value)
+        self.headers = {}    # list of (header name, header value)
         self.body = ''
         self.protocol_override = None
 
@@ -2446,3 +2602,17 @@ class _dict_of(dict):
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
         super(_dict_of, self).__init__()
+
+class AzureNodeLocation(NodeLocation):
+
+    # we can also have something in here for available services which is an extra to the API with Azure
+    def __init__(self, id, name, country, driver, available_services, virtual_machine_role_sizes):
+        super(AzureNodeLocation, self).__init__(id, name, country, driver)
+        self.available_services = available_services
+        self.virtual_machine_role_sizes = virtual_machine_role_sizes
+
+    def __repr__(self):
+        return (('<AzureNodeLocation: id=%s, name=%s, country=%s, '
+                 'driver=%s services=%s virtualMachineRoleSizes=%s >')
+                % (self.id, self.name, self.country,
+                   self.driver.name, ','.join(self.available_service), ','.join(self.virtual_machine_role_sizes)))
