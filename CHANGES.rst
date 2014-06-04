@@ -28,10 +28,15 @@ General
   (GITHUB-301)
   [Csaba Hoch]
 
+- Update CA_CERTS_PATH to also look for CA cert bundle which comes with
+  openssl Homebrew formula on OS x (/usr/local/etc/openssl/cert.pem).
+  (GITHUB-309)
+  [Pedro Romano]
+
 Compute
 ~~~~~~~
 
-- Fix create_key_pair method which was not returning private key. 
+- Fix create_key_pair method which was not returning private key.
   (LIBCLOUD-566)
   [Sebastien Goasguen]
 
