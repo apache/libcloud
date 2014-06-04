@@ -3835,8 +3835,8 @@ class BaseEC2NodeDriver(NodeDriver):
         over the Internet.
 
         :param      gateway_ids: Return only intenet gateways matching the
-                                 provided internet gateway IDs. If not 
-                                 specified, a list of all the internet 
+                                 provided internet gateway IDs. If not
+                                 specified, a list of all the internet
                                  gateways in the corresponding region is
                                  returned.
         :type       gateway_ids: ``list``
