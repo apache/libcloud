@@ -68,6 +68,9 @@ __all__ = [
     'EC2Network',
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
+    'EC2RouteTable',
+    'EC2Route',
+    'EC2SubnetAssociation',
     'ExEC2AvailabilityZone',
 
     'IdempotentParamError'
@@ -1495,6 +1498,12 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
         }
+    },
+    'route_table': {
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        }
     }
 }
 
@@ -1728,6 +1737,124 @@ class VPCInternetGateway(object):
 
     def __repr__(self):
         return (('<VPCInternetGateway: id=%s>') % (self.id))
+
+
+class EC2RouteTable(object):
+    """
+    Class which stores information about VPC Route Tables.
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, id, routes, subnet_associations,
+                 propagating_gateway_ids, extra=None):
+        """
+        :param      id: The ID of the route table.
+        :type       id: ``str``
+
+        :param      routes: A list of routes in the route table.
+        :type       routes: ``list`` of :class:`EC2Route`
+
+        :param      subnet_associations: A list of associations between the
+                                         route table and one or more subnets.
+        :type       subnet_associations: ``list`` of
+                                         :class:`EC2SubnetAssociation`
+
+        :param      propagating_gateway_ids: The list of IDs of any virtual
+                                             private gateways propagating the
+                                             routes.
+        :type       propagating_gateway_ids: ``list``
+        """
+
+        self.id = id
+        self.routes = routes
+        self.subnet_associations = subnet_associations
+        self.propagating_gateway_ids = propagating_gateway_ids
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2RouteTable: id=%s>') % (self.id))
+
+
+class EC2Route(object):
+    """
+    Class which stores information about a Route.
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, cidr, gateway_id, instance_id, owner_id,
+                 interface_id, state, origin, vpc_peering_connection_id):
+        """
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      gateway_id: The ID of a gateway attached to the VPC.
+        :type       gateway_id: ``str``
+
+        :param      instance_id: The ID of a NAT instance in the VPC.
+        :type       instance_id: ``str``
+
+        :param      owner_id: The AWS account ID of the owner of the instance.
+        :type       owner_id: ``str``
+
+        :param      interface_id: The ID of the network interface.
+        :type       interface_id: ``str``
+
+        :param      state: The state of the route (active | blackhole).
+        :type       state: ``str``
+
+        :param      origin: Describes how the route was created.
+        :type       origin: ``str``
+
+        :param      vpc_peering_connection_id: The ID of the VPC
+                                               peering connection.
+        :type       vpc_peering_connection_id: ``str``
+        """
+
+        self.cidr = cidr
+        self.gateway_id = gateway_id
+        self.instance_id = instance_id
+        self.owner_id = owner_id
+        self.interface_id = interface_id
+        self.state = state
+        self.origin = origin
+        self.vpc_peering_connection_id = vpc_peering_connection_id
+
+    def __repr__(self):
+        return (('<EC2Route: cidr=%s>') % (self.cidr))
+
+
+class EC2SubnetAssociation(object):
+    """
+    Class which stores information about Route Table associated with
+    a given Subnet in a VPC
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, id, route_table_id, subnet_id, main=False):
+        """
+        :param      id: The ID of the subent association in the VPC.
+        :type       id: ``str``
+
+        :param      route_table_id: The ID of a route table in the VPC.
+        :type       route_table_id: ``str``
+
+        :param      subnet_id: The ID of a subnet in the VPC.
+        :type       subnet_id: ``str``
+
+        :param      main: If true, means this is a main VPC route table.
+        :type       main: ``bool``
+        """
+
+        self.id = id
+        self.route_table_id = route_table_id
+        self.subnet_id = subnet_id
+        self.main = main
+
+    def __repr__(self):
+        return (('<EC2SubnetAssociation: id=%s>') % (self.id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -3927,6 +4054,306 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
+    def ex_list_route_tables(self, route_table_ids=None, filters=None):
+        """
+        Describes one or more of a VPC's route tables.
+        These are are used to determine where network traffic is directed.
+
+        :param      route_table_ids: Return only route tables matching the
+                                provided route table IDs. If not specified,
+                                a list of all the route tables in the
+                                corresponding region is returned.
+        :type       route_table_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain route tables.
+        :type       filters: ``dict``
+
+        :rtype: ``list`` of :class:`.EC2RouteTable`
+        """
+        params = {'Action': 'DescribeRouteTables'}
+
+        if route_table_ids:
+            for route_table_idx, route_table_id in enumerate(route_table_ids):
+                route_table_idx += 1  # We want 1-based indexes
+                route_table_key = 'RouteTableId.%s' % route_table_idx
+                params[route_table_key] = route_table_id
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params)
+
+        return self._to_route_tables(response.object)
+
+    def ex_create_route_table(self, network, name=None):
+        """
+        Create a route table within a VPC.
+
+        :param      vpc_id: The VPC that the subnet should be created in.
+        :type       vpc_id: :class:`.EC2Network`
+
+        :rtype:     :class: `.EC2RouteTable`
+        """
+        params = {'Action': 'CreateRouteTable',
+                  'VpcId': network.id}
+
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='routeTable',
+                                            namespace=NAMESPACE))[0]
+
+        route_table = self._to_route_table(element)
+
+        if name:
+            self.ex_create_tags(route_table, {'Name': name})
+
+        return route_table
+
+    def ex_delete_route_table(self, route_table):
+        """
+        Deletes a VPC route table.
+
+        :param      route_table: The route table to delete.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :rtype:     ``bool``
+        """
+
+        params = {'Action': 'DeleteRouteTable',
+                  'RouteTableId': route_table.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_associate_route_table(self, route_table, subnet):
+        """
+        Associates a route table with a subnet within a VPC.
+
+        Note: A route table can be associated with multiple subnets.
+
+        :param      route_table: The route table to associate.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :param      subnet: The subnet to associate with.
+        :type       subnet: :class:`.EC2Subnet`
+
+        :return:    Route table association ID.
+        :rtype:     ``str``
+        """
+
+        params = {'Action': 'AssociateRouteTable',
+                  'RouteTableId': route_table.id,
+                  'SubnetId': subnet.id}
+
+        result = self.connection.request(self.path, params=params).object
+        association_id = findtext(element=result,
+                                  xpath='associationId',
+                                  namespace=NAMESPACE)
+
+        return association_id
+
+    def ex_dissociate_route_table(self, subnet_association):
+        """
+        Dissociates a subnet from a route table.
+
+        :param      subnet_association: The subnet association object or
+                                        subnet association ID.
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or
+                                        ``str``
+
+        :rtype:     ``bool``
+        """
+
+        if isinstance(subnet_association, EC2SubnetAssociation):
+            subnet_association_id = subnet_association.id
+        else:
+            subnet_association_id = subnet_association
+
+        params = {'Action': 'DisassociateRouteTable',
+                  'AssociationId': subnet_association_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_replace_route_table_association(self, subnet_association,
+                                           route_table):
+        """
+        Changes the route table associated with a given subnet in a VPC.
+
+        Note: This method can be used to change which table is the main route
+              table in the VPC (Specify the main route table's association ID
+              and the route table to be the new main route table).
+
+        :param      subnet_association: The subnet association object or
+                                        subnet association ID.
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or
+                                        ``str``
+
+        :param      route_table: The new route table to associate.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :return:    New route table association ID.
+        :rtype:     ``str``
+        """
+
+        if isinstance(subnet_association, EC2SubnetAssociation):
+            subnet_association_id = subnet_association.id
+        else:
+            subnet_association_id = subnet_association
+
+        params = {'Action': 'ReplaceRouteTableAssociation',
+                  'AssociationId': subnet_association_id,
+                  'RouteTableId': route_table.id}
+
+        result = self.connection.request(self.path, params=params).object
+        new_association_id = findtext(element=result,
+                                      xpath='newAssociationId',
+                                      namespace=NAMESPACE)
+
+        return new_association_id
+
+    def ex_create_route(self, route_table, cidr,
+                        internet_gateway=None, node=None,
+                        network_interface=None, vpc_peering_connection=None):
+        """
+        Creates a route entry in the route table.
+
+        :param      route_table: The route table to create the route in.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      internet_gateway: The internet gateway to route
+                                      traffic through.
+        :type       internet_gateway: :class:`.VPCInternetGateway`
+
+        :param      node: The NAT instance to route traffic through.
+        :type       node: :class:`Node`
+
+        :param      network_interface: The network interface of the node
+                                       to route traffic through.
+        :type       network_interface: :class:`.EC2NetworkInterface`
+
+        :param      vpc_peering_connection: The VPC peering connection.
+        :type       vpc_peering_connection: :class:`.VPCPeeringConnection`
+
+        :rtype:     ``bool``
+
+        Note: You must specify one of the following: internet_gateway,
+              node, network_interface, vpc_peering_connection.
+        """
+
+        params = {'Action': 'CreateRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
+
+        if internet_gateway:
+            params['GatewayId'] = internet_gateway.id
+
+        if node:
+            params['InstanceId'] = node.id
+
+        if network_interface:
+            params['NetworkInterfaceId'] = network_interface.id
+
+        if vpc_peering_connection:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection.id
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_route(self, route_table, cidr):
+        """
+        Deletes a route entry from the route table.
+
+        :param      route_table: The route table to delete the route from.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :rtype:     ``bool``
+        """
+
+        params = {'Action': 'DeleteRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_replace_route(self, route_table, cidr,
+                         internet_gateway=None, node=None,
+                         network_interface=None, vpc_peering_connection=None):
+        """
+        Replaces an existing route entry within a route table in a VPC.
+
+        :param      route_table: The route table to replace the route in.
+        :type       route_table: :class:`.EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      internet_gateway: The new internet gateway to route
+                                       traffic through.
+        :type       internet_gateway: :class:`.VPCInternetGateway`
+
+        :param      node: The new NAT instance to route traffic through.
+        :type       node: :class:`Node`
+
+        :param      network_interface: The new network interface of the node
+                                       to route traffic through.
+        :type       network_interface: :class:`.EC2NetworkInterface`
+
+        :param      vpc_peering_connection: The new VPC peering connection.
+        :type       vpc_peering_connection: :class:`.VPCPeeringConnection`
+
+        :rtype:     ``bool``
+
+        Note: You must specify one of the following: internet_gateway,
+              node, network_interface, vpc_peering_connection.
+        """
+
+        params = {'Action': 'ReplaceRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
+
+        if internet_gateway:
+            params['GatewayId'] = internet_gateway.id
+
+        if node:
+            params['InstanceId'] = node.id
+
+        if network_interface:
+            params['NetworkInterfaceId'] = network_interface.id
+
+        if vpc_peering_connection:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection.id
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -4450,6 +4877,125 @@ class BaseEC2NodeDriver(NodeDriver):
         return VPCInternetGateway(id=id, name=name, vpc_id=vpc_id,
                                   state=state, driver=self.connection.driver,
                                   extra={'tags': tags})
+
+    def _to_route_tables(self, response):
+        return [self._to_route_table(el) for el in response.findall(
+            fixxpath(xpath='routeTableSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_route_table(self, element):
+        # route table id
+        route_table_id = findtext(element=element,
+                                  xpath='routeTableId',
+                                  namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['route_table'])
+
+        # Add tags to the extra dict
+        extra['tags'] = tags
+
+        # Get routes
+        routes = self._to_routes(element, 'routeSet/item')
+
+        # Get subnet associations
+        subnet_associations = self._to_subnet_associations(
+            element, 'associationSet/item')
+
+        # Get propagating routes virtual private gateways (VGW) IDs
+        propagating_gateway_ids = []
+        for el in element.findall(fixxpath(xpath='propagatingVgwSet/item',
+                                           namespace=NAMESPACE)):
+            propagating_gateway_ids.append(findtext(element=el,
+                                                    xpath='gatewayId',
+                                                    namespace=NAMESPACE))
+
+        return EC2RouteTable(route_table_id, routes, subnet_associations,
+                             propagating_gateway_ids, extra=extra)
+
+    def _to_routes(self, element, xpath):
+        return [self._to_route(el) for el in element.findall(
+            fixxpath(xpath=xpath, namespace=NAMESPACE))
+        ]
+
+    def _to_route(self, element):
+        """
+        Parse the XML element and return a route object
+
+        :rtype:     :class: `EC2Route`
+        """
+
+        destination_cidr = findtext(element=element,
+                                    xpath='destinationCidrBlock',
+                                    namespace=NAMESPACE)
+
+        gateway_id = findtext(element=element,
+                              xpath='gatewayId',
+                              namespace=NAMESPACE)
+
+        instance_id = findtext(element=element,
+                               xpath='instanceId',
+                               namespace=NAMESPACE)
+
+        owner_id = findtext(element=element,
+                            xpath='instanceOwnerId',
+                            namespace=NAMESPACE)
+
+        interface_id = findtext(element=element,
+                                xpath='networkInterfaceId',
+                                namespace=NAMESPACE)
+
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+
+        origin = findtext(element=element,
+                          xpath='origin',
+                          namespace=NAMESPACE)
+
+        vpc_peering_connection_id = findtext(element=element,
+                                             xpath='vpcPeeringConnectionId',
+                                             namespace=NAMESPACE)
+
+        return EC2Route(destination_cidr, gateway_id, instance_id, owner_id,
+                        interface_id, state, origin, vpc_peering_connection_id)
+
+    def _to_subnet_associations(self, element, xpath):
+        return [self._to_subnet_association(el) for el in element.findall(
+            fixxpath(xpath=xpath, namespace=NAMESPACE))
+        ]
+
+    def _to_subnet_association(self, element):
+        """
+        Parse the XML element and return a route table association object
+
+        :rtype:     :class: `EC2SubnetAssociation`
+        """
+
+        association_id = findtext(element=element,
+                                  xpath='routeTableAssociationId',
+                                  namespace=NAMESPACE)
+
+        route_table_id = findtext(element=element,
+                                  xpath='routeTableId',
+                                  namespace=NAMESPACE)
+
+        subnet_id = findtext(element=element,
+                             xpath='subnetId',
+                             namespace=NAMESPACE)
+
+        main = findtext(element=element,
+                        xpath='main',
+                        namespace=NAMESPACE)
+
+        main = True if main else False
+
+        return EC2SubnetAssociation(association_id, route_table_id,
+                                    subnet_id, main)
 
     def _pathlist(self, key, arr):
         """

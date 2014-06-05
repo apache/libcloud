@@ -218,10 +218,18 @@ Compute
   [LIBCLOUD-575, Zak Estrada]
 
 - Add support for network management for advanced zones
-  (ex_list_network_offerings, ex_create_network, ex_delete_network) in the 
+  (ex_list_network_offerings, ex_create_network, ex_delete_network) in the
   CloudStack driver.
   (GITHUB-316)
   [Roeland Kuipers]
+
+- Add extension methods for routes and route table management to the EC2
+  driver (ex_list_route_tables, ex_create_route_table, ex_delete_route_table,
+  ex_associate_route_table, ex_dissociate_route_table,
+  ex_replace_route_table_association, ex_create_route, ex_delete_route,
+  ex_replace_route)
+  (LIBCLOUD-574, GITHUB-313)
+  [Lior Goikhburg]
 
 Storage
 ~~~~~~~
