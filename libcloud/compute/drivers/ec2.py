@@ -68,6 +68,7 @@ __all__ = [
     'EC2Network',
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
+    'EC2RouteTable',
     'ExEC2AvailabilityZone',
 
     'IdempotentParamError'
@@ -1495,6 +1496,12 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
         }
+    },
+    'route_table': {
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        }
     }
 }
 
@@ -1728,6 +1735,25 @@ class VPCInternetGateway(object):
 
     def __repr__(self):
         return (('<VPCInternetGateway: id=%s>') % (self.id))
+
+
+class EC2RouteTable(object):
+    """
+    Class which stores information about VPC Route Tables.
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, id, routes, subnet_associations,
+                 propagating_gateway_ids, extra=None):
+        self.id = id
+        self.routes = routes
+        self.subnet_associations = subnet_associations
+        self.propagating_gateway_ids = propagating_gateway_ids
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2RouteTable: id=%s') % (self.id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -3927,6 +3953,39 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
+    def ex_list_route_tables(self, rtable_ids=None, filters=None):
+        """
+        Describes one or more of a VPC's route tables.
+        These are are used to determine where network traffic is directed.
+
+        :param      rtable_ids: Return only route tables matching the provided
+                                route table IDs. If not specified, a list of
+                                all the route tables in the corresponding
+                                region is returned.
+        :type       rtable_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain route tables.
+        :type       filters: ``dict``
+
+        :rtype: ``list`` of :class:`.EC2RouteTable`
+        """
+        params = {'Action': 'DescribeRouteTables'}
+
+        if rtable_ids:
+            for rtable_idx, rtable_id in enumerate(rtable_ids):
+                rtable_idx += 1  # We want 1-based indexes
+                rtable_key = 'RouteTableId.%s' % rtable_idx
+                params[rtable_key] = rtable_id
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params)
+        print response.body
+
+        return self._to_route_tables(response.object)
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -4450,6 +4509,119 @@ class BaseEC2NodeDriver(NodeDriver):
         return VPCInternetGateway(id=id, name=name, vpc_id=vpc_id,
                                   state=state, driver=self.connection.driver,
                                   extra={'tags': tags})
+
+    def _to_route_tables(self, response):
+        return [self._to_route_table(el) for el in response.findall(
+            fixxpath(xpath='routeTableSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_route_table(self, element):
+        # route table id
+        route_table_id = findtext(element=element,
+                                  xpath='routeTableId',
+                                  namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['route_table'])
+
+        # Add tags to the extra dict
+        extra['tags'] = tags
+
+        # Get routes
+        routes = self._to_routes(element, 'routeSet/item')
+
+        # Get subnet associations
+        subnet_associations = self._to_subnet_associations(
+            element, 'associationSet/item')
+
+        # Get propagating routes virtual private gateways (VGW) IDs
+        propagating_gateway_ids = []
+        for el in element.findall(fixxpath(xpath='propagatingVgwSet/item',
+                                           namespace=NAMESPACE)):
+            propagating_gateway_ids.append(findtext(element=el,
+                                                    xpath='gatewayId',
+                                                    namespace=NAMESPACE))
+
+        return EC2RouteTable(route_table_id, routes, subnet_associations,
+                             propagating_gateway_ids, extra=extra)
+
+    def _to_routes(self, element, xpath):
+        return [self._to_route(el) for el in element.findall(
+            fixxpath(xpath=xpath, namespace=NAMESPACE))
+        ]
+
+    def _to_route(self, element):
+        """
+        Parse the XML element and return a route dict
+
+        :rtype:     ``dict``
+        """
+
+        route = {}
+        route['destination_cidr'] = findtext(element=element,
+                                    xpath='destinationCidrBlock',
+                                    namespace=NAMESPACE)
+
+        route['gateway_id'] = findtext(element=element,
+                                       xpath='gatewayId',
+                                       namespace=NAMESPACE)
+
+        route['instance_id'] = findtext(element=element,
+                                        xpath='instanceId',
+                                        namespace=NAMESPACE)
+
+        route['owner_id'] = findtext(element=element,
+                                     xpath='instanceOwnerId',
+                                     namespace=NAMESPACE)
+
+        route['interface_id'] = findtext(element=element,
+                                         xpath='networkInterfaceId',
+                                         namespace=NAMESPACE)
+
+        route['state'] = findtext(element=element,
+                                  xpath='state',
+                                  namespace=NAMESPACE)
+
+        route['origin'] = findtext(element=element,
+                                   xpath='origin',
+                                   namespace=NAMESPACE)
+
+        route['peering_connection_id'] = findtext(element=element,
+                                   xpath='vpcPeeringConnectionId',
+                                   namespace=NAMESPACE)
+
+        return route
+
+    def _to_subnet_associations(self, element, xpath):
+        return [self._to_subnet_association(el) for el in element.findall(
+            fixxpath(xpath=xpath, namespace=NAMESPACE))
+        ]
+
+    def _to_subnet_association(self, element):
+        """
+        Parse the XML element and return a route table associations dict
+
+        :rtype:     ``dict``
+        """
+
+        subnet_association = {}
+        subnet_association['association_id'] = findtext(element=element,
+            xpath='routeTableAssociationId', namespace=NAMESPACE)
+
+        subnet_association['route_table_id'] = findtext(element=element,
+             xpath='routeTableId', namespace=NAMESPACE)
+
+        subnet_association['subnet_id'] = findtext(element=element,
+             xpath='subnetId', namespace=NAMESPACE)
+
+        subnet_association['main'] = findtext(element=element,
+             xpath='main', namespace=NAMESPACE)
+
+        return subnet_association
 
     def _pathlist(self, key, arr):
         """
