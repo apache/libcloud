@@ -2173,8 +2173,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        return OpenStack_1_1_FloatingIpAddress(obj['id'], obj['ip'], self,
-                                               obj['instance_id'])
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=obj['ip'],
+                                               pool=None,
+                                               node_id=obj['instance_id'],
+                                               driver=self)
 
     def ex_list_floating_ips(self):
         """
@@ -2210,7 +2213,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']
-        return OpenStack_1_1_FloatingIpAddress(id, ip_address, self)
+        return OpenStack_1_1_FloatingIpAddress(id,
+                                               ip_address=ip_address,
+                                               pool=None,
+                                               node_id=None,
+                                               driver=self)
 
     def ex_delete_floating_ip(self, ip):
         """
