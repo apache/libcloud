@@ -514,7 +514,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         # Default scopes to read/write for compute, storage, and dns.  Can
         # override this when calling get_driver() or setting in secrets.py
         self.scopes = scopes
-        if self.scopes is None or not self.scopes:
+        if not self.scopes:
             self.scopes = [
                 'https://www.googleapis.com/auth/compute',
                 'https://www.googleapis.com/auth/devstorage.full_control',
