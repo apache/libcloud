@@ -218,9 +218,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
 
-    def list_nodes(self):
+    def list_nodes(self, all_tenants=False):
+        params = {}
+        if all_tenants:
+            params = {'all_tenants': 1}
         return self._to_nodes(
-            self.connection.request('/servers/detail').object)
+            self.connection.request('/servers/detail', params=params).object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
         if snapshot:
