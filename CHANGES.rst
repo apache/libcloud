@@ -213,6 +213,10 @@ Compute
   (GUTHUB-308)
   [Dustin Oberloh]
 
+- Add ex_all_tenants argument to the list_nodes method in the OpenStack driver.
+  (GITHUB-312)
+  [LIBCLOUD-575, Zak Estrada]
+
 Storage
 ~~~~~~~
 
