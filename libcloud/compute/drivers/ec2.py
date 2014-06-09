@@ -69,6 +69,8 @@ __all__ = [
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
     'EC2RouteTable',
+    'EC2Route',
+    'EC2SubnetAssociation',
     'ExEC2AvailabilityZone',
 
     'IdempotentParamError'
@@ -1754,6 +1756,46 @@ class EC2RouteTable(object):
 
     def __repr__(self):
         return (('<EC2RouteTable: id=%s') % (self.id))
+
+
+class EC2Route(object):
+    """
+    Class which stores information about a Route.
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, cidr, gateway_id, instance_id, owner_id,
+                 interface_id, state, origin, peering_connection_id):
+        self.cidr = cidr
+        self.gateway_id = gateway_id
+        self.instance_id = instance_id
+        self.owner_id = owner_id
+        self.interface_id = interface_id
+        self.state = state
+        self.origin = origin
+        self.peering_connection_id = peering_connection_id
+
+    def __repr__(self):
+        return (('<EC2Route: cidr=%s') % (self.cidr))
+
+
+class EC2SubnetAssociation(object):
+    """
+    Class which stores information about Route Table associated with
+    a given Subnet in a VPC
+
+    Note: This class is VPC specific.
+    """
+
+    def __init__(self, id, route_table_id, subnet_id, main):
+        self.id = id
+        self.route_table_id = route_table_id
+        self.subnet_id = subnet_id
+        self.main = main
+
+    def __repr__(self):
+        return (('<EC2SubnetAssociation: id=%s') % (self.id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -3982,7 +4024,6 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update(self._build_filters(filters))
 
         response = self.connection.request(self.path, params=params)
-        print response.body
 
         return self._to_route_tables(response.object)
 
@@ -4556,45 +4597,37 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_route(self, element):
         """
-        Parse the XML element and return a route dict
+        Parse the XML element and return a route object
 
-        :rtype:     ``dict``
+        :rtype:     :class: `EC2Route`
         """
 
-        route = {}
-        route['destination_cidr'] = findtext(element=element,
-                                    xpath='destinationCidrBlock',
-                                    namespace=NAMESPACE)
+        destination_cidr = findtext(element=element,
+            xpath='destinationCidrBlock', namespace=NAMESPACE)
 
-        route['gateway_id'] = findtext(element=element,
-                                       xpath='gatewayId',
-                                       namespace=NAMESPACE)
+        gateway_id = findtext(element=element,
+            xpath='gatewayId', namespace=NAMESPACE)
 
-        route['instance_id'] = findtext(element=element,
-                                        xpath='instanceId',
-                                        namespace=NAMESPACE)
+        instance_id = findtext(element=element,
+            xpath='instanceId', namespace=NAMESPACE)
 
-        route['owner_id'] = findtext(element=element,
-                                     xpath='instanceOwnerId',
-                                     namespace=NAMESPACE)
+        owner_id = findtext(element=element,
+            xpath='instanceOwnerId', namespace=NAMESPACE)
 
-        route['interface_id'] = findtext(element=element,
-                                         xpath='networkInterfaceId',
-                                         namespace=NAMESPACE)
+        interface_id = findtext(element=element,
+            xpath='networkInterfaceId', namespace=NAMESPACE)
 
-        route['state'] = findtext(element=element,
-                                  xpath='state',
-                                  namespace=NAMESPACE)
+        state = findtext(element=element,
+            xpath='state', namespace=NAMESPACE)
 
-        route['origin'] = findtext(element=element,
-                                   xpath='origin',
-                                   namespace=NAMESPACE)
+        origin = findtext(element=element,
+            xpath='origin', namespace=NAMESPACE)
 
-        route['peering_connection_id'] = findtext(element=element,
-                                   xpath='vpcPeeringConnectionId',
-                                   namespace=NAMESPACE)
+        peering_connection_id = findtext(element=element,
+            xpath='vpcPeeringConnectionId', namespace=NAMESPACE)
 
-        return route
+        return EC2Route(destination_cidr, gateway_id, instance_id, owner_id,
+                        interface_id, state, origin, peering_connection_id)
 
     def _to_subnet_associations(self, element, xpath):
         return [self._to_subnet_association(el) for el in element.findall(
@@ -4603,25 +4636,27 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_subnet_association(self, element):
         """
-        Parse the XML element and return a route table associations dict
+        Parse the XML element and return a route table association object
 
-        :rtype:     ``dict``
+        :rtype:     :class: `EC2SubnetAssociation`
         """
 
-        subnet_association = {}
-        subnet_association['association_id'] = findtext(element=element,
+        association_id = findtext(element=element,
             xpath='routeTableAssociationId', namespace=NAMESPACE)
 
-        subnet_association['route_table_id'] = findtext(element=element,
+        route_table_id = findtext(element=element,
              xpath='routeTableId', namespace=NAMESPACE)
 
-        subnet_association['subnet_id'] = findtext(element=element,
+        subnet_id = findtext(element=element,
              xpath='subnetId', namespace=NAMESPACE)
 
-        subnet_association['main'] = findtext(element=element,
+        main = findtext(element=element,
              xpath='main', namespace=NAMESPACE)
 
-        return subnet_association
+        main = True if main else False
+
+        return EC2SubnetAssociation(association_id, route_table_id,
+                                    subnet_id, main)
 
     def _pathlist(self, key, arr):
         """
