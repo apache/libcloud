@@ -124,7 +124,7 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
         self._service_name = self._ex_force_service_name or 'swift'
 
         if self._ex_force_service_region:
-            self._service_region = self._ex_force_service_region.upper()
+            self._service_region = self._ex_force_service_region
         else:
             self._service_region = None
 

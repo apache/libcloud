@@ -225,6 +225,12 @@ Storage
   (LIBCLOUD-552)
   [Tomaz MUraus]
 
+- Fix a bug in the OpenStack Swift driver which prevented the driver to work
+  with installations where region names in the service catalog werent upper
+  case.
+  (LIBCLOUD-576, GITHUB-311)
+  [Zak Estrada]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
