@@ -218,9 +218,17 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
 
-    def list_nodes(self, all_tenants=False):
+    def list_nodes(self, ex_all_tenants=False):
+        """
+        List the nodes in a tenant
+
+        :param ex_all_tenants: List nodes for all the tenants. Note: Your user
+                               must have admin privileges for this
+                               functionality to work.
+        :type ex_all_tenants: ``bool``
+        """
         params = {}
-        if all_tenants:
+        if ex_all_tenants:
             params = {'all_tenants': 1}
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
