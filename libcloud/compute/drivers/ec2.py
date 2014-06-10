@@ -4206,7 +4206,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Creates a route entry in the route table.
 
-        :param      route_table: The route to create the route in.
+        :param      route_table: The route table to create the route in.
         :type       route_table: :class:`EC2RouteTable`
 
         :param      cidr: The CIDR block used for the destination match.
@@ -4249,6 +4249,30 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if vpc_peering_connection_id:
             params['VpcPeeringConnectionId'] = vpc_peering_connection_id
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_route(self, route_table, cidr):
+        """
+        Deletes a route entry from the route table.
+
+        :param      route_table: The route table to delete the route from.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :rtype:     ``bool``
+        """
+
+        params = {'Action': 'DeleteRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result,
