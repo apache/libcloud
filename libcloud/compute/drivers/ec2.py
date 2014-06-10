@@ -1798,14 +1798,15 @@ class EC2Route(object):
     :param      origin: Describes how the route was created.
     :type       origin: ``str``
 
-    :param      peering_connection_id: The ID of the VPC peering connection.
-    :type       peering_connection_id: ``str``
+    :param      vpc_peering_connection_id: The ID of the VPC
+                                           peering connection.
+    :type       vpc_peering_connection_id: ``str``
 
     Note: This class is VPC specific.
     """
 
     def __init__(self, cidr, gateway_id, instance_id, owner_id,
-                 interface_id, state, origin, peering_connection_id):
+                 interface_id, state, origin, vpc_peering_connection_id):
         self.cidr = cidr
         self.gateway_id = gateway_id
         self.instance_id = instance_id
@@ -1813,7 +1814,7 @@ class EC2Route(object):
         self.interface_id = interface_id
         self.state = state
         self.origin = origin
-        self.peering_connection_id = peering_connection_id
+        self.vpc_peering_connection_id = vpc_peering_connection_id
 
     def __repr__(self):
         return (('<EC2Route: cidr=%s') % (self.cidr))
@@ -4199,6 +4200,63 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return new_association_id
 
+    def ex_create_route(self, route_table, cidr,
+                        gateway_id=None, instance_id=None,
+                        interface_id=None, vpc_peering_connection_id=None):
+        """
+        Creates a route entry in the route table.
+
+        :param      route_table: The route to create the route in.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      gateway_id: The ID of internet gateway to
+                                route traffic through.
+        :type       gateway_id: ``str``
+
+        :param      instance_id: The ID of a NAT instance to
+                                 route traffic through.
+        :type       instance_id: ``str``
+
+        :param      interface_id: The ID of the network interface of the
+                                  instance to route traffic through.
+        :type       interface_id: ``str``
+
+        :param      vpc_peering_connection_id: The ID of the VPC
+                                               peering connection.
+        :type       vpc_peering_connection_id: ``str``
+
+        :rtype:     ``bool``
+
+        Note: You must specify one of the following: gateway_id, instance_id,
+              interface_id, vpc_peering_connection_id.
+        """
+
+        params = {'Action': 'CreateRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
+
+        if gateway_id:
+            params['GatewayId'] = gateway_id
+
+        if instance_id:
+            params['InstanceId'] = instance_id
+
+        if interface_id:
+            params['NetworkInterfaceId'] = interface_id
+
+        if vpc_peering_connection_id:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection_id
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -4795,11 +4853,11 @@ class BaseEC2NodeDriver(NodeDriver):
         origin = findtext(element=element,
             xpath='origin', namespace=NAMESPACE)
 
-        peering_connection_id = findtext(element=element,
+        vpc_peering_connection_id = findtext(element=element,
             xpath='vpcPeeringConnectionId', namespace=NAMESPACE)
 
         return EC2Route(destination_cidr, gateway_id, instance_id, owner_id,
-                        interface_id, state, origin, peering_connection_id)
+                        interface_id, state, origin, vpc_peering_connection_id)
 
     def _to_subnet_associations(self, element, xpath):
         return [self._to_subnet_association(el) for el in element.findall(
