@@ -4075,7 +4075,7 @@ class BaseEC2NodeDriver(NodeDriver):
                             created in.
         :type       vpc_id: ``str``
 
-        :rtype:     :class: `EC2RouteTable`
+        :rtype:     :class: `.EC2RouteTable`
         """
         params = {'Action': 'CreateRouteTable',
                   'VpcId': vpc_id}
@@ -4096,12 +4096,12 @@ class BaseEC2NodeDriver(NodeDriver):
         Deletes a VPC route table.
 
         :param      route_table: The route table to delete.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :rtype:     ``bool``
         """
 
-        params = {'Action': 'DeleteRouteTable', 
+        params = {'Action': 'DeleteRouteTable',
                   'RouteTableId': route_table.id}
 
         result = self.connection.request(self.path, params=params).object
@@ -4118,10 +4118,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Note: A route table can be associated with multiple subnets.
 
         :param      route_table: The route table to associate.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :param      subnet: The subnet to associate with.
-        :type       subnet: :class:`EC2Subnet`
+        :type       subnet: :class:`.EC2Subnet`
 
         :return:    Route table association ID.
         :rtype:     ``str``
@@ -4144,7 +4144,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      subnet_association: The subnet association object or
                                         subnet association ID.
-        :type       subnet_association: :class:`EC2SubnetAssociation` or `str`
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or ``str``
 
         :rtype:     ``bool``
         """
@@ -4175,10 +4175,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      subnet_association: The subnet association object or
                                         subnet association ID.
-        :type       subnet_association: :class:`EC2SubnetAssociation` or `str`
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or ``str``
 
         :param      route_table: The new route table to associate.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :return:    New route table association ID.
         :rtype:     ``str``
@@ -4207,7 +4207,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Creates a route entry in the route table.
 
         :param      route_table: The route table to create the route in.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :param      cidr: The CIDR block used for the destination match.
         :type       cidr: ``str``
@@ -4262,7 +4262,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Deletes a route entry from the route table.
 
         :param      route_table: The route table to delete the route from.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :param      cidr: The CIDR block used for the destination match.
         :type       cidr: ``str``
@@ -4288,7 +4288,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Replaces an existing route entry within a route table in a VPC.
 
         :param      route_table: The route table to replace the route in.
-        :type       route_table: :class:`EC2RouteTable`
+        :type       route_table: :class:`.EC2RouteTable`
 
         :param      cidr: The CIDR block used for the destination match.
         :type       cidr: ``str``
@@ -4914,28 +4914,36 @@ class BaseEC2NodeDriver(NodeDriver):
         """
 
         destination_cidr = findtext(element=element,
-            xpath='destinationCidrBlock', namespace=NAMESPACE)
+                                    xpath='destinationCidrBlock',
+                                    namespace=NAMESPACE)
 
         gateway_id = findtext(element=element,
-            xpath='gatewayId', namespace=NAMESPACE)
+                              xpath='gatewayId',
+                              namespace=NAMESPACE)
 
         instance_id = findtext(element=element,
-            xpath='instanceId', namespace=NAMESPACE)
+                               xpath='instanceId',
+                               namespace=NAMESPACE)
 
         owner_id = findtext(element=element,
-            xpath='instanceOwnerId', namespace=NAMESPACE)
+                            xpath='instanceOwnerId',
+                            namespace=NAMESPACE)
 
         interface_id = findtext(element=element,
-            xpath='networkInterfaceId', namespace=NAMESPACE)
+                                xpath='networkInterfaceId',\
+                                namespace=NAMESPACE)
 
         state = findtext(element=element,
-            xpath='state', namespace=NAMESPACE)
+                         xpath='state',
+                         namespace=NAMESPACE)
 
         origin = findtext(element=element,
-            xpath='origin', namespace=NAMESPACE)
+                          xpath='origin',
+                          namespace=NAMESPACE)
 
         vpc_peering_connection_id = findtext(element=element,
-            xpath='vpcPeeringConnectionId', namespace=NAMESPACE)
+                                             xpath='vpcPeeringConnectionId',
+                                             namespace=NAMESPACE)
 
         return EC2Route(destination_cidr, gateway_id, instance_id, owner_id,
                         interface_id, state, origin, vpc_peering_connection_id)
@@ -4953,16 +4961,20 @@ class BaseEC2NodeDriver(NodeDriver):
         """
 
         association_id = findtext(element=element,
-            xpath='routeTableAssociationId', namespace=NAMESPACE)
+                                  xpath='routeTableAssociationId',
+                                  namespace=NAMESPACE)
 
         route_table_id = findtext(element=element,
-             xpath='routeTableId', namespace=NAMESPACE)
+                                  xpath='routeTableId',
+                                  namespace=NAMESPACE)
 
         subnet_id = findtext(element=element,
-             xpath='subnetId', namespace=NAMESPACE)
+                             xpath='subnetId',
+                             namespace=NAMESPACE)
 
         main = findtext(element=element,
-             xpath='main', namespace=NAMESPACE)
+                        xpath='main',
+                        namespace=NAMESPACE)
 
         main = True if main else False
 
