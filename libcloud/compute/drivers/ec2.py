@@ -1,4 +1,4 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
+# or Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
@@ -4136,6 +4136,32 @@ class BaseEC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE)
 
         return association_id
+
+    def ex_dissociate_route_table(self, subnet_association):
+        """
+        Dissociates a subnet from a route table.
+
+        :param      subnet_association: The subnet association object or
+                                        subnet association ID.
+        :type       subnet_association: :class:`EC2SubnetAssociation` or `str`
+
+        :rtype:     ``bool``
+        """
+
+        if isinstance(subnet_association, EC2SubnetAssociation):
+            subnet_association_id = subnet_association.id
+        else:
+            subnet_association_id = subnet_association
+
+        params = {'Action': 'DisassociateRouteTable',
+                  'AssociationId': subnet_association_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
 
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
