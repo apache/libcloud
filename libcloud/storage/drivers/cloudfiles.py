@@ -358,6 +358,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                     dst_container_name, dst_object_name):
         # Using Copy Method 2 from OpenStack Object Storage Copy Object Docs
         # TODO Handle Static Large Object Manifest
+        # TODO Figure out how to handle destination container not existing
         headers = {"Destination": "/%s/%s" % (dst_container_name,
                                               dst_object_name)}
 

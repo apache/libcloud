@@ -312,7 +312,34 @@ class CloudFilesTests(unittest.TestCase):
             pass
         else:
             self.fail('Container is not empty but an exception was not thrown')
+            
+    def test_copy_object_success(self):
+        def upload_file(self, response, file_path, chunked=False,
+                        calculate_hash=True):
+            return True, 'hash343hhash89h932439jsaa89', 1000
 
+        old_func = CloudFilesStorageDriver._upload_file
+        CloudFilesStorageDriver._upload_file = upload_file
+
+        container_name = 'fromhere'
+        object_name = 'HERE'
+        file_path = os.path.abspath(__file__)
+
+        src_container = self.driver.create_container(container_name=container_name)
+        
+        obj = self.driver.upload_object(
+            file_path=file_path, container=container,
+            object_name=object_name)
+        #self.assertEqual(obj.name, object_name)
+        CloudFilesStorageDriver._upload_file = old_func
+        
+        dst_container = self.driver.create_container(container_name="tothere")
+        
+        result = self.driver.copy_object("fromhere", "HERE",
+                                         "tothere", "THERE")
+        
+        self.assertTrue(result)
+        
     def test_download_object_success(self):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
