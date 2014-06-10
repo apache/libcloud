@@ -4110,6 +4110,33 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
+    def ex_associate_route_table(self, route_table, subnet):
+        """
+        Associates a route table with a subnet within a VPC.
+
+        Note: A route table can be associated with multiple subnets.
+
+        :param      route_table: The route table to associate.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :param      subnet: The subnet to associate with.
+        :type       subnet: :class:`EC2Subnet`
+
+        :return:    Route table association ID.
+        :rtype:     ``str``
+        """
+
+        params = {'Action': 'AssociateRouteTable',
+                  'RouteTableId': route_table.id,
+                  'SubnetId': subnet.id}
+
+        result = self.connection.request(self.path, params=params).object
+        association_id = findtext(element=result,
+                                  xpath='associationId',
+                                  namespace=NAMESPACE)
+
+        return association_id
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
