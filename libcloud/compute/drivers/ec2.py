@@ -4163,6 +4163,42 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
+    def ex_replace_route_table_association(self, subnet_association,
+                                           route_table):
+        """
+        Changes the route table associated with a given subnet in a VPC.
+
+        Note: This method can be used to change which table is the main route
+              table in the VPC (Specify the main route table's association ID
+              and the route table to be the new main route table).
+
+        :param      subnet_association: The subnet association object or
+                                        subnet association ID.
+        :type       subnet_association: :class:`EC2SubnetAssociation` or `str`
+
+        :param      route_table: The new route table to associate.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :return:    New route table association ID.
+        :rtype:     ``str``
+        """
+
+        if isinstance(subnet_association, EC2SubnetAssociation):
+            subnet_association_id = subnet_association.id
+        else:
+            subnet_association_id = subnet_association
+
+        params = {'Action': 'ReplaceRouteTableAssociation',
+                  'AssociationId': subnet_association_id,
+                  'RouteTableId': route_table.id}
+
+        result = self.connection.request(self.path, params=params).object
+        new_association_id = findtext(element=result,
+                                      xpath='newAssociationId',
+                                      namespace=NAMESPACE)
+
+        return new_association_id
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
