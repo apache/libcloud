@@ -4281,6 +4281,63 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
+    def ex_replace_route(self, route_table, cidr,
+                         gateway_id=None, instance_id=None,
+                         interface_id=None, vpc_peering_connection_id=None):
+        """
+        Replaces an existing route entry within a route table in a VPC.
+
+        :param      route_table: The route table to replace the route in.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      gateway_id: The new ID of internet gateway to
+                                route traffic through.
+        :type       gateway_id: ``str``
+
+        :param      instance_id: The new ID of a NAT instance to
+                                 route traffic through.
+        :type       instance_id: ``str``
+
+        :param      interface_id: The new ID of the network interface of the
+                                  instance to route traffic through.
+        :type       interface_id: ``str``
+
+        :param      vpc_peering_connection_id: The new ID of the VPC
+                                               peering connection.
+        :type       vpc_peering_connection_id: ``str``
+
+        :rtype:     ``bool``
+
+        Note: You must specify one of the following: gateway_id, instance_id,
+              interface_id, vpc_peering_connection_id.
+        """
+
+        params = {'Action': 'ReplaceRoute',
+                  'RouteTableId': route_table.id,
+                  'DestinationCidrBlock': cidr}
+
+        if gateway_id:
+            params['GatewayId'] = gateway_id
+
+        if instance_id:
+            params['InstanceId'] = instance_id
+
+        if interface_id:
+            params['NetworkInterfaceId'] = interface_id
+
+        if vpc_peering_connection_id:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection_id
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
