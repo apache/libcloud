@@ -99,6 +99,18 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'can_use_for_deploy': {
             'key_name': 'canusefordeploy',
             'transform_func': str
+        },
+        'gateway': {
+            'key_name': 'gateway',
+            'transform_func': str
+        },
+        'netmask': {
+            'key_name': 'netmask',
+            'transform_func': str
+        },
+        'vpc_id': {
+            'key_name': 'vpcid',
+            'transform_func': str
         }
     },
     'node': {
@@ -451,6 +463,30 @@ class CloudStackNetwork(object):
                  'networkofferingid=%s, zoneid=%s, driver%s>')
                 % (self.id, self.displaytext, self.name,
                    self.networkofferingid, self.zoneid, self.driver.name))
+
+
+class CloudStackNetworkOffering(object):
+    """
+    Class representing a CloudStack Network Offering.
+    """
+
+    def __init__(self, name, displaytext, guestiptype, id, serviceofferingid,
+                 forvpc, driver, extra=None):
+        self.displaytext = displaytext
+        self.name = name
+        self.guestiptype = guestiptype
+        self.id = id
+        self.serviceofferingid = serviceofferingid
+        self.forvpc = forvpc
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackNetworkOffering: id=%s, name=%s, displaytext=%s, '
+                 'guestiptype=%s, serviceofferingid=%s, forvpc=%s, driver%s>')
+                % (self.id, self.name, self.displaytext,
+                   self.guestiptype, self.serviceofferingid, self.forvpc,
+                   self.driver.name))
 
 
 class CloudStackProject(object):
@@ -879,6 +915,95 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             extra=extra))
 
         return networks
+
+    def ex_list_network_offerings(self):
+        """
+        List the available network offerings
+
+        :rtype ``list`` of :class:`CloudStackNetworkOffering`
+        """
+
+        res = self._sync_request(command='listNetworkOfferings',
+                                 method='GET')
+        netoffers = res.get('networkoffering', [])
+
+        networkofferings = []
+
+        for netoffer in netoffers:
+
+            networkofferings.append(CloudStackNetworkOffering(
+                            netoffer['name'],
+                            netoffer['displaytext'],
+                            netoffer['guestiptype'],
+                            netoffer['id'],
+                            netoffer['serviceofferingid'],
+                            netoffer['forvpc'],
+                            self))
+
+        return networkofferings
+
+    def ex_create_network(self, displaytext, name, networkoffering,
+                          location, **kwargs):
+
+        """
+
+        Creates a Network, only available in advanced zones.
+
+        :param  displaytext: the display text of the network
+        :type   displaytext: ``str``
+
+        :param  name: the name of the network
+        :type   name: ``str``
+
+        :param  networkoffering: the network offering id
+        :type   networkoffering: :class:'CloudStackNetworkOffering`
+
+        :param location: Zone
+        :type  location: :class:`NodeLocation`
+
+        :param  gateway: The Gateway of this network
+        :type   gateway: ``str``
+
+        :param  netmask: The netmask of this network
+        :type   netmask: ``str``
+
+        :param  vpcid: The VPC the network belongs to
+        :type   vpcid: ``str``
+
+        :rtype: :class:`CloudStackNetwork`
+
+        """
+        extra_args = kwargs.copy()
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network']
+
+        args = {
+            'displaytext': displaytext,
+            'name': name,
+            'networkofferingid': networkoffering.id,
+            'zoneid': location.id
+        }
+        args.update(extra_args)
+
+        for net in self.ex_list_networks():
+            if name == net.name:
+                raise LibcloudError('This network name already exists')
+
+        result = self._sync_request(command='createNetwork',
+                                     params=args,
+                                     method='GET')
+
+        result = result['network']
+        extra = self._get_extra_dict(result, extra_map)
+
+        network = CloudStackNetwork(displaytext,
+                                    name,
+                                    networkoffering.id,
+                                    result['id'],
+                                    location.id,
+                                    self,
+                                    extra=extra)
+
+        return network
 
     def ex_list_projects(self):
         """

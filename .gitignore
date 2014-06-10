@@ -15,3 +15,5 @@ dist/*apache-libcloud*
 dist/*apache_libcloud*
 _build/
 apache_libcloud.egg-info/
+.project
+.pydevproject
