@@ -4090,6 +4090,26 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return route_table
 
+    def ex_delete_route_table(self, route_table):
+        """
+        Deletes a VPC route table.
+
+        :param      route_table: The route table to delete.
+        :type       route_table: :class:`EC2RouteTable`
+
+        :rtype:     ``bool``
+        """
+
+        params = {'Action': 'DeleteRouteTable', 
+                  'RouteTableId': route_table.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
