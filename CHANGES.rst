@@ -217,6 +217,12 @@ Compute
   (GITHUB-312)
   [LIBCLOUD-575, Zak Estrada]
 
+- Add support for network management for advanced zones
+  (ex_list_network_offerings, ex_create_network, ex_delete_network) in the 
+  CloudStack driver.
+  (GITHUB-316)
+  [Roeland Kuipers]
+
 Storage
 ~~~~~~~
 

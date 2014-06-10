@@ -99,6 +99,22 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'can_use_for_deploy': {
             'key_name': 'canusefordeploy',
             'transform_func': str
+        },
+        'gateway': {
+            'key_name': 'gateway',
+            'transform_func': str
+        },
+        'netmask': {
+            'key_name': 'netmask',
+            'transform_func': str
+        },
+        'vpc_id': {
+            'key_name': 'vpcid',
+            'transform_func': str
+        },
+        'project_id': {
+            'key_name': 'projectid',
+            'transform_func': str
         }
     },
     'node': {
@@ -451,6 +467,31 @@ class CloudStackNetwork(object):
                  'networkofferingid=%s, zoneid=%s, driver%s>')
                 % (self.id, self.displaytext, self.name,
                    self.networkofferingid, self.zoneid, self.driver.name))
+
+
+class CloudStackNetworkOffering(object):
+    """
+    Class representing a CloudStack Network Offering.
+    """
+
+    def __init__(self, name, display_text, guest_ip_type, id,
+                 service_offering_id, for_vpc, driver, extra=None):
+        self.display_text = display_text
+        self.name = name
+        self.guest_ip_type = guest_ip_type
+        self.id = id
+        self.service_offering_id = service_offering_id
+        self.for_vpc = for_vpc
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackNetworkOffering: id=%s, name=%s, '
+                 'display_text=%s, guest_ip_type=%s, service_offering_id=%s, '
+                 'for_vpc=%s, driver%s>')
+                % (self.id, self.name, self.display_text,
+                   self.guest_ip_type, self.service_offering_id, self.for_vpc,
+                   self.driver.name))
 
 
 class CloudStackProject(object):
@@ -879,6 +920,140 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             extra=extra))
 
         return networks
+
+    def ex_list_network_offerings(self):
+        """
+        List the available network offerings
+
+        :rtype ``list`` of :class:`CloudStackNetworkOffering`
+        """
+        res = self._sync_request(command='listNetworkOfferings',
+                                 method='GET')
+        netoffers = res.get('networkoffering', [])
+
+        networkofferings = []
+
+        for netoffer in netoffers:
+            networkofferings.append(CloudStackNetworkOffering(
+                                    netoffer['name'],
+                                    netoffer['displaytext'],
+                                    netoffer['guestiptype'],
+                                    netoffer['id'],
+                                    netoffer['serviceofferingid'],
+                                    netoffer['forvpc'],
+                                    self))
+
+        return networkofferings
+
+    def ex_create_network(self, display_text, name, network_offering,
+                          location, gateway=None, netmask=None,
+                          network_domain=None, vpc_id=None, project_id=None):
+        """
+
+        Creates a Network, only available in advanced zones.
+
+        :param  display_text: the display text of the network
+        :type   display_text: ``str``
+
+        :param  name: the name of the network
+        :type   name: ``str``
+
+        :param  network_offering: the network offering id
+        :type   network_offering: :class:'CloudStackNetworkOffering`
+
+        :param location: Zone
+        :type  location: :class:`NodeLocation`
+
+        :param  gateway: Optional, the Gateway of this network
+        :type   gateway: ``str``
+
+        :param  netmask: Optional, the netmask of this network
+        :type   netmask: ``str``
+
+        :param  network_domain: Optional, the DNS domain of the network
+        :type   network_domain: ``str``
+
+        :param  vpc_id: Optional, the VPC id the network belongs to
+        :type   vpc_id: ``str``
+
+        :param  project_id: Optional, the project id the networks belongs to
+        :type   project_id: ``str``
+
+        :rtype: :class:`CloudStackNetwork`
+
+        """
+
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network']
+
+        args = {
+            'displaytext': display_text,
+            'name': name,
+            'networkofferingid': network_offering.id,
+            'zoneid': location.id,
+        }
+
+        if gateway is not None:
+            args['gateway'] = gateway
+
+        if netmask is not None:
+            args['netmask'] = netmask
+
+        if network_domain is not None:
+            args['networkdomain'] = network_domain
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        if project_id is not None:
+            args['projectid'] = project_id
+
+        """ Cloudstack allows for duplicate network names,
+        this should be handled in the code leveraging libcloud
+        As there could be use cases for duplicate names.
+        e.g. management from ROOT level"""
+
+        # for net in self.ex_list_networks():
+        #    if name == net.name:
+        #        raise LibcloudError('This network name already exists')
+
+        result = self._sync_request(command='createNetwork',
+                                    params=args,
+                                    method='GET')
+
+        result = result['network']
+        extra = self._get_extra_dict(result, extra_map)
+
+        network = CloudStackNetwork(display_text,
+                                    name,
+                                    network_offering.id,
+                                    result['id'],
+                                    location.id,
+                                    self,
+                                    extra=extra)
+
+        return network
+
+    def ex_delete_network(self, network, force=None):
+        """
+
+        Deletes a Network, only available in advanced zones.
+
+        :param  network: The network
+        :type   network: :class: 'CloudStackNetwork'
+
+        :param  force: Force deletion of the network?
+        :type   force: ``bool``
+
+        :rtype: ``bool``
+
+        """
+
+        args = {'id': network.id, 'forced': force}
+
+        self._async_request(command='deleteNetwork',
+                            params=args,
+                            method='GET')
+        return True
 
     def ex_list_projects(self):
         """
