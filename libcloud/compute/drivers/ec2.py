@@ -4144,7 +4144,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      subnet_association: The subnet association object or
                                         subnet association ID.
-        :type       subnet_association: :class:`.EC2SubnetAssociation` or ``str``
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or
+                                        ``str``
 
         :rtype:     ``bool``
         """
@@ -4175,7 +4176,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      subnet_association: The subnet association object or
                                         subnet association ID.
-        :type       subnet_association: :class:`.EC2SubnetAssociation` or ``str``
+        :type       subnet_association: :class:`.EC2SubnetAssociation` or
+                                        ``str``
 
         :param      route_table: The new route table to associate.
         :type       route_table: :class:`.EC2RouteTable`
@@ -4930,7 +4932,7 @@ class BaseEC2NodeDriver(NodeDriver):
                             namespace=NAMESPACE)
 
         interface_id = findtext(element=element,
-                                xpath='networkInterfaceId',\
+                                xpath='networkInterfaceId',
                                 namespace=NAMESPACE)
 
         state = findtext(element=element,
