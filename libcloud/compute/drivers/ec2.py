@@ -1743,6 +1743,21 @@ class EC2RouteTable(object):
     """
     Class which stores information about VPC Route Tables.
 
+    :param      id: The ID of the route table.
+    :type       id: ``str``
+
+    :param      routes: A list of routes in the route table.
+    :type       routes: ``list`` of :class:`EC2Route`
+
+    :param      subnet_associations: A list of associations between the
+                                     route table and one or more subnets.
+    :type       subnet_associations: ``list`` of :class:`EC2SubnetAssociation`
+
+    :param      propagating_gateway_ids: The list of IDs of any virtual
+                                         private gateways propagating the
+                                         routes.
+    :type       propagating_gateway_ids: ``list``
+
     Note: This class is VPC specific.
     """
 
@@ -1761,6 +1776,30 @@ class EC2RouteTable(object):
 class EC2Route(object):
     """
     Class which stores information about a Route.
+
+    :param      cidr: The CIDR block used for the destination match.
+    :type       cidr: ``str``
+
+    :param      gateway_id: The ID of a gateway attached to the VPC.
+    :type       gateway_id: ``str``
+
+    :param      instance_id: The ID of a NAT instance in the VPC.
+    :type       instance_id: ``str``
+
+    :param      owner_id: The AWS account ID of the owner of the instance.
+    :type       owner_id: ``str``
+
+    :param      interface_id: The ID of the network interface.
+    :type       interface_id: ``str``
+
+    :param      state: The state of the route (active | blackhole).
+    :type       state: ``str``
+
+    :param      origin: Describes how the route was created.
+    :type       origin: ``str``
+
+    :param      peering_connection_id: The ID of the VPC peering connection.
+    :type       peering_connection_id: ``str``
 
     Note: This class is VPC specific.
     """
