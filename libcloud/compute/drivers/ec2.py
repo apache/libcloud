@@ -4066,6 +4066,30 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._to_route_tables(response.object)
 
+    def ex_create_route_table(self, vpc_id, name=None):
+        """
+        Create a route table within a VPC.
+
+        :param      vpc_id: The ID of the VPC that the subnet should be
+                            created in.
+        :type       vpc_id: ``str``
+
+        :rtype:     :class: `EC2RouteTable`
+        """
+        params = {'Action': 'CreateRouteTable',
+                  'VpcId': vpc_id}
+
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='routeTable',
+                                            namespace=NAMESPACE))[0]
+
+        route_table = self._to_route_table(element)
+
+        if name:
+            self.ex_create_tags(route_table, {'Name': name})
+
+        return route_table
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
