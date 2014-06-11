@@ -470,7 +470,8 @@ class CloudStackNetworkOffering(object):
     Class representing a CloudStack Network Offering.
     """
 
-    def __init__(self, name, display_text, guest_ip_type, id, service_offering_id,
+    def __init__(self, name, display_text, guest_ip_type, id,
+                 service_offering_id,
                  forvpc, driver, extra=None):
         self.displaytext = display_text
         self.name = name
