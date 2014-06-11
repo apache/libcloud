@@ -199,8 +199,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_ex_list_network_offerings(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'listNetworkOfferings_default.json')
-        fixture_networkoffers = fixture
-        ['listnetworkofferingsresponse']['networkoffering']
+        fixture_networkoffers = fixture['listnetworkofferingsresponse'][
+                                                        'networkoffering']
 
         networkoffers = self.driver.ex_list_network_offerings()
 
@@ -238,6 +238,13 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network.extra['netmask'], fixture_network['netmask'])
         self.assertEqual(network.networkofferingid,
                          fixture_network['networkofferingid'])
+
+    def test_ex_delete_network(self):
+
+        network = self.driver.ex_list_networks()[0]
+
+        result = self.driver.ex_delete_network(network=network)
+        self.assertTrue(result)
 
     def test_ex_list_projects(self):
         _, fixture = CloudStackMockHttp()._load_fixture(

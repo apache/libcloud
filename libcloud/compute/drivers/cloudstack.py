@@ -984,9 +984,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         }
         args.update(extra_args)
 
-        for net in self.ex_list_networks():
-            if name == net.name:
-                raise LibcloudError('This network name already exists')
+        """ Cloudstack allows for duplicate network names,
+        this should be handled in the code leveraging libcloud
+        As there could be use cases for duplicate names.
+        e.g. management from ROOT level"""
+
+        #for net in self.ex_list_networks():
+        #    if name == net.name:
+        #        raise LibcloudError('This network name already exists')
 
         result = self._sync_request(command='createNetwork',
                                      params=args,
@@ -1004,6 +1009,28 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                     extra=extra)
 
         return network
+
+    def ex_delete_network(self, network, forced=None):
+        """
+
+        Deletes a Network, only available in advanced zones.
+
+        :param  network: The network
+        :type   network: :class: 'CloudStackNetwork'
+
+        :param  force: Force deletion of the network?
+        :type   force: ``bool``
+
+        :rtype: ``bool``
+
+        """
+
+        args = {'id': network.id, 'forced': forced}
+
+        self._async_request(command='deleteNetwork',
+                                     params=args,
+                                     method='GET')
+        return True
 
     def ex_list_projects(self):
         """

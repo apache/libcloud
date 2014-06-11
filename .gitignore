@@ -17,3 +17,4 @@ _build/
 apache_libcloud.egg-info/
 .project
 .pydevproject
+.settings
