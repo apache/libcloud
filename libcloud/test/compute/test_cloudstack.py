@@ -196,6 +196,21 @@ class CloudStackCommonTestCase(TestCaseMixin):
                 fixture_networks[i]['networkofferingid'])
             self.assertEqual(network.zoneid, fixture_networks[i]['zoneid'])
 
+    def test_ex_list_network_offerings(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listNetworkOfferings_default.json')
+        fixture_networkoffers = fixture['listnetworkofferingsresponse']['networkoffering']
+
+        networkoffers = self.driver.ex_list_network_offerings()
+
+        for i, networkoffer in enumerate(networkoffers):
+            self.assertEqual(networkoffer.id, fixture_networkoffers[i]['id'])
+            self.assertEqual(networkoffer.name, fixture_networkoffers[i]['name'])
+            self.assertEqual(networkoffer.displaytext, fixture_networkoffers[i]['displaytext'])
+            self.assertEqual(networkoffer.forvpc, fixture_networkoffers[i]['forvpc'])
+            self.assertEqual(networkoffer.guestiptype, fixture_networkoffers[i]['guestiptype'])
+            self.assertEqual(networkoffer.serviceofferingid, fixture_networkoffers[i]['serviceofferingid'])
+
     def test_ex_create_network(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'createNetwork_default.json')
@@ -215,7 +230,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network.id, fixture_network['id'])
         self.assertEqual(network.extra['gateway'], fixture_network['gateway'])
         self.assertEqual(network.extra['netmask'], fixture_network['netmask'])
-        self.assertEqual(network.networkofferingid, fixture_network['networkofferingid'])
+        self.assertEqual(network.networkofferingid,
+                         fixture_network['networkofferingid'])
 
     def test_ex_list_projects(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
