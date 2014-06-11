@@ -470,13 +470,13 @@ class CloudStackNetworkOffering(object):
     Class representing a CloudStack Network Offering.
     """
 
-    def __init__(self, name, displaytext, guestiptype, id, serviceofferingid,
+    def __init__(self, name, display_text, guest_ip_type, id, service_offering_id,
                  forvpc, driver, extra=None):
-        self.displaytext = displaytext
+        self.displaytext = display_text
         self.name = name
-        self.guestiptype = guestiptype
+        self.guestiptype = guest_ip_type
         self.id = id
-        self.serviceofferingid = serviceofferingid
+        self.serviceofferingid = service_offering_id
         self.forvpc = forvpc
         self.driver = driver
         self.extra = extra or {}
@@ -1010,7 +1010,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return network
 
-    def ex_delete_network(self, network, forced=None):
+    def ex_delete_network(self, network, force=None):
         """
 
         Deletes a Network, only available in advanced zones.
@@ -1025,7 +1025,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         """
 
-        args = {'id': network.id, 'forced': forced}
+        args = {'id': network.id, 'forced': force}
 
         self._async_request(command='deleteNetwork',
                             params=args,
