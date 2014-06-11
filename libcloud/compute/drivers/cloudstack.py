@@ -932,13 +932,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         for netoffer in netoffers:
 
             networkofferings.append(CloudStackNetworkOffering(
-                            netoffer['name'],
-                            netoffer['displaytext'],
-                            netoffer['guestiptype'],
-                            netoffer['id'],
-                            netoffer['serviceofferingid'],
-                            netoffer['forvpc'],
-                            self))
+                                    netoffer['name'],
+                                    netoffer['displaytext'],
+                                    netoffer['guestiptype'],
+                                    netoffer['id'],
+                                    netoffer['serviceofferingid'],
+                                    netoffer['forvpc'],
+                                    self))
 
         return networkofferings
 
@@ -989,13 +989,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         As there could be use cases for duplicate names.
         e.g. management from ROOT level"""
 
-        #for net in self.ex_list_networks():
+        # for net in self.ex_list_networks():
         #    if name == net.name:
         #        raise LibcloudError('This network name already exists')
 
         result = self._sync_request(command='createNetwork',
-                                     params=args,
-                                     method='GET')
+                                    params=args,
+                                    method='GET')
 
         result = result['network']
         extra = self._get_extra_dict(result, extra_map)
@@ -1028,8 +1028,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         args = {'id': network.id, 'forced': forced}
 
         self._async_request(command='deleteNetwork',
-                                     params=args,
-                                     method='GET')
+                            params=args,
+                            method='GET')
         return True
 
     def ex_list_projects(self):

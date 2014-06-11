@@ -199,8 +199,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_ex_list_network_offerings(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'listNetworkOfferings_default.json')
-        fixture_networkoffers = fixture['listnetworkofferingsresponse'][
-                                                        'networkoffering']
+        fixture_networkoffers = \
+            fixture['listnetworkofferingsresponse']['networkoffering']
 
         networkoffers = self.driver.ex_list_network_offerings()
 
@@ -226,11 +226,12 @@ class CloudStackCommonTestCase(TestCaseMixin):
         netoffer = self.driver.ex_list_network_offerings()[0]
         location = self.driver.list_locations()[0]
         network = self.driver.ex_create_network(displaytext='test',
-                                        name='test',
-                                        networkoffering=netoffer,
-                                        location=location,
-                                        gateway='10.1.1.1',
-                                        netmask='255.255.255.0')
+                                                name='test',
+                                                networkoffering=netoffer,
+                                                location=location,
+                                                gateway='10.1.1.1',
+                                                netmask='255.255.255.0')
+
         self.assertEqual(network.name, fixture_network['name'])
         self.assertEqual(network.displaytext, fixture_network['displaytext'])
         self.assertEqual(network.id, fixture_network['id'])
