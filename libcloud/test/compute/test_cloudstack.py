@@ -232,7 +232,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                                 gateway='10.1.1.1',
                                                 netmask='255.255.255.0',
                                                 network_domain='cloud.local',
-                                                vpc_id=None)
+                                                vpc_id="2",
+                                                project_id="2")
 
         self.assertEqual(network.name, fixture_network['name'])
         self.assertEqual(network.displaytext, fixture_network['displaytext'])
@@ -241,6 +242,9 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network.extra['netmask'], fixture_network['netmask'])
         self.assertEqual(network.networkofferingid,
                          fixture_network['networkofferingid'])
+        self.assertEqual(network.extra['vpc_id'], fixture_network['vpcid'])
+        self.assertEqual(network.extra['project_id'],
+                         fixture_network['projectid'])
 
     def test_ex_delete_network(self):
 
