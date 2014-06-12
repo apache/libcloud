@@ -474,7 +474,7 @@ class CloudStackNetworkOffering(object):
     Class representing a CloudStack Network Offering.
     """
 
-    def __init__(self, name, display_text, guest_ip_type, id, 
+    def __init__(self, name, display_text, guest_ip_type, id,
                  service_offering_id,
                  forvpc, driver, extra=None):
         self.displaytext = display_text
@@ -985,7 +985,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: :class:`CloudStackNetwork`
 
         """
-        #extra_args = kwargs.copy()
+
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network']
 
         args = {
@@ -1009,8 +1009,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         if project_id is not None:
             args['projectid'] = project_id
-
-        #args.update(extra_args)
 
         """ Cloudstack allows for duplicate network names,
         this should be handled in the code leveraging libcloud
