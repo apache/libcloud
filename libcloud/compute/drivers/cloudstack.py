@@ -111,6 +111,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'vpc_id': {
             'key_name': 'vpcid',
             'transform_func': str
+        },
+        'project_id': {
+            'key_name': 'projectid',
+            'transform_func': str
         }
     },
     'node': {
@@ -470,7 +474,7 @@ class CloudStackNetworkOffering(object):
     Class representing a CloudStack Network Offering.
     """
 
-    def __init__(self, name, display_text, guest_ip_type, id,
+    def __init__(self, name, display_text, guest_ip_type, id, 
                  service_offering_id,
                  forvpc, driver, extra=None):
         self.displaytext = display_text
@@ -943,47 +947,70 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return networkofferings
 
-    def ex_create_network(self, displaytext, name, networkoffering,
-                          location, **kwargs):
+    def ex_create_network(self, display_text, name, network_offering,
+                          location, gateway=None, netmask=None,
+                          network_domain=None, vpc_id=None, project_id=None):
 
         """
 
         Creates a Network, only available in advanced zones.
 
-        :param  displaytext: the display text of the network
-        :type   displaytext: ``str``
+        :param  display_text: the display text of the network
+        :type   display_text: ``str``
 
         :param  name: the name of the network
         :type   name: ``str``
 
-        :param  networkoffering: the network offering id
-        :type   networkoffering: :class:'CloudStackNetworkOffering`
+        :param  network_offering: the network offering id
+        :type   network_offering: :class:'CloudStackNetworkOffering`
 
         :param location: Zone
         :type  location: :class:`NodeLocation`
 
-        :param  gateway: The Gateway of this network
+        :param  gateway: Optional, the Gateway of this network
         :type   gateway: ``str``
 
-        :param  netmask: The netmask of this network
+        :param  netmask: Optional, the netmask of this network
         :type   netmask: ``str``
 
-        :param  vpcid: The VPC the network belongs to
-        :type   vpcid: ``str``
+        :param  network_domain: Optional, the DNS domain of the network
+        :type   network_domain: ``str``
+
+        :param  vpc_id: Optional, the VPC id the network belongs to
+        :type   vpc_id: ``str``
+
+        :param  project_id: Optional, the project id the networks belongs to
+        :type   project_id: ``str``
 
         :rtype: :class:`CloudStackNetwork`
 
         """
-        extra_args = kwargs.copy()
+        #extra_args = kwargs.copy()
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network']
 
         args = {
-            'displaytext': displaytext,
+            'displaytext': display_text,
             'name': name,
-            'networkofferingid': networkoffering.id,
-            'zoneid': location.id
+            'networkofferingid': network_offering.id,
+            'zoneid': location.id,
         }
-        args.update(extra_args)
+
+        if gateway is not None:
+            args['gateway'] = gateway
+
+        if netmask is not None:
+            args['netmask'] = netmask
+
+        if network_domain is not None:
+            args['networkdomain'] = network_domain
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        if project_id is not None:
+            args['projectid'] = project_id
+
+        #args.update(extra_args)
 
         """ Cloudstack allows for duplicate network names,
         this should be handled in the code leveraging libcloud
@@ -1001,9 +1028,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         result = result['network']
         extra = self._get_extra_dict(result, extra_map)
 
-        network = CloudStackNetwork(displaytext,
+        network = CloudStackNetwork(display_text,
                                     name,
-                                    networkoffering.id,
+                                    network_offering.id,
                                     result['id'],
                                     location.id,
                                     self,

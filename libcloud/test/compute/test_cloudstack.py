@@ -225,12 +225,14 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         netoffer = self.driver.ex_list_network_offerings()[0]
         location = self.driver.list_locations()[0]
-        network = self.driver.ex_create_network(displaytext='test',
+        network = self.driver.ex_create_network(display_text='test',
                                                 name='test',
-                                                networkoffering=netoffer,
+                                                network_offering=netoffer,
                                                 location=location,
                                                 gateway='10.1.1.1',
-                                                netmask='255.255.255.0')
+                                                netmask='255.255.255.0',
+                                                network_domain='cloud.local',
+                                                vpc_id=None)
 
         self.assertEqual(network.name, fixture_network['name'])
         self.assertEqual(network.displaytext, fixture_network['displaytext'])
