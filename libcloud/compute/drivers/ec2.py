@@ -1757,7 +1757,8 @@ class EC2RouteTable(object):
 
         :param      subnet_associations: A list of associations between the
                                          route table and one or more subnets.
-        :type       subnet_associations: ``list`` of :class:`EC2SubnetAssociation`
+        :type       subnet_associations: ``list`` of
+                                         :class:`EC2SubnetAssociation`
 
         :param      propagating_gateway_ids: The list of IDs of any virtual
                                              private gateways propagating the
