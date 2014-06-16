@@ -1743,26 +1743,28 @@ class EC2RouteTable(object):
     """
     Class which stores information about VPC Route Tables.
 
-    :param      id: The ID of the route table.
-    :type       id: ``str``
-
-    :param      routes: A list of routes in the route table.
-    :type       routes: ``list`` of :class:`EC2Route`
-
-    :param      subnet_associations: A list of associations between the
-                                     route table and one or more subnets.
-    :type       subnet_associations: ``list`` of :class:`EC2SubnetAssociation`
-
-    :param      propagating_gateway_ids: The list of IDs of any virtual
-                                         private gateways propagating the
-                                         routes.
-    :type       propagating_gateway_ids: ``list``
-
     Note: This class is VPC specific.
     """
 
     def __init__(self, id, routes, subnet_associations,
                  propagating_gateway_ids, extra=None):
+        """
+        :param      id: The ID of the route table.
+        :type       id: ``str``
+
+        :param      routes: A list of routes in the route table.
+        :type       routes: ``list`` of :class:`EC2Route`
+
+        :param      subnet_associations: A list of associations between the
+                                         route table and one or more subnets.
+        :type       subnet_associations: ``list`` of :class:`EC2SubnetAssociation`
+
+        :param      propagating_gateway_ids: The list of IDs of any virtual
+                                             private gateways propagating the
+                                             routes.
+        :type       propagating_gateway_ids: ``list``
+        """
+
         self.id = id
         self.routes = routes
         self.subnet_associations = subnet_associations
@@ -1770,43 +1772,45 @@ class EC2RouteTable(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<EC2RouteTable: id=%s') % (self.id))
+        return (('<EC2RouteTable: id=%s>') % (self.id))
 
 
 class EC2Route(object):
     """
     Class which stores information about a Route.
 
-    :param      cidr: The CIDR block used for the destination match.
-    :type       cidr: ``str``
-
-    :param      gateway_id: The ID of a gateway attached to the VPC.
-    :type       gateway_id: ``str``
-
-    :param      instance_id: The ID of a NAT instance in the VPC.
-    :type       instance_id: ``str``
-
-    :param      owner_id: The AWS account ID of the owner of the instance.
-    :type       owner_id: ``str``
-
-    :param      interface_id: The ID of the network interface.
-    :type       interface_id: ``str``
-
-    :param      state: The state of the route (active | blackhole).
-    :type       state: ``str``
-
-    :param      origin: Describes how the route was created.
-    :type       origin: ``str``
-
-    :param      vpc_peering_connection_id: The ID of the VPC
-                                           peering connection.
-    :type       vpc_peering_connection_id: ``str``
-
     Note: This class is VPC specific.
     """
 
     def __init__(self, cidr, gateway_id, instance_id, owner_id,
                  interface_id, state, origin, vpc_peering_connection_id):
+        """
+        :param      cidr: The CIDR block used for the destination match.
+        :type       cidr: ``str``
+
+        :param      gateway_id: The ID of a gateway attached to the VPC.
+        :type       gateway_id: ``str``
+
+        :param      instance_id: The ID of a NAT instance in the VPC.
+        :type       instance_id: ``str``
+
+        :param      owner_id: The AWS account ID of the owner of the instance.
+        :type       owner_id: ``str``
+
+        :param      interface_id: The ID of the network interface.
+        :type       interface_id: ``str``
+
+        :param      state: The state of the route (active | blackhole).
+        :type       state: ``str``
+
+        :param      origin: Describes how the route was created.
+        :type       origin: ``str``
+
+        :param      vpc_peering_connection_id: The ID of the VPC
+                                               peering connection.
+        :type       vpc_peering_connection_id: ``str``
+        """
+
         self.cidr = cidr
         self.gateway_id = gateway_id
         self.instance_id = instance_id
@@ -1817,7 +1821,7 @@ class EC2Route(object):
         self.vpc_peering_connection_id = vpc_peering_connection_id
 
     def __repr__(self):
-        return (('<EC2Route: cidr=%s') % (self.cidr))
+        return (('<EC2Route: cidr=%s>') % (self.cidr))
 
 
 class EC2SubnetAssociation(object):
@@ -1828,14 +1832,28 @@ class EC2SubnetAssociation(object):
     Note: This class is VPC specific.
     """
 
-    def __init__(self, id, route_table_id, subnet_id, main):
+    def __init__(self, id, route_table_id, subnet_id, main=False):
+        """
+        :param      id: The ID of the subent association in the VPC.
+        :type       id: ``str``
+
+        :param      route_table_id: The ID of a route table in the VPC.
+        :type       route_table_id: ``str``
+
+        :param      subnet_id: The ID of a subnet in the VPC.
+        :type       subnet_id: ``str``
+
+        :param      main: If true, means this is a main VPC route table.
+        :type       main: ``bool``
+        """
+
         self.id = id
         self.route_table_id = route_table_id
         self.subnet_id = subnet_id
         self.main = main
 
     def __repr__(self):
-        return (('<EC2SubnetAssociation: id=%s') % (self.id))
+        return (('<EC2SubnetAssociation: id=%s>') % (self.id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -4035,16 +4053,16 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
-    def ex_list_route_tables(self, rtable_ids=None, filters=None):
+    def ex_list_route_tables(self, route_table_ids=None, filters=None):
         """
         Describes one or more of a VPC's route tables.
         These are are used to determine where network traffic is directed.
 
-        :param      rtable_ids: Return only route tables matching the provided
-                                route table IDs. If not specified, a list of
-                                all the route tables in the corresponding
-                                region is returned.
-        :type       rtable_ids: ``list``
+        :param      route_table_ids: Return only route tables matching the
+                                provided route table IDs. If not specified,
+                                a list of all the route tables in the
+                                corresponding region is returned.
+        :type       route_table_ids: ``list``
 
         :param      filters: The filters so that the response includes
                              information for only certain route tables.
@@ -4054,11 +4072,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DescribeRouteTables'}
 
-        if rtable_ids:
-            for rtable_idx, rtable_id in enumerate(rtable_ids):
-                rtable_idx += 1  # We want 1-based indexes
-                rtable_key = 'RouteTableId.%s' % rtable_idx
-                params[rtable_key] = rtable_id
+        if route_table_ids:
+            for route_table_idx, route_table_id in enumerate(route_table_ids):
+                route_table_idx += 1  # We want 1-based indexes
+                route_table_key = 'RouteTableId.%s' % route_table_idx
+                params[route_table_key] = route_table_id
 
         if filters:
             params.update(self._build_filters(filters))
@@ -4067,18 +4085,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._to_route_tables(response.object)
 
-    def ex_create_route_table(self, vpc_id, name=None):
+    def ex_create_route_table(self, network, name=None):
         """
         Create a route table within a VPC.
 
-        :param      vpc_id: The ID of the VPC that the subnet should be
-                            created in.
-        :type       vpc_id: ``str``
+        :param      vpc_id: The VPC that the subnet should be created in.
+        :type       vpc_id: :class:`.EC2Network`
 
         :rtype:     :class: `.EC2RouteTable`
         """
         params = {'Action': 'CreateRouteTable',
-                  'VpcId': vpc_id}
+                  'VpcId': network.id}
 
         response = self.connection.request(self.path, params=params).object
         element = response.findall(fixxpath(xpath='routeTable',
@@ -4203,8 +4220,8 @@ class BaseEC2NodeDriver(NodeDriver):
         return new_association_id
 
     def ex_create_route(self, route_table, cidr,
-                        gateway_id=None, instance_id=None,
-                        interface_id=None, vpc_peering_connection_id=None):
+                        internet_gateway=None, node=None,
+                        network_interface=None, vpc_peering_connection=None):
         """
         Creates a route entry in the route table.
 
@@ -4214,43 +4231,41 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr: The CIDR block used for the destination match.
         :type       cidr: ``str``
 
-        :param      gateway_id: The ID of internet gateway to
-                                route traffic through.
-        :type       gateway_id: ``str``
+        :param      internet_gateway: The internet gateway to route
+                                      traffic through.
+        :type       internet_gateway: :class:`.VPCInternetGateway`
 
-        :param      instance_id: The ID of a NAT instance to
-                                 route traffic through.
-        :type       instance_id: ``str``
+        :param      node: The NAT instance to route traffic through.
+        :type       node: :class:`Node`
 
-        :param      interface_id: The ID of the network interface of the
-                                  instance to route traffic through.
-        :type       interface_id: ``str``
+        :param      network_interface: The network interface of the node
+                                       to route traffic through.
+        :type       network_interface: :class:`.EC2NetworkInterface`
 
-        :param      vpc_peering_connection_id: The ID of the VPC
-                                               peering connection.
-        :type       vpc_peering_connection_id: ``str``
+        :param      vpc_peering_connection: The VPC peering connection.
+        :type       vpc_peering_connection: :class:`.VPCPeeringConnection`
 
         :rtype:     ``bool``
 
-        Note: You must specify one of the following: gateway_id, instance_id,
-              interface_id, vpc_peering_connection_id.
+        Note: You must specify one of the following: internet_gateway,
+              node, network_interface, vpc_peering_connection.
         """
 
         params = {'Action': 'CreateRoute',
                   'RouteTableId': route_table.id,
                   'DestinationCidrBlock': cidr}
 
-        if gateway_id:
-            params['GatewayId'] = gateway_id
+        if internet_gateway:
+            params['GatewayId'] = internet_gateway.id
 
-        if instance_id:
-            params['InstanceId'] = instance_id
+        if node:
+            params['InstanceId'] = node.id
 
-        if interface_id:
-            params['NetworkInterfaceId'] = interface_id
+        if network_interface:
+            params['NetworkInterfaceId'] = network_interface.id
 
-        if vpc_peering_connection_id:
-            params['VpcPeeringConnectionId'] = vpc_peering_connection_id
+        if vpc_peering_connection:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection.id
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result,
@@ -4284,8 +4299,8 @@ class BaseEC2NodeDriver(NodeDriver):
         return element == 'true'
 
     def ex_replace_route(self, route_table, cidr,
-                         gateway_id=None, instance_id=None,
-                         interface_id=None, vpc_peering_connection_id=None):
+                         internet_gateway=None, node=None,
+                         network_interface=None, vpc_peering_connection=None):
         """
         Replaces an existing route entry within a route table in a VPC.
 
@@ -4295,43 +4310,41 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr: The CIDR block used for the destination match.
         :type       cidr: ``str``
 
-        :param      gateway_id: The new ID of internet gateway to
-                                route traffic through.
-        :type       gateway_id: ``str``
+        :param      internet_gateway: The new internet gateway to route
+                                       traffic through.
+        :type       internet_gateway: :class:`.VPCInternetGateway`
 
-        :param      instance_id: The new ID of a NAT instance to
-                                 route traffic through.
-        :type       instance_id: ``str``
+        :param      node: The new NAT instance to route traffic through.
+        :type       node: :class:`Node`
 
-        :param      interface_id: The new ID of the network interface of the
-                                  instance to route traffic through.
-        :type       interface_id: ``str``
+        :param      network_interface: The new network interface of the node
+                                       to route traffic through.
+        :type       network_interface: :class:`.EC2NetworkInterface`
 
-        :param      vpc_peering_connection_id: The new ID of the VPC
-                                               peering connection.
-        :type       vpc_peering_connection_id: ``str``
+        :param      vpc_peering_connection: The new VPC peering connection.
+        :type       vpc_peering_connection: :class:`.VPCPeeringConnection`
 
         :rtype:     ``bool``
 
-        Note: You must specify one of the following: gateway_id, instance_id,
-              interface_id, vpc_peering_connection_id.
+        Note: You must specify one of the following: internet_gateway,
+              node, network_interface, vpc_peering_connection.
         """
 
         params = {'Action': 'ReplaceRoute',
                   'RouteTableId': route_table.id,
                   'DestinationCidrBlock': cidr}
 
-        if gateway_id:
-            params['GatewayId'] = gateway_id
+        if internet_gateway:
+            params['GatewayId'] = internet_gateway.id
 
-        if instance_id:
-            params['InstanceId'] = instance_id
+        if node:
+            params['InstanceId'] = node.id
 
-        if interface_id:
-            params['NetworkInterfaceId'] = interface_id
+        if network_interface:
+            params['NetworkInterfaceId'] = network_interface.id
 
-        if vpc_peering_connection_id:
-            params['VpcPeeringConnectionId'] = vpc_peering_connection_id
+        if vpc_peering_connection:
+            params['VpcPeeringConnectionId'] = vpc_peering_connection.id
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result,
