@@ -2084,18 +2084,25 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             }
         )
 
-    def _to_snapshot(self, api_node):
-        if 'snapshot' in api_node:
-            api_node = api_node['snapshot']
+    def _to_snapshot(self, data):
+        if 'snapshot' in data:
+            data = data['snapshot']
 
-        extra = {'volume_id': api_node['volume_id'],
-                 'name': api_node['display_name'],
-                 'created': api_node['created_at'],
-                 'description': api_node['display_description'],
-                 'status': api_node['status']}
+        volume_id = data.get('volume_id', data.get('volumeId', None))
+        display_name = data.get('display_name', data.get('displayName', None))
+        created_at = data.get('created_at', data.get('createdAt', None))
+        description = data.get('display_description',
+                               data.get('displayDescription', None))
+        status = data.get('status', None)
 
-        snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
-                                  size=api_node['size'], extra=extra)
+        extra = {'volume_id': volume_id,
+                 'name': display_name,
+                 'created': created_at,
+                 'description': description,
+                 'status': status}
+
+        snapshot = VolumeSnapshot(id=data['id'], driver=self,
+                                  size=data['size'], extra=extra)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):

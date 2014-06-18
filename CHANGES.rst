@@ -231,6 +231,9 @@ Compute
   (LIBCLOUD-574, GITHUB-313)
   [Lior Goikhburg]
 
+- Fix ex_list_snapshots for HP Helion OpenStack based driver.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
