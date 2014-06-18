@@ -49,6 +49,18 @@ Allocate, Associate, Disassociate, and Release an Elastic IP
 .. literalinclude:: /examples/compute/create_ec2_node_and_associate_elastic_ip.py
    :language: python
 
+Create a general purpose SSD volume
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/ec2/create_general_purpose_ssd_volume.py
+   :language: python
+
+Create a provisioned IOPS volume
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/ec2/create_provisioned_iops_volume.py
+   :language: python
+
 API Docs
 --------
 

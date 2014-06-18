@@ -234,6 +234,11 @@ Compute
 - Fix ex_list_snapshots for HP Helion OpenStack based driver.
   [Tomaz Muraus]
 
+- Allow user to specify volume type and number of IOPS when creating a new
+  volume in the EC2 driver by passing ``ex_volume_type`` and ``ex_iops``
+  argument to the ``create_volume`` method.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
