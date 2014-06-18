@@ -560,6 +560,10 @@ class VolumeSnapshot(object):
         """
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
+    def __repr__(self):
+        return ('<VolumeSnapshot id=%s size=%s driver=%s>' %
+                (self.id, self.size, self.driver.name))
+
 
 class KeyPair(object):
     """
