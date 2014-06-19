@@ -239,6 +239,10 @@ Compute
   argument to the ``create_volume`` method.
   [Tomaz Muraus]
 
+- Fix ex_unpause_node method in the OpenStack driver.
+  (GITHUB-317)
+  [Pablo Orduña]
+
 Storage
 ~~~~~~~
 
