@@ -2311,7 +2311,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     def ex_unpause_node(self, node):
         uri = '/servers/%s/action' % (node.id)
-        data = {'pause': None}
+        data = {'unpause': None}
         resp = self.connection.request(uri, method='POST', data=data)
         return resp.status == httplib.ACCEPTED
 
