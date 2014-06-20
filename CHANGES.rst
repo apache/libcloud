@@ -243,6 +243,11 @@ Compute
   (GITHUB-317)
   [Pablo Orduña]
 
+- Allow user to launch EC2 node in a specific VPC subnet by passing
+  ``ex_subnet`` argument to the create_node method.
+  (GITHUB-318)
+  [Lior Goikhburg]
+
 Storage
 ~~~~~~~
 
