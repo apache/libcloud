@@ -1875,7 +1875,7 @@ class BaseEC2NodeDriver(NodeDriver):
         'terminated': NodeState.TERMINATED
     }
 
-    def list_nodes(self, ex_node_ids=None):
+    def list_nodes(self, ex_node_ids=None, filters=None):
         """
         List all nodes
 
@@ -1886,21 +1886,34 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      ex_node_ids: List of ``node.id``
         :type       ex_node_ids: ``list`` of ``str``
 
+        :param      filters: The filters so that the response includes
+                             information for only certain nodes.
+        :type       filters: ``dict``
+
         :rtype: ``list`` of :class:`Node`
         """
+
         params = {'Action': 'DescribeInstances'}
+
         if ex_node_ids:
             params.update(self._pathlist('InstanceId', ex_node_ids))
+
+        if filters:
+            params.update(self._build_filters(filters))
+
         elem = self.connection.request(self.path, params=params).object
+
         nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
                           namespace=NAMESPACE):
             nodes += self._to_nodes(rs, 'instancesSet/item')
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
+
         for node in nodes:
             ips = nodes_elastic_ips_mappings[node.id]
             node.public_ips.extend(ips)
+
         return nodes
 
     def list_sizes(self, location=None):
