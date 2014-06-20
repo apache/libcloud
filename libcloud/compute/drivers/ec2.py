@@ -2544,10 +2544,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeVpcs'}
 
         if network_ids:
-            for network_idx, network_id in enumerate(network_ids):
-                network_idx += 1  # We want 1-based indexes
-                network_key = 'VpcId.%s' % network_idx
-                params[network_key] = network_id
+            params.update(self._pathlist('VpcId', network_ids))
 
         if filters:
             params.update(self._build_filters(filters))
@@ -2719,10 +2716,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeSecurityGroups'}
 
         if group_ids:
-            for id_idx, group_id in enumerate(group_ids):
-                id_idx += 1  # We want 1-based indexes
-                id_key = 'GroupId.%s' % (id_idx)
-                params[id_key] = group_id
+            params.update(self._pathlist('GroupId', group_ids))
 
         if group_names:
             for name_idx, group_name in enumerate(group_names):
@@ -4095,10 +4089,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeRouteTables'}
 
         if route_table_ids:
-            for route_table_idx, route_table_id in enumerate(route_table_ids):
-                route_table_idx += 1  # We want 1-based indexes
-                route_table_key = 'RouteTableId.%s' % route_table_idx
-                params[route_table_key] = route_table_id
+            params.update(self._pathlist('RouteTableId', route_table_ids))
 
         if filters:
             params.update(self._build_filters(filters))
