@@ -19,6 +19,11 @@ Compute
   (LIBCLOUD-572, GITHUB-307)
   [Lior Goikhburg]
 
+- Allow user to filter which nodes are returned by passing ``ex_filters``
+  argument to the ``list_nodes`` method in the EC2 driver.
+  (LIBCLOUD-580, GITHUB-320)
+  [Lior Goikhburg]
+
 Changes with Apache Libcloud 0.15.0
 -----------------------------------
 
