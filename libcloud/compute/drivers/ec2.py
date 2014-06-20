@@ -2047,6 +2047,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_ebs_optimized: EBS-Optimized if True
         :type       ex_ebs_optimized: ``bool``
+
+        :keyword    ex_subnet: The subnet to launch the instance into.
+        :type       ex_subnet: :class:`.EC2Subnet`
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -2117,6 +2120,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_ebs_optimized' in kwargs:
             params['EbsOptimized'] = kwargs['ex_ebs_optimized']
+
+        if 'ex_subnet' in kwargs:
+            params['SubnetId'] = kwargs['ex_subnet'].id
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
