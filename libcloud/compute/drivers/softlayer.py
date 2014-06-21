@@ -17,6 +17,12 @@ Softlayer driver
 """
 
 import time
+crypto = False
+try:
+    from Crypto.PublicKey import RSA
+    crypto = True
+except ImportError:
+    pass
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
@@ -24,6 +30,7 @@ from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage
+from libcloud.compute.types import KeyPairDoesNotExistError
 
 DEFAULT_DOMAIN = 'example.com'
 DEFAULT_CPU_SIZE = 1
@@ -158,7 +165,6 @@ class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
 
         args = ({'headers': headers}, ) + args
         endpoint = '%s/%s' % (self.endpoint, service)
-
         return super(SoftLayerConnection, self).request(method, *args,
                                                         **{'endpoint':
                                                             endpoint})
@@ -188,6 +194,47 @@ class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
             return {}
 
 
+class KeyPair(object):
+    """
+    Represents a SSH key pair.
+    """
+    def __init__(self, name, public_key, fingerprint, driver, key_id, private_key=None,
+                 extra=None):
+        """
+        Constructor.
+
+        :keyword    name: Name of the key pair object.
+        :type       name: ``str``
+
+        :keyword    fingerprint: Key fingerprint.
+        :type       fingerprint: ``str``
+
+        :keyword    public_key: Public key in OpenSSH format.
+        :type       public_key: ``str``
+
+        :keyword    private_key: Private key in PEM format.
+        :type       private_key: ``str``
+
+        :keyword    key_id: id of the key on Softlayer.
+        :type       key_id: ``str``
+
+        :keyword    extra: Provider specific attributes associated with this
+                           key pair. (optional)
+        :type       extra: ``dict``
+        """
+        self.name = name
+        self.fingerprint = fingerprint
+        self.public_key = public_key
+        self.private_key = private_key
+        self.key_id = key_id
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<KeyPair name=%s fingerprint=%s driver=%s>' %
+                (self.name, self.fingerprint, self.driver.name))
+
+
 class SoftLayerNodeDriver(NodeDriver):
     """
     SoftLayer node driver
@@ -204,7 +251,7 @@ class SoftLayerNodeDriver(NodeDriver):
     website = 'http://www.softlayer.com/'
     type = Provider.SOFTLAYER
 
-    features = {'create_node': ['generates_password']}
+    features = {'create_node': ['generates_password', 'ssh_key']}
 
     def _to_node(self, host):
         try:
@@ -330,6 +377,8 @@ class SoftLayerNodeDriver(NodeDriver):
         :type       ex_datacenter: ``str``
         :keyword    ex_os: e.g. UBUNTU_LATEST
         :type       ex_os: ``str``
+        :keyword    ex_keyname: The name of the key pair
+        :type       ex_keyname: ``str``
         """
         name = kwargs['name']
         os = 'DEBIAN_LATEST'
@@ -402,6 +451,9 @@ class SoftLayerNodeDriver(NodeDriver):
         if datacenter:
             newCCI['datacenter'] = {'name': datacenter}
 
+        if 'ex_key' in kwargs:
+            newCCI['sshKeys'] = [self._key_name_to_id(kwargs.get('ex_key'))]
+
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'createObject', newCCI
         ).object
@@ -410,6 +462,80 @@ class SoftLayerNodeDriver(NodeDriver):
         raw_node = self._get_order_information(node_id)
 
         return self._to_node(raw_node)
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        key_pair = KeyPair(name=elem['label'],
+                           public_key=elem['key'],
+                           fingerprint=elem['fingerprint'],
+                           private_key=elem.get('private', None),
+                           key_id=elem['id'],
+                           driver=self)
+        return key_pair
+
+    def _key_name_to_id(self, key):
+        result = self.connection.request(
+            'SoftLayer_Account', 'getSshKeys'
+        ).object
+        key_id = [x for x in result if x['label'] == key]
+        if len(key_id) == 0:
+            raise KeyPairDoesNotExistError(key, self)
+        else:
+            return int(key_id[0]['id'])
+
+    def list_key_pairs(self):
+        result = self.connection.request(
+            'SoftLayer_Account', 'getSshKeys'
+        ).object
+        elems = [x for x in result]
+        key_pairs = self._to_key_pairs(elems=elems)
+        return key_pairs
+
+    def get_key_pair(self, name):
+        key_id = self._key_name_to_id(name)
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'getObject', id=key_id
+        ).object
+        return self._to_key_pair(result)
+
+    #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
+    def create_key_pair(self, name):
+        if crypto == False:
+            raise NotImplemented("create_key_pair need the pycrypto library")
+        key = RSA.generate(2048)
+        new_key = {
+            'key': key.publickey().exportKey("OpenSSH"),
+            'label': name,
+            'notes': '',
+        }
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'createObject', new_key
+        ).object
+        result['private'] = key.exportKey("PEM")
+        return self._to_key_pair(result)
+
+    def import_key_pair_from_string(self, name, key_material):
+        new_key = {
+            'key': key_material,
+            'label': name,
+            'notes': '',
+        }
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'createObject', new_key
+        ).object
+
+        key_pair = self._to_key_pair(result)
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        key = self._key_name_to_id(key_pair)
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'deleteObject', id=key
+        ).object
+        return result
 
     def _to_image(self, img):
         return NodeImage(
