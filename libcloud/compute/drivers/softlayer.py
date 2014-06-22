@@ -473,11 +473,14 @@ class SoftLayerNodeDriver(NodeDriver):
         return key_pair
 
     def _key_name_to_id(self, key):
-
         result = self.connection.request(
             'SoftLayer_Account', 'getSshKeys'
         ).object
-        return [x for x in result if x['label'] == key]
+        key_id = [x for x in result if x['label'] == key]
+        if len(key_id) == 0:
+            raise KeyPairDoesNotExistError(key, self)
+        else:
+            return key_id
 
     def list_key_pairs(self):
         result = self.connection.request(
