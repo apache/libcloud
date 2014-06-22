@@ -448,7 +448,7 @@ class SoftLayerNodeDriver(NodeDriver):
             newCCI['datacenter'] = {'name': datacenter}
 
         if 'ex_key' in kwargs:
-            newCCI['sshKeys'] = self._key_name_to_id(kwargs.get('ex_key'))
+            newCCI['sshKeys'] = [self._key_name_to_id(kwargs.get('ex_key'))]
 
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'createObject', newCCI
