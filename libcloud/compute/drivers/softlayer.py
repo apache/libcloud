@@ -17,7 +17,12 @@ Softlayer driver
 """
 
 import time
-from Crypto.PublicKey import RSA
+crypto = False
+try:
+    from Crypto.PublicKey import RSA
+    crypto = True
+except ImportError:
+    pass
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
@@ -498,6 +503,8 @@ class SoftLayerNodeDriver(NodeDriver):
 
     #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
     def create_key_pair(self, name):
+        if crypto == False:
+            raise NotImplemented("create_key_pair need the pycrypto library")
         key = RSA.generate(2048)
         new_key = {
             'key': key.publickey().exportKey("OpenSSH"),
