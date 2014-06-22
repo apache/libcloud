@@ -524,16 +524,13 @@ class SoftLayerNodeDriver(NodeDriver):
 
         key_pair = self._to_key_pair(result)
         return key_pair
-    # TODO
+
     def delete_key_pair(self, key_pair):
-        params = {
-            'Action': 'DeleteKeyPair',
-            'KeyName': key_pair.name
-        }
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        key = self._key_name_to_id(key_pair)
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'deleteObject', id=key
+        ).object
+        return result
 
     def _to_image(self, img):
         return NodeImage(
