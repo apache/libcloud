@@ -225,7 +225,7 @@ setup(
                 ' and documentation, please see http://libcloud.apache.org',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    requires=([], ['ssl', 'simplejson', 'pycrypto'],)[pre_python26],
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',

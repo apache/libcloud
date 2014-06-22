@@ -17,7 +17,7 @@ Softlayer driver
 """
 
 import time
-import Crypto
+from Crypto.PublicKey import RSA
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
@@ -26,7 +26,6 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage
 from libcloud.compute.types import KeyPairDoesNotExistError
-from Crypto.PublicKey import RSA
 
 DEFAULT_DOMAIN = 'example.com'
 DEFAULT_CPU_SIZE = 1
