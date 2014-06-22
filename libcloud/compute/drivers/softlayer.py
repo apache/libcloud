@@ -198,8 +198,8 @@ class KeyPair(object):
     """
     Represents a SSH key pair.
     """
-    def __init__(self, name, public_key, fingerprint, driver, key_id, private_key=None,
-                 extra=None):
+    def __init__(self, name, public_key, fingerprint, driver, key_id,
+                 private_key=None, extra=None):
         """
         Constructor.
 
@@ -452,7 +452,7 @@ class SoftLayerNodeDriver(NodeDriver):
             newCCI['datacenter'] = {'name': datacenter}
 
         if 'ex_keyname' in kwargs:
-            newCCI['sshKeys'] = [self._key_name_to_id(kwargs.get('ex_keyname'))]
+            newCCI['sshKeys'] = [self._key_name_to_id(kwargs['ex_keyname'])]
 
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'createObject', newCCI
@@ -501,10 +501,12 @@ class SoftLayerNodeDriver(NodeDriver):
         ).object
         return self._to_key_pair(result)
 
-    #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
+    #TODO: Check this with the libcloud guys,
+    #can we create new dependencies?
     def create_key_pair(self, name):
-        if crypto == False:
-            raise NotImplementedError("create_key_pair need the pycrypto library")
+        if crypto is False:
+            raise NotImplementedError("create_key_pair needs"
+                                      " the pycrypto library")
         key = RSA.generate(2048)
         new_key = {
             'key': key.publickey().exportKey("OpenSSH"),
