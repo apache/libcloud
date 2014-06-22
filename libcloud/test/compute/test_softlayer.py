@@ -16,6 +16,13 @@
 import unittest
 import sys
 
+crypto = False
+try:
+    import Crypto
+    crypto = False
+except ImportError:
+    pass
+
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.utils.py3 import httplib
@@ -151,13 +158,17 @@ class SoftLayerTests(unittest.TestCase):
                           name='test-key-pair')
 
     def test_create_key_pair(self):
-        key_pair = self.driver.create_key_pair(name='my-key-pair')
-        fingerprint = ('1f:51:ae:28:bf:89:e9:d8:1f:25:5d'
-                       ':37:2d:7d:b8:ca:9f:f5:f1:6f')
+        if crypto:
+            key_pair = self.driver.create_key_pair(name='my-key-pair')
+            fingerprint = ('1f:51:ae:28:bf:89:e9:d8:1f:25:5d'
+                           ':37:2d:7d:b8:ca:9f:f5:f1:6f')
 
-        self.assertEqual(key_pair.name, 'my-key-pair')
-        self.assertEqual(key_pair.fingerprint, fingerprint)
-        self.assertTrue(key_pair.private_key is not None)
+            self.assertEqual(key_pair.name, 'my-key-pair')
+            self.assertEqual(key_pair.fingerprint, fingerprint)
+            self.assertTrue(key_pair.private_key is not None)
+        else:
+            self.assertRaises(NotImplemented, self.driver.create_key_pair,
+                              name='my-key-pair')
 
     def test_delete_key_pair(self):
         success = self.driver.delete_key_pair('test1')
