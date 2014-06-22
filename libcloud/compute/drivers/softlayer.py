@@ -17,6 +17,7 @@ Softlayer driver
 """
 
 import time
+import Crypto
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
@@ -25,6 +26,7 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage
 from libcloud.compute.types import KeyPairDoesNotExistError
+from Crypto.PublicKey import RSA
 
 DEFAULT_DOMAIN = 'example.com'
 DEFAULT_CPU_SIZE = 1
@@ -465,7 +467,7 @@ class SoftLayerNodeDriver(NodeDriver):
         key_pair = KeyPair(name=elem['label'],
                            public_key=elem['key'],
                            fingerprint=elem['fingerprint'],
-                           private_key=None,
+                           private_key=elem.get('private', None),
                            key_id=elem['id'],
                            driver=self)
         return key_pair
@@ -496,26 +498,31 @@ class SoftLayerNodeDriver(NodeDriver):
         except IndexError:
             raise KeyPairDoesNotExistError(name, self)
 
-    #TODO
+    #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
     def create_key_pair(self, name):
-
-        result = self.connection.request(
-            'SoftLayer_Security_Ssh_Key', 'createObject'
-        )
-        return key_pair
-    #TODO
-    def import_key_pair_from_string(self, name, key_material):
-        base64key = ensure_string(base64.b64encode(b(key_material)))
-
-        params = {
-            'Action': 'ImportKeyPair',
-            'KeyName': name,
-            'PublicKeyMaterial': base64key
+        key = RSA.generate(2048)
+        new_key = {
+            'key': key.publickey().exportKey("OpenSSH"),
+            'label': name,
+            'notes': '',
         }
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'createObject', new_key
+        ).object
+        result['private'] = key.exportKey("PEM")
+        return self._to_key_pair(result)
 
-        response = self.connection.request(self.path, params=params)
-        elem = response.object
-        key_pair = self._to_key_pair(elem=elem)
+    def import_key_pair_from_string(self, name, key_material):
+        new_key = {
+            'key': key_material,
+            'label': name,
+            'notes': '',
+        }
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'createObject', new_key
+        ).object
+
+        key_pair = self._to_key_pair(result)
         return key_pair
     # TODO
     def delete_key_pair(self, key_pair):
