@@ -480,7 +480,7 @@ class SoftLayerNodeDriver(NodeDriver):
         if len(key_id) == 0:
             raise KeyPairDoesNotExistError(key, self)
         else:
-            return key_id
+            return int(key_id[0]['id'])
 
     def list_key_pairs(self):
         result = self.connection.request(
@@ -491,15 +491,11 @@ class SoftLayerNodeDriver(NodeDriver):
         return key_pairs
 
     def get_key_pair(self, name):
+        key_id = self._key_name_to_id(name)
         result = self.connection.request(
-            'SoftLayer_Account', 'getSshKeys'
+            'SoftLayer_Security_Ssh_Key', 'getObject', id=key_id
         ).object
-        elems = [x for x in result if x['label'] == name]
-        try:
-            key_pair = self._to_key_pairs(elems=elems)[0]
-            return key_pair
-        except IndexError:
-            raise KeyPairDoesNotExistError(name, self)
+        return self._to_key_pair(result)
 
     #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
     def create_key_pair(self, name):
