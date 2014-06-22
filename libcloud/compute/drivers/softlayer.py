@@ -24,6 +24,7 @@ from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage
+from libcloud.compute.types import KeyPairDoesNotExistError
 
 DEFAULT_DOMAIN = 'example.com'
 DEFAULT_CPU_SIZE = 1
@@ -493,18 +494,14 @@ class SoftLayerNodeDriver(NodeDriver):
             key_pair = self._to_key_pairs(elems=elems)[0]
             return key_pair
         except IndexError:
-            raise LibcloudError("Key pair {} not found".format(name), self.name)
+            raise KeyPairDoesNotExistError(name, self)
 
     #TODO
     def create_key_pair(self, name):
-        params = {
-            'Action': 'CreateKeyPair',
-            'KeyName': name
-        }
 
-        response = self.connection.request(self.path, params=params)
-        elem = response.object
-        key_pair = self._to_key_pair(elem=elem)
+        result = self.connection.request(
+            'SoftLayer_Security_Ssh_Key', 'createObject'
+        )
         return key_pair
     #TODO
     def import_key_pair_from_string(self, name, key_material):
