@@ -29,7 +29,7 @@ from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
-    NodeImage
+    NodeImage, KeyPair
 from libcloud.compute.types import KeyPairDoesNotExistError
 
 DEFAULT_DOMAIN = 'example.com'
@@ -192,47 +192,6 @@ class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
             }
         else:
             return {}
-
-
-class KeyPair(object):
-    """
-    Represents a SSH key pair.
-    """
-    def __init__(self, name, public_key, fingerprint, driver, key_id,
-                 private_key=None, extra=None):
-        """
-        Constructor.
-
-        :keyword    name: Name of the key pair object.
-        :type       name: ``str``
-
-        :keyword    fingerprint: Key fingerprint.
-        :type       fingerprint: ``str``
-
-        :keyword    public_key: Public key in OpenSSH format.
-        :type       public_key: ``str``
-
-        :keyword    private_key: Private key in PEM format.
-        :type       private_key: ``str``
-
-        :keyword    key_id: id of the key on Softlayer.
-        :type       key_id: ``str``
-
-        :keyword    extra: Provider specific attributes associated with this
-                           key pair. (optional)
-        :type       extra: ``dict``
-        """
-        self.name = name
-        self.fingerprint = fingerprint
-        self.public_key = public_key
-        self.private_key = private_key
-        self.key_id = key_id
-        self.driver = driver
-        self.extra = extra or {}
-
-    def __repr__(self):
-        return ('<KeyPair name=%s fingerprint=%s driver=%s>' %
-                (self.name, self.fingerprint, self.driver.name))
 
 
 class SoftLayerNodeDriver(NodeDriver):
@@ -472,8 +431,8 @@ class SoftLayerNodeDriver(NodeDriver):
                            public_key=elem['key'],
                            fingerprint=elem['fingerprint'],
                            private_key=elem.get('private', None),
-                           key_id=elem['id'],
-                           driver=self)
+                           driver=self,
+                           extra={'id': elem['id']})
         return key_pair
 
     def _key_name_to_id(self, key):
