@@ -20,6 +20,7 @@ crypto = False
 try:
     import Crypto
     crypto = True
+    Crypto
 except ImportError:
     pass
 
