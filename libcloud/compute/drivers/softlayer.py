@@ -501,8 +501,8 @@ class SoftLayerNodeDriver(NodeDriver):
         ).object
         return self._to_key_pair(result)
 
-    #TODO: Check this with the libcloud guys,
-    #can we create new dependencies?
+    # TODO: Check this with the libcloud guys,
+    # can we create new dependencies?
     def create_key_pair(self, name):
         if crypto is False:
             raise NotImplementedError("create_key_pair needs"
