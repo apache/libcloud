@@ -19,7 +19,7 @@ import sys
 crypto = False
 try:
     import Crypto
-    crypto = False
+    crypto = True
 except ImportError:
     pass
 
@@ -167,7 +167,7 @@ class SoftLayerTests(unittest.TestCase):
             self.assertEqual(key_pair.fingerprint, fingerprint)
             self.assertTrue(key_pair.private_key is not None)
         else:
-            self.assertRaises(NotImplemented, self.driver.create_key_pair,
+            self.assertRaises(NotImplementedError, self.driver.create_key_pair,
                               name='my-key-pair')
 
     def test_delete_key_pair(self):

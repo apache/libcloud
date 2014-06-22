@@ -504,7 +504,7 @@ class SoftLayerNodeDriver(NodeDriver):
     #TODO: Check this with the libcloud guys, can we create it locally and upload or it has to be server side?
     def create_key_pair(self, name):
         if crypto == False:
-            raise NotImplemented("create_key_pair need the pycrypto library")
+            raise NotImplementedError("create_key_pair need the pycrypto library")
         key = RSA.generate(2048)
         new_key = {
             'key': key.publickey().exportKey("OpenSSH"),
