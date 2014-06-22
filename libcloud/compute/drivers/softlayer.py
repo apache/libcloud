@@ -484,6 +484,53 @@ class SoftLayerNodeDriver(NodeDriver):
         key_pairs = self._to_key_pairs(elems=elems)
         return key_pairs
 
+    def get_key_pair(self, name):
+        result = self.connection.request(
+            'SoftLayer_Account', 'getSshKeys'
+        ).object
+        elems = [x for x in result if x['label'] == name]
+        try:
+            key_pair = self._to_key_pairs(elems=elems)[0]
+            return key_pair
+        except IndexError:
+            raise LibcloudError("Key pair {} not found".format(name), self.name)
+
+    #TODO
+    def create_key_pair(self, name):
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+    #TODO
+    def import_key_pair_from_string(self, name, key_material):
+        base64key = ensure_string(base64.b64encode(b(key_material)))
+
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyName': name,
+            'PublicKeyMaterial': base64key
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+    # TODO
+    def delete_key_pair(self, key_pair):
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName': key_pair.name
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
     def _to_image(self, img):
         return NodeImage(
             id=img['template']['operatingSystemReferenceCode'],
