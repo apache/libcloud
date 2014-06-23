@@ -6,11 +6,11 @@
   "name": "operation-regions_us-central1_targetPools_lctargetpool_removeHealthCheck_post",
   "operationType": "removeHealthCheck",
   "progress": 100,
-  "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/operations/operation-regions_us-central1_targetPools_lctargetpool_removeHealthCheck_post",
+  "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/operations/operation-regions_us-central1_targetPools_lctargetpool_removeHealthCheck_post",
   "startTime": "2013-09-03T01:28:32.942-07:00",
   "status": "DONE",
   "targetId": "16862638289615591831",
-  "targetLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/lctargetpool",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/targetPools/lctargetpool",
   "user": "user@gserviceaccount.com"
 }

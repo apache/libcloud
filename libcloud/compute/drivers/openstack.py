@@ -16,31 +16,34 @@
 OpenStack driver
 """
 
-from __future__ import with_statement
-
 try:
     import simplejson as json
 except ImportError:
     import json
 
 import warnings
+import base64
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 
-import os
-import base64
-
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, ProviderError
-from libcloud.compute.types import NodeState, Provider
+from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
+from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.base import KeyPair
+from libcloud.compute.types import NodeState, Provider
+from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.utils.xml import findall
@@ -109,12 +112,19 @@ class OpenStackResponse(Response):
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):
-            text = "; ".join([err.text or '' for err in body.getiterator()
+            text = '; '.join([err.text or '' for err in body.getiterator()
                               if err.text])
         elif self.has_content_type('application/json'):
-            values = body.values()
+            values = list(body.values())
 
-            if len(values) > 0 and 'message' in values[0]:
+            context = self.connection.context
+            driver = self.connection.driver
+            key_pair_name = context.get('key_pair_name', None)
+
+            if len(values) > 0 and values[0]['code'] == 404 and key_pair_name:
+                raise KeyPairDoesNotExistError(name=key_pair_name,
+                                               driver=driver)
+            elif len(values) > 0 and 'message' in values[0]:
                 text = ';'.join([fault_data['message'] for fault_data
                                  in values])
             else:
@@ -144,9 +154,6 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
 
         if method in ("POST", "PUT"):
             headers = {'Content-Type': self.default_content_type}
-
-        if method == "GET":
-            self._add_cache_busting_to_params(params)
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
@@ -211,9 +218,20 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
 
-    def list_nodes(self):
+    def list_nodes(self, ex_all_tenants=False):
+        """
+        List the nodes in a tenant
+
+        :param ex_all_tenants: List nodes for all the tenants. Note: Your user
+                               must have admin privileges for this
+                               functionality to work.
+        :type ex_all_tenants: ``bool``
+        """
+        params = {}
+        if ex_all_tenants:
+            params = {'all_tenants': 1}
         return self._to_nodes(
-            self.connection.request('/servers/detail').object)
+            self.connection.request('/servers/detail', params=params).object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
         if snapshot:
@@ -280,6 +298,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def list_images(self, location=None, ex_only_active=True):
         """
+        Lists all active images
+
         @inherits: :class:`NodeDriver.list_images`
 
         :param ex_only_active: True if list only active
@@ -288,6 +308,22 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         return self._to_images(
             self.connection.request('/images/detail').object, ex_only_active)
+
+    def get_image(self, image_id):
+        """
+        Get an image based on a image_id
+
+        @inherits: :class:`NodeDriver.get_image`
+
+        :param image_id: Image identifier
+        :type image_id: ``str``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+
+        """
+        return self._to_image(self.connection.request(
+            '/images/%s' % (image_id,)).object['image'])
 
     def list_sizes(self, location=None):
         return self._to_sizes(
@@ -854,8 +890,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      'uri': "https://%s%s/servers/%s" % (
                          self.connection.host,
                          self.connection.request_path, el.get('id')),
-                     'metadata': metadata,
-                 })
+                     'metadata': metadata})
         return n
 
     def _to_sizes(self, object):
@@ -906,8 +941,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return {"rate": rate, "absolute": absolute}
 
-    def ex_save_image(self, node, name):
+    def create_image(self, node, name, description=None, reboot=True):
         """Create an image for node.
+
+        @inherits: :class:`NodeDriver.create_image`
 
         :param      node: node to use as a base for image
         :type       node: :class:`Node`
@@ -929,8 +966,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images", method="POST",
                                     data=ET.tostring(image_elm)).object)
 
-    def ex_delete_image(self, image):
+    def delete_image(self, image):
         """Delete an image for node.
+
+        @inherits: :class:`NodeDriver.delete_image`
 
         :param      image: the image to be deleted
         :type       image: :class:`NodeImage`
@@ -1015,7 +1054,8 @@ class OpenStackNetwork(object):
 
     def __repr__(self):
         return '<OpenStackNetwork id="%s" name="%s" cidr="%s">' % (self.id,
-               self.name, self.cidr,)
+                                                                   self.name,
+                                                                   self.cidr,)
 
 
 class OpenStackSecurityGroup(object):
@@ -1191,15 +1231,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @inherits:  :class:`NodeDriver.create_node`
 
-        :keyword    ex_metadata: Key/Value metadata to associate with a node
-        :type       ex_metadata: ``dict``
-
-        :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
-        :type       ex_files:   ``dict``
-
-        :keyword    ex_keyname:  Name of existing public key to inject into
-                                 instance
+        :keyword    ex_keyname:  The name of the key pair
         :type       ex_keyname:  ``str``
 
         :keyword    ex_userdata: String containing user data
@@ -1207,17 +1239,28 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  https://help.ubuntu.com/community/CloudInit
         :type       ex_userdata: ``str``
 
-        :keyword    networks: The server is launched into a set of Networks.
-        :type       networks: :class:`OpenStackNetwork`
-
         :keyword    ex_security_groups: List of security groups to assign to
                                         the node
         :type       ex_security_groups: ``list`` of
                                        :class:`OpenStackSecurityGroup`
 
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
+        :keyword    ex_files:   File Path => File contents to create on
+                                the no  de
+        :type       ex_files:   ``dict``
+
+
+        :keyword    networks: The server is launched into a set of Networks.
+        :type       networks: :class:`OpenStackNetwork`
+
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_availability_zone: Nova availability zone for the node
+        :type       ex_availability_zone: ``str``
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1273,6 +1316,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         volumes = obj['volumes']
         return [self._to_volume(volume) for volume in volumes]
 
+    def _to_snapshots(self, obj):
+        snapshots = obj['snapshots']
+        return [self._to_snapshot(snapshot) for snapshot in snapshots]
+
     def _to_sizes(self, obj):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
@@ -1284,6 +1331,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             'personality': self._files_to_personality(kwargs.get("ex_files",
                                                                  {}))
         }
+
+        if 'ex_availability_zone' in kwargs:
+            server_params['availability_zone'] = kwargs['ex_availability_zone']
 
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
@@ -1433,7 +1483,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, 'revertResize')
         return resp.status == httplib.ACCEPTED
 
-    def ex_save_image(self, node, name, metadata=None):
+    def create_image(self, node, name, metadata=None):
         """
         Creates a new image.
 
@@ -1454,7 +1504,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
         image_id = self._extract_image_id_from_url(resp.headers['location'])
-        return self.ex_get_image(image_id=image_id)
+        return self.get_image(image_id=image_id)
 
     def ex_set_server_name(self, node, name):
         """
@@ -1570,6 +1620,75 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
 
+    def ex_get_console_output(self, node, length=None):
+        """
+        Get console output
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      length: Optional number of lines to fetch from the
+                            console log
+        :type       length: ``int``
+
+        :return: Dictionary with the output
+        :rtype: ``dict``
+        """
+
+        data = {
+            "os-getConsoleOutput": {
+                "length": length
+            }
+        }
+
+        resp = self.connection.request('/servers/%s/action' % node.id,
+                                       method='POST', data=data).object
+        return resp
+
+    def ex_list_snapshots(self):
+        return self._to_snapshots(
+            self.connection.request('/os-snapshots').object)
+
+    def ex_create_snapshot(self, volume, name, description=None, force=False):
+        """
+        Create a snapshot based off of a volume.
+
+        :param      node: volume
+        :type       node: :class:`StorageVolume`
+
+        :keyword    name: New name for the volume snapshot
+        :type       name: ``str``
+
+        :keyword    description: Description of the snapshot (optional)
+        :type       description: ``str``
+
+        :keyword    force: Whether to force creation (optional)
+        :type       force: ``bool``
+
+        :rtype:     :class:`VolumeSnapshot`
+        """
+        data = {'snapshot': {'display_name': name,
+                             'display_description': description,
+                             'volume_id': volume.id,
+                             'force': force}}
+
+        return self._to_snapshot(self.connection.request('/os-snapshots',
+                                                         method='POST',
+                                                         data=data).object)
+
+    def ex_delete_snapshot(self, snapshot):
+        """
+        Delete a VolumeSnapshot
+
+        :param      node: snapshot
+        :type       node: :class:`VolumeSnapshot`
+
+        :rtype:     ``bool``
+        """
+        resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
     def _to_security_group_rules(self, obj):
         return [self._to_security_group_rule(security_group_rule) for
                 security_group_rule in obj]
@@ -1582,16 +1701,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             group = obj['group'].get('name', None)
             tenant_id = obj['group'].get('tenant_id', None)
 
-        return OpenStackSecurityGroupRule(id=obj['id'],
-                                          parent_group_id=
-                                          obj['parent_group_id'],
-                                          ip_protocol=obj['ip_protocol'],
-                                          from_port=obj['from_port'],
-                                          to_port=obj['to_port'],
-                                          driver=self,
-                                          ip_range=ip_range,
-                                          group=group,
-                                          tenant_id=tenant_id)
+        return OpenStackSecurityGroupRule(
+            id=obj['id'], parent_group_id=obj['parent_group_id'],
+            ip_protocol=obj['ip_protocol'], from_port=obj['from_port'],
+            to_port=obj['to_port'], driver=self, ip_range=ip_range,
+            group=group, tenant_id=tenant_id)
 
     def _to_security_groups(self, obj):
         security_groups = obj['security_groups']
@@ -1655,7 +1769,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('/os-security-groups/%s' %
                                        (security_group.id),
                                        method='DELETE')
-        return resp.status == httplib.NO_CONTENT
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_create_security_group_rule(self, security_group, ip_protocol,
                                       from_port, to_port, cidr=None,
@@ -1713,16 +1827,58 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
 
-    def _to_keypairs(self, obj):
-        keypairs = obj['keypairs']
-        return [self._to_keypair(keypair['keypair']) for keypair in keypairs]
+    def _to_key_pairs(self, obj):
+        key_pairs = obj['keypairs']
+        key_pairs = [self._to_key_pair(key_pair['keypair']) for key_pair in
+                     key_pairs]
+        return key_pairs
 
-    def _to_keypair(self, obj):
-        return OpenStackKeyPair(name=obj['name'],
-                                fingerprint=obj['fingerprint'],
-                                public_key=obj['public_key'],
-                                private_key=obj.get('private_key', None),
-                                driver=self)
+    def _to_key_pair(self, obj):
+        key_pair = KeyPair(name=obj['name'],
+                           fingerprint=obj['fingerprint'],
+                           public_key=obj['public_key'],
+                           private_key=obj.get('private_key', None),
+                           driver=self)
+        return key_pair
+
+    def list_key_pairs(self):
+        response = self.connection.request('/os-keypairs')
+        key_pairs = self._to_key_pairs(response.object)
+        return key_pairs
+
+    def get_key_pair(self, name):
+        self.connection.set_context({'key_pair_name': name})
+
+        response = self.connection.request('/os-keypairs/%s' % (name))
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
+
+    def create_key_pair(self, name):
+        data = {'keypair': {'name': name}}
+        response = self.connection.request('/os-keypairs', method='POST',
+                                           data=data)
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        data = {'keypair': {'name': name, 'public_key': key_material}}
+        response = self.connection.request('/os-keypairs', method='POST',
+                                           data=data)
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete a KeyPair.
+
+        :param keypair: KeyPair to delete
+        :type  keypair: :class:`OpenStackKeyPair`
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request('/os-keypairs/%s' % (key_pair.name),
+                                           method='DELETE')
+        return response.status == httplib.ACCEPTED
 
     def ex_list_keypairs(self):
         """
@@ -1730,8 +1886,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackKeyPair`
         """
-        return self._to_keypairs(
-            self.connection.request('/os-keypairs').object)
+        warnings.warn('This method has been deprecated in favor of '
+                      'list_key_pairs method')
+
+        return self.list_key_pairs()
 
     def ex_create_keypair(self, name):
         """
@@ -1742,10 +1900,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        return self._to_keypair(self.connection.request(
-            '/os-keypairs', method='POST',
-            data={'keypair': {'name': name}}
-        ).object['keypair'])
+        warnings.warn('This method has been deprecated in favor of '
+                      'create_key_pair method')
+
+        return self.create_key_pair(name=name)
 
     def ex_import_keypair(self, name, keyfile):
         """
@@ -1759,10 +1917,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        with open(os.path.expanduser(keyfile), 'r') as fp:
-            public_key = fp.read()
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_file method')
 
-        return self.ex_import_keypair_from_string(name, public_key)
+        return self.import_key_pair_from_file(name=name, key_file_path=keyfile)
 
     def ex_import_keypair_from_string(self, name, key_material):
         """
@@ -1776,10 +1934,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        return self._to_keypair(self.connection.request(
-            '/os-keypairs', method='POST',
-            data={'keypair': {'name': name, 'public_key': key_material}}
-        ).object['keypair'])
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_string method')
+
+        return self.import_key_pair_from_string(name=name,
+                                                key_material=key_material)
 
     def ex_delete_keypair(self, keypair):
         """
@@ -1790,9 +1949,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/os-keypairs/%s' % (keypair.name),
-                                       method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        warnings.warn('This method has been deprecated in favor of '
+                      'delete_key_pair method')
+
+        return self.delete_key_pair(key_pair=keypair)
 
     def ex_get_size(self, size_id):
         """
@@ -1806,9 +1966,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_size(self.connection.request(
             '/flavors/%s' % (size_id,)) .object['flavor'])
 
-    def ex_get_image(self, image_id):
+    def get_image(self, image_id):
         """
         Get a NodeImage
+
+        @inherits: :class:`NodeDriver.get_image`
 
         :param      image_id: ID of the image which should be used
         :type       image_id: ``str``
@@ -1818,9 +1980,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_image(self.connection.request(
             '/images/%s' % (image_id,)).object['image'])
 
-    def ex_delete_image(self, image):
+    def delete_image(self, image):
         """
         Delete a NodeImage
+
+        @inherits: :class:`NodeDriver.delete_image`
 
         :param      image: image witch should be used
         :type       image: :class:`NodeImage`
@@ -1862,7 +2026,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             if label in public_networks_labels:
                 public_ips.extend(ips)
             else:
-                private_ips.extend(ips)
+                for ip in ips:
+                    # is_private_subnet does not check for ipv6
+                    try:
+                        if is_private_subnet(ip):
+                            private_ips.append(ip)
+                        else:
+                            public_ips.append(ip)
+                    except:
+                        private_ips.append(ip)
+
+        # Sometimes 'image' attribute is not present if the node is in an error
+        # state
+        image = api_node.get('image', None)
+        image_id = image.get('id', None) if image else None
 
         return Node(
             id=api_node['id'],
@@ -1878,7 +2055,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 # Docs says "tenantId", but actual is "tenant_id". *sigh*
                 # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
-                imageId=api_node['image']['id'],
+                imageId=image_id,
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
@@ -1888,6 +2065,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
+                                               None),
             ),
         )
 
@@ -1904,6 +2083,27 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 'attachments': [att for att in api_node['attachments'] if att],
             }
         )
+
+    def _to_snapshot(self, data):
+        if 'snapshot' in data:
+            data = data['snapshot']
+
+        volume_id = data.get('volume_id', data.get('volumeId', None))
+        display_name = data.get('display_name', data.get('displayName', None))
+        created_at = data.get('created_at', data.get('createdAt', None))
+        description = data.get('display_description',
+                               data.get('displayDescription', None))
+        status = data.get('status', None)
+
+        extra = {'volume_id': volume_id,
+                 'name': display_name,
+                 'created': created_at,
+                 'description': description,
+                 'status': status}
+
+        snapshot = VolumeSnapshot(id=data['id'], driver=self,
+                                  size=data['size'], extra=extra)
+        return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
         # if provider-specific subclasses can get better values for
@@ -1986,6 +2186,70 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_floating_ip_pools(
             self.connection.request('/os-floating-ip-pools').object)
 
+    def _to_floating_ips(self, obj):
+        ip_elements = obj['floating_ips']
+        return [self._to_floating_ip(ip) for ip in ip_elements]
+
+    def _to_floating_ip(self, obj):
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=obj['ip'],
+                                               pool=None,
+                                               node_id=obj['instance_id'],
+                                               driver=self)
+
+    def ex_list_floating_ips(self):
+        """
+        List floating IPs
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self.connection.request('/os-floating-ips').object)
+
+    def ex_get_floating_ip(self, ip):
+        """
+        Get specified floating IP
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        floating_ips = self.ex_list_floating_ips()
+        ip_obj, = [x for x in floating_ips if x.ip_address == ip]
+        return ip_obj
+
+    def ex_create_floating_ip(self):
+        """
+        Create new floating IP
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        resp = self.connection.request('/os-floating-ips',
+                                       method='POST',
+                                       data={})
+        data = resp.object['floating_ip']
+        id = data['id']
+        ip_address = data['ip']
+        return OpenStack_1_1_FloatingIpAddress(id=id,
+                                               ip_address=ip_address,
+                                               pool=None,
+                                               node_id=None,
+                                               driver=self)
+
+    def ex_delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/os-floating-ips/%s' % ip.id,
+                                       method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
     def ex_attach_floating_ip_to_node(self, node, ip):
         """
         Attach the floating IP to the node
@@ -2026,6 +2290,43 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='POST', data=data)
         return resp.status == httplib.ACCEPTED
 
+    def ex_get_metadata_for_node(self, node):
+        """
+        Return the metadata associated with the node.
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :return: A dictionary or other mapping of strings to strings,
+                 associating tag names with tag values.
+        :type tags: ``dict``
+        """
+        return node.extra['metadata']
+
+    def ex_pause_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'pause': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_unpause_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'unpause': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_suspend_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'suspend': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_resume_node(self, node):
+        uri = '/servers/%s/action' % (node.id)
+        data = {'resume': None}
+        resp = self.connection.request(uri, method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -2050,14 +2351,17 @@ class OpenStack_1_1_FloatingIpPool(object):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        return OpenStack_1_1_FloatingIpAddress(obj['id'], obj['ip'], self,
-                                               obj['instance_id'])
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=obj['ip'],
+                                               pool=self,
+                                               node_id=obj['instance_id'],
+                                               driver=self.connection.driver)
 
     def get_floating_ip(self, ip):
         """
         Get specified floating IP from the pool
 
-        :param      ip: floating IP to remove
+        :param      ip: floating IP to get
         :type       ip: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
@@ -2077,7 +2381,11 @@ class OpenStack_1_1_FloatingIpPool(object):
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']
-        return OpenStack_1_1_FloatingIpAddress(id, ip_address, self)
+        return OpenStack_1_1_FloatingIpAddress(id=id,
+                                               ip_address=ip_address,
+                                               pool=self,
+                                               node_id=None,
+                                               driver=self.connection.driver)
 
     def delete_floating_ip(self, ip):
         """
@@ -2101,11 +2409,12 @@ class OpenStack_1_1_FloatingIpAddress(object):
     Floating IP info.
     """
 
-    def __init__(self, id, ip_address, pool, node_id=None):
+    def __init__(self, id, ip_address, pool, node_id=None, driver=None):
         self.id = str(id)
         self.ip_address = ip_address
         self.pool = pool
         self.node_id = node_id
+        self.driver = driver
 
     def delete(self):
         """
@@ -2113,8 +2422,12 @@ class OpenStack_1_1_FloatingIpAddress(object):
 
         :rtype: ``bool``
         """
-        return self.pool.delete_floating_ip(self)
+        if self.pool is not None:
+            return self.pool.delete_floating_ip(self)
+        elif self.driver is not None:
+            return self.driver.ex_delete_floating_ip(self)
 
     def __repr__(self):
-        return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s, pool=%s>'
-                % (self.id, self.ip_address, self.pool))
+        return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
+                ' pool=%s, driver=%s>'
+                % (self.id, self.ip_address, self.pool, self.driver))

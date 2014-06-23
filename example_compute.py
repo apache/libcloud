@@ -17,18 +17,16 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 EC2 = get_driver(Provider.EC2_US_EAST)
-Slicehost = get_driver(Provider.SLICEHOST)
 Rackspace = get_driver(Provider.RACKSPACE)
 
 drivers = [EC2('access key id', 'secret key'),
-           Slicehost('api key'),
            Rackspace('username', 'api key')]
 
 nodes = [driver.list_nodes() for driver in drivers]
 
 print(nodes)
 # [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
-# <Node: provider=Slicehost, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
+# <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
 
 # grab the node named "test"
 node = [n for n in nodes if n.name == 'test'][0]

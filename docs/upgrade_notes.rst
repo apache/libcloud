@@ -5,6 +5,25 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 0.14.1
+---------------
+
+Fix record name inconsistencies in the Rackspace DNS driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Record.name`` attribute is now correctly set to ``None`` for records which
+refer to the bare domain name. Previously, ``Record.name`` attribute for such
+records was set to the domain name.
+
+For example, lets have a look at a record which points to the domain
+``example.com``.
+
+New ``Record.name`` attribute value for such record: ``None``
+
+Old ``Record.name`` attribute value for such record: ``example.com``
+
+This was done to make the Rackspace driver consistent with the other ones.
+
 Libcloud 0.14.0
 ---------------
 
@@ -14,6 +33,62 @@ single class plus ``region`` argument model.
 
 More information on how this affects existing drivers and your code can be
 found bellow.
+
+Default Content-Type is now provided if none is supplied and none can be guessed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In older versions, Libcloud would throw an exception when a content type is not
+supplied and none can't be automatically detected when uploading an object.
+
+This has changed with the 0.14.0 release. Now if no content type is specified
+and none can't be detected, a default content type of
+``application/octet-stream`` is used.
+
+If you want to preserve the old behavior, you can set ``strict_mode`` attribute
+on the driver object to ``True``.
+
+.. sourcecode:: python
+
+    from libcloud.storage.types import Provider
+    from libcloud.stoage.providers import get_driver
+
+    cls = get_driver(Provider.CLOUDFILES)
+    driver = cls('username', 'api key')
+
+    driver.strict_mode = True
+
+If you are not using strict mode and you are uploading a binary object, we
+still encourage you to practice Python's "explicit is better than implicit"
+mantra and explicitly specify Content-Type of ``application/octet-stream``.
+
+SSH Key pair management functionality has been promoted to the base API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SSH key pair management functionality has been promoted to be a part of the
+base compute API.
+
+As such, the following new classes and methods have been added:
+
+* `libcloud.compute.base.KeyPair`
+* `libcloud.compute.base.NodeDriver.list_key_pairs`
+* `libcloud.compute.base.NodeDriver.create_key_pair`
+* `libcloud.compute.base.NodeDriver.import_key_pair_from_string`
+* `libcloud.compute.base.NodeDriver.import_key_pair_from_file`
+* `libcloud.compute.base.NodeDriver.delete_key_pair`
+
+Previously, this functionality was available in some of the provider drivers
+(CloudStack, EC2, OpenStack) via the following extension methods:
+
+* `ex_list_keypairs`
+* `ex_create_keypair`
+* `ex_import_keypair_from_string`
+* `ex_import_keypair`
+* `ex_delete_keypair`
+
+Existing extension methods will continue to work until the next major release,
+but you are strongly encouraged to start using new methods which are now part
+of the base compute API and are guaranteed to work the same across different
+providers.
 
 New default kernel versions used when creating Linode servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,9 +218,9 @@ model. As such, the following provider constants have been **removed**:
 
 And replaced with two new constants:
 
-* ``RACKSPACE`` - Supported values for ``region`` argument are: ``us``, ``uk``.
+* ``RACKSPACE_FIRST_GEN`` - Supported values for ``region`` argument are: ``us``, ``uk``.
   Default value is ``us``.
-* ``RACKSPACE_FIRST_GEN`` - Supported values for the ``region`` argument are:
+* ``RACKSPACE`` - Supported values for the ``region`` argument are:
   ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``.
   Default value is ``dfw``.
 
@@ -543,6 +618,54 @@ Not OK:
     record = driver.create_record(name=www, zone=zone, type=0,
                                   data='127.0.0.1')
 
+Cache busting functionality is now only enabled in Rackspace first-gen driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cache busting functionality has been disabled in the Rackspace next-gen driver
+and all of the OpenStack drivers. It's now only enabled in the Rackspace
+first-gen driver.
+
+Cache busting functionality works by appending a random query parameter to
+every GET HTTP request. It was originally added to the Rackspace first-gen
+driver a long time ago to avoid excessive HTTP caching on the provider side.
+This excessive caching some times caused list_nodes and other calls to return
+stale data.
+
+This approach should not be needed with Rackspace next-gen and OpenStack drivers
+so it has been disabled.
+
+No action is required on the user's side.
+
+libcloud.security.VERIFY_SSL_CERT_STRICT variable has been removed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``libcloud.security.VERIFY_SSL_CERT_STRICT`` variable has been introduced in
+version 0.4.2 when we initially added support for SSL certificate verification.
+This variable was added to ease the migration from older versions of Libcloud
+which didn't verify SSL certificates.
+
+In version 0.6.0, this variable has been set to ``True`` by default and
+deprecated.
+
+In this release, this variable has been fully removed. For more information
+on how SSL certificate validation works in Libcloud, see the :doc:`SSL
+Certificate Validation </other/ssl-certificate-validation>` page.
+
+get_container method changes in the S3 driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Previously, the ``get_container`` method in the S3 driver used a very
+inefficient approach of using ``list_containers`` + late filterting.
+
+The code was changed to use a more efficient approach which means using
+a single HTTP ``HEAD`` request.
+
+The only downside of this approach is that it doesn't return container
+creation date.
+
+If you need the container creation date, you should use ``list_containers``
+method and do the later filtering yourself.
+
 Libcloud 0.8
 ------------
 
@@ -553,7 +676,8 @@ Libcloud 0.8
 * ``ex_save_image`` method in the OpenStack driver now returns a ``NodeImage``
   instance.
 
-For a full list of changes, please see the `CHANGES file <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=fd1f9cd8917bf9d9c5f4d5344872dbccba894444;hb=b26812db71e6c36be3cc5f7fcb87f82b267bfddd>`_.
+For a full list of changes, please see the `CHANGES file
+<https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=fd1f9cd8917bf9d9c5f4d5344872dbccba894444;hb=b26812db71e6c36be3cc5f7fcb87f82b267bfddd>`__.
 
 Libcloud 0.7
 ------------
@@ -584,7 +708,8 @@ Updated code:
                 driver=driver)
 
 * Old deprecated paths have been removed. If you still haven't updated your
-code you need to do it now, otherwise it won't work with 0.7 and future releases.
+  code you need to do it now, otherwise it won't work with 0.7 and future
+  releases.
 
 Bellow is a list of old paths and their new locations:
 
@@ -598,7 +723,8 @@ Bellow is a list of old paths and their new locations:
 In the ``contrib/`` directory you can also find a simple bash script which can
 perform a search and replace for you - `migrate_paths.py <https://svn.apache.org/repos/asf/libcloud/trunk/contrib/migrate_paths.sh>`_.
 
-For a full list of changes, please see the `CHANGES file <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=276948338c2581de1178e51f7f7cdbd4e7ba9286;hb=2ad8f3fa1f258d6c53d7b058cdc6cd9ab1fd579b>`_.
+For a full list of changes, please see the `CHANGES file
+<https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=276948338c2581de1178e51f7f7cdbd4e7ba9286;hb=2ad8f3fa1f258d6c53d7b058cdc6cd9ab1fd579b>`__.
 
 Libcloud 0.6
 ------------
@@ -645,4 +771,4 @@ For example:
     Cls = get_provider(Provider.OPENNEBULA)
     driver = Cls('key', 'secret', api_version='1.4')
 
-For a full list of changes, please see the `CHANGES file <https://svn.apache.org/viewvc/libcloud/trunk/CHANGES?revision=1198753&view=markup>`_.
+For a full list of changes, please see the `CHANGES file <https://svn.apache.org/viewvc/libcloud/trunk/CHANGES?revision=1198753&view=markup>`__.

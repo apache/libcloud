@@ -15,17 +15,17 @@
 
 from __future__ import with_statement
 
-__all__ = [
-    'Zone',
-    'Record',
-    'DNSDriver'
-]
-
 import datetime
 
 from libcloud import __version__
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
+
+__all__ = [
+    'Zone',
+    'Record',
+    'DNSDriver'
+]
 
 
 class Zone(object):
@@ -422,9 +422,6 @@ class DNSDriver(BaseDriver):
 
         :param file_path: File path where the output will be saved.
         :type  file_path: ``str``
-
-        :return: Zone data in BIND compatible format.
-        :rtype: ``str``
         """
         result = self.export_zone_to_bind_format(zone=zone)
 

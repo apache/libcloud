@@ -15,31 +15,6 @@
   "name": "project_name",
   "quotas": [
     {
-      "limit": 8.0,
-      "metric": "INSTANCES",
-      "usage": 7.0
-    },
-    {
-      "limit": 8.0,
-      "metric": "CPUS",
-      "usage": 7.0
-    },
-    {
-      "limit": 8.0,
-      "metric": "EPHEMERAL_ADDRESSES",
-      "usage": 7.0
-    },
-    {
-      "limit": 8.0,
-      "metric": "DISKS",
-      "usage": 3.0
-    },
-    {
-      "limit": 1024.0,
-      "metric": "DISKS_TOTAL_GB",
-      "usage": 30.0
-    },
-    {
       "limit": 1000.0,
       "metric": "SNAPSHOTS",
       "usage": 0.0
@@ -52,7 +27,7 @@
     {
       "limit": 100.0,
       "metric": "FIREWALLS",
-      "usage": 4.0
+      "usage": 5.0
     },
     {
       "limit": 100.0,
@@ -60,15 +35,25 @@
       "usage": 0.0
     },
     {
-      "limit": 7.0,
-      "metric": "STATIC_ADDRESSES",
-      "usage": 3.0
-    },
-    {
       "limit": 100.0,
       "metric": "ROUTES",
       "usage": 6.0
+    },
+    {
+      "limit": 50.0,
+      "metric": "FORWARDING_RULES",
+      "usage": 0.0
+    },
+    {
+      "limit": 50.0,
+      "metric": "TARGET_POOLS",
+      "usage": 1.0
+    },
+    {
+      "limit": 50.0,
+      "metric": "HEALTH_CHECKS",
+      "usage": 1.0
     }
   ],
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name"
 }

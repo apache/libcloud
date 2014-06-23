@@ -5,5 +5,5 @@
   "id": "08257021638942464470",
   "kind": "compute#network",
   "name": "default",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default"
 }

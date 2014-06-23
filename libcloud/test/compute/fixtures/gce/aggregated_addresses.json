@@ -10,8 +10,8 @@
           "id": "10955781597205896134",
           "kind": "compute#address",
           "name": "libcloud-demo-europe-address",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/europe-west1",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/europe-west1/addresses/libcloud-demo-europe-address",
+          "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1",
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1/addresses/libcloud-demo-europe-address",
           "status": "RESERVED"
         }
       ]
@@ -25,8 +25,8 @@
           "id": "01531551729918243104",
           "kind": "compute#address",
           "name": "lcaddress",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/addresses/lcaddress",
+          "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/addresses/lcaddress",
           "status": "RESERVED"
         },
         {
@@ -36,8 +36,8 @@
           "id": "17634862894218443422",
           "kind": "compute#address",
           "name": "libcloud-demo-address",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/addresses/libcloud-demo-address",
+          "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/addresses/libcloud-demo-address",
           "status": "RESERVED"
         },
         {
@@ -47,8 +47,8 @@
           "id": "11879548153827627972",
           "kind": "compute#address",
           "name": "testaddress",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/addresses/testaddress",
+          "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/addresses/testaddress",
           "status": "RESERVED"
         }
       ]
@@ -67,5 +67,5 @@
     }
   },
   "kind": "compute#addressAggregatedList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/addresses"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/aggregated/addresses"
 }

@@ -15,7 +15,7 @@
 Rackspace driver
 """
 from libcloud.compute.types import Provider, LibcloudError
-from libcloud.compute.base import NodeLocation
+from libcloud.compute.base import NodeLocation, VolumeSnapshot
 from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
@@ -55,6 +55,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
     auth_url = AUTH_URL
     _auth_version = '2.0'
+    cache_busting = True
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop('region', None)
@@ -205,6 +206,21 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
                                                   port=port,
                                                   region=region,
                                                   **kwargs)
+
+    def _to_snapshot(self, api_node):
+        if 'snapshot' in api_node:
+            api_node = api_node['snapshot']
+
+        extra = {'volume_id': api_node['volumeId'],
+                 'name': api_node['displayName'],
+                 'created': api_node['createdAt'],
+                 'description': api_node['displayDescription'],
+                 'status': api_node['status']}
+
+        snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
+                                  size=api_node['size'],
+                                  extra=extra)
+        return snapshot
 
     def _ex_connection_class_kwargs(self):
         endpoint_args = ENDPOINT_ARGS_MAP[self.region]

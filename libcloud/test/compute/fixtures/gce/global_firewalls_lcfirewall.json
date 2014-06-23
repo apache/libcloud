@@ -11,8 +11,8 @@
   "id": "0565629596395414121",
   "kind": "compute#firewall",
   "name": "lcfirewall",
-  "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/firewalls/lcfirewall",
+  "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/firewalls/lcfirewall",
   "sourceTags": [
     "libcloud"
   ]

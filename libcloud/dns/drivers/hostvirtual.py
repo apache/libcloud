@@ -65,10 +65,14 @@ class HostVirtualDNSDriver(DNSDriver):
         RecordType.AAAA: 'AAAA',
         RecordType.CNAME: 'CNAME',
         RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT',
         RecordType.NS: 'SPF',
         RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
+
+    def __init__(self, key, secure=True, host=None, port=None):
+        super(HostVirtualDNSDriver, self).__init__(key=key, secure=secure,
+                                                   host=host, port=port)
 
     def _to_zones(self, items):
         zones = []
@@ -109,10 +113,10 @@ class HostVirtualDNSDriver(DNSDriver):
         return zones
 
     def list_records(self, zone):
-        params = {'zone_id': zone.id}
+        params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         result = self.connection.request(
-            API_ROOT + '/dns/records/', data=json.dumps(params)).object
+            API_ROOT + '/dns/records/', params=params).object
         records = self._to_records(items=result, zone=zone)
         return records
 

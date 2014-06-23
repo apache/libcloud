@@ -13,11 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import ssl
+import copy
+import binascii
 import time
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from pipes import quote as pquote
 
 try:
@@ -63,31 +70,47 @@ class HTTPResponse(httplib.HTTPResponse):
 
 class Response(object):
     """
-    A Base Response class to derive from.
+    A base Response class to derive from.
     """
-    NODE_STATE_MAP = {}
 
-    object = None
-    body = None
-    status = httplib.OK
-    headers = {}
-    error = None
-    connection = None
+    status = httplib.OK  # Response status code
+    headers = {}  # Response headers
+    body = None  # Raw response body
+    object = None  # Parsed response body
+
+    error = None  # Reason returned by the server.
+    connection = None  # Parent connection class
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = self._decompress_response(response=response)
+        """
+        :param response: HTTP response object. (optional)
+        :type response: :class:`httplib.HTTPResponse`
 
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-
-        self.status = response.status
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
+        self.connection = connection
 
         # http.client In Python 3 doesn't automatically lowercase the header
         # names
         self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
-        self.connection = connection
+        self.status = response.status
+
+        # This attribute is set when using LoggingConnection.
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data:
+            # LoggingConnection already decompresses data so it can log it
+            # which means we don't need to decompress it here.
+            self.body = response._original_data
+        else:
+            self.body = self._decompress_response(body=response.read(),
+                                                  headers=self.headers)
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -101,6 +124,7 @@ class Response(object):
         Override in a provider's subclass.
 
         :return: Parsed body.
+        :rtype: ``str``
         """
         return self.body
 
@@ -111,6 +135,7 @@ class Response(object):
         Override in a provider's subclass.
 
         :return: Parsed error.
+        :rtype: ``str``
         """
         return self.body
 
@@ -124,23 +149,22 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-        return self.status == httplib.OK or self.status == httplib.CREATED
+        return self.status in [httplib.OK, httplib.CREATED]
 
-    def _decompress_response(self, response):
+    def _decompress_response(self, body, headers):
         """
         Decompress a response body if it is using deflate or gzip encoding.
 
+        :param body: Response body.
+        :type body: ``str``
+
+        :param headers: Response headers.
+        :type headers: ``dict``
+
         :return: Decompressed response
+        :rtype: ``str``
         """
-        headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
-
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data is not None:
-            return original_data
-
-        body = response.read()
 
         if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
@@ -165,7 +189,7 @@ class JsonResponse(Response):
             body = json.loads(self.body)
         except:
             raise MalformedResponseError(
-                "Failed to parse JSON",
+                'Failed to parse JSON',
                 body=self.body,
                 driver=self.connection.driver)
         return body
@@ -196,6 +220,10 @@ class XmlResponse(Response):
 class RawResponse(Response):
 
     def __init__(self, connection):
+        """
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
         self._status = None
         self._response = None
         self._headers = {}
@@ -231,7 +259,7 @@ class RawResponse(Response):
         return self._reason
 
 
-#TODO: Move this to a better location/package
+# TODO: Move this to a better location/package
 class LoggingConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
@@ -303,7 +331,11 @@ class LoggingConnection():
     def _log_curl(self, method, url, body, headers):
         cmd = ["curl", "-i"]
 
-        cmd.extend(["-X", pquote(method)])
+        if method.lower() == 'head':
+            # HEAD method need special handling
+            cmd.extend(["--head"])
+        else:
+            cmd.extend(["-X", pquote(method)])
 
         for h in headers:
             cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
@@ -374,7 +406,7 @@ class Connection(object):
     """
     A Base Connection class to derive from.
     """
-    #conn_classes = (LoggingHTTPSConnection)
+    # conn_classes = (LoggingHTTPSConnection)
     conn_classes = (LibcloudHTTPConnection, LibcloudHTTPSConnection)
 
     responseCls = Response
@@ -386,12 +418,21 @@ class Connection(object):
     secure = 1
     driver = None
     action = None
+    cache_busting = False
+
+    allow_insecure = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
+
+        if not self.allow_insecure and not secure:
+            # TODO: We should eventually switch to whitelist instead of
+            # blacklist approach
+            raise ValueError('Non https connections are not allowed (use '
+                             'secure=True)')
 
         self.request_path = ''
 
@@ -414,7 +455,13 @@ class Connection(object):
             self.timeout = timeout
 
     def set_context(self, context):
+        if not isinstance(context, dict):
+            raise TypeError('context needs to be a dictionary')
+
         self.context = context
+
+    def reset_context(self):
+        self.context = {}
 
     def _tuple_from_url(self, url):
         secure = 1
@@ -480,7 +527,7 @@ class Connection(object):
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
-        #connection = self.conn_classes[False]("127.0.0.1", 8080)
+        # connection = self.conn_classes[False]("127.0.0.1", 8080)
 
         self.connection = connection
 
@@ -501,7 +548,7 @@ class Connection(object):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier
+        Users of the library should call this to uniquely identify their
         requests to a provider.
 
         :type token: ``str``
@@ -546,9 +593,13 @@ class Connection(object):
         """
         if params is None:
             params = {}
+        else:
+            params = copy.copy(params)
 
         if headers is None:
             headers = {}
+        else:
+            headers = copy.copy(headers)
 
         action = self.morph_action_hook(action)
         self.action = action
@@ -556,6 +607,10 @@ class Connection(object):
 
         # Extend default parameters
         params = self.add_default_params(params)
+
+        # Add cache busting parameters (if enabled)
+        if self.cache_busting and method == 'GET':
+            params = self._add_cache_busting_to_params(params=params)
 
         # Extend default headers
         headers = self.add_default_headers(headers)
@@ -613,13 +668,22 @@ class Connection(object):
                                         headers=headers)
         except ssl.SSLError:
             e = sys.exc_info()[1]
+            self.reset_context()
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls(connection=self)
+            responseCls = self.rawResponseCls
+            kwargs = {'connection': self}
         else:
-            response = self.responseCls(response=self.connection.getresponse(),
-                                        connection=self)
+            responseCls = self.responseCls
+            kwargs = {'connection': self,
+                      'response': self.connection.getresponse()}
+
+        try:
+            response = responseCls(**kwargs)
+        finally:
+            # Always reset the context after the request has completed
+            self.reset_context()
 
         return response
 
@@ -665,6 +729,25 @@ class Connection(object):
         Override in a provider's subclass.
         """
         return data
+
+    def _add_cache_busting_to_params(self, params):
+        """
+        Add cache busting parameter to the query parameters of a GET request.
+
+        Parameters are only added if "cache_busting" class attribute is set to
+        True.
+
+        Note: This should only be used with *naughty* providers which use
+        excessive caching of responses.
+        """
+        cache_busting_value = binascii.hexlify(os.urandom(8)).decode('ascii')
+
+        if isinstance(params, dict):
+            params['cache-busting'] = cache_busting_value
+        else:
+            params.append(('cache-busting', cache_busting_value))
+
+        return params
 
 
 class PollingConnection(Connection):
@@ -786,7 +869,7 @@ class PollingConnection(Connection):
 
 class ConnectionKey(Connection):
     """
-    A Base Connection class to derive from, which includes a
+    Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None):
@@ -802,7 +885,7 @@ class ConnectionKey(Connection):
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key.
+    Base connection class which accepts a ``user_id`` and ``key`` argument.
     """
 
     user_id = None

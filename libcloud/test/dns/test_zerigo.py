@@ -65,7 +65,7 @@ class ZerigoTests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         records = list(self.driver.list_records(zone=zone))
 
-        self.assertEqual(len(records), 2)
+        self.assertEqual(len(records), 4)
         self.assertEqual(records[0].name, 'www')
         self.assertEqual(records[0].type, RecordType.A)
         self.assertEqual(records[0].data, '172.16.16.1')
@@ -75,6 +75,14 @@ class ZerigoTests(unittest.TestCase):
 
         self.assertEqual(records[1].name, 'test')
         self.assertEqual(records[1].extra['ttl'], 3600)
+
+    def test_record_with_empty_name(self):
+        zone = self.driver.list_zones()[0]
+        record1 = list(self.driver.list_records(zone=zone))[-1]
+        record2 = list(self.driver.list_records(zone=zone))[-2]
+
+        self.assertEqual(record1.name, None)
+        self.assertEqual(record2.name, None)
 
     def test_list_records_no_results(self):
         zone = self.driver.list_zones()[0]

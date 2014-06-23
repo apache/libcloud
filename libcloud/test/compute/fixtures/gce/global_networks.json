@@ -8,7 +8,7 @@
       "id": "08257021638942464470",
       "kind": "compute#network",
       "name": "default",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default"
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default"
     },
     {
       "IPv4Range": "10.10.0.0/16",
@@ -17,7 +17,7 @@
       "id": "13254259054875092094",
       "kind": "compute#network",
       "name": "libcloud-demo-europe-network",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/libcloud-demo-europe-network"
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/libcloud-demo-europe-network"
     },
     {
       "IPv4Range": "10.10.0.0/16",
@@ -26,9 +26,9 @@
       "id": "17172579178188075621",
       "kind": "compute#network",
       "name": "libcloud-demo-network",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/libcloud-demo-network"
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/libcloud-demo-network"
     }
   ],
   "kind": "compute#networkList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks"
 }

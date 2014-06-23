@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Libcloud Python 2.x and 3.x compatibility layer
-# Some methods bellow are taken from Django PYK3 port which is licensed under 3
+# Some methods below are taken from Django PYK3 port which is licensed under 3
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
@@ -22,7 +22,11 @@ from __future__ import absolute_import
 
 import sys
 import types
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 PY2 = False
 PY25 = False
@@ -79,16 +83,33 @@ if PY3:
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
 
+    def ensure_string(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode('utf-8')
+        else:
+            raise TypeError("Invalid argument %r for ensure_string()" % (s,))
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
     u = str
+
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return bytes([s])
 
     def dictvalues(d):
         return list(d.values())
 
     def tostring(node):
         return ET.tostring(node, encoding='unicode')
+
+    def hexadigits(s):
+        # s needs to be a byte string.
+        return [format(x, "x") for x in s]
+
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA
@@ -96,7 +117,7 @@ else:
     import urllib2  # NOQA
     import urlparse  # NOQA
     import xmlrpclib  # NOQA
-    from urllib import quote as urlquote  # NOQA
+    from urllib import quote as _urlquote  # NOQA
     from urllib import unquote as urlunquote  # NOQA
     from urllib import urlencode as urlencode  # NOQA
 
@@ -114,16 +135,23 @@ else:
     if not PY25:
         from os.path import relpath  # NOQA
 
+    # Save the real value of unicode because urlquote needs it to tell the
+    # difference between a unicode string and a byte string.
+    _real_unicode = unicode
     basestring = unicode = str
 
     method_type = types.MethodType
 
-    b = bytes = str
+    b = bytes = ensure_string = str
 
     def byte(n):
         return n
 
     u = unicode
+
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return chr(s)
 
     def next(i):
         return i.next()
@@ -132,6 +160,16 @@ else:
         return d.values()
 
     tostring = ET.tostring
+
+    def urlquote(s, safe='/'):
+        if isinstance(s, _real_unicode):
+            # Pretend to be py3 by encoding the URI automatically.
+            s = s.encode('utf8')
+        return _urlquote(s, safe)
+
+    def hexadigits(s):
+        # s needs to be a string.
+        return [x.encode("hex") for x in s]
 
 if PY25:
     import posixpath

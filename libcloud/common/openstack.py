@@ -17,8 +17,6 @@
 Common utilities for OpenStack
 """
 import sys
-import binascii
-import os
 import datetime
 
 from libcloud.utils.py3 import httplib
@@ -122,7 +120,14 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.auth_user_info = None
 
     def morph_action_hook(self, action):
-        return action
+        (_, _, _, request_path) = self._tuple_from_url(self.auth_url)
+
+        if request_path == '':
+            # No path is provided in the auth_url, use action passed to this
+            # method.
+            return action
+
+        return request_path
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
@@ -138,7 +143,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         :type force: ``bool``
         """
         if not force and self.auth_version in AUTH_VERSIONS_WITH_EXPIRES \
-           and self._is_token_valid():
+           and self.is_token_valid():
             # If token is still valid, there is no need to re-authenticate
             return self
 
@@ -164,7 +169,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
-        elif resp.status != httplib.NO_CONTENT:
+        elif resp.status not in [httplib.NO_CONTENT, httplib.OK]:
             body = 'code: %s body:%s headers:%s' % (resp.status,
                                                     resp.body,
                                                     resp.headers)
@@ -279,11 +284,12 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
         return self
 
-    def _is_token_valid(self):
+    def is_token_valid(self):
         """
-        Return True if the current taken is already cached and hasn't expired
-        yet.
+        Return True if the current auth token is already cached and hasn't
+        expired yet.
 
+        :return: ``True`` if the token is still valid, ``False`` otherwise.
         :rtype: ``bool``
         """
         if not self.auth_token:
@@ -298,7 +304,6 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         time_tuple_expires = expires.utctimetuple()
         time_tuple_now = datetime.datetime.utcnow().utctimetuple()
 
-        # TODO: Subtract some reasonable grace time period
         if time_tuple_now < time_tuple_expires:
             return True
 
@@ -479,30 +484,54 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_service_type=None,
                  ex_force_service_name=None,
                  ex_force_service_region=None):
+        super(OpenStackBaseConnection, self).__init__(
+            user_id, key, secure=secure, timeout=timeout)
+
+        if ex_force_auth_version:
+            self._auth_version = ex_force_auth_version
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
-        self._auth_version = self._auth_version or ex_force_auth_version
+        self._ex_force_auth_token = ex_force_auth_token
         self._ex_tenant_name = ex_tenant_name
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
-
-        self._osa = None
-
-        if ex_force_auth_token:
-            self.auth_token = ex_force_auth_token
 
         if ex_force_auth_token and not ex_force_base_url:
             raise LibcloudError(
                 'Must also provide ex_force_base_url when specifying '
                 'ex_force_auth_token.')
 
+        if ex_force_auth_token:
+            self.auth_token = ex_force_auth_token
+
         if not self._auth_version:
             self._auth_version = AUTH_API_VERSION
 
-        super(OpenStackBaseConnection, self).__init__(
-            user_id, key, secure=secure, timeout=timeout)
+        auth_url = self._get_auth_url()
+
+        if not auth_url:
+            raise LibcloudError('OpenStack instance must ' +
+                                'have auth_url set')
+
+        osa = OpenStackAuthConnection(self, auth_url, self._auth_version,
+                                      self.user_id, self.key,
+                                      tenant_name=self._ex_tenant_name,
+                                      timeout=self.timeout)
+        self._osa = osa
+
+    def _get_auth_url(self):
+        """
+        Retrieve auth url for this instance using either "ex_force_auth_url"
+        constructor kwarg of "auth_url" class variable.
+        """
+        auth_url = self.auth_url
+
+        if self._ex_force_auth_url is not None:
+            auth_url = self._ex_force_auth_url
+
+        return auth_url
 
     def get_service_catalog(self):
         if self.service_catalog is None:
@@ -547,51 +576,42 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def request(self, **kwargs):
         return super(OpenStackBaseConnection, self).request(**kwargs)
 
+    def _set_up_connection_info(self, url):
+        result = self._tuple_from_url(url)
+        (self.host, self.port, self.secure, self.request_path) = result
+
     def _populate_hosts_and_request_paths(self):
         """
         OpenStack uses a separate host for API calls which is only provided
         after an initial authentication request.
         """
+        osa = self._osa
 
-        if not self.auth_token:
-            aurl = self.auth_url
+        if self._ex_force_auth_token:
+            # If ex_force_auth_token is provided we always hit the api directly
+            # and never try to authenticate.
+            #
+            # Note: When ex_force_auth_token is provided, ex_force_base_url
+            # must be provided as well.
+            self._set_up_connection_info(url=self._ex_force_base_url)
+            return
 
-            if self._ex_force_auth_url is not None:
-                aurl = self._ex_force_auth_url
-
-            if not aurl:
-                raise LibcloudError('OpenStack instance must ' +
-                                    'have auth_url set')
-
-            osa = OpenStackAuthConnection(self, aurl, self._auth_version,
-                                          self.user_id, self.key,
-                                          tenant_name=self._ex_tenant_name,
-                                          timeout=self.timeout)
-
-            # may throw InvalidCreds, etc
-            osa.authenticate()
+        if not osa.is_token_valid():
+            # Token is not available or it has expired. Need to retrieve a
+            # new one.
+            osa.authenticate()  # may throw InvalidCreds
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires
             self.auth_user_info = osa.auth_user_info
 
-            # pull out and parse the service catalog
-            osc = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=
-                                          self._auth_version)
+            # Pull out and parse the service catalog
+            osc = OpenStackServiceCatalog(
+                osa.urls, ex_force_auth_version=self._auth_version)
             self.service_catalog = osc
 
-        # Set up connection info
         url = self._ex_force_base_url or self.get_endpoint()
-        (self.host, self.port, self.secure, self.request_path) = \
-            self._tuple_from_url(url)
-
-    def _add_cache_busting_to_params(self, params):
-        cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
-
-        if isinstance(params, dict):
-            params['cache-busting'] = cache_busting_number
-        else:
-            params.append(('cache-busting', cache_busting_number))
+        self._set_up_connection_info(url=url)
 
 
 class OpenStackDriverMixin(object):

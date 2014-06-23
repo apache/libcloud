@@ -20,13 +20,12 @@ Usage:
     libcloud.security.VERIFY_SSL_CERT = True
 
     # Optional.
-    libcloud.security.CA_CERTS_PATH.append("/path/to/cacert.txt")
+    libcloud.security.CA_CERTS_PATH.append('/path/to/cacert.txt')
 """
 
 import os
 
 VERIFY_SSL_CERT = True
-VERIFY_SSL_CERT_STRICT = True
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together.
@@ -43,7 +42,10 @@ CA_CERTS_PATH = [
     # macports: curl-ca-bundle
     '/opt/local/share/curl/curl-ca-bundle.crt',
 
-    # homebrew: curl-ca-bundle
+    # homebrew: openssl
+    '/usr/local/etc/openssl/cert.pem',
+
+    # homebrew: curl-ca-bundle (backward compatibility)
     '/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt',
 ]
 
@@ -63,15 +65,11 @@ if environment_cert_file is not None:
     # don't want to fall-back to a potentially less restrictive bundle
     CA_CERTS_PATH = [environment_cert_file]
 
-CA_CERTS_UNAVAILABLE_WARNING_MSG = (
-    'Warning: No CA Certificates were found in CA_CERTS_PATH. '
-    'Toggling VERIFY_SSL_CERT to False.'
-)
-
 CA_CERTS_UNAVAILABLE_ERROR_MSG = (
-    'No CA Certificates were found in CA_CERTS_PATH. For information on'
+    'No CA Certificates were found in CA_CERTS_PATH. For information on '
     'how to get required certificate files, please visit '
-    'http://libcloud.apache.org/docs/ssl-certificate-validation.html'
+    'https://libcloud.readthedocs.org/en/latest/other/'
+    'ssl-certificate-validation.html'
 )
 
 VERIFY_SSL_DISABLED_MSG = (

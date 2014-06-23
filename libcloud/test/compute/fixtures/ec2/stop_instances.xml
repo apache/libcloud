@@ -1,4 +1,4 @@
-<StopInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<StopInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
     <requestId>4ace6850-c876-4971-af0b-67a4278c36a1</requestId>
     <instancesSet>
         <item>

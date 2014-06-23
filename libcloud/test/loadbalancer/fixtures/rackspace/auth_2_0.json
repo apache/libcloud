@@ -2,7 +2,7 @@
     "access": {
         "token": {
             "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "expires": "2012-03-14T08:10:14.000-05:00"
+            "expires": "2031-03-14T08:10:14.000-05:00"
         },
         "serviceCatalog": [
             {
@@ -53,7 +53,7 @@
                     }
                 ],
                 "name": "cloudFilesCDN",
-                "type": "object-store"
+                "type": "rax:object-cdn"
             }
         ],
         "user": {

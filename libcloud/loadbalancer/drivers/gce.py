@@ -30,8 +30,8 @@ DEFAULT_ALGORITHM = Algorithm.RANDOM
 class GCELBDriver(Driver):
     connectionCls = GCEConnection
     apiname = 'googleapis'
-    name = 'Google Compute Engine'
-    website = 'https://www.googleapis.com/'
+    name = 'Google Compute Engine Load Balancer'
+    website = 'https://cloud.google.com/'
 
     _VALUE_TO_ALGORITHM_MAP = {
         'RANDOM': Algorithm.RANDOM
@@ -97,7 +97,7 @@ class GCELBDriver(Driver):
         pool, then adding the members to the target pool.
 
         :param  name: Name of the new load balancer (required)
-        :type   ``str``
+        :type   name: ``str``
 
         :param  port: Port or range of ports the load balancer should listen
                       on, defaults to all ports.  Examples: '80', '5000-5999'

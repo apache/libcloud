@@ -9,6 +9,6 @@
   "maximumPersistentDisksSizeGb": "10240",
   "memoryMb": 3840,
   "name": "n1-standard-1",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
   "zone": "europe-west1-a"
 }

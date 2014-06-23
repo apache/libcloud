@@ -23,7 +23,11 @@ from hashlib import sha256
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
-from xml.etree import ElementTree
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -54,7 +58,7 @@ class AzureResponse(XmlResponse):
             # Some APIs respond with an XML error. Others just dump HTML
             body = self.parse_body()
 
-            if type(body) == ElementTree.Element:
+            if type(body) == ET.Element:
                 code = body.findtext(fixxpath(xpath='Code'))
                 message = body.findtext(fixxpath(xpath='Message'))
                 message = message.split('\n')[0]

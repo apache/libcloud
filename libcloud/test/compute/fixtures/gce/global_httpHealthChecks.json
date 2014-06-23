@@ -12,24 +12,38 @@
       "name": "basic-check",
       "port": 80,
       "requestPath": "/",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks/basic-check",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks/basic-check",
       "timeoutSec": 5,
       "unhealthyThreshold": 2
     },
     {
+      "checkIntervalSec": 10,
+      "creationTimestamp": "2013-12-13T10:52:46.800-08:00",
+      "healthyThreshold": 3,
+      "host": "lchost",
+      "id": "022194976205566532",
+      "kind": "compute#httpHealthCheck",
+      "name": "lchealthcheck",
+      "port": 9000,
+      "requestPath": "/lc",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks/lchealthcheck",
+      "timeoutSec": 10,
+      "unhealthyThreshold": 4
+    },
+    {
       "checkIntervalSec": 5,
-      "creationTimestamp": "2013-09-02T22:25:44.759-07:00",
+      "creationTimestamp": "2013-12-13T10:51:42.762-08:00",
       "healthyThreshold": 2,
-      "id": "16372093408499501663",
+      "id": "08359377740909791076",
       "kind": "compute#httpHealthCheck",
       "name": "libcloud-lb-demo-healthcheck",
       "port": 80,
       "requestPath": "/",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks/libcloud-lb-demo-healthcheck",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks/libcloud-lb-demo-healthcheck",
       "timeoutSec": 5,
       "unhealthyThreshold": 2
     }
   ],
   "kind": "compute#httpHealthCheckList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks"
 }

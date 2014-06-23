@@ -15,9 +15,7 @@
 
 import os
 import sys
-import unittest
 import os.path
-import warnings
 
 from mock import patch
 
@@ -25,6 +23,8 @@ import libcloud.security
 
 from libcloud.utils.py3 import reload
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+
+from libcloud.test import unittest
 
 ORIGINAL_CA_CERS_PATH = libcloud.security.CA_CERTS_PATH
 
@@ -52,18 +52,13 @@ class TestHttpLibSSLTests(unittest.TestCase):
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.environ['SSL_CERT_FILE'] = file_path
 
-        try:
-            reload(libcloud.security)
-        except ValueError:
-            e = sys.exc_info()[1]
-            msg = 'Certificate file can\'t be a directory'
-            self.assertEqual(str(e), msg)
-        else:
-            self.fail('Exception was not thrown')
+        expected_msg = 'Certificate file can\'t be a directory'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                reload, libcloud.security)
 
     def test_custom_ca_path_using_env_var_exist(self):
         # When setting a path we don't actually check that a valid CA file is
-        # provied.
+        # provided.
         # This happens later in the code in httplib_ssl.connect method
         file_path = os.path.abspath(__file__)
         os.environ['SSL_CERT_FILE'] = file_path
@@ -73,6 +68,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertEqual(libcloud.security.CA_CERTS_PATH, [file_path])
 
     def test_verify_hostname(self):
+        # commonName
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -81,6 +77,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                              (('organizationalUnitName', 'SSL'),),
                              (('commonName', 'somemachine.python.org'),))}
 
+        # commonName
         cert2 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -91,6 +88,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                  'subjectAltName': ((('DNS', 'foo.alt.name')),
                                     (('DNS', 'foo.alt.name.1')))}
 
+        # commonName
         cert3 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -99,6 +97,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                              (('organizationalUnitName', 'SSL'),),
                              (('commonName', 'python.org'),))}
 
+        # wildcard commonName
         cert4 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -146,6 +145,12 @@ class TestHttpLibSSLTests(unittest.TestCase):
                         hostname='us-east-1.api.joyentcloud.com', cert=cert4))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='t1.useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='ponies.useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='api.useast-1.api.joyentcloud.com', cert=cert4))
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
@@ -192,37 +197,20 @@ class TestHttpLibSSLTests(unittest.TestCase):
     def test_setup_verify(self, _):
         libcloud.security.CA_CERTS_PATH = []
 
-        # non-strict mode should just emit a warning
+        # Should throw a runtime error
         libcloud.security.VERIFY_SSL_CERT = True
-        libcloud.security.VERIFY_SSL_CERT_STRICT = False
-        self.httplib_object._setup_verify()
 
-        warnings.warn.assert_called_once_with(
-            libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
-
-        # strict mode, should throw a runtime error
-        libcloud.security.VERIFY_SSL_CERT = True
-        libcloud.security.VERIFY_SSL_CERT_STRICT = True
-
-        try:
-            self.httplib_object._setup_verify()
-        except RuntimeError:
-            e = sys.exc_info()[1]
-            msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
-            self.assertEqual(str(e), msg)
-            pass
-        else:
-            self.fail('Exception not thrown')
+        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+        self.assertRaisesRegexp(RuntimeError, expected_msg,
+                                self.httplib_object._setup_verify)
 
         libcloud.security.VERIFY_SSL_CERT = False
-        libcloud.security.VERIFY_SSL_CERT_STRICT = False
         self.httplib_object._setup_verify()
 
     @patch('warnings.warn')
     def test_setup_ca_cert(self, _):
         # verify = False, _setup_ca_cert should be a no-op
         self.httplib_object.verify = False
-        self.httplib_object.strict = False
         self.httplib_object._setup_ca_cert()
 
         self.assertEqual(self.httplib_object.ca_cert, None)
@@ -236,15 +224,12 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
 
-        # verify = True, no CA certs are available, warning should be emitted
+        # verify = True, no CA certs are available, exception should be thrown
         libcloud.security.CA_CERTS_PATH = []
-        self.httplib_object._setup_ca_cert()
 
-        warnings.warn.assert_called_once_with(
-            libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
-
-        self.assertFalse(self.httplib_object.ca_cert)
-        self.assertFalse(self.httplib_object.verify)
+        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+        self.assertRaisesRegexp(RuntimeError, expected_msg,
+                                self.httplib_object._setup_ca_cert)
 
 
 if __name__ == '__main__':

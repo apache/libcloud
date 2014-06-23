@@ -21,26 +21,37 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import b
 
-CHUNK_SIZE = 8096
-
 if PY3:
     from io import FileIO as file
 
+CHUNK_SIZE = 8096
 
-def read_in_chunks(iterator, chunk_size=None, fill_size=False):
+__all__ = [
+    'read_in_chunks',
+    'exhaust_iterator',
+    'guess_file_mime_type'
+]
+
+
+def read_in_chunks(iterator, chunk_size=None, fill_size=False,
+                   yield_empty=False):
     """
     Return a generator which yields data in chunks.
 
-    :type iterator: :class:`object` which implements iterator interface.
-    :param response: An object which implements an iterator interface
+    :param terator: An object which implements an iterator interface
                      or a File like object with read method.
+    :type iterator: :class:`object` which implements iterator interface.
 
-    :type chunk_size: ``int``
     :param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
+    :type chunk_size: ``int``
 
+    :param fill_size: If True, make sure chunks are exactly chunk_size in
+                      length (except for last chunk).
     :type fill_size: ``bool``
-    :param fill_size: If True, make sure chunks are chunk_size in length
-                      (except for last chunk).
+
+    :param yield_empty: If true and iterator returned no data, yield empty
+                        bytes object before raising StopIteration.
+    :type yield_empty: ``bool``
 
     TODO: At some point in the future we could use byte arrays here if version
     >= Python 3. This should speed things up a bit and reduce memory usage.
@@ -69,6 +80,9 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
                 empty = True
 
         if len(data) == 0:
+            if empty and yield_empty:
+                yield b('')
+
             raise StopIteration
 
         if fill_size:

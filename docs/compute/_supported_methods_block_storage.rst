@@ -4,10 +4,9 @@ Provider                              list volumes create volume destroy volume 
 `Abiquo`_                             no           no            no             no            no            no             no             
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
-`CloudFrames`_                        no           no            no             no            no            no             no
-`CloudSigma`_                         no           no            no             no            no            no             no             
-`CloudSigma`_                         no           no            no             no            no            no             no             
-`CloudStack`_                         no           yes           yes            yes           yes           yes            no             
+`CloudFrames`_                        no           no            no             no            no            no             no             
+`CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
+`CloudStack`_                         yes          yes           yes            yes           yes           no             no             
 `Digital Ocean`_                      no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
@@ -31,27 +30,32 @@ Provider                              list volumes create volume destroy volume 
 `ElasticHosts (lax-p)`_               no           no            no             no            no            no             no             
 `ElasticHosts (sjc-c)`_               no           no            no             no            no            no             no             
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
-`Gandi`_                              no           yes           yes            yes           yes           yes            no             
-`Google Compute Engine`_              no           yes           yes            yes           yes           yes            no             
+`Exoscale`_                           yes          yes           yes            yes           yes           no             no             
+`Gandi`_                              yes          yes           yes            yes           yes           no             no             
+`Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
-`IBM SmartCloud Enterprise`_          no           yes           yes            yes           yes           yes            no             
+`HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           no             no             
+`IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
+`Ikoula`_                             yes          yes           yes            yes           yes           no             no             
 `Joyent`_                             no           no            no             no            no            no             no             
-`KTUCloud`_                           no           yes           yes            yes           yes           yes            no             
+`Kili Public Cloud`_                  yes          yes           yes            yes           yes           no             no             
+`KTUCloud`_                           yes          yes           yes            yes           yes           no             no             
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            no             no            no            no             no             
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
-`Ninefold`_                           no           yes           yes            yes           yes           yes            no             
-`OpenNebula`_                         no           no            no             no            no            no             no             
-`OpenStack`_                          no           yes           yes            yes           yes           yes            no             
+`Ninefold`_                           yes          yes           yes            yes           yes           no             no             
+`OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
+`OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Opsource`_                           no           no            no             no            no            no             no             
-`Rackspace Cloud (Next Gen)`_         no           yes           yes            yes           yes           yes            no             
-`Rackspace Cloud (First Gen)`_        no           yes           yes            yes           yes           yes            no             
+`Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
+`Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
+`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           no             no             
+`Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
 `skalicloud`_                         no           no            no             no            no            no             no             
-`Slicehost`_                          no           no            no             no            no            no             no             
 `SoftLayer`_                          no           no            no             no            no            no             no             
 `vCloud`_                             no           no            no             no            no            no             no             
 `VCL`_                                no           no            no             no            no            no             no             
@@ -64,12 +68,10 @@ Provider                              list volumes create volume destroy volume 
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
-.. _`CloudSigma`: http://www.cloudsigma.com/
-.. _`CloudSigma`: http://www.cloudsigma.com/
+.. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
-.. _`Dummy Node Provider`: http://example.com
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
@@ -91,27 +93,32 @@ Provider                              list volumes create volume destroy volume 
 .. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
 .. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
+.. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
-.. _`Google Compute Engine`: https://www.googleapis.com/
+.. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
+.. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
-.. _`OpenNebula`: http://opennebula.org/
+.. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale INC`: http://www.outscale.com
+.. _`Outscale SAS`: http://www.outscale.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
-.. _`Slicehost`: http://slicehost.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`VCL`: http://incubator.apache.org/vcl/

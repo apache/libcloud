@@ -45,7 +45,8 @@
         "metadata": {
             "My Server Name" : "Apache1"
         },
-        "OS-DCF:diskConfig": "AUTO"
+        "OS-DCF:diskConfig": "AUTO",
+        "OS-EXT-AZ:availability_zone": "testaz"
 
     }
 }

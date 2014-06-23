@@ -79,7 +79,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     :return: Dictionary with pricing where a key name is size ID and
              the value is a price.
     """
-    if not driver_type in VALID_PRICING_DRIVER_TYPES:
+    if driver_type not in VALID_PRICING_DRIVER_TYPES:
         raise AttributeError('Invalid driver type: %s', driver_type)
 
     if driver_name in PRICING_DATA[driver_type]:
@@ -189,7 +189,7 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL,
     if not os.path.exists(dir_name):
         # Verify a valid path is provided
         msg = ('Can\'t write to %s, directory %s, doesn\'t exist' %
-              (file_path, dir_name))
+               (file_path, dir_name))
         raise ValueError(msg)
 
     if os.path.exists(file_path) and os.path.isdir(file_path):

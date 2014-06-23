@@ -5,10 +5,10 @@
   "name": "operation-zones_us-central1-a_disks_post",
   "operationType": "insert",
   "progress": 0,
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_disks_post",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_disks_post",
   "startTime": "2013-06-26T16:48:17.479-07:00",
   "status": "PENDING",
-  "targetLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/lcdisk",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/lcdisk",
   "user": "897001307951@developer.gserviceaccount.com",
-  "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
 }

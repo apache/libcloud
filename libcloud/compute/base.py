@@ -17,12 +17,13 @@
 Provides base classes for working with drivers
 """
 
+from __future__ import with_statement
+
 import sys
 import time
 import hashlib
 import os
 import socket
-import struct
 import binascii
 
 from libcloud.utils.py3 import b
@@ -31,14 +32,12 @@ import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
-
-# @@TR: are the imports below part of the public api for this
-# module? They aren't used in here ...
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
-from libcloud.httplib_ssl import LibcloudHTTPSConnection
-from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
+
+from libcloud.utils.networking import is_private_subnet
+from libcloud.utils.networking import is_valid_ip_address
 
 
 # How long to wait for the node to come online after creating it
@@ -50,20 +49,21 @@ SSH_CONNECT_TIMEOUT = 5 * 60
 
 
 __all__ = [
-    "Node",
-    "NodeState",
-    "NodeSize",
-    "NodeImage",
-    "NodeLocation",
-    "NodeAuthSSHKey",
-    "NodeAuthPassword",
-    "NodeDriver",
+    'Node',
+    'NodeState',
+    'NodeSize',
+    'NodeImage',
+    'NodeLocation',
+    'NodeAuthSSHKey',
+    'NodeAuthPassword',
+    'NodeDriver',
 
-    # @@TR: do the following need exporting?
-    "ConnectionKey",
-    "ConnectionUserAndKey",
-    "LibcloudHTTPSConnection",
-    "LibcloudHTTPConnection"
+    'StorageVolume',
+    'VolumeSnapshot',
+
+    # Deprecated, moved to libcloud.utils.networking
+    'is_private_subnet',
+    'is_valid_ip_address'
 ]
 
 
@@ -76,9 +76,8 @@ class UuidMixin(object):
         self._uuid = None
 
     def get_uuid(self):
-        """Unique hash for a node, node image, or node size
-
-        :return: ``string``
+        """
+        Unique hash for a node, node image, or node size
 
         The hash is a function of an SHA1 hash of the node, node image,
         or node size's ID and its driver which means that it should be
@@ -96,6 +95,8 @@ class UuidMixin(object):
 
         Note, for example, that this example will always produce the
         same UUID!
+
+        :rtype: ``str``
         """
         if not self._uuid:
             self._uuid = hashlib.sha1(b('%s:%s' %
@@ -134,7 +135,7 @@ class Node(UuidMixin):
     >>> node.name
     'dummy-1'
 
-    the node keeps a reference to its own driver which means that we
+    The node keeps a reference to its own driver which means that we
     can work on nodes from different providers without having to know
     which is which.
 
@@ -145,17 +146,46 @@ class Node(UuidMixin):
     >>> node2.driver.creds
     72
 
-    Althrough Node objects can be subclassed, this isn't normally
+    Although Node objects can be subclassed, this isn't normally
     done.  Instead, any driver specific information is stored in the
-    "extra" proproperty of the node.
+    "extra" attribute of the node.
 
     >>> node.extra
     {'foo': 'bar'}
-
     """
 
     def __init__(self, id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None):
+        """
+        :param id: Node ID.
+        :type id: ``str``
+
+        :param name: Node name.
+        :type name: ``str``
+
+        :param state: Node state.
+        :type state: :class:`libcloud.compute.types.NodeState`
+
+        :param public_ips: Public IP addresses associated with this node.
+        :type public_ips: ``list``
+
+        :param private_ips: Private IP addresses associated with this node.
+        :type private_ips: ``list``
+
+        :param driver: Driver this node belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param size: Size of this node. (optional)
+        :type size: :class:`.NodeSize`
+
+        :param image: Image of this node. (optional)
+        :type size: :class:`.NodeImage`
+
+        :param extra: Optional provider specific attributes associated with
+                      this node.
+        :type extra: ``dict``
+
+        """
         self.id = str(id) if id else None
         self.name = name
         self.state = state
@@ -167,26 +197,9 @@ class Node(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
-    # Note: getters and setters bellow are here only for backward
-    # compatibility. They will be removed in the next release.
-
-    def _set_public_ips(self, value):
-        self.public_ips = value
-
-    def _get_public_ips(self):
-        return self.public_ips
-
-    def _set_private_ips(self, value):
-        self.private_ips = value
-
-    def _get_private_ips(self):
-        return self.private_ips
-
-    public_ip = property(fget=_get_public_ips, fset=_set_public_ips)
-    private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
-
     def reboot(self):
-        """Reboot this node
+        """
+        Reboot this node
 
         :return: ``bool``
 
@@ -207,7 +220,8 @@ class Node(UuidMixin):
         return self.driver.reboot_node(self)
 
     def destroy(self):
-        """Destroy this node
+        """
+        Destroy this node
 
         :return: ``bool``
 
@@ -229,9 +243,9 @@ class Node(UuidMixin):
 
     def __repr__(self):
         return (('<Node: uuid=%s, name=%s, state=%s, public_ips=%s, '
-                 'provider=%s ...>')
+                 'private_ips=%s, provider=%s ...>')
                 % (self.uuid, self.name, self.state, self.public_ips,
-                   self.driver.name))
+                   self.private_ips, self.driver.name))
 
 
 class NodeSize(UuidMixin):
@@ -258,7 +272,34 @@ class NodeSize(UuidMixin):
     4
     """
 
-    def __init__(self, id, name, ram, disk, bandwidth, price, driver):
+    def __init__(self, id, name, ram, disk, bandwidth, price,
+                 driver, extra=None):
+        """
+        :param id: Size ID.
+        :type  id: ``str``
+
+        :param name: Size name.
+        :type  name: ``str``
+
+        :param ram: Amount of memory (in MB) provided by this size.
+        :type  ram: ``int``
+
+        :param disk: Amount of disk storage (in GB) provided by this image.
+        :type  disk: ``int``
+
+        :param bandwidth: Amount of bandiwdth included with this size.
+        :type  bandwidth: ``int``
+
+        :param price: Price (in US dollars) of running this node for an hour.
+        :type  price: ``float``
+
+        :param driver: Driver this size belongs to.
+        :type  driver: :class:`.NodeDriver`
+
+        :param extra: Optional provider specific attributes associated with
+                      this size.
+        :type  extra: ``dict``
+        """
         self.id = str(id)
         self.name = name
         self.ram = ram
@@ -266,6 +307,7 @@ class NodeSize(UuidMixin):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):
@@ -295,10 +337,23 @@ class NodeImage(UuidMixin):
     to the create_node function to decide which OS image to use.
 
     >>> node = driver.create_node(image=image)
-
     """
 
     def __init__(self, id, name, driver, extra=None):
+        """
+        :param id: Image ID.
+        :type id: ``str``
+
+        :param name: Image name.
+        :type name: ``str``
+
+        :param driver: Driver this image belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provided specific attributes associated with
+                      this image.
+        :type extra: ``dict``
+        """
         self.id = str(id)
         self.name = name
         self.driver = driver
@@ -322,6 +377,19 @@ class NodeLocation(object):
     """
 
     def __init__(self, id, name, country, driver):
+        """
+        :param id: Location ID.
+        :type id: ``str``
+
+        :param name: Location name.
+        :type name: ``str``
+
+        :param country: Location country.
+        :type country: ``str``
+
+        :param driver: Driver this location belongs to.
+        :type driver: :class:`.NodeDriver`
+        """
         self.id = str(id)
         self.name = name
         self.country = country
@@ -347,6 +415,10 @@ class NodeAuthSSHKey(object):
     """
 
     def __init__(self, pubkey):
+        """
+        :param pubkey: Public key matetiral.
+        :type pubkey: ``str``
+        """
         self.pubkey = pubkey
 
     def __repr__(self):
@@ -358,6 +430,13 @@ class NodeAuthPassword(object):
     A password to be used for authentication to a node.
     """
     def __init__(self, password, generated=False):
+        """
+        :param password: Password.
+        :type password: ``str``
+
+        :type generated: ``True`` if this password was automatically generated,
+                         ``False`` otherwise.
+        """
         self.password = password
         self.generated = generated
 
@@ -371,6 +450,22 @@ class StorageVolume(UuidMixin):
     """
 
     def __init__(self, id, name, size, driver, extra=None):
+        """
+        :param id: Storage volume ID.
+        :type id: ``str``
+
+        :param name: Storage volume name.
+        :type name: ``str``
+
+        :param size: Size of this volume (in GB).
+        :type size: ``int``
+
+        :param driver: Driver this image belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provider specific attributes.
+        :type extra: ``dict``
+        """
         self.id = id
         self.name = name
         self.size = size
@@ -378,18 +473,25 @@ class StorageVolume(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
+    def list_snapshots(self):
+        """
+        :rtype: ``list`` of ``VolumeSnapshot``
+        """
+        return self.driver.list_volume_snapshots(volume=self)
+
     def attach(self, node, device=None):
         """
         Attach this volume to a node.
 
         :param node: Node to attach volume to
-        :type node: :class:`Node`
+        :type node: :class:`.Node`
 
         :param device: Where the device is exposed,
                             e.g. '/dev/sdb (optional)
         :type device: ``str``
 
-        :return s ``bool``
+        :return: ``True`` if attach was successful, ``False`` otherwise.
+        :rtype: ``bool``
         """
 
         return self.driver.attach_volume(node=node, volume=self, device=device)
@@ -398,22 +500,18 @@ class StorageVolume(UuidMixin):
         """
         Detach this volume from its node
 
-        :return s ``bool``
+        :return: ``True`` if detach was successful, ``False`` otherwise.
+        :rtype: ``bool``
         """
 
         return self.driver.detach_volume(volume=self)
-
-    def list_snapshots(self):
-        """
-        :return s ``list`` of ``VolumeSnapshot``
-        """
-        return self.driver.list_volume_snapshots(volume=self)
 
     def snapshot(self, name):
         """
         Creates a snapshot of this volume.
 
-        :return s ``VolumeSnapshot``
+        :return: Created snapshot.
+        :rtype: ``VolumeSnapshot``
         """
         return self.driver.create_volume_snapshot(volume=self, name=name)
 
@@ -421,7 +519,8 @@ class StorageVolume(UuidMixin):
         """
         Destroy this storage volume.
 
-        :return s ``bool``
+        :return: ``True`` if destroy was successful, ``False`` otherwise.
+        :rtype: ``bool``
         """
 
         return self.driver.destroy_volume(volume=self)
@@ -457,9 +556,51 @@ class VolumeSnapshot(object):
         """
         Destroys this snapshot.
 
-        :return s ``bool``
+        :rtype: ``bool``
         """
         return self.driver.destroy_volume_snapshot(snapshot=self)
+
+    def __repr__(self):
+        return ('<VolumeSnapshot id=%s size=%s driver=%s>' %
+                (self.id, self.size, self.driver.name))
+
+
+class KeyPair(object):
+    """
+    Represents a SSH key pair.
+    """
+
+    def __init__(self, name, public_key, fingerprint, driver, private_key=None,
+                 extra=None):
+        """
+        Constructor.
+
+        :keyword    name: Name of the key pair object.
+        :type       name: ``str``
+
+        :keyword    fingerprint: Key fingerprint.
+        :type       fingerprint: ``str``
+
+        :keyword    public_key: Public key in OpenSSH format.
+        :type       public_key: ``str``
+
+        :keyword    private_key: Private key in PEM format.
+        :type       private_key: ``str``
+
+        :keyword    extra: Provider specific attributes associated with this
+                           key pair. (optional)
+        :type       extra: ``dict``
+        """
+        self.name = name
+        self.fingerprint = fingerprint
+        self.public_key = public_key
+        self.private_key = private_key
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<KeyPair name=%s fingerprint=%s driver=%s>' %
+                (self.name, self.fingerprint, self.driver.name))
 
 
 class NodeDriver(BaseDriver):
@@ -476,13 +617,15 @@ class NodeDriver(BaseDriver):
     name = None
     type = None
     port = None
-    features = {"create_node": []}
+    features = {'create_node': []}
+
     """
     List of available features for a driver.
-        - :class:`create_node`
-            - ssh_key: Supports :class:`NodeAuthSSHKey` as an authentication
+        - :meth:`libcloud.compute.base.NodeDriver.create_node`
+            - ssh_key: Supports :class:`.NodeAuthSSHKey` as an authentication
               method for nodes.
-            - password: Supports :class:`NodeAuthPassword` as an authentication
+            - password: Supports :class:`.NodeAuthPassword` as an
+              authentication
               method for nodes.
             - generates_password: Returns a password attribute on the Node
               object returned from creation.
@@ -496,41 +639,38 @@ class NodeDriver(BaseDriver):
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
 
-    def _get_and_check_auth(self, auth):
+    def list_nodes(self):
         """
-        Helper function for providers supporting :class:`NodeAuthPassword` or
-        :class:`NodeAuthSSHKey`
+        List all nodes.
 
-        Validates that only a supported object type is passed to the auth
-        parameter and raises an exception if it is not.
-
-        If no :class:`NodeAuthPassword` object is provided but one is expected
-        then a password is automatically generated.
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`.Node`
         """
+        raise NotImplementedError(
+            'list_nodes not implemented for this driver')
 
-        if isinstance(auth, NodeAuthPassword):
-            if 'password' in self.features['create_node']:
-                return auth
-            raise LibcloudError(
-                'Password provided as authentication information, but password'
-                'not supported', driver=self)
+    def list_sizes(self, location=None):
+        """
+        List sizes on a provider
 
-        if isinstance(auth, NodeAuthSSHKey):
-            if 'ssh_key' in self.features['create_node']:
-                return auth
-            raise LibcloudError(
-                'SSH Key provided as authentication information, but SSH Key'
-                'not supported', driver=self)
+        :param location: The location at which to list sizes
+        :type location: :class:`.NodeLocation`
 
-        if 'password' in self.features['create_node']:
-            value = os.urandom(16)
-            value = binascii.hexlify(value).decode('ascii')
-            return NodeAuthPassword(value, generated=True)
+        :return: list of node size objects
+        :rtype: ``list`` of :class:`.NodeSize`
+        """
+        raise NotImplementedError(
+            'list_sizes not implemented for this driver')
 
-        if auth:
-            raise LibcloudError(
-                '"auth" argument provided, but it was not a NodeAuthPassword'
-                'or NodeAuthSSHKey object', driver=self)
+    def list_locations(self):
+        """
+        List data centers for a provider
+
+        :return: list of node location objects
+        :rtype: ``list`` of :class:`.NodeLocation`
+        """
+        raise NotImplementedError(
+            'list_locations not implemented for this driver')
 
     def create_node(self, **kwargs):
         """
@@ -587,8 +727,8 @@ class NodeDriver(BaseDriver):
         actually provided to the driver API by the hosting provider rather than
         generated by libcloud.
 
-        You can only pass a :class:`NodeAuthPassword` or
-        :class:`NodeAuthSSHKey` to ``create_node`` via the auth parameter if
+        You can only pass a :class:`.NodeAuthPassword` or
+        :class:`.NodeAuthSSHKey` to ``create_node`` via the auth parameter if
         has the corresponding feature flag.
 
         :param name:   String with a name for this new node (required)
@@ -596,97 +736,24 @@ class NodeDriver(BaseDriver):
 
         :param size:   The size of resources allocated to this node.
                             (required)
-        :type size:   :class:`NodeSize`
+        :type size:   :class:`.NodeSize`
 
         :param image:  OS Image to boot on node. (required)
-        :type image:  :class:`NodeImage`
+        :type image:  :class:`.NodeImage`
 
         :param location: Which data center to create a node in. If empty,
-                              undefined behavoir will be selected. (optional)
-        :type location: :class:`NodeLocation`
+                              undefined behavior will be selected. (optional)
+        :type location: :class:`.NodeLocation`
 
         :param auth:   Initial authentication information for the node
                             (optional)
-        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
+        :type auth:   :class:`.NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
         :return: The newly created node.
-        :rtype: :class:`Node`
+        :rtype: :class:`.Node`
         """
         raise NotImplementedError(
             'create_node not implemented for this driver')
-
-    def destroy_node(self, node):
-        """Destroy a node.
-
-        Depending upon the provider, this may destroy all data associated with
-        the node, including backups.
-
-        :param node: The node to be destroyed
-        :type node: :class:`Node`
-
-        :return: True if the destroy was successful, otherwise False
-        :rtype: ``bool``
-        """
-        raise NotImplementedError(
-            'destroy_node not implemented for this driver')
-
-    def reboot_node(self, node):
-        """
-        Reboot a node.
-
-        :param node: The node to be rebooted
-        :type node: :class:`Node`
-
-        :return: True if the reboot was successful, otherwise False
-        :rtype: ``bool``
-        """
-        raise NotImplementedError(
-            'reboot_node not implemented for this driver')
-
-    def list_nodes(self):
-        """
-        List all nodes
-        :return:  list of node objects
-        :rtype: ``list`` of :class:`Node`
-        """
-        raise NotImplementedError(
-            'list_nodes not implemented for this driver')
-
-    def list_images(self, location=None):
-        """
-        List images on a provider
-
-        :param location: The location at which to list images
-        :type location: :class:`NodeLocation`
-
-        :return: list of node image objects
-        :rtype: ``list`` of :class:`NodeImage`
-        """
-        raise NotImplementedError(
-            'list_images not implemented for this driver')
-
-    def list_sizes(self, location=None):
-        """
-        List sizes on a provider
-
-        :param location: The location at which to list sizes
-        :type location: :class:`NodeLocation`
-
-        :return: list of node size objects
-        :rtype: ``list`` of :class:`NodeSize`
-        """
-        raise NotImplementedError(
-            'list_sizes not implemented for this driver')
-
-    def list_locations(self):
-        """
-        List data centers for a provider
-
-        :return: list of node location objects
-        :rtype: ``list`` of :class:`NodeLocation`
-        """
-        raise NotImplementedError(
-            'list_locations not implemented for this driver')
 
     def deploy_node(self, **kwargs):
         """
@@ -695,8 +762,8 @@ class NodeDriver(BaseDriver):
         In order to be able to SSH into a created node access credentials are
         required.
 
-        A user can pass either a :class:`NodeAuthPassword` or
-        :class:`NodeAuthSSHKey` to the ``auth`` argument. If the
+        A user can pass either a :class:`.NodeAuthPassword` or
+        :class:`.NodeAuthSSHKey` to the ``auth`` argument. If the
         ``create_node`` implementation supports that kind if credential (as
         declared in ``self.features['create_node']``) then it is passed on to
         ``create_node``. Otherwise it is not passed on to ``create_node`` and
@@ -734,7 +801,7 @@ class NodeDriver(BaseDriver):
         existing implementation should be able to handle most such.
 
         :param deploy: Deployment to run once machine is online and
-                            availble to SSH.
+                            available to SSH.
         :type deploy: :class:`Deployment`
 
         :param ssh_username: Optional name of the account which is used
@@ -756,7 +823,7 @@ class NodeDriver(BaseDriver):
 
         :param auth:   Initial authentication information for the node
                             (optional)
-        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
+        :type auth:   :class:`.NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
         :param ssh_key: A path (or paths) to an SSH private key with which
                              to attempt to authenticate. (optional)
@@ -789,7 +856,7 @@ class NodeDriver(BaseDriver):
             pass
         elif 'create_node' in self.features:
             f = self.features['create_node']
-            if not 'generates_password' in f and not "password" in f:
+            if 'generates_password' not in f and "password" not in f:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
         else:
@@ -843,7 +910,7 @@ class NodeDriver(BaseDriver):
                 e = sys.exc_info()[1]
                 deploy_error = e
             else:
-                # Script sucesfully executed, don't try alternate username
+                # Script successfully executed, don't try alternate username
                 deploy_error = None
                 break
 
@@ -852,6 +919,57 @@ class NodeDriver(BaseDriver):
                                   driver=self)
 
         return node
+
+    def reboot_node(self, node):
+        """
+        Reboot a node.
+
+        :param node: The node to be rebooted
+        :type node: :class:`.Node`
+
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'reboot_node not implemented for this driver')
+
+    def destroy_node(self, node):
+        """
+        Destroy a node.
+
+        Depending upon the provider, this may destroy all data associated with
+        the node, including backups.
+
+        :param node: The node to be destroyed
+        :type node: :class:`.Node`
+
+        :return: True if the destroy was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'destroy_node not implemented for this driver')
+
+    ##
+    # Volume and snapshot management methods
+    ##
+
+    def list_volumes(self):
+        """
+        List storage volumes.
+
+        :rtype: ``list`` of :class:`.StorageVolume`
+        """
+        raise NotImplementedError(
+            'list_volumes not implemented for this driver')
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a storage volume.
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        raise NotImplementedError(
+            'list_volume_snapshots not implemented for this driver')
 
     def create_volume(self, size, name, location=None, snapshot=None):
         """
@@ -864,9 +982,9 @@ class NodeDriver(BaseDriver):
         :type name: ``str``
 
         :param location: Which data center to create a volume in. If
-                               empty, undefined behavoir will be selected.
+                               empty, undefined behavior will be selected.
                                (optional)
-        :type location: :class:`NodeLocation`
+        :type location: :class:`.NodeLocation`
 
         :param snapshot:  Name of snapshot from which to create the new
                                volume.  (optional)
@@ -877,6 +995,44 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'create_volume not implemented for this driver')
+
+    def create_volume_snapshot(self, volume, name):
+        """
+        Creates a snapshot of the storage volume.
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        raise NotImplementedError(
+            'create_volume_snapshot not implemented for this driver')
+
+    def attach_volume(self, node, volume, device=None):
+        """
+        Attaches volume to node.
+
+        :param node: Node to attach volume to.
+        :type node: :class:`.Node`
+
+        :param volume: Volume to attach.
+        :type volume: :class:`.StorageVolume`
+
+        :param device: Where the device is exposed, e.g. '/dev/sdb'
+        :type device: ``str``
+
+        :rytpe: ``bool``
+        """
+        raise NotImplementedError('attach not implemented for this driver')
+
+    def detach_volume(self, volume):
+        """
+        Detaches a volume from a node.
+
+        :param volume: Volume to be detached
+        :type volume: :class:`.StorageVolume`
+
+        :rtype: ``bool``
+        """
+
+        raise NotImplementedError('detach not implemented for this driver')
 
     def destroy_volume(self, volume):
         """
@@ -891,55 +1047,6 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'destroy_volume not implemented for this driver')
 
-    def attach_volume(self, node, volume, device=None):
-        """
-        Attaches volume to node.
-
-        :param Node node: Node to attach volume to.
-        :param StorageVolume volume: Volume to attach.
-        :param str device: Where the device is exposed, e.g. '/dev/sdb'
-
-        :return bool:
-        """
-        raise NotImplementedError('attach not implemented for this driver')
-
-    def detach_volume(self, volume):
-        """
-        Detaches a volume from a node.
-
-        :param StorageVolume volume: Volume to be detached
-        :return bool:
-        """
-
-        raise NotImplementedError('detach not implemented for this driver')
-
-    def list_volumes(self):
-        """
-        List storage volumes.
-
-        :return [StorageVolume]:
-        """
-        raise NotImplementedError(
-            'list_volumes not implemented for this driver')
-
-    def list_volume_snapshots(self, volume):
-        """
-        List snapshots for a storage volume.
-
-        :rtype: ``list`` of :class:`VolumeSnapshot`
-        """
-        raise NotImplementedError(
-            'list_volume_snapshots not implemented for this driver')
-
-    def create_volume_snapshot(self, volume, name):
-        """
-        Creates a snapshot of the storage volume.
-
-        :rtype: :class:`VolumeSnapshot`
-        """
-        raise NotImplementedError(
-            'create_volume_snapshot not implemented for this driver')
-
     def destroy_volume_snapshot(self, snapshot):
         """
         Destroys a snapshot.
@@ -948,6 +1055,289 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'destroy_volume_snapshot not implemented for this driver')
+
+    ##
+    # Image management methods
+    ##
+
+    def list_images(self, location=None):
+        """
+        List images on a provider.
+
+        :param location: The location at which to list images.
+        :type location: :class:`.NodeLocation`
+
+        :return: list of node image objects.
+        :rtype: ``list`` of :class:`.NodeImage`
+        """
+        raise NotImplementedError(
+            'list_images not implemented for this driver')
+
+    def create_image(self, node, name, description=None):
+        """
+        Creates an image from a node object.
+
+        :param node: Node to run the task on.
+        :type node: :class:`.Node`
+
+        :param name: name for new image.
+        :type name: ``str``
+
+        :param description: description for new image.
+        :type name: ``description``
+
+        :rtype: :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+
+        """
+        raise NotImplementedError(
+            'create_image not implemented for this driver')
+
+    def delete_image(self, node_image):
+        """
+        Deletes a node image from a provider.
+
+        :param node_image: Node image object.
+        :type node_image: :class:`.NodeImage`
+
+        :return: ``True`` if delete_image was successful, ``False`` otherwise.
+        :rtype: ``bool``
+        """
+
+        raise NotImplementedError(
+            'delete_image not implemented for this driver')
+
+    def get_image(self, image_id):
+        """
+        Returns a single node image from a provider.
+
+        :param image_id: Node to run the task on.
+        :type image_id: ``str``
+
+        :rtype :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+        """
+        raise NotImplementedError(
+            'get_image not implemented for this driver')
+
+    def copy_image(self, source_region, node_image, name, description=None):
+        """
+        Copies an image from a source region to the current region.
+
+        :param source_region: Region to copy the node from.
+        :type source_region: ``str``
+
+        :param node_image: NodeImage to copy.
+        :type node_image: :class`.NodeImage`:
+
+        :param name: name for new image.
+        :type name: ``str``
+
+        :param description: description for new image.
+        :type name: ``str``
+
+        :rtype: :class:`.NodeImage`:
+        :return: NodeImage instance on success.
+        """
+        raise NotImplementedError(
+            'copy_image not implemented for this driver')
+
+    ##
+    # SSH key pair management methods
+    ##
+
+    def list_key_pairs(self):
+        """
+        List all the available key pair objects.
+
+        :rtype: ``list`` of :class:`.KeyPair` objects
+        """
+        raise NotImplementedError(
+            'list_key_pairs not implemented for this driver')
+
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
+        raise NotImplementedError(
+            'get_key_pair not implemented for this driver')
+
+    def create_key_pair(self, name):
+        """
+        Create a new key pair object.
+
+        :param name: Key pair name.
+        :type name: ``str``
+        """
+        raise NotImplementedError(
+            'create_key_pair not implemented for this driver')
+
+    def import_key_pair_from_string(self, name, key_material):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_material: Public key material.
+        :type key_material: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        raise NotImplementedError(
+            'import_key_pair_from_string not implemented for this driver')
+
+    def import_key_pair_from_file(self, name, key_file_path):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_file_path: Path to the public key file.
+        :type key_file_path: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        key_file_path = os.path.expanduser(key_file_path)
+
+        with open(key_file_path, 'r') as fp:
+            key_material = fp.read()
+
+        return self.import_key_pair_from_string(name=name,
+                                                key_material=key_material)
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete an existing key pair.
+
+        :param key_pair: Key pair object.
+        :type key_pair: :class`.KeyPair`
+        """
+        raise NotImplementedError(
+            'delete_key_pair not implemented for this driver')
+
+    def wait_until_running(self, nodes, wait_period=3, timeout=600,
+                           ssh_interface='public_ips', force_ipv4=True):
+        """
+        Block until the provided nodes are considered running.
+
+        Node is considered running when it's state is "running" and when it has
+        at least one IP address assigned.
+
+        :param nodes: List of nodes to wait for.
+        :type nodes: ``list`` of :class:`.Node`
+
+        :param wait_period: How many seconds to wait between each loop
+                            iteration. (default is 3)
+        :type wait_period: ``int``
+
+        :param timeout: How many seconds to wait before giving up.
+                        (default is 600)
+        :type timeout: ``int``
+
+        :param ssh_interface: Which attribute on the node to use to obtain
+                              an IP address. Valid options: public_ips,
+                              private_ips. Default is public_ips.
+        :type ssh_interface: ``str``
+
+        :param force_ipv4: Ignore IPv6 addresses (default is True).
+        :type force_ipv4: ``bool``
+
+        :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
+                 list of ip_address on success.
+        :rtype: ``list`` of ``tuple``
+        """
+        def is_supported(address):
+            """
+            Return True for supported address.
+            """
+            if force_ipv4 and not is_valid_ip_address(address=address,
+                                                      family=socket.AF_INET):
+                return False
+            return True
+
+        def filter_addresses(addresses):
+            """
+            Return list of supported addresses.
+            """
+            return [address for address in addresses if is_supported(address)]
+
+        if ssh_interface not in ['public_ips', 'private_ips']:
+            raise ValueError('ssh_interface argument must either be' +
+                             'public_ips or private_ips')
+
+        start = time.time()
+        end = start + timeout
+
+        uuids = set([node.uuid for node in nodes])
+
+        while time.time() < end:
+            all_nodes = self.list_nodes()
+            matching_nodes = list([node for node in all_nodes
+                                   if node.uuid in uuids])
+
+            if len(matching_nodes) > len(uuids):
+                found_uuids = [node.uuid for node in matching_nodes]
+                msg = ('Unable to match specified uuids ' +
+                       '(%s) with existing nodes. Found ' % (uuids) +
+                       'multiple nodes with same uuid: (%s)' % (found_uuids))
+                raise LibcloudError(value=msg, driver=self)
+
+            running_nodes = [node for node in matching_nodes
+                             if node.state == NodeState.RUNNING]
+            addresses = [filter_addresses(getattr(node, ssh_interface))
+                         for node in running_nodes]
+
+            if len(running_nodes) == len(uuids) == len(addresses):
+                return list(zip(running_nodes, addresses))
+            else:
+                time.sleep(wait_period)
+                continue
+
+        raise LibcloudError(value='Timed out after %s seconds' % (timeout),
+                            driver=self)
+
+    def _get_and_check_auth(self, auth):
+        """
+        Helper function for providers supporting :class:`.NodeAuthPassword` or
+        :class:`.NodeAuthSSHKey`
+
+        Validates that only a supported object type is passed to the auth
+        parameter and raises an exception if it is not.
+
+        If no :class:`.NodeAuthPassword` object is provided but one is expected
+        then a password is automatically generated.
+        """
+
+        if isinstance(auth, NodeAuthPassword):
+            if 'password' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'Password provided as authentication information, but password'
+                'not supported', driver=self)
+
+        if isinstance(auth, NodeAuthSSHKey):
+            if 'ssh_key' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'SSH Key provided as authentication information, but SSH Key'
+                'not supported', driver=self)
+
+        if 'password' in self.features['create_node']:
+            value = os.urandom(16)
+            value = binascii.hexlify(value).decode('ascii')
+            return NodeAuthPassword(value, generated=True)
+
+        if auth:
+            raise LibcloudError(
+                '"auth" argument provided, but it was not a NodeAuthPassword'
+                'or NodeAuthSSHKey object', driver=self)
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
@@ -958,77 +1348,6 @@ class NodeDriver(BaseDriver):
                                        ssh_interface=ssh_interface,
                                        force_ipv4=force_ipv4)
 
-    def wait_until_running(self, nodes, wait_period=3, timeout=600,
-                           ssh_interface='public_ips', force_ipv4=True):
-        """
-        Block until the given nodes are fully booted and have an IP address
-        assigned.
-
-        :param nodes: list of node instances.
-        :type nodes: ``List`` of :class:`Node`
-
-        :param wait_period: How many seconds to between each loop
-                                 iteration (default is 3)
-        :type wait_period: ``int``
-
-        :param timeout: How many seconds to wait before timing out
-                             (default is 600)
-        :type timeout: ``int``
-
-        :param ssh_interface: The interface to wait for.
-                                   Default is 'public_ips', other option is
-                                   'private_ips'.
-        :type ssh_interface: ``str``
-
-        :param force_ipv4: Ignore ipv6 IP addresses (default is True).
-        :type force_ipv4: ``bool``
-
-        :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
-                 list of ip_address on success.
-        :rtype: ``list`` of ``tuple``
-        """
-        def is_supported(address):
-            """Return True for supported address"""
-            if force_ipv4 and not is_valid_ip_address(address=address,
-                                                      family=socket.AF_INET):
-                return False
-            return True
-
-        def filter_addresses(addresses):
-            """Return list of supported addresses"""
-            return [a for a in addresses if is_supported(a)]
-
-        start = time.time()
-        end = start + timeout
-
-        if ssh_interface not in ['public_ips', 'private_ips']:
-            raise ValueError('ssh_interface argument must either be' +
-                             'public_ips or private_ips')
-
-        uuids = set([n.uuid for n in nodes])
-        while time.time() < end:
-            nodes = self.list_nodes()
-            nodes = list([n for n in nodes if n.uuid in uuids])
-
-            if len(nodes) > len(uuids):
-                found_uuids = [n.uuid for n in nodes]
-                msg = ('Unable to match specified uuids ' +
-                       '(%s) with existing nodes. Found ' % (uuids) +
-                       'multiple nodes with same uuid: (%s)' % (found_uuids))
-                raise LibcloudError(value=msg, driver=self)
-
-            running_nodes = [n for n in nodes if n.state == NodeState.RUNNING]
-            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in
-                         running_nodes]
-            if len(running_nodes) == len(uuids) == len(addresses):
-                return list(zip(running_nodes, addresses))
-            else:
-                time.sleep(wait_period)
-                continue
-
-        raise LibcloudError(value='Timed out after %s seconds' % (timeout),
-                            driver=self)
-
     def _ssh_client_connect(self, ssh_client, wait_period=1.5, timeout=300):
         """
         Try to connect to the remote SSH server. If a connection times out or
@@ -1038,11 +1357,11 @@ class NodeDriver(BaseDriver):
         :type ssh_client: ``SSHClient``
 
         :param wait_period: How many seconds to wait between each loop
-                                 iteration (default is 1.5)
+                            iteration. (default is 1.5)
         :type wait_period: ``int``
 
-        :param timeout: How many seconds to wait before timing out
-                             (default is 600)
+        :param timeout: How many seconds to wait before giving up.
+                        (default is 300)
         :type timeout: ``int``
 
         :return: ``SSHClient`` on success
@@ -1069,10 +1388,17 @@ class NodeDriver(BaseDriver):
                                            ssh_port, ssh_username,
                                            ssh_password, ssh_key_file,
                                            ssh_timeout, timeout, max_tries):
+        """
+        Establish an SSH connection to the node and run the provided deployment
+        task.
+
+        :rtype: :class:`.Node`:
+        :return: Node instance on success.
+        """
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
                                password=ssh_password,
-                               key=ssh_key_file,
+                               key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
         # Connect to the SSH server running on the node
@@ -1080,89 +1406,58 @@ class NodeDriver(BaseDriver):
                                               timeout=timeout)
 
         # Execute the deployment task
-        self._run_deployment_script(task=task, node=node,
-                                    ssh_client=ssh_client,
-                                    max_tries=max_tries)
+        node = self._run_deployment_script(task=task, node=node,
+                                           ssh_client=ssh_client,
+                                           max_tries=max_tries)
+        return node
 
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
         """
         Run the deployment script on the provided node. At this point it is
         assumed that SSH connection has already been established.
 
-        :param task: Deployment task to run on the node.
-        :type task: ``Deployment``
+        :param task: Deployment task to run.
+        :type task: :class:`Deployment`
 
-        :param node: Node to operate one
+        :param node: Node to run the task on.
         :type node: ``Node``
 
-        :param ssh_client: A configured and connected SSHClient instance
-        :type ssh_client: ``SSHClient``
+        :param ssh_client: A configured and connected SSHClient instance.
+        :type ssh_client: :class:`SSHClient`
 
         :param max_tries: How many times to retry if a deployment fails
-                               before giving up (default is 3)
+                          before giving up. (default is 3)
         :type max_tries: ``int``
 
+        :rtype: :class:`.Node`
         :return: ``Node`` Node instance on success.
         """
         tries = 0
+
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
             except Exception:
-                e = sys.exc_info()[1]
                 tries += 1
+
                 if tries >= max_tries:
                     e = sys.exc_info()[1]
                     raise LibcloudError(value='Failed after %d tries: %s'
                                         % (max_tries, str(e)), driver=self)
             else:
+                # Deployment succeeded
                 ssh_client.close()
                 return node
 
     def _get_size_price(self, size_id):
+        """
+        Return pricing information for the provided size id.
+        """
         return get_size_price(driver_type='compute',
                               driver_name=self.api_name,
                               size_id=size_id)
 
 
-def is_private_subnet(ip):
-    """
-    Utility function to check if an IP address is inside a private subnet.
-
-    :type ip: ``str``
-    :param ip: IP address to check
-
-    :return: ``bool`` if the specified IP address is private.
-    """
-    priv_subnets = [{'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                    {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
-                    {'subnet': '192.168.0.0', 'mask': '255.255.0.0'}]
-
-    ip = struct.unpack('I', socket.inet_aton(ip))[0]
-
-    for network in priv_subnets:
-        subnet = struct.unpack('I', socket.inet_aton(network['subnet']))[0]
-        mask = struct.unpack('I', socket.inet_aton(network['mask']))[0]
-
-        if (ip & mask) == (subnet & mask):
-            return True
-
-    return False
-
-
-def is_valid_ip_address(address, family=socket.AF_INET):
-    """
-    Check if the provided address is valid IPv4 or IPv6 adddress.
-
-    :return: ``bool`` True if the provided address is valid.
-    """
-    try:
-        socket.inet_pton(family, address)
-    except socket.error:
-        return False
-    return True
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     import doctest
     doctest.testmod()

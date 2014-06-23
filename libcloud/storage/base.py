@@ -33,7 +33,20 @@ from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
+__all__ = [
+    'Object',
+    'Container',
+    'StorageDriver',
+
+    'CHUNK_SIZE',
+    'DEFAULT_CONTENT_TYPE'
+]
+
 CHUNK_SIZE = 8096
+
+# Default Content-Type which is sent when uploading an object if one is not
+# supplied and can't be detected when using non-strict mode.
+DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
 
 class Object(object):
@@ -50,7 +63,7 @@ class Object(object):
         :param size: Object size in bytes.
         :type  size: ``int``
 
-        :param hash Object hash.
+        :param hash: Object hash.
         :type  hash: ``str``
 
         :param container: Object container.
@@ -172,6 +185,10 @@ class StorageDriver(BaseDriver):
     name = None
     hash_type = 'md5'
     supports_chunked_encoding = False
+
+    # When strict mode is used, exception will be thrown if no content type is
+    # provided and none can be detected when uploading an object
+    strict_mode = False
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -592,9 +609,13 @@ class StorageDriver(BaseDriver):
             content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
+                if self.strict_mode:
+                    raise AttributeError('File content-type could not be '
+                                         'guessed and no content_type value '
+                                         'is provided')
+                else:
+                    # Fallback to a content-type
+                    content_type = DEFAULT_CONTENT_TYPE
 
         file_size = None
 
@@ -646,7 +667,7 @@ class StorageDriver(BaseDriver):
         :param data: Data to upload.
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :rtype: ``tuple``
@@ -692,7 +713,7 @@ class StorageDriver(BaseDriver):
                         (defauls to False).
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :type chunk_size: ``int``
@@ -721,7 +742,7 @@ class StorageDriver(BaseDriver):
             chunk = ''
             if chunked:
                 response.connection.connection.send(b('%X\r\n' %
-                                                   (len(chunk))))
+                                                      (len(chunk))))
                 response.connection.connection.send(chunk)
                 response.connection.connection.send(b('\r\n'))
                 response.connection.connection.send(b('0\r\n\r\n'))
@@ -733,7 +754,7 @@ class StorageDriver(BaseDriver):
             try:
                 if chunked:
                     response.connection.connection.send(b('%X\r\n' %
-                                                       (len(chunk))))
+                                                          (len(chunk))))
                     response.connection.connection.send(b(chunk))
                     response.connection.connection.send(b('\r\n'))
                 else:

@@ -30,7 +30,11 @@ urlparse = urlparse.urlparse
 
 import time
 
-from xml.etree import ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from xml.parsers.expat import ExpatError
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
@@ -690,26 +694,22 @@ class VCloudNodeDriver(NodeDriver):
         return result
 
     def create_node(self, **kwargs):
-        """Creates and returns node.
-
-
-        @inherits: :class:`NodeDriver.create_node`
+        """
+        Creates and returns node.
 
         :keyword    ex_network: link to a "Network" e.g.,
-          "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
+                    ``https://services.vcloudexpress...``
         :type       ex_network: ``str``
 
         :keyword    ex_vdc: Name of organisation's virtual data
-            center where vApp VMs will be deployed.
+                            center where vApp VMs will be deployed.
         :type       ex_vdc: ``str``
 
         :keyword    ex_cpus: number of virtual cpus (limit depends on provider)
         :type       ex_cpus: ``int``
 
-        :keyword    ex_row: ????
         :type       ex_row: ``str``
 
-        :keyword    ex_group: ????
         :type       ex_group: ``str``
         """
         name = kwargs['name']
@@ -951,7 +951,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                       '5': NodeState.RUNNING,
                       '6': NodeState.UNKNOWN,
                       '7': NodeState.UNKNOWN,
-                      '8': NodeState.TERMINATED,
+                      '8': NodeState.STOPPED,
                       '9': NodeState.UNKNOWN,
                       '10': NodeState.UNKNOWN}
 
@@ -1336,11 +1336,12 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return results
 
     def create_node(self, **kwargs):
-        """Creates and returns node. If the source image is:
-           - vApp template - a new vApp is instantiated from template
-           - existing vApp - a new vApp is cloned from the source vApp. Can
-                             not clone more vApps is parallel otherwise
-                             resource busy error is raised.
+        """
+        Creates and returns node. If the source image is:
+          - vApp template - a new vApp is instantiated from template
+          - existing vApp - a new vApp is cloned from the source vApp. Can
+                            not clone more vApps is parallel otherwise
+                            resource busy error is raised.
 
 
         @inherits: :class:`NodeDriver.create_node`

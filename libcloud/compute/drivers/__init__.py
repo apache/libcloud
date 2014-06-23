@@ -35,7 +35,6 @@ __all__ = [
     'opennebula',
     'rackspace',
     'rimuhosting',
-    'slicehost',
     'softlayer',
     'vcloud',
     'voxel',

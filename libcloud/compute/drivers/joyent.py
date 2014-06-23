@@ -30,9 +30,9 @@ from libcloud.utils.py3 import b
 from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import Provider
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.base import is_private_subnet
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize
+from libcloud.utils.networking import is_private_subnet
 
 API_HOST_SUFFIX = '.api.joyentcloud.com'
 API_VERSION = '~6.5'
@@ -74,6 +74,8 @@ class JoyentConnection(ConnectionUserAndKey):
     """
 
     responseCls = JoyentResponse
+
+    allow_insecure = False
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'

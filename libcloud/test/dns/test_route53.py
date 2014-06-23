@@ -50,13 +50,31 @@ class Route53Tests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records), 10)
 
         record = records[1]
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
+        self.assertEqual(record.extra['ttl'], 86400)
+
+        record = records[3]
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'ASPMX.L.GOOGLE.COM.')
+        self.assertEqual(record.extra['priority'], 1)
+
+        record = records[4]
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'ALT1.ASPMX.L.GOOGLE.COM.')
+        self.assertEqual(record.extra['priority'], 5)
+
+        record = records[8]
+        self.assertEqual(record.type, RecordType.SRV)
+        self.assertEqual(record.data, 'xmpp-server.example.com.')
+        self.assertEqual(record.extra['priority'], 1)
+        self.assertEqual(record.extra['weight'], 10)
+        self.assertEqual(record.extra['port'], 5269)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')
@@ -202,7 +220,7 @@ class Route53MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_02_29_hostedzone(self, method, url, body, headers):
-        #print method, url, body, headers
+        # print method, url, body, headers
         if method == "POST":
             body = self.fixtures.load("create_zone.xml")
             return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])

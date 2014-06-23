@@ -2,7 +2,7 @@ CloudFrames Compute Driver Documentation
 ========================================
 
 Connecting to the CloudFrames installation
-----------------------------------------
+------------------------------------------
 
 This will tell you how to interpret the available arguments:
 

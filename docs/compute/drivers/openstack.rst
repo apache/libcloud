@@ -1,6 +1,18 @@
 OpenStack Compute Driver Documentation
 ======================================
 
+`OpenStack`_ is an open-source project which allows you to build and run your
+own public or a private cloud.
+
+.. figure:: /_static/images/provider_logos/openstack.png
+    :align: center
+    :width: 200
+    :target: http://www.openstack.org/
+
+Among many other private clouds, it also powers Rackspace's Public Cloud.
+
+.. _connecting-to-openstack-installation:
+
 Connecting to the OpenStack installation
 ----------------------------------------
 
@@ -14,21 +26,25 @@ common scenario with a default installation, you will only need to provide
 
 Available arguments:
 
-* ``ex_force_auth_url`` - Authentication service (Keystone) API URL (e.g.
-  ``http://192.168.1.101:5000/v2.0``)
+* ``ex_force_auth_url`` - Authentication service (Keystone) API URL. It can
+  either be a full URL with a path (e.g.
+  ``https://192.168.1.101:5000/v2.0/tokens/``) or a base URL without a path
+  (e.g. ``https://192.168.1.1``). If no path is provided, default path for the
+  provided auth version is appended to the base URL.
 * ``ex_force_auth_version`` - API version of the authentication service. This
   argument determines how authentication is performed. Valid and supported
   versions are:
-    * ``1.0`` - authenticate against the keystone using the provided username
-      and API key (old and deprecated version which was used by Rackspace in
-      the past)
-    * ``1.1`` - authenticate against the keystone using the provided username
-      and API key (old and deprecated version which was used by Rackspace in
-      the past)
-    * ``2.0`` or ``2.0_apikey`` - authenticate against keystone with a username
-     and API key
-    * `2.0_password`` - authenticate against keystone with a username and
-      password
+
+  * ``1.0`` - authenticate against the keystone using the provided username
+    and API key (old and deprecated version which was used by Rackspace in
+    the past)
+  * ``1.1`` - authenticate against the keystone using the provided username
+    and API key (old and deprecated version which was used by Rackspace in
+    the past)
+  * ``2.0`` or ``2.0_apikey`` - authenticate against keystone with a username
+    and API key
+  * ``2.0_password`` - authenticate against keystone with a username and
+    password
 
   Unless you are working with a very old version of OpenStack you will either
   want to use ``2.0_apikey`` or ``2.0_password``.
@@ -75,7 +91,25 @@ component of the URL (``12345`` in the example bellow).
 4. Skipping normal authentication flow and hitting the API endpoint directly using the ``ex_force_auth_token`` argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This is an advanced use cases which assumes you manage authentication and token
+retrieval yourself.
+
+If you use this argument, the driver won't hit authentication service and as
+such, won't be aware of the token expiration time.
+
+This means auth token will be considered valid for the whole life time of the
+driver instance and you will need to manually re-instantiate a driver with a new
+token before the currently used one is about to expire.
+
 .. literalinclude:: /examples/compute/openstack/force_auth_token.py
+   :language: python
+
+5. HP Cloud (www.hpcloud.com)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Connecting to HP Cloud US West and US East (OpenStack Havana).
+
+.. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
 
 Non-standard functionality and extension methods
@@ -105,6 +139,9 @@ between different requests.
 
 This means that driver will only hit authentication service and obtain auth
 token on the first request or if the auth token is about to expire.
+
+As noted in the example 4 above, this doesn't hold true if you use
+``ex_force_auth_token`` argument.
 
 Troubleshooting
 ---------------
@@ -151,6 +188,23 @@ service are two different services which listen on different ports.
 API Docs
 --------
 
+Please note that there are two API versions of the OpenStack Compute API, which
+are supported by two different subclasses of the OpenStackNodeDriver. The
+default is the 1.1 API. The 1.0 API is supported to be able to connect to
+OpenStack instances which do not yet support the version 1.1 API.
+
+Compute 1.1 API version (current)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_1_NodeDriver
+    :members:
+    :inherited-members:
+
+Compute 1.0 API version (old installations)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_0_NodeDriver
     :members:
     :inherited-members:
+
+.. _`OpenStack`: http://www.openstack.org/

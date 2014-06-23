@@ -30,12 +30,12 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlencode
 
 from libcloud.compute.providers import Provider
-from libcloud.compute.base import is_private_subnet
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.types import (NodeState, InvalidCredsError,
                                     LibcloudError)
 from libcloud.compute.base import (Node, NodeDriver, NodeImage, NodeSize,
                                    NodeLocation)
+from libcloud.utils.networking import is_private_subnet
 
 API_HOST = 'api.nephoscale.com'
 
@@ -48,10 +48,10 @@ NODE_STATE_MAP = {
 VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                         httplib.NO_CONTENT]
 
-#used in create_node and specifies how many times to get the list of nodes and
-#check if the newly created node is there. This is because when a request is
-#sent to create a node, NephoScale replies with the job id, and not the node
-#itself thus we don't have the ip addresses, that are required in deploy_node
+# used in create_node and specifies how many times to get the list of nodes and
+# check if the newly created node is there. This is because when a request is
+# sent to create a node, NephoScale replies with the job id, and not the node
+# itself thus we don't have the ip addresses, that are required in deploy_node
 CONNECT_ATTEMPTS = 10
 
 
@@ -94,6 +94,8 @@ class NephoscaleConnection(ConnectionUserAndKey):
     """
     host = API_HOST
     responseCls = NephoscaleResponse
+
+    allow_insecure = False
 
     def add_default_headers(self, headers):
         """
@@ -386,9 +388,9 @@ get all keys call with no arguments')
         if not nowait:
             return node
         else:
-            #try to get the created node public ips, for use in deploy_node
-            #At this point we don't have the id of the newly created Node,
-            #so search name in nodes
+            # try to get the created node public ips, for use in deploy_node
+            # At this point we don't have the id of the newly created Node,
+            # so search name in nodes
             created_node = False
             while connect_attempts > 0:
                 nodes = self.list_nodes()
@@ -409,7 +411,7 @@ get all keys call with no arguments')
         public_ips = []
         private_ips = []
         ip_addresses = data.get('ipaddresses', '')
-        #E.g. "ipaddresses": "198.120.14.6, 10.132.60.1"
+        # E.g. "ipaddresses": "198.120.14.6, 10.132.60.1"
         if ip_addresses:
             for ip in ip_addresses.split(','):
                 ip = ip.replace(' ', '')

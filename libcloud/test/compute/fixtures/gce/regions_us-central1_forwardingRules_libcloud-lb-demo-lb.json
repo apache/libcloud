@@ -6,7 +6,7 @@
   "kind": "compute#forwardingRule",
   "name": "libcloud-lb-demo-lb",
   "portRange": "80-80",
-  "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/forwardingRules/libcloud-lb-demo-lb",
-  "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
+  "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/forwardingRules/libcloud-lb-demo-lb",
+  "target": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
 }

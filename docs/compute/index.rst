@@ -22,20 +22,31 @@ Terminology
 Compute
 ~~~~~~~
 
-* **Node** - represents a cloud or virtual server.
-* **NodeSize** - represents node hardware configuration. Usually this is amount
-  of the available RAM, bandwidth, CPU speed and disk size. Most of the drivers
-  also expose hourly price (in dollars) for the Node of this size.
-* **NodeImage** - represents an operating system image.
-* **NodeLocation** - represents a physical location where a server can be.
-* **NodeState** - represents a node state. Standard states are: ``running``,
-  ``rebooting``, ``terminated``, ``pending``, and ``unknown``.
+* :class:`~libcloud.compute.base.Node` - represents a cloud or virtual server.
+* :class:`~libcloud.compute.base.NodeSize` - represents node hardware
+  configuration. Usually this is amount of the available RAM, bandwidth,
+  CPU speed and disk size. Most of the drivers also expose an hourly price
+  (in dollars) for the Node of this size.
+* :class:`~libcloud.compute.base.NodeImage` - represents an operating system
+  image.
+* :class:`~libcloud.compute.base.NodeLocation` - represents a physical location
+  where a server can be.
+* :class:`~libcloud.compute.types.NodeState` - represents a node state.
+  Standard states are: ``running``, ``stopped``, ``rebooting``, ``terminated``,
+  ``pending``, and ``unknown``.
+
+Key Pair Management
+~~~~~~~~~~~~~~~~~~~
+
+* :class:`~libcloud.compute.base.KeyPair` - represents an SSH key pair object.
 
 Block Storage
 ~~~~~~~~~~~~~
 
-* **StorageVolume** - represents a block storage volume
-* **VolumeSnapshot** - represents a point in time snapshot of a StorageVolume
+* :class:`~libcloud.compute.base.StorageVolume` - represents a block storage
+  volume
+* :class:`~libcloud.compute.base.VolumeSnapshot` - represents a point in time
+  snapshot of a StorageVolume
 
 Supported Providers
 -------------------
@@ -56,11 +67,19 @@ Deployment
 ----------
 
 Libcloud provides deployment functionality which makes bootstrapping a server
-easier. It allows you to create a server and runn shell commands on it once the
+easier. It allows you to create a server and run shell commands on it once the
 server has been created.
 
 For more information and examples, please see the :doc:`deployment page
 </compute/deployment>`.
+
+SSH key pair management
+-----------------------
+
+Compute API also allows you to manage your SSH key pairs.
+
+For more information and examples, please see the :doc:`key pair management
+page </compute/key_pair_management>`.
 
 Examples
 --------
@@ -70,5 +89,5 @@ We have :doc:`examples of several common patterns </compute/examples>`.
 API Reference
 -------------
 
-There is a reference to :doc:`all the methods on the base compute driver
-</compute/api/>`.
+For a full reference of all the classes and methods exposed by the compute
+API, see :doc:`this page </compute/api>`.

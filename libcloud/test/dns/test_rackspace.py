@@ -75,7 +75,7 @@ class RackspaceUSTests(unittest.TestCase):
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
-        self.assertEqual(len(record_types), 7)
+        self.assertEqual(len(record_types), 8)
         self.assertTrue(RecordType.A in record_types)
 
     def test_list_zones_success(self):
@@ -308,6 +308,17 @@ class RackspaceUSTests(unittest.TestCase):
         name = None
         self.assertEqual(self.driver._to_full_record_name(domain, name),
                          'foo.bar')
+
+    def test_to_partial_record_name(self):
+        domain = 'example.com'
+        names = ['test.example.com', 'foo.bar.example.com',
+                 'example.com.example.com', 'example.com']
+        expected_values = ['test', 'foo.bar', 'example.com', None]
+
+        for name, expected_value in zip(names, expected_values):
+            value = self.driver._to_partial_record_name(domain=domain,
+                                                        name=name)
+            self.assertEqual(value, expected_value)
 
 
 class RackspaceUKTests(RackspaceUSTests):

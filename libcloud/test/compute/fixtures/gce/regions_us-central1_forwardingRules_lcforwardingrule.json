@@ -6,7 +6,7 @@
   "kind": "compute#forwardingRule",
   "name": "lcforwardingrule",
   "portRange": "8000-8500",
-  "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/forwardingRules/lcforwardingrule",
-  "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/lctargetpool"
+  "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/forwardingRules/lcforwardingrule",
+  "target": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/targetPools/lctargetpool"
 }

@@ -316,17 +316,14 @@ class AtmosTests(unittest.TestCase):
         file_path = os.path.abspath(__file__)
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftu'
-        try:
-            self.driver.upload_object(file_path=file_path, container=container,
-                                      object_name=object_name)
-        except AttributeError:
-            pass
-        else:
-            self.fail(
-                'File content type not provided'
-                ' but an exception was not thrown')
-        finally:
-            libcloud.utils.files.guess_file_mime_type = old_func
+        obj = self.driver.upload_object(file_path=file_path,
+                                        container=container,
+                                        object_name=object_name)
+
+        # Just check that the file was uploaded OK, as the fallback
+        # Content-Type header should be set (application/octet-stream).
+        self.assertEqual(obj.name, object_name)
+        libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_error(self):
         def dummy_content_type(name):

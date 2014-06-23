@@ -1,4 +1,4 @@
-<CreateSnapshotResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<CreateSnapshotResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
   <requestId>59dbff89-35bd-4eac-99ed-be587</requestId>
   <snapshotId>snap-a7cb2hd9</snapshotId>
   <volumeId>vol-4282672b</volumeId>

@@ -13,27 +13,31 @@ Debugging
 
 .. note::
 
-    If you are sharing debug output on our IRC channel or issue tracker using
-    Pastebin, Github Gists or a similar service, make sure to remove your
-    credentials and any other data you consider private from the output.
+    If you are sharing debug output on any public medium such as our IRC
+    channel or an issue tracker using Pastebin, Github Gists or a similar
+    service, make sure to remove your credentials and any other data you
+    consider private from the output.
 
-Libcloud has a special debug mode which when enabled outputs all the outgoing
+Libcloud has a special debug mode which when enabled, logs all the outgoing
 HTTP requests and all the incoming HTTP responses. Output also includes cURL
 commands which can be used to re-produce the requests.
 
-When this mode is enabled and if ``paramiko`` library is installed (used for
-deployment), paramiko library log level is also set to ``DEBUG`` which helps
-with debugging the deployment issues.
+When this mode is enabled and ``paramiko`` library is installed (used for
+deployment), paramiko library log level is set to ``DEBUG`` which helps with
+debugging the deployment related issues.
+
+To make the debugging easier, Libcloud will also automatically decompress the
+response body (if compressed) before logging it.
 
 To enable it, set ``LIBCLOUD_DEBUG`` environment variable and make it point
-to a file where the output should be saved.
+to a file where the debug output should be saved.
 
 For example if you want the output to be logged to the standard error (on
-Unix) you can set it to ``/dev/stderr``:
+Linux) you can set it to ``/dev/stderr``:
 
 .. sourcecode:: bash
 
-    LIBCLOUD_DEBUG=/dev/stderr python my_script.py.
+    LIBCLOUD_DEBUG=/dev/stderr python my_script.py
 
 Example output:
 

@@ -45,7 +45,6 @@ class Provider(object):
     :cvar EC2_EU_WEST: Amazon AWS EU Ireland
     :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
-    :cvar SLICEHOST: Slicehost.com
     :cvar GCE: Google Compute Engine
     :cvar GOGRID: GoGrid
     :cvar VPSNET: VPS.net
@@ -72,12 +71,15 @@ class Provider(object):
     :cvar KTUCLOUD: kt ucloud driver
     :cvar GRIDSPOT: Gridspot driver
     :cvar ABIQUO: Abiquo driver
-    @cvar NEPHOSCALE: NephoScale driver
+    :cvar NEPHOSCALE: NephoScale driver
+    :cvar EXOSCALE: Exoscale driver.
+    :cvar IKOULA: Ikoula driver.
+    :cvar OUTSCALE_SAS: Outscale SAS driver.
+    :cvar OUTSCALE_INC: Outscale INC driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'
-    SLICEHOST = 'slicehost'
     GCE = 'gce'
     GOGRID = 'gogrid'
     VPSNET = 'vpsnet'
@@ -104,7 +106,6 @@ class Provider(object):
     NINEFOLD = 'ninefold'
     TERREMARK = 'terremark'
     CLOUDSTACK = 'cloudstack'
-    CLOUDSIGMA_US = 'cloudsigma_us'
     LIBVIRT = 'libvirt'
     JOYENT = 'joyent'
     VCL = 'vcl'
@@ -116,6 +117,14 @@ class Provider(object):
     DIGITAL_OCEAN = 'digitalocean'
     NEPHOSCALE = 'nephoscale'
     CLOUDFRAMES = 'cloudframes'
+    EXOSCALE = 'exoscale'
+    IKOULA = 'ikoula'
+    OUTSCALE_SAS = 'outscale_sas'
+    OUTSCALE_INC = 'outscale_inc'
+
+    # OpenStack based providers
+    HPCLOUD = 'hpcloud'
+    KILI = 'kili'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
@@ -137,12 +146,17 @@ class Provider(object):
     ELASTICHOSTS_AU1 = 'elastichosts_au1'
     ELASTICHOSTS_CN1 = 'elastichosts_cn1'
 
+    CLOUDSIGMA_US = 'cloudsigma_us'
+
     # Deprecated constants which aren't supported anymore
     RACKSPACE_UK = 'rackspace_uk'
     RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
     RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
     RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
+
+    # Removed
+    # SLICEHOST = 'slicehost'
 
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
@@ -209,6 +223,26 @@ class DeploymentError(LibcloudError):
     def __repr__(self):
         return (('<DeploymentError: node=%s, error=%s, driver=%s>'
                 % (self.node.id, str(self.value), str(self.driver))))
+
+
+class KeyPairError(LibcloudError):
+    error_type = 'KeyPairError'
+
+    def __init__(self, name, driver):
+        self.name = name
+        self.value = 'Key pair with name %s does not exist' % (name)
+        super(KeyPairError, self).__init__(value=self.value, driver=driver)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return ('<%s name=%s, value=%s, driver=%s>' %
+                (self.error_type, self.name, self.value, self.driver.name))
+
+
+class KeyPairDoesNotExistError(KeyPairError):
+    error_type = 'KeyPairDoesNotExistError'
 
 
 """Deprecated alias of :class:`DeploymentException`"""

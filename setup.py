@@ -16,7 +16,7 @@ import os
 import sys
 import doctest
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -168,31 +168,6 @@ class TestCommand(Command):
         return not res.wasSuccessful()
 
 
-class Pep8Command(Command):
-    description = "run pep8 script"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            import pep8
-            pep8
-        except ImportError:
-            print ('Missing "pep8" library. You can install it using pip: '
-                   'pip install pep8')
-            sys.exit(1)
-
-        cwd = os.getcwd()
-        retcode = call(('pep8 %s/libcloud/' %
-                       (cwd)).split(' '))
-        sys.exit(retcode)
-
-
 class ApiDocsCommand(Command):
     description = "generate API documentation"
     user_options = []
@@ -260,10 +235,10 @@ setup(
     url='http://libcloud.apache.org/',
     cmdclass={
         'test': TestCommand,
-        'pep8': Pep8Command,
         'apidocs': ApiDocsCommand,
         'coverage': CoverageCommand
     },
+    zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -280,4 +255,5 @@ setup(
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation :: PyPy'])

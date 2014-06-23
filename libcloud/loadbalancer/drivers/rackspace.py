@@ -157,7 +157,7 @@ class RackspaceConnectionThrottle(object):
                             before applying throttling.
     :type min_connections: ``int``
 
-    :param max_connections: Maximum number of of connections per IP address.
+    :param max_connections: Maximum number of connections per IP address.
                             (Must be between 0 and 100000, 0 allows an
                             unlimited number of connections.)
     :type max_connections: ``int``
@@ -249,6 +249,7 @@ class RackspaceConnection(RackspaceConnection, PollingConnection):
     auth_url = AUTH_URL
     poll_interval = 2
     timeout = 80
+    cache_busting = True
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -259,8 +260,6 @@ class RackspaceConnection(RackspaceConnection, PollingConnection):
 
         if method in ('POST', 'PUT'):
             headers['Content-Type'] = 'application/json'
-        if method == 'GET':
-            self._add_cache_busting_to_params(params)
 
         return super(RackspaceConnection, self).request(
             action=action, params=params,
@@ -405,7 +404,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         balancer_attrs.update({
             'nodes': [self._member_attributes(member) for member in members],
         })
-        #balancer_attrs['nodes'] = ['fu']
+        # balancer_attrs['nodes'] = ['fu']
         balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',

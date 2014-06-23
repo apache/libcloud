@@ -27,29 +27,31 @@ from libcloud.utils.py3 import httplib
 
 
 class LibcloudHTTPSConnection(httplib.HTTPSConnection):
-    """LibcloudHTTPSConnection
+    """
+    LibcloudHTTPSConnection
 
     Subclass of HTTPSConnection which verifies certificate names
     if and only if CA certificates are available.
     """
-    verify = False        # does not verify
+    verify = True         # verify by default
     ca_cert = None        # no default CA Certificate
 
     def __init__(self, *args, **kwargs):
-        """Constructor
+        """
+        Constructor
         """
         self._setup_verify()
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
 
     def _setup_verify(self):
-        """Setup Verify SSL or not
+        """
+        Setup Verify SSL or not
 
         Reads security module's VERIFY_SSL_CERT and toggles whether
         the class overrides the connect() class method or runs the
         inherited httplib.HTTPSConnection connect()
         """
         self.verify = libcloud.security.VERIFY_SSL_CERT
-        self.strict = libcloud.security.VERIFY_SSL_CERT_STRICT
 
         if self.verify:
             self._setup_ca_cert()
@@ -57,7 +59,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             warnings.warn(libcloud.security.VERIFY_SSL_DISABLED_MSG)
 
     def _setup_ca_cert(self):
-        """Setup CA Certs
+        """
+        Setup CA Certs
 
         Search in CA_CERTS_PATH for valid candidates and
         return first match.  Otherwise, complain about certs
@@ -73,18 +76,12 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             # use first available certificate
             self.ca_cert = ca_certs_available[0]
         else:
-            if self.strict:
-                raise RuntimeError(
-                    libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
-            else:
-                # no certificates found; toggle verify to False
-                warnings.warn(
-                    libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
-                self.ca_cert = None
-                self.verify = False
+            raise RuntimeError(
+                libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
 
     def connect(self):
-        """Connect
+        """
+        Connect
 
         Checks if verification is toggled; if not, just call
         httplib.HTTPSConnection's connect
@@ -111,7 +108,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             raise ssl.SSLError('Failed to verify hostname')
 
     def _verify_hostname(self, hostname, cert):
-        """Verify hostname against peer cert
+        """
+        Verify hostname against peer cert
 
         Check both commonName and entries in subjectAltName, using a
         rudimentary glob to dns regex check to find matches
@@ -133,7 +131,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         )
 
     def _get_subject_alt_names(self, cert):
-        """Get SubjectAltNames
+        """
+        Get SubjectAltNames
 
         Retrieve 'subjectAltName' attributes from cert data structure
         """
@@ -146,7 +145,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         return values
 
     def _get_common_name(self, cert):
-        """Get Common Name
+        """
+        Get Common Name
 
         Retrieve 'commonName' attribute from cert data structure
         """

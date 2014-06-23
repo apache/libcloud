@@ -11,16 +11,16 @@ Rackspace Cloud DNS and others.
 Terminology
 -----------
 
-* **Zone** - Represents a DNS zone or so called domain.
-* **Record** - Represents a DNS record. Each record belongs to a Zone and has
-  a ``type`` and ``data`` attribute. Value of the ``data`` attribute depends on
-  the record type.
+* :class:`~libcloud.dns.base.Zone` - Represents a DNS zone or so called domain.
+* :class:`~libcloud.dns.base.Record` - Represents a DNS record. Each record
+  belongs to a Zone and has a ``type`` and ``data`` attribute. Value of the
+  ``data`` attribute depends on the record type.
   Some record types also require user to associate additional attributes with
   them. Those additional attributes are stored in the ``extra`` attribute
   (dictionary) on the record object. An example include ``MX`` and ``SRV``
   record type which also contains a priority.
-* **RecordType** - Represents a DNS record type (``A``, ``AAAA``, ``MX``,
-  ``TXT``, ``SRV``, ``PTR``, ``NS``, etc.)
+* :class:`~libcloud.dns.types.RecordType` - Represents a DNS record type
+  (``A``, ``AAAA``, ``MX``, ``TXT``, ``SRV``, ``PTR``, ``NS``, etc.)
 * **Zone Type** - Each zone has a ``type`` attribute. This attribute represents
   a zone type. Type can either be ``master`` (also called primary) or ``slave``
   (also called secondary).
@@ -39,5 +39,5 @@ We have :doc:`examples of several common patterns </dns/examples>`.
 API Reference
 -------------
 
-There is a reference to :doc:`all the methods on the base dns driver
-</dns/api/>`.
+For a full reference of all the classes and methods exposed by the DNS
+API, see :doc:`this page </dns/api>`.

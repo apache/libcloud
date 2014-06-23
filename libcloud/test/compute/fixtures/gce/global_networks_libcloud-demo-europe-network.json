@@ -5,5 +5,5 @@
   "id": "13254259054875092094",
   "kind": "compute#network",
   "name": "libcloud-demo-europe-network",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/libcloud-demo-europe-network"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/libcloud-demo-europe-network"
 }

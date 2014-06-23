@@ -8,7 +8,7 @@
   "name": "lchealthcheck",
   "port": 8000,
   "requestPath": "/lc",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks/lchealthcheck",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks/lchealthcheck",
   "timeoutSec": 10,
   "unhealthyThreshold": 4
 }

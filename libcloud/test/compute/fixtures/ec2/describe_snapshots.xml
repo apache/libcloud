@@ -1,4 +1,4 @@
-<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
    <requestId>and4xcasi-35bd-4e3c-89ab-cb183</requestId>
    <snapshotSet>
       <item>
@@ -29,6 +29,10 @@
          <volumeSize>15</volumeSize>
          <description>Weekly backup</description>
          <tagSet>
+            <item>
+               <key>Name</key>
+               <value>DB Backup 1</value>
+            </item>
             <item>
                <key>Key2</key>
                <value>db_backup</value>

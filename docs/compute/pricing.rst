@@ -1,3 +1,5 @@
+:orphan:
+
 Pricing
 =======
 
@@ -14,14 +16,14 @@ Example bellow shows how to retrieve pricing for ``NodeSize`` objects using
    :language: python
    :emphasize-lines: 11-19
 
-As noted above this pricing information is an estimate and you should only
+As noted above this pricing information is an estimate and should only
 be used as such. You should always check your provider website / control panel
 for accurate pricing information and never rely solely on Libcloud pricing data.
 
 Besides that, many cloud providers also offer different pricing scheme based
-on the volume and discounts for reserved instances. All of this information
-is not taken into account in the simplistic "price per hour" pricing scheme
-available in Libcloud.
+on the volume, term commitment and discounts for reserved instances. All of
+this information is not taken into account in the simplistic "price per hour"
+pricing scheme available in Libcloud.
 
 Where does the Libcloud pricing data come from?
 -----------------------------------------------
@@ -30,8 +32,8 @@ Most of the providers don't provide pricing information via the API which means
 most of the pricing information is scrapped directly from the provider
 websites.
 
-Pricing data which is scrapped from the provider websites is located in the
-a JSON file (``data/pricing.json``) which is bundled with each release. This
+Pricing data which is scrapped from the provider websites is located in a
+JSON file (``data/pricing.json``) which is bundled with each release. This
 pricing data is only updated once you install a new release which means it
 could be out of date.
 
@@ -46,7 +48,7 @@ Using a custom pricing file
 
 By default Libcloud reads pricing data from ``data/pricing.json`` file which
 is included in the release package. If you want to use a custom pricing file,
-simply put move the file to ``~/.libcloud.pricing.json``.
+simply move your custom pricing file to ``~/.libcloud.pricing.json``.
 
 If ``~/.libcloud.pricing.json`` file is available, Libcloud will use it instead
 of the default pricing file which comes bundled with the release.

@@ -1,4 +1,4 @@
-<DescribeTagsResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<DescribeTagsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
     <requestId>fa7e0e44-df5e-49a0-98d7-5d4d19a29f95</requestId>
     <tagSet>
         <item>

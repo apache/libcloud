@@ -15,7 +15,11 @@
 
 import sys
 import unittest
-from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import httplib, b
 
@@ -208,13 +212,13 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployTest', 'testNode', state=0,
                  public_ips=[], private_ips=[], driver=self.driver))
-        self.assertEqual(node.state, NodeState.TERMINATED)
+        self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_ex_undeploy_with_error(self):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployErrorTest', 'testNode',
                  state=0, public_ips=[], private_ips=[], driver=self.driver))
-        self.assertEqual(node.state, NodeState.TERMINATED)
+        self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_ex_find_node(self):
         node = self.driver.ex_find_node('testNode')
@@ -474,9 +478,10 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
     def request(self, method, url, body=None, headers=None, raw=False):
-        self.assertTrue(url.startswith('/api/'), ('"%s" is invalid. Needs to '
-                        'start with "/api". The passed URL should be just '
-                        'the path, not full URL.', url))
+        self.assertTrue(url.startswith('/api/'),
+                        ('"%s" is invalid. Needs to '
+                         'start with "/api". The passed URL should be just '
+                         'the path, not full URL.', url))
         super(VCloud_1_5_MockHttp, self).request(method, url, body, headers,
                                                  raw)
 

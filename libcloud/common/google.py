@@ -21,28 +21,32 @@ Information about setting up your Google OAUTH2 credentials:
 For libcloud, there are two basic methods for authenticating to Google using
 OAUTH2: Service Accounts and Client IDs for Installed Applications.
 
-Both are initially set up from the
-U{API Console<https://code.google.com/apis/console#access>}
+Both are initially set up from the Cloud Console_
+_Console: https://cloud.google.com/console
 
 Setting up Service Account authentication (note that you need the PyCrypto
 package installed to use this):
-    - Go to the API Console
-    - Click on "Create another client ID..."
-    - Select "Service account" and click on "Create client ID"
-    - Download the Private Key
+    - Go to the Console
+    - Go to your project and then to "APIs & auth" on the left
+    - Click on "Credentials"
+    - Click on "Create New Client ID..."
+    - Select "Service account" and click on "Create Client ID"
+    - Download the Private Key (should happen automatically).
     - The key that you download is a PKCS12 key.  It needs to be converted to
       the PEM format.
     - Convert the key using OpenSSL (the default password is 'notasecret'):
       ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-      | openssl rsa -out PRIV.pem``
+      -passin pass:notasecret | openssl rsa -out PRIV.pem``
     - Move the .pem file to a safe location.
     - To Authenticate, you will need to pass the Service Account's "Email
       address" in as the user_id and the path to the .pem file as the key.
 
 Setting up Installed Application authentication:
-    - Go to the API Connsole
-    - Click on "Create another client ID..."
-    - Select "Installed application" and click on "Create client ID"
+    - Go to the Console
+    - Go to your project and then to "APIs & auth" on the left
+    - Click on "Credentials"
+    - Select "Installed application" and "Other" then click on
+      "Create Client ID"
     - To Authenticate, pass in the "Client ID" as the user_id and the "Client
       secret" as the key
     - The first time that you do this, the libcloud will give you a URL to
@@ -82,6 +86,8 @@ try:
     from Crypto.Hash import SHA256
     from Crypto.PublicKey import RSA
     from Crypto.Signature import PKCS1_v1_5
+    import Crypto.Random
+    Crypto.Random.atfork()
 except ImportError:
     # The pycrypto library is unavailable
     SHA256 = None
@@ -104,6 +110,10 @@ class GoogleBaseError(ProviderError):
     def __init__(self, value, http_code, code, driver=None):
         self.code = code
         super(GoogleBaseError, self).__init__(value, http_code, driver)
+
+
+class InvalidRequestError(GoogleBaseError):
+    pass
 
 
 class JsonParseError(GoogleBaseError):
@@ -158,8 +168,13 @@ class GoogleResponse(JsonResponse):
         else:
             err = body['error']
 
-        code = err.get('code')
-        message = err.get('message')
+        if 'code' in err:
+            code = err.get('code')
+            message = err.get('message')
+        else:
+            code = None
+            message = body.get('error_description', err)
+
         return (code, message)
 
     def parse_body(self):
@@ -206,6 +221,14 @@ class GoogleResponse(JsonResponse):
                 code = None
             raise ResourceNotFoundError(message, self.status, code)
 
+        elif self.status == httplib.BAD_REQUEST:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise InvalidRequestError(message, self.status, code)
+
         else:
             if (not json_error) and ('error' in body):
                 (code, message) = self._get_error(body)
@@ -230,7 +253,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     host = 'accounts.google.com'
     auth_path = '/o/oauth2/auth'
 
-    def __init__(self, user_id, key, scope,
+    def __init__(self, user_id, key, scopes=None,
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
         """
@@ -243,9 +266,9 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                      authentication.
         :type   key: ``str``
 
-        :param  scope: A list of urls defining the scope of authentication
+        :param  scopes: A list of urls defining the scope of authentication
                        to grant.
-        :type   scope: ``list``
+        :type   scopes: ``list``
 
         :keyword  redirect_uri: The Redirect URI for the authentication
                                 request.  See Google OAUTH2 documentation for
@@ -256,8 +279,9 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                               for Installed Application authentication.
         :type     login_hint: ``str``
         """
+        scopes = scopes or []
 
-        self.scope = " ".join(scope)
+        self.scopes = " ".join(scopes)
         self.redirect_uri = redirect_uri
         self.login_hint = login_hint
 
@@ -306,7 +330,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         auth_params = {'response_type': 'code',
                        'client_id': self.user_id,
                        'redirect_uri': self.redirect_uri,
-                       'scope': self.scope,
+                       'scope': self.scopes,
                        'state': 'Libcloud Request'}
         if self.login_hint:
             auth_params['login_hint'] = self.login_hint
@@ -380,7 +404,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         """
         if SHA256 is None:
             raise GoogleAuthError('PyCrypto library required for '
-                                  'Service Accout Authentication.')
+                                  'Service Account Authentication.')
         # Check to see if 'key' is a file and read the file if it is.
         keypath = os.path.expanduser(key)
         is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
@@ -403,7 +427,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
         # Construct a claim set
         claim_set = {'iss': self.user_id,
-                     'scope': self.scope,
+                     'scope': self.scopes,
                      'aud': 'https://accounts.google.com/o/oauth2/token',
                      'exp': int(time.time()) + 3600,
                      'iat': int(time.time())}
@@ -431,7 +455,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         Service Account authentication doesn't supply a "refresh token" so
         this simply gets a new token using the email address/key.
 
-        :param  token_info: Dictionary contining token information.
+        :param  token_info: Dictionary containing token information.
                             (Not used, but here for compatibility)
         :type   token_info: ``dict``
 
@@ -447,10 +471,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = GoogleResponse
     host = 'www.googleapis.com'
     poll_interval = 2.0
-    timeout = 120
+    timeout = 180
 
     def __init__(self, user_id, key, auth_type=None,
-                 credential_file=None, **kwargs):
+                 credential_file=None, scopes=None, **kwargs):
         """
         Determine authentication type, set up appropriate authentication
         connection and get initial authentication information.
@@ -473,6 +497,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         :keyword  credential_file: Path to file for caching authentication
                                    information.
         :type     credential_file: ``str``
+
+        :keyword  scopes: List of OAuth2 scope URLs. The empty default sets
+                          read/write access to Compute, Storage, and DNS.
+        :type     scopes: ``list``
         """
         self.credential_file = credential_file or '~/.gce_libcloud_auth'
 
@@ -483,16 +511,24 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 auth_type = 'SA'
             else:
                 auth_type = 'IA'
-        if 'scope' in kwargs:
-            self.scope = kwargs['scope']
-            kwargs.pop('scope', None)
+
+        # Default scopes to read/write for compute, storage, and dns.  Can
+        # override this when calling get_driver() or setting in secrets.py
+        self.scopes = scopes
+        if not self.scopes:
+            self.scopes = [
+                'https://www.googleapis.com/auth/compute',
+                'https://www.googleapis.com/auth/devstorage.full_control',
+                'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            ]
         self.token_info = self._get_token_info_from_file()
+
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
-                user_id, key, self.scope, **kwargs)
+                user_id, key, self.scopes, **kwargs)
         elif auth_type == 'IA':
             self.auth_conn = GoogleInstalledAppAuthConnection(
-                user_id, key, self.scope, **kwargs)
+                user_id, key, self.scopes, **kwargs)
         else:
             raise GoogleAuthError('auth_type should be \'SA\' or \'IA\'')
 

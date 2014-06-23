@@ -33,7 +33,7 @@ from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
-API_ROOT = '/vapi'
+API_ROOT = ''
 
 NODE_STATE_MAP = {
     'BUILDING': NodeState.PENDING,
@@ -64,9 +64,10 @@ class HostVirtualNodeDriver(NodeDriver):
     connectionCls = HostVirtualComputeConnection
     features = {'create_node': ['ssh_key', 'password']}
 
-    def __init__(self, key):
+    def __init__(self, key, secure=True, host=None, port=None):
         self.location = None
-        NodeDriver.__init__(self, key)
+        super(HostVirtualNodeDriver, self).__init__(key=key, secure=secure,
+                                                    host=host, port=port)
 
     def _to_node(self, data):
         state = NODE_STATE_MAP[data['status']]
@@ -210,7 +211,7 @@ class HostVirtualNodeDriver(NodeDriver):
     def destroy_node(self, node):
         params = {
             'mbpkgid': node.id,
-            #'reason': 'Submitted through Libcloud API'
+            # 'reason': 'Submitted through Libcloud API'
         }
 
         result = self.connection.request(

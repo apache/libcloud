@@ -258,7 +258,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         """Don't block until GoGrid allocates id for a node
         but return right away with id == None.
 
-        The existance of this method is explained by the fact
+        The existence of this method is explained by the fact
         that GoGrid assigns id to a node only few minutes after
         creation.
 

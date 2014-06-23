@@ -12,10 +12,12 @@ Balancers.
 Terminology
 -----------
 
-* **LoadBalancer** - represents a load balancer instance.
-* **Member** - represents a load balancer member.
-* **Algorithm** - represents a load balancing algorithm (round-robin, random,
-  least connections, etc.).
+* :class:`~libcloud.loadbalancer.base.LoadBalancer` - represents a load
+  balancer instance.
+* :class:`~libcloud.loadbalancer.base.Member` - represents a load balancer
+  member.
+* :class:`~libcloud.loadbalancer.base.Algorithm` - represents a load balancing
+  algorithm (round-robin, random, least connections, etc.).
 
 Supported Providers
 -------------------
@@ -31,5 +33,5 @@ We have :doc:`examples of several common patterns </loadbalancer/examples>`.
 API Reference
 -------------
 
-There is a reference to :doc:`all the methods on the base loadbalancer driver
-</loadbalancer/api/>`.
+For a full reference of all the classes and methods exposed by the loadbalancer
+API, see :doc:`this page </loadbalancer/api>`.

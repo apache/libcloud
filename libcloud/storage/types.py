@@ -52,15 +52,17 @@ class Provider(object):
     NINEFOLD = 'ninefold'
     GOOGLE_STORAGE = 'google_storage'
     S3_US_WEST_OREGON = 's3_us_west_oregon'
-    CLOUDFILES_SWIFT = 'cloudfiles_swift'
     NIMBUS = 'nimbus'
     LOCAL = 'local'
+    OPENSTACK_SWIFT = 'openstack_swift'
     CLOUDFILES = 'cloudfiles'
     AZURE_BLOBS = 'azure_blobs'
+    KTUCLOUD = 'ktucloud'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
     CLOUDFILES_UK = 'cloudfiles_uk'
+    CLOUDFILES_SWIFT = 'cloudfiles_swift'
 
 
 class ContainerError(LibcloudError):

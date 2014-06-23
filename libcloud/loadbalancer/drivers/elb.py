@@ -18,6 +18,7 @@ __all__ = [
 ]
 
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
@@ -46,7 +47,7 @@ class ELBConnection(SignedAWSConnection):
 
 
 class ElasticLBDriver(Driver):
-    name = 'ELB'
+    name = 'Amazon Elastic Load Balancing'
     website = 'http://aws.amazon.com/elasticloadbalancing/'
     connectionCls = ELBConnection
 
@@ -132,6 +133,183 @@ class ElasticLBDriver(Driver):
     def balancer_list_members(self, balancer):
         return balancer._members
 
+    def ex_list_balancer_policies(self, balancer):
+        """
+        Return a list of policy description string.
+
+        :rtype: ``list`` of ``str``
+        """
+        params = {
+            'Action': 'DescribeLoadBalancerPolicies',
+            'LoadBalancerName': balancer.id
+        }
+
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_policies(data)
+
+    def ex_list_balancer_policy_types(self):
+        """
+        Return a list of policy type description string.
+
+        :rtype: ``list`` of ``str``
+        """
+        params = {'Action': 'DescribeLoadBalancerPolicyTypes'}
+
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_policy_types(data)
+
+    def ex_create_balancer_policy(self, name, policy_name, policy_type,
+                                  policy_attributes=None):
+        """
+        Create a new load balancer policy
+
+        :param name: Balancer name to create the policy for
+        :type  name: ``str``
+
+        :param policy_name: policy to be created
+        :type  policy_name: ``str``
+
+        :param policy_type: policy type being used to create policy.
+        :type  policy_type: ``str``
+
+        :param policy_attributes: Each list contain values, ['AttributeName',
+                                                             'value']
+        :type  policy_attributes: ``PolicyAttribute list``
+        """
+        params = {
+            'Action': 'CreateLoadBalancerPolicy',
+            'LoadBalancerName': name,
+            'PolicyName': policy_name,
+            'PolicyTypeName': policy_type
+        }
+
+        if policy_attributes is not None:
+            for index, (name, value) in enumerate(
+                    policy_attributes.iteritems(), 1):
+                params['PolicyAttributes.member.%d. \
+                        AttributeName' % (index)] = name
+                params['PolicyAttributes.member.%d. \
+                        AttributeValue' % (index)] = value
+
+        response = self.connection.request(ROOT, params=params)
+        return response.status == httplib.OK
+
+    def ex_delete_balancer_policy(self, name, policy_name):
+        """
+        Delete a load balancer policy
+
+        :param name: balancer name for which policy will be deleted
+        :type  name: ``str``
+
+        :param policy_name: The Mnemonic name for the policy being deleted
+        :type  policy_name: ``str``
+        """
+        params = {
+            'Action': 'DeleteLoadBalancerPolicy',
+            'LoadBalancerName': name,
+            'PolicyName': policy_name
+        }
+
+        response = self.connection.request(ROOT, params=params)
+        return response.status == httplib.OK
+
+    def ex_set_balancer_policies_listener(self, name, port, policies):
+        """
+        Associates, updates, or disables a policy with a listener on
+        the load balancer
+
+        :param name: balancer name to set policies for listerner
+        :type  name: ``str``
+
+        :param port: port to use
+        :type  port: ``str``
+
+        :param policies: List of policies to be associated with the balancer
+        :type  policies: ``string list``
+        """
+        params = {
+            'Action': 'SetLoadBalancerPoliciesOfListener',
+            'LoadBalancerName': name,
+            'LoadBalancerPort': str(port)
+        }
+
+        if policies:
+            params = self._create_list_params(params, policies,
+                                              'PolicyNames.member.%d')
+
+        response = self.connection.request(ROOT, params=params)
+        return response.status == httplib.OK
+
+    def ex_set_balancer_policies_backend_server(self, name, instance_port,
+                                                policies):
+        """
+        Replaces the current set of policies associated with a port on
+        which the back-end server is listening with a new set of policies
+
+        :param name: balancer name to set policies of backend server
+        :type  name: ``str``
+
+        :param instance_port: Instance Port
+        :type  instance_port: ``int``
+
+        :param policies: List of policies to be associated with the balancer
+        :type  policies: ``string list`
+        """
+        params = {
+            'Action': 'SetLoadBalancerPoliciesForBackendServer',
+            'LoadBalancerName': name,
+            'InstancePort': str(instance_port)
+        }
+
+        if policies:
+            params = self._create_list_params(params, policies,
+                                              'PolicyNames.member.%d')
+
+        response = self.connection.request(ROOT, params=params)
+        return response.status == httplib.OK
+
+    def ex_create_balancer_listeners(self, name, listeners=None):
+        """
+        Creates one or more listeners on a load balancer for the specified port
+
+        :param name: The mnemonic name associated with the load balancer
+        :type  name: ``str``
+
+        :param listeners: Each tuple contain values, (LoadBalancerPortNumber,
+                          InstancePortNumber, Protocol,[SSLCertificateId])
+        :type  listeners: ``list of tuple`
+        """
+        params = {
+            'Action': 'CreateLoadBalancerListeners',
+            'LoadBalancerName': name
+        }
+
+        for index, listener in enumerate(listeners):
+            i = index + 1
+            protocol = listener[2].upper()
+            params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
+            params['Listeners.member.%d.InstancePort' % i] = listener[1]
+            params['Listeners.member.%d.Protocol' % i] = listener[2]
+            if protocol == 'HTTPS' or protocol == 'SSL':
+                params['Listeners.member.%d.   \
+                        SSLCertificateId' % i] = listener[3]
+        else:
+            return False
+
+        response = self.connection.request(ROOT, params=params)
+        return response.status == httplib.OK
+
+    def _to_policies(self, data):
+        xpath = 'DescribeLoadBalancerPoliciesResult/PolicyDescriptions/member'
+        return [findtext(element=el, xpath='PolicyName', namespace=NS)
+                for el in findall(element=data, xpath=xpath, namespace=NS)]
+
+    def _to_policy_types(self, data):
+        xpath = 'DescribeLoadBalancerPolicyTypesResult/'
+        xpath += 'PolicyTypeDescriptions/member'
+        return [findtext(element=el, xpath='PolicyTypeName', namespace=NS)
+                for el in findall(element=data, xpath=xpath, namespace=NS)]
+
     def _to_balancers(self, data):
         xpath = 'DescribeLoadBalancersResult/LoadBalancerDescriptions/member'
         return [self._to_balancer(el)
@@ -160,3 +338,13 @@ class ElasticLBDriver(Driver):
                                             balancer=balancer))
 
         return balancer
+
+    def _create_list_params(self, params, items, label):
+        """
+        return parameter list
+        """
+        if isinstance(items, str):
+            items = [items]
+        for index, item in enumerate(items):
+            params[label % (index + 1)] = item
+        return params

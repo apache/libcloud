@@ -21,6 +21,7 @@ from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 class KTUCloudNodeDriver(CloudStackNodeDriver):
     "Driver for KTUCloud Compute platform."
 
+    EMPTY_DISKOFFERINGID = '0'
     type = Provider.KTUCLOUD
     name = 'KTUCloud'
     website = 'https://ucloudbiz.olleh.com/'
@@ -32,7 +33,8 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         if location is not None:
             args['zoneid'] = location.id
 
-        imgs = self._sync_request('listAvailableProductTypes')
+        imgs = self._sync_request(command='listAvailableProductTypes',
+                                  method='GET')
         images = []
 
         for img in imgs['producttypes']:
@@ -55,30 +57,34 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         szs = self._sync_request('listAvailableProductTypes')
         sizes = []
         for sz in szs['producttypes']:
+            diskofferingid = sz.get('diskofferingid',
+                                    self.EMPTY_DISKOFFERINGID)
             sizes.append(NodeSize(
-                sz['diskofferingid'],
+                diskofferingid,
                 sz['diskofferingdesc'],
                 0, 0, 0, 0, self)
             )
         return sizes
 
     def create_node(self, name, size, image, location=None, **kwargs):
-        extra_args = {}
+        params = {'displayname': name,
+                  'serviceofferingid': image.id,
+                  'templateid': str(image.extra['templateid']),
+                  'zoneid': str(image.extra['zoneid'])}
+
         usageplantype = kwargs.pop('usageplantype', None)
         if usageplantype is None:
-            extra_args['usageplantype'] = 'hourly'
+            params['usageplantype'] = 'hourly'
         else:
-            extra_args['usageplantype'] = usageplantype
+            params['usageplantype'] = usageplantype
+
+        if size.id != self.EMPTY_DISKOFFERINGID:
+            params['diskofferingid'] = size.id
 
         result = self._async_request(
-            'deployVirtualMachine',
-            displayname=name,
-            serviceofferingid=image.id,
-            diskofferingid=size.id,
-            templateid=str(image.extra['templateid']),
-            zoneid=str(image.extra['zoneid']),
-            **extra_args
-        )
+            command='deployVirtualMachine',
+            params=params,
+            method='GET')
 
         node = result['virtualmachine']
 

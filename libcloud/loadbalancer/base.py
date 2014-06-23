@@ -17,16 +17,36 @@ from libcloud.common.base import ConnectionKey, BaseDriver
 from libcloud.common.types import LibcloudError
 
 __all__ = [
-    "Member",
-    "LoadBalancer",
-    "Driver",
-    "Algorithm"
+    'Member',
+    'LoadBalancer',
+    'Algorithm',
+    'Driver',
+    'DEFAULT_ALGORITHM'
 ]
 
 
 class Member(object):
+    """
+    Represents a load balancer member.
+    """
 
     def __init__(self, id, ip, port, balancer=None, extra=None):
+        """
+        :param id: Member ID.
+        :type id: ``str``
+
+        :param ip: IP address of this member.
+        :param ip: ``str``
+
+        :param port: Port of this member
+        :param port: ``str``
+
+        :param balancer: Balancer this member is attached to. (optional)
+        :param balancer: :class:`.LoadBalancer`
+
+        :param extra: Provider specific attributes.
+        :type extra: ``dict``
+        """
         self.id = str(id) if id else None
         self.ip = ip
         self.port = port
@@ -38,25 +58,34 @@ class Member(object):
                                                     self.ip, self.port))
 
 
-class Algorithm(object):
-    RANDOM = 0
-    ROUND_ROBIN = 1
-    LEAST_CONNECTIONS = 2
-    WEIGHTED_ROUND_ROBIN = 3
-    WEIGHTED_LEAST_CONNECTIONS = 4
-
-DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
-
-
 class LoadBalancer(object):
     """
     Provide a common interface for handling Load Balancers.
     """
 
-    name = None
-    website = None
-
     def __init__(self, id, name, state, ip, port, driver, extra=None):
+        """
+        :param id: Load balancer ID.
+        :type id: ``str``
+
+        :param name: Load balancer name.
+        :type name: ``str``
+
+        :param state: State this loadbalancer is in.
+        :type state: :class:`libcloud.loadbalancer.types.State`
+
+        :param ip: IP address of this loadbalancer.
+        :type ip: ``str``
+
+        :param port: Port of this loadbalancer.
+        :type port: ``int``
+
+        :param driver: Driver this loadbalancer belongs to.
+        :type driver: :class:`.Driver`
+
+        :param extra: Provier specific attributes. (optional)
+        :type extra: ``dict``
+        """
         self.id = str(id) if id else None
         self.name = name
         self.state = state
@@ -88,12 +117,29 @@ class LoadBalancer(object):
                 self.name, self.state))
 
 
+class Algorithm(object):
+    """
+    Represents a load balancing algorithm.
+    """
+
+    RANDOM = 0
+    ROUND_ROBIN = 1
+    LEAST_CONNECTIONS = 2
+    WEIGHTED_ROUND_ROBIN = 3
+    WEIGHTED_LEAST_CONNECTIONS = 4
+
+DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
+
+
 class Driver(BaseDriver):
     """
     A base Driver class to derive from
 
     This class is always subclassed by a specific driver.
     """
+
+    name = None
+    website = None
 
     connectionCls = ConnectionKey
     _ALGORITHM_TO_VALUE_MAP = {}
@@ -261,6 +307,14 @@ class Driver(BaseDriver):
         raise NotImplementedError(
             'balancer_list_members not implemented for this driver')
 
+    def list_supported_algorithms(self):
+        """
+        Return algorithms supported by this driver.
+
+        :rtype: ``list`` of ``str``
+        """
+        return list(self._ALGORITHM_TO_VALUE_MAP.keys())
+
     def _value_to_algorithm(self, value):
         """
         Return :class`Algorithm` based on the value.
@@ -290,11 +344,3 @@ class Driver(BaseDriver):
         except KeyError:
             raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
                                 driver=self)
-
-    def list_supported_algorithms(self):
-        """
-        Return algorithms supported by this driver.
-
-        :rtype: ``list`` of ``str``
-        """
-        return list(self._ALGORITHM_TO_VALUE_MAP.keys())

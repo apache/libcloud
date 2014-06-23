@@ -1,0 +1,66 @@
+Amazon S3 Storage Driver Documentation
+======================================
+
+`Amazon Simple Storage Service (Amazon S3)`_ is an online cloud storage service
+from Amazon Web Services.
+
+Multipart uploads
+------------------
+
+Amazon S3 driver supports multipart uploads which means you can upload objects
+with a total size of up to 5 TB.
+
+Multipart upload works by splitting an object in multiple parts and uploading
+those parts to S3. After all the parts of the object are uploaded, Amazon S3
+assembles those parts and creates an object.
+
+If you use
+:meth:`libcloud.storage.base.StorageDriver.upload_object_via_stream` method,
+Libcloud transparently handles all the splitting and uploading of the parts
+for you.
+
+By default, to prevent excessive buffering and use of memory, each part is
+5 MB in size. This is also the smallest size of a part you can use with the
+multi part upload.
+
+Examples
+--------
+
+1. Uploading a very large file using upload_object_via_stream method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This approach shows how you can upload a very large file using
+``upload_object_via_stream`` method.
+
+Keep in mind that exactly the same approach and method can also be used for
+uploading other arbitrary sized files. There is no minimum size limit and
+you can even upload / create empty objects.
+
+.. literalinclude:: /examples/storage/s3/multipart_large_file_upload.py
+   :language: python
+
+2. Specifying canned ACL when uploading an object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to specify custom ACL when uploading an object, you can do so by
+passing ``extra`` argument with the ``acl`` attribute to the upload methods.
+
+Valid values for this attribute are:
+
+* ``private`` (default)
+* ``public-read``
+* ``public-read-write``
+* ``authenticated-read``
+* ``bucket-owner-read``
+* ``bucket-owner-full-control``
+
+For example:
+
+.. literalinclude:: /examples/storage/s3/upload_object_acls.py
+   :language: python
+
+For more information about the canned ACLs, please refer to the `Canned ACL`
+section of the Amazon S3 documentation.
+
+.. _`Amazon Simple Storage Service (Amazon S3)`: http://aws.amazon.com/s3/
+.. _`Canned ACL`: http://docs.aws.amazon.com/AmazonS3/latest/dev/ACLOverview.html#CannedACL

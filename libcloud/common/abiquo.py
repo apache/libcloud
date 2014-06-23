@@ -85,7 +85,11 @@ def get_href(element, rel):
             # 'http://localhost:80/api/admin/enterprises'
             #
             # we are only interested in '/admin/enterprises/' part
-            return urlparse.urlparse(href).path[len(b('/api')):]
+            needle = '/api/'
+            url_path = urlparse.urlparse(href).path
+            index = url_path.find(needle)
+            result = url_path[index + len(needle) - 1:]
+            return result
 
 
 class AbiquoResponse(XmlResponse):
@@ -168,6 +172,16 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
     """
 
     responseCls = AbiquoResponse
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None):
+        super(AbiquoConnection, self).__init__(user_id=user_id, key=key,
+                                               secure=secure,
+                                               host=host, port=port,
+                                               url=url, timeout=timeout)
+
+        # This attribute stores data cached across multiple request
+        self.cache = {}
 
     def add_default_headers(self, headers):
         """

@@ -13,11 +13,11 @@ Libcloud is available on PyPi. You can install latest stable version using pip:
 Installation (development version)
 ----------------------------------
 
-You can install latest development version from out Git repository:
+You can install latest development version from our Git repository:
 
 .. sourcecode:: bash
 
-    pip install -e https://git-wip-us.apache.org/repos/asf/libcloud.git@trunk#egg=apache-libcloud
+    pip install -e git+https://git-wip-us.apache.org/repos/asf/libcloud.git@trunk#egg=apache-libcloud
 
 Upgrading
 ---------
@@ -51,6 +51,12 @@ with any of the Libcloud drivers.
 
    driver = cls('my username', 'my api key')
 
+Keep in mind that some drivers take additional arguments such as ``region``
+and ``api_version``.
+
+For more information on which arguments you can pass to your provider driver,
+see provider-specific documentation and the driver docstrings.
+
 3. Start using the driver
 
 .. sourcecode:: python
@@ -78,3 +84,14 @@ on the :doc:`Compute Examples </compute/examples>` page.
 
 Where to go from here?
 ----------------------
+
+The best thing to do after understanding the basic driver work-flow is to visit
+the documentation chapter for the API you are interested in (:doc:`Compute </compute/index>`, :doc:`Object Storage </storage/index>`,
+:doc:`Load Balancer </loadbalancer/index>`, :doc:`DNS </dns/index>`). Chapter
+for each API explains some basic terminology and things you need to know to
+make an effective use of that API.
+
+After you have a good grasp of those basic concepts, you are encouraged to
+check the driver specific documentation (if available) and usage examples. If
+the driver specific documentation for the provider you are interested in is
+not available yet, you are encouraged to check docstrings for that driver.

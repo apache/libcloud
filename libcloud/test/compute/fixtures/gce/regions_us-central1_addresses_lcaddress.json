@@ -5,7 +5,7 @@
   "id": "01531551729918243104",
   "kind": "compute#address",
   "name": "lcaddress",
-  "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/addresses/lcaddress",
+  "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/addresses/lcaddress",
   "status": "RESERVED"
 }

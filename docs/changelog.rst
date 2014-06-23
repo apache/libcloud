@@ -1,4 +1,1 @@
-Changelog
-=========
-
-.. literalinclude:: ../CHANGES
+.. include:: ../CHANGES.rst

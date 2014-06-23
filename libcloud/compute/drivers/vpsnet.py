@@ -69,6 +69,8 @@ class VPSNetConnection(ConnectionUserAndKey):
     host = API_HOST
     responseCls = VPSNetResponse
 
+    allow_insecure = False
+
     def add_default_headers(self, headers):
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))

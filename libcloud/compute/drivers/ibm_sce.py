@@ -64,7 +64,7 @@ class IBMConnection(ConnectionUserAndKey):
         headers['Accept'] = 'text/xml'
         headers['Authorization'] = ('Basic %s' % (base64.b64encode(
             b('%s:%s' % (self.user_id, self.key))).decode('utf-8')))
-        if not 'Content-Type' in headers:
+        if 'Content-Type' not in headers:
             headers['Content-Type'] = 'text/xml'
         return headers
 

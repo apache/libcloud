@@ -89,8 +89,8 @@ class LinodeNodeDriver(NodeDriver):
 
     # Converts Linode's state from DB to a NodeState constant.
     LINODE_STATES = {
-        -2: NodeState.UNKNOWN,    # Boot Failed
-        -1: NodeState.PENDING,    # Being Created
+        (-2): NodeState.UNKNOWN,    # Boot Failed
+        (-1): NodeState.PENDING,    # Being Created
         0: NodeState.PENDING,     # Brand New
         1: NodeState.RUNNING,     # Running
         2: NodeState.TERMINATED,  # Powered Off
@@ -244,7 +244,7 @@ class LinodeNodeDriver(NodeDriver):
 
         if not ssh and not root:
             raise LinodeException(0xFB, "Need SSH key or root password")
-        if not root is None and len(root) < 6:
+        if root is not None and len(root) < 6:
             raise LinodeException(0xFB, "Root password is too short")
 
         # Swap size
@@ -284,16 +284,6 @@ class LinodeNodeDriver(NodeDriver):
         comments = "Created by Apache libcloud <http://www.libcloud.org>" if\
             "ex_comment" not in kwargs else kwargs["ex_comment"]
 
-        # Labels
-        label = {
-            "lconfig": "[%s] Configuration Profile" % name,
-            "lroot": "[%s] %s Disk Image" % (name, image.name),
-            "lswap": "[%s] Swap Space" % name
-        }
-        for what in ["lconfig", "lroot", "lswap"]:
-            if what in kwargs:
-                label[what] = kwargs[what]
-
         # Step 1: linode.create
         params = {
             "api_action": "linode.create",
@@ -319,6 +309,18 @@ class LinodeNodeDriver(NodeDriver):
                 "LinodeID": linode["id"]
             }
             self.connection.request(API_ROOT, params=params)
+
+        # Step 1d. Labels
+        # use the linode id as the name can be up to 63 chars and the labels
+        # are limited to 48 chars
+        label = {
+            "lconfig": "[%s] Configuration Profile" % linode["id"],
+            "lroot": "[%s] %s Disk Image" % (linode["id"], image.name),
+            "lswap": "[%s] Swap Space" % linode["id"]
+        }
+        for what in ["lconfig", "lroot", "lswap"]:
+            if what in kwargs:
+                label[what] = kwargs[what]
 
         # Step 2: linode.disk.createfromdistribution
         if not root:

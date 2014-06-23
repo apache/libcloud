@@ -14,7 +14,7 @@ libcloud.security.VERIFY_SSL_CERT = False
 OpenStack = get_driver(Provider.OPENSTACK)
 
 driver = OpenStack('your username', 'your password',
-                   ex_force_auth_url='https://nova-api.trystack.org:5443/v2.0',
+                   ex_force_auth_url='https://nova-api.trystack.org:5443',
                    ex_force_auth_version='2.0_password')
 
 nodes = driver.list_nodes()

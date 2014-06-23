@@ -127,7 +127,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(toDelete)
         self.assertTrue(ret)
 
-        # Delete non-existant node
+        # Delete non-existent node
         IBMMockHttp.type = 'DELETED'
         nodes = self.driver.list_nodes()            # retrieves 2 nodes
         self.assertEqual(len(nodes), 2)
@@ -313,7 +313,7 @@ class IBMMockHttp(MockHttp):
         body = self.fixtures.load('list_storage_offerings.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    # This is only to accomodate the response tests built into test\__init__.py
+    # This is only to accommodate the response tests built into test\__init__.py
     def _computecloud_enterprise_api_rest_20100331_instances_26557(self, method, url, body, headers):
         if method == 'DELETE':
             body = self.fixtures.load('delete.xml')

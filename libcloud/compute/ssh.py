@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-Wraps multiple ways to communicate over SSH
+Wraps multiple ways to communicate over SSH.
 """
+
 have_paramiko = False
 
 try:
@@ -29,13 +30,46 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import time
 import subprocess
 import logging
+import warnings
 
 from os.path import split as psplit
 from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
+from libcloud.utils.py3 import StringIO
+
+__all__ = [
+    'BaseSSHClient',
+    'ParamikoSSHClient',
+    'ShellOutSSHClient',
+
+    'SSHCommandTimeoutError'
+]
+
+
+# Maximum number of bytes to read at once from a socket
+CHUNK_SIZE = 1024
+
+
+class SSHCommandTimeoutError(Exception):
+    """
+    Exception which is raised when an SSH command times out.
+    """
+    def __init__(self, cmd, timeout):
+        self.cmd = cmd
+        self.timeout = timeout
+        message = 'Command didn\'t finish in %s seconds' % (timeout)
+        super(SSHCommandTimeoutError, self).__init__(message)
+
+    def __repr__(self):
+        return ('<SSHCommandTimeoutError: cmd="%s",timeout=%s)>' %
+                (self.cmd, self.timeout))
+
+    def __str__(self):
+        return self.message
 
 
 class BaseSSHClient(object):
@@ -44,7 +78,7 @@ class BaseSSHClient(object):
     """
 
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
+                 key=None, key_files=None, timeout=None):
         """
         :type hostname: ``str``
         :keyword hostname: Hostname or IP address to connect to.
@@ -56,16 +90,28 @@ class BaseSSHClient(object):
         :keyword username: Username to use, defaults to root.
 
         :type password: ``str``
-        :keyword password: Password to authenticate with.
+        :keyword password: Password to authenticate with or a password used
+                           to unlock a private key if a password protected key
+                           is used.
 
-        :type key: ``list``
-        :keyword key: Private SSH keys to authenticate with.
+        :param key: Deprecated in favor of ``key_files`` argument.
+
+        :type key_files: ``str`` or ``list``
+        :keyword key_files: A list of paths to the private key files to use.
         """
+        if key is not None:
+            message = ('You are using deprecated "key" argument which has '
+                       'been replaced with "key_files" argument')
+            warnings.warn(message, DeprecationWarning)
+
+            # key_files has precedent
+            key_files = key if not key_files else key_files
+
         self.hostname = hostname
         self.port = port
         self.username = username
         self.password = password
-        self.key = key
+        self.key_files = key_files
         self.timeout = timeout
 
     def connect(self):
@@ -157,9 +203,31 @@ class ParamikoSSHClient(BaseSSHClient):
     A SSH Client powered by Paramiko.
     """
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
-        super(ParamikoSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+                 key=None, key_files=None, key_material=None, timeout=None):
+        """
+        Authentication is always attempted in the following order:
+
+        - The key passed in (if key is provided)
+        - Any key we can find through an SSH agent (only if no password and
+          key is provided)
+        - Any "id_rsa" or "id_dsa" key discoverable in ~/.ssh/ (only if no
+          password and key is provided)
+        - Plain username/password auth, if a password was given (if password is
+          provided)
+        """
+        if key_files and key_material:
+            raise ValueError(('key_files and key_material arguments are '
+                              'mutually exclusive'))
+
+        super(ParamikoSSHClient, self).__init__(hostname=hostname, port=port,
+                                                username=username,
+                                                password=password,
+                                                key=key,
+                                                key_files=key_files,
+                                                timeout=timeout)
+
+        self.key_material = key_material
+
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
@@ -173,9 +241,14 @@ class ParamikoSSHClient(BaseSSHClient):
 
         if self.password:
             conninfo['password'] = self.password
-        elif self.key:
-            conninfo['key_filename'] = self.key
-        else:
+
+        if self.key_files:
+            conninfo['key_filename'] = self.key_files
+
+        if self.key_material:
+            conninfo['pkey'] = self._get_pkey_object(key=self.key_material)
+
+        if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
             conninfo['look_for_keys'] = True
 
@@ -238,34 +311,122 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
         return True
 
-    def run(self, cmd):
+    def run(self, cmd, timeout=None):
+        """
+        Note: This function is based on paramiko's exec_command()
+        method.
+
+        :param timeout: How long to wait (in seconds) for the command to
+                        finish (optional).
+        :type timeout: ``float``
+        """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
 
-        # based on exec_command()
+        # Use the system default buffer size
         bufsize = -1
-        t = self.client.get_transport()
-        chan = t.open_session()
-        chan.exec_command(cmd)
-        stdin = chan.makefile('wb', bufsize)
-        stdout = chan.makefile('rb', bufsize)
-        stderr = chan.makefile_stderr('rb', bufsize)
-        #stdin, stdout, stderr = self.client.exec_command(cmd)
-        stdin.close()
-        status = chan.recv_exit_status()
-        so = stdout.read()
-        se = stderr.read()
 
-        extra = {'_status': status, '_stdout': so, '_stderr': se}
+        transport = self.client.get_transport()
+        chan = transport.open_session()
+
+        start_time = time.time()
+        chan.exec_command(cmd)
+
+        stdout = StringIO()
+        stderr = StringIO()
+
+        # Create a stdin file and immediately close it to prevent any
+        # interactive script from hanging the process.
+        stdin = chan.makefile('wb', bufsize)
+        stdin.close()
+
+        # Receive all the output
+        # Note #1: This is used instead of chan.makefile approach to prevent
+        # buffering issues and hanging if the executed command produces a lot
+        # of output.
+        #
+        # Note #2: If you are going to remove "ready" checks inside the loop
+        # you are going to have a bad time. Trying to consume from a channel
+        # which is not ready will block for indefinitely.
+        exit_status_ready = chan.exit_status_ready()
+
+        while not exit_status_ready:
+            current_time = time.time()
+            elapsed_time = (current_time - start_time)
+
+            if timeout and (elapsed_time > timeout):
+                # TODO: Is this the right way to clean up?
+                chan.close()
+
+                raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
+
+            if chan.recv_ready():
+                data = chan.recv(CHUNK_SIZE)
+
+                while data:
+                    stdout.write(data)
+                    ready = chan.recv_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv(CHUNK_SIZE)
+
+            if chan.recv_stderr_ready():
+                data = chan.recv_stderr(CHUNK_SIZE)
+
+                while data:
+                    stderr.write(data)
+                    ready = chan.recv_stderr_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv_stderr(CHUNK_SIZE)
+
+            # We need to check the exist status here, because the command could
+            # print some output and exit during this sleep bellow.
+            exit_status_ready = chan.exit_status_ready()
+
+            if exit_status_ready:
+                break
+
+            # Short sleep to prevent busy waiting
+            time.sleep(1.5)
+
+        # Receive the exit status code of the command we ran.
+        status = chan.recv_exit_status()
+
+        stdout = stdout.getvalue()
+        stderr = stderr.getvalue()
+
+        extra = {'_status': status, '_stdout': stdout, '_stderr': stderr}
         self.logger.debug('Command finished', extra=extra)
 
-        return [so, se, status]
+        return [stdout, stderr, status]
 
     def close(self):
         self.logger.debug('Closing server connection')
 
         self.client.close()
         return True
+
+    def _get_pkey_object(self, key):
+        """
+        Try to detect private key type and return paramiko.PKey object.
+        """
+
+        for cls in [paramiko.RSAKey, paramiko.DSSKey, paramiko.ECDSAKey]:
+            try:
+                key = cls.from_private_key(StringIO(key))
+            except paramiko.ssh_exception.SSHException:
+                # Invalid key, try other key type
+                pass
+            else:
+                return key
+
+        msg = 'Invalid or unsupported key type'
+        raise paramiko.ssh_exception.SSHException(msg)
 
 
 class ShellOutSSHClient(BaseSSHClient):
@@ -277,9 +438,13 @@ class ShellOutSSHClient(BaseSSHClient):
     """
 
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
-        super(ShellOutSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+                 key=None, key_files=None, timeout=None):
+        super(ShellOutSSHClient, self).__init__(hostname=hostname,
+                                                port=port, username=username,
+                                                password=password,
+                                                key=key,
+                                                key_files=key_files,
+                                                timeout=timeout)
         if self.password:
             raise ValueError('ShellOutSSHClient only supports key auth')
 
@@ -325,8 +490,8 @@ class ShellOutSSHClient(BaseSSHClient):
     def _get_base_ssh_command(self):
         cmd = ['ssh']
 
-        if self.key:
-            cmd += ['-i', self.key]
+        if self.key_files:
+            cmd += ['-i', self.key_files]
 
         if self.timeout:
             cmd += ['-oConnectTimeout=%s' % (self.timeout)]
