@@ -1,6 +1,24 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+Compute
+~~~~~~~
+
+- Allow user to limit a list of subnets which are returned by passing
+  ``subnet_ids`` and ``filters`` argument to the ``ex_list_subnets``
+  method in the EC2 driver.
+  (LIBCLOUD-571, GITHUB-306)
+  [Lior Goikhburg]
+
+- Allow user to limit a list of internet gateways which are returned by
+  passing ``gateway_ids`` and ``filters`` argument to the
+  ``ex_list_internet_gateways`` method in the EC2 driver.
+  (LIBCLOUD-572, GITHUB-307)
+  [Lior Goikhburg]
+
 Changes with Apache Libcloud 0.15.0
 -----------------------------------
 
