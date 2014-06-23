@@ -3535,7 +3535,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         interface = self._to_interface(element, name)
 
-        if name and self.ex_create_tags(interface, {'Name': name})
+        if name and self.ex_create_tags(interface, {'Name': name}):
             interface.extra['tags']['Name'] = name
 
         return interface
