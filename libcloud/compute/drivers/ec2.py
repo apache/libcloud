@@ -3976,15 +3976,35 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return result
 
-    def ex_list_internet_gateways(self):
+    def ex_list_internet_gateways(self, gateway_ids=None, filters=None):
         """
         Describes available Internet gateways and whether or not they are
         attached to a VPC. These are required for VPC nodes to communicate
         over the Internet.
 
+        :param      gateway_ids: Return only intenet gateways matching the
+                                 provided internet gateway IDs. If not
+                                 specified, a list of all the internet
+                                 gateways in the corresponding region is
+                                 returned.
+        :type       gateway_ids: ``list``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain gateways.
+        :type       filters: ``dict``
+
         :rtype: ``list`` of :class:`.VPCInternetGateway`
         """
         params = {'Action': 'DescribeInternetGateways'}
+
+        if gateway_ids:
+            for gateway_idx, gateway_id in enumerate(gateway_ids):
+                gateway_idx += 1  # We want 1-based indexes
+                gateway_key = 'InternetGatewayId.%s' % gateway_idx
+                params[gateway_key] = gateway_id
+
+        if filters:
+            params.update(self._build_filters(filters))
 
         response = self.connection.request(self.path, params=params).object
 
