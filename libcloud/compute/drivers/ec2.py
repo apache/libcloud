@@ -1998,10 +1998,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'Action': 'DescribeVolumes',
         }
         if node:
-            params.update({
-                'Filter.1.Name': 'attachment.instance-id',
-                'Filter.1.Value': node.id,
-            })
+            filters = {'attachment.instance-id': node.id}
+            params.update(self._build_filters(filters))
+
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
             fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
@@ -3156,12 +3155,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DescribeAvailabilityZones'}
 
+        filters = {'region-name': self.region_name}
         if only_available:
-            params.update({'Filter.0.Name': 'state'})
-            params.update({'Filter.0.Value.0': 'available'})
+                  filters['state'] = 'available'
 
-        params.update({'Filter.1.Name': 'region-name'})
-        params.update({'Filter.1.Value.0': self.region_name})
+        params.update(self._build_filters(filters))
 
         result = self.connection.request(self.path,
                                          params=params.copy()).object
@@ -3196,12 +3194,13 @@ class BaseEC2NodeDriver(NodeDriver):
         :return: dict Node tags
         :rtype: ``dict``
         """
-        params = {'Action': 'DescribeTags',
-                  'Filter.0.Name': 'resource-id',
-                  'Filter.0.Value.0': resource.id,
-                  'Filter.1.Name': 'resource-type',
-                  'Filter.1.Value.0': 'instance',
+        params = {'Action': 'DescribeTags'}
+
+        filters = {'resource-id': resource.id,
+                   'resource-type': 'instance'
                   }
+
+        params.update(self._build_filters(filters))
 
         result = self.connection.request(self.path, params=params).object
 
@@ -5075,10 +5074,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Add instance filter to the provided params dictionary.
         """
-        params.update({
-            'Filter.0.Name': 'instance-id',
-            'Filter.0.Value.0': node.id
-        })
+        filters = {'instance-id': node.id}
+        params.update(self._build_filters(filters))
 
         return params
 
