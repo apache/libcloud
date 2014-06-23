@@ -1875,7 +1875,7 @@ class BaseEC2NodeDriver(NodeDriver):
         'terminated': NodeState.TERMINATED
     }
 
-    def list_nodes(self, ex_node_ids=None, filters=None):
+    def list_nodes(self, ex_node_ids=None, ex_filters=None):
         """
         List all nodes
 
@@ -1886,9 +1886,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      ex_node_ids: List of ``node.id``
         :type       ex_node_ids: ``list`` of ``str``
 
-        :param      filters: The filters so that the response includes
+        :param      ex_filters: The filters so that the response includes
                              information for only certain nodes.
-        :type       filters: ``dict``
+        :type       ex_filters: ``dict``
 
         :rtype: ``list`` of :class:`Node`
         """
@@ -1898,8 +1898,8 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_node_ids:
             params.update(self._pathlist('InstanceId', ex_node_ids))
 
-        if filters:
-            params.update(self._build_filters(filters))
+        if ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         elem = self.connection.request(self.path, params=params).object
 
