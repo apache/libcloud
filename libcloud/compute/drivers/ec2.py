@@ -3157,7 +3157,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         filters = {'region-name': self.region_name}
         if only_available:
-                  filters['state'] = 'available'
+            filters['state'] = 'available'
 
         params.update(self._build_filters(filters))
 
@@ -3196,9 +3196,10 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DescribeTags'}
 
-        filters = {'resource-id': resource.id,
-                   'resource-type': 'instance'
-                  }
+        filters = {
+            'resource-id': resource.id,
+            'resource-type': 'instance'
+        }
 
         params.update(self._build_filters(filters))
 
