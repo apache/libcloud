@@ -2199,7 +2199,7 @@ class BaseEC2NodeDriver(NodeDriver):
             name=name)
 
         if self.ex_create_tags(volume, {'Name': name}):
-            volume.extra[tags]['Name'] = name
+            volume.extra['tags']['Name'] = name
 
         return volume
 
@@ -2253,7 +2253,7 @@ class BaseEC2NodeDriver(NodeDriver):
         snapshot = self._to_snapshot(response, name)
 
         if name and self.ex_create_tags(snapshot, {'Name': name}):
-            snapshot.extra[tags]['Name'] = name
+            snapshot.extra['tags']['Name'] = name
 
         return snapshot
 
@@ -2596,7 +2596,7 @@ class BaseEC2NodeDriver(NodeDriver):
         network = self._to_network(element)
 
         if name and self.ex_create_tags(network, {'Name': name}):
-            network.extra[tags]['Name'] = name
+            network.extra['tags']['Name'] = name
 
         return network
 
@@ -2679,7 +2679,7 @@ class BaseEC2NodeDriver(NodeDriver):
         subnet = self._to_subnet(element)
 
         if name and self.ex_create_tags(subnet, {'Name': name}):
-            subnet.extra[tags]['Name'] = name
+            subnet.extra['tags']['Name'] = name
 
         return subnet
 
