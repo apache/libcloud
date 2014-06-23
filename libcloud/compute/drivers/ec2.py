@@ -1746,11 +1746,14 @@ class EC2RouteTable(object):
     Note: This class is VPC specific.
     """
 
-    def __init__(self, id, routes, subnet_associations,
+    def __init__(self, id, name, routes, subnet_associations,
                  propagating_gateway_ids, extra=None):
         """
         :param      id: The ID of the route table.
         :type       id: ``str``
+
+        :param      name: The name of the route table.
+        :type       name: ``str``
 
         :param      routes: A list of routes in the route table.
         :type       routes: ``list`` of :class:`EC2Route`
@@ -1767,6 +1770,7 @@ class EC2RouteTable(object):
         """
 
         self.id = id
+        self.name = name
         self.routes = routes
         self.subnet_associations = subnet_associations
         self.propagating_gateway_ids = propagating_gateway_ids
@@ -2193,7 +2197,10 @@ class BaseEC2NodeDriver(NodeDriver):
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
             name=name)
-        self.ex_create_tags(volume, {'Name': name})
+
+        if self.ex_create_tags(volume, {'Name': name}):
+            volume.extra[tags]['Name'] = name
+
         return volume
 
     def attach_volume(self, node, volume, device):
@@ -2245,8 +2252,8 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         snapshot = self._to_snapshot(response, name)
 
-        if name:
-            self.ex_create_tags(snapshot, {'Name': name})
+        if name and self.ex_create_tags(snapshot, {'Name': name}):
+            snapshot.extra[tags]['Name'] = name
 
         return snapshot
 
@@ -2588,8 +2595,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         network = self._to_network(element)
 
-        if name is not None:
-            self.ex_create_tags(network, {'Name': name})
+        if name and self.ex_create_tags(network, {'Name': name}):
+            network.extra[tags]['Name'] = name
 
         return network
 
@@ -2671,8 +2678,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         subnet = self._to_subnet(element)
 
-        if name is not None:
-            self.ex_create_tags(subnet, {'Name': name})
+        if name and self.ex_create_tags(subnet, {'Name': name}):
+            subnet.extra[tags]['Name'] = name
 
         return subnet
 
@@ -3528,9 +3535,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         interface = self._to_interface(element, name)
 
-        if name is not None:
-            tags = {'Name': name}
-            self.ex_create_tags(resource=interface, tags=tags)
+        if name and self.ex_create_tags(interface, {'Name': name})
+            interface.extra['tags']['Name'] = name
 
         return interface
 
@@ -4038,8 +4044,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         gateway = self._to_internet_gateway(element[0], name)
 
-        if name is not None:
-            self.ex_create_tags(gateway, {'Name': name})
+        if name and self.ex_create_tags(gateway, {'Name': name}):
+            gateway.extra['tags']['Name'] = name
 
         return gateway
 
@@ -4153,10 +4159,10 @@ class BaseEC2NodeDriver(NodeDriver):
         element = response.findall(fixxpath(xpath='routeTable',
                                             namespace=NAMESPACE))[0]
 
-        route_table = self._to_route_table(element)
+        route_table = self._to_route_table(element, name=name)
 
-        if name:
-            self.ex_create_tags(route_table, {'Name': name})
+        if name and self.ex_create_tags(route_table, {'Name': name}):
+            route_table.extra['tags']['Name'] = name
 
         return route_table
 
@@ -4667,7 +4673,7 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
         ]
 
-    def _to_network(self, element):
+    def _to_network(self, element, name=None):
         # Get the network id
         vpc_id = findtext(element=element,
                           xpath='vpcId',
@@ -4678,7 +4684,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         # Set our name if the Name key/value if available
         # If we don't get anything back then use the vpc_id
-        name = tags.get('Name', vpc_id)
+        name = name if name else tags.get('Name', vpc_id)
 
         cidr_block = findtext(element=element,
                               xpath='cidrBlock',
@@ -4740,7 +4746,7 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='subnetSet/item', namespace=NAMESPACE))
         ]
 
-    def _to_subnet(self, element):
+    def _to_subnet(self, element, name=None):
         # Get the subnet ID
         subnet_id = findtext(element=element,
                              xpath='subnetId',
@@ -4750,7 +4756,7 @@ class BaseEC2NodeDriver(NodeDriver):
         tags = self._get_resource_tags(element)
 
         # If we don't get anything back then use the subnet_id
-        name = tags.get('Name', subnet_id)
+        name = name if name else tags.get('Name', subnet_id)
 
         state = findtext(element=element,
                          xpath='state',
@@ -4934,7 +4940,7 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='routeTableSet/item', namespace=NAMESPACE))
         ]
 
-    def _to_route_table(self, element):
+    def _to_route_table(self, element, name=None):
         # route table id
         route_table_id = findtext(element=element,
                                   xpath='routeTableId',
@@ -4965,7 +4971,9 @@ class BaseEC2NodeDriver(NodeDriver):
                                                     xpath='gatewayId',
                                                     namespace=NAMESPACE))
 
-        return EC2RouteTable(route_table_id, routes, subnet_associations,
+        name = name if name else tags.get('Name', id)
+
+        return EC2RouteTable(route_table_id, name, routes, subnet_associations,
                              propagating_gateway_ids, extra=extra)
 
     def _to_routes(self, element, xpath):
