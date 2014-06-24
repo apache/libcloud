@@ -2352,10 +2352,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'Action': 'DeleteKeyPair',
             'KeyName': key_pair.name
         }
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        res = self.connection.request(self.path, params=params).object
+
+        return self._get_boolean(res)
 
     def copy_image(self, image, source_region, name=None, description=None):
         """
@@ -2611,11 +2610,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DeleteVpc', 'VpcId': vpc.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_list_subnets(self, subnet_ids=None, filters=None):
         """
@@ -2694,12 +2691,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DeleteSubnet', 'SubnetId': subnet.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_list_security_groups(self):
         """
@@ -2801,11 +2795,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DeleteSecurityGroup', 'GroupId': group_id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_delete_security_group_by_name(self, group_name):
         """
@@ -2818,11 +2810,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DeleteSecurityGroup', 'GroupName': group_name}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_delete_security_group(self, name):
         """
@@ -2867,10 +2857,9 @@ class BaseEC2NodeDriver(NodeDriver):
                   'ToPort': str(to_port),
                   'CidrIp': cidr_ip}
         try:
-            resp = self.connection.request(
+            res = self.connection.request(
                 self.path, params=params.copy()).object
-            return bool(findtext(element=resp, xpath='return',
-                                 namespace=NAMESPACE))
+            return self._get_boolean(res)
         except Exception:
             e = sys.exc_info()[1]
             if e.args[0].find('InvalidPermission.Duplicate') == -1:
@@ -2924,11 +2913,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         params["Action"] = 'AuthorizeSecurityGroupIngress'
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_authorize_security_group_egress(self, id, from_port, to_port,
                                            cidr_ips, group_pairs=None,
@@ -2980,11 +2967,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         params["Action"] = 'AuthorizeSecurityGroupEgress'
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_revoke_security_group_ingress(self, id, from_port, to_port,
                                          cidr_ips=None, group_pairs=None,
@@ -3034,11 +3019,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         params["Action"] = 'RevokeSecurityGroupIngress'
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_revoke_security_group_egress(self, id, from_port, to_port,
                                         cidr_ips=None, group_pairs=None,
@@ -3090,11 +3073,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         params['Action'] = 'RevokeSecurityGroupEgress'
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_authorize_security_group_permissive(self, name):
         """
@@ -3236,11 +3217,10 @@ class BaseEC2NodeDriver(NodeDriver):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
 
     def ex_delete_tags(self, resource, tags):
         """
@@ -3264,11 +3244,10 @@ class BaseEC2NodeDriver(NodeDriver):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
 
     def ex_get_metadata_for_node(self, node):
         """
@@ -3552,11 +3531,9 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DeleteNetworkInterface',
                   'NetworkInterfaceId': network_interface.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_attach_network_interface_to_node(self, network_interface,
                                             node, device_index):
@@ -3607,11 +3584,9 @@ class BaseEC2NodeDriver(NodeDriver):
         if force:
             params['Force'] = True
 
-        result = self.connection.request(self.path, params=params).object
+        res = self.connection.request(self.path, params=params).object
 
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_modify_instance_attribute(self, node, attributes):
         """
@@ -3633,11 +3608,10 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'ModifyInstanceAttribute'}
         params.update(attributes)
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
 
     def ex_modify_image_attribute(self, image, attributes):
         """
@@ -3658,11 +3632,10 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'ModifyImageAttribute'}
         params.update(attributes)
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
 
     def ex_change_node_size(self, node, new_size):
         """
@@ -4061,12 +4034,9 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DeleteInternetGateway',
                   'InternetGatewayId': gateway.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_attach_internet_gateway(self, gateway, network):
         """
@@ -4084,12 +4054,9 @@ class BaseEC2NodeDriver(NodeDriver):
                   'InternetGatewayId': gateway.id,
                   'VpcId': network.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_detach_internet_gateway(self, gateway, network):
         """
@@ -4107,12 +4074,9 @@ class BaseEC2NodeDriver(NodeDriver):
                   'InternetGatewayId': gateway.id,
                   'VpcId': network.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_list_route_tables(self, route_table_ids=None, filters=None):
         """
@@ -4179,12 +4143,9 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DeleteRouteTable',
                   'RouteTableId': route_table.id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_associate_route_table(self, route_table, subnet):
         """
@@ -4233,12 +4194,9 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DisassociateRouteTable',
                   'AssociationId': subnet_association_id}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_replace_route_table_association(self, subnet_association,
                                            route_table):
@@ -4325,12 +4283,9 @@ class BaseEC2NodeDriver(NodeDriver):
         if vpc_peering_connection:
             params['VpcPeeringConnectionId'] = vpc_peering_connection.id
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_delete_route(self, route_table, cidr):
         """
@@ -4349,12 +4304,9 @@ class BaseEC2NodeDriver(NodeDriver):
                   'RouteTableId': route_table.id,
                   'DestinationCidrBlock': cidr}
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def ex_replace_route(self, route_table, cidr,
                          internet_gateway=None, node=None,
@@ -4404,12 +4356,9 @@ class BaseEC2NodeDriver(NodeDriver):
         if vpc_peering_connection:
             params['VpcPeeringConnectionId'] = vpc_peering_connection.id
 
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result,
-                           xpath='return',
-                           namespace=NAMESPACE)
+        res = self.connection.request(self.path, params=params).object
 
-        return element == 'true'
+        return self._get_boolean(res)
 
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
