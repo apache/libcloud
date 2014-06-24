@@ -2593,7 +2593,7 @@ class BaseEC2NodeDriver(NodeDriver):
         element = response.findall(fixxpath(xpath='vpc',
                                             namespace=NAMESPACE))[0]
 
-        network = self._to_network(element)
+        network = self._to_network(element, name)
 
         if name and self.ex_create_tags(network, {'Name': name}):
             network.extra['tags']['Name'] = name
@@ -2676,7 +2676,7 @@ class BaseEC2NodeDriver(NodeDriver):
         element = response.findall(fixxpath(xpath='subnet',
                                             namespace=NAMESPACE))[0]
 
-        subnet = self._to_subnet(element)
+        subnet = self._to_subnet(element, name)
 
         if name and self.ex_create_tags(subnet, {'Name': name}):
             subnet.extra['tags']['Name'] = name
