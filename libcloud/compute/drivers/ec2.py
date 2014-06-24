@@ -5269,7 +5269,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.api_name = details['api_name']
         self.country = details['country']
 
-        self.connectionCls.host = details['endpoint']
+        host = host or details['endpoint']
 
         super(EC2NodeDriver, self).__init__(key=key, secret=secret,
                                             secure=secure, host=host,

@@ -56,8 +56,14 @@ class BaseEC2Tests(LibcloudTestCase):
         regions = REGION_DETAILS.keys()
         regions = [d for d in regions if d != 'nimbus']
 
-        for region in regions:
-            EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+        region_endpoints = [
+            EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
+        ]
+
+        # Verify that each driver doesn't get the same API host endpoint
+        self.assertEqual(len(region_endpoints),
+                         len(set(region_endpoints)),
+                         "Multiple Region Drivers were given the same API endpoint")
 
     def test_instantiate_driver_invalid_regions(self):
         for region in ['invalid', 'nimbus']:
