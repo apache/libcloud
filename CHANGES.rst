@@ -160,6 +160,17 @@ Compute
   (LIBCLOUD-625, LIBCLOUD-276, GITHUB-276)
   [Eric Johnson]
 
+- Fix a bug in Elasticstack node creation method where it would raise
+  exceptions because of missing data in a response, and also fix pulling the
+  IP from the proper data item.
+  (GITHUB-325)
+  [Michael Bennett]
+
+- Fix a bug which prevented user to connect and instantiate multiple EC2 driver
+  instances for different regions at the same time.
+  (GITHUB-325)
+  [Michael Bennett]
+
 Storage
 ~~~~~~~
 

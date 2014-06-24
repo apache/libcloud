@@ -106,6 +106,20 @@ class ElasticStackTestCase(object):
         self.assertEqual(
             node.extra['ide:0:0'], "b6049e7a-aa1b-47f9-b21d-cdf2354e28d3")
 
+    def test_list_offline_node(self):
+        self.mockHttp.type = 'OFFLINE'
+
+        nodes = self.driver.list_nodes()
+        self.assertTrue(isinstance(nodes, list))
+        self.assertEqual(len(nodes), 1)
+
+        node = nodes[0]
+        self.assertEqual(len(node.public_ips), 0, "Public IPs was not empty")
+        self.assertNotIn('smp', node.extra)
+        self.assertNotIn('started', node.extra)
+        self.assertEqual(
+            node.extra['ide:0:0'], "b6049e7a-aa1b-47f9-b21d-cdf2354e28d3")
+
     def test_list_sizes(self):
         images = self.driver.list_sizes()
         self.assertEqual(len(images), 6)
@@ -254,6 +268,10 @@ class ElasticStackMockHttp(MockHttp):
 
     def _servers_info(self, method, url, body, headers):
         body = self.fixtures.load('servers_info.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _servers_info_OFFLINE(self, method, url, body, headers):
+        body = self.fixtures.load('offline_servers_info.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _servers_72258_set(self, method, url, body, headers):
