@@ -4511,6 +4511,8 @@ class BaseEC2NodeDriver(NodeDriver):
         extra = self._get_extra_dict(
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP['volume'])
 
+        extra['tags'] = tags
+
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
