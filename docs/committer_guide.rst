@@ -143,13 +143,14 @@ command.**
 * Go to the `PyPi release management page`_, find a new release and click on
   "files" link.
 
-* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz and
-  .zip). For ``File Type`` select ``Source`` and for ``Python Version`` select
-  ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
+* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz,
+  .zip, and .whl). For ``File Type`` select ``Source`` (except for ``.whl``
+  file where you should select ``Python Wheel``) and for ``Python Version``
+  select ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
   signature for each file (``PGP signature (.asc)`` field).
 
 Once all the files have been uploaded, the page should look similar to the
-screenshot bellow.
+screenshot below.
 
 .. image:: _static/images/pypi_files_page.png
    :width: 700px
