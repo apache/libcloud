@@ -2038,9 +2038,12 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_userdata: User data
         :type       ex_userdata: ``str``
 
-        :keyword    ex_security_groups: A list of names of security groups to
-                                        assign to the node.
-        :type       ex_security_groups:   ``list``
+        :keyword    ex_security_groups: A list of names, or IDs (in case if 
+                                        the node is launched into a VPC) or
+                                        security groups objects to assign to
+                                        the node.
+        :type       ex_security_groups: ``list`` or 
+                                        ``list`` of :class:`.EC2SecurityGroup`
 
         :keyword    ex_metadata: Key/Value metadata to associate with a node
         :type       ex_metadata: ``dict``
@@ -2090,9 +2093,19 @@ class BaseEC2NodeDriver(NodeDriver):
             if not isinstance(security_groups, (tuple, list)):
                 security_groups = [security_groups]
 
-            for sig in range(len(security_groups)):
-                params['SecurityGroup.%d' % (sig + 1,)] =\
-                    security_groups[sig]
+            for idx, security_group in enumerate(security_groups):
+                idx += 1  # We want 1-based indexes
+
+                if 'ex_subnet' in kwargs:
+                    if isinstance(security_group, EC2SecurityGroup):
+                        params['SecurityGroupId.%d' % idx] = security_group.id
+                    else:
+                        params['SecurityGroupId.%d' % idx] = security_group
+                else:
+                    if isinstance(security_group, EC2SecurityGroup):
+                        params['SecurityGroup.%d' % idx] = security_group.name
+                    else:
+                        params['SecurityGroup.%d' % idx] = security_group
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
