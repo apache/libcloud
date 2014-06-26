@@ -339,12 +339,24 @@ class CloudStackNode(Node):
 class CloudStackAddress(object):
     """
     A public IP address.
+
+    :param      id: UUID of the Public IP
+    :type       id: ``str``
+
+    :param      address: The public IP address
+    :type       address: ``str``
+
+    :param      associated_network_id: The ID of the network where this address
+                                        has been associated with
+    :type       associated_network_id: ``str``
     """
 
-    def __init__(self, id, address, driver):
+    def __init__(self, id, address, driver, associated_network_id=None,):
+
         self.id = id
         self.address = address
         self.driver = driver
+        self.associated_network_id = associated_network_id
 
     def release(self):
         self.driver.ex_release_public_ip(address=self)
@@ -1351,7 +1363,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             return ips
 
         for ip in res['publicipaddress']:
-            ips.append(CloudStackAddress(ip['id'], ip['ipaddress'], self))
+            ips.append(CloudStackAddress(ip['id'],
+                                         ip['ipaddress'],
+                                         self,
+                                         ip['associatednetworkid']))
         return ips
 
     def ex_allocate_public_ip(self, location=None):
