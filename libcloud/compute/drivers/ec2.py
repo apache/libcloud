@@ -2038,11 +2038,11 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_userdata: User data
         :type       ex_userdata: ``str``
 
-        :keyword    ex_security_groups: A list of names, or IDs (in case if 
+        :keyword    ex_security_groups: A list of names, or IDs (in case if
                                         the node is launched into a VPC) or
                                         security groups objects to assign to
                                         the node.
-        :type       ex_security_groups: ``list`` or 
+        :type       ex_security_groups: ``list`` or
                                         ``list`` of :class:`.EC2SecurityGroup`
 
         :keyword    ex_metadata: Key/Value metadata to associate with a node
