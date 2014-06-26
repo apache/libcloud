@@ -2611,6 +2611,45 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return network
 
+    def ex_modify_network_attributes(self, vpc, dns_support=None,
+                                     dns_hostnames=None):
+        """
+        Modifies the specified attributes of the specified VPC. 
+
+        :param      vpc: VPC to modify.
+        :type       vpc: :class:`.EC2Network`
+
+        :param      dns_support: Indicates whether DNS resolution is enabled
+                                 for the VPC.
+        :type       dns_support: ``bool``
+
+        :param      dns_hostnames: Indicates whether the instances launched
+                                   in the VPC get DNS hostnames. 
+                                   Note: Requires dns_support to be enabled
+        :type       dns_hostnames: ``bool``
+
+        :rtype:     ``bool``
+        """
+
+        result = True
+        if dns_support is not None:
+            params = {'Action': 'ModifyVpcAttribute',
+                      'VpcId': vpc.id,
+                      'EnableDnsSupport.Value': dns_support}
+
+            res = self.connection.request(self.path, params=params).object
+            result = result and self._get_boolean(res)
+
+        if dns_hostnames is not None:
+            params = {'Action': 'ModifyVpcAttribute',
+                      'VpcId': vpc.id,
+                      'EnableDnsHostnames.Value': dns_hostnames}
+
+            res = self.connection.request(self.path, params=params).object
+            result = result and self._get_boolean(res)
+
+        return result
+
     def ex_delete_network(self, vpc):
         """
         Deletes a network/VPC.
