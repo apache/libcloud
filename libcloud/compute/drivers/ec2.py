@@ -2614,7 +2614,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_modify_network_attributes(self, vpc, dns_support=None,
                                      dns_hostnames=None):
         """
-        Modifies the specified attributes of the specified VPC. 
+        Modifies the specified attributes of the specified VPC.
 
         :param      vpc: VPC to modify.
         :type       vpc: :class:`.EC2Network`
@@ -2624,7 +2624,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type       dns_support: ``bool``
 
         :param      dns_hostnames: Indicates whether the instances launched
-                                   in the VPC get DNS hostnames. 
+                                   in the VPC get DNS hostnames.
                                    Note: Requires dns_support to be enabled
         :type       dns_hostnames: ``bool``
 
