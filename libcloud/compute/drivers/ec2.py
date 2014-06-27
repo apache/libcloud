@@ -2010,18 +2010,45 @@ class BaseEC2NodeDriver(NodeDriver):
                     )
         return locations
 
-    def list_volumes(self, node=None):
-        params = {
-            'Action': 'DescribeVolumes',
-        }
-        if node:
-            filters = {'attachment.instance-id': node.id}
-            params.update(self._build_filters(filters))
+    def list_volumes(self, node=None, ex_volume_ids=None, ex_filters=None):
+        """
+        Return a list of :class:`StorageVolume` objects for the
+        current region.
+
+        :param      node: Return only volumes attached to a scecific node
+        :type       node: :class:`Node`
+
+        :param      ex_volume_ids: Return only volumes matching the provided
+                                   volume IDs. If not specified, a list of all
+                                   the volumes in the corresponding region
+                                   is returned.
+        :type       ex_volume_ids: ``list``
+
+        :param      ex_filters: The filters so that the response includes
+                                information for only certain volumes.
+        :type       ex_filters: ``dict``
+
+        :rtype:     ``list`` of :class:`StorageVolume`
+        """
+
+        params = {'Action': 'DescribeVolumes'}
+
+        if ex_volume_ids:
+            params.update(self._pathlist('VolumeId', ex_volume_ids))
+
+        if ex_filters and node:
+            ex_filters.update({'attachment.instance-id': node.id})
+        elif node:
+            ex_filters = {'attachment.instance-id': node.id}
+
+        if ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
             fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
         ]
+
         return volumes
 
     def create_node(self, **kwargs):
