@@ -35,10 +35,17 @@ from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
+from libcloud.compute.ssh import have_paramiko
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
 
+if have_paramiko:
+    from paramiko.ssh_exception import SSHException
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (SSHException, IOError, socket.gaierror,
+                                     socket.error)
+else:
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -1372,9 +1379,9 @@ class NodeDriver(BaseDriver):
         while time.time() < end:
             try:
                 ssh_client.connect()
-            except (IOError, socket.gaierror, socket.error):
-                # Retry if a connection is refused or timeout
-                # occurred
+            except SSH_TIMEOUT_EXCEPTION_CLASSES:
+                # Retry if a connection is refused, timeout occurred,
+                # or the connection fails due to failed authentication.
                 ssh_client.close()
                 time.sleep(wait_period)
                 continue
@@ -1401,7 +1408,6 @@ class NodeDriver(BaseDriver):
                                key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
-        # Connect to the SSH server running on the node
         ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
                                               timeout=timeout)
 

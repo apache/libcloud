@@ -33,6 +33,15 @@ Compute
   (GITHUB-315)
   [Marcus Devich]
 
+- Fix a possible race condition in deploy_node which would occur if node
+  is online and can be accessed via SSH, but the SSH key we want to use hasn't
+  been installed yet.
+
+  Previously, we would immediately throw if we can connect, but the SSH key
+  hasn't been installed yet.
+  (GITHUB-331)
+  [David Gay]
+
 Changes with Apache Libcloud 0.15.0
 -----------------------------------
 
