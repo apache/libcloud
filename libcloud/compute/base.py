@@ -1397,9 +1397,18 @@ class NodeDriver(BaseDriver):
                                key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
-        # Connect to the SSH server running on the node
-        ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                              timeout=timeout)
+        connect_tries = 6
+        connect_delay = 10
+
+        while connect_tries > 0:
+            try:
+                # Connect to the SSH server running on the node
+                ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
+                                                      timeout=timeout)
+                break
+            except:
+                time.sleep(connect_delay)
+                connect_tries -= 1
 
         # Execute the deployment task
         node = self._run_deployment_script(task=task, node=node,
