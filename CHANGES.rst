@@ -181,6 +181,11 @@ Compute
   (GITHUB-512)
   [Syed Mushtaq Ahmed]
 
+- Allow user to pass ``ex_config_drive`` argument to the ``create_node`` method
+  in the OpenStack driver.
+  (LIBCLOUD-356, GITHUB-330)
+  [Ryan Parrish]
+
 Storage
 ~~~~~~~
 
