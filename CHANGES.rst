@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- Add network_association_id to ex_list_public_ips and CloudstackAddress object
+  (GITHUB-327)
+  [Roeland Kuipers]
+
 - Allow user to limit a list of subnets which are returned by passing
   ``subnet_ids`` and ``filters`` argument to the ``ex_list_subnets``
   method in the EC2 driver.
