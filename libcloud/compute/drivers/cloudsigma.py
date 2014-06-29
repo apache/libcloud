@@ -1611,8 +1611,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Retrieve a single tag.
 
-        :param id: ID of the tag to retrieve.
-        :type id: ``str``
+        :param tag_id: ID of the tag to retrieve.
+        :type tag_id: ``str``
 
         :rtype: ``list`` of :class:`.CloudSigmaTag` objects
         """
@@ -1674,8 +1674,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Associate tag with the provided resources.
 
-        :param resource: Resources to associate a tag with.
-        :type resource: ``list`` of :class:`libcloud.compute.base.Node` or
+        :param resources: Resources to associate a tag with.
+        :type resources: ``list`` of :class:`libcloud.compute.base.Node` or
                         :class:`.CloudSigmaDrive`
 
         :param tag: Tag to associate with the resources.

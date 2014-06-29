@@ -274,8 +274,8 @@ class AbiquoNodeDriver(NodeDriver):
 
         You can specify the location as well.
 
-        :param     name:     name of the group (required)
-        :type      name:     ``str``
+        :param     group:     name of the group (required)
+        :type      group:     ``str``
 
         :param     location: location were to create the group
         :type      location: :class:`NodeLocation`

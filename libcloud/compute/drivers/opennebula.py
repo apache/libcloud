@@ -415,9 +415,9 @@ class OpenNebulaNodeDriver(NodeDriver):
         """
         List virtual networks on a provider.
 
-        :type  location: :class:`NodeLocation`
         :param location: Location from which to request a list of virtual
                          networks. (optional)
+        :type  location: :class:`NodeLocation`
 
         :return: List of virtual networks available to be connected to a
                  compute node.
