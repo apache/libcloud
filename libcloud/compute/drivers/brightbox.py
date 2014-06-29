@@ -121,12 +121,15 @@ class BrightboxNodeDriver(NodeDriver):
         )
 
     def _to_location(self, data):
-        return NodeLocation(
-            id=data['id'],
-            name=data['handle'],
-            country='GB',
-            driver=self
-        )
+        if data:
+            return NodeLocation(
+                id=data['id'],
+                name=data['handle'],
+                country='GB',
+                driver=self
+            )
+        else:
+            return None
 
     def _post(self, path, data={}):
         headers = {'Content-Type': 'application/json'}
@@ -183,7 +186,7 @@ class BrightboxNodeDriver(NodeDriver):
         data = self.connection.request('/%s/servers' % self.api_version).object
         return list(map(self._to_node, data))
 
-    def list_images(self):
+    def list_images(self, location=None):
         data = self.connection.request('/%s/images' % self.api_version).object
         return list(map(self._to_image, data))
 

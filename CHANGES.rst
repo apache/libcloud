@@ -24,6 +24,11 @@ Compute
   (LIBCLOUD-580, GITHUB-320)
   [Lior Goikhburg]
 
+- Allow user to specify admin password by passing ``ex_admin_pass`` argument
+  to the ``create_node`` method in the Openstack driver.
+  (GITHUB-315)
+  [Marcus Devich]
+
 Changes with Apache Libcloud 0.15.0
 -----------------------------------
 
