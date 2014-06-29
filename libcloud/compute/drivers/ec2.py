@@ -3327,8 +3327,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Create a network interface within a VPC subnet.
 
-        :param      node: EC2NetworkSubnet instance
-        :type       node: :class:`EC2NetworkSubnet`
+        :param      subnet: EC2NetworkSubnet instance
+        :type       subnet: :class:`EC2NetworkSubnet`
 
         :param      name:  Optional name of the interface
         :type       name:  ``str``
@@ -3473,8 +3473,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Modify image attributes.
 
-        :param      node: Node instance
-        :type       node: :class:`Node`
+        :param      image: NodeImage instance
+        :type       image: :class:`NodeImage`
 
         :param      attributes: Dictionary with node attributes
         :type       attributes: ``dict``

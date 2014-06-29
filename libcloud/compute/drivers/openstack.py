@@ -1072,7 +1072,7 @@ class OpenStackSecurityGroup(object):
         :type       description: ``str``
 
         :keyword    rules: Rules associated with this group.
-        :type       description: ``list`` of
+        :type       rules: ``list`` of
                     :class:`OpenStackSecurityGroupRule`
 
         :keyword    extra: Extra attributes associated with this group.
@@ -1248,6 +1248,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
 
+        :keyword    ex_admin_pass: The root password for the node
+        :type       ex_admin_pass: ``str``
+
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
         """
@@ -1333,6 +1336,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
+
+        if 'ex_admin_pass' in kwargs:
+            server_params['adminPass'] = kwargs['ex_admin_pass']
 
         if 'networks' in kwargs:
             networks = kwargs['networks']
@@ -1642,8 +1648,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a snapshot based off of a volume.
 
-        :param      node: volume
-        :type       node: :class:`StorageVolume`
+        :param      volume: volume
+        :type       volume: :class:`StorageVolume`
 
         :keyword    name: New name for the volume snapshot
         :type       name: ``str``
@@ -1669,8 +1675,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a VolumeSnapshot
 
-        :param      node: snapshot
-        :type       node: :class:`VolumeSnapshot`
+        :param      snapshot: snapshot
+        :type       snapshot: :class:`VolumeSnapshot`
 
         :rtype:     ``bool``
         """
