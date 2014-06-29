@@ -351,8 +351,7 @@ class CloudStackAddress(object):
     :type       associated_network_id: ``str``
     """
 
-    def __init__(self, id, address, driver, associated_network_id=None,):
-
+    def __init__(self, id, address, driver, associated_network_id=None):
         self.id = id
         self.address = address
         self.driver = driver

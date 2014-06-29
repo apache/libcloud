@@ -7,10 +7,6 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
-- Add network_association_id to ex_list_public_ips and CloudstackAddress object
-  (GITHUB-327)
-  [Roeland Kuipers]
-
 - Allow user to limit a list of subnets which are returned by passing
   ``subnet_ids`` and ``filters`` argument to the ``ex_list_subnets``
   method in the EC2 driver.
@@ -27,6 +23,10 @@ Compute
   argument to the ``list_nodes`` method in the EC2 driver.
   (LIBCLOUD-580, GITHUB-320)
   [Lior Goikhburg]
+
+- Add network_association_id to ex_list_public_ips and CloudstackAddress object
+  (GITHUB-327)
+  [Roeland Kuipers]
 
 - Allow user to specify admin password by passing ``ex_admin_pass`` argument
   to the ``create_node`` method in the Openstack driver.
