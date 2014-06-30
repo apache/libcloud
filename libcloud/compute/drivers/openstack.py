@@ -1238,6 +1238,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  see
                                  https://help.ubuntu.com/community/CloudInit
         :type       ex_userdata: ``str``
+        
+        :keyword    ex_config_drive: Enable config drive
+                                     see
+                                     http://docs.openstack.org/grizzly/openstack-compute/admin/content/config-drive.html
+        :type       ex_config_drive: ``bool``
 
         :keyword    ex_security_groups: List of security groups to assign to
                                         the node
@@ -1341,6 +1346,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'ex_userdata' in kwargs:
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')
+
+        if 'ex_config_drive' in kwargs:
             server_params['config_drive'] = True
 
         if 'ex_disk_config' in kwargs:
