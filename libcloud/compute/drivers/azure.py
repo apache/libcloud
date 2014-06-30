@@ -414,13 +414,31 @@ class AzureNodeDriver(NodeDriver):
             ex_deployment_slot = kwargs['ex_deployment_slot']
         else:
             # We assume production if this is not provided.
-            ex_deployment_slot = "production"
+            ex_deployment_slot = "Production"
 
         if "ex_admin_user_id" in kwargs:
             ex_admin_user_id = kwargs['ex_admin_user_id']
         else:
             # This mimics the Azure UI behavior.
             ex_admin_user_id = "azureuser"
+
+        if "ex_storage_service_name" not in kwargs:
+            raise ValueError("ex_storage_service_name is required.")
+
+        if "size" not in kwargs:
+            raise ValueError("size is required. ")
+
+        if "image" not in kwargs:
+            raise ValueError("image is required.")
+
+        if "name" not in kwargs:
+            raise ValueError("name is required.")
+
+        if "ex_admin_user_id" not in kwargs:
+            raise ValueError("ex_cloud_service_name is required.")
+
+        if "ex_admin_user_id" not in kwargs:
+            raise ValueError("ex_cloud_service_name is required.")
 
         node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
         network_config = ConfigurationSet()
