@@ -1658,7 +1658,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+        targetpool_data = {'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}] }
 
         request = '/regions/%s/targetPools/%s/addHealthCheck' % (
             targetpool.region.name, targetpool.name)
@@ -1727,7 +1727,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+        targetpool_data = {'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}] }
 
         request = '/regions/%s/targetPools/%s/removeHealthCheck' % (
             targetpool.region.name, targetpool.name)
