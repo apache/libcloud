@@ -1,7 +1,6 @@
 import libcloud
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword
-from libcloud.compute.drivers.azure import AZURE_DEFAULT_IMAGE_NAME
 
 __author__ = 'david'
 
@@ -34,18 +33,23 @@ class AzureNodeDriverTests(unittest.TestCase) :
         self.assertEqual(len(locations), 7)
 
         locationNamesResult = list(a.name for a in locations)
-        locationNamesExpected = ['East Asia','Southeast Asia','North Europe','West Europe','East US','North Central US','West US']
+        locationNamesExpected = ['East Asia','Southeast Asia','North Europe',
+                                 'West Europe','East US','North Central US',
+                                 'West US']
 
         self.assertListEqual(locationNamesResult, locationNamesExpected)
 
-        matchedLocation = next(location for location in locations if location.name == 'Southeast Asia')
+        matchedLocation = next(location for location in locations
+                               if location.name == 'Southeast Asia')
         servicesResult = matchedLocation.available_services
         servicesExpected = ['Compute','Storage','PersistentVMRole','HighMemory']
         self.assertListEqual(servicesResult, servicesExpected)
 
         vmRoleSizesResult = matchedLocation.virtual_machine_role_sizes
 
-        vmRoleSizesExpected = ['A5','A6','A7','Basic_A0','Basic_A1','Basic_A2','Basic_A3','Basic_A4','ExtraLarge','ExtraSmall','Large','Medium','Small']
+        vmRoleSizesExpected = ['A5','A6','A7','Basic_A0','Basic_A1','Basic_A2',
+                               'Basic_A3','Basic_A4','ExtraLarge','ExtraSmall',
+                               'Large','Medium','Small']
         self.assertListEqual(vmRoleSizesResult, vmRoleSizesExpected)
 
     def test_images_returned_successfully(self):
@@ -57,7 +61,8 @@ class AzureNodeDriverTests(unittest.TestCase) :
         self.assertEquals(len(images), 207 )
 
     def test_list_nodes_returned_successfully(self):
-        vmimages = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest01")
+        vmimages = self.driver.list_nodes(
+            ex_cloud_service_name="dcoddkinztest01")
         self.assertEqual(len(vmimages), 2)
 
         img0 = vmimages[0]
@@ -74,7 +79,8 @@ class AzureNodeDriverTests(unittest.TestCase) :
         self.assertEquals(extra["ssh_port"], u'22')
 
     def test_list_nodes_returned_no_deployments(self):
-        vmimages = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest03")
+        vmimages = self.driver.list_nodes(
+            ex_cloud_service_name="dcoddkinztest03")
         self.assertIsNone(vmimages)
 
     def test_list_nodes_returned_no_cloud_service(self):
@@ -84,7 +90,9 @@ class AzureNodeDriverTests(unittest.TestCase) :
     def test_restart_node_success(self):
 
         node = type('Node', (object,), dict(id="dc03"))
-        result = self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
+        result = self.driver.reboot_node(
+            node=node, ex_cloud_service_name="dcoddkinztest01",
+            ex_deployment_slot="Production")
 
         self.assertTrue(result)
 
@@ -94,35 +102,45 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = type('Node', (object,), dict(id="dc03"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest02", ex_deployment_slot="Production")
+            self.driver.reboot_node(node=node,
+                                    ex_cloud_service_name="dcoddkinztest02",
+                                    ex_deployment_slot="Production")
 
     def test_restart_node_fail_no_cloud_service(self):
 
         node = type('Node', (object,), dict(id="dc03"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest03", ex_deployment_slot="Production")
+            self.driver.reboot_node(node=node,
+                                    ex_cloud_service_name="dcoddkinztest03",
+                                    ex_deployment_slot="Production")
 
     def test_restart_node_fail_node_not_found(self):
 
         node = type('Node', (object,), dict(id="dc13"))
 
 
-        result = self.driver.reboot_node(node=node, ex_cloud_service_name="dcoddkinztest01", ex_deployment_slot="Production")
+        result = self.driver.reboot_node(
+            node=node, ex_cloud_service_name="dcoddkinztest01",
+            ex_deployment_slot="Production")
         self.assertFalse(result)
 
     def test_destroy_node_success_single_node_in_cloud_service(self):
 
         node = type('Node', (object,), dict(id="oddkinz1"))
 
-        result = self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz1", ex_deployment_slot="Production")
+        result = self.driver.destroy_node(node=node,
+                                          ex_cloud_service_name="oddkinz1",
+                                          ex_deployment_slot="Production")
         self.assertTrue(result)
 
     def test_destroy_node_success_multiple_nodes_in_cloud_service(self):
 
         node = type('Node', (object,), dict(id="oddkinz1"))
 
-        result = self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
+        result = self.driver.destroy_node(node=node,
+                                          ex_cloud_service_name="oddkinz2",
+                                          ex_deployment_slot="Production")
         self.assertTrue(result)
 
     def test_destroy_node_fail_node_does_not_exist(self):
@@ -130,7 +148,9 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node = type('Node', (object,), dict(id="oddkinz2"))
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production")
+            self.driver.destroy_node(node=node,
+                                     ex_cloud_service_name="oddkinz2",
+                                     ex_deployment_slot="Production")
 
     def test_destroy_node_success_cloud_service_not_found(self):
 
@@ -138,7 +158,9 @@ class AzureNodeDriverTests(unittest.TestCase) :
         node["name"]="cloudredis"
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_node(node=node, ex_cloud_service_name="oddkinz5", ex_deployment_slot="Production" )
+            self.driver.destroy_node(node=node,
+                                     ex_cloud_service_name="oddkinz5",
+                                     ex_deployment_slot="Production" )
 
     def test_create_cloud_service(self):
         result = self.driver.create_cloud_service("testdc123", "North Europe")
@@ -147,17 +169,20 @@ class AzureNodeDriverTests(unittest.TestCase) :
     def test_create_cloud_service_service_exists(self):
 
         with self.assertRaises(LibcloudError):
-            self.driver.create_cloud_service(ex_cloud_service_name="testdc1234", location="North Europe")
+            self.driver.create_cloud_service(ex_cloud_service_name="testdc1234",
+                                             location="North Europe")
 
     def test_destroy_cloud_service(self):
 
-        result = self.driver.destroy_cloud_service(ex_cloud_service_name="testdc123")
+        result = self.driver.destroy_cloud_service(
+            ex_cloud_service_name="testdc123")
         self.assertTrue(result)
 
     def test_destroy_cloud_service_service_does_not_exist(self):
 
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_cloud_service(ex_cloud_service_name="testdc1234")
+            self.driver.destroy_cloud_service(
+                ex_cloud_service_name="testdc1234")
 
     def test_create_node_and_deployment_one_node(self):
         kwargs = {}
@@ -171,10 +196,12 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = \
+            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
         kwargs["name"] = "dcoddkinztest03"
 
-        result = self.driver.create_node(ex_cloud_service_name="testdcabc", **kwargs)
+        result = self.driver.create_node(
+            ex_cloud_service_name="testdcabc", **kwargs)
         self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node(self):
@@ -189,11 +216,13 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
+        kwargs["image"] = \
+            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
         kwargs["name"] = "dcoddkinztest03"
 
         node = type('Node', (object,), dict(id="dc14"))
-        result = self.driver.create_node(ex_cloud_service_name="testdcabc2", **kwargs)
+        result = self.driver.create_node(
+            ex_cloud_service_name="testdcabc2", **kwargs)
         self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node_307_response(self):
@@ -208,11 +237,13 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = AZURE_DEFAULT_IMAGE_NAME["OpenLogic"]
+        kwargs["image"] = \
+            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
         kwargs["name"] = "dcoddkinztest04"
 
         with self.assertRaises(LibcloudError):
-            self.driver.create_node(ex_cloud_service_name="testdcabc3", **kwargs)
+            self.driver.create_node(ex_cloud_service_name="testdcabc3",
+                                    **kwargs)
 
 class AzureMockHttp(MockHttp):
 
@@ -330,7 +361,7 @@ class AzureMockHttp(MockHttp):
         if method == "GET":
                 body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments.xml')
 
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2(self, method, url, body, headers):
         if method == "GET":

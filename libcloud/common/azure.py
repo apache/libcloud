@@ -31,7 +31,8 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, CertificateConnection
+from libcloud.common.base import ConnectionUserAndKey, RawResponse, \
+    CertificateConnection
 from libcloud.common.base import XmlResponse
 
 # Azure API version
@@ -43,8 +44,11 @@ AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 
 class AzureResponse(XmlResponse):
 
+
     valid_response_codes = [httplib.NOT_FOUND, httplib.CONFLICT,
-                            httplib.BAD_REQUEST, httplib.TEMPORARY_REDIRECT] # added TEMPORARY_REDIRECT as this can sometimes be sent by azure instead of a success or fail response
+                            # added TEMPORARY_REDIRECT as this can sometimes be
+                            # sent by azure instead of a success or fail response
+                            httplib.BAD_REQUEST, httplib.TEMPORARY_REDIRECT]
 
     def success(self):
         i = int(self.status)
@@ -193,8 +197,10 @@ class AzureBaseDriver(object):
 
 class AzureServiceManagementConnection(CertificateConnection):
     # This needs the following approach -
-    # 1. Make request using LibcloudHTTPSConnection which is a overloaded class which takes in a client certificate
-    # 2. Depending on the type of operation use a PollingConnection when the response id is returned
+    # 1. Make request using LibcloudHTTPSConnection which is a overloaded
+    # class which takes in a client certificate
+    # 2. Depending on the type of operation use a PollingConnection
+    # when the response id is returned
     # 3. The Response can be used in an AzureServiceManagementResponse
     """Authentication class for "Service Account" authentication."""
     driver = AzureBaseDriver
@@ -220,7 +226,8 @@ class AzureServiceManagementConnection(CertificateConnection):
         self.keyfile = keypath;
         is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
         if not is_file_path:
-            raise InvalidCredsError('pem file needed to authenticate to Microsoft Azure')
+            raise InvalidCredsError(
+                'pem file needed to authenticate to Microsoft Azure')
         self.key_file = key_file
 
         super(AzureServiceManagementConnection, self).__init__(
