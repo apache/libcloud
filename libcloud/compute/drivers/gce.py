@@ -938,7 +938,8 @@ class GCENodeDriver(NodeDriver):
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
                               interval=None, timeout=None,
                               unhealthy_threshold=None,
-                              healthy_threshold=None):
+                              healthy_threshold=None,
+                              description=None):
         """
         Create an Http Health Check.
 
@@ -969,6 +970,9 @@ class GCENodeDriver(NodeDriver):
                                      healthy.  Defaults to 2.
         :type     healthy_threshold: ``int``
 
+        :keyword  description: The description of the check.  Defaults to None.
+        :type     description: ``str``
+
         :return:  Health Check object
         :rtype:   :class:`GCEHealthCheck`
         """
@@ -976,6 +980,8 @@ class GCENodeDriver(NodeDriver):
         hc_data['name'] = name
         if host:
             hc_data['host'] = host
+        if description:
+            hc_data['description'] = description
         # As of right now, the 'default' values aren't getting set when called
         # through the API, so set them explicitly
         hc_data['requestPath'] = path or '/'
@@ -1613,16 +1619,25 @@ class GCENodeDriver(NodeDriver):
         """
         if not hasattr(targetpool, 'name'):
             targetpool = self.ex_get_targetpool(targetpool)
-        if not hasattr(node, 'name'):
-            node = self.ex_get_node(node, 'all')
+        if hasattr(node, 'name'):
+            node_uri = node.extra['selfLink']
+        else:
+            if node.startswith('https://'):
+                node_uri = node
+            else:
+                node = self.ex_get_node(node, 'all')
+                node_uri = node.extra['selfLink']
 
-        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
+        targetpool_data = {'instances': [{'instance': node_uri}]}
 
         request = '/regions/%s/targetPools/%s/addInstance' % (
             targetpool.region.name, targetpool.name)
         self.connection.async_request(request, method='POST',
                                       data=targetpool_data)
-        targetpool.nodes.append(node)
+        if all((node_uri != n) and
+               (not hasattr(n, 'extra') or n.extra['selfLink'] != node_uri)
+               for n in targetpool.nodes):
+            targetpool.nodes.append(node)
         return True
 
     def ex_targetpool_add_healthcheck(self, targetpool, healthcheck):
@@ -1667,10 +1682,17 @@ class GCENodeDriver(NodeDriver):
         """
         if not hasattr(targetpool, 'name'):
             targetpool = self.ex_get_targetpool(targetpool)
-        if not hasattr(node, 'name'):
-            node = self.ex_get_node(node, 'all')
 
-        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
+        if hasattr(node, 'name'):
+            node_uri = node.extra['selfLink']
+        else:
+            if node.startswith('https://'):
+                node_uri = node
+            else:
+                node = self.ex_get_node(node, 'all')
+                node_uri = node.extra['selfLink']
+
+        targetpool_data = {'instances': [{'instance': node_uri}]}
 
         request = '/regions/%s/targetPools/%s/removeInstance' % (
             targetpool.region.name, targetpool.name)
@@ -1679,7 +1701,8 @@ class GCENodeDriver(NodeDriver):
         # Remove node object from node list
         index = None
         for i, nd in enumerate(targetpool.nodes):
-            if nd.name == node.name:
+            if nd == node_uri or (hasattr(nd, 'extra') and
+                                  nd.extra['selfLink'] == node_uri):
                 index = i
                 break
         if index is not None:
