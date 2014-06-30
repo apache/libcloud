@@ -231,13 +231,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                   'interval': 10,
                   'timeout': 10,
                   'unhealthy_threshold': 4,
-                  'healthy_threshold': 3}
+                  'healthy_threshold': 3,
+                  'description': 'test healthcheck'}
         hc = self.driver.ex_create_healthcheck(healthcheck_name, **kwargs)
         self.assertTrue(isinstance(hc, GCEHealthCheck))
         self.assertEqual(hc.name, healthcheck_name)
         self.assertEqual(hc.path, '/lc')
         self.assertEqual(hc.port, 8000)
         self.assertEqual(hc.interval, 10)
+        self.assertEqual(hc.extra['host'], 'lchost')
+        self.assertEqual(hc.extra['description'], 'test healthcheck')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
@@ -413,7 +416,20 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(remove_node)
         self.assertEqual(len(targetpool.nodes), 1)
 
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra['selfLink'])
+        self.assertTrue(add_node)
+        self.assertEqual(len(targetpool.nodes), 2)
+
+        remove_node = self.driver.ex_targetpool_remove_node(targetpool, node.extra['selfLink'])
+        self.assertTrue(remove_node)
+        self.assertEqual(len(targetpool.nodes), 1)
+
         add_node = self.driver.ex_targetpool_add_node(targetpool, node)
+        self.assertTrue(add_node)
+        self.assertEqual(len(targetpool.nodes), 2)
+
+        # check that duplicates are filtered
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra['selfLink'])
         self.assertTrue(add_node)
         self.assertEqual(len(targetpool.nodes), 2)
 
