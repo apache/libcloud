@@ -1363,6 +1363,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args['projectid'] = project.id
         vms = self._sync_request('listVirtualMachines', params=args)
         addrs = self._sync_request('listPublicIpAddresses', params=args)
+        port_forwarding_rules = self._sync_request('listPortForwardingRules')
+
+        try:
+            ip_forwarding_rules = self._sync_request('listIpForwardingRules')
+        except:
+            ip_forwarding_rules = {}
 
         public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
@@ -1380,14 +1386,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             public_ips = list(public_ips)
             node = self._to_node(data=vm, public_ips=public_ips)
 
-            addresses = public_ips_map.get(vm['id'], {}).items()
-            addresses = [CloudStackAddress(node, v, k) for k, v in addresses]
+            addresses = public_ips_map.get(str(vm['id']), {}).items()
+            addresses = [CloudStackAddress(address_id, address, node.driver)
+                         for address, address_id in addresses]
             node.extra['ip_addresses'] = addresses
 
             rules = []
             for addr in addresses:
-                result = self._sync_request('listIpForwardingRules')
-                for r in result.get('ipforwardingrule', []):
+                for r in ip_forwarding_rules.get('ipforwardingrule', []):
                     if str(r['virtualmachineid']) == node.id:
                         rule = CloudStackIPForwardingRule(node, r['id'],
                                                           addr,
@@ -1400,11 +1406,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
             rules = []
             public_ips = self.ex_list_public_ips()
-            result = self._sync_request('listPortForwardingRules')
-            for r in result.get('portforwardingrule', []):
+            for r in port_forwarding_rules.get('portforwardingrule', []):
                 if str(r['virtualmachineid']) == node.id:
-                    addr = [a for a in public_ips if
-                            a.address == r['ipaddress']]
+                    addr = [
+                        CloudStackAddress(a['id'], a['ipaddress'], node.driver)
+                        for a in addrs.get('publicipaddress', [])
+                        if a['ipaddress'] == r['ipaddress']
+                    ]
                     rule = CloudStackPortForwardingRule(node, r['id'],
                                                         addr[0],
                                                         r['protocol'].upper(),
