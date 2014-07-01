@@ -100,8 +100,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         project = 'debian-cloud'
         image = self.driver._match_images(project, 'debian-7')
         self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
-        image = self.driver._match_images(project, 'debian-6')
-        self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
+        image = self.driver._match_images(project, 'backports')
+        self.assertEqual(image.name, 'backports-debian-7-wheezy-v20131127')
 
     def test_ex_list_addresses(self):
         address_list = self.driver.ex_list_addresses()
