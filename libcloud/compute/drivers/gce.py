@@ -910,7 +910,7 @@ class GCENodeDriver(NodeDriver):
         list_zones = [self._to_zone(z) for z in response['items']]
         return list_zones
 
-    def ex_create_address(self, name, region=None):
+    def ex_create_address(self, name, region=None, address=None):
         """
         Create a static address in a region.
 
@@ -919,6 +919,10 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  region: Name of region for the address (e.g. 'us-central1')
         :type     region: ``str`` or :class:`GCERegion`
+
+        :keyword  address: Ephemeral IP address to promote to a static one
+                           (e.g. 'xxx.xxx.xxx.xxx')
+        :type     address: ``str`` or ``None``
 
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
@@ -930,6 +934,8 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('REGION_NOT_SPECIFIED',
                              'Region must be provided for an address')
         address_data = {'name': name}
+        if address:
+            address_data['address'] = address
         request = '/regions/%s/addresses' % (region.name)
         self.connection.async_request(request, method='POST',
                                       data=address_data)
