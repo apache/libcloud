@@ -892,19 +892,18 @@ class ConnectionKey(Connection):
 
 class CertificateConnection(Connection):
     """
-    Base connection class which accepts a single ``key`` argument.
+    Base connection class which accepts a single ``cert_file`` argument.
     """
-    def __init__(self, subscription_id, cert_file, secure=True, host=None, port=None, url=None,
+    def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
                  timeout=None):
         """
-        Initialize `user_id` and `key`; set `secure` to an ``int`` based on
+        Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
         super(CertificateConnection, self).__init__(secure=secure, host=host,
                                             port=port, url=url, timeout=timeout)
 
         self.cert_file = cert_file
-        self.subscription_id = subscription_id
 
 class ConnectionUserAndKey(ConnectionKey):
     """
