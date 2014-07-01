@@ -21,7 +21,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
     libcloud.security.VERIFY_SSL_CERT = False
 
     SUBSCRIPTION_ID = '3761b98b-673d-526c-8d55-fee918758e6e'
-    KEY_FILE = 'fixtures\\azure\\libcloud.pem' #empty file is fine
+    KEY_FILE = 'fixtures/azure/libcloud.pem' #empty file is fine
 
     def setUp(self):
         Azure = get_driver(Provider.AZURE)
