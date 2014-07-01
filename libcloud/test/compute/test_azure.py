@@ -1,6 +1,7 @@
 import libcloud
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword
+from libcloud.common.azure import AzureServiceManagementConnection
 
 __author__ = 'david'
 
