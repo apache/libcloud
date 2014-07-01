@@ -15,7 +15,6 @@
 """Azure Compute driver
 
 """
-import httplib
 import re
 import time
 import collections
@@ -24,6 +23,7 @@ import sys
 import copy
 import base64
 
+from libcloud.utils.py3 import httplib
 from libcloud.common.azure import AzureServiceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
@@ -36,14 +36,8 @@ from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
 from httplib import (HTTPSConnection)
 
-if sys.version_info < (3,):
-    from urllib2 import quote as url_quote
-    from urllib2 import unquote as url_unquote
-    _strtype = basestring
-else:
-    from urllib.parse import quote as url_quote
-    from urllib.parse import unquote as url_unquote
-    _strtype = str
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import urlunquote
 
 if sys.version_info < (3,):
     _unicode_type = unicode
