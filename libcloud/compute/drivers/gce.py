@@ -977,7 +977,7 @@ class GCENodeDriver(NodeDriver):
         :type     healthy_threshold: ``int``
 
         :keyword  description: The description of the check.  Defaults to None.
-        :type     description: ``str``
+        :type     description: ``str`` or ``None``
 
         :return:  Health Check object
         :rtype:   :class:`GCEHealthCheck`
@@ -1072,7 +1072,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_forwarding_rule(self, name, targetpool, region=None,
                                   protocol='tcp', port_range=None,
-                                  address=None):
+                                  address=None, description=None):
         """
         Create a forwarding rule.
 
@@ -1097,6 +1097,10 @@ class GCENodeDriver(NodeDriver):
                            in same region.
         :type     address: ``str`` or :class:`GCEAddress`
 
+        :keyword  description: The description of the forwarding rule.
+                               Defaults to None.
+        :type     description: ``str`` or ``None``
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
@@ -1117,6 +1121,8 @@ class GCENodeDriver(NodeDriver):
             forwarding_rule_data['IPAddress'] = address.extra['selfLink']
         if port_range:
             forwarding_rule_data['portRange'] = port_range
+        if description:
+            forwarding_rule_data['description'] = description
 
         request = '/regions/%s/forwardingRules' % (region.name)
 
