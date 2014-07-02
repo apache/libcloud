@@ -3352,7 +3352,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      elastic_ip: Elastic IP instance
         :type       elastic_ip: :class:`ElasticIP`
 
-        :param      domain: The domain where the IP resides (vpc only)
+        :param      domain: The domain where the IP resides (standard/vpc)
         :type       domain: ``str``
 
         :return:    A string representation of the association ID which is
@@ -3362,10 +3362,10 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        if domain is not None and domain != 'vpc':
-            raise AttributeError('Domain can only be set to vpc')
+        if domain is not None and domain not in ['standard', 'vpc']:
+            raise AttributeError('Domain can only be set to standard or vpc')
 
-        if domain is None:
+        if domain is None or domain == 'standard':
             params.update({'PublicIp': elastic_ip.ip})
         else:
             params.update({'AllocationId': elastic_ip.extra['allocation_id']})
