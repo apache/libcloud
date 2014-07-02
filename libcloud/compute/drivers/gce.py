@@ -1118,7 +1118,7 @@ class GCENodeDriver(NodeDriver):
         if address:
             if not hasattr(address, 'name'):
                 address = self.ex_get_address(address, region)
-            forwarding_rule_data['IPAddress'] = address.extra['selfLink']
+            forwarding_rule_data['IPAddress'] = address.address
         if port_range:
             forwarding_rule_data['portRange'] = port_range
         if description:
