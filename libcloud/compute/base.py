@@ -1380,6 +1380,14 @@ class NodeDriver(BaseDriver):
             try:
                 ssh_client.connect()
             except SSH_TIMEOUT_EXCEPTION_CLASSES:
+                e = sys.exc_info()[1]
+                message = str(e).lower()
+                expected_msg = 'no such file or directory'
+
+                if isinstance(e, IOError) and expected_msg in message:
+                    # Propagate (key) file doesn't exist errors
+                    raise e
+
                 # Retry if a connection is refused, timeout occurred,
                 # or the connection fails due to failed authentication.
                 ssh_client.close()

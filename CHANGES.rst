@@ -42,6 +42,11 @@ Compute
   (GITHUB-331)
   [David Gay]
 
+- Propagate an exception in ``deploy_node`` method if user specified an invalid
+  path to the private key file. Previously this exception was silently swallowed
+  and ignored.
+  [Tomaz Muraus]
+
 DNS
 ~~~
 
