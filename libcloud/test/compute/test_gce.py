@@ -255,11 +255,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         fwr_name = 'lcforwardingrule'
         targetpool = 'lctargetpool'
         region = 'us-central1'
+        port_range='8000-8500'
+        description = 'test forwarding rule'
         fwr = self.driver.ex_create_forwarding_rule(fwr_name, targetpool,
                                                     region=region,
-                                                    port_range='8000-8500')
+                                                    port_range=port_range,
+                                                    description=description)
         self.assertTrue(isinstance(fwr, GCEForwardingRule))
         self.assertEqual(fwr.name, fwr_name)
+        self.assertEqual(fwr.region.name, region)
+        self.assertEqual(fwr.protocol, 'TCP')
+        self.assertEqual(fwr.extra['portRange'], port_range)
+        self.assertEqual(fwr.extra['description'], description)
 
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
