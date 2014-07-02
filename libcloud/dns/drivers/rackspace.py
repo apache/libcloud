@@ -93,7 +93,15 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     def has_completed(self, response):
         status = response.object['status']
         if status == 'ERROR':
-            raise LibcloudError(response.object['error']['message'],
+            data = response.object['error']
+
+            if 'code' and 'message' in data:
+                message = '%s - %s (%s)' % (data['code'], data['message'],
+                                            data['details'])
+            else:
+                message = data['message']
+
+            raise LibcloudError(message,
                                 driver=self.driver)
 
         return status == 'COMPLETED'
@@ -318,6 +326,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         updated_record = get_new_obj(obj=record, klass=Record,
                                      attributes={'type': type,
                                                  'data': data,
+                                                 'driver': self,
                                                  'extra': merged})
         return updated_record
 

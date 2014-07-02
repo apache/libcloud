@@ -42,6 +42,13 @@ Compute
   (GITHUB-331)
   [David Gay]
 
+DNS
+~~~
+
+- Include a better message in the exception which is thrown when a request
+  in the Rackspace driver ends up in an ``ERROR`` state.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.15.0
 -----------------------------------
 
