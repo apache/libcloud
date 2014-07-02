@@ -3322,6 +3322,42 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    def ex_list_addresses(self, public_ips=None,
+                          allocation_ids=None, filters=None):
+        """
+        Return Elastic IP addresses allocated in the current region
+
+        :param   public_ips: Return only EIPs matching the provided IP
+                             addresses.
+        :type    public_ips: ``list``
+
+        :param   allocation_ids: Return only EIPs matching the provided
+                                 allocation ID (when listing EIPs
+                                 allocated for a VPC).
+        :type    allocation_ids: ``list``
+
+        :param   filters: The filters so that the response includes
+                          information for only certain EIPs
+        :type    filters: ``dict``
+
+        :rtype: ``list`` of :class:`.ElasticIP`
+        """
+
+        params = {'Action': 'DescribeAddresses'}
+
+        if public_ips:
+            params.update(self._pathlist('PublicIp', public_ips))
+
+        if allocation_ids:
+            params.update(self._pathlist('AllocationId', allocation_ids))
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_addresses(response, only_associated=False)
+
     def ex_describe_all_addresses(self, only_associated=False):
         """
         Return all the Elastic IP addresses for this account
