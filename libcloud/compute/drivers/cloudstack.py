@@ -801,7 +801,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             server_params['zoneid'] = self.list_locations()[0].id
 
         if networks:
-            networks = ','.join([network.id for network in networks])
+            networks = ','.join([str(network.id) for network in networks])
             server_params['networkids'] = networks
 
         if project:
