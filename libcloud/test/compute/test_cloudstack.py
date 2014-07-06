@@ -555,7 +555,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         rules = self.driver.ex_list_firewall_rules()
         res = self.driver.ex_delete_firewall_rule(rules[0])
         self.assertTrue(res)
-    
+
     def test_ex_create_firewall_rule(self):
         address = self.driver.ex_list_public_ips()[0]
         cidr_list = '192.168.0.0/16'
