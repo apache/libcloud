@@ -367,6 +367,60 @@ class CloudStackAddress(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
+class CloudStackFirewallRule(object):
+    """
+    A firewall rule.
+    """
+
+    def __init__(self, id, address, cidr_list, protocol,
+                 icmp_code=None, icmp_type=None,
+                 start_port=None, end_port=None):
+
+        """
+        A Firewall rule.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      id: Firewall Rule ID
+        :type       id: ``int``
+
+        :param      address: External IP address
+        :type       address: :class:`CloudStackAddress`
+
+        :param      cidr_list: cidr list
+        :type       cidr_list: ``str``
+
+        :param      protocol: TCP/IP Protocol (TCP, UDP)
+        :type       protocol: ``str``
+
+        :param      icmp_code: Error code for this icmp message
+        :type       icmp_code: ``int``
+
+        :param      icmp_type: Type of the icmp message being sent
+        :type       icmp_type: ``int``
+
+        :param      start_port: start of port range
+        :type       start_port: ``int``
+
+        :param      end_port: end of port range
+        :type       end_port: ``int``
+
+        :rtype: :class:`CloudStackFirewallRule`
+        """
+
+        self.id = id
+        self.address = address
+        self.cidr_list = cidr_list
+        self.protocol = protocol
+        self.icmp_code = icmp_code
+        self.icmp_type = icmp_type
+        self.start_port = start_port
+        self.end_port = end_port
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+
 class CloudStackIPForwardingRule(object):
     """
     A NAT/firewall forwarding rule.
@@ -1398,6 +1452,101 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         res = self._async_request(command='disassociateIpAddress',
                                   params={'id': address.id},
+                                  method='GET')
+        return res['success']
+
+    def ex_list_firewall_rules(self):
+        """
+        Lists all Firewall Rules
+
+        :rtype: ``list`` of :class:`CloudStackFirewallRule`
+        """
+        rules = []
+        result = self._sync_request(command='listFirewallRules',
+                                    method='GET')
+        if result != {}:
+            public_ips = self.ex_list_public_ips()
+            for rule in result['firewallrule']:
+                addr = [a for a in public_ips if
+                        a.address == rule['ipaddress']]
+
+                rules.append(CloudStackFirewallRule(rule['id'],
+                                                    addr[0],
+                                                    rule['cidrlist'],
+                                                    rule['protocol'],
+                                                    rule.get('icmpcode'),
+                                                    rule.get('icmptype'),
+                                                    rule.get('startport'),
+                                                    rule.get('endport')))
+
+        return rules
+
+    def ex_create_firewall_rule(self, address, cidr_list, protocol,
+                                icmp_code=None, icmp_type=None,
+                                start_port=None, end_port=None):
+        """
+        Creates a Firewalle Rule
+
+        :param      address: External IP address
+        :type       address: :class:`CloudStackAddress`
+
+        :param      cidr_list: cidr list
+        :type       cidr_list: ``str``
+
+        :param      protocol: TCP/IP Protocol (TCP, UDP)
+        :type       protocol: ``str``
+
+        :param      icmp_code: Error code for this icmp message
+        :type       icmp_code: ``int``
+
+        :param      icmp_type: Type of the icmp message being sent
+        :type       icmp_type: ``int``
+
+        :param      start_port: start of port range
+        :type       start_port: ``int``
+
+        :param      end_port: end of port range
+        :type       end_port: ``int``
+
+        :rtype: :class:`CloudStackFirewallRule`
+        """
+        args = {
+            'ipaddressid': address.id,
+            'cidrlist': cidr_list,
+            'protocol': protocol
+        }
+        if icmp_code is not None:
+            args['icmpcode'] = int(icmp_code)
+        if icmp_type is not None:
+            args['icmptype'] = int(icmp_type)
+        if start_port is not None:
+            args['startport'] = int(start_port)
+        if end_port is not None:
+            args['endport'] = int(end_port)
+        result = self._async_request(command='createFirewallRule',
+                                     params=args,
+                                     method='GET')
+        rule = CloudStackFirewallRule(result['firewallrule']['id'],
+                                      address,
+                                      cidr_list,
+                                      protocol,
+                                      icmp_code,
+                                      icmp_type,
+                                      start_port,
+                                      end_port)
+        return rule
+
+    def ex_delete_firewall_rule(self, firewall_rule):
+        """
+        Remove a Firewall rule.
+
+        :param firewall_rule: Firewall rule which should be used
+        :type  firewall_rule: :class:`CloudStackFirewallRule`
+
+        :rtype: ``bool``
+        """
+        res = self._async_request(command='deleteFirewallRule',
+                                  params={'id': firewall_rule.id},
                                   method='GET')
         return res['success']
 
