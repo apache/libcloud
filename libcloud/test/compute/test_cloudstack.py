@@ -108,19 +108,24 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.extra['zone_id'], default_location.id)
 
     def test_create_node_ex_networks(self):
+        CloudStackMockHttp.fixture_tag = 'deploynetworks'
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
 
-        CloudStackMockHttp.fixture_tag = 'deploynetworks'
-        networks = [nw for nw in self.driver.ex_list_networks()]
-        node = self.driver.create_node(name='test',
+        networks = [nw for nw in self.driver.ex_list_networks()
+                    if str(nw.zoneid) == str(location.id)]
+
+        node = self.driver.create_node(name='deploynetworks',
                                        location=location,
                                        image=image,
                                        size=size,
                                        networks=networks)
-        self.assertEqual(node.name, 'test')
-        self.assertEqual(node.id, 'fc4fd31a-16d3-49db-814a-56b39b9ef986')
+        self.assertEqual(node.name, 'deploynetworks')
+        self.assertEqual(node.extra['size_id'], size.id)
+        self.assertEqual(node.extra['zone_id'], location.id)
+        self.assertEqual(node.extra['image_id'], image.id)
+        self.assertEqual(len(node.private_ips), 2)
 
     def test_create_node_ex_security_groups(self):
         size = self.driver.list_sizes()[0]
