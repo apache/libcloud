@@ -1,0 +1,1 @@
+{"listfirewallrulesresponse": {"count": 1, "firewallrule": [ { "cidrlist": "192.168.0.0/16", "id": 171597, "ipaddress": "1.1.1.116", "protocol": "tcp", "startport": "33", "endport": "34", "ipaddressid": 34000, "state": "Active" }]}}
