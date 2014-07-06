@@ -42,8 +42,10 @@ from libcloud.utils.networking import is_valid_ip_address
 
 if have_paramiko:
     from paramiko.ssh_exception import SSHException
-    SSH_TIMEOUT_EXCEPTION_CLASSES = (SSHException, IOError, socket.gaierror,
-                                     socket.error)
+    from paramiko.ssh_exception import AuthenticationException
+
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (AuthenticationException, SSHException,
+                                     IOError, socket.gaierror, socket.error)
 else:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)
 
