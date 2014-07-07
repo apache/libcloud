@@ -379,7 +379,8 @@ class CloudStackFirewallRule(object):
         """
         A Firewall rule.
 
-        @note: This is a non-standard extension API, and only works for EC2.
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
 
         :param      id: Firewall Rule ID
         :type       id: ``int``
