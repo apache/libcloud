@@ -1116,7 +1116,7 @@ class GCENodeDriver(NodeDriver):
         forwarding_rule_data['name'] = name
         forwarding_rule_data['region'] = region.extra['selfLink']
         forwarding_rule_data['target'] = targetpool.extra['selfLink']
-        forwarding_rule_data['protocol'] = protocol.upper()
+        forwarding_rule_data['IPProtocol'] = protocol.upper()
         if address:
             if not hasattr(address, 'name'):
                 address = self.ex_get_address(address, region)
