@@ -16,6 +16,15 @@ Compute
   (LIBCLOUD-594, GITHUB-337)
   [Atsushi Sasaki]
 
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Allow user to specify session affinity algorithm in the GCE driver by passing
+  ``ex_session_affinity`` argument to the ``create_balancer`` method.
+  (LIBCLOUD-595, GITHUB-341)
+  [Lee Verberne, Eric Johnson]
+
 Changes with Apache Libcloud 0.15.1
 -----------------------------------
 

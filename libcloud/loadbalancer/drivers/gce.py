@@ -89,7 +89,8 @@ class GCELBDriver(Driver):
         return balancers
 
     def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_region=None, ex_healthchecks=None, ex_address=None):
+                        ex_region=None, ex_healthchecks=None, ex_address=None,
+                        ex_session_affinity=None):
         """
         Create a new load balancer instance.
 
@@ -126,11 +127,17 @@ class GCELBDriver(Driver):
         :keyword  ex_healthchecks: Optional list of healthcheck objects or
                                    names to add to the load balancer.
         :type     ex_healthchecks: ``list`` of :class:`GCEHealthCheck` or
-                                   ``str``
+                                   ``list`` of ``str``
 
         :keyword  ex_address: Optional static address object to be assigned to
                               the load balancer.
         :type     ex_address: C{GCEAddress}
+
+        :keyword  ex_session_affinity: Optional algorithm to use for session
+                                       affinity.  This will modify the hashing
+                                       algorithm such that a client will tend
+                                       to stick to a particular Member.
+        :type     ex_session_affinity: ``str``
 
         :return:  LoadBalancer object
         :rtype:   :class:`LoadBalancer`
@@ -154,7 +161,7 @@ class GCELBDriver(Driver):
         tp_name = '%s-tp' % name
         targetpool = self.gce.ex_create_targetpool(
             tp_name, region=ex_region, healthchecks=ex_healthchecks,
-            nodes=node_list)
+            nodes=node_list, session_affinity=ex_session_affinity)
 
         # Create the Forwarding rule, but if it fails, delete the target pool.
         try:
