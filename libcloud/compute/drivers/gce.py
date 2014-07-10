@@ -1350,7 +1350,7 @@ class GCENodeDriver(NodeDriver):
         return node_list
 
     def ex_create_targetpool(self, name, region=None, healthchecks=None,
-                             nodes=None):
+                             nodes=None, session_affinity=None):
         """
         Create a target pool.
 
@@ -1366,6 +1366,10 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  nodes:  Optional list of nodes to attach to the pool
         :type     nodes:  ``list`` of ``str`` or :class:`Node`
+
+        :keyword  session_affinity:  Optional algorithm to use for session
+                                     affinity.
+        :type     session_affinity:  ``str``
 
         :return:  Target Pool object
         :rtype:   :class:`GCETargetPool`
@@ -1391,6 +1395,8 @@ class GCENodeDriver(NodeDriver):
             else:
                 node_list = [n.extra['selfLink'] for n in nodes]
             targetpool_data['instances'] = node_list
+        if session_affinity:
+            targetpool_data['sessionAffinity'] = session_affinity
 
         request = '/regions/%s/targetPools' % (region.name)
 
@@ -3312,6 +3318,7 @@ class GCENodeDriver(NodeDriver):
         extra = {}
         extra['selfLink'] = targetpool.get('selfLink')
         extra['description'] = targetpool.get('description')
+        extra['sessionAffinity'] = targetpool.get('sessionAffinity')
         region = self.ex_get_region(targetpool['region'])
         healthcheck_list = [self.ex_get_healthcheck(h.split('/')[-1]) for h
                             in targetpool.get('healthChecks', [])]

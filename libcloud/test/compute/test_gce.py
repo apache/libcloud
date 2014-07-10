@@ -327,6 +327,17 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(targetpool.nodes), len(nodes))
         self.assertEqual(targetpool.region.name, region)
 
+    def test_ex_create_targetpool_session_affinity(self):
+        targetpool_name = 'lctargetpool-sticky'
+        region = 'us-central1'
+        session_affinity = 'CLIENT_IP_PROTO'
+        targetpool = self.driver.ex_create_targetpool(
+            targetpool_name, region=region,
+            session_affinity=session_affinity)
+        self.assertEqual(targetpool.name, targetpool_name)
+        self.assertEqual(targetpool.extra.get('sessionAffinity'),
+                         session_affinity)
+
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
         volume = self.driver.ex_get_volume('lcdisk')
@@ -1036,6 +1047,12 @@ class GCEMockHttp(MockHttpTestCase):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_targetPools_lctargetpool.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool_sticky(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lctargetpool_sticky.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_libcloud_lb_demo_lb_tp(

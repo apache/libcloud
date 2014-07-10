@@ -212,8 +212,8 @@ Bad (please avoid):
         description = kwargs.get('description', None)
         public_ips = kwargs.get('public_ips', None)
 
-5. When returning a dictionary, document it's structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. When returning a dictionary, document its structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dynamic nature of Python can be very nice and useful, but if (ab)use it in a
 wrong way it can also make it hard for the API consumer to understand what is
