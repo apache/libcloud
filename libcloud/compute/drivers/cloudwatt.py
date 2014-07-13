@@ -47,7 +47,10 @@ class CloudwattAuthConnection(OpenStackAuthConnection):
 
     def authenticate(self, force=False):
         reqbody = json.dumps({'auth': {
-            'passwordCredentials': {'username': self.user_id, 'password': self.key},
+            'passwordCredentials': {
+                'username': self.user_id,
+                'password': self.key
+            },
             'tenantId': self._ex_tenant_id
         }})
         resp = self.request('/tokens', data=reqbody, headers={},
@@ -93,21 +96,17 @@ class CloudwattConnection(OpenStack_1_1_Connection):
         self.ex_tenant_id = kwargs.pop('ex_tenant_id')
         super(CloudwattConnection, self).__init__(*args, **kwargs)
         osa = CloudwattAuthConnection(
-                self,
-                AUTH_URL,
-                self._auth_version,
-                self.user_id,
-                self.key,
-                tenant_name=self._ex_tenant_name,
-                timeout=self.timeout,
-                ex_tenant_id=self.ex_tenant_id
+            self,
+            AUTH_URL,
+            self._auth_version,
+            self.user_id,
+            self.key,
+            tenant_name=self._ex_tenant_name,
+            timeout=self.timeout,
+            ex_tenant_id=self.ex_tenant_id
         )
         self._osa = osa
         self._auth_version = '2.0'
-        
-
-    def request(self, *args, **kwargs):
-        return super(CloudwattConnection, self).request(*args, **kwargs)
 
 
 class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
@@ -132,10 +131,14 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
         Note: tenant_name argument is required for HP cloud.
         """
         self.ex_tenant_id = tenant_id
-        super(CloudwattNodeDriver, self).__init__(key=key, secret=secret,
-                                                secure=secure, host=host,
-                                                port=port,
-                                                **kwargs)
+        super(CloudwattNodeDriver, self).__init__(
+            key=key,
+            secret=secret,
+            secure=secure,
+            host=host,
+            port=port,
+            **kwargs
+        )
 
     def _ex_connection_class_kwargs(self):
         """
