@@ -186,6 +186,10 @@ Compute
   (LIBCLOUD-356, GITHUB-330)
   [Ryan Parrish]
 
+- Add new driver for Cloudwatt (https://www.cloudwatt.com/en/) provider.
+  (GITHUB-338)
+  [ZuluPro]
+
 Storage
 ~~~~~~~
 

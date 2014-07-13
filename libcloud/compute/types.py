@@ -132,9 +132,11 @@ class Provider(object):
     PROFIT_BRICKS = 'profitbricks'
     VULTR = 'vultr'
     AURORACOMPUTE = 'aurora_compute'
+    CLOUDWATT = 'cloudwatt'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
+    CLOUDWATT = 'cloudwatt'
     KILI = 'kili'
 
     # Deprecated constants which are still supported

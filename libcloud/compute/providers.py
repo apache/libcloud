@@ -159,6 +159,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
     Provider.AURORACOMPUTE:
     ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
+    Provider.CLOUDWATT:
+    ('libcloud.compute.drivers.cloudwatt', 'CloudwattNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
