@@ -1,6 +1,21 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+Compute
+~~~~~~~
+
+- Fix to join networks properly in ``deploy_node`` in the CloudStack
+  driver.
+  (LIBCLOUD-593, GITUHB-336)
+  [Atsushi Sasaki]
+
+- Create ``CloudStackFirewallRule`` class and corresponding methods.
+  (LIBCLOUD-594, GITHUB-337)
+  [Atsushi Sasaki]
+
 Changes with Apache Libcloud 0.15.1
 -----------------------------------
 
