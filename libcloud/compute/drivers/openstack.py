@@ -1348,7 +1348,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 b(kwargs['ex_userdata'])).decode('ascii')
 
         if 'ex_config_drive' in kwargs:
-            server_params['config_drive'] = True
+            server_params['config_drive'] = kwargs['ex_config_drive']
 
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
