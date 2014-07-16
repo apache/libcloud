@@ -16,6 +16,9 @@ Compute
   (LIBCLOUD-594, GITHUB-337)
   [Atsushi Sasaki]
 
+- Add support for SSD disks to Google Compute driver.
+  (GITHUB-339)
+  [Eric Johnson]
 
 Loadbalancer
 ~~~~~~~~~~~~

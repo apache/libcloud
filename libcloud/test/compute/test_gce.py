@@ -343,11 +343,19 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         volume = self.driver.ex_get_volume('lcdisk')
         snapshot = volume.snapshot(snapshot_name)
         self.assertEqual(snapshot.name, snapshot_name)
-        self.assertEqual(snapshot.size, '1')
+        self.assertEqual(snapshot.size, '10')
+
+    def test_create_volume_ssd(self):
+        volume_name = 'lcdisk'
+        size = 10
+        volume = self.driver.create_volume(size, volume_name,
+                                           ex_disk_type='pd-ssd')
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.extra['type'], 'pd-ssd')
 
     def test_create_volume(self):
         volume_name = 'lcdisk'
-        size = 1
+        size = 10
         volume = self.driver.create_volume(size, volume_name)
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
@@ -595,15 +603,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         snapshot_name = 'lcsnapshot'
         snapshot = self.driver.ex_get_snapshot(snapshot_name)
         self.assertEqual(snapshot.name, snapshot_name)
-        self.assertEqual(snapshot.size, '1')
+        self.assertEqual(snapshot.size, '10')
         self.assertEqual(snapshot.status, 'READY')
 
     def test_ex_get_volume(self):
         volume_name = 'lcdisk'
         volume = self.driver.ex_get_volume(volume_name)
         self.assertEqual(volume.name, volume_name)
-        self.assertEqual(volume.size, '1')
+        self.assertEqual(volume.size, '10')
         self.assertEqual(volume.extra['status'], 'READY')
+        self.assertEqual(volume.extra['type'], 'pd-ssd')
 
     def test_ex_get_zone(self):
         zone_name = 'us-central1-b'
