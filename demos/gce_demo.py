@@ -190,16 +190,16 @@ def main():
 
     # == Create Node with disk auto-created ==
     if MAX_NODES > 1:
-        print('Creating Node with auto-created disk:')
+        print('Creating Node with auto-created SSD:')
         name = '%s-np-node' % DEMO_BASE_NAME
         node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
-                                 ex_tags=['libcloud'])
+                                 ex_tags=['libcloud'], disk_type='pd-ssd')
         print('   Node %s created' % name)
 
         # == Create, and attach a disk ==
         print('Creating a new disk:')
         disk_name = '%s-attach-disk' % DEMO_BASE_NAME
-        volume = gce.create_volume(1, disk_name)
+        volume = gce.create_volume(10, disk_name)
         if volume.attach(node_1):
             print ('   Attached %s to %s' % (volume.name, node_1.name))
 
