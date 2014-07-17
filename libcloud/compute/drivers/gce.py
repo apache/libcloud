@@ -2318,6 +2318,10 @@ class GCENodeDriver(NodeDriver):
                 image = self._match_images('windows-cloud', partial_name)
             elif partial_name.startswith('container-vm'):
                 image = self._match_images('google-containers', partial_name)
+            elif partial_name.startswith('coreos'):
+                image = self._match_images('coreos-cloud', partial_name)
+            elif partial_name.startswith('opensuse'):
+                image = self._match_images('opensuse-cloud', partial_name)
 
         return image
 
