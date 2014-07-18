@@ -127,8 +127,6 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
 
         :param tenant_id: ID of tenant required for Cloudwatt auth
         :type tenant_id: ``str``
-
-        Note: tenant_name argument is required for HP cloud.
         """
         self.ex_tenant_id = tenant_id
         super(CloudwattNodeDriver, self).__init__(
