@@ -3015,7 +3015,7 @@ class GCENodeDriver(NodeDriver):
         else:
             volume_data['type'] = 'https://www.googleapis.com/compute/'
             volume_data['type'] += '%s/projects/%s/zones/%s/diskTypes/%s' % (
-                    API_VERSION, self.project, location.name, ex_disk_type)
+                API_VERSION, self.project, location.name, ex_disk_type)
         request = '/zones/%s/disks' % (location.name)
 
         return request, volume_data, params
