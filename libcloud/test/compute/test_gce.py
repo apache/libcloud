@@ -337,7 +337,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_create_volume_ssd(self):
         volume_name = 'lcdisk'
         size = 10
-        volume = self.driver.create_volume(size, volume_name, disk_type='pd-ssd')
+        volume = self.driver.create_volume(size, volume_name,
+            ex_disk_type='pd-ssd')
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.extra['type'], 'pd-ssd')
 

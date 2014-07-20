@@ -1140,8 +1140,8 @@ class GCENodeDriver(NodeDriver):
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
-                    external_ip='ephemeral', disk_type="pd-standard",
-                    disk_auto_delete=True):
+                    external_ip='ephemeral', ex_disk_type='pd-standard',
+                    ex_disk_auto_delete=True):
         """
         Create a new node and return a node object for the node.
 
@@ -1183,14 +1183,14 @@ class GCENodeDriver(NodeDriver):
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
-        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
-                             for an SSD disk.
-        :type     disk_type: ``str``
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+                                for an SSD disk.
+        :type     ex_disk_type: ``str``
 
-        :keyword  disk_auto_delete: Indicate that the boot disk should be
-                                    deleted when the Node is deleted. Set to
-                                    True by default.
-        :type     disk_auto_delete: ``bool``
+        :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
+                                       deleted when the Node is deleted. Set to
+                                       True by default.
+        :type     ex_disk_auto_delete: ``bool``
 
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
@@ -1209,7 +1209,7 @@ class GCENodeDriver(NodeDriver):
             ex_boot_disk = self.create_volume(None, name, location=location,
                                               image=image,
                                               use_existing=use_existing_disk,
-                                              disk_type=disk_type)
+                                              ex_disk_type=ex_disk_type)
 
         if ex_metadata is not None:
             ex_metadata = {"items": [{"key": k, "value": v}
@@ -1219,8 +1219,8 @@ class GCENodeDriver(NodeDriver):
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
                                                    ex_boot_disk, external_ip,
-                                                   disk_type,
-                                                   disk_auto_delete)
+                                                   ex_disk_type,
+                                                   ex_disk_auto_delete)
         self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
@@ -1230,8 +1230,8 @@ class GCENodeDriver(NodeDriver):
                                  ex_tags=None, ex_metadata=None,
                                  ignore_errors=True, use_existing_disk=True,
                                  poll_interval=2, external_ip='ephemeral',
-                                 disk_type="pd-standard",
-                                 auto_disk_delete=True,
+                                 ex_disk_type='pd-standard',
+                                 ex_auto_disk_delete=True,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1288,14 +1288,14 @@ class GCENodeDriver(NodeDriver):
                                multiple node creation.)
         :type     external_ip: ``str`` or None
 
-        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
-                             for an SSD disk.
-        :type     disk_type: ``str``
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+                                for an SSD disk.
+        :type     ex_disk_type: ``str``
 
-        :keyword  disk_auto_delete: Indicate that the boot disk should be
-                                    deleted when the Node is deleted. Set to
-                                    True by default.
-        :type     disk_auto_delete: ``bool``
+        :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
+                                       deleted when the Node is deleted. Set to
+                                       True by default.
+        :type     ex_disk_auto_delete: ``bool``
 
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
@@ -1323,7 +1323,7 @@ class GCENodeDriver(NodeDriver):
                       'ignore_errors': ignore_errors,
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
-                      'disk_type': disk_type}
+                      'ex_disk_type': ex_disk_type}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -1425,7 +1425,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_targetpool(name, region)
 
     def create_volume(self, size, name, location=None, snapshot=None,
-                      image=None, use_existing=True, disk_type="pd-standard"):
+                      image=None, use_existing=True,
+                      ex_disk_type='pd-standard'):
         """
         Create a volume (disk).
 
@@ -1451,15 +1452,15 @@ class GCENodeDriver(NodeDriver):
                                 of attempting to create a new disk.
         :type     use_existing: ``bool``
 
-        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
-                             for an SSD disk.
-        :type     disk_type: ``str``
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+                                for an SSD disk.
+        :type     ex_disk_type: ``str``
 
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
         request, volume_data, params = self._create_vol_req(
-            size, name, location, snapshot, image, disk_type)
+            size, name, location, snapshot, image, ex_disk_type)
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
@@ -2735,8 +2736,8 @@ class GCENodeDriver(NodeDriver):
 
     def _create_node_req(self, name, size, image, location, network,
                          tags=None, metadata=None, boot_disk=None,
-                         external_ip='ephemeral', disk_type='pd-standard',
-                         disk_auto_delete=True):
+                         external_ip='ephemeral', ex_disk_type='pd-standard',
+                         ex_disk_auto_delete=True):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -2774,14 +2775,14 @@ class GCENodeDriver(NodeDriver):
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
-        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
-                             for an SSD disk.
-        :type     disk_type: ``str``
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+                                for an SSD disk.
+        :type     ex_disk_type: ``str``
 
-        :keyword  disk_auto_delete: Indicate that the boot disk should be
-                                    deleted when the Node is deleted. Set to
-                                    True by default.
-        :type     disk_auto_delete: ``bool``
+        :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
+                                       deleted when the Node is deleted. Set to
+                                       True by default.
+        :type     ex_disk_auto_delete: ``bool``
 
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
@@ -2828,7 +2829,7 @@ class GCENodeDriver(NodeDriver):
         :type   status: ``dict``
 
         :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, disk_type, etc.)
+                            (size, image, location, ex_disk_type, etc.)
         :type   node_attrs: ``dict``
         """
         disk = None
@@ -2847,7 +2848,8 @@ class GCENodeDriver(NodeDriver):
             # Or, if there is an error, mark as failed.
             disk_req, disk_data, disk_params = self._create_vol_req(
                 None, status['name'], location=node_attrs['location'],
-                image=node_attrs['image'], disk_type=node_attrs['disk_type'])
+                image=node_attrs['image'],
+                ex_disk_type=node_attrs['ex_disk_type'])
             try:
                 disk_res = self.connection.request(
                     disk_req, method='POST', data=disk_data,
@@ -2955,7 +2957,7 @@ class GCENodeDriver(NodeDriver):
                                               node_attrs['location'])
 
     def _create_vol_req(self, size, name, location=None, snapshot=None,
-                        image=None, disk_type="pd-standard"):
+                        image=None, ex_disk_type='pd-standard'):
         """
         Assemble the request/data for creating a volume.
 
@@ -2978,8 +2980,8 @@ class GCENodeDriver(NodeDriver):
         :keyword  image: Image to create disk from.
         :type     image: :class:`GCENodeImage` or ``str`` or ``None``
 
-        :keyword  disk_type: Specify pd-standard (default) or pd-ssd
-        :type     disk_type: ``str``
+        :keyword  ex_disk_type: Specify pd-standard (default) or pd-ssd
+        :type     ex_disk_type: ``str``
 
         :return:  Tuple containing the request string, the data dictionary and
                   the URL parameters
@@ -3008,12 +3010,12 @@ class GCENodeDriver(NodeDriver):
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        if disk_type.startswith('https'):
-            volume_data['type'] = disk_type
+        if ex_disk_type.startswith('https'):
+            volume_data['type'] = ex_disk_type
         else:
             volume_data['type'] = 'https://www.googleapis.com/compute/'
             volume_data['type'] += '%s/projects/%s/zones/%s/diskTypes/%s' % (
-                    API_VERSION, self.project, location.name, disk_type)
+                    API_VERSION, self.project, location.name, ex_disk_type)
         request = '/zones/%s/disks' % (location.name)
 
         return request, volume_data, params

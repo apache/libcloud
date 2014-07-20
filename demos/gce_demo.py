@@ -193,7 +193,7 @@ def main():
         print('Creating Node with auto-created SSD:')
         name = '%s-np-node' % DEMO_BASE_NAME
         node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
-                                 ex_tags=['libcloud'], disk_type='pd-ssd')
+                                 ex_tags=['libcloud'], ex_disk_type='pd-ssd')
         print('   Node %s created' % name)
 
         # == Create, and attach a disk ==
