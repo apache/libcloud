@@ -124,6 +124,7 @@ class Provider(object):
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
+    CLOUDWATT = 'cloudwatt'
     KILI = 'kili'
 
     # Deprecated constants which are still supported
