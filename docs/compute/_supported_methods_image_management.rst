@@ -62,6 +62,7 @@ Provider                              list images get image create image delete 
 `vCloud`_                             yes         no        no           no           no        
 `Voxel VoxCLOUD`_                     yes         no        no           no           no        
 `vps.net`_                            yes         no        no           no           no        
+`VMware vSphere`_                     no          no        no           no           no        
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -125,3 +126,4 @@ Provider                              list images get image create image delete 
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
+.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/

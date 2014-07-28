@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- Add new driver for VMware vSphere (http://www.vmware.com/products/vsphere/)
+  based clouds.
+  [Tomaz Muraus]
+
 - Add two new default node states - ``NodeState.SUSPENDED`` and
   ``NodeState.ERROR``.
   [Tomaz Muraus]

@@ -121,6 +121,7 @@ class Provider(object):
     IKOULA = 'ikoula'
     OUTSCALE_SAS = 'outscale_sas'
     OUTSCALE_INC = 'outscale_inc'
+    VSPHERE = 'vsphere'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
