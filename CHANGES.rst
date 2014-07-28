@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- Add two new default node states - ``NodeState.SUSPENDED`` and
+  ``NodeState.ERROR``.
+  [Tomaz Muraus]
+
 - Fix to join networks properly in ``deploy_node`` in the CloudStack
   driver.
   (LIBCLOUD-593, GITUHB-336)
