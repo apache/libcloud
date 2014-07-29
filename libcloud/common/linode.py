@@ -88,9 +88,9 @@ class LinodeResponse(JsonResponse):
         self.status = response.status
 
         # Linode hack
-        # sends "Content-Encoding: gzip" header but a plain/text response          
+        # sends "Content-Encoding: gzip" header but a plain/text response
         response_read = response.read()
- 
+
         try:
             self.body = self._decompress_response(body=response_read,
                                                   headers=self.headers)
