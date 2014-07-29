@@ -359,7 +359,10 @@ class VSphereNodeDriver(NodeDriver):
         properties = vm.get_properties()
         status = vm.get_status()
 
-        id = vm.properties.config.uuid
+        uuid = vm.properties.config.uuid
+        instance_uuid = vm.properties.config.instanceUuid
+
+        id = uuid
         name = properties['name']
         public_ips = []
         private_ips = []
@@ -369,16 +372,27 @@ class VSphereNodeDriver(NodeDriver):
         net = properties.get('net', [])
         resource_pool_id = vm.properties.resourcePool._obj
 
+        try:
+            operating_system = vm.properties.summary.guest.guestFullName,
+        except Exception:
+            operating_system = 'unknown'
+
         extra = {
-            'uuid': id,
+            'uuid': uuid,
+            'instance_uuid': instance_uuid,
             'path': properties['path'],
+            'resource_pool_id': resource_pool_id,
             'hostname': properties.get('hostname', None),
             'guest_id': properties['guest_id'],
             'devices': properties.get('devices', {}),
             'disks': properties.get('disks', []),
             'net': net,
 
-            'resource_pool_id': resource_pool_id
+            'overall_status': vm.properties.overallStatus,
+            'operating_system': operating_system,
+
+            'cpus': vm.properties.config.hardware.numCPU,
+            'memory_mb': vm.properties.config.hardware.memoryMB
         }
 
         # Add primary IP
