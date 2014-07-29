@@ -34,7 +34,9 @@ except ImportError:
 
 from pysphere import VIServer
 from pysphere.vi_task import VITask
+from pysphere.vi_mor import VIMor, MORTypes
 from pysphere.resources import VimService_services as VI
+from pysphere.vi_virtual_machine import VIVirtualMachine
 
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
 from libcloud.common.base import ConnectionUserAndKey
@@ -268,7 +270,18 @@ class VSphereNodeDriver(NodeDriver):
         :type path: ``str``
         :rtype: :class:`Node`
         """
-        node = self._to_node(vm_path=path)
+        vm = self.connection.client.get_vm_by_path(path)
+        node = self._to_node(vm=vm)
+        return node
+
+    def ex_get_node_by_uuid(self, uuid):
+        """
+        Retrieve Node object for a VM with a provided uuid.
+
+        :type uuid: ``str``
+        """
+        vm = self._get_vm_for_uuid(uuid=uuid)
+        node = self._to_node(vm=vm)
         return node
 
     @wrap_non_libcloud_exceptions
@@ -289,21 +302,64 @@ class VSphereNodeDriver(NodeDriver):
         """
         return self.connection.client.get_api_version()
 
+    def _get_vm_for_uuid(self, uuid, datacenter=None):
+        """
+        Retrieve VM for the provided UUID.
+
+        :type uuid: ``str``
+        """
+        server = self.connection.client
+
+        dc_list = []
+        if datacenter and VIMor.is_mor(datacenter):
+            dc_list.append(datacenter)
+        else:
+            dc = server.get_datacenters()
+            if datacenter:
+                dc_list = [k for k, v in dc.iteritems() if v == datacenter]
+            else:
+                dc_list = list(dc.iterkeys())
+
+        for mor_dc in dc_list:
+            request = VI.FindByUuidRequestMsg()
+            search_index = server._do_service_content.SearchIndex
+            mor_search_index = request.new__this(search_index)
+            mor_search_index.set_attribute_type(MORTypes.SearchIndex)
+            request.set_element__this(mor_search_index)
+
+            mor_datacenter = request.new_datacenter(mor_dc)
+            mor_datacenter.set_attribute_type(MORTypes.Datacenter)
+            request.set_element_datacenter(mor_datacenter)
+
+            request.set_element_vmSearch(True)
+            request.set_element_uuid(uuid)
+
+            try:
+                vm = server._proxy.FindByUuid(request)._returnval
+            except VI.ZSI.FaultException:
+                pass
+            else:
+                if vm:
+                    return VIVirtualMachine(server, vm)
+
+            return None
+
     def _to_nodes(self, vm_paths):
         nodes = []
         for vm_path in vm_paths:
-            node = self._to_node(vm_path=vm_path)
+            vm = self.connection.client.get_vm_by_path(vm_path)
+            node = self._to_node(vm=vm)
             nodes.append(node)
 
         return nodes
 
-    def _to_node(self, vm_path):
-        vm = self.connection.client.get_vm_by_path(vm_path)
+    def _to_node(self, vm):
+        assert(isinstance(vm, VIVirtualMachine))
 
         properties = vm.get_properties()
         status = vm.get_status()
 
-        id = properties['path']
+        id = vm.properties.config.uuid
         name = properties['name']
         public_ips = []
         private_ips = []
@@ -311,14 +367,18 @@ class VSphereNodeDriver(NodeDriver):
         state = self.NODE_STATE_MAP.get(status, NodeState.UNKNOWN)
         ip_address = properties.get('ip_address', None)
         net = properties.get('net', [])
+        resource_pool_id = vm.properties.resourcePool._obj
 
         extra = {
+            'uuid': id,
             'path': properties['path'],
             'hostname': properties.get('hostname', None),
             'guest_id': properties['guest_id'],
             'devices': properties.get('devices', {}),
             'disks': properties.get('disks', []),
-            'net': net
+            'net': net,
+
+            'resource_pool_id': resource_pool_id
         }
 
         # Add primary IP
@@ -352,9 +412,8 @@ class VSphereNodeDriver(NodeDriver):
         return node
 
     def _get_vm_for_node(self, node):
-        vm_path = node.id
-        vm = self.connection.client.get_vm_by_path(vm_path)
-
+        uuid = node.id
+        vm = self._get_vm_for_uuid(uuid=uuid)
         return vm
 
     def _ex_connection_class_kwargs(self):
