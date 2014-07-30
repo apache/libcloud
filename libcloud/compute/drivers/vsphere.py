@@ -175,6 +175,33 @@ class VSphereNodeDriver(NodeDriver):
         return nodes
 
     @wrap_non_libcloud_exceptions
+    def ex_clone_node(self, node, name, power_on=True, template=False):
+        """
+        Clone the provided node.
+
+        :param node: Node to clone.
+        :type node: :class:`Node`
+
+        :param name: Name of the new node.
+        :type name: ``str``
+
+        :param power_on: Power the new node on after being created.
+        :type power_on: ``bool``
+
+        :param template: Specifies whether or not the new virtual machine
+                         should be marked as a template.
+        :type template: ``bool``
+
+        :return: New node.
+        :rtype: :class:`Node`
+        """
+        vm = self._get_vm_for_node(node=node)
+        new_vm = vm.clone(name=name, power_on=power_on, template=template)
+        new_node = self._to_node(vm=new_vm)
+
+        return new_node
+
+    @wrap_non_libcloud_exceptions
     def reboot_node(self, node):
         vm = self._get_vm_for_node(node=node)
         vm.reset()
