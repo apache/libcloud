@@ -86,7 +86,16 @@ preparing a release.
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm test/secrets.py``
 
-2. Creating release artifacts
+2. Update JIRA
+~~~~~~~~~~~~~~
+
+* Create a new JIRA version for the release in question (if one doesn't exist
+  yet)
+* Close all the corresponding JIRA tickets and set ``Fix Version/s`` field
+  to the current version
+* Release the JIRA version
+
+3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have a script that runs the required setup.py commands and then hashes
@@ -107,7 +116,7 @@ are suitable to be uploaded for a release.
 
 Copy the artifacts in another directory, unpack one of them and test it with ``tox``.
 
-3. Tagging a release
+4. Tagging a release
 ~~~~~~~~~~~~~~~~~~~~
 
 Tag the tentative release with a ``-tentative`` postfix.
@@ -121,8 +130,8 @@ For example:
 .. sourcecode:: bash
 
     git tag v0.15.0-tentative 105b9610835f99704996d861d613c5a9a8b3f8b1
-	
-4. Upload the release artifacts and start a [VOTE] thread
+
+5. Upload the release artifacts and start a [VOTE] thread
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Upload all release artifacts including the ``whl`` files to your people.apache.org
@@ -131,7 +140,7 @@ space. Then start a [VOTE] thread on the dev@libcloud.apache.org mailing list.
 Once the vote has passed tag the release with a new tag, removing the ``-tentative`` postfix.
 Upload the release artifacts to Apache servers and Pypi.
 
-5. Uploading release artifacts to Apache servers
+6. Uploading release artifacts to Apache servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Add release artifacts to the dist SVN repository at
@@ -146,7 +155,7 @@ Upload the release artifacts to Apache servers and Pypi.
   are automatically archived and available at
   https://dist.apache.org/repos/dist/release/libcloud/.
 
-6. Publishing package to PyPi
+7. Publishing package to PyPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **For consistency and security reasons packages are always uploaded to PyPi
@@ -172,7 +181,7 @@ screenshot below.
    :width: 700px
    :align: center
 
-7. Verifying the release artifact check sums
+8. Verifying the release artifact check sums
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To verify that nothing went wrong doing the release process, run the
@@ -193,14 +202,14 @@ For example
 
     ./dist/verify_checksums.sh apache-libcloud-0.13.2
 
-8. Updating doap_libcloud.rdf file
+9. Updating doap_libcloud.rdf file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add information about the new release to the ``doap_libcloud.rdf`` file in the
 root of the main code repository.
 
-9. Updating website
-~~~~~~~~~~~~~~~~~~~
+10. Updating website
+~~~~~~~~~~~~~~~~~~~~
 
 Check out the website using SVN: ``svn co https://svn.apache.org/repos/asf/libcloud/site/trunk``
 
@@ -210,7 +219,7 @@ Check out the website using SVN: ``svn co https://svn.apache.org/repos/asf/libcl
 
 Build the site locally and make sure everything is correct. Check the ``README.md`` file.
 
-10. Sending announcements
+11. Sending announcements
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Send a release announcement to {dev,users}@libcloud.apache.org. If it's a
