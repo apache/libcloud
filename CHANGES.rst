@@ -7,6 +7,11 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- Fix an issue with ``LIBCLOUD_DEBUG`` not working correctly with the
+  Linode driver.
+  [Tomaz Muraus, Juan Carlos Moreno]
+  (LIBCLOUD-598, GITHUB-342)
+
 - Add new driver for VMware vSphere (http://www.vmware.com/products/vsphere/)
   based clouds.
   [Tomaz Muraus]

@@ -87,8 +87,16 @@ class LinodeResponse(JsonResponse):
         self.error = response.reason
         self.status = response.status
 
-        self.body = self._decompress_response(body=response.read(),
-                                              headers=self.headers)
+        # This attribute is set when using LoggingConnection.
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data:
+            # LoggingConnection already decompresses data so it can log it
+            # which means we don't need to decompress it here.
+            self.body = response._original_data
+        else:
+            self.body = self._decompress_response(body=response.read(),
+                                                  headers=self.headers)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
