@@ -15,6 +15,7 @@
 
 import socket
 import struct
+import platform
 
 __all__ = [
     'is_private_subnet',
@@ -73,7 +74,10 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     :return: ``bool`` True if the provided address is valid.
     """
     try:
-        socket.inet_pton(family, address)
+        if (platform.system()=='Windows'):
+            socket.inet_aton( address)
+        else:
+            socket.inet_pton(family, address)
     except socket.error:
         return False
 
