@@ -87,8 +87,15 @@ class LinodeResponse(JsonResponse):
         self.error = response.reason
         self.status = response.status
 
-        self.body = self._decompress_response(body=response.read(),
-                                              headers=self.headers)
+        # Linode hack
+        # sends "Content-Encoding: gzip" header but a plain/text response
+        response_read = response.read()
+
+        try:
+            self.body = self._decompress_response(body=response_read,
+                                                  headers=self.headers)
+        except IOError:
+            self.body = response_read.strip()
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
