@@ -319,6 +319,26 @@ class VSphereNodeDriver(NodeDriver):
         return vm.get_resource_pool_name()
 
     @wrap_non_libcloud_exceptions
+    def ex_get_hosts(self):
+        """
+        Retrurn all the available hosts.
+
+        :rtype: ``dict``
+        """
+        result = self.connection.client.get_hosts()
+        return result
+
+    @wrap_non_libcloud_exceptions
+    def ex_get_datastores(self):
+        """
+        Return all the available datastores.
+
+        :rtype: ``dict``
+        """
+        result = self.connection.client.get_datastores()
+        return result
+
+    @wrap_non_libcloud_exceptions
     def ex_get_node_by_path(self, path):
         """
         Retrieve Node object for a VM with a provided path.
