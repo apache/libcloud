@@ -175,6 +175,7 @@ class VSphereNodeDriver(NodeDriver):
         return nodes
 
     @wrap_non_libcloud_exceptions
+    @wrap_non_libcloud_exceptions
     def ex_clone_node(self, node, name, power_on=True, template=False):
         """
         Clone the provided node.
@@ -200,6 +201,34 @@ class VSphereNodeDriver(NodeDriver):
         new_node = self._to_node(vm=new_vm)
 
         return new_node
+
+    @wrap_non_libcloud_exceptions
+    def ex_migrate_node(self, node, resource_pool=None, host=None,
+                        priority='default'):
+        """
+        Migrate provided node to a new host or resource pool.
+
+        :param node: Node to clone.
+        :type node: :class:`Node`
+
+        :param resource_pool: ID of the target resource pool to migrate the
+                              node into.
+        :type resource_pool: ``str``
+
+        :param host: Target host to migrate the host to.
+        :type host: ``str``
+
+        :param priority: Migration task priority. Possible values: default,
+                         high, low.
+        :type priority: ``str``
+
+        :return: True on success.
+        :rtype: ``bool``
+        """
+        vm = self._get_vm_for_node(node=node)
+        vm.migrate(priority=priority, resource_pool=resource_pool, host=host)
+
+        return True
 
     @wrap_non_libcloud_exceptions
     def reboot_node(self, node):
