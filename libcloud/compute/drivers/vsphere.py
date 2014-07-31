@@ -181,7 +181,7 @@ class VSphereNodeDriver(NodeDriver):
         Clone the provided node.
 
         :param node: Node to clone.
-        :type node: :class:`Node`
+        :type node: :class:`libcloud.compute.base.Node`
 
         :param name: Name of the new node.
         :type name: ``str``
@@ -194,7 +194,7 @@ class VSphereNodeDriver(NodeDriver):
         :type template: ``bool``
 
         :return: New node.
-        :rtype: :class:`Node`
+        :rtype: :class:`libcloud.compute.base.Node`
         """
         vm = self._get_vm_for_node(node=node)
         new_vm = vm.clone(name=name, power_on=power_on, template=template)
@@ -209,7 +209,7 @@ class VSphereNodeDriver(NodeDriver):
         Migrate provided node to a new host or resource pool.
 
         :param node: Node to clone.
-        :type node: :class:`Node`
+        :type node: :class:`libcloud.compute.base.Node`
 
         :param resource_pool: ID of the target resource pool to migrate the
                               node into.
@@ -324,7 +324,7 @@ class VSphereNodeDriver(NodeDriver):
         Retrieve Node object for a VM with a provided path.
 
         :type path: ``str``
-        :rtype: :class:`Node`
+        :rtype: :class:`libcloud.compute.base.Node`
         """
         vm = self.connection.client.get_vm_by_path(path)
         node = self._to_node(vm=vm)
