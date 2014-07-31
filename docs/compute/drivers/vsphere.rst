@@ -72,5 +72,15 @@ You can test if the url you are using is valid by adding ``/vimService.wsdl``
 to it (e.g. ``https://<host>/sdk/vimService.wsdl``). When you visit this page,
 you should get an XML response back.
 
+API Docs
+--------
+
+VMware vSphere v5.5
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: libcloud.compute.drivers.vsphere.VSphere_5_5_NodeDriver
+    :members:
+    :inherited-members:
+
 .. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`pysphere`: https://pypi.python.org/pypi/pysphere
