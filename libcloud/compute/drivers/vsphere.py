@@ -44,6 +44,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import NodeLocation
+from libcloud.compute.base import NodeImage
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
@@ -166,6 +167,39 @@ class VSphereNodeDriver(NodeDriver):
             locations.append(location)
 
         return locations
+
+    @wrap_non_libcloud_exceptions
+    def list_images(self):
+        """
+        List available images (templates).
+        """
+        server = self.connection.client
+
+        names = ['name', 'config.uuid', 'config.template']
+        properties = server._retrieve_properties_traversal(
+            property_names=names,
+            from_node=None,
+            obj_type=MORTypes.VirtualMachine)
+
+        images = []
+        for prop in properties:
+            id = None
+            name = None
+            is_template = False
+
+            for item in prop.PropSet:
+                if item.Name == 'config.uuid':
+                    id = item.Val
+                if item.Name == 'name':
+                    name = item.Val
+                elif item.Name == 'config.template':
+                    is_template = item.Val
+
+            if is_template:
+                image = NodeImage(id=id, name=name, driver=self)
+                images.append(image)
+
+            return images
 
     @wrap_non_libcloud_exceptions
     def list_nodes(self):
