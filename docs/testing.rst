@@ -19,7 +19,7 @@ dependencies installed:
   use tox to run the tests with all the supported Python versions
 * ``mock`` (``pip install mock``)
 * ``lockfile`` (``pip install lockfile``) - only used in the local storage
-  storage driver
+  driver
 * ``coverage`` (``pip install coverage``) - you only need this library if you
   want to generate a test coverage report
 
