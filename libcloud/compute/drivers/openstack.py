@@ -1238,7 +1238,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  see
                                  https://help.ubuntu.com/community/CloudInit
         :type       ex_userdata: ``str``
-        
+
         :keyword    ex_config_drive: Enable config drive
                                      see
                                      http://docs.openstack.org/grizzly/openstack-compute/admin/content/config-drive.html
