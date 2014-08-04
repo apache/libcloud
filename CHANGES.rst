@@ -33,6 +33,10 @@ Compute
   (GITHUB-339)
   [Eric Johnson]
 
+- Add utility ``get_regions`` and ``get_service_names`` methods to the
+  ``OpenStackServiceCatalog`` class.
+  [Andrew Mann, Tomaz Muraus]
+
 Loadbalancer
 ~~~~~~~~~~~~
 

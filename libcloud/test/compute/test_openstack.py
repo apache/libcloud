@@ -92,25 +92,45 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
         OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
                                                 OpenStackMockHttp)
 
-    def test_connection_get_service_catalog(self):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
         connection.auth_url = "https://auth.api.example.com"
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
 
-        result = connection.get_service_catalog()
-        catalog = result.get_catalog()
-        endpoints = result.get_endpoints('cloudFilesCDN', 'cloudFilesCDN')
-        public_urls = result.get_public_urls('cloudFilesCDN', 'cloudFilesCDN')
+        self.service_catalog = connection.get_service_catalog()
+        self.catalog = self.service_catalog.get_catalog()
+
+    def test_connection_get_service_catalog(self):
+        endpoints = self.service_catalog.get_endpoints('cloudFilesCDN', 'cloudFilesCDN')
+        public_urls = self.service_catalog.get_public_urls('cloudFilesCDN', 'cloudFilesCDN')
 
         expected_urls = [
             'https://cdn2.clouddrive.com/v1/MossoCloudFS',
             'https://cdn2.clouddrive.com/v1/MossoCloudFS'
         ]
 
-        self.assertTrue('cloudFilesCDN' in catalog)
+        self.assertTrue('cloudFilesCDN' in self.catalog)
         self.assertEqual(len(endpoints), 2)
         self.assertEqual(public_urls, expected_urls)
+
+    def test_get_regions(self):
+        regions = self.service_catalog.get_regions()
+        self.assertEqual(regions, ['ORD', 'LON'])
+
+    def test_get_service_names(self):
+        OpenStackBaseConnection.conn_classes = (OpenStack_2_0_MockHttp,
+                                                OpenStack_2_0_MockHttp)
+        OpenStackBaseConnection._auth_version = '2.0'
+
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
+        connection.auth_url = "https://auth.api.example.com"
+        connection._ex_force_base_url = "https://www.foo.com"
+        connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
+
+        service_catalog = connection.get_service_catalog()
+
+        service_names = service_catalog.get_service_names(service_type='object-store')
+        self.assertEqual(service_names, ['cloudFiles'])
 
 
 class OpenStackAuthConnectionTests(unittest.TestCase):

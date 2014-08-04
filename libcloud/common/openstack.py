@@ -378,6 +378,50 @@ class OpenStackServiceCatalog(object):
         else:
             return {}
 
+    def get_regions(self):
+        """
+        Retrieve a list of all the available regions.
+
+        :rtype: ``list`` of ``str``
+        """
+        regions = set()
+
+        catalog_items = self._service_catalog.items()
+
+        if '2.0' in self._auth_version:
+            for service_type, services_by_name in catalog_items:
+                items = services_by_name.items()
+                for service_name, endpoints_by_region in items:
+                    for region in endpoints_by_region.keys():
+                        if region:
+                            regions.add(region)
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            for service_name, endpoints_by_region in catalog_items:
+                for region in endpoints_by_region.keys():
+                    if region:
+                        regions.add(region)
+
+        return list(regions)
+
+    def get_service_names(self, service_type, region=None):
+        """
+        Retrieve list of service names that match service type and region
+
+        :rtype: ``list`` of ``str``
+        """
+        names = set()
+
+        if '2.0' in self._auth_version:
+            named_entries = self._service_catalog.get(service_type, {})
+            for (name, region_entries) in named_entries.items():
+                # Support None for region to return the first found
+                if region is None or region in region_entries.keys():
+                    names.add(name)
+        else:
+            raise ValueError('Unsupported version: %s' % (self._auth_version))
+
+        return list(names)
+
     def _parse_auth_v1(self, service_catalog):
         for service, endpoints in service_catalog.items():
 
