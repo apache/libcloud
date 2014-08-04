@@ -44,6 +44,15 @@ Compute
   Reported by Chris DeRamus.
   [Tomaz Muraus]
 
+Networking
+~~~~~~~~~~
+
+- Add initial implementation of a base networking API with a reference drivers
+  for OpenStack Nova, OpenStack Neutron and OpenStack Quantum networking.
+
+  Note: Base API hasn't been decided upon yet and is subject to change.
+  [Andrew Mann, Chris DeRamus, Tomaz Muraus]
+
 Loadbalancer
 ~~~~~~~~~~~~
 

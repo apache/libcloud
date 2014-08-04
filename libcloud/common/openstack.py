@@ -652,6 +652,12 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     :param ex_force_service_region: Region to use when selecting an
     service.  If not specified, a provider specific default will be used.
     :type ex_force_service_region: ``str``
+
+    :param ex_clone_connection: An optional OpenStackBaseConnection that
+    will have its member data cloned when constructing this connection.
+    Cloning occurs before other fields are set which means explicitly
+    specifying arguments has precedence over cloning.
+    :type ex_clone_connection: :class:`.OpenStackBaseConnection`
     """
 
     auth_url = None
@@ -673,20 +679,48 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,
-                 ex_force_service_region=None):
+                 ex_force_service_region=None,
+                 ex_clone_connection=None):
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure, timeout=timeout)
 
+        self._ex_force_base_url = None
+        self._ex_force_auth_url = None
+        self._ex_force_auth_token = None
+        self._ex_tenant_name = None
+        self._ex_force_service_type = None
+        self._ex_force_service_name = None
+        self._ex_force_service_region = None
+
+        # Clone an existing connection (if provided)
+        if ex_clone_connection:
+            self._clone_connection(connection=ex_clone_connection,
+                                   ex_force_auth_url=ex_force_auth_url)
+
+        # Use the passed in arguments
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
 
-        self._ex_force_base_url = ex_force_base_url
-        self._ex_force_auth_url = ex_force_auth_url
-        self._ex_force_auth_token = ex_force_auth_token
-        self._ex_tenant_name = ex_tenant_name
-        self._ex_force_service_type = ex_force_service_type
-        self._ex_force_service_name = ex_force_service_name
-        self._ex_force_service_region = ex_force_service_region
+        if ex_force_base_url:
+            self._ex_force_base_url = ex_force_base_url
+
+        if ex_force_auth_url:
+            self._ex_force_auth_url = ex_force_auth_url
+
+        if ex_force_auth_token:
+            self._ex_force_auth_token = ex_force_auth_token
+
+        if ex_tenant_name:
+            self._ex_tenant_name = ex_tenant_name
+
+        if ex_force_service_type:
+            self._ex_force_service_type = ex_force_service_type
+
+        if ex_force_service_name:
+            self._ex_force_service_name = ex_force_service_name
+
+        if ex_force_service_region:
+            self._ex_force_service_region = ex_force_service_region
 
         if ex_force_auth_token and not ex_force_base_url:
             raise LibcloudError(
@@ -705,11 +739,35 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             raise LibcloudError('OpenStack instance must ' +
                                 'have auth_url set')
 
-        osa = OpenStackAuthConnection(self, auth_url, self._auth_version,
-                                      self.user_id, self.key,
-                                      tenant_name=self._ex_tenant_name,
-                                      timeout=self.timeout)
-        self._osa = osa
+        # Only create a new auth connection if ex_clone_connection is not
+        # provided or if the properties of the auth connection were changed
+        if not ex_clone_connection or (self != ex_clone_connection):
+            osa = OpenStackAuthConnection(parent_conn=self, auth_url=auth_url,
+                                          auth_version=self._auth_version,
+                                          user_id=self.user_id,
+                                          key=self.key,
+                                          tenant_name=self._ex_tenant_name,
+                                          timeout=self.timeout)
+            self._osa = osa
+
+    def _clone_connection(self, connection, ex_force_auth_url):
+        """
+        Clone parameters from the provided connection.
+
+        :param connection: Connection to clone.
+        :type connection: :class:`.OpenStackBaseConnection`
+        """
+        self._ex_force_auth_url = connection._ex_force_auth_url
+        self._auth_version = connection._auth_version
+        self._ex_force_auth_token = connection._ex_force_auth_token
+        self._ex_tenant_name = connection._ex_tenant_name
+        self._ex_force_service_region = connection._ex_force_service_region
+        self._osa = connection._osa
+        self.service_catalog = connection.service_catalog
+        self.auth_token = connection.auth_token
+        self.auth_token_expires = connection.auth_token_expires
+        self.auth_user_info = connection.auth_user_info
+        self.auth_url = connection.auth_url
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET', raw=False):
@@ -820,7 +878,26 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.service_catalog = osc
 
         url = self._ex_force_base_url or self.get_endpoint()
+        self._base_url = url
         self._set_up_connection_info(url=url)
+
+    def __eq__(self, other):
+        """
+        Two connection classes are considered equal if all the attributes
+        are the same.
+        """
+        self_auth_url = self._get_auth_url()
+        other_auth_url = other._get_auth_url()
+
+        return (self._auth_version == other._auth_version and
+                self.user_id == other.user_id and
+                self.key == other.key and
+                self._ex_tenant_name == other._ex_tenant_name and
+                self.timeout == other.timeout and
+                self_auth_url == other_auth_url)
+
+    def __ne__(self, other):
+        return not self.__eq__(other=other)
 
 
 class OpenStackException(ProviderError):
@@ -907,6 +984,7 @@ class OpenStackDriverMixin(object):
         self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
         self._ex_force_service_region = kwargs.get('ex_force_service_region',
                                                    None)
+        self._ex_clone_connection = kwargs.get('ex_clone_connection', None)
 
     def openstack_connection_kwargs(self):
         """
@@ -930,4 +1008,6 @@ class OpenStackDriverMixin(object):
             rv['ex_force_service_name'] = self._ex_force_service_name
         if self._ex_force_service_region:
             rv['ex_force_service_region'] = self._ex_force_service_region
+        if self._ex_clone_connection:
+            rv['ex_clone_connection'] = self._ex_clone_connection
         return rv

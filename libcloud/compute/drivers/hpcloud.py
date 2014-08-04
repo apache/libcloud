@@ -21,6 +21,8 @@ from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_NodeDriver
 
+from libcloud.networking.drivers.hpcloud import HPCloudNetworkingDriver
+
 
 __all__ = [
     'HPCloudNodeDriver'
@@ -43,11 +45,16 @@ AUTH_URL_TEMPLATE = 'https://%s.identity.hpcloudsvc.com:35357/v2.0/tokens'
 
 
 class HPCloudConnection(OpenStack_1_1_Connection):
+    service_type = 'network'
+    service_name = 'Networking'
     _auth_version = '2.0_password'
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop('region', None)
         self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
+        ex_force_service_region = kwargs.get('ex_force_service_region',
+                                             self.region)
+        kwargs['ex_force_service_region'] = ex_force_service_region
         super(HPCloudConnection, self).__init__(*args, **kwargs)
 
     def get_endpoint(self):
@@ -86,6 +93,17 @@ class HPCloudNodeDriver(OpenStack_1_1_NodeDriver):
                                                 port=port,
                                                 region=region,
                                                 **kwargs)
+        self._networking_driver = None
+
+    def get_networking_driver(self):
+        if not self._networking_driver:
+            cls = HPCloudNetworkingDriver
+            self._networking_driver = cls(key=self.key,
+                                          secret=self.secret,
+                                          region=self.region,
+                                          ex_clone_connection=self.connection)
+
+        return self._networking_driver
 
     def _ex_connection_class_kwargs(self):
         endpoint_args = ENDPOINT_ARGS_MAP[self.region]

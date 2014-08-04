@@ -647,6 +647,17 @@ class NodeDriver(BaseDriver):
         super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
+        self._networking_driver = None
+
+    def get_networking_driver(self):
+        """
+        Obtain a reference for networking driver for this account.
+
+        :return: Networking driver.
+        :rtype: :class:`libcloud.networking.base.NetworkingDriver`
+        """
+        raise NotImplementedError(
+            'get_networking_driver is not implemented for this driver')
 
     def list_nodes(self):
         """
