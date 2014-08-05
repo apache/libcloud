@@ -115,7 +115,7 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
 
     def test_get_regions(self):
         regions = self.service_catalog.get_regions()
-        self.assertEqual(regions, ['ORD', 'LON'])
+        self.assertEqual(sorted(regions), ['LON', 'ORD'])
 
     def test_get_service_names(self):
         OpenStackBaseConnection.conn_classes = (OpenStack_2_0_MockHttp,
