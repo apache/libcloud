@@ -48,6 +48,7 @@ Available arguments:
 
   Unless you are working with a very old version of OpenStack you will either
   want to use ``2.0_apikey`` or ``2.0_password``.
+* ``ex_tenant_name`` - tenant / project name
 * ``ex_force_auth_token`` - token which is used for authentication. If this
   argument is provided, normal authentication flow is skipped and the OpenStack
   API endpoint is directly hit with the provided token.
@@ -104,8 +105,17 @@ token before the currently used one is about to expire.
 .. literalinclude:: /examples/compute/openstack/force_auth_token.py
    :language: python
 
-5. HP Cloud (www.hpcloud.com)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Connecting and specifying a tenant
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows how to connect to OpenStack installation which requires you
+to specify a tenant (``ex_tenant_name`` argument).
+
+.. literalinclude:: /examples/compute/openstack/tenant_name.py
+   :language: python
+
+6. HP Cloud (www.hpcloud.com)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Connecting to HP Cloud US West and US East (OpenStack Havana).
 
