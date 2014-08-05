@@ -21,6 +21,11 @@ try:
 except ImportError:
     import json
 
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 import warnings
 import base64
 
@@ -29,23 +34,18 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.types import MalformedResponseError, ProviderError
+from libcloud.common.openstack import OpenStackException
+from libcloud.common.openstack import OpenStackResponse
 from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.pricing import get_size_price
-from libcloud.common.base import Response
 from libcloud.utils.xml import findall
 
 __all__ = [
@@ -65,78 +65,6 @@ __all__ = [
 ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
 
 DEFAULT_API_VERSION = '1.1'
-
-
-class OpenStackException(ProviderError):
-    pass
-
-
-class OpenStackResponse(Response):
-    node_driver = None
-
-    def success(self):
-        i = int(self.status)
-        return i >= 200 and i <= 299
-
-    def has_content_type(self, content_type):
-        content_type_value = self.headers.get('content-type') or ''
-        content_type_value = content_type_value.lower()
-        return content_type_value.find(content_type.lower()) > -1
-
-    def parse_body(self):
-        if self.status == httplib.NO_CONTENT or not self.body:
-            return None
-
-        if self.has_content_type('application/xml'):
-            try:
-                return ET.XML(self.body)
-            except:
-                raise MalformedResponseError(
-                    'Failed to parse XML',
-                    body=self.body,
-                    driver=self.node_driver)
-
-        elif self.has_content_type('application/json'):
-            try:
-                return json.loads(self.body)
-            except:
-                raise MalformedResponseError(
-                    'Failed to parse JSON',
-                    body=self.body,
-                    driver=self.node_driver)
-        else:
-            return self.body
-
-    def parse_error(self):
-        text = None
-        body = self.parse_body()
-
-        if self.has_content_type('application/xml'):
-            text = '; '.join([err.text or '' for err in body.getiterator()
-                              if err.text])
-        elif self.has_content_type('application/json'):
-            values = list(body.values())
-
-            context = self.connection.context
-            driver = self.connection.driver
-            key_pair_name = context.get('key_pair_name', None)
-
-            if len(values) > 0 and values[0]['code'] == 404 and key_pair_name:
-                raise KeyPairDoesNotExistError(name=key_pair_name,
-                                               driver=driver)
-            elif len(values) > 0 and 'message' in values[0]:
-                text = ';'.join([fault_data['message'] for fault_data
-                                 in values])
-            else:
-                text = body
-        else:
-            # while we hope a response is always one of xml or json, we have
-            # seen html or text in the past, its not clear we can really do
-            # something to make it more readable here, so we will just pass
-            # it along as the whole response body in the text variable.
-            text = body
-
-        return '%s %s %s' % (self.status, self.error, text)
 
 
 class OpenStackComputeConnection(OpenStackBaseConnection):
