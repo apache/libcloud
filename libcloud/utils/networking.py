@@ -19,7 +19,9 @@ import struct
 __all__ = [
     'is_private_subnet',
     'is_public_subnet',
-    'is_valid_ip_address'
+    'is_valid_ip_address',
+    'join_ipv4_segments',
+    'increment_ipv4_segments'
 ]
 
 
@@ -78,3 +80,46 @@ def is_valid_ip_address(address, family=socket.AF_INET):
         return False
 
     return True
+
+
+def join_ipv4_segments(segments):
+    """
+    Helper method to join ip numeric segment pieces back into a full
+    ip address.
+
+    :param segments: IPv4 segments to join.
+    :type segments: ``list`` or ``tuple``
+
+    :return: IPv4 address.
+    :rtype: ``str``
+    """
+    return '.'.join([str(s) for s in segments])
+
+
+def increment_ipv4_segments(segments):
+    """
+    Increment an ip address given in quad segments based on ipv4 rules
+
+    :param segments: IPv4 segments to increment.
+    :type segments: ``list`` or ``tuple``
+
+    :return: Incremented segments.
+    :rtype: ``list``
+    """
+    segments = [int(segment) for segment in segments]
+
+    segments[3] += 1
+
+    if segments[3] == 256:
+        segments[3] = 0
+        segments[2] += 1
+
+        if segments[2] == 256:
+            segments[2] = 0
+            segments[1] += 1
+
+            if segments[1] == 256:
+                segments[1] = 0
+                segments[0] += 1
+
+    return segments
