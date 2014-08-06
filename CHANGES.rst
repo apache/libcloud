@@ -37,6 +37,13 @@ Compute
   ``OpenStackServiceCatalog`` class.
   [Andrew Mann, Tomaz Muraus]
 
+- Fix a bug in ``ex_get_console_output`` in the EC2 driver which would cause
+  an exception to be thrown if there was no console output for a particular
+  node.
+
+  Reported by Chris DeRamus.
+  [Tomaz Muraus]
+
 Loadbalancer
 ~~~~~~~~~~~~
 

@@ -3733,7 +3733,12 @@ class BaseEC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE)
 
         timestamp = parse_date(timestamp)
-        output = base64.b64decode(b(encoded_string)).decode('utf-8')
+
+        if encoded_string:
+            output = base64.b64decode(b(encoded_string)).decode('utf-8')
+        else:
+            # No console output
+            output = None
 
         return {'instance_id': node.id,
                 'timestamp': timestamp,
