@@ -627,9 +627,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._populate_hosts_and_request_paths()
         return super(OpenStackBaseConnection, self).morph_action_hook(action)
 
-    def request(self, **kwargs):
-        return super(OpenStackBaseConnection, self).request(**kwargs)
-
     def _set_up_connection_info(self, url):
         result = self._tuple_from_url(url)
         (self.host, self.port, self.secure, self.request_path) = result
