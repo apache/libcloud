@@ -480,7 +480,7 @@ class VSphereNodeDriver(NodeDriver):
         state = self.NODE_STATE_MAP.get(status, NodeState.UNKNOWN)
         ip_address = properties.get('ip_address', None)
         net = properties.get('net', [])
-        resource_pool_id = vm.properties.resourcePool._obj
+        resource_pool_id = str(vm.properties.resourcePool._obj)
 
         try:
             operating_system = vm.properties.summary.guest.guestFullName,
