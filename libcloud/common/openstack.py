@@ -46,7 +46,8 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '1.1',
     '2.0',
     '2.0_apikey',
-    '2.0_password'
+    '2.0_password',
+    '3.x_password'
 ]
 
 # How many seconds to substract from the auth token expiration time before
@@ -165,6 +166,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return self.authenticate_2_0_with_apikey()
         elif self.auth_version == "2.0_password":
             return self.authenticate_2_0_with_password()
+        elif self.auth_version == '3.x_password':
+            return self.authenticate_3_x_with_password()
         else:
             raise LibcloudError('Unsupported Auth Version requested')
 
@@ -294,6 +297,81 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
         return self
 
+    def authenticate_3_x_with_password(self):
+        # TODO: Support for custom domain
+        # TODO: Refactor and add a class per API version
+        domain = 'Default'
+
+        data = {
+            'auth': {
+                'identity': {
+                    'methods': ['password'],
+                    'password': {
+                        'user': {
+                            'domain': {
+                                'name': domain
+                            },
+                            'name': self.user_id,
+                            'password': self.key
+                        }
+                    }
+                },
+                'scope': {
+                    'project': {
+                        'domain': {
+                            'name': domain
+                        },
+                        'name': self.tenant_name
+                    }
+                }
+            }
+        }
+
+        if self.tenant_name:
+            data['auth']['scope'] = {
+                'project': {
+                    'domain': {
+                        'name': domain
+                    },
+                    'name': self.tenant_name
+                }
+            }
+
+        data = json.dumps(data)
+        response = self.request('/v3/auth/tokens', data=data,
+                                headers={'Content-Type': 'application/json'},
+                                method='POST')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            headers = response.headers
+
+            try:
+                body = json.loads(response.body)
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+
+            try:
+                expires = body['token']['expires_at']
+
+                self.auth_token = headers['x-subject-token']
+                self.auth_token_expires = parse_date(expires)
+                self.urls = body['token']['catalog']
+                self.auth_user_info = None
+            except KeyError:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Auth JSON response is \
+                                             missing required elements', e)
+            body = 'code: %s body:%s' % (response.status, response.body)
+        else:
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
+
+        return self
+
     def is_token_valid(self):
         """
         Return True if the current auth token is already cached and hasn't
@@ -339,7 +417,9 @@ class OpenStackServiceCatalog(object):
 
         # Check this way because there are a couple of different 2.0_*
         # auth types.
-        if '2.0' in self._auth_version:
+        if '3.x' in self._auth_version:
+            self._parse_auth_v3(service_catalog)
+        elif '2.0' in self._auth_version:
             self._parse_auth_v2(service_catalog)
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             self._parse_auth_v1(service_catalog)
@@ -376,7 +456,16 @@ class OpenStackServiceCatalog(object):
         return eps
 
     def get_endpoint(self, service_type=None, name=None, region=None):
-        if '2.0' in self._auth_version:
+        if '3.x' in self._auth_version:
+            endpoints = self._service_catalog.get(service_type, {}) \
+                                             .get(region, [])
+
+            endpoint = []
+            for _endpoint in endpoints:
+                if _endpoint['type'] == 'public':
+                    endpoint = [_endpoint]
+                    break
+        elif '2.0' in self._auth_version:
             endpoint = self._service_catalog.get(service_type, {}) \
                                             .get(name, {}).get(region, [])
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
@@ -464,6 +553,28 @@ class OpenStackServiceCatalog(object):
                     catalog[region] = []
 
                 catalog[region].append(endpoint)
+
+    def _parse_auth_v3(self, service_catalog):
+        for entry in service_catalog:
+            service_type = entry['type']
+
+            # TODO: use defaultdict
+            if service_type not in self._service_catalog:
+                self._service_catalog[service_type] = {}
+
+            for endpoint in entry['endpoints']:
+                region = endpoint.get('region', None)
+
+                # TODO: Normalize entries for each version
+                catalog = self._service_catalog[service_type]
+                if region not in catalog:
+                    catalog[region] = []
+
+                region_entry = {
+                    'url': endpoint['url'],
+                    'type': endpoint['interface']  # public / private
+                }
+                catalog[region].append(region_entry)
 
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
@@ -630,8 +741,13 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         ep = self.service_catalog.get_endpoint(service_type=service_type,
                                                name=service_name,
                                                region=service_region)
+
+        # TODO: Normalize keys for different auth versions and use an object
         if 'publicURL' in ep:
             return ep['publicURL']
+        elif 'url' in ep:
+            # v3
+            return ep['url']
 
         raise LibcloudError('Could not find specified endpoint')
 
