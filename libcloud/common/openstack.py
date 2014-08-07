@@ -506,9 +506,30 @@ class OpenStackServiceCatalog(object):
 
         return list(regions)
 
+    def get_service_types(self, region=None):
+        """
+        Retrieve all the available service types.
+
+        :param region: Optional region to retrieve service types for.
+        :type region: ``str``
+
+        :rtype: ``list`` of ``str``
+        """
+        service_types = set()
+
+        for service_type, values in self._service_catalog.items():
+            regions = values.keys()
+            if not region or region in regions:
+                service_types.add(service_type)
+
+        return list(service_types)
+
     def get_service_names(self, service_type, region=None):
         """
         Retrieve list of service names that match service type and region
+
+        :type service_type: ``str``
+        :type region: ``str``
 
         :rtype: ``list`` of ``str``
         """

@@ -117,6 +117,14 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
         regions = self.service_catalog.get_regions()
         self.assertEqual(sorted(regions), ['LON', 'ORD'])
 
+    def test_get_service_types(self):
+        service_types = self.service_catalog.get_service_types()
+        self.assertEqual(sorted(service_types), ['compute', 'object-store',
+                                                 'rax:object-cdn'])
+
+        service_types = self.service_catalog.get_service_types(region='invalid')
+        self.assertEqual(sorted(service_types), [])
+
     def test_get_service_names(self):
         OpenStackBaseConnection.conn_classes = (OpenStack_2_0_MockHttp,
                                                 OpenStack_2_0_MockHttp)
