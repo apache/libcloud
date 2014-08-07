@@ -487,7 +487,11 @@ class OpenStackServiceCatalog(object):
 
         catalog_items = self._service_catalog.items()
 
-        if '2.0' in self._auth_version:
+        if '3.x' in self._auth_version:
+            for service_type, values in catalog_items:
+                for region in values.keys():
+                    regions.add(region)
+        elif '2.0' in self._auth_version:
             for service_type, services_by_name in catalog_items:
                 items = services_by_name.items()
                 for service_name, endpoints_by_region in items:
