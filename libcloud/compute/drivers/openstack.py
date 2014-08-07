@@ -73,21 +73,6 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
     service_name = 'nova'
     service_region = 'RegionOne'
 
-    def request(self, action, params=None, data='', headers=None,
-                method='GET'):
-        if not headers:
-            headers = {}
-        if not params:
-            params = {}
-
-        if method in ("POST", "PUT"):
-            headers = {'Content-Type': self.default_content_type}
-
-        return super(OpenStackComputeConnection, self).request(
-            action=action,
-            params=params, data=data,
-            method=method, headers=headers)
-
 
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """

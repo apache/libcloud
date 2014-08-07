@@ -575,6 +575,23 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                       timeout=self.timeout)
         self._osa = osa
 
+    def request(self, action, params=None, data='', headers=None,
+                method='GET', raw=False):
+        headers = headers or {}
+        params = params or {}
+
+        # Include default content-type for POST and PUT request (if available)
+        default_content_type = getattr(self, 'default_content_type', None)
+        if method.upper() in ['POST', 'PUT'] and default_content_type:
+            headers = {'Content-Type': default_content_type}
+
+        return super(OpenStackBaseConnection, self).request(action=action,
+                                                            params=params,
+                                                            data=data,
+                                                            method=method,
+                                                            headers=headers,
+                                                            raw=raw)
+
     def _get_auth_url(self):
         """
         Retrieve auth url for this instance using either "ex_force_auth_url"
