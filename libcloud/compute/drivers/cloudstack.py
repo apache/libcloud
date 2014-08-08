@@ -810,6 +810,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :keyword    ex_displayname: String containing instance display name
         :type       ex_displayname: ``str``
 
+        :keyword    ex_ip_address: String with ipaddress for the default nic
+        :type       ex_ip_address: ``str``
+
         :rtype:     :class:`.CloudStackNode`
         """
 
@@ -836,6 +839,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         ex_user_data = kwargs.get('ex_userdata', None)
         ex_security_groups = kwargs.get('ex_security_groups', None)
         ex_displayname = kwargs.get('ex_displayname', None)
+        ex_ip_address = kwargs.get('ex_ip_address', None)
 
         if name:
             server_params['name'] = name
@@ -875,6 +879,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if ex_security_groups:
             ex_security_groups = ','.join(ex_security_groups)
             server_params['securitygroupnames'] = ex_security_groups
+
+        if ex_ip_address:
+            server_params['ipaddress'] = ex_ip_address
 
         return server_params
 
