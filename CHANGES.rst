@@ -44,6 +44,10 @@ Compute
   Reported by Chris DeRamus.
   [Tomaz Muraus]
 
+- Add ip_address parameter in CloudStack driver ``create_node`` method. 
+  (GITHUB-346)
+  [Roeland Kuipers]
+
 Loadbalancer
 ~~~~~~~~~~~~
 
