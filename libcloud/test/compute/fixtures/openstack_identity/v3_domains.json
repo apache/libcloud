@@ -1,0 +1,18 @@
+{
+    "domains": [
+        {
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/domains/default"
+            },
+            "enabled": true,
+            "description": "Owns users and tenants (i.e. projects) available on Identity API v2.",
+            "name": "Default",
+            "id": "default"
+        }
+    ],
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/domains",
+        "previous": null,
+        "next": null
+    }
+}

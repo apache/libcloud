@@ -23,7 +23,6 @@ from libcloud.utils.py3 import PY25
 
 
 class OpenStackBaseConnectionTest(unittest.TestCase):
-
     def setUp(self):
         self.timeout = 10
         OpenStackBaseConnection.conn_classes = (None, Mock())

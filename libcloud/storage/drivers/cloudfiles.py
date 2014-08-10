@@ -183,30 +183,25 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         self.cdn_request = False
         self.use_internal_url = use_internal_url
 
-    def _get_endpoint_key(self):
-        if self.use_internal_url:
-            endpoint_key = INTERNAL_ENDPOINT_KEY
-        else:
-            endpoint_key = PUBLIC_ENDPOINT_KEY
-
-        if self.cdn_request:
-            # cdn endpoints don't have internal urls
-            endpoint_key = PUBLIC_ENDPOINT_KEY
-
-        return endpoint_key
-
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
+
+        if self.use_internal_url:
+            endpoint_type = 'internal'
+        else:
+            endpoint_type = 'external'
 
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
                 name='cloudFiles',
-                region=region)
+                region=region,
+                endpoint_type=endpoint_type)
             cdn_ep = self.service_catalog.get_endpoint(
                 service_type='rax:object-cdn',
                 name='cloudFilesCDN',
-                region=region)
+                region=region,
+                endpoint_type=endpoint_type)
         else:
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
@@ -215,15 +210,13 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         if self.cdn_request:
             ep = cdn_ep
 
-        endpoint_key = self._get_endpoint_key()
-
         if not ep:
             raise LibcloudError('Could not find specified endpoint')
 
-        if endpoint_key in ep:
-            return ep[endpoint_key]
-        else:
+        if not ep.url:
             raise LibcloudError('Could not find specified endpoint')
+
+        return ep.url
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False, cdn_request=False):
@@ -242,7 +235,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
             action=action,
             params=params, data=data,
             method=method, headers=headers,
-            raw=raw)
+            raw=raw, cdn_request=cdn_request)
 
 
 class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
@@ -343,7 +336,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :param ex_ttl: cache time to live
         :type ex_ttl: ``int``
         """
-        container_name = container.name
+        container_name = self._encode_container_name(container.name)
         headers = {'X-CDN-Enabled': 'True'}
 
         if ex_ttl:

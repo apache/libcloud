@@ -138,16 +138,6 @@ class CloudFilesTests(unittest.TestCase):
             self.driver.connection.get_endpoint())
         self.driver.connection.cdn_request = False
 
-    def test_endpoint_pointer(self):
-        kwargs = {'use_internal_url': False}
-        driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
-        self.assertEquals(driver.connection._get_endpoint_key(), libcloud.storage.drivers.cloudfiles.PUBLIC_ENDPOINT_KEY)
-        kwargs = {'use_internal_url': True}
-        driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
-        self.assertEquals(driver.connection._get_endpoint_key(), libcloud.storage.drivers.cloudfiles.INTERNAL_ENDPOINT_KEY)
-        driver.connection.cdn_request = True
-        self.assertEquals(driver.connection._get_endpoint_key(), libcloud.storage.drivers.cloudfiles.PUBLIC_ENDPOINT_KEY)
-
     def test_list_containers(self):
         CloudFilesMockHttp.type = 'EMPTY'
         containers = self.driver.list_containers()

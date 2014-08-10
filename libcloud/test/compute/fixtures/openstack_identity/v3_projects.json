@@ -1,0 +1,49 @@
+{
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/projects",
+        "previous": null,
+        "next": null
+    },
+    "projects": [
+        {
+            "description": "Test project",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/projects/a"
+            },
+            "enabled": true,
+            "id": "a",
+            "domain_id": "default",
+            "name": "divvy"
+        },
+        {
+            "description": "Admin Tenant",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/projects/b"
+            },
+            "enabled": true,
+            "id": "b",
+            "domain_id": "default",
+            "name": "admin"
+        },
+        {
+            "description": "Initial tenant",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/projects/c"
+            },
+            "enabled": true,
+            "id": "c",
+            "domain_id": "default",
+            "name": "first-tenant"
+        },
+        {
+            "description": "Service Tenant",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/projects/d"
+            },
+            "enabled": true,
+            "id": "d",
+            "domain_id": "default",
+            "name": "service"
+        }
+    ]
+}

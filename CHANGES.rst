@@ -4,6 +4,13 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Add new ``OpenStackIdentity_3_0_Connection`` class for working with
+  OpenStack Identity (Keystone) service API v3.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -42,6 +49,12 @@ Compute
   node.
 
   Reported by Chris DeRamus.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- Fix a bug with CDN requests in the CloudFiles driver.
   [Tomaz Muraus]
 
 Loadbalancer

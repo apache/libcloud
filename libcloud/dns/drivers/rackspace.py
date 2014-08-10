@@ -115,7 +115,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
             raise LibcloudError("Auth version %s not supported" %
                                 (self._auth_version))
 
-        public_url = ep.get('publicURL', None)
+        public_url = ep.url
 
         # This is a nasty hack, but because of how global auth and old accounts
         # work, there is no way around it.

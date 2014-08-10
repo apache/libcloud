@@ -5,6 +5,42 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud in development
+-----------------------
+
+Changes in the OpenStack authentication and service catalog classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+    If you are only working with the driver classes and have never dorectly
+    touched the classes mentioned bellow, then you aren't affected and those
+    changes are fully backward compatible.
+
+
+To make OpenStack authentication and identity related classes more extensible,
+easier to main and easier to use, those classes have been refactored. All of
+the changes are described bellow.
+
+* New ``libcloud.common.openstack_identity`` module has been added. This module
+  contains code for working with OpenStack Identity (Keystone) service.
+* ``OpenStackAuthConnection`` class has been removed and replaced with one
+  connection class per Keystone API version
+  (``OpenStackIdentity_1_0_Connection``, ``OpenStackIdentity_2_0_Connection``,
+  ``OpenStackIdentity_3_0_Connection``).
+* New ``get_auth_class`` method has been added to ``OpenStackBaseConnection``
+  class. This method allows you to retrieve an instance of the authentication
+  class which is used with the current connection.
+* ``OpenStackServiceCatalog`` class has been refactored to store parsed catalog
+  entries in a structured format (``OpenStackServiceCatalogEntry`` and
+  ``OpenStackServiceCatalogEntryEndpoint`` class). Previously entries were
+  stored in an unstructured form in a dictionary. All the catalog entries can
+  be retrieved by using ``OpenStackServiceCatalog.get_entris`` method.
+* ``ex_force_auth_version`` argument in ``OpenStackServiceCatalog`` constructor
+  method has been renamed to ``auth_version``
+* ``get_regions``, ``get_service_types`` and ``get_service_names`` methods on
+  the ``OpenStackServiceCatalog`` class have been modified to always return the
+  result in the same order (result values are sorted beforehand).
+
 Libcloud 0.14.1
 ---------------
 
