@@ -210,10 +210,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         if self.cdn_request:
             ep = cdn_ep
 
-        if not ep:
-            raise LibcloudError('Could not find specified endpoint')
-
-        if not ep.url:
+        if not ep or not ep.url:
             raise LibcloudError('Could not find specified endpoint')
 
         return ep.url
