@@ -62,6 +62,7 @@ __all__ = [
     'OpenStackServiceCatalog',
     'OpenStackServiceCatalogEntry',
     'OpenStackServiceCatalogEntryEndpoint',
+    'OpenStackIdentityEndpointType',
 
     'OpenStackIdentityConnection',
     'OpenStackIdentity_1_0_Connection',
@@ -71,6 +72,15 @@ __all__ = [
 
     'get_class_for_auth_version'
 ]
+
+
+class OpenStackIdentityEndpointType(object):
+    """
+    Enum class for openstack identity endpoint type.
+    """
+    INTERNAL = 'internal'
+    EXTERNAL = 'external'
+    ADMIN = 'admin'
 
 
 class OpenStackIdentityVersion(object):
@@ -199,7 +209,8 @@ class OpenStackServiceCatalog(object):
 
         result = []
         for endpoint in endpoints:
-            if endpoint.endpoint_type == 'external':
+            endpoint_type = endpoint.endpoint_type
+            if endpoint_type == OpenStackIdentityEndpointType.EXTERNAL:
                 result.append(endpoint.url)
 
         return result
@@ -225,7 +236,7 @@ class OpenStackServiceCatalog(object):
         return endpoints
 
     def get_endpoint(self, service_type=None, name=None, region=None,
-                     endpoint_type='external'):
+                     endpoint_type=OpenStackIdentityEndpointType.EXTERNAL):
         """
         Retrieve a single endpoint using the provided criteria.
 
@@ -346,13 +357,13 @@ class OpenStackServiceCatalog(object):
                 if public_url:
                     entry_endpoint = OpenStackServiceCatalogEntryEndpoint(
                         region=region, url=public_url,
-                        endpoint_type='external')
+                        endpoint_type=OpenStackIdentityEndpointType.EXTERNAL)
                     entry_endpoints.append(entry_endpoint)
 
                 if private_url:
                     entry_endpoint = OpenStackServiceCatalogEntryEndpoint(
                         region=region, url=private_url,
-                        endpoint_type='internal')
+                        endpoint_type=OpenStackIdentityEndpointType.INTERNAL)
                     entry_endpoints.append(entry_endpoint)
 
             entry = OpenStackServiceCatalogEntry(service_type=service,
@@ -378,13 +389,13 @@ class OpenStackServiceCatalog(object):
                 if public_url:
                     entry_endpoint = OpenStackServiceCatalogEntryEndpoint(
                         region=region, url=public_url,
-                        endpoint_type='external')
+                        endpoint_type=OpenStackIdentityEndpointType.EXTERNAL)
                     entry_endpoints.append(entry_endpoint)
 
                 if private_url:
                     entry_endpoint = OpenStackServiceCatalogEntryEndpoint(
                         region=region, url=private_url,
-                        endpoint_type='internal')
+                        endpoint_type=OpenStackIdentityEndpointType.INTERNAL)
                     entry_endpoints.append(entry_endpoint)
 
             entry = OpenStackServiceCatalogEntry(service_type=service_type,
@@ -407,11 +418,11 @@ class OpenStackServiceCatalog(object):
                 endpoint_type = endpoint['interface']
 
                 if endpoint_type == 'internal':
-                    endpoint_type = 'internal'
+                    endpoint_type = OpenStackIdentityEndpointType.INTERNAL
                 elif endpoint_type == 'public':
-                    endpoint_type = 'external'
+                    endpoint_type = OpenStackIdentityEndpointType.EXTERNAL
                 elif endpoint_type == 'admin':
-                    endpoint_type = 'admin'
+                    endpoint_type = OpenStackIdentityEndpointType.ADMIN
 
                 entry_endpoint = OpenStackServiceCatalogEntryEndpoint(
                     region=region, url=url, endpoint_type=endpoint_type)
@@ -458,6 +469,12 @@ class OpenStackServiceCatalogEntry(object):
 
 
 class OpenStackServiceCatalogEntryEndpoint(object):
+    VALID_ENDPOINT_TYPES = [
+        OpenStackIdentityEndpointType.INTERNAL,
+        OpenStackIdentityEndpointType.EXTERNAL,
+        OpenStackIdentityEndpointType.ADMIN,
+    ]
+
     def __init__(self, region, url, endpoint_type='external'):
         """
         :param region: Endpoint region.
@@ -469,7 +486,7 @@ class OpenStackServiceCatalogEntryEndpoint(object):
         :param endpoint_type: Endpoint type (external / internal / admin).
         :type endpoint_type: ``str``
         """
-        if endpoint_type not in ['internal', 'external', 'admin']:
+        if endpoint_type not in self.VALID_ENDPOINT_TYPES:
             raise ValueError('Invalid type: %s' % (endpoint_type))
 
         # TODO: Normalize / lowercase all the region names
