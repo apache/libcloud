@@ -871,6 +871,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              tenant_name=tenant_name,
                              timeout=timeout,
                              parent_conn=parent_conn)
+        self.auth_user_roles = None
 
     def authenticate(self, force=False):
         """
