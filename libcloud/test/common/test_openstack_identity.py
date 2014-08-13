@@ -224,12 +224,25 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_3_0_MockHttp
+        mock_cls.type = None
         OpenStackIdentity_3_0_Connection.conn_classes = (mock_cls, mock_cls)
 
         self.auth_instance = OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                                               user_id='test',
                                                               key='test')
         self.auth_instance.auth_token = 'mock'
+
+    def test_list_supported_versions(self):
+        OpenStackIdentity_3_0_MockHttp.type = 'v3'
+
+        versions = self.auth_instance.list_supported_versions()
+        self.assertEqual(len(versions), 2)
+        self.assertEqual(versions[0].version, 'v2.0')
+        self.assertEqual(versions[0].url,
+                         'http://192.168.18.100:5000/v2.0/')
+        self.assertEqual(versions[1].version, 'v3.0')
+        self.assertEqual(versions[1].url,
+                         'http://192.168.18.100:5000/v3/')
 
     def test_list_domains(self):
         domains = self.auth_instance.list_domains()
@@ -434,6 +447,12 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
 class OpenStackIdentity_3_0_MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('openstack_identity')
     json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v3(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('v3_versions.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
 
     def _v3_domains(self, method, url, body, headers):
         if method == 'GET':

@@ -53,6 +53,7 @@ AUTH_TOKEN_EXPIRES_GRACE_SECONDS = 5
 
 
 __all__ = [
+    'OpenStackIdentityVersion',
     'OpenStackIdentityDomain',
     'OpenStackIdentityProject',
     'OpenStackIdentityUser',
@@ -70,6 +71,19 @@ __all__ = [
 
     'get_class_for_auth_version'
 ]
+
+
+class OpenStackIdentityVersion(object):
+    def __init__(self, version, status, updated, url):
+        self.version = version
+        self.status = status
+        self.updated = updated
+        self.url = url
+
+    def __repr__(self):
+        return (('<OpenStackIdentityVersion version=%s, status=%s, '
+                 'updated=%s, url=%s' %
+                 (self.version, self.status, self.updated, self.url)))
 
 
 class OpenStackIdentityDomain(object):
@@ -479,6 +493,7 @@ class OpenStackAuthResponse(Response):
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED,
                                httplib.ACCEPTED, httplib.NO_CONTENT,
+                               httplib.MULTIPLE_CHOICES,
                                httplib.UNAUTHORIZED,
                                httplib.INTERNAL_SERVER_ERROR]
 
@@ -613,6 +628,43 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         :type force: ``bool``
         """
         raise NotImplementedError('authenticate not implemented')
+
+    def list_supported_versions(self):
+        """
+        Retrieve a list of all the identity versions which are supported by
+        this installation.
+
+        :rtype: ``list`` of :class:`.OpenStackIdentityVersion`
+        """
+        response = self.request('/', method='GET')
+        result = self._to_versions(data=response.object['versions']['values'])
+        result = sorted(result, key=lambda x: x.version)
+        return result
+
+    def _to_versions(self, data):
+        result = []
+        for item in data:
+            version = self._to_version(data=item)
+            result.append(version)
+
+        return result
+
+    def _to_version(self, data):
+        try:
+            updated = parse_date(data['updated'])
+        except Exception:
+            updated = None
+
+        try:
+            url = data['links'][0]['href']
+        except IndexError:
+            url = None
+
+        version = OpenStackIdentityVersion(version=data['id'],
+                                           status=data['status'],
+                                           updated=updated,
+                                           url=url)
+        return version
 
     def _is_authentication_needed(self, force=False):
         """
@@ -964,12 +1016,19 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
+                roles = self._to_roles(body['token']['roles'])
+            except Exception:
+                e = sys.exc_info()[1]
+                roles = []
+
+            try:
                 expires = body['token']['expires_at']
 
                 self.auth_token = headers['x-subject-token']
                 self.auth_token_expires = parse_date(expires)
                 self.urls = body['token']['catalog']
                 self.auth_user_info = None
+                self.auth_user_roles = roles
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \

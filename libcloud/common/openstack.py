@@ -28,9 +28,9 @@ from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import ProviderError
 from libcloud.compute.types import (LibcloudError, MalformedResponseError)
 from libcloud.compute.types import KeyPairDoesNotExistError
+from libcloud.common.openstack_identity import get_class_for_auth_version
 
 # Imports for backward compatibility reasons
-from libcloud.common.openstack_identity import get_class_for_auth_version
 from libcloud.common.openstack_identity import OpenStackServiceCatalog
 
 
@@ -246,7 +246,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                                      name=service_name,
                                                      region=service_region)
 
-        # TODO: Normalize keys for different auth versions and use an object
         url = endpoint.url
 
         if not url:
