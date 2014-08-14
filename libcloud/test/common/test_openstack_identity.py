@@ -342,24 +342,44 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.assertEqual(user.id, 'c')
         self.assertEqual(user.name, 'test2')
 
-    def test_grant_role_to_user(self):
+    def test_grant_domain_role_to_user(self):
         domain = self.auth_instance.list_domains()[0]
         role = self.auth_instance.list_roles()[0]
         user = self.auth_instance.list_users()[0]
 
-        result = self.auth_instance.grant_role_to_user(domain=domain,
-                                                       role=role,
-                                                       user=user)
+        result = self.auth_instance.grant_domain_role_to_user(domain=domain,
+                                                              role=role,
+                                                              user=user)
         self.assertTrue(result)
 
-    def test_revoke_role_from_user(self):
+    def test_revoke_domain_role_from_user(self):
         domain = self.auth_instance.list_domains()[0]
         role = self.auth_instance.list_roles()[0]
         user = self.auth_instance.list_users()[0]
 
-        result = self.auth_instance.revoke_role_from_user(domain=domain,
-                                                          role=role,
-                                                          user=user)
+        result = self.auth_instance.revoke_domain_role_from_user(domain=domain,
+                                                                 role=role,
+                                                                 user=user)
+        self.assertTrue(result)
+
+    def test_grant_project_role_to_user(self):
+        project = self.auth_instance.list_projects()[0]
+        role = self.auth_instance.list_roles()[0]
+        user = self.auth_instance.list_users()[0]
+
+        result = self.auth_instance.grant_project_role_to_user(project=project,
+                                                               role=role,
+                                                               user=user)
+        self.assertTrue(result)
+
+    def test_revoke_project_role_from_user(self):
+        project = self.auth_instance.list_projects()[0]
+        role = self.auth_instance.list_roles()[0]
+        user = self.auth_instance.list_users()[0]
+
+        result = self.auth_instance.revoke_project_role_from_user(project=project,
+                                                                  role=role,
+                                                                  user=user)
         self.assertTrue(result)
 
 
@@ -531,12 +551,25 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
 
     def _v3_domains_default_users_a_roles_a(self, method, url, body, headers):
         if method == 'PUT':
-            # grant role
+            # grant domain role
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers,
                     httplib.responses[httplib.NO_CONTENT])
         elif method == 'DELETE':
-            # revoke role
+            # revoke domain role
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers,
+                    httplib.responses[httplib.NO_CONTENT])
+        raise NotImplementedError()
+
+    def _v3_projects_a_users_a_roles_a(self, method, url, body, headers):
+        if method == 'PUT':
+            # grant project role
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers,
+                    httplib.responses[httplib.NO_CONTENT])
+        elif method == 'DELETE':
+            # revoke project role
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers,
                     httplib.responses[httplib.NO_CONTENT])

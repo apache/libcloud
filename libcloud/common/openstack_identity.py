@@ -1087,11 +1087,14 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         result = self._to_roles(data=response.object['roles'])
         return result
 
-    def grant_role_to_user(self, domain, role, user):
+    def grant_domain_role_to_user(self, domain, role, user):
         """
-        Grant role to the domain user.
+        Grant domain role to a user.
 
-        Note: This function appeats to be idempodent.
+        Note: This function appears to be idempodent.
+
+        :param domain: Domain to grant the role to.
+        :type domain: :class:`.OpenStackIdentityDomain`
 
         :param role: Role to grant.
         :type role: :class:`.OpenStackIdentityRole`
@@ -1107,12 +1110,68 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         response = self.authenticated_request(path, method='PUT')
         return response.status == httplib.NO_CONTENT
 
-    def revoke_role_from_user(self, domain, user, role):
+    def revoke_domain_role_from_user(self, domain, user, role):
         """
-        Revoke role from a domain user.
+        Revoke domain role from a user.
+
+        :param domain: Domain to revoke the role from.
+        :type domain: :class:`.OpenStackIdentityDomain`
+
+        :param role: Role to revoke.
+        :type role: :class:`.OpenStackIdentityRole`
+
+        :param user: User to revoke the role from.
+        :type user: :class:`.OpenStackIdentityUser`
+
+        :return: ``True`` on success.
+        :rtype: ``bool``
         """
         path = ('/v3/domains/%s/users/%s/roles/%s' %
                 (domain.id, user.id, role.id))
+        response = self.authenticated_request(path, method='DELETE')
+        return response.status == httplib.NO_CONTENT
+
+    def grant_project_role_to_user(self, project, role, user):
+        """
+        Grant project role to a user.
+
+        Note: This function appeats to be idempodent.
+
+        :param project: Project to grant the role to.
+        :type project: :class:`.OpenStackIdentityDomain`
+
+        :param role: Role to grant.
+        :type role: :class:`.OpenStackIdentityRole`
+
+        :param user: User to grant the role to.
+        :type user: :class:`.OpenStackIdentityUser`
+
+        :return: ``True`` on success.
+        :rtype: ``bool``
+        """
+        path = ('/v3/projects/%s/users/%s/roles/%s' %
+                (project.id, user.id, role.id))
+        response = self.authenticated_request(path, method='PUT')
+        return response.status == httplib.NO_CONTENT
+
+    def revoke_project_role_from_user(self, project, role, user):
+        """
+        Revoke project role from a user.
+
+        :param project: Project to revoke the role from.
+        :type project: :class:`.OpenStackIdentityDomain`
+
+        :param role: Role to revoke.
+        :type role: :class:`.OpenStackIdentityRole`
+
+        :param user: User to revoke the role from.
+        :type user: :class:`.OpenStackIdentityUser`
+
+        :return: ``True`` on success.
+        :rtype: ``bool``
+        """
+        path = ('/v3/projects/%s/users/%s/roles/%s' %
+                (project.id, user.id, role.id))
         response = self.authenticated_request(path, method='DELETE')
         return response.status == httplib.NO_CONTENT
 
