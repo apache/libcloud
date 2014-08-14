@@ -300,17 +300,29 @@ class LoggingConnection():
         headers = lowercase_keys(dict(r.getheaders()))
 
         encoding = headers.get('content-encoding', None)
+        content_type = headers.get('content-type', None)
 
         if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
 
+        pretty_print_json = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_JSON',
+                                           False)
+
         if r.chunked:
             ht += "%x\r\n" % (len(body))
             ht += u(body)
             ht += "\r\n0\r\n"
         else:
+            if pretty_print_json and content_type == 'application/json':
+                try:
+                    body = json.loads(u(body))
+                    body = json.dumps(body, sort_keys=True, indent=4)
+                except:
+                    # Invalid JSON or server is lying about content-type
+                    pass
+
             ht += u(body)
 
         if sys.version_info >= (2, 6) and sys.version_info < (2, 7):

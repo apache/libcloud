@@ -11,6 +11,12 @@ General
   OpenStack Identity (Keystone) service API v3.
   [Tomaz Muraus]
 
+- Add support for prettifying JSON response body which is printed to a file
+  like object when using ``LIBCLOUD_DEBUG`` environment variable.
+  This option can be enabled by setting ``LIBCLOUD_DEBUG_PRETTY_PRINT_JSON``
+  environment variable.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
