@@ -40,6 +40,7 @@ from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import b
 
 __all__ = [
     'BaseSSHClient',
@@ -364,7 +365,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv(CHUNK_SIZE)
 
                 while data:
-                    stdout.write(data)
+                    stdout.write(b(data).decode('utf-8'))
                     ready = chan.recv_ready()
 
                     if not ready:
@@ -376,7 +377,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv_stderr(CHUNK_SIZE)
 
                 while data:
-                    stderr.write(data)
+                    stderr.write(b(data).decode('utf-8'))
                     ready = chan.recv_stderr_ready()
 
                     if not ready:

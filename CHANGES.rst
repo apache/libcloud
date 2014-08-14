@@ -61,6 +61,11 @@ Compute
   (GITHUB-346)
   [Roeland Kuipers]
 
+- Fix ``ParamikoSSHClient.run`` and ``deploy_node`` method to work correctly
+  under Python 3.
+  (GITHUB-347)
+  [Eddy Reyes]
+
 Storage
 ~~~~~~~
 
