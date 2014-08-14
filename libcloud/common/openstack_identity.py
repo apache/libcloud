@@ -100,7 +100,7 @@ class OpenStackIdentityVersion(object):
 
     def __repr__(self):
         return (('<OpenStackIdentityVersion version=%s, status=%s, '
-                 'updated=%s, url=%s' %
+                 'updated=%s, url=%s>' %
                  (self.version, self.status, self.updated, self.url)))
 
 
@@ -153,8 +153,8 @@ class OpenStackIdentityUser(object):
 
     def __repr__(self):
         return (('<OpenStackIdentityUser id=%s, domain_id=%s, name=%s, '
-                 'email=%s, enabled=%s' % (self.id, self.domain_id, self.name,
-                                           self.email, self.enabled)))
+                 'email=%s, enabled=%s>' % (self.id, self.domain_id, self.name,
+                                            self.email, self.enabled)))
 
 
 class OpenStackServiceCatalog(object):
