@@ -879,8 +879,24 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     name = 'OpenStack Identity API v3.x'
     auth_version = '3.0'
 
-    def __init__(self, auth_url, user_id, key, tenant_name=None, timeout=None,
-                 parent_conn=None):
+    def __init__(self, auth_url, user_id, key, tenant_name=None,
+                 domain_name='Default', scope_to='project',
+                 timeout=None, parent_conn=None):
+        """
+        :param tenant_name: Name of the project this user belongs to. Note:
+                            When scope_to is set to project, this argument
+                            control to which project to scope the token to.
+        :type tenant_name: ``str``
+
+        :param domain_name: Domain the user belongs to. Note: Then scope_to
+                            is set to token, this argument controls to which
+                            domain to scope the token to.
+        :type domain_name: ``str``
+
+        :param scope_to: Whether to scope a token to a "project" or a
+                         "domain"
+        :type scope_to: ``str``
+        """
         super(OpenStackIdentity_3_0_Connection,
               self).__init__(auth_url=auth_url,
                              user_id=user_id,
@@ -888,6 +904,19 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              tenant_name=tenant_name,
                              timeout=timeout,
                              parent_conn=parent_conn)
+        if scope_to not in ['project', 'domain']:
+            raise ValueError('Invalid value for "scope_to" argument: %s' %
+                             (scope_to))
+
+        if scope_to == 'project' and (not tenant_name or not domain_name):
+            raise ValueError('Must provide tenant_name and domain_name '
+                             'argument')
+        elif scope_to == 'domain' and not domain_name:
+            raise ValueError('Must provide domain_name argument')
+
+        self.tenant_name = tenant_name
+        self.domain_name = domain_name
+        self.scope_to = scope_to
         self.auth_user_roles = None
 
     def authenticate(self, force=False):
@@ -897,9 +926,6 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         if not self._is_authentication_needed(force=force):
             return self
 
-        # TODO: Support for custom domain
-        domain = 'Default'
-
         data = {
             'auth': {
                 'identity': {
@@ -907,33 +933,36 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                     'password': {
                         'user': {
                             'domain': {
-                                'name': domain
+                                'name': self.domain_name
                             },
                             'name': self.user_id,
                             'password': self.key
                         }
                     }
-                },
-                'scope': {
-                    'project': {
-                        'domain': {
-                            'name': domain
-                        },
-                        'name': self.tenant_name
-                    }
                 }
             }
         }
 
-        if self.tenant_name:
+        if self.scope_to == 'project':
+            # Scope token to project (tenant)
             data['auth']['scope'] = {
                 'project': {
                     'domain': {
-                        'name': domain
+                        'name': self.domain_name
                     },
                     'name': self.tenant_name
                 }
             }
+        elif self.domain_name:
+            # Scope token to domain
+            data['auth']['scope'] = {
+                'domain': {
+                    'name': self.domain_name
+                }
+            }
+        else:
+            raise ValueError('Token needs to be scoped either to project or '
+                             'a domain')
 
         data = json.dumps(data)
         response = self.request('/v3/auth/tokens', data=data,

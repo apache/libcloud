@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import unittest
 import datetime
 
 try:
@@ -33,6 +32,7 @@ from libcloud.common.openstack_identity import OpenStackServiceCatalog
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
 
+from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test.secrets import OPENSTACK_PARAMS
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -229,8 +229,53 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
 
         self.auth_instance = OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                                               user_id='test',
-                                                              key='test')
+                                                              key='test',
+                                                              tenant_name='test')
         self.auth_instance.auth_token = 'mock'
+
+    def test_scope_to_argument(self):
+        # Invalid scope_to value
+        expected_msg = 'Invalid value for "scope_to" argument: foo'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                scope_to='foo')
+
+        # Missing tenant_name
+        expected_msg = 'Must provide tenant_name and domain_name argument'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                scope_to='project')
+
+        # Missing domain_name
+        expected_msg = 'Must provide domain_name argument'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                scope_to='domain',
+                                domain_name=None)
+
+        # Scope to project all ok
+        OpenStackIdentity_3_0_Connection(auth_url='http://none',
+                                         user_id='test',
+                                         key='test',
+                                         scope_to='project',
+                                         tenant_name='test',
+                                         domain_name='Default')
+        # Scope to domain
+        OpenStackIdentity_3_0_Connection(auth_url='http://none',
+                                         user_id='test',
+                                         key='test',
+                                         scope_to='domain',
+                                         tenant_name=None,
+                                         domain_name='Default')
 
     def test_list_supported_versions(self):
         OpenStackIdentity_3_0_MockHttp.type = 'v3'
