@@ -47,22 +47,15 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0',
     '2.0_apikey',
     '2.0_password',
+    '3.x',
     '3.x_password'
 ]
-
-# How many seconds to substract from the auth token expiration time before
-# testing if the token is still valid.
-# The time is subtracted to account for the HTTP request latency and prevent
-# user from getting "InvalidCredsError" if token is about to expire.
-AUTH_TOKEN_EXPIRES_GRACE_SECONDS = 5
 
 __all__ = [
     'OpenStackBaseConnection',
     'OpenStackResponse',
     'OpenStackException',
-    'OpenStackDriverMixin',
-
-    'AUTH_TOKEN_EXPIRES_GRACE_SECONDS'
+    'OpenStackDriverMixin'
 ]
 
 

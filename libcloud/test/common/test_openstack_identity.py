@@ -25,7 +25,7 @@ from mock import Mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.openstack import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
+from libcloud.common.openstack_identity import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.common.openstack_identity import get_class_for_auth_version
 from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
 from libcloud.common.openstack_identity import OpenStackServiceCatalog
