@@ -880,22 +880,22 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     auth_version = '3.0'
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name='Default', scope_to='project',
+                 domain_name='Default', token_scope='project',
                  timeout=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
-                            When scope_to is set to project, this argument
+                            When token_scope is set to project, this argument
                             control to which project to scope the token to.
         :type tenant_name: ``str``
 
-        :param domain_name: Domain the user belongs to. Note: Then scope_to
+        :param domain_name: Domain the user belongs to. Note: Then token_scope
                             is set to token, this argument controls to which
                             domain to scope the token to.
         :type domain_name: ``str``
 
-        :param scope_to: Whether to scope a token to a "project" or a
+        :param token_scope: Whether to scope a token to a "project" or a
                          "domain"
-        :type scope_to: ``str``
+        :type token_scope: ``str``
         """
         super(OpenStackIdentity_3_0_Connection,
               self).__init__(auth_url=auth_url,
@@ -904,19 +904,19 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              tenant_name=tenant_name,
                              timeout=timeout,
                              parent_conn=parent_conn)
-        if scope_to not in ['project', 'domain']:
-            raise ValueError('Invalid value for "scope_to" argument: %s' %
-                             (scope_to))
+        if token_scope not in ['project', 'domain']:
+            raise ValueError('Invalid value for "token_scope" argument: %s' %
+                             (token_scope))
 
-        if scope_to == 'project' and (not tenant_name or not domain_name):
+        if token_scope == 'project' and (not tenant_name or not domain_name):
             raise ValueError('Must provide tenant_name and domain_name '
                              'argument')
-        elif scope_to == 'domain' and not domain_name:
+        elif token_scope == 'domain' and not domain_name:
             raise ValueError('Must provide domain_name argument')
 
         self.tenant_name = tenant_name
         self.domain_name = domain_name
-        self.scope_to = scope_to
+        self.token_scope = token_scope
         self.auth_user_roles = None
 
     def authenticate(self, force=False):
@@ -943,7 +943,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
             }
         }
 
-        if self.scope_to == 'project':
+        if self.token_scope == 'project':
             # Scope token to project (tenant)
             data['auth']['scope'] = {
                 'project': {
@@ -953,7 +953,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                     'name': self.tenant_name
                 }
             }
-        elif self.domain_name:
+        elif self.token_scope == 'domain':
             # Scope token to domain
             data['auth']['scope'] = {
                 'domain': {

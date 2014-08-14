@@ -233,15 +233,15 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                               tenant_name='test')
         self.auth_instance.auth_token = 'mock'
 
-    def test_scope_to_argument(self):
-        # Invalid scope_to value
-        expected_msg = 'Invalid value for "scope_to" argument: foo'
+    def test_token_scope_argument(self):
+        # Invalid token_scope value
+        expected_msg = 'Invalid value for "token_scope" argument: foo'
         self.assertRaisesRegexp(ValueError, expected_msg,
                                 OpenStackIdentity_3_0_Connection,
                                 auth_url='http://none',
                                 user_id='test',
                                 key='test',
-                                scope_to='foo')
+                                token_scope='foo')
 
         # Missing tenant_name
         expected_msg = 'Must provide tenant_name and domain_name argument'
@@ -250,7 +250,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                 auth_url='http://none',
                                 user_id='test',
                                 key='test',
-                                scope_to='project')
+                                token_scope='project')
 
         # Missing domain_name
         expected_msg = 'Must provide domain_name argument'
@@ -259,21 +259,21 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                 auth_url='http://none',
                                 user_id='test',
                                 key='test',
-                                scope_to='domain',
+                                token_scope='domain',
                                 domain_name=None)
 
         # Scope to project all ok
         OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                          user_id='test',
                                          key='test',
-                                         scope_to='project',
+                                         token_scope='project',
                                          tenant_name='test',
                                          domain_name='Default')
         # Scope to domain
         OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                          user_id='test',
                                          key='test',
-                                         scope_to='domain',
+                                         token_scope='domain',
                                          tenant_name=None,
                                          domain_name='Default')
 
