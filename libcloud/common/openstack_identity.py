@@ -1087,11 +1087,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         response = self.authenticated_request(path, method='DELETE')
         return response.status == httplib.NO_CONTENT
 
-    def create_domain(self):
-        pass
-
     def create_user(self, email, password, name, description=None,
-                    domain_id=None, enabled=True):
+                    domain_id=None, default_project_id=None, enabled=True):
         """
         Create a new user account.
 
@@ -1109,6 +1106,9 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
         :param domain_id: ID of the domain to add the user to (optional).
         :type domain_id: ``str``
+
+        :param default_project_id: ID of the default user project (optional).
+        :type default_project_id: ``str``
 
         :param enabled: True to enable user after creation.
         :type enabled: ``bool``
@@ -1128,6 +1128,9 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
         if domain_id:
             data['domain_id'] = domain_id
+
+        if default_project_id:
+            data['default_project_id'] = default_project_id
 
         data = json.dumps({'user': data})
         response = self.authenticated_request('/v3/users', data=data,
