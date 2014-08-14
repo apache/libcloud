@@ -83,6 +83,14 @@ class OpenStackIdentityEndpointType(object):
     ADMIN = 'admin'
 
 
+class OpenStackIdentityTokenScope(object):
+    """
+    Enum class for openstack identity token scope.
+    """
+    PROJECT = 'project'
+    DOMAIN = 'domain'
+
+
 class OpenStackIdentityVersion(object):
     def __init__(self, version, status, updated, url):
         self.version = version
@@ -879,8 +887,14 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     name = 'OpenStack Identity API v3.x'
     auth_version = '3.0'
 
+    VALID_TOKEN_SCOPES = [
+        OpenStackIdentityTokenScope.PROJECT,
+        OpenStackIdentityTokenScope.DOMAIN
+    ]
+
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name='Default', token_scope='project',
+                 domain_name='Default',
+                 token_scope=OpenStackIdentityTokenScope.PROJECT,
                  timeout=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
@@ -904,14 +918,16 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              tenant_name=tenant_name,
                              timeout=timeout,
                              parent_conn=parent_conn)
-        if token_scope not in ['project', 'domain']:
+        if token_scope not in self.VALID_TOKEN_SCOPES:
             raise ValueError('Invalid value for "token_scope" argument: %s' %
                              (token_scope))
 
-        if token_scope == 'project' and (not tenant_name or not domain_name):
+        if (token_scope == OpenStackIdentityTokenScope.PROJECT and
+                (not tenant_name or not domain_name)):
             raise ValueError('Must provide tenant_name and domain_name '
                              'argument')
-        elif token_scope == 'domain' and not domain_name:
+        elif (token_scope == OpenStackIdentityTokenScope.DOMAIN and
+                not domain_name):
             raise ValueError('Must provide domain_name argument')
 
         self.tenant_name = tenant_name
@@ -943,7 +959,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
             }
         }
 
-        if self.token_scope == 'project':
+        if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
             # Scope token to project (tenant)
             data['auth']['scope'] = {
                 'project': {
@@ -953,7 +969,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                     'name': self.tenant_name
                 }
             }
-        elif self.token_scope == 'domain':
+        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN:
             # Scope token to domain
             data['auth']['scope'] = {
                 'domain': {
