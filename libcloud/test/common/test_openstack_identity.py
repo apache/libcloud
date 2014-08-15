@@ -30,6 +30,7 @@ from libcloud.common.openstack_identity import get_class_for_auth_version
 from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
 from libcloud.common.openstack_identity import OpenStackServiceCatalog
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
+from libcloud.common.openstack_identity import OpenStackIdentityUser
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
 
 from libcloud.test import unittest
@@ -342,6 +343,16 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.assertEqual(user.id, 'c')
         self.assertEqual(user.name, 'test2')
 
+    def test_enable_user(self):
+        user = self.auth_instance.list_users()[0]
+        result = self.auth_instance.enable_user(user=user)
+        self.assertTrue(isinstance(result, OpenStackIdentityUser))
+
+    def test_disable_user(self):
+        user = self.auth_instance.list_users()[0]
+        result = self.auth_instance.disable_user(user=user)
+        self.assertTrue(isinstance(result, OpenStackIdentityUser))
+
     def test_grant_domain_role_to_user(self):
         domain = self.auth_instance.list_domains()[0]
         role = self.auth_instance.list_roles()[0]
@@ -541,6 +552,13 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             body = self.fixtures.load('v3_create_user.json')
             return (httplib.CREATED, body, self.json_content_headers,
                     httplib.responses[httplib.CREATED])
+        raise NotImplementedError()
+
+    def _v3_users_a(self, method, url, body, headers):
+        if method == 'PATCH':
+            # enable / disable user
+            body = self.fixtures.load('v3_users_a.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v3_roles(self, method, url, body, headers):

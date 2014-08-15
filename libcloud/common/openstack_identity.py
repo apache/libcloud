@@ -1248,6 +1248,52 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         user = self._to_user(data=response.object['user'])
         return user
 
+    def enable_user(self, user):
+        """
+        Enable user account.
+
+        Note: This operation appears to be idempotent.
+
+        :param user: User to enable.
+        :type user: :class:`.OpenStackIdentityUser`
+
+        :return: User account which has been enabled.
+        :rtype: :class:`.OpenStackIdentityUser`
+        """
+        data = {
+            'enabled': True
+        }
+        data = json.dumps({'user': data})
+        response = self.authenticated_request('/v3/users/%s' % (user.id),
+                                              data=data,
+                                              method='PATCH')
+
+        user = self._to_user(data=response.object['user'])
+        return user
+
+    def disable_user(self, user):
+        """
+        Disable user account.
+
+        Note: This operation appears to be idempotent.
+
+        :param user: User to disable.
+        :type user: :class:`.OpenStackIdentityUser`
+
+        :return: User account which has been disabled.
+        :rtype: :class:`.OpenStackIdentityUser`
+        """
+        data = {
+            'enabled': False
+        }
+        data = json.dumps({'user': data})
+        response = self.authenticated_request('/v3/users/%s' % (user.id),
+                                              data=data,
+                                              method='PATCH')
+
+        user = self._to_user(data=response.object['user'])
+        return user
+
     def _to_domains(self, data):
         result = []
         for item in data:
