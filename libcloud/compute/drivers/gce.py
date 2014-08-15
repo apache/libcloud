@@ -1211,9 +1211,17 @@ class GCENodeDriver(NodeDriver):
                                               use_existing=use_existing_disk,
                                               ex_disk_type=ex_disk_type)
 
-        if ex_metadata is not None:
-            ex_metadata = {"items": [{"key": k, "value": v}
-                                     for k, v in ex_metadata.items()]}
+        if not ex_metadata or not isinstance(ex_metadata, dict):
+            # Should output a relevant error message if non-dict is received?
+            ex_metadata = None
+        else:
+            items = []
+            for k, v in ex_metadata.items():
+                items.append({'key': k, 'value': v})
+            if 'items' not in ex_metadata:
+                # May cause issues with raw metadata text named "items".
+                ex_metadata = {'items': items}
+            print("after else", ex_metadata)
 
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
