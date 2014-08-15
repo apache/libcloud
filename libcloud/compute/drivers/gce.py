@@ -1221,7 +1221,6 @@ class GCENodeDriver(NodeDriver):
             if 'items' not in ex_metadata:
                 # May cause issues with raw metadata text named "items".
                 ex_metadata = {'items': items}
-            print("after else", ex_metadata)
 
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
