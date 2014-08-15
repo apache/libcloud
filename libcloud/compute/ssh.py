@@ -364,7 +364,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv(CHUNK_SIZE)
 
                 while data:
-                    stdout.write(data)
+                    stdout.write(data.decode("utf-8"))
                     ready = chan.recv_ready()
 
                     if not ready:
@@ -376,7 +376,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv_stderr(CHUNK_SIZE)
 
                 while data:
-                    stderr.write(data)
+                    stderr.write(data.decode("utf-8"))
                     ready = chan.recv_stderr_ready()
 
                     if not ready:
