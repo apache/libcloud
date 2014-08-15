@@ -89,6 +89,7 @@ class OpenStackIdentityTokenScope(object):
     """
     PROJECT = 'project'
     DOMAIN = 'domain'
+    UNSCOPED = 'unscoped'
 
 
 class OpenStackIdentityVersion(object):
@@ -889,7 +890,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
     VALID_TOKEN_SCOPES = [
         OpenStackIdentityTokenScope.PROJECT,
-        OpenStackIdentityTokenScope.DOMAIN
+        OpenStackIdentityTokenScope.DOMAIN,
+        OpenStackIdentityTokenScope.UNSCOPED
     ]
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
@@ -976,6 +978,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                     'name': self.domain_name
                 }
             }
+        elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
+            pass
         else:
             raise ValueError('Token needs to be scoped either to project or '
                              'a domain')
@@ -1008,7 +1012,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
                 self.auth_token = headers['x-subject-token']
                 self.auth_token_expires = parse_date(expires)
-                self.urls = body['token']['catalog']
+                # Note: catalog is not returned for unscoped tokens
+                self.urls = body['token'].get('catalog', None)
                 self.auth_user_info = None
                 self.auth_user_roles = roles
             except KeyError:
