@@ -14,6 +14,9 @@ env:
   - TOX_ENV=py34
   - TOX_ENV=docs
 
+git:
+  depth: 10
+
 install:
   - pip install tox
 
