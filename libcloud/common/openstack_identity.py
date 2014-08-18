@@ -117,12 +117,12 @@ class OpenStackIdentityDomain(object):
 
 
 class OpenStackIdentityProject(object):
-    def __init__(self, id, domain_id, name, description, enabled):
+    def __init__(self, id, name, description, enabled, domain_id=None):
         self.id = id
-        self.domain_id = domain_id
         self.name = name
         self.description = description
         self.enabled = enabled
+        self.domain_id = domain_id
 
     def __repr__(self):
         return (('<OpenStackIdentityProject id=%s, domain_id=%s, name=%s, '
@@ -708,6 +708,23 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
 
         return True
 
+    def _to_projects(self, data):
+        result = []
+        for item in data:
+            project = self._to_project(data=item)
+            result.append(project)
+
+        return result
+
+    def _to_project(self, data):
+        project = OpenStackIdentityProject(id=data['id'],
+                                           name=data['name'],
+                                           description=data['description'],
+                                           enabled=data['enabled'],
+                                           domain_id=data.get('domain_id',
+                                                              None))
+        return project
+
 
 class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
     """
@@ -877,6 +894,14 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
                                              missing required elements', e)
 
         return self
+
+    def list_projects(self):
+        response = self.authenticated_request('/v2.0/tenants', method='GET')
+        result = self._to_projects(data=response.object['tenants'])
+        return result
+
+    def list_tenants(self):
+        return self.list_projects()
 
 
 class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
@@ -1307,22 +1332,6 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                                          name=data['name'],
                                          enabled=data['enabled'])
         return domain
-
-    def _to_projects(self, data):
-        result = []
-        for item in data:
-            project = self._to_project(data=item)
-            result.append(project)
-
-        return result
-
-    def _to_project(self, data):
-        project = OpenStackIdentityProject(id=data['id'],
-                                           domain_id=data['domain_id'],
-                                           name=data['name'],
-                                           description=data['description'],
-                                           enabled=data['enabled'])
-        return project
 
     def _to_users(self, data):
         result = []
