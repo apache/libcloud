@@ -1212,8 +1212,7 @@ class GCENodeDriver(NodeDriver):
                                               ex_disk_type=ex_disk_type)
 
         if not ex_metadata or not isinstance(ex_metadata, dict):
-            # Should output a relevant error message if non-dict is received?
-            ex_metadata = None
+            raise ValueError('metadata field is not a dictionnary.')
         else:
             items = []
             for k, v in ex_metadata.items():
