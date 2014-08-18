@@ -1215,8 +1215,8 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('metadata field is not a dictionnary.')
         else:
             items = []
-            for k, v in ex_metadata.items():
-                items.append({'key': k, 'value': v})
+            for key, value in ex_metadata.items():
+                items.append({'key': key, 'value': value})
             if 'items' not in ex_metadata:
                 # May cause issues with raw metadata text named "items".
                 ex_metadata = {'items': items}
