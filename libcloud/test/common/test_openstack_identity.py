@@ -27,8 +27,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack_identity import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.common.openstack_identity import get_class_for_auth_version
-from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
 from libcloud.common.openstack_identity import OpenStackServiceCatalog
+from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
 from libcloud.common.openstack_identity import OpenStackIdentityUser
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
@@ -220,6 +220,27 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
 
         return connection
+
+
+class OpenStackIdentity_2_0_ConnectionTests(unittest.TestCase):
+    def setUp(self):
+        mock_cls = OpenStackIdentity_2_0_MockHttp
+        mock_cls.type = None
+        OpenStackIdentity_2_0_Connection.conn_classes = (mock_cls, mock_cls)
+
+        self.auth_instance = OpenStackIdentity_2_0_Connection(auth_url='http://none',
+                                                              user_id='test',
+                                                              key='test',
+                                                              tenant_name='test')
+        self.auth_instance.auth_token = 'mock'
+
+    def test_list_projects(self):
+        result = self.auth_instance.list_projects()
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0].id, 'a')
+        self.assertEqual(result[0].name, 'test')
+        self.assertEqual(result[0].description, 'test project')
+        self.assertTrue(result[0].enabled)
 
 
 class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
@@ -520,8 +541,19 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                                          'nova'])
 
 
+class OpenStackIdentity_2_0_MockHttp(MockHttp):
+    fixtures = ComputeFileFixtures('openstack_identity/v2')
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v2_0_tenants(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('v2_0_tenants.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+
 class OpenStackIdentity_3_0_MockHttp(MockHttp):
-    fixtures = ComputeFileFixtures('openstack_identity')
+    fixtures = ComputeFileFixtures('openstack_identity/v3')
     json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
 
     def _v3(self, method, url, body, headers):
