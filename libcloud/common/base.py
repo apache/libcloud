@@ -444,7 +444,7 @@ class Connection(object):
     allow_insecure = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
-                 timeout=None):
+                 timeout=None, proxy_url=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -474,6 +474,8 @@ class Connection(object):
 
         if timeout:
             self.timeout = timeout
+
+        self.proxy_url = proxy_url
 
     def set_context(self, context):
         if not isinstance(context, dict):
@@ -542,6 +544,9 @@ class Connection(object):
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
         if self.timeout and not PY25:
             kwargs.update({'timeout': self.timeout})
+
+        if self.proxy_url:
+            kwargs.update({'proxy_url': self.proxy_url})
 
         connection = self.conn_classes[secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
@@ -893,14 +898,15 @@ class ConnectionKey(Connection):
     Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
-                 timeout=None):
+                 timeout=None, proxy_url=None):
         """
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
         super(ConnectionKey, self).__init__(secure=secure, host=host,
                                             port=port, url=url,
-                                            timeout=timeout)
+                                            timeout=timeout,
+                                            proxy_url=proxy_url)
         self.key = key
 
 
@@ -911,11 +917,12 @@ class ConnectionUserAndKey(ConnectionKey):
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, url=None, timeout=None):
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
                                                    host=host, port=port,
-                                                   url=url, timeout=timeout)
+                                                   url=url, timeout=timeout,
+                                                   proxy_url=proxy_url)
         self.user_id = user_id
 
 
