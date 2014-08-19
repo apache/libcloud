@@ -17,6 +17,9 @@ General
   environment variable.
   [Tomaz Muraus]
 
+- Add support for using an HTTP proxy for outgoing HTTP and HTTPS requests.
+  [Tomaz Muraus, Philip Kershaw]
+
 Compute
 ~~~~~~~
 
