@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import ssl
 
@@ -22,6 +23,58 @@ from mock import Mock, call
 from libcloud.test import unittest
 from libcloud.common.base import Connection
 from libcloud.common.base import LoggingConnection
+from libcloud.httplib_ssl import LibcloudBaseConnection
+from libcloud.httplib_ssl import LibcloudHTTPConnection
+
+
+class BaseConnectionClassTestCase(unittest.TestCase):
+    def test_parse_proxy_url(self):
+        conn = LibcloudBaseConnection()
+
+        proxy_url = 'http://127.0.0.1:3128'
+        result = conn._parse_proxy_url(proxy_url=proxy_url)
+        self.assertEqual(result[0], 'http')
+        self.assertEqual(result[1], '127.0.0.1')
+        self.assertEqual(result[2], 3128)
+
+        proxy_url = 'https://127.0.0.1:3128'
+        expected_msg = 'Only http proxies are supported'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                conn._parse_proxy_url,
+                                proxy_url=proxy_url)
+
+        proxy_url = 'http://127.0.0.1'
+        expected_msg = 'proxy_url must be in the following format'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                conn._parse_proxy_url,
+                                proxy_url=proxy_url)
+
+    def test_constructor(self):
+        conn = LibcloudHTTPConnection(host='localhost', port=80)
+        self.assertEqual(conn.proxy_scheme, None)
+        self.assertEqual(conn.proxy_host, None)
+        self.assertEqual(conn.proxy_port, None)
+
+        proxy_url = 'http://127.0.0.3:3128'
+        conn.set_http_proxy(proxy_url=proxy_url)
+        self.assertEqual(conn.proxy_scheme, 'http')
+        self.assertEqual(conn.proxy_host, '127.0.0.3')
+        self.assertEqual(conn.proxy_port, 3128)
+
+        proxy_url = 'http://127.0.0.4:3128'
+        conn = LibcloudHTTPConnection(host='localhost', port=80,
+                                      proxy_url=proxy_url)
+        self.assertEqual(conn.proxy_scheme, 'http')
+        self.assertEqual(conn.proxy_host, '127.0.0.4')
+        self.assertEqual(conn.proxy_port, 3128)
+
+        os.environ['http_proxy'] = proxy_url
+        proxy_url = 'http://127.0.0.5:3128'
+        conn = LibcloudHTTPConnection(host='localhost', port=80,
+                                      proxy_url=proxy_url)
+        self.assertEqual(conn.proxy_scheme, 'http')
+        self.assertEqual(conn.proxy_host, '127.0.0.5')
+        self.assertEqual(conn.proxy_port, 3128)
 
 
 class ConnectionClassTestCase(unittest.TestCase):

@@ -46,9 +46,8 @@ from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.compression import decompress_data
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
+from libcloud.httplib_ssl import LibcloudHTTPConnection
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
-
-LibcloudHTTPConnection = httplib.HTTPConnection
 
 
 class HTTPResponse(httplib.HTTPResponse):
@@ -267,7 +266,9 @@ class LoggingConnection():
 
     :cvar log: file-like object that logs entries are written to.
     """
+
     log = None
+    http_proxy_used = False
 
     def _log_response(self, r):
         rv = "# -------- begin %d:%d response ----------\n" % (id(self), id(r))
@@ -341,7 +342,15 @@ class LoggingConnection():
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
-        cmd = ["curl", "-i"]
+        cmd = ["curl"]
+
+        if self.http_proxy_used:
+            proxy_url = 'http://%s:%s' % (self.proxy_host,
+                                          self.proxy_port)
+            proxy_url = pquote(proxy_url)
+            cmd.extend(['--proxy', proxy_url])
+
+        cmd.extend(['-i'])
 
         if method.lower() == 'head':
             # HEAD method need special handling
