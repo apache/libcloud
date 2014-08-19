@@ -86,7 +86,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'BUILD': NodeState.PENDING,
         'REBUILD': NodeState.PENDING,
         'ACTIVE': NodeState.RUNNING,
-        'SUSPENDED': NodeState.TERMINATED,
+        'SUSPENDED': NodeState.STOPPED,
+        'SHUTOFF': NodeState.STOPPED,
         'DELETED': NodeState.TERMINATED,
         'QUEUE_RESIZE': NodeState.PENDING,
         'PREP_RESIZE': NodeState.PENDING,
@@ -98,6 +99,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'SHARE_IP': NodeState.PENDING,
         'SHARE_IP_NO_CONFIG': NodeState.PENDING,
         'DELETE_IP': NodeState.PENDING,
+        'ERROR': NodeState.ERROR,
         'UNKNOWN': NodeState.UNKNOWN
     }
 

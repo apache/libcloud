@@ -66,6 +66,10 @@ Compute
   (GITHUB-347)
   [Eddy Reyes]
 
+- Update OpenStack driver to map more node states to states recognized by
+  Libcloud.
+  [Chris DeRamus]
+
 Storage
 ~~~~~~~
 
