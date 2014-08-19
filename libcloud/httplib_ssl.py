@@ -63,6 +63,7 @@ class LibcloudBaseConnection(object):
         self.proxy_scheme = scheme
         self.proxy_host = host
         self.proxy_port = port
+        self.http_proxy_used = True
 
         self._setup_http_proxy()
 
