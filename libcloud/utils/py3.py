@@ -30,6 +30,7 @@ except ImportError:
 
 PY2 = False
 PY25 = False
+PY26 = False
 PY27 = False
 PY3 = False
 PY32 = False
@@ -37,10 +38,13 @@ PY32 = False
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
     PY2 = True
 
-if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+if sys.version_info >= (2, 5) and sys.version_info < (2, 6):
     PY25 = True
 
-if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+    PY26 = True
+
+if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
     PY27 = True
 
 if sys.version_info >= (3, 0):
