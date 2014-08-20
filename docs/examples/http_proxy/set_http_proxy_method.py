@@ -7,6 +7,6 @@ PROXY_URL = 'http://<proxy hostname>:<proxy port>'
 
 cls = get_driver(Provider.RACKSPACE)
 driver = cls('username', 'api key', region='ord')
-driver.set_http_proxy(proxy_url=PROXY_URL)
+driver.connection.set_http_proxy(proxy_url=PROXY_URL)
 
 pprint(driver.list_nodes())
