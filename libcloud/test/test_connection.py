@@ -40,6 +40,16 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(result[0], 'http')
         self.assertEqual(result[1], '127.0.0.1')
         self.assertEqual(result[2], 3128)
+        self.assertEqual(result[3], None)
+        self.assertEqual(result[4], None)
+
+        proxy_url = 'http://user1:pass1@127.0.0.1:3128'
+        result = conn._parse_proxy_url(proxy_url=proxy_url)
+        self.assertEqual(result[0], 'http')
+        self.assertEqual(result[1], '127.0.0.1')
+        self.assertEqual(result[2], 3128)
+        self.assertEqual(result[3], 'user1')
+        self.assertEqual(result[4], 'pass1')
 
         proxy_url = 'https://127.0.0.1:3128'
         expected_msg = 'Only http proxies are supported'

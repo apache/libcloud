@@ -23,8 +23,8 @@ bellow:
 Known limitations
 -----------------
 
-* HTTP proxies which require authentication are not supported
 * Python 2.6 is not supported
+* Only HTTP basic authentication proxy authorization method is supported
 
 Examples
 --------
@@ -35,9 +35,17 @@ with Libcloud.
 1. Using http_proxy environment variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Without authentication:
+
 .. sourcecode:: python
 
     http_proxy=http://<proxy hostname>:<proxy port> python my_script.py
+
+With basic auth authentication:
+
+.. sourcecode:: python
+
+    http_proxy=http://<username>:<password>@<proxy hostname>:<proxy port> python my_script.py
 
 2. Passing http_proxy argument to the connection class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

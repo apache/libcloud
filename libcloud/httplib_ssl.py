@@ -21,11 +21,14 @@ import re
 import socket
 import sys
 import ssl
+import base64
 import warnings
 
 import libcloud.security
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlunquote
 
 __all__ = [
     'LibcloudBaseConnection',
@@ -46,23 +49,37 @@ class LibcloudBaseConnection(object):
     proxy_scheme = None
     proxy_host = None
     proxy_port = None
+
+    proxy_username = None
+    proxy_password = None
+
     http_proxy_used = False
 
     def set_http_proxy(self, proxy_url):
         """
         Set a HTTP proxy which will be used with this connection.
 
-        :param proxy_url: Proxy URL (e.g. http://hostname:3128)
+        :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
+                          authentication and
+                          http://<username>:<password>@<hostname>:<port> for
+                          basic auth authentication information.
         :type proxy_url: ``str``
         """
         if sys.version_info[:2] == (2, 6):
             raise Exception('HTTP proxy support requires Python 2.7 or higher')
 
-        scheme, host, port = self._parse_proxy_url(proxy_url=proxy_url)
+        result = self._parse_proxy_url(proxy_url=proxy_url)
+        scheme = result[0]
+        host = result[1]
+        port = result[2]
+        username = result[3]
+        password = result[4]
 
         self.proxy_scheme = scheme
         self.proxy_host = host
         self.proxy_port = port
+        self.proxy_username = username
+        self.proxy_password = password
         self.http_proxy_used = True
 
         self._setup_http_proxy()
@@ -88,7 +105,22 @@ class LibcloudBaseConnection(object):
         proxy_scheme = parsed.scheme
         proxy_host, proxy_port = parsed.hostname, parsed.port
 
-        return (proxy_scheme, proxy_host, proxy_port)
+        netloc = parsed.netloc
+
+        if '@' in netloc:
+            username_password = netloc.split('@', 1)[0]
+            split = username_password.split(':', 1)
+
+            if len(split) == 0:
+                raise ValueError('URL is in an invalid format')
+
+            proxy_username, proxy_password = split[0], split[1]
+        else:
+            proxy_username = None
+            proxy_password = None
+
+        return (proxy_scheme, proxy_host, proxy_port, proxy_username,
+                proxy_password)
 
     def _setup_http_proxy(self):
         """
@@ -97,7 +129,16 @@ class LibcloudBaseConnection(object):
         :param proxy_url: Proxy URL (e.g. http://<host>:3128)
         :type proxy_url: ``str``
         """
-        self.set_tunnel(host=self.host, port=self.port)
+        headers = {}
+
+        if self.proxy_username and self.proxy_password:
+            # Include authentication header
+            user_pass = '%s:%s' % (self.proxy_username, self.proxy_password)
+            encoded = base64.encodestring(b(urlunquote(user_pass))).strip()
+            auth_header = 'Basic %s' % (encoded.decode('utf-8'))
+            headers['Proxy-Authorization'] = auth_header
+
+        self.set_tunnel(host=self.host, port=self.port, headers=headers)
         self._set_hostport(host=self.proxy_host, port=self.proxy_port)
 
     def _activate_http_proxy(self, sock):
