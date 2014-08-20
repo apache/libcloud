@@ -1937,25 +1937,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_node(obj['server'])
 
     def _to_node(self, api_node):
-        public_networks_labels = ['public', 'internet']
+        public_networks_labels = ['public', 'internet', 'floating']
 
-        public_ips, private_ips = [], []
+        public_ips, private_ips, ip_details = [], [], []
 
         for label, values in api_node['addresses'].items():
-            ips = [v['addr'] for v in values]
+            ip_details = [{'ip': v['addr'], 'type': v['OS-EXT-IPS:type']}
+                          for v in values if 'OS-EXT-IPS:type' in v]
 
-            if label in public_networks_labels:
-                public_ips.extend(ips)
-            else:
-                for ip in ips:
-                    # is_private_subnet does not check for ipv6
-                    try:
-                        if is_private_subnet(ip):
-                            private_ips.append(ip)
-                        else:
-                            public_ips.append(ip)
-                    except:
-                        private_ips.append(ip)
+        for ips in ip_details:
+            try:
+                if 'ip' in ips:
+                    if ips.get('type').lower() in public_networks_labels:
+                        public_ips.append(ips.get('ip'))
+                    else:
+                        private_ips.append(ips.get('ip'))
+            except:
+                pass
 
         # Sometimes 'image' attribute is not present if the node is in an error
         # state
