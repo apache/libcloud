@@ -189,6 +189,7 @@ class NodeState(object):
     :cvar SUSPENDED: Node is suspended.
     :cvar ERROR: Node is an error state. Usually no operations can be performed
                  on the node once it ends up in the error state.
+    :cvar PAUSED: Node is paused.
     :cvar UNKNOWN: Node state is unknown.
     """
     RUNNING = 0
@@ -199,6 +200,7 @@ class NodeState(object):
     STOPPED = 5
     SUSPENDED = 6
     ERROR = 7
+    PAUSED = 8
 
 
 class Architecture(object):
