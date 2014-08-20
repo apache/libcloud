@@ -251,9 +251,11 @@ class Node(UuidMixin):
         return self.driver.destroy_node(self)
 
     def __repr__(self):
+        state = NodeState.tostring(self.state)
+
         return (('<Node: uuid=%s, name=%s, state=%s, public_ips=%s, '
                  'private_ips=%s, provider=%s ...>')
-                % (self.uuid, self.name, self.state, self.public_ips,
+                % (self.uuid, self.name, state, self.public_ips,
                    self.private_ips, self.driver.name))
 
 

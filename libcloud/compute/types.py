@@ -202,6 +202,20 @@ class NodeState(object):
     ERROR = 7
     PAUSED = 8
 
+    @classmethod
+    def tostring(cls, value):
+        values = cls.__dict__
+        values = dict([(key, string) for key, string in values.items() if
+                       not key.startswith('__')])
+
+        for item_key, item_value in values.items():
+            if value == item_value:
+                return item_key
+
+    @classmethod
+    def fromstring(cls, value):
+        return getattr(cls, value.upper(), None)
+
 
 class Architecture(object):
     """
