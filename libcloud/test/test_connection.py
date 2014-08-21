@@ -25,14 +25,10 @@ from libcloud.common.base import Connection
 from libcloud.common.base import LoggingConnection
 from libcloud.httplib_ssl import LibcloudBaseConnection
 from libcloud.httplib_ssl import LibcloudHTTPConnection
-from libcloud.utils.py3 import PY26
 
 
 class BaseConnectionClassTestCase(unittest.TestCase):
     def test_parse_proxy_url(self):
-        if PY26:
-            return
-
         conn = LibcloudBaseConnection()
 
         proxy_url = 'http://127.0.0.1:3128'
@@ -64,9 +60,6 @@ class BaseConnectionClassTestCase(unittest.TestCase):
                                 proxy_url=proxy_url)
 
     def test_constructor(self):
-        if PY26:
-            return
-
         conn = LibcloudHTTPConnection(host='localhost', port=80)
         self.assertEqual(conn.proxy_scheme, None)
         self.assertEqual(conn.proxy_host, None)

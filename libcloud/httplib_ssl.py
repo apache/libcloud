@@ -19,7 +19,6 @@ verification, depending on libcloud.security settings.
 import os
 import re
 import socket
-import sys
 import ssl
 import base64
 import warnings
@@ -65,9 +64,6 @@ class LibcloudBaseConnection(object):
                           basic auth authentication information.
         :type proxy_url: ``str``
         """
-        if sys.version_info[:2] == (2, 6):
-            raise Exception('HTTP proxy support requires Python 2.7 or higher')
-
         result = self._parse_proxy_url(proxy_url=proxy_url)
         scheme = result[0]
         host = result[1]
@@ -138,7 +134,15 @@ class LibcloudBaseConnection(object):
             auth_header = 'Basic %s' % (encoded.decode('utf-8'))
             headers['Proxy-Authorization'] = auth_header
 
-        self.set_tunnel(host=self.host, port=self.port, headers=headers)
+        if hasattr(self, 'set_tunnel'):
+            # Python 2.7 and higher
+            self.set_tunnel(host=self.host, port=self.port, headers=headers)
+        elif hasattr(self, '_set_tunnel'):
+            # Python 2.6
+            self._set_tunnel(host=self.host, port=self.port, headers=headers)
+        else:
+            raise ValueError('Unsupported Python version')
+
         self._set_hostport(host=self.proxy_host, port=self.proxy_port)
 
     def _activate_http_proxy(self, sock):
