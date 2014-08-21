@@ -483,6 +483,15 @@ class Connection(object):
 
         self.proxy_url = proxy_url
 
+    def set_http_proxy(self, proxy_url):
+        """
+        Set an HTTP proxy which will be used for all the outgoing HTTP requests.
+
+        :param proxy_url: Proxy URL.
+        :type proxy_url: ``str``
+        """
+        self.proxy_url = proxy_url
+
     def set_context(self, context):
         if not isinstance(context, dict):
             raise TypeError('context needs to be a dictionary')
