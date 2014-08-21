@@ -59,6 +59,18 @@ class BaseConnectionClassTestCase(unittest.TestCase):
                                 conn._parse_proxy_url,
                                 proxy_url=proxy_url)
 
+        proxy_url = 'http://@127.0.0.1:3128'
+        expected_msg = 'URL is in an invalid format'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                conn._parse_proxy_url,
+                                proxy_url=proxy_url)
+
+        proxy_url = 'http://user@127.0.0.1:3128'
+        expected_msg = 'URL is in an invalid format'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                conn._parse_proxy_url,
+                                proxy_url=proxy_url)
+
     def test_constructor(self):
         conn = LibcloudHTTPConnection(host='localhost', port=80)
         self.assertEqual(conn.proxy_scheme, None)

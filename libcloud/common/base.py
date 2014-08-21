@@ -485,9 +485,12 @@ class Connection(object):
 
     def set_http_proxy(self, proxy_url):
         """
-        Set an HTTP proxy which will be used for all the outgoing HTTP requests.
+        Set a HTTP proxy which will be used with this connection.
 
-        :param proxy_url: Proxy URL.
+        :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
+                          authentication and
+                          http://<username>:<password>@<hostname>:<port> for
+                          basic auth authentication information.
         :type proxy_url: ``str``
         """
         self.proxy_url = proxy_url

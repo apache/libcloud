@@ -107,7 +107,7 @@ class LibcloudBaseConnection(object):
             username_password = netloc.split('@', 1)[0]
             split = username_password.split(':', 1)
 
-            if len(split) == 0:
+            if len(split) < 2:
                 raise ValueError('URL is in an invalid format')
 
             proxy_username, proxy_password = split[0], split[1]
