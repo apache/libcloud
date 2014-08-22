@@ -1168,7 +1168,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
 
         :keyword    networks: The server is launched into a set of Networks.
-        :type       networks: :class:`OpenStackNetwork`
+        :type       networks: ``list`` of :class:`OpenStackNetwork`
 
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
