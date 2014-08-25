@@ -22,7 +22,7 @@
       "ALERT_BWOUT_ENABLED": 1,
       "BACKUPSENABLED": 1,
       "ALERT_CPU_THRESHOLD": 90,
-      "PLANID": "1",
+      "PLANID": "2",
       "BACKUPWEEKLYDAY": 0,
       "LABEL": "api-node3",
       "LPM_DISPLAYGROUP": "test",
