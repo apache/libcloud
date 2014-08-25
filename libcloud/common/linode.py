@@ -31,15 +31,16 @@ __all__ = [
 API_HOST = 'api.linode.com'
 API_ROOT = '/'
 
-# Constants that map a RAM figure to a PlanID (updated 4/25/14)
-LINODE_PLAN_IDS = {2048: '1',
-                   4096: '3',
-                   8192: '5',
-                   16384: '6',
-                   32768: '7',
-                   49152: '8',
-                   65536: '9',
-                   98304: '11'}
+# Constants that map a RAM figure to a PlanID (updated 2014-08-25)
+LINODE_PLAN_IDS = {1024: '1',
+                   2048: '2',
+                   4096: '4',
+                   8192: '6',
+                   16384: '7',
+                   32768: '8',
+                   49152: '9',
+                   65536: '10',
+                   98304: '12'}
 
 
 class LinodeException(Exception):
