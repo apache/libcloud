@@ -250,39 +250,39 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
     ''' Datacenter Function Tests
     '''
     def test_ex_create_datacenter(self):
-    	datacenter = self.driver.ex_create_datacenter(name="StackPointCloud",location="us/la")
+        datacenter = self.driver.ex_create_datacenter(name="StackPointCloud",location="us/la")
 
-    	self.assertEqual(datacenter[0].id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
-    	self.assertEqual(datacenter[0].extra['location'], 'us/las')
-    	self.assertEqual(datacenter[0].datacenter_version, '1')
+        self.assertEqual(datacenter[0].id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
+        self.assertEqual(datacenter[0].extra['location'], 'us/las')
+        self.assertEqual(datacenter[0].datacenter_version, '1')
 
     def test_ex_destroy_datacenter(self):
-    	datacenter = type('Datacenter', (object,),
-    		dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
-    	destroy = self.driver.ex_destroy_datacenter(datacenter=datacenter)
+        datacenter = type('Datacenter', (object,),
+            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        destroy = self.driver.ex_destroy_datacenter(datacenter=datacenter)
 
-    	self.assertTrue(destroy)
+        self.assertTrue(destroy)
 
     def test_ex_describe_datacenter(self):
-    	datacenter = type('Datacenter', (object,),
-    		dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
-    	describe = self.driver.ex_describe_datacenter(datacenter=datacenter)
+        datacenter = type('Datacenter', (object,),
+            dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
+        describe = self.driver.ex_describe_datacenter(datacenter=datacenter)
 
-    	self.assertEqual(describe[0].id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
-    	self.assertEqual(describe[0].name, 'StackPointCloud')
-    	self.assertEqual(describe[0].datacenter_version, '1')
-    	self.assertEqual(describe[0].extra['location'], 'us/las')
-    	self.assertEqual(describe[0].extra['provisioning_state'], 'AVAILABLE')
+        self.assertEqual(describe[0].id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
+        self.assertEqual(describe[0].name, 'StackPointCloud')
+        self.assertEqual(describe[0].datacenter_version, '1')
+        self.assertEqual(describe[0].extra['location'], 'us/las')
+        self.assertEqual(describe[0].extra['provisioning_state'], 'AVAILABLE')
 
     def test_ex_clear_datacenter(self):
-    	datacenter = type('Datacenter', (object,), 
-    		dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        datacenter = type('Datacenter', (object,), 
+            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
         clear = self.driver.ex_clear_datacenter(datacenter=datacenter)
 
         self.assertTrue(clear)
 
     def test_ex_list_datacenters(self):
-    	datacenters = self.driver.ex_list_datacenters()
+        datacenters = self.driver.ex_list_datacenters()
 
         self.assertEqual(len(datacenters), 2)
 
@@ -292,13 +292,13 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(dc1.datacenter_version,"1")
 
     def test_ex_update_datacenter(self):
-    	datacenter = type('Datacenter', (object,),
-    		dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
+        datacenter = type('Datacenter', (object,),
+            dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
 
-    	update = self.driver.ex_update_datacenter(datacenter=datacenter,
-    		name="StackPointCloud")
+        update = self.driver.ex_update_datacenter(datacenter=datacenter,
+            name="StackPointCloud")
 
-    	self.assertTrue(update)
+        self.assertTrue(update)
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
@@ -427,12 +427,12 @@ class ProfitBricksMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_3_getAllDataCenters(self, method, url, body, headers):
-    	body = self.fixtures.load('ex_list_datacenters.xml')
-    	return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        body = self.fixtures.load('ex_list_datacenters.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_3_updateDataCenter(self, method, url, body, headers):
-    	body = self.fixtures.load('ex_update_datacenter.xml')
-    	return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        body = self.fixtures.load('ex_update_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_3_getAllImages(self, method, url, body, headers):
         body = self.fixtures.load('list_images.xml')
