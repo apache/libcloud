@@ -76,6 +76,7 @@ class Provider(object):
     :cvar IKOULA: Ikoula driver.
     :cvar OUTSCALE_SAS: Outscale SAS driver.
     :cvar OUTSCALE_INC: Outscale INC driver.
+    :cvar PROFIT_BRICKS: ProfitBricks driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -122,6 +123,7 @@ class Provider(object):
     OUTSCALE_SAS = 'outscale_sas'
     OUTSCALE_INC = 'outscale_inc'
     VSPHERE = 'vsphere'
+    PROFIT_BRICKS = 'profitbricks'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'

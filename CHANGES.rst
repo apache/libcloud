@@ -98,6 +98,10 @@ Compute
   Reported by Xavier Barbosa.
   [Tomaz Muraus, Xavier Barbosa]
 
+- Add new driver for ProfitBricks provider.
+  (LIBCLOUD-589, GITHUB-352)
+  [Matt Baldwin]
+
 Storage
 ~~~~~~~
 
