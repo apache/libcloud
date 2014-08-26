@@ -32,12 +32,13 @@ from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
 from libcloud.compute.base import KeyPair, UuidMixin
 from libcloud.compute.types import NodeState
-from libcloud.common.types import LibcloudError
+from libcloud.common.types import LibcloudError, MalformedResponseError
 
 __version__ = '1.0.0'
 
 API_HOST = 'api.profitbricks.com'
 API_VERSION = '/1.3/'
+
 
 class ProfitBricksResponse(XmlResponse):
     """
@@ -48,7 +49,7 @@ class ProfitBricksResponse(XmlResponse):
             body = ET.XML(self.body)
         except:
             raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body, driver=ProfitBricksNodeDriver)
+                body=self.body, driver=ProfitBricksNodeDriver)
 
         for e in body.findall('.//detail'):
             if ET.iselement(e[0].find('httpCode')):
@@ -64,8 +65,9 @@ class ProfitBricksResponse(XmlResponse):
             else:
                 message = None
 
-        return LibcloudError('HTTP Code: %s, Fault Code: %s, Message: %s' % 
-            (http_code, fault_code, message), driver=self)
+        return LibcloudError('HTTP Code: %s, Fault Code: %s, Message: %s' %
+                            (http_code, fault_code, message), driver=self)
+
 
 class ProfitBricksConnection(ConnectionUserAndKey):
     """
@@ -83,9 +85,9 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
-        soap_env = ET.Element('soapenv:Envelope',{
-            'xmlns:soapenv' : 'http://schemas.xmlsoap.org/soap/envelope/',
-            'xmlns:ws' : 'http://ws.api.profitbricks.com/'
+        soap_env = ET.Element('soapenv:Envelope', {
+            'xmlns:soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
+            'xmlns:ws': 'http://ws.api.profitbricks.com/'
             })
         soap_header = ET.SubElement(soap_env, 'soapenv:Header')
         soap_body = ET.SubElement(soap_env, 'soapenv:Body')
@@ -112,16 +114,17 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         action = self.api_prefix + action
 
         return super(ProfitBricksConnection, self).request(action=action,
-                                                              params=params,
-                                                              data=data,
-                                                              headers=headers,
-                                                              method=method,
-                                                              raw=raw)
+            params=params,
+            data=data,
+            headers=headers,
+            method=method,
+            raw=raw)
+
 
 class Datacenter(UuidMixin):
     """
-    Class which stores information about ProfitBricks datacenter 
-    instances. 
+    Class which stores information about ProfitBricks datacenter
+    instances.
 
     :param      id: The datacenter ID.
     :type       id: ``str``
@@ -133,7 +136,7 @@ class Datacenter(UuidMixin):
     :type datacenter_version: ``str``
 
 
-    Note: This class is ProfitBricks specific. 
+    Note: This class is ProfitBricks specific.
     """
     def __init__(self, id, name, datacenter_version, driver, extra=None):
         self.id = str(id)
@@ -148,12 +151,13 @@ class Datacenter(UuidMixin):
 
     def __repr__(self):
         return (('<Datacenter: id=%s, name=%s, datacenter_version=%s, driver=%s> ...>')
-                % (self.id, self.name, self.datacenter_version, self.driver.name))
+            % (self.id, self.name, self.datacenter_version, self.driver.name))
+
 
 class ProfitBricksNetworkInterface(object):
     """
     Class which stores information about ProfitBricks network
-    interfaces. 
+    interfaces.
 
     :param      id: The network interface ID.
     :type       id: ``str``
@@ -164,7 +168,7 @@ class ProfitBricksNetworkInterface(object):
     :param      state: The network interface name.
     :type       state: ``int``
 
-    Note: This class is ProfitBricks specific. 
+    Note: This class is ProfitBricks specific.
     """    
     def __init__(self, id, name, state, extra=None):
         self.id = id
@@ -176,9 +180,10 @@ class ProfitBricksNetworkInterface(object):
         return (('<ProfitBricksNetworkInterface: id=%s, name=%s')
                 % (self.id, self.name))
 
+
 class ProfitBricksAvailabilityZone(object):
     """
-    Extension class which stores information about a ProfitBricks 
+    Extension class which stores information about a ProfitBricks
     availability zone.
 
     Note: This class is ProfitBricks specific.
@@ -191,9 +196,10 @@ class ProfitBricksAvailabilityZone(object):
         return (('<ExProfitBricksAvailabilityZone: name=%s>')
                 % (self.name))
 
+
 class ProfitBricksNodeDriver(NodeDriver):
     """
-    Base ProfitBricks node driver. 
+    Base ProfitBricks node driver.
     """
     connectionCls = ProfitBricksConnection
     name = "ProfitBricks Node Provider"
@@ -218,7 +224,7 @@ class ProfitBricksNodeDriver(NodeDriver):
     }
 
     REGIONS = {
-        '1': {'region': 'us/las','country': 'USA'},
+        '1': {'region': 'us/las', 'country': 'USA'},
         '2': {'region': 'de/fra', 'country': 'DEU'},
         '3': {'region': 'de/fkb', 'country': 'DEU'},
     }
@@ -228,17 +234,17 @@ class ProfitBricksNodeDriver(NodeDriver):
         '2': {'name': 'ZONE_1'},
         '3': {'name': 'ZONE_2'},
     }
-    
+
     """
     ProfitBricks is unique in that they allow the user to define all aspects
-    of the instance size, i.e. disk size, core size, and memory size. 
+    of the instance size, i.e. disk size, core size, and memory size.
 
     These are instance types that match up with what other providers support.
 
     You can configure disk size, core size, and memory size using the ex_
-    parameters on the create_node method. 
+    parameters on the create_node method.
     """
-    
+
     PROFIT_BRICKS_GENERIC_SIZES = {
         '1': {
             'id': '1',
@@ -288,10 +294,10 @@ class ProfitBricksNodeDriver(NodeDriver):
             'ram': 57344,
             'disk': 50,
             'cores': 8
-        }    
+        }
     }
 
-    """ Core Functions    
+    """ Core Functions
     """
 
     def list_sizes(self):
@@ -310,7 +316,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
     def list_images(self):
         """
-        List all images. 
+        List all images.
 
         :rtype: ``list`` of :class:`NodeImage`
         """
@@ -318,12 +324,13 @@ class ProfitBricksNodeDriver(NodeDriver):
         action = 'getAllImages'
         body = {'action': action}
 
-        return self._to_images(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_images(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def list_locations(self):
         """
-        List all locations. 
-        """        
+        List all locations.
+        """
         locations = []
 
         for key, values in self.REGIONS.items():
@@ -336,25 +343,27 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         List all nodes.
 
-        :rtype: ``list`` of :class:`Node` 
-        """        
+        :rtype: ``list`` of :class:`Node`
+        """
         action = 'getAllServers'
         body = {'action': action}
 
-        return self._to_nodes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_nodes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def reboot_node(self, node=None):
         """
         Reboots the node.
 
-        :rtype: ``bool`` 
-        """                
+        :rtype: ``bool``
+        """   
         action = 'resetServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action, 
+            data=body, method='POST').object
 
         return True
 
@@ -371,7 +380,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param volume: If the volume already exists then pass this in.
         :type volume: :class:`StorageVolume`
 
-        :param datacenter: If you've already created the DC then pass 
+        :param datacenter: If you've already created the DC then pass
                            it in.
         :type datacenter: :class:`Datacenter`
 
@@ -392,8 +401,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``Node``
         :rtype:     :class:`Node`
-        """                
-
+        """
 
         if not datacenter:
             '''
@@ -438,7 +446,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         '''
         You can override the suggested sizes by passing in unique
         values for ram, cores, and disk allowing you to size it
-        for your specific use. 
+        for your specific use.
         '''
 
         if 'disk' in kwargs:
@@ -476,17 +484,17 @@ class ProfitBricksNodeDriver(NodeDriver):
             volume_name = name + "-volume"
 
             if datacenter:
-                volume = self.create_volume(size=disk, 
+                volume = self.create_volume(size=disk,
                     ex_datacenter=datacenter, ex_image=image,
                     ex_password=password, name=volume_name
                     )
             else:
-                volume = self.create_volume(size=disk, 
+                volume = self.create_volume(size=disk,
                     ex_datacenter=dc[0], ex_image=image,
                     ex_password=password, name=volume_name
                     )
 
-            storage_id = volume[0].id        
+            storage_id = volume[0].id
         else:
             if datacenter:
                 datacenter_id = datacenter.id
@@ -523,7 +531,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             waittime += interval
             time.sleep(interval)
 
-        return self._to_nodes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_nodes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def destroy_node(self, node, remove_attached_disks=None):
         """
@@ -536,13 +545,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type remove_attached_disks: : ``bool``
 
         :rtype:     : ``bool``
-        """     
+        """
         action = 'deleteServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action, 
+            data=body, method='POST').object
 
         return True
 
@@ -556,13 +566,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         action = 'getAllStorages'
         body = {'action': action}
 
-        return self._to_volumes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_volumes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def attach_volume(self, node, volume, device=None, bus_type=None):
         """
         Attaches a volume.
 
-        :param volume: The volume you're attaching..
+        :param volume: The volume you're attaching.
         :type volume: :class:`StorageVolume`
 
         :param node: The node to which you're attaching the volume.
@@ -576,7 +587,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
-        """     
+        """
         action = 'connectStorageToServer'
         body = {'action': action,
                 'request': 'true',
@@ -586,16 +597,17 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'deviceNumber': str(device)
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
-    def create_volume(self, size, name=None, 
+    def create_volume(self, size, name=None,
         ex_datacenter=None, ex_image=None, ex_password=None):
         """
         Creates a volume.
 
-        :param ex_datacenter: The datacenter you're placing 
+        :param ex_datacenter: The datacenter you're placing
                               the storage in. (req)
         :type ex_datacenter: :class:`Datacenter`
 
@@ -607,7 +619,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
-        """  
+        """
         action = 'createStorage'
         body = {'action': action,
                 'request': 'true',
@@ -622,24 +634,26 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_password:
             body['profitBricksImagePassword'] = ex_password
 
-        return self._to_volumes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_volumes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def detach_volume(self, node, volume):
         """
         Detaches a volume.
 
-        :param volume: The volume you're attaching..
+        :param volume: The volume you're attaching.
         :type volume: :class:`StorageVolume`
 
         :rtype:     :``bool``
-        """  
+        """
         action = 'disconnectStorageFromServer'
         body = {'action': action,
                 'storageId': volume.id,
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -647,16 +661,17 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Destroys a volume.
 
-        :param volume: The volume you're attaching..
+        :param volume: The volume you're attaching.
         :type volume: :class:`StorageVolume`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'deleteStorage'
         body = {'action': action,
                 'storageId': volume.id}
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -674,7 +689,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type size: ``int``
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'updateStorage'
         body = {'action': action,
                 'request': 'true',
@@ -686,8 +701,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         if size:
             body['size'] = str(size)
 
-        self.connection.request(action=action,data=body,method='POST').object
-        
+        self.connection.request(action=action,
+            data=body, method='POST').object
+
         return True
 
     def ex_describe_volume(self, volume):
@@ -699,13 +715,14 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
-        """  
+        """
         action = 'getStorage'
         body = {'action': action, 
                 'storageId': volume.id
                 }
 
-        return self._to_volumes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_volumes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     """ Extension Functions
     """
@@ -722,13 +739,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type node: :class:`Node`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'stopServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -746,7 +764,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -754,6 +773,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Returns a list of availability zones.
         """
+
         availability_zones = []
 
         for key, values in self.AVAILABILITY_ZONE.items():
@@ -775,15 +795,16 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``Node``
         :rtype:     :class:`Node`
-        """  
+        """
         action = 'getServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
-        return self._to_nodes(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_nodes(self.connection.request(action=action,
+            data=body, method='POST').object)
 
-    def ex_update_node(self, node, name=None, cores=None, 
+    def ex_update_node(self, node, name=None, cores=None,
         ram=None, availability_zone=None):
         """
         Updates a node.
@@ -798,7 +819,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type availability_zone: :class:`ProfitBricksAvailabilityZone`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'updateServer'
 
         body = {'action': action,
@@ -818,7 +839,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         if availability_zone:
             body['availabilityZone'] = availability_zone.name
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -830,7 +852,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         Creates a datacenter.
 
         ProfitBricks has a concept of datacenters.
-        These represent buckets into which you 
+        These represent buckets into which you
         can place various compute resources.
 
         :param name: The DC name.
@@ -841,19 +863,20 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``Datacenter``
         :rtype:     :class:`Datacenter`
-        """  
+        """
         action = 'createDataCenter'
 
         body = {'action': action,
                 'request': 'true',
                 'dataCenterName': name,
                 'location': location.lower()
-                }        
+                }
 
         if not name:
             raise ValueError("You must provide a datacenter name.")
 
-        return self._to_datacenters(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_datacenters(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def ex_destroy_datacenter(self, datacenter):
         """
@@ -863,13 +886,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type datacenter: :class:`Datacenter`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'deleteDataCenter'
         body = {'action': action,
                 'dataCenterId': datacenter.id
                 }
 
-        request = self.connection.request(action=action,data=body,method='POST').object
+        request = self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -882,14 +906,15 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``Datacenter``
         :rtype:     :class:`Datacenter`
-        """  
+        """
 
         action = 'getDataCenter'
         body = {'action': action,
                 'dataCenterId': datacenter.id
                 }
-        
-        return self._to_datacenters(self.connection.request(action=action,data=body,method='POST').object)
+
+        return self._to_datacenters(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def ex_list_datacenters(self):
         """
@@ -897,11 +922,12 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    ``list`` of class ``Datacenter``
         :rtype:     :class:`Datacenter`
-        """  
+        """
         action = 'getAllDataCenters'
         body = {'action': action}
 
-        return self._to_datacenters(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_datacenters(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def ex_update_datacenter(self, datacenter, name):
         """
@@ -914,7 +940,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type name: : ``str``
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'updateDataCenter'
         body = {'action': action,
                 'request': 'true',
@@ -922,7 +948,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterName': name
                 }
 
-        request = self.connection.request(action=action,data=body,method='POST').object
+        request = self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -936,14 +963,15 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type datacenter: :class:`Datacenter`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'clearDataCenter'
         body = {'action': action,
                 'dataCenterId': datacenter.id
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
-        
+        self.connection.request(action=action,
+            data=body, method='POST').object
+
         return True
 
     ''' Network Interface Extension Functions
@@ -955,11 +983,12 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    ``list`` of class ``ProfitBricksNetworkInterface``
         :rtype:     :class:`ProfitBricksNetworkInterface`
-        """  
+        """
         action = 'getAllNic'
         body = {'action': action}
 
-        return self._to_interfaces(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_interfaces(self.connection.request(action=action,
+            data=body, method='POST').object)
 
     def ex_describe_network_interface(self, network_interface):
         """
@@ -970,15 +999,16 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``ProfitBricksNetworkInterface``
         :rtype:     :class:`ProfitBricksNetworkInterface`
-        """  
+        """
         action = 'getNic'
         body = {'action': action,
                 'nicId': network_interface.id
                 }
 
-        return self._to_interfaces(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_interfaces(self.connection.request(action=action,
+            data=body, method='POST').object)
 
-    def ex_create_network_interface(self, node, 
+    def ex_create_network_interface(self, node,
         lan_id=None, ip=None, nic_name=None, dhcp_active=True):
         """
         Creates a network interface.
@@ -997,7 +1027,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :return:    Instance of class ``ProfitBricksNetworkInterface``
         :rtype:     :class:`ProfitBricksNetworkInterface`
-        """  
+        """
         action = 'createNic'
         body = {'action': action,
                 'request': 'true',
@@ -1016,9 +1046,10 @@ class ProfitBricksNodeDriver(NodeDriver):
         if nic_name:
             body['nicName'] = nic_name
 
-        return self._to_interfaces(self.connection.request(action=action,data=body,method='POST').object)
+        return self._to_interfaces(self.connection.request(action=action,
+            data=body, method='POST').object)
 
-    def ex_update_network_interface(self, network_interface, name=None, 
+    def ex_update_network_interface(self, network_interface, name=None,
         lan_id=None, ip=None, dhcp_active=None):
         """
         Updates a network interface.
@@ -1036,7 +1067,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type dhcp_active: ``bool``
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'updateNic'
         body = {'action': action,
                 'request': 'true',
@@ -1055,7 +1086,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         if dhcp_active is not None:
             body['dhcpActive'] = str(dhcp_active).lower()
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -1067,17 +1099,19 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type network_interface: :class:`ProfitBricksNetworkInterface`
 
         :rtype:     : ``bool``
-        """  
+        """
 
         action = 'deleteNic'
         body = {'action': action,
                 'nicId': network_interface.id}
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
-    def ex_set_inet_access(self, datacenter, network_interface, internet_access=True):
+    def ex_set_inet_access(self, datacenter, 
+        network_interface, internet_access=True):
         # Results in strange behavior within the provider, so for now
         # this is commented out.
 
@@ -1089,7 +1123,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'internetAccess': str(internet_access).lower()
                 }
 
-        self.connection.request(action=action,data=body,method='POST').object
+        self.connection.request(action=action,
+            data=body, method='POST').object
 
         return True
 
@@ -1472,7 +1507,6 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Convert the PROFIT_BRICKS_GENERIC_SIZES into NodeSize
         """
-        
         return NodeSize(
             id=data["id"],
             name=data["name"],
@@ -1482,5 +1516,5 @@ class ProfitBricksNodeDriver(NodeDriver):
             price=None,
             driver=self.connection.driver,
             extra={
-                'cores' : data["cores"]
+                'cores': data["cores"]
             })
