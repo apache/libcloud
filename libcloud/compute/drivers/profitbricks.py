@@ -14,23 +14,26 @@
 # limitations under the License.
 """ProfitBricks Compute driver
 """
-import httplib
+# import httplib
 import base64
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
-import json
+# import xml.etree.ElementTree as ET
+
+# import xml.dom.minidom
+# import json
 import copy
 import time
 
-from xml.etree.ElementTree import tostring
+from xml.etree import ElementTree as ET
+# from xml.etree.ElementTree import tostring
+from xml.etree.ElementTree import _ElementInterface
 
 from libcloud.utils.networking import is_private_subnet
-from libcloud.utils.py3 import urlparse, b
+from libcloud.utils.py3 import b
 from libcloud.compute.providers import Provider
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, Response
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.base import KeyPair, UuidMixin
+from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
@@ -1354,23 +1357,23 @@ class ProfitBricksNodeDriver(NodeDriver):
             private_ips=private_ips,
             driver=self.connection.driver,
             extra={
-            'datacenter_id': datacenter_id,
-            'datacenter_version': datacenter_version,
-            'provisioning_state': self.PROVISIONING_STATE.get(
-                provisioning_state, NodeState.UNKNOWN),
-            'creation_time': creation_time,
-            'last_modification_time': last_modification_time,
-            'os_type': os_type,
-            'ram': ram,
-            'cores': cores,
-            'availability_zone': availability_zone,
-            'internet_access': internet_access,
-            'cpu_hotpluggable': cpu_hotpluggable,
-            'memory_hotpluggable': memory_hotpluggable,
-            'nic_hotpluggable': nic_hotpluggable,
-            'nic_hot_unpluggable': nic_hot_unpluggable,
-            'disc_virtio_hotplug': disc_virtio_hotplug,
-            'disc_virtio_hotunplug': disc_virtio_hotunplug})
+                'datacenter_id': datacenter_id,
+                'datacenter_version': datacenter_version,
+                'provisioning_state': self.PROVISIONING_STATE.get(
+                    provisioning_state, NodeState.UNKNOWN),
+                'creation_time': creation_time,
+                'last_modification_time': last_modification_time,
+                'os_type': os_type,
+                'ram': ram,
+                'cores': cores,
+                'availability_zone': availability_zone,
+                'internet_access': internet_access,
+                'cpu_hotpluggable': cpu_hotpluggable,
+                'memory_hotpluggable': memory_hotpluggable,
+                'nic_hotpluggable': nic_hotpluggable,
+                'nic_hot_unpluggable': nic_hot_unpluggable,
+                'disc_virtio_hotplug': disc_virtio_hotplug,
+                'disc_virtio_hotunplug': disc_virtio_hotunplug})
 
     def _to_volumes(self, object):
         return [self._to_volume(
@@ -1428,14 +1431,15 @@ class ProfitBricksNodeDriver(NodeDriver):
             name=storage_name,
             size=int(size),
             driver=self.connection.driver,
-            extra={'datacenter_id': datacenter_id,
-                   'creation_time': creation_time,
-                   'last_modification_time': last_modification_time,
-                   'provisioning_state': self.PROVISIONING_STATE.get(
-                        provisioning_state, NodeState.UNKNOWN),
-                   'server_id': server_id,
-                   'image_id': image_id,
-                   'image_name': image_name})
+            extra={
+                'datacenter_id': datacenter_id,
+                'creation_time': creation_time,
+                'last_modification_time': last_modification_time,
+                'provisioning_state': self.PROVISIONING_STATE.get(
+                    provisioning_state, NodeState.UNKNOWN),
+                'server_id': server_id,
+                'image_id': image_id,
+                'image_name': image_name})
 
     def _to_interfaces(self, object):
         return [self._to_interface(
