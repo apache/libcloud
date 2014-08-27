@@ -25,7 +25,7 @@ import time
 
 from xml.etree import ElementTree as ET
 # from xml.etree.ElementTree import tostring
-from xml.etree.ElementTree import _ElementInterface
+# from xml.etree.ElementTree import _ElementInterface
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.py3 import b
