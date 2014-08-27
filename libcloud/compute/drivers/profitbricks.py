@@ -86,11 +86,13 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
+        print("Encoding DATA")
         soap_env = ET.Element('soapenv:Envelope', {
             'xmlns:soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
             'xmlns:ws': 'http://ws.api.profitbricks.com/'
             })
-        soap_header = ET.SubElement(soap_env, 'soapenv:Header')
+        # soap_header = ET.SubElement(soap_env, 'soapenv:Header')
+        ET.SubElement(soap_env, 'soapenv:Header')
         soap_body = ET.SubElement(soap_env, 'soapenv:Body')
         soap_req_body = ET.SubElement(soap_body, 'ws:%s' % (data['action']))
 
@@ -903,8 +905,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterId': datacenter.id
                 }
 
-        request = self.connection.request(action=action,
-                                          data=body, method='POST').object
+        self.connection.request(action=action,
+                                data=body, method='POST').object
 
         return True
 
@@ -1483,20 +1485,21 @@ class ProfitBricksNodeDriver(NodeDriver):
                 ip = elements[0].find('ips').text
                 ips.append(ip)
 
-        return ProfitBricksNetworkInterface(id=nic_id,
-                                            name=nic_name,
-                                            state=self.PROVISIONING_STATE.get(
-                                                provisioning_state, NodeState.UNKNOWN),
-                                            extra={
-                                                'datacenter_id': datacenter_id,
-                                                'datacenter_version': datacenter_version,
-                                                'server_id': server_id,
-                                                'lan_id': lan_id,
-                                                'internet_access': internet_access,
-                                                'mac_address': mac_address,
-                                                'dhcp_active': dhcp_active,
-                                                'gateway_ip': gateway_ip,
-                                                'ips': ips})
+        return ProfitBricksNetworkInterface(
+            id=nic_id,
+            name=nic_name,
+            state=self.PROVISIONING_STATE.get(
+                provisioning_state, NodeState.UNKNOWN),
+            extra={
+                'datacenter_id': datacenter_id,
+                'datacenter_version': datacenter_version,
+                'server_id': server_id,
+                'lan_id': lan_id,
+                'internet_access': internet_access,
+                'mac_address': mac_address,
+                'dhcp_active': dhcp_active,
+                'gateway_ip': gateway_ip,
+                'ips': ips})
 
     def _to_location(self, data):
 
