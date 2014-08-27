@@ -19,7 +19,13 @@ import base64
 import copy
 import time
 
-from xml.etree import ElementTree as ET
+# from xml.etree import ElementTree as ET
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.py3 import b
 from libcloud.compute.providers import Provider
