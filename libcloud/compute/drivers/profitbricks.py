@@ -14,19 +14,12 @@
 # limitations under the License.
 """ProfitBricks Compute driver
 """
-# import httplib
 import base64
-# import xml.etree.ElementTree as ET
 
-# import xml.dom.minidom
-# import json
 import copy
 import time
 
 from xml.etree import ElementTree as ET
-# from xml.etree.ElementTree import tostring
-# from xml.etree.ElementTree import _ElementInterface
-
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.py3 import b
 from libcloud.compute.providers import Provider
@@ -346,7 +339,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             location = self._to_location(copy.deepcopy(values))
             locations.append(location)
 
-        return sorted(locations)
+        return locations
 
     def list_nodes(self):
         """
@@ -802,7 +795,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             )
             availability_zones.append(availability_zone)
 
-        return sorted(availability_zones)
+        return availability_zones
 
     def ex_describe_node(self, node):
         """

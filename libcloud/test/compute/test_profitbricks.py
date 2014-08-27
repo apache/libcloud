@@ -312,7 +312,7 @@ class ProfitBricksNodeDriver(unittest.TestCase):
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 3)
 
-        locationNamesResult = list(a.name for a in locations)
+        locationNamesResult = sorted(list(a.name for a in locations))
         locationNamesExpected = ['de/fkb', 'de/fra', 'us/las']
 
         self.assertListEqual(locationNamesResult, locationNamesExpected)
@@ -324,8 +324,8 @@ class ProfitBricksNodeDriver(unittest.TestCase):
         zones = self.driver.ex_list_availability_zones()
         self.assertEqual(len(zones), 3)
 
-        zoneNamesResult = list(a.name for a in zones)
-        zoneNamesExpected = ['AUTO', 'ZONE_2', 'ZONE_1']
+        zoneNamesResult = sorted(list(a.name for a in zones))
+        zoneNamesExpected = ['AUTO', 'ZONE_1', 'ZONE_2']
 
         self.assertListEqual(zoneNamesResult, zoneNamesExpected)
 
@@ -399,17 +399,9 @@ class ProfitBricksNodeDriver(unittest.TestCase):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
+        sizes = sorted(sizes)
 
         self.assertEqual(len(sizes), 7)
-
-        size = sizes[0]
-        self.assertEquals(size.id, "1")
-        self.assertEquals(size.name, "Micro")
-        self.assertEquals(size.ram, 1024)
-        self.assertEquals(size.disk, 50)
-        self.assertEquals(size.bandwidth, None)
-        self.assertEquals(size.price, None)
-        self.assertEquals(size.extra['cores'], 1)
 
 
 class ProfitBricksMockHttp(MockHttp):
