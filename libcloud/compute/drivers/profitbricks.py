@@ -114,11 +114,11 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         action = self.api_prefix + action
 
         return super(ProfitBricksConnection, self).request(action=action,
-                     params=params,
-                     data=data,
-                     headers=headers,
-                     method=method,
-                     raw=raw)
+                                                           params=params,
+                                                           data=data,
+                                                           headers=headers,
+                                                           method=method,
+                                                           raw=raw)
 
 
 class Datacenter(UuidMixin):
@@ -1214,17 +1214,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         return NodeImage(id=image_id,
                         name=image_name,
                         driver=self.connection.driver,
-                        extra={
-                                'image_size': image_size,
-                                'image_type': image_type,
-                                'cpu_hotpluggable': cpu_hotpluggable,
-                                'memory_hotpluggable': memory_hotpluggable,
-                                'os_type': os_type,
-                                'public': public,
-                                'location': image_region,
-                                'writeable': writeable
-                            }
-                        )
+                        extra={'image_size': image_size,
+                               'image_type': image_type,
+                               'cpu_hotpluggable': cpu_hotpluggable,
+                               'memory_hotpluggable': memory_hotpluggable,
+                               'os_type': os_type,
+                               'public': public,
+                               'location': image_region,
+                               'writeable': writeable})
 
     def _to_nodes(self, object):
         return [self._to_node(n) for n in object.findall('.//return')]
@@ -1364,7 +1361,6 @@ class ProfitBricksNodeDriver(NodeDriver):
         elements = list(volume.iter())
 
         datacenter_id = elements[0].find('dataCenterId').text
-        datacenter_version = elements[0].find('dataCenterVersion').text
         storage_id = elements[0].find('storageId').text
 
         if ET.iselement(elements[0].find('storageName')):
@@ -1409,16 +1405,15 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return StorageVolume(id=storage_id,
                              name=storage_name,
-                             size=int(size), 
+                             size=int(size),
                              driver=self.connection.driver,
-                             extra={
-                                'datacenter_id': datacenter_id,
-                                'creation_time': creation_time,
-                                'last_modification_time': last_modification_time,
-                                'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
-                                'server_id': server_id,
-                                'image_id': image_id,
-                                'image_name': image_name})
+                             extra={'datacenter_id': datacenter_id,
+                                    'creation_time': creation_time,
+                                    'last_modification_time': last_modification_time,
+                                    'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
+                                    'server_id': server_id,
+                                    'image_id': image_id,
+                                    'image_name': image_name})
 
     def _to_interfaces(self, object):
         return [self._to_interface(interface) for interface in object.findall('.//return')]
