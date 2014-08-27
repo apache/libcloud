@@ -48,8 +48,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(nodes), 3)
 
         node = nodes[0]
-        self.assertEquals(node.id,"c8e57d7b-e731-46ad-a913-1828c0562246")
-        self.assertEquals(node.name,"server001")
+        self.assertEquals(node.id, "c8e57d7b-e731-46ad-a913-1828c0562246")
+        self.assertEquals(node.name, "server001")
         self.assertEquals(node.state, 0)
         self.assertEquals(node.public_ips, ['162.254.25.197'])
         self.assertEquals(node.private_ips, ['10.10.108.12', '10.13.198.11'])
@@ -62,54 +62,56 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(node.extra['availability_zone'], "ZONE_1")
 
     def test_ex_describe_node(self):
-        image = type('NodeImage', (object,), 
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9", 
-                name="Debian-7-server-2014-07-01"))
+        image = type('NodeImage', (object,),
+                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9",
+                          name="Debian-7-server-2014-07-01"))
         size = type('NodeSize', (object,),
-            dict(id="2",
-                name="Small Instance",
-                ram=2048,
-                disk=50,
-                extra={'cores': 1}))
+                    dict(id="2",
+                         name="Small Instance",
+                         ram=2048,
+                         disk=50,
+                         extra={'cores': 1}))
 
-        node = self.driver.create_node(name="SPC-Server", image=image, size=size)
+        node = self.driver.create_node(name="SPC-Server",
+                                       image=image,
+                                       size=size)
 
         self.assertEquals(node[0].id,"7b18b85f-cc93-4c2d-abcc-5ce732d35750")
 
     def test_reboot_node(self):
-        node = type('Node', (object,), 
-            dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
+        node = type('Node', (object,),
+                    dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
         reboot = self.driver.reboot_node(node=node)
 
         self.assertTrue(reboot)
 
     def test_ex_stop_node(self):
-        node = type('Node', (object,), 
-            dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
+        node = type('Node', (object,),
+                    dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
         stop = self.driver.ex_stop_node(node=node)
 
         self.assertTrue(stop)
 
     def test_ex_start_node(self):
-        node = type('Node', (object,), 
-            dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
+        node = type('Node', (object,),
+                    dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
         start = self.driver.ex_start_node(node=node)
 
         self.assertTrue(start)
 
     def test_destroy_node(self):
-        node = type('Node', (object,), 
-            dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
+        node = type('Node', (object,),
+                    dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
         destroy = self.driver.destroy_node(node=node)
 
         self.assertTrue(destroy)
 
     def test_ex_update_node(self):
-        node = type('Node', (object,), 
-            dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
+        node = type('Node', (object,),
+                    dict(id="c8e57d7b-e731-46ad-a913-1828c0562246"))
 
         zone = type('ExProfitBricksAvailabilityZone', (object,),
-            dict(name="ZONE_2"))
+                    dict(name="ZONE_2"))
 
         update = self.driver.ex_update_node(node=node, ram=2048, cores=2, name="server002", availability_zone=zone)
 
@@ -123,8 +125,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(volumes), 4)
 
         volume = volumes[0]
-        self.assertEquals(volume.id,"453582cf-8d54-4ec8-bc0b-f9962f7fd232")
-        self.assertEquals(volume.name,"storage001")
+        self.assertEquals(volume.id, "453582cf-8d54-4ec8-bc0b-f9962f7fd232")
+        self.assertEquals(volume.name, "storage001")
         self.assertEquals(volume.size, 50)
         self.assertEquals(volume.extra['server_id'], "ebee7d83-912b-42f1-9b62-b953351a7e29")
         self.assertEquals(volume.extra['provisioning_state'], 0)
@@ -135,83 +137,90 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(volume.extra['datacenter_id'], "06eac419-c2b3-4761-aeb9-10efdd2cf292")
 
     def test_create_volume(self):
-        datacenter = type('Datacenter', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        datacenter = type('Datacenter', (object,),
+                          dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         image = type('NodeImage', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
         
         create = self.driver.create_volume(name="StackPointCloudStorage001",
-            size=50,ex_datacenter=datacenter,ex_image=image)
+                                           size=50,
+                                           ex_datacenter=datacenter,
+                                           ex_image=image)
 
         self.assertTrue(create)
 
     def test_attach_volume_general(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
-        attach = self.driver.attach_volume(node=node, volume=volume, device=None, bus_type=None)
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
+        attach = self.driver.attach_volume(node=node,
+                                           volume=volume,
+                                           device=None, bus_type=None)
 
         self.assertTrue(attach)
 
     def test_attach_volume_device_defined(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
         attach = self.driver.attach_volume(node=node, volume=volume, device=1, bus_type=None)
 
         self.assertTrue(attach)
 
     def test_attach_volume_bus_type_defined(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
-        attach = self.driver.attach_volume(node=node, volume=volume, device=None, bus_type="IDE")
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
+        attach = self.driver.attach_volume(node=node,
+                                           volume=volume,
+                                           device=None,
+                                           bus_type="IDE")
 
         self.assertTrue(attach)
 
     def test_attach_volume_options_defined(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
         attach = self.driver.attach_volume(node=node, volume=volume, device=1, bus_type="IDE")
 
         self.assertTrue(attach)
 
     def test_detach_volume(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
         
         attach = self.driver.detach_volume(node=node, volume=volume)
 
         self.assertTrue(attach)
 
     def test_destroy_volume(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         destroy = self.driver.destroy_volume(volume=volume)
 
         self.assertTrue(destroy)
 
     def test_update_volume(self):
-        volume = type('StorageVolume', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        volume = type('StorageVolume', (object,),
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         destroy = self.driver.ex_update_volume(volume=volume)
 
@@ -219,7 +228,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
     def test_ex_describe_volume(self):
         volume = type('StorageVolume', (object,),
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
 
         describe = self.driver.ex_describe_volume(volume=volume)
 
@@ -250,7 +259,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
     ''' Datacenter Function Tests
     '''
     def test_ex_create_datacenter(self):
-        datacenter = self.driver.ex_create_datacenter(name="StackPointCloud",location="us/la")
+        datacenter = self.driver.ex_create_datacenter(name="StackPointCloud",
+                                                      location="us/la")
 
         self.assertEqual(datacenter[0].id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
         self.assertEqual(datacenter[0].extra['location'], 'us/las')
@@ -258,14 +268,14 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
     def test_ex_destroy_datacenter(self):
         datacenter = type('Datacenter', (object,),
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+                          dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
         destroy = self.driver.ex_destroy_datacenter(datacenter=datacenter)
 
         self.assertTrue(destroy)
 
     def test_ex_describe_datacenter(self):
         datacenter = type('Datacenter', (object,),
-            dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
+                          dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
         describe = self.driver.ex_describe_datacenter(datacenter=datacenter)
 
         self.assertEqual(describe[0].id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
@@ -275,8 +285,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(describe[0].extra['provisioning_state'], 'AVAILABLE')
 
     def test_ex_clear_datacenter(self):
-        datacenter = type('Datacenter', (object,), 
-            dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+        datacenter = type('Datacenter', (object,),
+                          dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
         clear = self.driver.ex_clear_datacenter(datacenter=datacenter)
 
         self.assertTrue(clear)
@@ -287,16 +297,16 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(datacenters), 2)
 
         dc1 = datacenters[0]
-        self.assertEquals(dc1.id,"a3e6f83a-8982-4d6a-aebc-60baf5755ede")
-        self.assertEquals(dc1.name,"StackPointCloud")
-        self.assertEquals(dc1.datacenter_version,"1")
+        self.assertEquals(dc1.id, "a3e6f83a-8982-4d6a-aebc-60baf5755ede")
+        self.assertEquals(dc1.name, "StackPointCloud")
+        self.assertEquals(dc1.datacenter_version, "1")
 
     def test_ex_update_datacenter(self):
         datacenter = type('Datacenter', (object,),
-            dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
+                          dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
 
         update = self.driver.ex_update_datacenter(datacenter=datacenter,
-            name="StackPointCloud")
+                                                  name="StackPointCloud")
 
         self.assertTrue(update)
 
@@ -320,12 +330,12 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(zones), 3)
 
         zoneNamesResult = list(a.name for a in zones)
-        zoneNamesExpected = ['AUTO', 'ZONE_1','ZONE_2']
+        zoneNamesExpected = ['AUTO', 'ZONE_1', 'ZONE_2']
 
         self.assertListEqual(zoneNamesResult, zoneNamesExpected)
 
-        matchedLocation = next(zone for zone in zones
-                               if zone.name == 'ZONE_1')
+        # matchedLocation = next(zone for zone in zones
+                               # if zone.name == 'ZONE_1')
 
     ''' Interface Tests
     '''
@@ -336,7 +346,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(interfaces), 3)
 
         interface = interfaces[0]
-        self.assertEquals(interface.id,"6b38a4f3-b851-4614-9e3a-5ddff4727727")
+        self.assertEquals(interface.id, "6b38a4f3-b851-4614-9e3a-5ddff4727727")
         self.assertEquals(interface.name, "StackPointCloud")
         self.assertEquals(interface.state, 0)
         self.assertEquals(interface.extra['server_id'], "234f0cf9-1efc-4ade-b829-036456584116")
@@ -344,21 +354,22 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(interface.extra['internet_access'], 'false')
         self.assertEquals(interface.extra['mac_address'], "02:01:40:47:90:04")
         self.assertEquals(interface.extra['dhcp_active'], "true")
-        self.assertEquals(interface.extra['gateway_ip'], None)                 
+        self.assertEquals(interface.extra['gateway_ip'], None)
         self.assertEquals(interface.extra['ips'], ['10.14.96.11', '10.14.96.11', '10.14.96.11'])
 
     def test_ex_create_network_interface(self):
         node = type('Node', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
         create = self.driver.ex_create_network_interface(node=node)
 
         self.assertTrue(create)
 
     def test_ex_destroy_network_interface(self):
         network_interface = type('ProfitBricksNetworkInterface', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+                                 dict(
+                                 id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
         destroy = self.driver.ex_destroy_network_interface(
             network_interface=network_interface)
 
@@ -366,8 +377,9 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
     def test_ex_update_network_interface(self):
         network_interface = type('ProfitBricksNetworkInterface', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+                                 dict(
+                                 id="cd59b162-0289-11e4-9f63-52540066fee9"))
+
         create = self.driver.ex_update_network_interface(
             network_interface=network_interface)
 
@@ -375,11 +387,12 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
     def test_ex_describe_network_interface(self):
         network_interface = type('ProfitBricksNetworkInterface', (object,),
-            dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
+                                 dict(
+                                 id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
         describe = self.driver.ex_describe_network_interface(network_interface=network_interface)[0]
 
-        self.assertEquals(describe.id,"f1c7a244-2fa6-44ee-8fb6-871f337683a3")
+        self.assertEquals(describe.id, "f1c7a244-2fa6-44ee-8fb6-871f337683a3")
         self.assertEquals(describe.name, None)
         self.assertEquals(describe.state, 0)
         self.assertEquals(describe.extra['datacenter_id'], "a3a2e730-0dc3-47e6-bac6-4c056d5e2aee")
@@ -398,8 +411,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(sizes), 7)
 
         size = sizes[0]
-        self.assertEquals(size.id,"1")
-        self.assertEquals(size.name,"Micro")
+        self.assertEquals(size.id, "1")
+        self.assertEquals(size.name, "Micro")
         self.assertEquals(size.ram, 1024)
         self.assertEquals(size.disk, 50)
         self.assertEquals(size.bandwidth, None)
@@ -407,6 +420,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(size.extra['cores'], 1)
 
 class ProfitBricksMockHttp(MockHttp):
+
 
     fixtures = ComputeFileFixtures('profitbricks')
 

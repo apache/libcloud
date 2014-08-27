@@ -1427,7 +1427,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         elements = list(interface.iter())
 
         nic_id = elements[0].find('nicId').text
-        
+
         if ET.iselement(elements[0].find('nicName')):
             nic_name = elements[0].find('nicName').text
         else:
@@ -1484,7 +1484,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             for ip in elements[0].findall('.//ips'):
                 ip = elements[0].find('ips').text
                 ips.append(ip)
-                
+
         return ProfitBricksNetworkInterface(id=nic_id,
                                             name=nic_name,
                                             state=self.PROVISIONING_STATE.get(
