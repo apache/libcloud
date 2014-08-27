@@ -49,7 +49,8 @@ class ProfitBricksResponse(XmlResponse):
             body = ET.XML(self.body)
         except:
             raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body, driver=ProfitBricksNodeDriver)
+                                         body=self.body,
+                                         driver=ProfitBricksNodeDriver)
 
         for e in body.findall('.//detail'):
             if ET.iselement(e[0].find('httpCode')):
@@ -151,7 +152,7 @@ class Datacenter(UuidMixin):
 
     def __repr__(self):
         return (('<Datacenter: id=%s, name=%s, datacenter_version=%s, driver=%s> ...>')
-            % (self.id, self.name, self.datacenter_version, self.driver.name))
+                % (self.id, self.name, self.datacenter_version, self.driver.name))
 
 
 class ProfitBricksNetworkInterface(object):
@@ -409,7 +410,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             '''
 
             datacenter_name = name + "-DC"
-            dc = self.ex_create_datacenter(name=datacenter_name, 
+            dc = self.ex_create_datacenter(name=datacenter_name,
                                            location="us/las")
             datacenter_id = dc[0].id
 
@@ -492,9 +493,10 @@ class ProfitBricksNodeDriver(NodeDriver):
                                             name=volume_name)
             else:
                 volume = self.create_volume(size=disk,
-                    ex_datacenter=dc[0], ex_image=image,
-                    ex_password=password, name=volume_name
-                    )
+                                            ex_datacenter=dc[0],
+                                            ex_image=image,
+                                            ex_password=password,
+                                            name=volume_name)
 
             storage_id = volume[0].id
         else:
@@ -602,7 +604,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -639,7 +641,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             body['profitBricksImagePassword'] = ex_password
 
         return self._to_volumes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                        data=body,
+                                                        method='POST').object)
 
     def detach_volume(self, node, volume):
         """
@@ -657,7 +660,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -881,9 +884,10 @@ class ProfitBricksNodeDriver(NodeDriver):
         if not name:
             raise ValueError("You must provide a datacenter name.")
 
-        return self._to_datacenters(self.connection.request(action=action,
-                                                            data=body,
-                                                            method='POST').object)
+        return self._to_datacenters(
+            self.connection.request(action=action,
+                                    data=body,
+                                    method='POST').object)
 
     def ex_destroy_datacenter(self, datacenter):
         """
@@ -958,9 +962,9 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterName': name
                 }
 
-        request = self.connection.request(action=action,
-                                          data=body,
-                                          method='POST').object
+        self.connection.request(action=action,
+                                data=body,
+                                method='POST').object
 
         return True
 
@@ -1179,9 +1183,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                           name=datacenter_name,
                           datacenter_version=datacenter_version,
                           driver=self.connection.driver,
-                          extra={
-                            'provisioning_state': provisioning_state,
-                            'location': location})
+                          extra={'provisioning_state': provisioning_state,
+                                 'location': location})
 
     def _to_images(self, object):
         return [self._to_image(image) for image in object.findall('.//return')]
@@ -1212,16 +1215,16 @@ class ProfitBricksNodeDriver(NodeDriver):
             image_region = None
 
         return NodeImage(id=image_id,
-                        name=image_name,
-                        driver=self.connection.driver,
-                        extra={'image_size': image_size,
-                               'image_type': image_type,
-                               'cpu_hotpluggable': cpu_hotpluggable,
-                               'memory_hotpluggable': memory_hotpluggable,
-                               'os_type': os_type,
-                               'public': public,
-                               'location': image_region,
-                               'writeable': writeable})
+                         name=image_name,
+                         driver=self.connection.driver,
+                         extra={'image_size': image_size,
+                                'image_type': image_type,
+                                'cpu_hotpluggable': cpu_hotpluggable,
+                                'memory_hotpluggable': memory_hotpluggable,
+                                'os_type': os_type,
+                                'public': public,
+                                'location': image_region,
+                                'writeable': writeable})
 
     def _to_nodes(self, object):
         return [self._to_node(n) for n in object.findall('.//return')]
