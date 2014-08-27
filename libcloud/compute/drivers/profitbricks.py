@@ -49,7 +49,7 @@ class ProfitBricksResponse(XmlResponse):
             body = ET.XML(self.body)
         except:
             raise MalformedResponseError("Failed to parse XML",
-                body=self.body, driver=ProfitBricksNodeDriver)
+                                         body=self.body, driver=ProfitBricksNodeDriver)
 
         for e in body.findall('.//detail'):
             if ET.iselement(e[0].find('httpCode')):
@@ -66,7 +66,7 @@ class ProfitBricksResponse(XmlResponse):
                 message = None
 
         return LibcloudError('HTTP Code: %s, Fault Code: %s, Message: %s' %
-                            (http_code, fault_code, message), driver=self)
+                             (http_code, fault_code, message), driver=self)
 
 
 class ProfitBricksConnection(ConnectionUserAndKey):
@@ -114,11 +114,11 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         action = self.api_prefix + action
 
         return super(ProfitBricksConnection, self).request(action=action,
-            params=params,
-            data=data,
-            headers=headers,
-            method=method,
-            raw=raw)
+                     params=params,
+                     data=data,
+                     headers=headers,
+                     method=method,
+                     raw=raw)
 
 
 class Datacenter(UuidMixin):
@@ -169,7 +169,7 @@ class ProfitBricksNetworkInterface(object):
     :type       state: ``int``
 
     Note: This class is ProfitBricks specific.
-    """    
+    """
     def __init__(self, id, name, state, extra=None):
         self.id = id
         self.name = name
@@ -325,7 +325,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {'action': action}
 
         return self._to_images(self.connection.request(action=action,
-            data=body, method='POST').object)
+                               data=body, method='POST').object)
 
     def list_locations(self):
         """
@@ -349,27 +349,27 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {'action': action}
 
         return self._to_nodes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                              data=body, method='POST').object)
 
     def reboot_node(self, node=None):
         """
         Reboots the node.
 
         :rtype: ``bool``
-        """   
+        """
         action = 'resetServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action, 
-            data=body, method='POST').object
+        self.connection.request(action=action,
+                                data=body, method='POST').object
 
         return True
 
-    def create_node(self, name, image, size=None, volume=None, 
-        datacenter=None, internet_access=True, 
-        availability_zone=None, **kwargs):
+    def create_node(self, name, image, size=None, volume=None,
+                    datacenter=None, internet_access=True,
+                    availability_zone=None, **kwargs):
         """
         Creates a node.
 
@@ -409,7 +409,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             '''
 
             datacenter_name = name + "-DC"
-            dc = self.ex_create_datacenter(name=datacenter_name, location="us/las")
+            dc = self.ex_create_datacenter(name=datacenter_name, 
+                                           location="us/las")
             datacenter_id = dc[0].id
 
             dc_operation_status = self.ex_describe_datacenter(dc[0])
@@ -455,7 +456,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             disk = size.disk
 
         if 'ram' in kwargs:
-            ram = kwargs['ram'] 
+            ram = kwargs['ram']
         else:
             ram = size.ram
 
@@ -477,7 +478,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             password = None
 
         '''
-        Create a StorageVolume that can be attached to the 
+        Create a StorageVolume that can be attached to the
         server when it is created.
         '''
         if not volume:
@@ -485,9 +486,10 @@ class ProfitBricksNodeDriver(NodeDriver):
 
             if datacenter:
                 volume = self.create_volume(size=disk,
-                    ex_datacenter=datacenter, ex_image=image,
-                    ex_password=password, name=volume_name
-                    )
+                                            ex_datacenter=datacenter,
+                                            ex_image=image,
+                                            ex_password=password,
+                                            name=volume_name)
             else:
                 volume = self.create_volume(size=disk,
                     ex_datacenter=dc[0], ex_image=image,
@@ -532,7 +534,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             time.sleep(interval)
 
         return self._to_nodes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                      data=body,
+                                                      method='POST').object)
 
     def destroy_node(self, node, remove_attached_disks=None):
         """
@@ -551,8 +554,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'serverId': node.id
                 }
 
-        self.connection.request(action=action, 
-            data=body, method='POST').object
+        self.connection.request(action=action,
+                                data=body, method='POST').object
 
         return True
 
@@ -567,7 +570,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {'action': action}
 
         return self._to_volumes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                        data=body,
+                                                        method='POST').object)
 
     def attach_volume(self, node, volume, device=None, bus_type=None):
         """
@@ -603,7 +607,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         return True
 
     def create_volume(self, size, name=None,
-        ex_datacenter=None, ex_image=None, ex_password=None):
+                      ex_datacenter=None, ex_image=None, ex_password=None):
         """
         Creates a volume.
 
@@ -671,7 +675,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'storageId': volume.id}
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -702,7 +706,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             body['size'] = str(size)
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -717,12 +721,13 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`StorageVolume`
         """
         action = 'getStorage'
-        body = {'action': action, 
+        body = {'action': action,
                 'storageId': volume.id
                 }
 
         return self._to_volumes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                        data=body,
+                                                        method='POST').object)
 
     """ Extension Functions
     """
@@ -746,7 +751,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -758,14 +763,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type node: :class:`Node`
 
         :rtype:     : ``bool``
-        """  
+        """
         action = 'startServer'
         body = {'action': action,
                 'serverId': node.id
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -802,10 +807,11 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         return self._to_nodes(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                      data=body,
+                                                      method='POST').object)
 
     def ex_update_node(self, node, name=None, cores=None,
-        ram=None, availability_zone=None):
+                       ram=None, availability_zone=None):
         """
         Updates a node.
 
@@ -840,7 +846,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             body['availabilityZone'] = availability_zone.name
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -876,7 +882,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             raise ValueError("You must provide a datacenter name.")
 
         return self._to_datacenters(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                            data=body,
+                                                            method='POST').object)
 
     def ex_destroy_datacenter(self, datacenter):
         """
@@ -893,7 +900,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         request = self.connection.request(action=action,
-            data=body, method='POST').object
+                                          data=body, method='POST').object
 
         return True
 
@@ -914,7 +921,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         return self._to_datacenters(self.connection.request(action=action,
-            data=body, method='POST').object)
+                                                            data=body,
+                                                            method='POST').object)
 
     def ex_list_datacenters(self):
         """
@@ -926,8 +934,10 @@ class ProfitBricksNodeDriver(NodeDriver):
         action = 'getAllDataCenters'
         body = {'action': action}
 
-        return self._to_datacenters(self.connection.request(action=action,
-            data=body, method='POST').object)
+        return self._to_datacenters(self.connection.request(
+                                    action=action,
+                                    data=body,
+                                    method='POST').object)
 
     def ex_update_datacenter(self, datacenter, name):
         """
@@ -949,7 +959,8 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         request = self.connection.request(action=action,
-            data=body, method='POST').object
+                                          data=body,
+                                          method='POST').object
 
         return True
 
@@ -970,7 +981,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -987,8 +998,10 @@ class ProfitBricksNodeDriver(NodeDriver):
         action = 'getAllNic'
         body = {'action': action}
 
-        return self._to_interfaces(self.connection.request(action=action,
-            data=body, method='POST').object)
+        return self._to_interfaces(
+            self.connection.request(action=action,
+                                    data=body,
+                                    method='POST').object)
 
     def ex_describe_network_interface(self, network_interface):
         """
@@ -1005,11 +1018,14 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'nicId': network_interface.id
                 }
 
-        return self._to_interfaces(self.connection.request(action=action,
-            data=body, method='POST').object)
+        return self._to_interfaces(
+            self.connection.request(action=action,
+                                    data=body,
+                                    method='POST').object)
 
     def ex_create_network_interface(self, node,
-        lan_id=None, ip=None, nic_name=None, dhcp_active=True):
+                                    lan_id=None, ip=None, nic_name=None,
+                                    dhcp_active=True):
         """
         Creates a network interface.
 
@@ -1046,11 +1062,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         if nic_name:
             body['nicName'] = nic_name
 
-        return self._to_interfaces(self.connection.request(action=action,
-            data=body, method='POST').object)
+        return self._to_interfaces(
+            self.connection.request(action=action,
+                                    data=body,
+                                    method='POST').object)
 
     def ex_update_network_interface(self, network_interface, name=None,
-        lan_id=None, ip=None, dhcp_active=None):
+                                    lan_id=None, ip=None,
+                                    dhcp_active=None):
         """
         Updates a network interface.
 
@@ -1087,7 +1106,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             body['dhcpActive'] = str(dhcp_active).lower()
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -1106,14 +1125,12 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'nicId': network_interface.id}
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
-    def ex_set_inet_access(self, datacenter, 
-        network_interface, internet_access=True):
-        # Results in strange behavior within the provider, so for now
-        # this is commented out.
+    def ex_set_inet_access(self, datacenter,
+                           network_interface, internet_access=True):
 
         action = 'setInternetAccess'
 
@@ -1124,7 +1141,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         self.connection.request(action=action,
-            data=body, method='POST').object
+                                data=body, method='POST').object
 
         return True
 
@@ -1159,13 +1176,12 @@ class ProfitBricksNodeDriver(NodeDriver):
             location = None
 
         return Datacenter(id=datacenter_id,
-                        name=datacenter_name,
-                        datacenter_version=datacenter_version,
-                        driver=self.connection.driver,
-                        extra={
+                          name=datacenter_name,
+                          datacenter_version=datacenter_version,
+                          driver=self.connection.driver,
+                          extra={
                             'provisioning_state': provisioning_state,
-                            'location': location}
-                        )
+                            'location': location})
 
     def _to_images(self, object):
         return [self._to_image(image) for image in object.findall('.//return')]
@@ -1316,42 +1332,36 @@ class ProfitBricksNodeDriver(NodeDriver):
         else:
             disc_virtio_hotunplug = None
 
-        return Node(
-            id=node_id,
-            name=node_name,
-            state=self.NODE_STATE_MAP.get(
-                virtual_machine_state, NodeState.UNKNOWN),
-            public_ips=public_ips,
-            private_ips=private_ips,
-            driver=self.connection.driver,
-            extra={
-                'datacenter_id': datacenter_id,
-                'datacenter_version': datacenter_version,
-                'provisioning_state': self.PROVISIONING_STATE.get(
-                    provisioning_state, NodeState.UNKNOWN),
-                'creation_time': creation_time,
-                'last_modification_time': last_modification_time,
-                'os_type': os_type,
-                'ram': ram,
-                'cores': cores,
-                'availability_zone': availability_zone,
-                'internet_access': internet_access,
-                'cpu_hotpluggable': cpu_hotpluggable,
-                'memory_hotpluggable': memory_hotpluggable,
-                'nic_hotpluggable': nic_hotpluggable,
-                'nic_hot_unpluggable': nic_hot_unpluggable,
-                'disc_virtio_hotplug': disc_virtio_hotplug,
-                'disc_virtio_hotunplug': disc_virtio_hotunplug
-                })
+        return Node(id=node_id,
+                    name=node_name,
+                    state=self.NODE_STATE_MAP.get(virtual_machine_state,
+                                                  NodeState.UNKNOWN),
+                    public_ips=public_ips,
+                    private_ips=private_ips,
+                    driver=self.connection.driver,
+                    extra={
+                        'datacenter_id': datacenter_id,
+                        'datacenter_version': datacenter_version,
+                        'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
+                        'creation_time': creation_time,
+                        'last_modification_time': last_modification_time,
+                        'os_type': os_type,
+                        'ram': ram,
+                        'cores': cores,
+                        'availability_zone': availability_zone,
+                        'internet_access': internet_access,
+                        'cpu_hotpluggable': cpu_hotpluggable,
+                        'memory_hotpluggable': memory_hotpluggable,
+                        'nic_hotpluggable': nic_hotpluggable,
+                        'nic_hot_unpluggable': nic_hot_unpluggable,
+                        'disc_virtio_hotplug': disc_virtio_hotplug,
+                        'disc_virtio_hotunplug': disc_virtio_hotunplug})
 
     def _to_volumes(self, object):
         return [self._to_volume(volume) for volume in object.findall('.//return')]
 
     def _to_volume(self, volume, node=None):
         elements = list(volume.iter())
-
-        # if node:
-        #     if node.id == elements[0].find('server_id').text:
 
         datacenter_id = elements[0].find('dataCenterId').text
         datacenter_version = elements[0].find('dataCenterVersion').text
@@ -1397,21 +1407,18 @@ class ProfitBricksNodeDriver(NodeDriver):
         else:
             image_name = None
 
-        return StorageVolume(id=storage_id, 
-                            name=storage_name,
-                            size=int(size), 
-                            driver=self.connection.driver,
-                            extra={
-                                    'datacenter_id': datacenter_id,
-                                    'creation_time': creation_time,
-                                    'last_modification_time': last_modification_time,
-                                    'provisioning_state': self.PROVISIONING_STATE.get(
-                                        provisioning_state, NodeState.UNKNOWN),
-                                    'server_id': server_id,
-                                    'image_id': image_id,
-                                    'image_name': image_name
-                                }
-                            )
+        return StorageVolume(id=storage_id,
+                             name=storage_name,
+                             size=int(size), 
+                             driver=self.connection.driver,
+                             extra={
+                                'datacenter_id': datacenter_id,
+                                'creation_time': creation_time,
+                                'last_modification_time': last_modification_time,
+                                'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
+                                'server_id': server_id,
+                                'image_id': image_id,
+                                'image_name': image_name})
 
     def _to_interfaces(self, object):
         return [self._to_interface(interface) for interface in object.findall('.//return')]
@@ -1478,43 +1485,38 @@ class ProfitBricksNodeDriver(NodeDriver):
                 ip = elements[0].find('ips').text
                 ips.append(ip)
                 
-        return ProfitBricksNetworkInterface(id=nic_id, 
-                            name=nic_name,
-                            state=self.PROVISIONING_STATE.get(
-                                        provisioning_state, NodeState.UNKNOWN),
-                            extra={
-                                    'datacenter_id': datacenter_id,
-                                    'datacenter_version': datacenter_version,
-                                    'server_id': server_id,
-                                    'lan_id': lan_id,
-                                    'internet_access': internet_access,
-                                    'mac_address': mac_address,
-                                    'dhcp_active': dhcp_active,
-                                    'gateway_ip': gateway_ip,
-                                    'ips': ips
-                                }
-                            )
+        return ProfitBricksNetworkInterface(id=nic_id,
+                                            name=nic_name,
+                                            state=self.PROVISIONING_STATE.get(
+                                                provisioning_state, NodeState.UNKNOWN),
+                                            extra={
+                                                'datacenter_id': datacenter_id,
+                                                'datacenter_version': datacenter_version,
+                                                'server_id': server_id,
+                                                'lan_id': lan_id,
+                                                'internet_access': internet_access,
+                                                'mac_address': mac_address,
+                                                'dhcp_active': dhcp_active,
+                                                'gateway_ip': gateway_ip,
+                                                'ips': ips})
 
     def _to_location(self, data):
 
-        return NodeLocation(
-            id=data["region"],
-            name=data["region"],
-            country=data["country"],
-            driver=self.connection.driver)
+        return NodeLocation(id=data["region"],
+                            name=data["region"],
+                            country=data["country"],
+                            driver=self.connection.driver)
 
     def _to_node_size(self, data):
         """
         Convert the PROFIT_BRICKS_GENERIC_SIZES into NodeSize
         """
-        return NodeSize(
-            id=data["id"],
-            name=data["name"],
-            ram=data["ram"],
-            disk=data["disk"],
-            bandwidth=None,
-            price=None,
-            driver=self.connection.driver,
-            extra={
-                'cores': data["cores"]
-            })
+        return NodeSize(id=data["id"],
+                        name=data["name"],
+                        ram=data["ram"],
+                        disk=data["disk"],
+                        bandwidth=None,
+                        price=None,
+                        driver=self.connection.driver,
+                        extra={
+                            'cores': data["cores"]})

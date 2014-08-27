@@ -305,7 +305,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(locations), 3)
 
         locationNamesResult = list(a.name for a in locations)
-        locationNamesExpected = ['us/las', 'de/fkb', 'de/fra']
+        locationNamesExpected = ['us/las', 'de/fra', 'de/fkb']
 
         self.assertListEqual(locationNamesResult, locationNamesExpected)
 
@@ -320,7 +320,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEqual(len(zones), 3)
 
         zoneNamesResult = list(a.name for a in zones)
-        zoneNamesExpected = ['AUTO', 'ZONE_2','ZONE_1']
+        zoneNamesExpected = ['AUTO', 'ZONE_1','ZONE_2']
 
         self.assertListEqual(zoneNamesResult, zoneNamesExpected)
 
