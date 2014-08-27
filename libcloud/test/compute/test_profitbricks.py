@@ -26,7 +26,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 
-class ProfitBricksNodeDriver(unittest.TestCase):
+class ProfitBricksTests(unittest.TestCase):
 
     libcloud.security.VERIFY_SSL_CERT = False
 
