@@ -153,8 +153,11 @@ class Datacenter(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return (('<Datacenter: id=%s, name=%s, datacenter_version=%s, driver=%s> ...>')
-                % (self.id, self.name, self.datacenter_version, self.driver.name))
+        return ((
+            '<Datacenter: id=%s, name=%s, \
+            datacenter_version=%s, driver=%s> ...>')
+                % (self.id, self.name, self.datacenter_version, \
+                    self.driver.name))
 
 
 class ProfitBricksNetworkInterface(object):
@@ -422,7 +425,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             waittime = 0
             interval = 5
 
-            while dc_operation_status[0].extra['provisioning_state'] == 3 and waittime < timeout:
+            while (dc_operation_status[0].extra['provisioning_state'] == 3) and (
+                waittime < timeout):
                 dc_operation_status = self.ex_describe_volume(volume[0])
                 if dc_operation_status[0].extra['provisioning_state'] == 0:
                     break
@@ -529,7 +533,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         waittime = 0
         interval = 5
 
-        while operation_status[0].extra['provisioning_state'] == 3 and waittime < timeout:
+        while (operation_status[0].extra['provisioning_state'] == 3) and (
+            waittime < timeout):
             operation_status = self.ex_describe_volume(volume[0])
             if operation_status[0].extra['provisioning_state'] == 0:
                 break
@@ -926,9 +931,10 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterId': datacenter.id
                 }
 
-        return self._to_datacenters(self.connection.request(action=action,
-                                                            data=body,
-                                                            method='POST').object)
+        return self._to_datacenters(self.connection.request(
+            action=action,
+            data=body,
+            method='POST').object)
 
     def ex_list_datacenters(self):
         """
@@ -1162,7 +1168,8 @@ class ProfitBricksNodeDriver(NodeDriver):
     """
 
     def _to_datacenters(self, object):
-        return [self._to_datacenter(datacenter) for datacenter in object.findall('.//return')]
+        return [self._to_datacenter(
+            datacenter) for datacenter in object.findall('.//return')]
 
     def _to_datacenter(self, datacenter):
         elements = list(datacenter.iter())
@@ -1267,7 +1274,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             provisioning_state = None
 
         if ET.iselement(elements[0].find('virtualMachineState')):
-            virtual_machine_state = elements[0].find('virtualMachineState').text
+            virtual_machine_state = elements[0].find(
+                'virtualMachineState').text
         else:
             virtual_machine_state = None
 
@@ -1277,7 +1285,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             creation_time = None
 
         if ET.iselement(elements[0].find('lastModificationTime')):
-            last_modification_time = elements[0].find('lastModificationTime').text
+            last_modification_time = elements[0].find(
+                'lastModificationTime').text
         else:
             last_modification_time = None
 
@@ -1330,37 +1339,42 @@ class ProfitBricksNodeDriver(NodeDriver):
             disc_virtio_hotplug = None
 
         if ET.iselement(elements[0].find('discVirtioHotUnPlug')):
-            disc_virtio_hotunplug = elements[0].find('discVirtioHotUnPlug').text
+            disc_virtio_hotunplug = elements[0].find(
+                'discVirtioHotUnPlug').text
         else:
             disc_virtio_hotunplug = None
 
-        return Node(id=node_id,
-                    name=node_name,
-                    state=self.NODE_STATE_MAP.get(virtual_machine_state,
-                                                  NodeState.UNKNOWN),
-                    public_ips=public_ips,
-                    private_ips=private_ips,
-                    driver=self.connection.driver,
-                    extra={
-                        'datacenter_id': datacenter_id,
-                        'datacenter_version': datacenter_version,
-                        'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
-                        'creation_time': creation_time,
-                        'last_modification_time': last_modification_time,
-                        'os_type': os_type,
-                        'ram': ram,
-                        'cores': cores,
-                        'availability_zone': availability_zone,
-                        'internet_access': internet_access,
-                        'cpu_hotpluggable': cpu_hotpluggable,
-                        'memory_hotpluggable': memory_hotpluggable,
-                        'nic_hotpluggable': nic_hotpluggable,
-                        'nic_hot_unpluggable': nic_hot_unpluggable,
-                        'disc_virtio_hotplug': disc_virtio_hotplug,
-                        'disc_virtio_hotunplug': disc_virtio_hotunplug})
+        return Node(
+            id=node_id,
+            name=node_name,
+            state=self.NODE_STATE_MAP.get(
+                virtual_machine_state,
+                NodeState.UNKNOWN),
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self.connection.driver,
+            extra={
+            'datacenter_id': datacenter_id,
+            'datacenter_version': datacenter_version,
+            'provisioning_state': self.PROVISIONING_STATE.get(
+                provisioning_state, NodeState.UNKNOWN),
+            'creation_time': creation_time,
+            'last_modification_time': last_modification_time,
+            'os_type': os_type,
+            'ram': ram,
+            'cores': cores,
+            'availability_zone': availability_zone,
+            'internet_access': internet_access,
+            'cpu_hotpluggable': cpu_hotpluggable,
+            'memory_hotpluggable': memory_hotpluggable,
+            'nic_hotpluggable': nic_hotpluggable,
+            'nic_hot_unpluggable': nic_hot_unpluggable,
+            'disc_virtio_hotplug': disc_virtio_hotplug,
+            'disc_virtio_hotunplug': disc_virtio_hotunplug})
 
     def _to_volumes(self, object):
-        return [self._to_volume(volume) for volume in object.findall('.//return')]
+        return [self._to_volume(
+            volume) for volume in object.findall('.//return')]
 
     def _to_volume(self, volume, node=None):
         elements = list(volume.iter())
@@ -1384,7 +1398,8 @@ class ProfitBricksNodeDriver(NodeDriver):
             creation_time = None
 
         if ET.iselement(elements[0].find('lastModificationTime')):
-            last_modification_time = elements[0].find('lastModificationTime').text
+            last_modification_time = elements[0].find(
+                'lastModificationTime').text
         else:
             last_modification_time = None
 
@@ -1408,20 +1423,23 @@ class ProfitBricksNodeDriver(NodeDriver):
         else:
             image_name = None
 
-        return StorageVolume(id=storage_id,
-                             name=storage_name,
-                             size=int(size),
-                             driver=self.connection.driver,
-                             extra={'datacenter_id': datacenter_id,
-                                    'creation_time': creation_time,
-                                    'last_modification_time': last_modification_time,
-                                    'provisioning_state': self.PROVISIONING_STATE.get(provisioning_state, NodeState.UNKNOWN),
-                                    'server_id': server_id,
-                                    'image_id': image_id,
-                                    'image_name': image_name})
+        return StorageVolume(
+            id=storage_id,
+            name=storage_name,
+            size=int(size),
+            driver=self.connection.driver,
+            extra={'datacenter_id': datacenter_id,
+                   'creation_time': creation_time,
+                   'last_modification_time': last_modification_time,
+                   'provisioning_state': self.PROVISIONING_STATE.get(
+                        provisioning_state, NodeState.UNKNOWN),
+                   'server_id': server_id,
+                   'image_id': image_id,
+                   'image_name': image_name})
 
     def _to_interfaces(self, object):
-        return [self._to_interface(interface) for interface in object.findall('.//return')]
+        return [self._to_interface(
+            interface) for interface in object.findall('.//return')]
 
     def _to_interface(self, interface):
         elements = list(interface.iter())
