@@ -24,6 +24,7 @@ from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.test.secrets import PROFIT_BRICKS
 
 
 class ProfitBricksNodeDriver(unittest.TestCase):

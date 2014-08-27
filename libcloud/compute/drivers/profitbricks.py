@@ -25,7 +25,7 @@ import time
 
 from xml.etree import ElementTree as ET
 # from xml.etree.ElementTree import tostring
-from xml.etree.ElementTree import _ElementInterface
+# from xml.etree.ElementTree import _ElementInterface
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.py3 import b
@@ -159,8 +159,8 @@ class Datacenter(UuidMixin):
         return ((
             '<Datacenter: id=%s, name=%s, \
             datacenter_version=%s, driver=%s> ...>')
-                % (self.id, self.name, self.datacenter_version, \
-                    self.driver.name))
+            % (self.id, self.name, self.datacenter_version,
+                self.driver.name))
 
 
 class ProfitBricksNetworkInterface(object):
@@ -428,14 +428,15 @@ class ProfitBricksNodeDriver(NodeDriver):
             waittime = 0
             interval = 5
 
-            while (dc_operation_status[0].extra['provisioning_state'] == 3) and (
+            while (
+                dc_operation_status[0].extra['provisioning_state'] == 3) and (
                 waittime < timeout):
-                dc_operation_status = self.ex_describe_volume(volume[0])
-                if dc_operation_status[0].extra['provisioning_state'] == 0:
-                    break
+                    dc_operation_status = self.ex_describe_volume(volume[0])
+                    if dc_operation_status[0].extra['provisioning_state'] == 0:
+                        break
 
-                waittime += interval
-                time.sleep(interval)
+                    waittime += interval
+                    time.sleep(interval)
         else:
             datacenter_id = datacenter.id
 
