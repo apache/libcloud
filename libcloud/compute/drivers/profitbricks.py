@@ -346,7 +346,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             location = self._to_location(copy.deepcopy(values))
             locations.append(location)
 
-        return locations
+        return sorted(locations)
 
     def list_nodes(self):
         """
@@ -428,14 +428,14 @@ class ProfitBricksNodeDriver(NodeDriver):
             waittime = 0
             interval = 5
 
-            while (
-                dc_operation_status[0].extra['provisioning_state'] == 3) and (waittime < timeout):
-                    dc_operation_status = self.ex_describe_volume(volume[0])
-                        if dc_operation_status[0].extra['provisioning_state'] == 0:
-                            break
+            while (dc_operation_status[0].extra['provisioning_state'] == 3
+                   ) and (waittime < timeout):
+                dc_operation_status = self.ex_describe_volume(volume[0])
+                if dc_operation_status[0].extra['provisioning_state'] == 0:
+                    break
 
-                        waittime += interval
-                        time.sleep(interval)
+                waittime += interval
+                time.sleep(interval)
         else:
             datacenter_id = datacenter.id
 
@@ -536,14 +536,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         waittime = 0
         interval = 5
 
-        while (operation_status[0].extra['provisioning_state'] == 3) and (
-            waittime < timeout):
-                operation_status = self.ex_describe_volume(volume[0])
-                if operation_status[0].extra['provisioning_state'] == 0:
-                    break
+        while (operation_status[0].extra['provisioning_state'] == 3
+               ) and (waittime < timeout):
+            operation_status = self.ex_describe_volume(volume[0])
+            if operation_status[0].extra['provisioning_state'] == 0:
+                break
 
-                waittime += interval
-                time.sleep(interval)
+            waittime += interval
+            time.sleep(interval)
 
         return self._to_nodes(self.connection.request(action=action,
                                                       data=body,
@@ -802,7 +802,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             )
             availability_zones.append(availability_zone)
 
-        return availability_zones
+        return sorted(availability_zones)
 
     def ex_describe_node(self, node):
         """
