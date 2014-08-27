@@ -20,25 +20,23 @@ import libcloud.security
 
 import libcloud
 
-from libcloud.common.types import LibcloudError
-from libcloud.compute.base import NodeAuthPassword
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-class ProfitBricksNodeDriver(unittest.TestCase) :
 
-    #required otherwise we get client side SSL verification
+class ProfitBricksNodeDriver(unittest.TestCase):
+
     libcloud.security.VERIFY_SSL_CERT = False
 
     USER_ID = 'user@profitbricks.com'
-    KEY = 'password' #empty file is fine
+    KEY = 'password'
 
     def setUp(self):
         ProfitBricks = get_driver(Provider.PROFIT_BRICKS)
         ProfitBricks.connectionCls.conn_classes = (None, ProfitBricksMockHttp)
-        self.driver = ProfitBricks(self.USER_ID, self.KEY )
+        self.driver = ProfitBricks(self.USER_ID, self.KEY)
 
     ''' Server Function Tests
     '''
@@ -76,7 +74,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
                                        image=image,
                                        size=size)
 
-        self.assertEquals(node[0].id,"7b18b85f-cc93-4c2d-abcc-5ce732d35750")
+        self.assertEquals(node[0].id, "7b18b85f-cc93-4c2d-abcc-5ce732d35750")
 
     def test_reboot_node(self):
         node = type('Node', (object,),
@@ -142,7 +140,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
         image = type('NodeImage', (object,),
                      dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+
         create = self.driver.create_volume(name="StackPointCloudStorage001",
                                            size=50,
                                            ex_datacenter=datacenter,
@@ -205,7 +203,7 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
         node = type('Node', (object,),
                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-        
+
         attach = self.driver.detach_volume(node=node, volume=volume)
 
         self.assertTrue(attach)
@@ -334,9 +332,6 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
 
         self.assertListEqual(zoneNamesResult, zoneNamesExpected)
 
-        # matchedLocation = next(zone for zone in zones
-                               # if zone.name == 'ZONE_1')
-
     ''' Interface Tests
     '''
 
@@ -419,8 +414,8 @@ class ProfitBricksNodeDriver(unittest.TestCase) :
         self.assertEquals(size.price, None)
         self.assertEquals(size.extra['cores'], 1)
 
-class ProfitBricksMockHttp(MockHttp):
 
+class ProfitBricksMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('profitbricks')
 
