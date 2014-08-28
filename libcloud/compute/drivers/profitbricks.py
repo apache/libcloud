@@ -36,6 +36,11 @@ from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
+PY26 = False
+
+if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+    PY26 = True
+
 __version__ = '1.0.0'
 
 API_HOST = 'api.profitbricks.com'
@@ -1174,7 +1179,10 @@ class ProfitBricksNodeDriver(NodeDriver):
             datacenter) for datacenter in object.findall('.//return')]
 
     def _to_datacenter(self, datacenter):
-        elements = list(datacenter.iter())
+        if(PY26):
+            elements = list(datacenter.findall())
+        else:
+            elements = list(datacenter.iter())
         datacenter_id = elements[0].find('dataCenterId').text
         if ET.iselement(elements[0].find('dataCenterName')):
             datacenter_name = elements[0].find('dataCenterName').text
