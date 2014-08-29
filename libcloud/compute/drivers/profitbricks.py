@@ -88,7 +88,6 @@ class ProfitBricksConnection(ConnectionUserAndKey):
             'xmlns:soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
             'xmlns:ws': 'http://ws.api.profitbricks.com/'
             })
-        # soap_header = ET.SubElement(soap_env, 'soapenv:Header')
         ET.SubElement(soap_env, 'soapenv:Header')
         soap_body = ET.SubElement(soap_env, 'soapenv:Body')
         soap_req_body = ET.SubElement(soap_body, 'ws:%s' % (data['action']))
@@ -1372,8 +1371,6 @@ class ProfitBricksNodeDriver(NodeDriver):
             volume) for volume in object.findall('.//return')]
 
     def _to_volume(self, volume, node=None):
-        # elements = list(volume.iter())
-
         datacenter_id = volume.find('dataCenterId').text
         storage_id = volume.find('storageId').text
 
@@ -1438,8 +1435,6 @@ class ProfitBricksNodeDriver(NodeDriver):
             interface) for interface in object.findall('.//return')]
 
     def _to_interface(self, interface):
-        # elements = list(interface.iter())
-
         nic_id = interface.find('nicId').text
 
         if ET.iselement(interface.find('nicName')):

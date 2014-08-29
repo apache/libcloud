@@ -315,7 +315,7 @@ class ProfitBricksTests(unittest.TestCase):
         locationNamesResult = sorted(list(a.name for a in locations))
         locationNamesExpected = ['de/fkb', 'de/fra', 'us/las']
 
-        self.assertListEqual(locationNamesResult, locationNamesExpected)
+        self.assertEquals(locationNamesResult,locationNamesExpected)
 
     ''' Availability Zone Tests
     '''
@@ -327,7 +327,7 @@ class ProfitBricksTests(unittest.TestCase):
         zoneNamesResult = sorted(list(a.name for a in zones))
         zoneNamesExpected = ['AUTO', 'ZONE_1', 'ZONE_2']
 
-        self.assertListEqual(zoneNamesResult, zoneNamesExpected)
+        self.assertEquals(zoneNamesResult,zoneNamesExpected)
 
     ''' Interface Tests
     '''
