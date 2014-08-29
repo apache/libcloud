@@ -19,6 +19,8 @@ import sys
 import unittest
 import datetime
 
+from mock import Mock
+
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
@@ -290,6 +292,34 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         node = self.driver.create_node(node_name, size, image)
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
+
+    def test_create_node_with_metadata(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+
+        self.driver._create_node_req = Mock()
+        self.driver._create_node_req.return_value = (None, None)
+        self.driver.connection.async_request = Mock()
+        self.driver.ex_get_node = Mock()
+
+        # ex_metadata doesn't contain "items" key
+        ex_metadata = {'key1': 'value1', 'key2': 'value2'}
+        self.driver.create_node(node_name, size, image,
+                                ex_metadata=ex_metadata)
+
+        actual = self.driver._create_node_req.call_args[0][6]
+        self.assertTrue('items' in actual)
+        self.assertEqual(len(actual['items']), 2)
+
+        # ex_metadata contains "items" key
+        ex_metadata = {'items': [{'key0': 'value0'}]}
+        self.driver.create_node(node_name, size, image,
+                                ex_metadata=ex_metadata)
+        actual = self.driver._create_node_req.call_args[0][6]
+        self.assertTrue('items' in actual)
+        self.assertEqual(len(actual['items']), 1)
+        self.assertEqual(actual['items'][0], {'key0': 'value0'})
 
     def test_create_node_existing(self):
         node_name = 'libcloud-demo-europe-np-node'

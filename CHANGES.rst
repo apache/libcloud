@@ -73,6 +73,11 @@ Compute
   Libcloud.
   [Chris DeRamus]
 
+- Fix a bug with ``ex_metadata`` argument handling in the Google Compute Engine
+  driver ``create_node`` method.
+  (LIBCLOUD-544, GITHUB-349, GITHUB-353)
+  [Raphael Theberge]
+
 Storage
 ~~~~~~~
 
