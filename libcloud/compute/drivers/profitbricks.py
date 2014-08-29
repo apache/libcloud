@@ -84,7 +84,6 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
-        print("Encoding DATA")
         soap_env = ET.Element('soapenv:Envelope', {
             'xmlns:soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
             'xmlns:ws': 'http://ws.api.profitbricks.com/'
@@ -436,18 +435,20 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if not size:
             if 'ram' not in kwargs:
-                raise ValueError('You need to either pass a ' \
-                    'NodeSize or specify ram as an extra parameter.')
+                raise ValueError('You need to either pass a '
+                                 'NodeSize or specify ram as '
+                                 'an extra parameter.')
             if 'cores' not in kwargs:
-                raise ValueError('You need to either pass a ' \
-                    'NodeSize or specify cores as an extra parameter.')
+                raise ValueError('You need to either pass a '
+                                 'NodeSize or specify cores as '
+                                 'an extra parameter.')
 
         if not volume:
             if not size:
                 if 'disk' not in kwargs:
-                    raise ValueError('You need to either pass a ' \
-                        'StorageVolume, a NodeSize, or specify ' \
-                        'disk as an extra parameter.')
+                    raise ValueError('You need to either pass a '
+                                     'StorageVolume, a NodeSize, or specify '
+                                     'disk as an extra parameter.')
 
         '''
         You can override the suggested sizes by passing in unique
@@ -1196,27 +1197,26 @@ class ProfitBricksNodeDriver(NodeDriver):
         return [self._to_image(image) for image in object.findall('.//return')]
 
     def _to_image(self, image):
-        elements = list(image.iter())
-        image_id = elements[0].find('imageId').text
-        image_name = elements[0].find('imageName').text
-        image_size = elements[0].find('imageSize').text
-        image_type = elements[0].find('imageType').text
-        os_type = elements[0].find('osType').text
-        public = elements[0].find('public').text
-        writeable = elements[0].find('writeable').text
+        image_id = image.find('imageId').text
+        image_name = image.find('imageName').text
+        image_size = image.find('imageSize').text
+        image_type = image.find('imageType').text
+        os_type = image.find('osType').text
+        public = image.find('public').text
+        writeable = image.find('writeable').text
 
-        if ET.iselement(elements[0].find('cpuHotpluggable')):
-            cpu_hotpluggable = elements[0].find('cpuHotpluggable').text
+        if ET.iselement(image.find('cpuHotpluggable')):
+            cpu_hotpluggable = image.find('cpuHotpluggable').text
         else:
             cpu_hotpluggable = None
 
-        if ET.iselement(elements[0].find('memoryHotpluggable')):
-            memory_hotpluggable = elements[0].find('memoryHotpluggable').text
+        if ET.iselement(image.find('memoryHotpluggable')):
+            memory_hotpluggable = image.find('memoryHotpluggable').text
         else:
             memory_hotpluggable = None
 
-        if ET.iselement(elements[0].find('location')):
-            image_region = elements[0].find('region').text
+        if ET.iselement(image.find('location')):
+            image_region = image.find('region').text
         else:
             image_region = None
 
@@ -1239,104 +1239,102 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Convert the request into a node Node
         """
-        elements = list(node.iter())
-        datacenter_id = elements[0].find('dataCenterId').text
-        datacenter_version = elements[0].find('dataCenterVersion').text
-        node_id = elements[0].find('serverId').text
+        datacenter_id = node.find('dataCenterId').text
+        datacenter_version = node.find('dataCenterVersion').text
+        node_id = node.find('serverId').text
 
         # all optional as they don't appear in create responses.
-        if ET.iselement(elements[0].find('serverName')):
-            node_name = elements[0].find('serverName').text
+        if ET.iselement(node.find('serverName')):
+            node_name = node.find('serverName').text
         else:
             node_name = None
 
-        if ET.iselement(elements[0].find('cores')):
-            cores = elements[0].find('cores').text
+        if ET.iselement(node.find('cores')):
+            cores = node.find('cores').text
         else:
             cores = None
 
-        if ET.iselement(elements[0].find('ram')):
-            ram = elements[0].find('ram').text
+        if ET.iselement(node.find('ram')):
+            ram = node.find('ram').text
         else:
             ram = None
 
-        if ET.iselement(elements[0].find('internetAccess')):
-            internet_access = elements[0].find('internetAccess').text
+        if ET.iselement(node.find('internetAccess')):
+            internet_access = node.find('internetAccess').text
         else:
             internet_access = None
 
-        if ET.iselement(elements[0].find('provisioningState')):
-            provisioning_state = elements[0].find('provisioningState').text
+        if ET.iselement(node.find('provisioningState')):
+            provisioning_state = node.find('provisioningState').text
         else:
             provisioning_state = None
 
-        if ET.iselement(elements[0].find('virtualMachineState')):
-            virtual_machine_state = elements[0].find(
+        if ET.iselement(node.find('virtualMachineState')):
+            virtual_machine_state = node.find(
                 'virtualMachineState').text
         else:
             virtual_machine_state = None
 
-        if ET.iselement(elements[0].find('creationTime')):
-            creation_time = elements[0].find('creationTime').text
+        if ET.iselement(node.find('creationTime')):
+            creation_time = node.find('creationTime').text
         else:
             creation_time = None
 
-        if ET.iselement(elements[0].find('lastModificationTime')):
-            last_modification_time = elements[0].find(
+        if ET.iselement(node.find('lastModificationTime')):
+            last_modification_time = node.find(
                 'lastModificationTime').text
         else:
             last_modification_time = None
 
-        if ET.iselement(elements[0].find('osType')):
-            os_type = elements[0].find('osType').text
+        if ET.iselement(node.find('osType')):
+            os_type = node.find('osType').text
         else:
             os_type = None
 
-        if ET.iselement(elements[0].find('availabilityZone')):
-            availability_zone = elements[0].find('availabilityZone').text
+        if ET.iselement(node.find('availabilityZone')):
+            availability_zone = node.find('availabilityZone').text
         else:
             availability_zone = None
 
         public_ips = []
         private_ips = []
 
-        if ET.iselement(elements[0].find('nics')):
-            for nic in elements[0].findall('.//nics'):
-                n_elements = list(nic.iter())
-                if ET.iselement(n_elements[0].find('ips')):
-                    ip = n_elements[0].find('ips').text
-                    if is_private_subnet(ip):
-                        private_ips.append(ip)
-                    else:
-                        public_ips.append(ip)
+        if ET.iselement(node.find('nics')):
+            for nic in node.findall('.//nics'):
+                n_elements = list(nic.findall('.//ips'))
+                ip = n_elements[0].text
+                if is_private_subnet(ip):
+                    private_ips.append(ip)
+                else:
+                    public_ips.append(ip)
 
-        if ET.iselement(elements[0].find('cpuHotPlug')):
-            cpu_hotpluggable = elements[0].find('cpuHotPlug').text
+        if ET.iselement(node.find('cpuHotPlug')):
+            cpu_hotpluggable = node.find('cpuHotPlug').text
         else:
             cpu_hotpluggable = None
 
-        if ET.iselement(elements[0].find('ramHotPlug')):
-            memory_hotpluggable = elements[0].find('ramHotPlug').text
+        if ET.iselement(node.find('ramHotPlug')):
+            memory_hotpluggable = node.find('ramHotPlug').text
         else:
             memory_hotpluggable = None
 
-        if ET.iselement(elements[0].find('nicHotPlug')):
-            nic_hotpluggable = elements[0].find('nicHotPlug').text
+        if ET.iselement(node.find('nicHotPlug')):
+            nic_hotpluggable = node.find('nicHotPlug').text
         else:
             nic_hotpluggable = None
 
-        if ET.iselement(elements[0].find('nicHotUnPlug')):
-            nic_hot_unpluggable = elements[0].find('nicHotUnPlug').text
+        if ET.iselement(node.find('nicHotUnPlug')):
+            nic_hot_unpluggable = node.find('nicHotUnPlug').text
         else:
             nic_hot_unpluggable = None
 
-        if ET.iselement(elements[0].find('discVirtioHotPlug')):
-            disc_virtio_hotplug = elements[0].find('discVirtioHotPlug').text
+        if ET.iselement(node.find('discVirtioHotPlug')):
+            disc_virtio_hotplug = node.find('discVirtioHotPlug').text
         else:
             disc_virtio_hotplug = None
 
-        if ET.iselement(elements[0].find('discVirtioHotUnPlug')):
-            disc_virtio_hotunplug = elements[0].find(
+        if ET.iselement(node.find('discVirtioHotUnPlug')):
+            disc_virtio_hotunplug = node.find(
                 'discVirtioHotUnPlug').text
         else:
             disc_virtio_hotunplug = None
@@ -1374,49 +1372,49 @@ class ProfitBricksNodeDriver(NodeDriver):
             volume) for volume in object.findall('.//return')]
 
     def _to_volume(self, volume, node=None):
-        elements = list(volume.iter())
+        # elements = list(volume.iter())
 
-        datacenter_id = elements[0].find('dataCenterId').text
-        storage_id = elements[0].find('storageId').text
+        datacenter_id = volume.find('dataCenterId').text
+        storage_id = volume.find('storageId').text
 
-        if ET.iselement(elements[0].find('storageName')):
-            storage_name = elements[0].find('storageName').text
+        if ET.iselement(volume.find('storageName')):
+            storage_name = volume.find('storageName').text
         else:
             storage_name = None
 
-        if ET.iselement(elements[0].find('serverIds')):
-            server_id = elements[0].find('serverIds').text
+        if ET.iselement(volume.find('serverIds')):
+            server_id = volume.find('serverIds').text
         else:
             server_id = None
 
-        if ET.iselement(elements[0].find('creationTime')):
-            creation_time = elements[0].find('creationTime').text
+        if ET.iselement(volume.find('creationTime')):
+            creation_time = volume.find('creationTime').text
         else:
             creation_time = None
 
-        if ET.iselement(elements[0].find('lastModificationTime')):
-            last_modification_time = elements[0].find(
+        if ET.iselement(volume.find('lastModificationTime')):
+            last_modification_time = volume.find(
                 'lastModificationTime').text
         else:
             last_modification_time = None
 
-        if ET.iselement(elements[0].find('provisioningState')):
-            provisioning_state = elements[0].find('provisioningState').text
+        if ET.iselement(volume.find('provisioningState')):
+            provisioning_state = volume.find('provisioningState').text
         else:
             provisioning_state = None
 
-        if ET.iselement(elements[0].find('size')):
-            size = elements[0].find('size').text
+        if ET.iselement(volume.find('size')):
+            size = volume.find('size').text
         else:
             size = 0
 
-        if ET.iselement(elements[0].find('mountImage')):
-            image_id = elements[0].find('mountImage')[0].text
+        if ET.iselement(volume.find('mountImage')):
+            image_id = volume.find('mountImage')[0].text
         else:
             image_id = None
 
-        if ET.iselement(elements[0].find('mountImage')):
-            image_name = elements[0].find('mountImage')[1].text
+        if ET.iselement(volume.find('mountImage')):
+            image_name = volume.find('mountImage')[1].text
         else:
             image_name = None
 
@@ -1440,66 +1438,65 @@ class ProfitBricksNodeDriver(NodeDriver):
             interface) for interface in object.findall('.//return')]
 
     def _to_interface(self, interface):
-        elements = list(interface.iter())
+        # elements = list(interface.iter())
 
-        nic_id = elements[0].find('nicId').text
+        nic_id = interface.find('nicId').text
 
-        if ET.iselement(elements[0].find('nicName')):
-            nic_name = elements[0].find('nicName').text
+        if ET.iselement(interface.find('nicName')):
+            nic_name = interface.find('nicName').text
         else:
             nic_name = None
 
-        if ET.iselement(elements[0].find('serverId')):
-            server_id = elements[0].find('serverId').text
+        if ET.iselement(interface.find('serverId')):
+            server_id = interface.find('serverId').text
         else:
             server_id = None
 
-        if ET.iselement(elements[0].find('lanId')):
-            lan_id = elements[0].find('lanId').text
+        if ET.iselement(interface.find('lanId')):
+            lan_id = interface.find('lanId').text
         else:
             lan_id = None
 
-        if ET.iselement(elements[0].find('internetAccess')):
-            internet_access = elements[0].find('internetAccess').text
+        if ET.iselement(interface.find('internetAccess')):
+            internet_access = interface.find('internetAccess').text
         else:
             internet_access = None
 
-        if ET.iselement(elements[0].find('macAddress')):
-            mac_address = elements[0].find('macAddress').text
+        if ET.iselement(interface.find('macAddress')):
+            mac_address = interface.find('macAddress').text
         else:
             mac_address = None
 
-        if ET.iselement(elements[0].find('dhcpActive')):
-            dhcp_active = elements[0].find('dhcpActive').text
+        if ET.iselement(interface.find('dhcpActive')):
+            dhcp_active = interface.find('dhcpActive').text
         else:
             dhcp_active = None
 
-        if ET.iselement(elements[0].find('gatewayIp')):
-            gateway_ip = elements[0].find('gatewayIp').text
+        if ET.iselement(interface.find('gatewayIp')):
+            gateway_ip = interface.find('gatewayIp').text
         else:
             gateway_ip = None
 
-        if ET.iselement(elements[0].find('provisioningState')):
-            provisioning_state = elements[0].find('provisioningState').text
+        if ET.iselement(interface.find('provisioningState')):
+            provisioning_state = interface.find('provisioningState').text
         else:
             provisioning_state = None
 
-        if ET.iselement(elements[0].find('dataCenterId')):
-            datacenter_id = elements[0].find('dataCenterId').text
+        if ET.iselement(interface.find('dataCenterId')):
+            datacenter_id = interface.find('dataCenterId').text
         else:
             datacenter_id = None
 
-        if ET.iselement(elements[0].find('dataCenterVersion')):
-            datacenter_version = elements[0].find('dataCenterVersion').text
+        if ET.iselement(interface.find('dataCenterVersion')):
+            datacenter_version = interface.find('dataCenterVersion').text
         else:
             datacenter_version = None
 
         ips = []
 
-        if ET.iselement(elements[0].find('ips')):
-            for ip in elements[0].findall('.//ips'):
-                ip = elements[0].find('ips').text
-                ips.append(ip)
+        if ET.iselement(interface.find('ips')):
+            for ip in interface.findall('.//ips'):
+                ips.append(ip.text)
 
         return ProfitBricksNetworkInterface(
             id=nic_id,

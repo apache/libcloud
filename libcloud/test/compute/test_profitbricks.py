@@ -347,7 +347,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEquals(interface.extra['mac_address'], "02:01:40:47:90:04")
         self.assertEquals(interface.extra['dhcp_active'], "true")
         self.assertEquals(interface.extra['gateway_ip'], None)
-        self.assertEquals(interface.extra['ips'], ['10.14.96.11', '10.14.96.11', '10.14.96.11'])
+        self.assertEquals(interface.extra['ips'], ['10.14.96.11', '162.254.26.14', '162.254.26.15'])
 
     def test_ex_create_network_interface(self):
         node = type('Node', (object,),
