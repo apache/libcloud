@@ -19,8 +19,6 @@ import base64
 import copy
 import time
 
-# from xml.etree import ElementTree as ET
-
 try:
     from lxml import etree as ET
 except ImportError:
@@ -36,8 +34,6 @@ from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
-__version__ = '1.0.0'
-
 API_HOST = 'api.profitbricks.com'
 API_VERSION = '/1.3/'
 
@@ -50,7 +46,7 @@ class ProfitBricksResponse(XmlResponse):
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML",
+            raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=ProfitBricksNodeDriver)
 
@@ -416,9 +412,9 @@ class ProfitBricksNodeDriver(NodeDriver):
             We generate a name from the server name passed into the function.
             '''
 
-            datacenter_name = name + "-DC"
+            datacenter_name = name + '-DC'
             dc = self.ex_create_datacenter(name=datacenter_name,
-                                           location="us/las")
+                                           location='us/las')
             datacenter_id = dc[0].id
 
             dc_operation_status = self.ex_describe_datacenter(dc[0])
@@ -440,18 +436,18 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if not size:
             if 'ram' not in kwargs:
-                raise ValueError("You need to either pass a ' \
-                    'NodeSize or specify 'ram' as an extra parameter.")
+                raise ValueError('You need to either pass a ' \
+                    'NodeSize or specify ram as an extra parameter.')
             if 'cores' not in kwargs:
-                raise ValueError("You need to either pass a ' \
-                    'NodeSize or specify 'cores' as an extra parameter.")
+                raise ValueError('You need to either pass a ' \
+                    'NodeSize or specify cores as an extra parameter.')
 
         if not volume:
             if not size:
                 if 'disk' not in kwargs:
-                    raise ValueError("You need to either pass a ' \
-                        'StorageVolume', a 'NodeSize', or specify ' \
-                        'disk' as an extra parameter.")
+                    raise ValueError('You need to either pass a ' \
+                        'StorageVolume, a NodeSize, or specify ' \
+                        'disk as an extra parameter.')
 
         '''
         You can override the suggested sizes by passing in unique
@@ -491,7 +487,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         server when it is created.
         '''
         if not volume:
-            volume_name = name + "-volume"
+            volume_name = name + '-volume'
 
             if datacenter:
                 volume = self.create_volume(size=disk,
@@ -891,7 +887,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 }
 
         if not name:
-            raise ValueError("You must provide a datacenter name.")
+            raise ValueError('You must provide a datacenter name.')
 
         return self._to_datacenters(
             self.connection.request(action=action,
@@ -1174,19 +1170,18 @@ class ProfitBricksNodeDriver(NodeDriver):
             datacenter) for datacenter in object.findall('.//return')]
 
     def _to_datacenter(self, datacenter):
-        elements = list(datacenter.iter())
-        datacenter_id = elements[0].find('dataCenterId').text
-        if ET.iselement(elements[0].find('dataCenterName')):
-            datacenter_name = elements[0].find('dataCenterName').text
+        datacenter_id = datacenter.find('dataCenterId').text
+        if ET.iselement(datacenter.find('dataCenterName')):
+            datacenter_name = datacenter.find('dataCenterName').text
         else:
             datacenter_name = None
-        datacenter_version = elements[0].find('dataCenterVersion').text
-        if ET.iselement(elements[0].find('provisioningState')):
-            provisioning_state = elements[0].find('provisioningState').text
+        datacenter_version = datacenter.find('dataCenterVersion').text
+        if ET.iselement(datacenter.find('provisioningState')):
+            provisioning_state = datacenter.find('provisioningState').text
         else:
             provisioning_state = None
-        if ET.iselement(elements[0].find('location')):
-            location = elements[0].find('location').text
+        if ET.iselement(datacenter.find('location')):
+            location = datacenter.find('location').text
         else:
             location = None
 
