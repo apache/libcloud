@@ -1211,9 +1211,23 @@ class GCENodeDriver(NodeDriver):
                                               use_existing=use_existing_disk,
                                               ex_disk_type=ex_disk_type)
 
-        if ex_metadata is not None:
-            ex_metadata = {"items": [{"key": k, "value": v}
-                                     for k, v in ex_metadata.items()]}
+        if not ex_metadata:
+            ex_metadata = None
+        elif not isinstance(ex_metadata, dict):
+            raise ValueError('metadata field is not a dictionnary.')
+        else:
+            if 'items' not in ex_metadata:
+                # The expected GCE format is odd:
+                # items: [{'value': '1', 'key': 'one'},
+                #        {'value': '2', 'key': 'two'},
+                #        {'value': 'N', 'key': 'N'}]
+                # So the only real key is items, and the values are tuples
+                # Since arbitrary values are fine, we only check for the key.
+                # If missing, we prefix it to the items.
+                items = []
+                for k, v in ex_metadata.items():
+                    items.append({'key': k, 'value': v})
+                ex_metadata = {'items': items}
 
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
