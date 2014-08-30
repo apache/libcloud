@@ -24,12 +24,12 @@ from mock import Mock
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
-                                          GCEAddress, GCEHealthCheck,
+                                          GCEAddress, GCEBackendService,
                                           GCEFirewall, GCEForwardingRule,
-                                          GCENetwork,
-                                          GCEZone,
-                                          GCENodeImage,
-                                          GCERoute)
+                                          GCEHealthCheck, GCENetwork,
+                                          GCENodeImage, GCERoute,
+                                          GCETargetHttpProxy, GCEUrlMap,
+                                          GCEZone)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleBaseConnection,
@@ -316,6 +316,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
 
+    def test_ex_create_backend_service(self):
+        backend_service_name = 'web-service'
+        backend_service = self.driver.ex_create_backend_service(
+            backend_service_name,
+            'lchealthcheck')
+        self.assertTrue(isinstance(backend_service, GCEBackendService))
+        self.assertEqual(backend_service.name, backend_service_name)
+
     def test_ex_create_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
         kwargs = {'host': 'lchost',
@@ -367,6 +375,22 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(fwr.protocol, 'TCP')
         self.assertEqual(fwr.extra['portRange'], port_range)
         self.assertEqual(fwr.extra['description'], description)
+
+    def test_ex_create_forwarding_rule_global(self):
+        fwr_name = 'http-rule'
+        target_name = 'web-proxy'
+        port_range = '80-80'
+        description = 'global forwarding rule'
+        for target in (target_name,
+                       self.driver.ex_get_target_http_proxy(target_name)):
+            fwr = self.driver.ex_create_forwarding_rule(fwr_name, target,
+                                                        global_rule=True,
+                                                        port_range=port_range,
+                                                        description=description)
+            self.assertTrue(isinstance(fwr, GCEForwardingRule))
+            self.assertEqual(fwr.name, fwr_name)
+            self.assertEqual(fwr.extra['portRange'], port_range)
+            self.assertEqual(fwr.extra['description'], description)
 
     def test_ex_create_route(self):
         route_name = 'lcdemoroute'
@@ -525,6 +549,23 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(targetpool.extra.get('sessionAffinity'),
                          session_affinity)
 
+    def test_ex_create_target_http_proxy(self):
+        proxy_name = 'web-proxy'
+        url_map_name = 'web-map'
+        for url_map in (url_map_name,
+                        self.driver.ex_get_url_map(url_map_name)):
+            proxy = self.driver.ex_create_target_http_proxy(proxy_name, url_map)
+            self.assertTrue(isinstance(proxy, GCETargetHttpProxy))
+            self.assertEqual(proxy_name, proxy.name)
+
+    def test_ex_create_url_map(self):
+        url_map_name = 'web-map'
+        for service in ('web-service',
+                        self.driver.ex_get_backend_service('web-service')):
+            url_map = self.driver.ex_create_url_map(url_map_name, service)
+            self.assertTrue(isinstance(url_map, GCEUrlMap))
+            self.assertEqual(url_map_name, url_map.name)
+
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
         volume = self.driver.ex_get_volume('lcdisk')
@@ -659,6 +700,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = address.destroy()
         self.assertTrue(destroyed)
 
+    def test_ex_destroy_backend_service(self):
+        backend_service = self.driver.ex_get_backend_service('web-service')
+        destroyed = backend_service.destroy()
+        self.assertTrue(destroyed)
+
     def test_ex_destroy_healthcheck(self):
         hc = self.driver.ex_get_healthcheck('lchealthcheck')
         destroyed = hc.destroy()
@@ -690,6 +736,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_destroy_forwarding_rule(self):
         fwr = self.driver.ex_get_forwarding_rule('lcforwardingrule')
+        destroyed = fwr.destroy()
+        self.assertTrue(destroyed)
+
+    def test_ex_destroy_forwarding_rule_global(self):
+        fwr = self.driver.ex_get_forwarding_rule('http-rule', global_rule=True)
         destroyed = fwr.destroy()
         self.assertTrue(destroyed)
 
@@ -725,6 +776,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_destroy_targetpool(self):
         targetpool = self.driver.ex_get_targetpool('lctargetpool')
         destroyed = targetpool.destroy()
+        self.assertTrue(destroyed)
+
+    def test_destroy_target_http_proxy(self):
+        proxy = self.driver.ex_get_target_http_proxy('web-proxy')
+        destroyed = proxy.destroy()
+        self.assertTrue(destroyed)
+
+    def test_destroy_url_map(self):
+        url_map = self.driver.ex_get_url_map('web-map')
+        destroyed = url_map.destroy()
         self.assertTrue(destroyed)
 
     def test_destroy_volume(self):
@@ -804,7 +865,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_get_forwarding_rule_global(self):
         fwr_name = 'http-rule'
-        fwr = self.driver.ex_get_forwarding_rule(fwr_name, global_rules=True)
+        fwr = self.driver.ex_get_forwarding_rule(fwr_name, global_rule=True)
         self.assertEqual(fwr.name, fwr_name)
         self.assertEqual(fwr.extra['portRange'], '80-80')
         self.assertEqual(fwr.targetpool.name, 'web-proxy')
@@ -1110,8 +1171,11 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_backendServices(self, method, url, body, headers):
-        body = self.fixtures.load('global_backendServices-%s.json' %
-                                  self.test.backend_services_mock)
+        if method == 'POST':
+            body = self.fixtures.load('global_backendServices_post.json')
+        else:
+            body = self.fixtures.load('global_backendServices-%s.json' %
+                                      self.test.backend_services_mock)
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_backendServices_no_backends(self, method, url, body, headers):
@@ -1119,15 +1183,25 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_backendServices_web_service(self, method, url, body, headers):
-        body = self.fixtures.load('global_backendServices_web_service.json')
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'global_backendServices_web_service_delete.json')
+        else:
+            body = self.fixtures.load('global_backendServices_web_service.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_forwardingRules(self, method, url, body, headers):
-        body = self.fixtures.load('global_forwardingRules.json')
+        if method == 'POST':
+            body = self.fixtures.load('global_forwardingRules_post.json')
+        else:
+            body = self.fixtures.load('global_forwardingRules.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_forwardingRules_http_rule(self, method, url, body, headers):
-        body = self.fixtures.load('global_forwardingRules_http_rule.json')
+        if method == 'DELETE':
+            body = self.fixtures.load('global_forwardingRules_http_rule_delete.json')
+        else:
+            body = self.fixtures.load('global_forwardingRules_http_rule.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_httpHealthChecks(self, method, url, body, headers):
@@ -1265,6 +1339,31 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_setCommonInstanceMetadata.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_global_backendServices_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_backendServices_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_backendServices_web_service_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_backendServices_web_service_delete'
+            '.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_forwardingRules_http_rule_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_forwardingRules_http_rule_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_forwardingRules_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_forwardingRules_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -1349,20 +1448,58 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_global_addresses_lcaddressglobal_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_global_targetHttpProxies_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_targetHttpProxies_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_targetHttpProxies_web_proxy_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_targetHttpProxies_web_proxy_delete'
+            '.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_urlMaps_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_urlMaps_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_urlMaps_web_map_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_urlMaps_web_map_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_targetHttpProxies(self, method, url, body, headers):
-        body = self.fixtures.load('global_targetHttpProxies.json')
+        if method == 'POST':
+            body = self.fixtures.load('global_targetHttpProxies_post.json')
+        else:
+            body = self.fixtures.load('global_targetHttpProxies.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_targetHttpProxies_web_proxy(self, method, url, body, headers):
-        body = self.fixtures.load('global_targetHttpProxies_web_proxy.json')
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'global_targetHttpProxies_web_proxy_delete.json')
+        else:
+            body = self.fixtures.load('global_targetHttpProxies_web_proxy.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_urlMaps(self, method, url, body, headers):
-        body = self.fixtures.load('global_urlMaps.json')
+        if method == 'POST':
+            body = self.fixtures.load('global_urlMaps_post.json')
+        else:
+            body = self.fixtures.load('global_urlMaps.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_urlMaps_web_map(self, method, url, body, headers):
-        body = self.fixtures.load('global_urlMaps_web_map.json')
+        if method == 'DELETE':
+            body = self.fixtures.load('global_urlMaps_web_map_delete.json')
+        else:
+            body = self.fixtures.load('global_urlMaps_web_map.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(

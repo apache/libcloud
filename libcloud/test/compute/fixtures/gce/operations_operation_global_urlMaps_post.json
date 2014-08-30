@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "14014131794489638887",
+ "name": "operation-global_urlMaps_post",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/urlMaps/web-map",
+ "targetId": "4266107551250249032",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-27T15:21:17.438-07:00",
+ "startTime": "2014-10-27T15:21:17.631-07:00",
+ "endTime": "2014-10-27T15:21:18.422-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation-global_urlMaps_post"
+}

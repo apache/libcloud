@@ -149,12 +149,22 @@ class GCEBackendService(UuidMixin):
         self.port_name = port_name
         self.protocol = protocol
         self.timeout = timeout
+        self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
 
     def __repr__(self):
         return '<GCEBackendService id="%s" name="%s">' % (
             self.id, self.name)
+
+    def destroy(self):
+        """
+        Destroy this Backend Service.
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_destroy_backend_service(backend_service=self)
 
 
 class GCEFailedDisk(object):
@@ -491,6 +501,15 @@ class GCETargetHttpProxy(UuidMixin):
         return '<GCETargetHttpProxy id="%s" name="%s">' % (
             self.id, self.name)
 
+    def destroy(self):
+        """
+        Destroy this Target HTTP Proxy.
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_target_http_proxy(target_http_proxy=self)
+
 
 class GCETargetInstance(UuidMixin):
     def __init__(self, id, name, zone, node, driver, extra=None):
@@ -645,6 +664,15 @@ class GCEUrlMap(UuidMixin):
     def __repr__(self):
         return '<GCEUrlMap id="%s" name="%s">' % (
             self.id, self.name)
+
+    def destroy(self):
+        """
+        Destroy this URL Map
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_url_map(url_map=self)
 
 
 class GCEZone(NodeLocation):
@@ -1434,6 +1462,30 @@ class GCENodeDriver(NodeDriver):
                                       data=address_data)
         return self.ex_get_address(name, region=region)
 
+    def ex_create_backend_service(self, name, healthcheck):
+        """
+        Create a global backend service.
+
+        :param  name: Name of the backend service
+        :type   name: ``str``
+
+        :keyword  healthcheck: HTTP health check to use with this service
+        :type     healthcheck: ``str`` or :class:`GCEHealthCheck`
+
+        :return:  A Backend Service object
+        :rtype:   :class:`GCEBackendService`
+        """
+        if not hasattr(healthcheck, 'name'):
+            healthcheck = self.ex_get_healthcheck(healthcheck)
+        backend_service_data = {
+            'name': name,
+            'healthChecks': [healthcheck.extra['selfLink']]}
+
+        request = '/global/backendServices'
+        self.connection.async_request(request, method='POST',
+                                      data=backend_service_data)
+        return self.ex_get_backend_service(name)
+
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
                               interval=None, timeout=None,
                               unhealthy_threshold=None,
@@ -1565,27 +1617,33 @@ class GCENodeDriver(NodeDriver):
                                       data=firewall_data)
         return self.ex_get_firewall(name)
 
-    def ex_create_forwarding_rule(self, name, targetpool, region=None,
+    def ex_create_forwarding_rule(self, name, target=None, region=None,
                                   protocol='tcp', port_range=None,
-                                  address=None, description=None):
+                                  address=None, description=None,
+                                  global_rule=False, targetpool=None):
         """
         Create a forwarding rule.
 
         :param  name: Name of forwarding rule to be created
         :type   name: ``str``
 
-        :param  targetpool: Target pool to apply the rule to
-        :param  targetpool: ``str`` or :class:`GCETargetPool`
+        :param  target: REQUIRED. The target of this forwarding rule.  For
+                        regional forwarding rules this should be a TargetPool
+                        in the same region.  For global rules this must be a
+                        global TargetHttpProxy.
+        :param  target: ``str`` or :class:`GCETargetPool` or
+                        :class:`GCETargetHttpProxy`
 
         :keyword  region: Region to create the forwarding rule in.  Defaults to
-                          self.region
+                          self.region.  Ignored if global_rule is True.
         :type     region: ``str`` or :class:`GCERegion`
 
         :keyword  protocol: Should be 'tcp' or 'udp'
         :type     protocol: ``str``
 
-        :keyword  port_range: Optional single port number or range separated
-                              by a dash.  Examples: '80', '5000-5999'.
+        :keyword  port_range: Single port number or range separated by a dash.
+                              Examples: '80', '5000-5999'.  Required for global
+                              forwarding rules, optional for regional rules.
         :type     port_range: ``str``
 
         :keyword  address: Optional static address for forwarding rule. Must be
@@ -1596,21 +1654,34 @@ class GCENodeDriver(NodeDriver):
                                Defaults to None.
         :type     description: ``str`` or ``None``
 
+        :param  targetpool: Deprecated parameter for backwards compatibility.
+                            Use target instead.
+        :param  targetpool: ``str`` or :class:`GCETargetPool`
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
-        forwarding_rule_data = {}
-        region = region or self.region
-        if not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
-        if not hasattr(targetpool, 'name'):
-            targetpool = self.ex_get_targetpool(targetpool, region)
+        # TODO: should global forwarding rules instead be separate libcloud
+        # objects?
+        forwarding_rule_data = {'name': name}
+        if global_rule:
+            if not hasattr(target, 'name'):
+                target = self.ex_get_target_http_proxy(target)
+        else:
+            region = region or self.region
+            if not hasattr(region, 'name'):
+                region = self.ex_get_region(region)
+            forwarding_rule_data['region'] = region.extra['selfLink']
 
-        forwarding_rule_data['name'] = name
-        forwarding_rule_data['region'] = region.extra['selfLink']
-        forwarding_rule_data['target'] = targetpool.extra['selfLink']
+            if not target:
+                target = targetpool
+            if not hasattr(target, 'name'):
+                target = self.ex_get_targetpool(target, region)
+
+        forwarding_rule_data['target'] = target.extra['selfLink']
         forwarding_rule_data['IPProtocol'] = protocol.upper()
-        if address:
+        # TODO: Support for global addresses
+        if address and not global_rule:
             if not hasattr(address, 'name'):
                 address = self.ex_get_address(address, region)
             forwarding_rule_data['IPAddress'] = address.address
@@ -1619,12 +1690,15 @@ class GCENodeDriver(NodeDriver):
         if description:
             forwarding_rule_data['description'] = description
 
-        request = '/regions/%s/forwardingRules' % (region.name)
+        if global_rule:
+            request = '/global/forwardingRules'
+        else:
+            request = '/regions/%s/forwardingRules' % (region.name)
 
         self.connection.async_request(request, method='POST',
                                       data=forwarding_rule_data)
 
-        return self.ex_get_forwarding_rule(name)
+        return self.ex_get_forwarding_rule(name, global_rule=global_rule)
 
     def ex_create_image(self, name, volume, description=None,
                         use_existing=True, wait_for_completion=True):
@@ -2176,6 +2250,58 @@ class GCENodeDriver(NodeDriver):
                                       data=targetpool_data)
 
         return self.ex_get_targetpool(name, region)
+
+    def ex_create_target_http_proxy(self, name, url_map):
+        """
+        Create a target HTTP proxy.
+
+        :param  name: Name of target HTTP proxy
+        :type   name: ``str``
+
+        :keyword  url_map: URL map defining the mapping from URl to the
+                           backend_service.
+        :type     healthchecks: ``str`` or :class:`GCEUrlMap`
+
+        :return:  Target Pool object
+        :rtype:   :class:`GCETargetPool`
+        """
+        targetproxy_data = {'name': name}
+
+        if not hasattr(url_map, 'name'):
+            url_map = self.ex_get_url_map(url_map)
+        targetproxy_data['urlMap'] = url_map.extra['selfLink']
+
+        request = '/global/targetHttpProxies'
+        self.connection.async_request(request, method='POST',
+                                      data=targetproxy_data)
+
+        return self.ex_get_target_http_proxy(name)
+
+    def ex_create_url_map(self, name, default_service):
+        """
+        Create a URL Map.
+
+        :param  name: Name of the URL Map.
+        :type   name: ``str``
+
+        :keyword  default_service: Default backend service for the map.
+        :type     default_service: ``str`` or :class:`GCEBackendService`
+
+        :return:  URL Map object
+        :rtype:   :class:`GCEUrlMap`
+        """
+        url_map_data = {'name': name}
+
+        # TODO: support hostRules, pathMatchers, tests
+        if not hasattr(default_service, 'name'):
+            default_service = self.ex_get_backend_service(default_service)
+        url_map_data['defaultService'] = default_service.extra['selfLink']
+
+        request = '/global/urlMaps'
+        self.connection.async_request(request, method='POST',
+                                      data=url_map_data)
+
+        return self.ex_get_url_map(name)
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
@@ -2830,6 +2956,21 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_destroy_backend_service(self, backend_service):
+        """
+        Destroy a Backend Service.
+
+        :param  backend_service: BackendService object to destroy
+        :type   backend_service: :class:`GCEBackendService`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/backendServices/%s' % backend_service.name
+
+        self.connection.async_request(request, method='DELETE')
+        return True
+
     def ex_delete_image(self, image):
         """
         Delete a specific image resource.
@@ -2959,8 +3100,11 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/regions/%s/forwardingRules/%s' % (
-            forwarding_rule.region.name, forwarding_rule.name)
+        if forwarding_rule.region:
+            request = '/regions/%s/forwardingRules/%s' % (
+                forwarding_rule.region.name, forwarding_rule.name)
+        else:
+            request = '/global/forwardingRules/%s' % forwarding_rule.name
         self.connection.async_request(request, method='DELETE')
         return True
 
@@ -3135,6 +3279,20 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_destroy_target_http_proxy(self, target_http_proxy):
+        """
+        Destroy a target HTTP proxy.
+
+        :param  target_http_proxy: TargetHttpProxy object to destroy
+        :type   target_http_proxy: :class:`GCETargetHttpProxy`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/targetHttpProxies/%s' % target_http_proxy.name
+        self.connection.async_request(request, method='DELETE')
+        return True
+
     def ex_destroy_targetpool(self, targetpool):
         """
         Destroy a target pool.
@@ -3147,6 +3305,21 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/regions/%s/targetPools/%s' % (targetpool.region.name,
                                                   targetpool.name)
+
+        self.connection.async_request(request, method='DELETE')
+        return True
+
+    def ex_destroy_url_map(self, url_map):
+        """
+        Destroy a URL map.
+
+        :param  url_map: UrlMap object to destroy
+        :type   url_map: :class:`GCEUrlMap`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/urlMaps/%s' % url_map.name
 
         self.connection.async_request(request, method='DELETE')
         return True
@@ -3287,7 +3460,7 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_firewall(response)
 
-    def ex_get_forwarding_rule(self, name, region=None, global_rules=False):
+    def ex_get_forwarding_rule(self, name, region=None, global_rule=False):
         """
         Return a Forwarding Rule object based on the forwarding rule name.
 
@@ -3298,18 +3471,19 @@ class GCENodeDriver(NodeDriver):
                           to search all regions).
         :type     region: ``str`` or ``None``
 
-        :keyword  global_rules: Set to True to get a global forwarding rule.
+        :keyword  global_rule: Set to True to get a global forwarding rule.
                                 Region will be ignored if True.
-        :type     global_rules: ``bool``
+        :type     global_rule: ``bool``
 
         :return:  A GCEForwardingRule object
         :rtype:   :class:`GCEForwardingRule`
         """
-        if global_rules:
+        if global_rule:
             request = '/global/forwardingRules/%s' % name
         else:
             region = self._set_region(region) or self._find_zone_or_region(
-                name, 'forwardingRules', region=True, res_name='ForwardingRule')
+                name, 'forwardingRules', region=True,
+                res_name='ForwardingRule')
             request = '/regions/%s/forwardingRules/%s' % (region.name, name)
 
         response = self.connection.request(request, method='GET').object
