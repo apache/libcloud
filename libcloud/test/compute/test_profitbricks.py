@@ -15,7 +15,6 @@
 
 import sys
 import httplib
-# import unittest
 import libcloud.security
 
 import libcloud
