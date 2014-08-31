@@ -16,6 +16,13 @@
 import unittest
 import sys
 
+try:
+    import Crypto
+    Crypto
+    crypto = True
+except ImportError:
+    crypto = False
+
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.utils.py3 import httplib
