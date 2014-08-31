@@ -422,29 +422,6 @@ class SoftLayerNodeDriver(NodeDriver):
 
         return self._to_node(raw_node)
 
-    def _to_key_pairs(self, elems):
-        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
-        return key_pairs
-
-    def _to_key_pair(self, elem):
-        key_pair = KeyPair(name=elem['label'],
-                           public_key=elem['key'],
-                           fingerprint=elem['fingerprint'],
-                           private_key=elem.get('private', None),
-                           driver=self,
-                           extra={'id': elem['id']})
-        return key_pair
-
-    def _key_name_to_id(self, key):
-        result = self.connection.request(
-            'SoftLayer_Account', 'getSshKeys'
-        ).object
-        key_id = [x for x in result if x['label'] == key]
-        if len(key_id) == 0:
-            raise KeyPairDoesNotExistError(key, self)
-        else:
-            return int(key_id[0]['id'])
-
     def list_key_pairs(self):
         result = self.connection.request(
             'SoftLayer_Account', 'getSshKeys'
@@ -454,7 +431,7 @@ class SoftLayerNodeDriver(NodeDriver):
         return key_pairs
 
     def get_key_pair(self, name):
-        key_id = self._key_name_to_id(name)
+        key_id = self._key_name_to_id(name=name)
         result = self.connection.request(
             'SoftLayer_Security_Ssh_Key', 'getObject', id=key_id
         ).object
@@ -462,20 +439,20 @@ class SoftLayerNodeDriver(NodeDriver):
 
     # TODO: Check this with the libcloud guys,
     # can we create new dependencies?
-    def create_key_pair(self, name):
+    def create_key_pair(self, name, ex_size=4096):
         if crypto is False:
-            raise NotImplementedError("create_key_pair needs"
-                                      " the pycrypto library")
-        key = RSA.generate(2048)
+            raise NotImplementedError('create_key_pair needs'
+                                      'the pycrypto library')
+        key = RSA.generate(ex_size)
         new_key = {
-            'key': key.publickey().exportKey("OpenSSH"),
+            'key': key.publickey().exportKey('OpenSSH'),
             'label': name,
             'notes': '',
         }
         result = self.connection.request(
             'SoftLayer_Security_Ssh_Key', 'createObject', new_key
         ).object
-        result['private'] = key.exportKey("PEM")
+        result['private'] = key.exportKey('PEM')
         return self._to_key_pair(result)
 
     def import_key_pair_from_string(self, name, key_material):
@@ -554,8 +531,31 @@ class SoftLayerNodeDriver(NodeDriver):
             },
         }
         res = self.connection.request(
-            "SoftLayer_Account",
-            "getVirtualGuests",
+            'SoftLayer_Account',
+            'getVirtualGuests',
             object_mask=mask
         ).object
         return [self._to_node(h) for h in res]
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        key_pair = KeyPair(name=elem['label'],
+                           public_key=elem['key'],
+                           fingerprint=elem['fingerprint'],
+                           private_key=elem.get('private', None),
+                           driver=self,
+                           extra={'id': elem['id']})
+        return key_pair
+
+    def _key_name_to_id(self, name):
+        result = self.connection.request(
+            'SoftLayer_Account', 'getSshKeys'
+        ).object
+        key_id = [x for x in result if x['label'] == name]
+        if len(key_id) == 0:
+            raise KeyPairDoesNotExistError(name, self)
+        else:
+            return int(key_id[0]['id'])
