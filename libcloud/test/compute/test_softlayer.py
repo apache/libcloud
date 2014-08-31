@@ -16,6 +16,14 @@
 import unittest
 import sys
 
+crypto = False
+try:
+    import Crypto
+    crypto = True
+    Crypto
+except ImportError:
+    pass
+
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.utils.py3 import httplib
@@ -25,11 +33,14 @@ from libcloud.utils.py3 import next
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.compute.drivers.softlayer import SoftLayerException, \
     NODE_STATE_MAP
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
 from libcloud.test import MockHttp               # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import SOFTLAYER_PARAMS
+
+null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                   '00:00:00:00:00'
 
 
 class SoftLayerTests(unittest.TestCase):
@@ -119,6 +130,7 @@ class SoftLayerTests(unittest.TestCase):
                                 ex_cpus=2,
                                 ex_ram=2048,
                                 ex_disk=100,
+                                ex_key='test1',
                                 ex_bandwidth=10,
                                 ex_local_disk=False,
                                 ex_datacenter='Dal05',
@@ -131,6 +143,37 @@ class SoftLayerTests(unittest.TestCase):
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
+
+    def test_list_keypairs(self):
+        keypairs = self.driver.list_key_pairs()
+        self.assertEqual(len(keypairs), 2)
+        self.assertEqual(keypairs[0].name, 'test1')
+        self.assertEqual(keypairs[0].fingerprint, null_fingerprint)
+
+    def test_get_key_pair(self):
+        key_pair = self.driver.get_key_pair(name='test1')
+        self.assertEqual(key_pair.name, 'test1')
+
+    def test_get_key_pair_does_not_exist(self):
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair,
+                          name='test-key-pair')
+
+    def test_create_key_pair(self):
+        if crypto:
+            key_pair = self.driver.create_key_pair(name='my-key-pair')
+            fingerprint = ('1f:51:ae:28:bf:89:e9:d8:1f:25:5d'
+                           ':37:2d:7d:b8:ca:9f:f5:f1:6f')
+
+            self.assertEqual(key_pair.name, 'my-key-pair')
+            self.assertEqual(key_pair.fingerprint, fingerprint)
+            self.assertTrue(key_pair.private_key is not None)
+        else:
+            self.assertRaises(NotImplementedError, self.driver.create_key_pair,
+                              name='my-key-pair')
+
+    def test_delete_key_pair(self):
+        success = self.driver.delete_key_pair('test1')
+        self.assertTrue(success)
 
 
 class SoftLayerMockHttp(MockHttp):
@@ -186,6 +229,26 @@ class SoftLayerMockHttp(MockHttp):
     def _xmlrpc_v3_SoftLayer_Virtual_Guest_deleteObject(
             self, method, url, body, headers):
         body = self.fixtures.load('empty.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3_SoftLayer_Account_getSshKeys(
+            self, method, url, body, headers):
+        body = self.fixtures.load('v3__SoftLayer_Account_getSshKeys.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_getObject(
+            self, method, url, body, headers):
+        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_getObject.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_createObject(
+            self, method, url, body, headers):
+        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_createObject.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_deleteObject(
+            self, method, url, body, headers):
+        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_deleteObject.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
