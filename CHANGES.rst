@@ -78,6 +78,10 @@ Compute
   (LIBCLOUD-544, GITHUB-349, GITHUB-353)
   [Raphael Theberge]
 
+- Add SSH key pair management methods to the Softlayer driver.
+  (GITHUB-321, GITHUB-354)
+  [Itxaka Serrano]
+
 Storage
 ~~~~~~~
 
