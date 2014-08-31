@@ -17,12 +17,11 @@ Softlayer driver
 """
 
 import time
-crypto = False
 try:
     from Crypto.PublicKey import RSA
     crypto = True
 except ImportError:
-    pass
+    crypto = False
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
