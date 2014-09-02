@@ -39,7 +39,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.openstack import OpenStackException
 from libcloud.common.openstack import OpenStackResponse
-from libcloud.utils.networking import is_private_subnet
+from libcloud.utils.networking import is_public_subnet
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
@@ -1942,20 +1942,36 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         public_ips, private_ips = [], []
 
         for label, values in api_node['addresses'].items():
-            ips = [v['addr'] for v in values]
+            for value in values:
+                ip = value['addr']
 
-            if label in public_networks_labels:
-                public_ips.extend(ips)
-            else:
-                for ip in ips:
-                    # is_private_subnet does not check for ipv6
-                    try:
-                        if is_private_subnet(ip):
-                            private_ips.append(ip)
-                        else:
-                            public_ips.append(ip)
-                    except:
-                        private_ips.append(ip)
+                is_public_ip = False
+
+                try:
+                    public_subnet = is_public_subnet(ip)
+                except:
+                    # IPv6
+                    public_subnet = False
+
+                # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
+                # public and 'fixed' for private
+                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+
+                if explicit_ip_type == 'floating':
+                    is_public_ip = True
+                elif explicit_ip_type == 'fixed':
+                    is_public_ip = False
+                elif label in public_networks_labels:
+                    # Try label next
+                    is_public_ip = True
+                elif public_subnet:
+                    # Check for public subnet
+                    is_public_ip = True
+
+                if is_public_ip:
+                    public_ips.append(ip)
+                else:
+                    private_ips.append(ip)
 
         # Sometimes 'image' attribute is not present if the node is in an error
         # state

@@ -82,6 +82,10 @@ Compute
   (GITHUB-321, GITHUB-354)
   [Itxaka Serrano]
 
+- Correctly categorize node IP addresses into public and private when dealing
+  with OpenStack floating IPs.
+  [Andrew Mann]
+
 Storage
 ~~~~~~~
 
