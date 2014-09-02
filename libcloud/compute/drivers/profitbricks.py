@@ -34,6 +34,15 @@ from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
+__all__ = [
+    'API_VERSION',
+    'API_HOST',
+    'ProfitBricksNodeDriver',
+    'Datacenter',
+    'ProfitBricksNetworkInterface',
+    'ProfitBricksAvailabilityZone'
+]
+
 API_HOST = 'api.profitbricks.com'
 API_VERSION = '/1.3/'
 
@@ -94,13 +103,13 @@ class ProfitBricksConnection(ConnectionUserAndKey):
 
         if 'request' in data.keys():
             soap_req_body = ET.SubElement(soap_req_body, 'request')
-            for key, value in data.iteritems():
-                if not (key == 'action' or key == 'request'):
+            for key, value in data.items():
+                if key not in ['action', 'request']:
                     child = ET.SubElement(soap_req_body, key)
                     child.text = value
         else:
-            for key, value in data.iteritems():
-                if not (key == 'action'):
+            for key, value in data.items():
+                if key != 'action':
                     child = ET.SubElement(soap_req_body, key)
                     child.text = value
 
@@ -204,7 +213,7 @@ class ProfitBricksNodeDriver(NodeDriver):
     Base ProfitBricks node driver.
     """
     connectionCls = ProfitBricksConnection
-    name = "ProfitBricks Node Provider"
+    name = 'ProfitBricks Node Provider'
     website = 'http://www.profitbricks.com'
     type = Provider.PROFIT_BRICKS
 
@@ -311,7 +320,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         sizes = []
 
         for key, values in self.PROFIT_BRICKS_GENERIC_SIZES.items():
-            node_size = self._to_node_size(copy.deepcopy(values))
+            node_size = self._to_node_size(values)
             sizes.append(node_size)
 
         return sizes
@@ -336,7 +345,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         locations = []
 
         for key, values in self.REGIONS.items():
-            location = self._to_location(copy.deepcopy(values))
+            location = self._to_location(values)
             locations.append(location)
 
         return locations
@@ -370,8 +379,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         return True
 
     def create_node(self, name, image, size=None, volume=None,
-                    datacenter=None, internet_access=True,
-                    availability_zone=None, **kwargs):
+                    ex_datacenter=None, ex_internet_access=True,
+                    ex_availability_zone=None, ex_ram=None,
+                    ex_cores=None, ex_disk=None, **kwargs):
         """
         Creates a node.
 
@@ -382,72 +392,59 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param volume: If the volume already exists then pass this in.
         :type volume: :class:`StorageVolume`
 
-        :param datacenter: If you've already created the DC then pass
+        :param ex_datacenter: If you've already created the DC then pass
                            it in.
-        :type datacenter: :class:`Datacenter`
+        :type ex_datacenter: :class:`Datacenter`
 
-        :param internet_access: Configure public Internet access.
-        :type internet_access: : ``bool``
+        :param ex_internet_access: Configure public Internet access.
+        :type ex_internet_access: : ``bool``
 
-        :param availability_zone: The availability zone.
-        :type availability_zone: class: `ProfitBricksAvailabilityZone`
+        :param ex_availability_zone: The availability zone.
+        :type ex_availability_zone: class: `ProfitBricksAvailabilityZone`
 
-        :param ram: The amount of ram required.
-        :type ram: : ``int``
+        :param ex_ram: The amount of ram required.
+        :type ex_ram: : ``int``
 
-        :param cores: The number of cores required.
-        :type cores: : ``int``
+        :param ex_cores: The number of cores required.
+        :type ex_cores: : ``int``
 
-        :param disk: The amount of disk required.
-        :type disk: : ``int``
+        :param ex_disk: The amount of disk required.
+        :type ex_disk: : ``int``
 
         :return:    Instance of class ``Node``
         :rtype:     :class:`Node`
         """
-
-        if not datacenter:
+        if not ex_datacenter:
             '''
             We generate a name from the server name passed into the function.
             '''
 
-            datacenter_name = name + '-DC'
-            dc = self.ex_create_datacenter(name=datacenter_name,
-                                           location='us/las')
-            datacenter_id = dc[0].id
+            'Creating a Datacenter for the node since one was not provided.'
+            new_datacenter = self._create_new_datacenter_for_node(name=name)
+            datacenter_id = new_datacenter[0].id
 
-            dc_operation_status = self.ex_describe_datacenter(dc[0])
-
-            timeout = 60 * 5
-            waittime = 0
-            interval = 5
-
-            while (dc_operation_status[0].extra['provisioning_state'] == 3
-                   ) and (waittime < timeout):
-                dc_operation_status = self.ex_describe_volume(volume[0])
-                if dc_operation_status[0].extra['provisioning_state'] == 0:
-                    break
-
-                waittime += interval
-                time.sleep(interval)
+            'Waiting for the Datacenter create operation to finish.'
+            self._wait_for_datacenter_state(new_datacenter)
         else:
-            datacenter_id = datacenter.id
+            datacenter_id = ex_datacenter.id
+            new_datacenter = None
 
         if not size:
-            if 'ram' not in kwargs:
+            if not ex_ram:
                 raise ValueError('You need to either pass a '
-                                 'NodeSize or specify ram as '
+                                 'NodeSize or specify ex_ram as '
                                  'an extra parameter.')
-            if 'cores' not in kwargs:
+            if not ex_cores:
                 raise ValueError('You need to either pass a '
-                                 'NodeSize or specify cores as '
+                                 'NodeSize or specify ex_cores as '
                                  'an extra parameter.')
 
         if not volume:
             if not size:
-                if 'disk' not in kwargs:
+                if not ex_disk:
                     raise ValueError('You need to either pass a '
                                      'StorageVolume, a NodeSize, or specify '
-                                     'disk as an extra parameter.')
+                                     'ex_disk as an extra parameter.')
 
         '''
         You can override the suggested sizes by passing in unique
@@ -455,20 +452,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         for your specific use.
         '''
 
-        if 'disk' in kwargs:
-            disk = kwargs['disk']
-        else:
-            disk = size.disk
+        if not ex_disk:
+            ex_disk = size.disk
 
-        if 'ram' in kwargs:
-            ram = kwargs['ram']
-        else:
-            ram = size.ram
+        if not ex_ram:
+            ex_ram = size.ram
 
-        if 'cores' in kwargs:
-            cores = kwargs['cores']
-        else:
-            cores = size.extra['cores']
+        if not ex_cores:
+            ex_cores = size.extra['cores']
 
         '''
         A pasword is automatically generated if it is
@@ -487,25 +478,21 @@ class ProfitBricksNodeDriver(NodeDriver):
         server when it is created.
         '''
         if not volume:
-            volume_name = name + '-volume'
-
-            if datacenter:
-                volume = self.create_volume(size=disk,
-                                            ex_datacenter=datacenter,
-                                            ex_image=image,
-                                            ex_password=password,
-                                            name=volume_name)
-            else:
-                volume = self.create_volume(size=disk,
-                                            ex_datacenter=dc[0],
-                                            ex_image=image,
-                                            ex_password=password,
-                                            name=volume_name)
+            volume = self._create_node_volume(ex_disk=ex_disk,
+                                              image=image,
+                                              password=password,
+                                              name=name,
+                                              ex_datacenter=ex_datacenter,
+                                              new_datacenter=new_datacenter)
 
             storage_id = volume[0].id
+
+            'Waiting on the storage volume to be created before provisioning '
+            'the instance.'
+            self._wait_for_storage_volume_state(volume)
         else:
-            if datacenter:
-                datacenter_id = datacenter.id
+            if ex_datacenter:
+                datacenter_id = ex_datacenter.id
             else:
                 datacenter_id = volume.extra['datacenter_id']
 
@@ -515,30 +502,15 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {'action': action,
                 'request': 'true',
                 'serverName': name,
-                'cores': str(cores),
-                'ram': str(ram),
+                'cores': str(ex_cores),
+                'ram': str(ex_ram),
                 'bootFromStorageId': storage_id,
-                'internetAccess': str(internet_access).lower(),
+                'internetAccess': str(ex_internet_access).lower(),
                 'dataCenterId': datacenter_id
                 }
 
-        if availability_zone:
-            body['availabilityZone'] = availability_zone.name
-
-        operation_status = self.ex_describe_volume(volume[0])
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5
-
-        while (operation_status[0].extra['provisioning_state'] == 3
-               ) and (waittime < timeout):
-            operation_status = self.ex_describe_volume(volume[0])
-            if operation_status[0].extra['provisioning_state'] == 0:
-                break
-
-            waittime += interval
-            time.sleep(interval)
+        if ex_availability_zone:
+            body['availabilityZone'] = ex_availability_zone.name
 
         return self._to_nodes(self.connection.request(action=action,
                                                       data=body,
@@ -829,8 +801,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param ram: The amount of ram the machine should have.
         :type ram: : ``int``
 
-        :param availability_zone: Update the availability zone.
-        :type availability_zone: :class:`ProfitBricksAvailabilityZone`
+        :param ex_availability_zone: Update the availability zone.
+        :type ex_availability_zone: :class:`ProfitBricksAvailabilityZone`
 
         :rtype:     : ``bool``
         """
@@ -885,9 +857,6 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterName': name,
                 'location': location.lower()
                 }
-
-        if not name:
-            raise ValueError('You must provide a datacenter name.')
 
         return self._to_datacenters(
             self.connection.request(action=action,
@@ -949,11 +918,11 @@ class ProfitBricksNodeDriver(NodeDriver):
                                     data=body,
                                     method='POST').object)
 
-    def ex_update_datacenter(self, datacenter, name):
+    def ex_rename_datacenter(self, datacenter, name):
         """
         Update a datacenter.
 
-        :param datacenter: The DC you're destroying.
+        :param datacenter: The DC you are renaming.
         :type datacenter: :class:`Datacenter`
 
         :param name: The DC name.
@@ -980,7 +949,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         This removes all objects in a DC.
 
-        :param datacenter: The DC you're destroying.
+        :param datacenter: The DC you're clearing.
         :type datacenter: :class:`Datacenter`
 
         :rtype:     : ``bool``
@@ -1028,10 +997,11 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'nicId': network_interface.id
                 }
 
-        return self._to_interfaces(
-            self.connection.request(action=action,
-                                    data=body,
-                                    method='POST').object)
+        return self._to_interface(
+            self.connection.request(
+                action=action,
+                data=body,
+                method='POST').object.findall('.//return')[0])
 
     def ex_create_network_interface(self, node,
                                     lan_id=None, ip=None, nic_name=None,
@@ -1140,27 +1110,20 @@ class ProfitBricksNodeDriver(NodeDriver):
         return True
 
     def ex_set_inet_access(self, datacenter,
-                           network_interface, internet_access=True):
+                           network_interface, ex_internet_access=True):
 
         action = 'setInternetAccess'
 
         body = {'action': action,
                 'dataCenterId': datacenter.id,
                 'lanId': network_interface.extra['lan_id'],
-                'internetAccess': str(internet_access).lower()
+                'internetAccess': str(ex_internet_access).lower()
                 }
 
         self.connection.request(action=action,
                                 data=body, method='POST').object
 
         return True
-
-    """ Snapshot Functions Not Implemented
-    """
-    def create_volume_snapshot(self):
-        raise NotImplementedError(
-            'While supported, this is '
-            'not implemented at this time.')
 
     """Private Functions
     """
@@ -1529,3 +1492,78 @@ class ProfitBricksNodeDriver(NodeDriver):
                         driver=self.connection.driver,
                         extra={
                             'cores': data["cores"]})
+
+    def _wait_for_datacenter_state(
+            self,
+            datacenter,
+            state=PROVISIONING_STATE.get(NodeState.RUNNING)):
+        """
+        Private function that waits the datacenter
+        """
+        dc_operation_status = self.ex_describe_datacenter(datacenter[0])
+
+        timeout = 60 * 5
+        waittime = 0
+        interval = 5
+
+        while ((dc_operation_status[0].extra['provisioning_state']) ==
+                (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
+                waittime < timeout):
+            dc_operation_status = self.ex_describe_datacenter(datacenter[0])
+            if dc_operation_status[0].extra['provisioning_state'] == state:
+                break
+
+            waittime += interval
+            time.sleep(interval)
+
+    def _create_new_datacenter_for_node(self, name):
+        """
+        Creates a Datacenter for a node.
+        """
+        dc_name = name + '-DC'
+
+        return self.ex_create_datacenter(name=dc_name, location='us/las')
+
+    def _wait_for_storage_volume_state(
+            self,
+            volume,
+            state=PROVISIONING_STATE.get(NodeState.RUNNING)):
+        """
+        Waits for the storage volume to be createDataCenter
+        before it allows the process to move on.
+        """
+        operation_status = self.ex_describe_volume(volume[0])
+
+        timeout = 60 * 5
+        waittime = 0
+        interval = 5
+
+        while ((operation_status[0].extra['provisioning_state']) ==
+                (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
+                waittime < timeout):
+            operation_status = self.ex_describe_volume(volume[0])
+            if operation_status[0].extra['provisioning_state'] == state:
+                break
+
+            waittime += interval
+            time.sleep(interval)
+
+    def _create_node_volume(self, ex_disk, image, password,
+                            name, ex_datacenter=None, new_datacenter=None):
+
+        volume_name = name + '-volume'
+
+        if ex_datacenter:
+            volume = self.create_volume(size=ex_disk,
+                                        ex_datacenter=ex_datacenter,
+                                        ex_image=image,
+                                        ex_password=password,
+                                        name=volume_name)
+        else:
+            volume = self.create_volume(size=ex_disk,
+                                        ex_datacenter=new_datacenter[0],
+                                        ex_image=image,
+                                        ex_password=password,
+                                        name=volume_name)
+
+        return volume

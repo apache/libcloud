@@ -14,29 +14,24 @@
 # limitations under the License.
 
 import sys
-import httplib
 import libcloud.security
-
 import libcloud
 
+from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.test import unittest
+from libcloud.test.secrets import PROFIT_BRICKS_PARAMS
 
 
 class ProfitBricksTests(unittest.TestCase):
 
-    libcloud.security.VERIFY_SSL_CERT = False
-
-    USER_ID = 'user@profitbricks.com'
-    KEY = 'password'
-
     def setUp(self):
         ProfitBricks = get_driver(Provider.PROFIT_BRICKS)
         ProfitBricks.connectionCls.conn_classes = (None, ProfitBricksMockHttp)
-        self.driver = ProfitBricks(self.USER_ID, self.KEY)
+        self.driver = ProfitBricks(*PROFIT_BRICKS_PARAMS)
 
     ''' Server Function Tests
     '''
@@ -299,11 +294,11 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEquals(dc1.name, "StackPointCloud")
         self.assertEquals(dc1.datacenter_version, "1")
 
-    def test_ex_update_datacenter(self):
+    def test_ex_rename_datacenter(self):
         datacenter = type('Datacenter', (object,),
                           dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
 
-        update = self.driver.ex_update_datacenter(datacenter=datacenter,
+        update = self.driver.ex_rename_datacenter(datacenter=datacenter,
                                                   name="StackPointCloud")
 
         self.assertTrue(update)
@@ -382,7 +377,7 @@ class ProfitBricksTests(unittest.TestCase):
                                  dict(
                                  id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
-        describe = self.driver.ex_describe_network_interface(network_interface=network_interface)[0]
+        describe = self.driver.ex_describe_network_interface(network_interface=network_interface)
 
         self.assertEquals(describe.id, "f1c7a244-2fa6-44ee-8fb6-871f337683a3")
         self.assertEquals(describe.name, None)
