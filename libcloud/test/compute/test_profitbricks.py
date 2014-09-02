@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import libcloud.security
 
 from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
