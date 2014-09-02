@@ -15,7 +15,6 @@
 
 import sys
 import libcloud.security
-import libcloud
 
 from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
@@ -394,7 +393,6 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        sizes = sorted(sizes)
 
         self.assertEqual(len(sizes), 7)
 
