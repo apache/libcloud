@@ -56,7 +56,7 @@ Provider                              list key pairs get key pair create key pai
 `RimuHosting`_                        no             no           no              no                            no                          no             
 `ServerLove`_                         no             no           no              no                            no                          no             
 `skalicloud`_                         no             no           no              no                            no                          no             
-`SoftLayer`_                          no             no           no              no                            no                          no             
+`SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
 `vCloud`_                             no             no           no              no                            no                          no             
 `VCL`_                                no             no           no              no                            no                          no             
 `vCloud`_                             no             no           no              no                            no                          no             
