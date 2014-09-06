@@ -27,9 +27,11 @@ import requests
 import demjson
 
 LINUX_PRICING_URLS = [
-    # Deprecated instances, JSON format
+    # Deprecated instances (JSON format)
     'http://aws.amazon.com/ec2/pricing/json/linux-od.json',
-    # Instancances JavaScript files
+    # Previous generation instances (JavaScript file)
+    'http://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js',
+    # New generation instances (JavaScript file)
     'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
 ]
 
