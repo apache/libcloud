@@ -1,6 +1,9 @@
 {
     "compute": {
         "ec2_us_west_oregon": {
+            "t2.micro": "0.013",
+            "t2.small": "0.026",
+            "t2.medium": "0.052",
             "m3.medium": "0.070",
             "m3.large": "0.140",
             "m3.xlarge": "0.280",
@@ -36,6 +39,9 @@
             "t1.micro": "0.020"
         },
         "ec2_us_west": {
+            "t2.micro": "0.017",
+            "t2.small": "0.034",
+            "t2.medium": "0.068",
             "m3.medium": "0.077",
             "m3.large": "0.154",
             "m3.xlarge": "0.308",
@@ -67,6 +73,9 @@
             "t1.micro": "0.025"
         },
         "ec2_eu_west": {
+            "t2.micro": "0.014",
+            "t2.small": "0.028",
+            "t2.medium": "0.056",
             "m3.medium": "0.077",
             "m3.large": "0.154",
             "m3.xlarge": "0.308",
@@ -121,6 +130,9 @@
             "8": 1.612
         },
         "ec2_ap_southeast_2": {
+            "t2.micro": "0.020",
+            "t2.small": "0.040",
+            "t2.medium": "0.080",
             "m3.medium": "0.098",
             "m3.large": "0.196",
             "m3.xlarge": "0.392",
@@ -155,6 +167,9 @@
             "1": 0.416
         },
         "ec2_us_east": {
+            "t2.micro": "0.013",
+            "t2.small": "0.026",
+            "t2.medium": "0.052",
             "m3.medium": "0.070",
             "m3.large": "0.140",
             "m3.xlarge": "0.280",
@@ -209,6 +224,9 @@
             "8": 1.2
         },
         "ec2_sa_east": {
+            "t2.micro": "0.027",
+            "t2.small": "0.054",
+            "t2.medium": "0.108",
             "m3.medium": "0.095",
             "m3.large": "0.190",
             "m3.xlarge": "0.381",
@@ -254,6 +272,9 @@
             "8": 1.44
         },
         "ec2_ap_northeast": {
+            "t2.micro": "0.020",
+            "t2.small": "0.040",
+            "t2.medium": "0.080",
             "m3.medium": "0.101",
             "m3.large": "0.203",
             "m3.xlarge": "0.405",
@@ -374,6 +395,9 @@
             "1gb": 0.15
         },
         "ec2_ap_southeast": {
+            "t2.micro": "0.020",
+            "t2.small": "0.040",
+            "t2.medium": "0.080",
             "m3.medium": "0.098",
             "m3.large": "0.196",
             "m3.xlarge": "0.392",
@@ -562,5 +586,5 @@
         }
     },
     "storage": {},
-    "updated": 1397154837
+    "updated": 1410023366
 }

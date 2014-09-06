@@ -335,6 +335,37 @@ INSTANCE_TYPES = {
         'ram': 244000,
         'disk': 320,  # x2
         'bandwidth': None
+    },
+    't2.micro': {
+        'id': 't2.micro',
+        'name': 'Burstable Performance Micro Instance',
+        'ram': 1024,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 1
+        }
+    },
+    # Burstable Performance General Purpose
+    't2.small': {
+        'id': 't2.small',
+        'name': 'Burstable Performance Small Instance',
+        'ram': 2048,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 11
+        }
+    },
+    't2.medium': {
+        'id': 't2.medium',
+        'name': 'Burstable Performance Medium Instance',
+        'ram': 4028,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     }
 }
 
@@ -377,7 +408,10 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # US West (Northern California) Region
@@ -453,7 +487,10 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # EU (Ireland) Region
@@ -492,7 +529,10 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -525,6 +565,9 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -562,7 +605,10 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # South America (Sao Paulo) Region
@@ -584,7 +630,10 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # Asia Pacific (Sydney) Region
@@ -621,7 +670,13 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     'nimbus': {

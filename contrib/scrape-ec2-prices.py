@@ -68,6 +68,14 @@ EC2_INSTANCE_TYPES = [
     'i2.2xlarge',
     'i2.4xlarge',
     'i2.8xlarge',
+    'r3.large',
+    'r3.xlarge',
+    'r3.2xlarge',
+    'r3.4xlarge',
+    'r3.8xlarge',
+    't2.micro',
+    't2.small',
+    't2.medium'
 ]
 
 # Maps EC2 region name to region name used in the pricing file

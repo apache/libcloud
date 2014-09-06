@@ -86,6 +86,9 @@ Compute
   with OpenStack floating IPs.
   [Andrew Mann]
 
+- Add new t2 instance types to the EC2 driver.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
