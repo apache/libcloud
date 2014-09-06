@@ -89,6 +89,9 @@ Compute
 - Add new t2 instance types to the EC2 driver.
   [Tomaz Muraus]
 
+- Add support for Amazon GovCloud to the EC2 driver (us-gov-west-1 region).
+  [Chris DeRamus]
+
 Storage
 ~~~~~~~
 
