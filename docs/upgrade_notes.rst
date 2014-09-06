@@ -16,7 +16,6 @@ Changes in the OpenStack authentication and service catalog classes
     touched the classes mentioned bellow, then you aren't affected and those
     changes are fully backward compatible.
 
-
 To make OpenStack authentication and identity related classes more extensible,
 easier to main and easier to use, those classes have been refactored. All of
 the changes are described bellow.
@@ -40,6 +39,9 @@ the changes are described bellow.
 * ``get_regions``, ``get_service_types`` and ``get_service_names`` methods on
   the ``OpenStackServiceCatalog`` class have been modified to always return the
   result in the same order (result values are sorted beforehand).
+
+For more information and examples, please refer to the
+`Libcloud now supports OpenStack Identity (Keystone) API v3`_ blog post.
 
 Libcloud 0.14.1
 ---------------
@@ -808,3 +810,5 @@ For example:
     driver = Cls('key', 'secret', api_version='1.4')
 
 For a full list of changes, please see the `CHANGES file <https://svn.apache.org/viewvc/libcloud/trunk/CHANGES?revision=1198753&view=markup>`__.
+
+.. _`Libcloud now supports OpenStack Identity (Keystone) API v3`: http://www.tomaz.me/2014/08/23/libcloud-now-supports-openstack-identity-keystone-api-v3.html
