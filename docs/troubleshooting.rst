@@ -32,7 +32,14 @@ response body (if compressed) before logging it.
 To enable it, set ``LIBCLOUD_DEBUG`` environment variable and make it point
 to a file where the debug output should be saved.
 
-For example if you want the output to be logged to the standard error (on
+If the API returns a JSON which is not human friendly, you can also set
+``LIBCLOUD_DEBUG_PRETTY_PRINT_JSON`` environment variable which will cause
+the JSON to be beautified / formated so it's easier for humands to read it.
+
+Example 1 - Logging output to standard error
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want the output to be logged to the standard error (on
 Linux) you can set it to ``/dev/stderr``:
 
 .. sourcecode:: bash
@@ -60,3 +67,116 @@ Example output:
     0
 
     # -------- end 4431824872:4431825232 response ----------
+
+Example 2 - Making JSON response human friendly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Non-formatted response:
+
+.. sourcecode:: bash
+
+    LIBCLOUD_DEBUG=/dev/stderr python my_script.py
+
+.. sourcecode:: bash
+
+    # -------- begin 23125648:23160304 response ----------
+    HTTP/1.1 200 OK
+    Content-Length: 1572
+    X-Compute-Request-Id: req-79ab42d8-a959-44eb-8dec-bc9458b2f4b3
+    Server: nginx/1.4.7
+    Connection: keep-alive
+    Date: Sat, 06 Sep 2014 14:13:37 GMT
+    Content-Type: application/json
+
+    {"servers": [{"status": "ACTIVE", "updated": "2014-09-06T14:13:32Z", "hostId": "561d56de25c177c422278d7ca5f8b210118348040b12afbad06f278a", "addresses": {"internet-routable": [{"OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:3f:c0:a1", "version": 4, "addr": "10.100.100.101", "OS-EXT-IPS:type": "fixed"}]}, "links": [{"href": "http://nova/v2/d3b31ebfd32744d19d848f3e9c351869/servers/deb35f96-be41-431e-b931-6e615ec720f4", "rel": "self"}, {"href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/servers/deb35f96-be41-431e-b931-6e615ec720f4", "rel": "bookmark"}], "key_name": null, "image": {"id": "e9537ddd-6579-4473-9898-d211ab90f6d3", "links": [{"href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/images/e9537ddd-6579-4473-9898-d211ab90f6d3", "rel": "bookmark"}]}, "OS-EXT-STS:task_state": null, "OS-EXT-STS:vm_state": "active", "OS-SRV-USG:launched_at": "2014-09-06T14:13:32.000000", "flavor": {"id": "90c2a137-611b-4dd2-9d65-d4a0b0858531", "links": [{"href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/flavors/90c2a137-611b-4dd2-9d65-d4a0b0858531", "rel": "bookmark"}]}, "id": "deb35f96-be41-431e-b931-6e615ec720f4", "security_groups": [{"name": "default"}], "OS-SRV-USG:terminated_at": null, "OS-EXT-AZ:availability_zone": "nova", "user_id": "06dda7c06aa246c88d7775d02bc119ac", "name": "test lc 2", "created": "2014-09-06T14:13:12Z", "tenant_id": "d3b31ebfd32744d19d848f3e9c351869", "OS-DCF:diskConfig": "MANUAL", "os-extended-volumes:volumes_attached": [], "accessIPv4": "", "accessIPv6": "", "progress": 0, "OS-EXT-STS:power_state": 1, "config_drive": "", "metadata": {}}]}
+    # -------- end 23125648:23160304 response ----------
+
+Human friendly formatted JSON response:
+
+.. sourcecode:: bash
+
+    LIBCLOUD_DEBUG=/dev/stderr LIBCLOUD_DEBUG_PRETTY_PRINT_JSON=1 python my_script.py
+
+.. sourcecode:: bash
+
+    # -------- begin 41102928:41133624 response ----------
+    HTTP/1.1 200 OK
+    Content-Length: 1572
+    X-Compute-Request-Id: req-3ce8b047-55cd-4e20-bfeb-b65619696aec
+    Server: nginx/1.4.7
+    Connection: keep-alive
+    Date: Sat, 06 Sep 2014 14:14:38 GMT
+    Content-Type: application/json
+
+    {
+        "servers": [
+            {
+                "OS-DCF:diskConfig": "MANUAL",
+                "OS-EXT-AZ:availability_zone": "nova",
+                "OS-EXT-STS:power_state": 1,
+                "OS-EXT-STS:task_state": null,
+                "OS-EXT-STS:vm_state": "active",
+                "OS-SRV-USG:launched_at": "2014-09-06T14:13:32.000000",
+                "OS-SRV-USG:terminated_at": null,
+                "accessIPv4": "",
+                "accessIPv6": "",
+                "addresses": {
+                    "internet-routable": [
+                        {
+                            "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:3f:c0:a1",
+                            "OS-EXT-IPS:type": "fixed",
+                            "addr": "10.100.100.101",
+                            "version": 4
+                        }
+                    ]
+                },
+                "config_drive": "",
+                "created": "2014-09-06T14:13:12Z",
+                "flavor": {
+                    "id": "90c2a137-611b-4dd2-9d65-d4a0b0858531",
+                    "links": [
+                        {
+                            "href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/flavors/90c2a137-611b-4dd2-9d65-d4a0b0858531",
+                            "rel": "bookmark"
+                        }
+                    ]
+                },
+                "hostId": "561d56de25c177c422278d7ca5f8b210118348040b12afbad06f278a",
+                "id": "deb35f96-be41-431e-b931-6e615ec720f4",
+                "image": {
+                    "id": "e9537ddd-6579-4473-9898-d211ab90f6d3",
+                    "links": [
+                        {
+                            "href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/images/e9537ddd-6579-4473-9898-d211ab90f6d3",
+                            "rel": "bookmark"
+                        }
+                    ]
+                },
+                "key_name": null,
+                "links": [
+                    {
+                        "href": "http://nova/v2/d3b31ebfd32744d19d848f3e9c351869/servers/deb35f96-be41-431e-b931-6e615ec720f4",
+                        "rel": "self"
+                    },
+                    {
+                        "href": "http://nova/d3b31ebfd32744d19d848f3e9c351869/servers/deb35f96-be41-431e-b931-6e615ec720f4",
+                        "rel": "bookmark"
+                    }
+                ],
+                "metadata": {},
+                "name": "test lc 2",
+                "os-extended-volumes:volumes_attached": [],
+                "progress": 0,
+                "security_groups": [
+                    {
+                        "name": "default"
+                    }
+                ],
+                "status": "ACTIVE",
+                "tenant_id": "d3b31ebfd32744d19d848f3e9c351869",
+                "updated": "2014-09-06T14:13:32Z",
+                "user_id": "06dda7c06aa246c88d7775d02bc119ac"
+            }
+        ]
+    }
+    # -------- end 41102928:41133624 response ----------
