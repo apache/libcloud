@@ -219,10 +219,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertTrue(destroy)
 
     def test_ex_describe_volume(self):
-        volume = type('StorageVolume', (object,),
-                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
-
-        describe = self.driver.ex_describe_volume(volume=volume)
+        describe = self.driver.ex_describe_volume(volume_id="8669a69f-2274-4520-b51e-dbdf3986a476")
 
         self.assertEqual(describe[0].id, "00d0b9e7-e016-456f-85a0-517aa9a34bf5")
         self.assertEqual(describe[0].size, 50)

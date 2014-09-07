@@ -686,19 +686,19 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    def ex_describe_volume(self, volume):
+    def ex_describe_volume(self, volume_id):
         """
         Describes a volume.
 
-        :param volume: The volume you're describing.
-        :type volume: :class:`StorageVolume`
+        :param volume_id: The ID of the volume you're describing.
+        :type volume_id: :class:`StorageVolume`
 
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
         """
         action = 'getStorage'
         body = {'action': action,
-                'storageId': volume.id
+                'storageId': volume_id
                 }
 
         return self._to_volumes(self.connection.request(action=action,
@@ -1530,12 +1530,12 @@ class ProfitBricksNodeDriver(NodeDriver):
         Waits for the storage volume to be createDataCenter
         before it allows the process to move on.
         """
-        operation_status = self.ex_describe_volume(volume[0])
+        operation_status = self.ex_describe_volume(volume[0].id)
 
         while ((operation_status[0].extra['provisioning_state']) ==
                 (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
                 waittime < timeout):
-            operation_status = self.ex_describe_volume(volume[0])
+            operation_status = self.ex_describe_volume(volume[0].id)
             if operation_status[0].extra['provisioning_state'] == state:
                 break
 
