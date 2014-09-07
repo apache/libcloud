@@ -19,6 +19,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
+from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 from libcloud.test import unittest
 from libcloud.test.secrets import PROFIT_BRICKS_PARAMS
@@ -67,7 +68,7 @@ class ProfitBricksTests(unittest.TestCase):
                                        image=image,
                                        size=size)
 
-        self.assertEquals(node[0].id, "7b18b85f-cc93-4c2d-abcc-5ce732d35750")
+        self.assertEquals(node.id, "7b18b85f-cc93-4c2d-abcc-5ce732d35750")
 
     def test_reboot_node(self):
         node = type('Node', (object,),
@@ -220,10 +221,10 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_describe_volume(self):
         describe = self.driver.ex_describe_volume(volume_id="8669a69f-2274-4520-b51e-dbdf3986a476")
 
-        self.assertEqual(describe[0].id, "00d0b9e7-e016-456f-85a0-517aa9a34bf5")
-        self.assertEqual(describe[0].size, 50)
-        self.assertEqual(describe[0].name, "StackPointCloud-Volume")
-        self.assertEqual(describe[0].extra['provisioning_state'], 0)
+        self.assertEqual(describe.id, "00d0b9e7-e016-456f-85a0-517aa9a34bf5")
+        self.assertEqual(describe.size, 50)
+        self.assertEqual(describe.name, "StackPointCloud-Volume")
+        self.assertEqual(describe.extra['provisioning_state'], NodeState.RUNNING)
 
     ''' Image Function Tests
     '''
@@ -250,9 +251,9 @@ class ProfitBricksTests(unittest.TestCase):
         datacenter = self.driver.ex_create_datacenter(name="StackPointCloud",
                                                       location="us/la")
 
-        self.assertEqual(datacenter[0].id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
-        self.assertEqual(datacenter[0].extra['location'], 'us/las')
-        self.assertEqual(datacenter[0].version, '1')
+        self.assertEqual(datacenter.id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
+        self.assertEqual(datacenter.extra['location'], 'us/las')
+        self.assertEqual(datacenter.version, '1')
 
     def test_ex_destroy_datacenter(self):
         datacenter = type('Datacenter', (object,),
@@ -264,13 +265,13 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_describe_datacenter(self):
         datacenter = type('Datacenter', (object,),
                           dict(id="d96dfafc-9a8c-4c0e-8a0c-857a15db572d"))
-        describe = self.driver.ex_describe_datacenter(datacenter=datacenter)
+        describe = self.driver.ex_describe_datacenter(datacenter_id=datacenter.id)
 
-        self.assertEqual(describe[0].id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
-        self.assertEqual(describe[0].name, 'StackPointCloud')
-        self.assertEqual(describe[0].version, '1')
-        self.assertEqual(describe[0].extra['location'], 'us/las')
-        self.assertEqual(describe[0].extra['provisioning_state'], 'AVAILABLE')
+        self.assertEqual(describe.id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
+        self.assertEqual(describe.name, 'StackPointCloud')
+        self.assertEqual(describe.version, '1')
+        self.assertEqual(describe.extra['location'], 'us/las')
+        self.assertEqual(describe.extra['provisioning_state'], NodeState.RUNNING)
 
     def test_ex_clear_datacenter(self):
         datacenter = type('Datacenter', (object,),
@@ -343,9 +344,8 @@ class ProfitBricksTests(unittest.TestCase):
         node = type('Node', (object,),
                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
-        create = self.driver.ex_create_network_interface(node=node)
-
-        self.assertTrue(create)
+        interface = self.driver.ex_create_network_interface(node=node)
+        self.assertEqual(interface.id, '6b38a4f3-b851-4614-9e3a-5ddff4727727')
 
     def test_ex_destroy_network_interface(self):
         network_interface = type('ProfitBricksNetworkInterface', (object,),
