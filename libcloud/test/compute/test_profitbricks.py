@@ -193,12 +193,11 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_detach_volume(self):
         volume = type('StorageVolume', (object,),
-                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476"))
+                      dict(id="8669a69f-2274-4520-b51e-dbdf3986a476",
+                           extra={'server_id': "cd59b162-0289-11e4-9f63-52540066fee9"}
+                           ))
 
-        node = type('Node', (object,),
-                    dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
-
-        attach = self.driver.detach_volume(node=node, volume=volume)
+        attach = self.driver.detach_volume(volume=volume)
 
         self.assertTrue(attach)
 

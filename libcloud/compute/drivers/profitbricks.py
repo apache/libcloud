@@ -617,7 +617,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                                                         data=body,
                                                         method='POST').object)
 
-    def detach_volume(self, node, volume):
+    def detach_volume(self, volume):
         """
         Detaches a volume.
 
@@ -626,10 +626,12 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype:     :``bool``
         """
+        node_id = volume.extra['server_id']
+
         action = 'disconnectStorageFromServer'
         body = {'action': action,
                 'storageId': volume.id,
-                'serverId': node.id
+                'serverId': node_id
                 }
 
         self.connection.request(action=action,
