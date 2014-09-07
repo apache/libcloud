@@ -20,6 +20,8 @@ import copy
 import binascii
 import time
 
+import xml.dom.minidom
+
 try:
     from lxml import etree as ET
 except ImportError:
@@ -308,20 +310,27 @@ class LoggingConnection():
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
 
-        pretty_print_json = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_JSON',
-                                           False)
+        pretty_print = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE',
+                                      False)
 
         if r.chunked:
             ht += "%x\r\n" % (len(body))
-            ht += u(body)
+            ht += body.decode('utf-8')
             ht += "\r\n0\r\n"
         else:
-            if pretty_print_json and content_type == 'application/json':
+            if pretty_print and content_type == 'application/json':
                 try:
-                    body = json.loads(u(body))
+                    body = json.loads(body.decode('utf-8'))
                     body = json.dumps(body, sort_keys=True, indent=4)
                 except:
                     # Invalid JSON or server is lying about content-type
+                    pass
+            elif pretty_print and content_type == 'text/xml':
+                try:
+                    elem = xml.dom.minidom.parseString(body.decode('utf-8'))
+                    body = elem.toprettyxml()
+                except Exception:
+                    # Invalid XML
                     pass
 
             ht += u(body)

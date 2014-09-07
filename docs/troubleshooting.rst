@@ -32,9 +32,11 @@ response body (if compressed) before logging it.
 To enable it, set ``LIBCLOUD_DEBUG`` environment variable and make it point
 to a file where the debug output should be saved.
 
-If the API returns a JSON which is not human friendly, you can also set
-``LIBCLOUD_DEBUG_PRETTY_PRINT_JSON`` environment variable which will cause
-the JSON to be beautified / formated so it's easier for humands to read it.
+If the API returns JSON or XML in the response body which is not human
+friendly, you can also set ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE``
+environment variable which will cause the JSON or XML to be beautified
+/ formated so it's easier for humans to read it. Keep in mind that this
+only works for non-chunked responses.
 
 Example 1 - Logging output to standard error
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,10 +70,10 @@ Example output:
 
     # -------- end 4431824872:4431825232 response ----------
 
-Example 2 - Making JSON response human friendly
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example 2 - Making JSON / XML response human friendly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Non-formatted response:
+Non-formatted JSON response:
 
 .. sourcecode:: bash
 
@@ -95,7 +97,7 @@ Human friendly formatted JSON response:
 
 .. sourcecode:: bash
 
-    LIBCLOUD_DEBUG=/dev/stderr LIBCLOUD_DEBUG_PRETTY_PRINT_JSON=1 python my_script.py
+    LIBCLOUD_DEBUG=/dev/stderr LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE=1 python my_script.py
 
 .. sourcecode:: bash
 
@@ -180,3 +182,56 @@ Human friendly formatted JSON response:
         ]
     }
     # -------- end 41102928:41133624 response ----------
+
+Non-formatted XML response:
+
+.. sourcecode:: bash
+
+    LIBCLOUD_DEBUG=/dev/stderr python my_script.py
+
+.. sourcecode:: bash
+
+    # -------- begin 33145616:33126160 response ----------
+    HTTP/1.1 200 OK
+    X-Amzn-Requestid: e84f62d0-368e-11e4-820b-8bf013dc269e
+    Date: Sun, 07 Sep 2014 13:00:13 GMT
+    Content-Length: 457
+    Content-Type: text/xml
+
+    <?xml version="1.0"?>
+    <ListHostedZonesResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/"><HostedZones><HostedZone><Id>/hostedzone/Z14L0C73CHH1DN</Id><Name>example1.com.</Name><CallerReference>41747982-568E-0DFC-8C11-71C23757C740</CallerReference><Config><Comment>test</Comment></Config><ResourceRecordSetCount>9</ResourceRecordSetCount></HostedZone></HostedZones><IsTruncated>false</IsTruncated><MaxItems>100</MaxItems></ListHostedZonesResponse>
+    # -------- end 33145616:33126160 response ----------
+
+Human friendly formatted XML response:
+
+.. sourcecode:: bash
+
+    LIBCLOUD_DEBUG=/dev/stderr LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE=1 python my_script.py
+
+.. sourcecode:: bash
+
+    # -------- begin 19444496:19425040 response ----------
+    HTTP/1.1 200 OK
+    X-Amzn-Requestid: 01c02441-368f-11e4-b616-9b9bd7509a8f
+    Date: Sun, 07 Sep 2014 13:00:56 GMT
+    Content-Length: 457
+    Content-Type: text/xml
+
+    <?xml version="1.0" ?>
+    <ListHostedZonesResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/">
+        <HostedZones>
+            <HostedZone>
+                <Id>/hostedzone/Z14L0C73CHH1DN</Id>
+                <Name>example1.com.</Name>
+                <CallerReference>41747982-568E-0DFC-8C11-71C23757C740</CallerReference>
+                <Config>
+                    <Comment>test</Comment>
+                </Config>
+                <ResourceRecordSetCount>9</ResourceRecordSetCount>
+            </HostedZone>
+        </HostedZones>
+        <IsTruncated>false</IsTruncated>
+        <MaxItems>100</MaxItems>
+    </ListHostedZonesResponse>
+
+    # -------- end 19444496:19425040 response ----------
