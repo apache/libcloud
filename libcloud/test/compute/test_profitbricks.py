@@ -186,7 +186,7 @@ class ProfitBricksTests(unittest.TestCase):
         node = type('Node', (object,),
                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
-        attach = self.driver.attach_volume(node=node, volume=volume, 
+        attach = self.driver.attach_volume(node=node, volume=volume,
                                            device=1, ex_bus_type="IDE")
 
         self.assertTrue(attach)
