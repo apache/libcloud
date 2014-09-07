@@ -150,7 +150,7 @@ class ProfitBricksTests(unittest.TestCase):
 
         attach = self.driver.attach_volume(node=node,
                                            volume=volume,
-                                           device=None, bus_type=None)
+                                           device=None, ex_bus_type=None)
 
         self.assertTrue(attach)
 
@@ -161,7 +161,7 @@ class ProfitBricksTests(unittest.TestCase):
         node = type('Node', (object,),
                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
-        attach = self.driver.attach_volume(node=node, volume=volume, device=1, bus_type=None)
+        attach = self.driver.attach_volume(node=node, volume=volume, device=1, ex_bus_type=None)
 
         self.assertTrue(attach)
 
@@ -175,7 +175,7 @@ class ProfitBricksTests(unittest.TestCase):
         attach = self.driver.attach_volume(node=node,
                                            volume=volume,
                                            device=None,
-                                           bus_type="IDE")
+                                           ex_bus_type="IDE")
 
         self.assertTrue(attach)
 
@@ -186,7 +186,8 @@ class ProfitBricksTests(unittest.TestCase):
         node = type('Node', (object,),
                     dict(id="cd59b162-0289-11e4-9f63-52540066fee9"))
 
-        attach = self.driver.attach_volume(node=node, volume=volume, device=1, bus_type="IDE")
+        attach = self.driver.attach_volume(node=node, volume=volume, 
+                                           device=1, ex_bus_type="IDE")
 
         self.assertTrue(attach)
 
@@ -255,7 +256,7 @@ class ProfitBricksTests(unittest.TestCase):
 
         self.assertEqual(datacenter[0].id, '0c793dd1-d4cd-4141-86f3-8b1a24b2d604')
         self.assertEqual(datacenter[0].extra['location'], 'us/las')
-        self.assertEqual(datacenter[0].datacenter_version, '1')
+        self.assertEqual(datacenter[0].version, '1')
 
     def test_ex_destroy_datacenter(self):
         datacenter = type('Datacenter', (object,),
@@ -271,7 +272,7 @@ class ProfitBricksTests(unittest.TestCase):
 
         self.assertEqual(describe[0].id, 'a3e6f83a-8982-4d6a-aebc-60baf5755ede')
         self.assertEqual(describe[0].name, 'StackPointCloud')
-        self.assertEqual(describe[0].datacenter_version, '1')
+        self.assertEqual(describe[0].version, '1')
         self.assertEqual(describe[0].extra['location'], 'us/las')
         self.assertEqual(describe[0].extra['provisioning_state'], 'AVAILABLE')
 
@@ -290,7 +291,7 @@ class ProfitBricksTests(unittest.TestCase):
         dc1 = datacenters[0]
         self.assertEquals(dc1.id, "a3e6f83a-8982-4d6a-aebc-60baf5755ede")
         self.assertEquals(dc1.name, "StackPointCloud")
-        self.assertEquals(dc1.datacenter_version, "1")
+        self.assertEquals(dc1.version, "1")
 
     def test_ex_rename_datacenter(self):
         datacenter = type('Datacenter', (object,),

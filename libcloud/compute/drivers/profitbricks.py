@@ -140,28 +140,24 @@ class Datacenter(UuidMixin):
     :param      name: The datacenter name.
     :type       name: ``str``
 
-    :param datacenter_version: Datacenter version.
-    :type datacenter_version: ``str``
+    :param version: Datacenter version.
+    :type version: ``str``
 
 
     Note: This class is ProfitBricks specific.
     """
-    def __init__(self, id, name, datacenter_version, driver, extra=None):
+    def __init__(self, id, name, version, driver, extra=None):
         self.id = str(id)
-        if name is None:
-            self.name = None
-        else:
-            self.name = name
-        self.datacenter_version = datacenter_version
+        self.name = name
+        self.version = version
         self.driver = driver
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):
         return ((
-            '<Datacenter: id=%s, name=%s, \
-            datacenter_version=%s, driver=%s> ...>')
-            % (self.id, self.name, self.datacenter_version,
+            '<Datacenter: id=%s, name=%s, version=%s, driver=%s> ...>')
+            % (self.id, self.name, self.version,
                 self.driver.name))
 
 
@@ -188,7 +184,7 @@ class ProfitBricksNetworkInterface(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ProfitBricksNetworkInterface: id=%s, name=%s')
+        return (('<ProfitBricksNetworkInterface: id=%s, name=%s>')
                 % (self.id, self.name))
 
 
@@ -204,7 +200,7 @@ class ProfitBricksAvailabilityZone(object):
         self.name = name
 
     def __repr__(self):
-        return (('<ExProfitBricksAvailabilityZone: name=%s>')
+        return (('<ProfitBricksAvailabilityZone: name=%s>')
                 % (self.name))
 
 
@@ -362,7 +358,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         return self._to_nodes(self.connection.request(action=action,
                               data=body, method='POST').object)
 
-    def reboot_node(self, node=None):
+    def reboot_node(self, node):
         """
         Reboots the node.
 
@@ -516,15 +512,15 @@ class ProfitBricksNodeDriver(NodeDriver):
                                                       data=body,
                                                       method='POST').object)
 
-    def destroy_node(self, node, remove_attached_disks=None):
+    def destroy_node(self, node, ex_remove_attached_disks=False):
         """
         Destroys a node.
 
         :param node: The node you wish to destroy.
         :type volume: :class:`Node`
 
-        :param remove_attached_disks: True to destory all attached volumes.
-        :type remove_attached_disks: : ``bool``
+        :param ex_remove_attached_disks: True to destory all attached volumes.
+        :type ex_remove_attached_disks: : ``bool``
 
         :rtype:     : ``bool``
         """
@@ -552,7 +548,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                                                         data=body,
                                                         method='POST').object)
 
-    def attach_volume(self, node, volume, device=None, bus_type=None):
+    def attach_volume(self, node, volume, device=None, ex_bus_type=None):
         """
         Attaches a volume.
 
@@ -565,8 +561,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param device: The device number order.
         :type device: : ``int``
 
-        :param bus_type: Bus type. Either IDE or VIRTIO (def).
-        :type bus_type: ``str``
+        :param ex_bus_type: Bus type. Either IDE or VIRTIO (default).
+        :type ex_bus_type: ``str``
 
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
@@ -576,7 +572,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'request': 'true',
                 'storageId': volume.id,
                 'serverId': node.id,
-                'busType': bus_type,
+                'busType': ex_bus_type,
                 'deviceNumber': str(device)
                 }
 
@@ -625,7 +621,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Detaches a volume.
 
-        :param volume: The volume you're attaching.
+        :param volume: The volume you're detaching.
         :type volume: :class:`StorageVolume`
 
         :rtype:     :``bool``
@@ -694,7 +690,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Describes a volume.
 
-        :param volume: The volume you're attaching..
+        :param volume: The volume you're describing.
         :type volume: :class:`StorageVolume`
 
         :return:    Instance of class ``StorageVolume``
@@ -1110,14 +1106,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         return True
 
     def ex_set_inet_access(self, datacenter,
-                           network_interface, ex_internet_access=True):
+                           network_interface, internet_access=True):
 
         action = 'setInternetAccess'
 
         body = {'action': action,
                 'dataCenterId': datacenter.id,
                 'lanId': network_interface.extra['lan_id'],
-                'internetAccess': str(ex_internet_access).lower()
+                'internetAccess': str(internet_access).lower()
                 }
 
         self.connection.request(action=action,
@@ -1138,7 +1134,7 @@ class ProfitBricksNodeDriver(NodeDriver):
             datacenter_name = datacenter.find('dataCenterName').text
         else:
             datacenter_name = None
-        datacenter_version = datacenter.find('dataCenterVersion').text
+        version = datacenter.find('dataCenterVersion').text
         if ET.iselement(datacenter.find('provisioningState')):
             provisioning_state = datacenter.find('provisioningState').text
         else:
@@ -1150,7 +1146,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return Datacenter(id=datacenter_id,
                           name=datacenter_name,
-                          datacenter_version=datacenter_version,
+                          version=version,
                           driver=self.connection.driver,
                           extra={'provisioning_state': provisioning_state,
                                  'location': location})
@@ -1496,15 +1492,14 @@ class ProfitBricksNodeDriver(NodeDriver):
     def _wait_for_datacenter_state(
             self,
             datacenter,
-            state=PROVISIONING_STATE.get(NodeState.RUNNING)):
+            state=PROVISIONING_STATE.get(NodeState.RUNNING),
+            timeout=300,
+            waittime=0,
+            interval=5):
         """
         Private function that waits the datacenter
         """
         dc_operation_status = self.ex_describe_datacenter(datacenter[0])
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5
 
         while ((dc_operation_status[0].extra['provisioning_state']) ==
                 (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
@@ -1527,16 +1522,15 @@ class ProfitBricksNodeDriver(NodeDriver):
     def _wait_for_storage_volume_state(
             self,
             volume,
-            state=PROVISIONING_STATE.get(NodeState.RUNNING)):
+            state=PROVISIONING_STATE.get(NodeState.RUNNING),
+            timeout=300,
+            waittime=0,
+            interval=5):
         """
         Waits for the storage volume to be createDataCenter
         before it allows the process to move on.
         """
         operation_status = self.ex_describe_volume(volume[0])
-
-        timeout = 60 * 5
-        waittime = 0
-        interval = 5
 
         while ((operation_status[0].extra['provisioning_state']) ==
                 (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
