@@ -104,6 +104,11 @@ Storage
 - Fix a bug with CDN requests in the CloudFiles driver.
   [Tomaz Muraus]
 
+- Fix a bug with not being able to specify meta_data / tags when uploading an
+  object using Google Storage driver.
+  (LIBCLOUD-612, GITHUB-356)
+  [Stefan Friesel]
+
 Loadbalancer
 ~~~~~~~~~~~~
 
