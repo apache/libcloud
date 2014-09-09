@@ -1194,7 +1194,10 @@ class ProfitBricksNodeDriver(NodeDriver):
             memory_hotpluggable = None
 
         if ET.iselement(image.find('location')):
-            image_region = image.find('region').text
+            if image.find('region'):
+                image_region = image.find('region').text
+            else:
+                image_region = None
         else:
             image_region = None
 
@@ -1280,11 +1283,12 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ET.iselement(node.find('nics')):
             for nic in node.findall('.//nics'):
                 n_elements = list(nic.findall('.//ips'))
-                ip = n_elements[0].text
-                if is_private_subnet(ip):
-                    private_ips.append(ip)
-                else:
-                    public_ips.append(ip)
+                if len(n_elements) > 0:
+                    ip = n_elements[0].text
+                    if is_private_subnet(ip):
+                        private_ips.append(ip)
+                    else:
+                        public_ips.append(ip)
 
         if ET.iselement(node.find('cpuHotPlug')):
             cpu_hotpluggable = node.find('cpuHotPlug').text
