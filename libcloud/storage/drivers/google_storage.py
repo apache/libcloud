@@ -134,3 +134,4 @@ class GoogleStorageDriver(BaseS3StorageDriver):
     namespace = NAMESPACE
     supports_chunked_encoding = False
     supports_s3_multipart_upload = False
+    http_vendor_prefix = 'x-goog'
