@@ -304,7 +304,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         }
     }
 
-    """ Core Functions
+    """
+    Core Functions
     """
 
     def list_sizes(self):
@@ -417,10 +418,10 @@ class ProfitBricksNodeDriver(NodeDriver):
 
             'Creating a Datacenter for the node since one was not provided.'
             new_datacenter = self._create_new_datacenter_for_node(name=name)
-            datacenter_id = new_datacenter[0].id
+            datacenter_id = new_datacenter.id
 
             'Waiting for the Datacenter create operation to finish.'
-            self._wait_for_datacenter_state(new_datacenter)
+            self._wait_for_datacenter_state(datacenter=new_datacenter)
         else:
             datacenter_id = ex_datacenter.id
             new_datacenter = None
@@ -481,7 +482,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                                               ex_datacenter=ex_datacenter,
                                               new_datacenter=new_datacenter)
 
-            storage_id = volume[0].id
+            storage_id = volume.id
 
             'Waiting on the storage volume to be created before provisioning '
             'the instance.'
@@ -508,9 +509,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_availability_zone:
             body['availabilityZone'] = ex_availability_zone.name
 
-        return self._to_nodes(self.connection.request(action=action,
-                                                      data=body,
-                                                      method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        nodes = self._to_nodes(data)
+        return nodes[0]
 
     def destroy_node(self, node, ex_remove_attached_disks=False):
         """
@@ -534,7 +537,8 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    """ Volume Functions
+    """
+    Volume Functions
     """
 
     def list_volumes(self):
@@ -578,8 +582,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         self.connection.request(action=action,
                                 data=body, method='POST').object
-
-        return True
+        return volume
 
     def create_volume(self, size, name=None,
                       ex_datacenter=None, ex_image=None, ex_password=None):
@@ -613,9 +616,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_password:
             body['profitBricksImagePassword'] = ex_password
 
-        return self._to_volumes(self.connection.request(action=action,
-                                                        data=body,
-                                                        method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        volumes = self._to_volumes(data)
+        return volumes[0]
 
     def detach_volume(self, volume):
         """
@@ -703,11 +708,14 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'storageId': volume_id
                 }
 
-        return self._to_volumes(self.connection.request(action=action,
-                                                        data=body,
-                                                        method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        volumes = self._to_volumes(data)
+        return volumes[0]
 
-    """ Extension Functions
+    """
+    Extension Functions
     """
 
     ''' Server Extension Functions
@@ -784,9 +792,11 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'serverId': node.id
                 }
 
-        return self._to_nodes(self.connection.request(action=action,
-                                                      data=body,
-                                                      method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        nodes = self._to_nodes(data)
+        return nodes[0]
 
     def ex_update_node(self, node, name=None, cores=None,
                        ram=None, availability_zone=None):
@@ -828,7 +838,8 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    ''' Datacenter Extension Functions
+    '''
+    Datacenter Extension Functions
     '''
 
     def ex_create_datacenter(self, name, location):
@@ -855,11 +866,11 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'dataCenterName': name,
                 'location': location.lower()
                 }
-
-        return self._to_datacenters(
-            self.connection.request(action=action,
-                                    data=body,
-                                    method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        datacenters = self._to_datacenters(data)
+        return datacenters[0]
 
     def ex_destroy_datacenter(self, datacenter):
         """
@@ -880,12 +891,12 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    def ex_describe_datacenter(self, datacenter):
+    def ex_describe_datacenter(self, datacenter_id):
         """
         Describes a datacenter.
 
-        :param datacenter: The DC you're destroying.
-        :type datacenter: :class:`Datacenter`
+        :param datacenter_id: The DC you are describing.
+        :type datacenter_id: ``str``
 
         :return:    Instance of class ``Datacenter``
         :rtype:     :class:`Datacenter`
@@ -893,13 +904,14 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = 'getDataCenter'
         body = {'action': action,
-                'dataCenterId': datacenter.id
+                'dataCenterId': datacenter_id
                 }
 
-        return self._to_datacenters(self.connection.request(
-            action=action,
-            data=body,
-            method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        datacenters = self._to_datacenters(data)
+        return datacenters[0]
 
     def ex_list_datacenters(self):
         """
@@ -962,7 +974,8 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    ''' Network Interface Extension Functions
+    '''
+    Network Interface Extension Functions
     '''
 
     def ex_list_network_interfaces(self):
@@ -1040,10 +1053,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         if nic_name:
             body['nicName'] = nic_name
 
-        return self._to_interfaces(
-            self.connection.request(action=action,
-                                    data=body,
-                                    method='POST').object)
+        data = self.connection.request(action=action,
+                                       data=body,
+                                       method='POST').object
+        interfaces = self._to_interfaces(data)
+        return interfaces[0]
 
     def ex_update_network_interface(self, network_interface, name=None,
                                     lan_id=None, ip=None,
@@ -1123,7 +1137,8 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    """Private Functions
+    """
+    Private Functions
     """
 
     def _to_datacenters(self, object):
@@ -1145,6 +1160,9 @@ class ProfitBricksNodeDriver(NodeDriver):
             location = datacenter.find('location').text
         else:
             location = None
+
+        provisioning_state = self.PROVISIONING_STATE.get(provisioning_state,
+                                                         NodeState.UNKNOWN)
 
         return Datacenter(id=datacenter_id,
                           name=datacenter_name,
@@ -1491,27 +1509,32 @@ class ProfitBricksNodeDriver(NodeDriver):
                         extra={
                             'cores': data["cores"]})
 
-    def _wait_for_datacenter_state(
-            self,
-            datacenter,
-            state=PROVISIONING_STATE.get(NodeState.RUNNING),
-            timeout=300,
-            waittime=0,
-            interval=5):
+    def _wait_for_datacenter_state(self, datacenter, state=NodeState.RUNNING,
+                                   timeout=300, interval=5):
         """
-        Private function that waits the datacenter
-        """
-        dc_operation_status = self.ex_describe_datacenter(datacenter[0])
+        Private function that waits the datacenter to transition into the
+        specified state.
 
-        while ((dc_operation_status[0].extra['provisioning_state']) ==
-                (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
-                waittime < timeout):
-            dc_operation_status = self.ex_describe_datacenter(datacenter[0])
-            if dc_operation_status[0].extra['provisioning_state'] == state:
+        :return: Datacenter object on success.
+        :rtype: :class:`.Datacenter`
+        """
+        wait_time = 0
+        datacenter = self.ex_describe_datacenter(datacenter_id=datacenter.id)
+
+        while (datacenter.extra['provisioning_state'] != state):
+            datacenter = \
+                self.ex_describe_datacenter(datacenter_id=datacenter.id)
+            if datacenter.extra['provisioning_state'] == state:
                 break
 
-            waittime += interval
+            if wait_time >= timeout:
+                raise Exception('Datacenter didn\'t transition to %s state '
+                                'in %s seconds' % (state, timeout))
+
+            wait_time += interval
             time.sleep(interval)
+
+        return datacenter
 
     def _create_new_datacenter_for_node(self, name):
         """
@@ -1521,28 +1544,30 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return self.ex_create_datacenter(name=dc_name, location='us/las')
 
-    def _wait_for_storage_volume_state(
-            self,
-            volume,
-            state=PROVISIONING_STATE.get(NodeState.RUNNING),
-            timeout=300,
-            waittime=0,
-            interval=5):
+    def _wait_for_storage_volume_state(self, volume, state=NodeState.RUNNING,
+                                       timeout=300, interval=5):
         """
-        Waits for the storage volume to be createDataCenter
-        before it allows the process to move on.
-        """
-        operation_status = self.ex_describe_volume(volume[0].id)
+        Wait for volume to transition into the specified state.
 
-        while ((operation_status[0].extra['provisioning_state']) ==
-                (self.PROVISIONING_STATE.get(NodeState.PENDING))) and (
-                waittime < timeout):
-            operation_status = self.ex_describe_volume(volume[0].id)
-            if operation_status[0].extra['provisioning_state'] == state:
+        :return: Volume object on success.
+        :rtype: :class:`Volume`
+        """
+        wait_time = 0
+        volume = self.ex_describe_volume(volume_id=volume.id)
+
+        while (volume.extra['provisioning_state'] != state):
+            volume = self.ex_describe_volume(volume_id=volume.id)
+            if volume.extra['provisioning_state'] == state:
                 break
 
-            waittime += interval
+            if wait_time >= timeout:
+                raise Exception('Volume didn\'t transition to %s state '
+                                'in %s seconds' % (state, timeout))
+
+            wait_time += interval
             time.sleep(interval)
+
+        return volume
 
     def _create_node_volume(self, ex_disk, image, password,
                             name, ex_datacenter=None, new_datacenter=None):
@@ -1557,7 +1582,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                                         name=volume_name)
         else:
             volume = self.create_volume(size=ex_disk,
-                                        ex_datacenter=new_datacenter[0],
+                                        ex_datacenter=new_datacenter,
                                         ex_image=image,
                                         ex_password=password,
                                         name=volume_name)
