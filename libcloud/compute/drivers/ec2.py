@@ -2280,7 +2280,7 @@ class BaseEC2NodeDriver(NodeDriver):
                      is io1.
         :type iops: ``int``
         """
-        valid_volume_types = ['standard', 'io1', 'g2']
+        valid_volume_types = ['standard', 'io1', 'gp2']
 
         params = {
             'Action': 'CreateVolume',

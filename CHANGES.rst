@@ -92,6 +92,12 @@ Compute
 - Add support for Amazon GovCloud to the EC2 driver (us-gov-west-1 region).
   [Chris DeRamus]
 
+- Allow user to pass "gp2" for "ex_volume_type" argument to the create_volume
+  method in the EC2 driver.
+
+  Reported by Xavier Barbosa.
+  [Tomaz Muraus, Xavier Barbosa]
+
 Storage
 ~~~~~~~
 
