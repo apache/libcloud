@@ -1113,6 +1113,67 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_forwarding_rule(name)
 
+    def ex_create_image(self, name, volume, description=None,
+                        use_existing=True, wait_for_completion=True):
+        """
+        Create an Image.
+
+        :param  name: The name of the image to create.
+        :type   name: ``str``
+
+        :param  volume: The disk to use to create the node, or the Google Cloud
+                        Storage URI
+        :type   image: ``str`` or :class:`StorageVolume`
+
+        :keyword    description: Description of the new Image
+        :type       description: ``str``
+
+        :keyword  use_existing: If True and an image with the given name
+                                already exists, return an object for that
+                                image instead of attempting to create
+                                a new image.
+        :type     use_existing: ``bool``
+
+        :keyword  wait_for_completion: If True, wait until the new image is
+                                       created before returning a new NodeImage
+                                       Otherwise, return a new NodeImage
+                                       instance, and let the user track the
+                                       creation progress
+        :type     wait_for_completion: ``bool``
+
+        :return:    A NodeImage object for the new image
+        :rtype:     :class:`GCENodeImage`
+
+        """
+        image_data = {}
+        image_data['name'] = name
+        image_data['description'] = description
+        if isinstance(volume, StorageVolume):
+            image_data['sourceDisk'] = volume.extra['selfLink']
+            image_data['zone'] = volume.extra['zone'].name
+        elif isinstance(volume, str) and \
+                volume.startswith('https://') and volume.endswith('tar.gz'):
+            image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
+        else:
+            raise ValueError('Source must be instance of StorageVolume or URI')
+
+        request = '/global/images'
+
+        try:
+            if wait_for_completion:
+                self.connection.async_request(request, method='POST',
+                                              data=image_data)
+            else:
+                self.connection.request(request, method='POST',
+                                        data=image_data)
+
+        except ResourceExistsError:
+            e = sys.exc_info()[1]
+            if not use_existing:
+                raise e
+
+        return self.ex_get_image(name)
+
     def ex_create_network(self, name, cidr):
         """
         Create a network.
@@ -3184,6 +3245,7 @@ class GCENodeDriver(NodeDriver):
         extra['creationTimestamp'] = image.get('creationTimestamp')
         extra['selfLink'] = image.get('selfLink')
         extra['deprecated'] = image.get('deprecated', None)
+        extra['status'] = image.get('status')
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)

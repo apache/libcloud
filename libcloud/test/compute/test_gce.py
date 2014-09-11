@@ -26,8 +26,8 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
                                           GCEAddress, GCEHealthCheck,
                                           GCEFirewall, GCEForwardingRule,
-                                          GCENetwork,
-                                          GCEZone)
+                                          GCENetwork, GCEZone,
+                                          GCENodeImage)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleBaseConnection,
@@ -238,6 +238,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(hc.path, '/lc')
         self.assertEqual(hc.port, 8000)
         self.assertEqual(hc.interval, 10)
+
+    def test_ex_create_image(self):
+        volume = self.driver.ex_get_volume('lcdisk')
+        image = self.driver.ex_create_image('coreos', volume)
+        self.assertTrue(isinstance(image, GCENodeImage))
+        self.assertEquals(image.name, 'coreos')
+        self.assertEquals(image.extra['description'], 'CoreOS test image')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
