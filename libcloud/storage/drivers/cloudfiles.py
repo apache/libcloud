@@ -307,6 +307,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
+        # pylint: disable=unexpected-keyword-arg
         container_name_encoded = self._encode_container_name(container.name)
         response = self.connection.request('/%s' % (container_name_encoded),
                                            method='HEAD',
@@ -339,6 +340,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         if ex_ttl:
             headers['X-TTL'] = ex_ttl
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='PUT',
                                            headers=headers,
@@ -467,6 +469,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name = self._encode_object_name(obj.name)
         headers = {'X-Purge-Email': email} if email else {}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
                                            method='DELETE',
@@ -538,6 +541,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = container.name
         headers = {'X-Container-Meta-Web-Index': index_file}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='POST',
                                            headers=headers,
@@ -561,6 +565,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = container.name
         headers = {'X-Container-Meta-Web-Error': file_name}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='POST',
                                            headers=headers,
@@ -580,6 +585,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         headers = {'X-Account-Meta-Temp-URL-Key': key}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('',
                                            method='POST',
                                            headers=headers,
@@ -607,6 +613,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
         path = '%s/%s/%s' % (self.connection.request_path,
@@ -654,6 +661,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name_encoded = self._encode_object_name(object_name)
         request_path = '/%s/%s' % (container_name_encoded, object_name_encoded)
 
+        # pylint: disable=no-member
         headers = {'X-Auth-Token': self.connection.auth_token,
                    'X-Object-Manifest': '%s/%s/' %
                                         (container_name_encoded,

@@ -602,6 +602,7 @@ class BaseS3StorageDriver(StorageDriver):
 
         if response.status != httplib.OK:
             element = response.object
+            # pylint: disable=maybe-no-member
             code, message = response._parse_error_details(element=element)
             msg = 'Error in multipart commit: %s (%s)' % (message, code)
             raise LibcloudError(msg, driver=self)
@@ -730,6 +731,7 @@ class BaseS3StorageDriver(StorageDriver):
                                     driver=self)
 
             body = response.parse_body()
+            # pylint: disable=maybe-no-member
             for node in body.findall(fixxpath(xpath='Upload',
                                               namespace=self.namespace)):
 
@@ -748,6 +750,7 @@ class BaseS3StorageDriver(StorageDriver):
                                         initiator, owner)
 
             # Check if this is the last entry in the listing
+            # pylint: disable=maybe-no-member
             is_truncated = body.findtext(fixxpath(xpath='IsTruncated',
                                                   namespace=self.namespace))
 

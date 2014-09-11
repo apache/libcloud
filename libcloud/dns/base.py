@@ -154,6 +154,9 @@ class DNSDriver(BaseDriver):
     name = None
     website = None
 
+    # Map libcloud record type enum to provider record type name
+    RECORD_TYPE_MAP = {}
+
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
         """

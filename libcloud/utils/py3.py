@@ -58,6 +58,7 @@ if PY3:
     from io import StringIO
     import urllib
     import urllib as urllib2
+    # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
 
@@ -180,6 +181,7 @@ if PY25:
 
     # Taken from http://jimmyg.org/work/code/barenecessities/index.html
     # (MIT license)
+    # pylint: disable=function-redefined
     def relpath(path, start=posixpath.curdir):   # NOQA
         """Return a relative version of a path"""
         if not path:
