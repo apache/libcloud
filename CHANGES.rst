@@ -112,6 +112,10 @@ Compute
   (GITHUB-361)
   [Andy Grimm]
 
+- Add ``ex_create_image`` method to the GCE driver.
+  (GITHUB-358, LIBCLOUD-611)
+  [Katriel Traum]
+
 Storage
 ~~~~~~~
 
