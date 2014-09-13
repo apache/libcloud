@@ -551,7 +551,7 @@ class GCENodeDriver(NodeDriver):
     }
 
     def __init__(self, user_id, key, datacenter=None, project=None,
-                 auth_type=None, scopes=None, **kwargs):
+                 auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -578,10 +578,16 @@ class GCENodeDriver(NodeDriver):
         :keyword  scopes: List of authorization URLs. Default is empty and
                           grants read/write to Compute, Storage, DNS.
         :type     scopes: ``list``
+
+        :keyword  credential_file: Path to file for caching authentication
+                                   information used by GCEConnection
+        :type     credential_file: ``str``
+
         """
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
+        self.credential_file = credential_file
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
@@ -2749,7 +2755,8 @@ class GCENodeDriver(NodeDriver):
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project,
-                'scopes': self.scopes}
+                'scopes': self.scopes,
+                'credential_file': self.credential_file}
 
     def _catch_error(self, ignore_errors=False):
         """
