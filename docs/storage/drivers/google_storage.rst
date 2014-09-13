@@ -21,4 +21,4 @@ API Docs
     :inherited-members:
 
 .. _`XML API v1.0`: https://developers.google.com/storage/docs/reference-guide
-.. _`official documentation`: https://developers.google.com/storage/docs/reference-guide
+.. _`official documentation`: https://developers.google.com/storage/docs/migrating#migration-simple
