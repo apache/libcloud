@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:deleteStorageResponse xmlns:ns2="http://ws.api.profitbricks.com/">
+         <return>
+            <requestId>3616447</requestId>
+            <dataCenterId>c2df1871-6aac-458e-ad1a-ef3f530cb7aa</dataCenterId>
+            <dataCenterVersion>13</dataCenterVersion>
+         </return>
+      </ns2:deleteStorageResponse>
+   </S:Body>
+</S:Envelope>

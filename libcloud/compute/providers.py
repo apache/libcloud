@@ -149,6 +149,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
     Provider.VSPHERE:
     ('libcloud.compute.drivers.vsphere', 'VSphereNodeDriver'),
+    Provider.PROFIT_BRICKS:
+    ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

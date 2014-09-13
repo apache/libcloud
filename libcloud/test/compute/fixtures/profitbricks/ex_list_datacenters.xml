@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:getAllDataCentersResponse xmlns:ns2="http://ws.api.profitbricks.com/">
+         <return>
+            <dataCenterId>a3e6f83a-8982-4d6a-aebc-60baf5755ede</dataCenterId>
+            <dataCenterName>StackPointCloud</dataCenterName>
+            <dataCenterVersion>1</dataCenterVersion>
+            <provisioningState>AVAILABLE</provisioningState>
+         </return>
+         <return>
+            <dataCenterId>c68f77b8-7ecb-40e9-8b41-79415dffc0f1</dataCenterId>
+            <dataCenterName>XYZ</dataCenterName>
+            <dataCenterVersion>2</dataCenterVersion>
+            <provisioningState>AVAILABLE</provisioningState>
+         </return>
+      </ns2:getAllDataCentersResponse>
+   </S:Body>
+</S:Envelope>
