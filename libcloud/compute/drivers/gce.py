@@ -1121,8 +1121,8 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name of the image to create.
         :type   name: ``str``
 
-        :param  volume: The volume to use to create the image, or the Google Cloud
-                        Storage URI
+        :param  volume: The volume to use to create the image, or the
+                        Google Cloud Storage URI
         :type   volume: ``str`` or :class:`StorageVolume`
 
         :keyword    description: Description of the new Image
