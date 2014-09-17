@@ -92,11 +92,26 @@ Compute
 - Add support for Amazon GovCloud to the EC2 driver (us-gov-west-1 region).
   [Chris DeRamus]
 
+- Allow user to pass "gp2" for "ex_volume_type" argument to the create_volume
+  method in the EC2 driver.
+
+  Reported by Xavier Barbosa.
+  [Tomaz Muraus, Xavier Barbosa]
+
+- Add new driver for ProfitBricks provider.
+  (LIBCLOUD-589, GITHUB-352)
+  [Matt Baldwin]
+
 Storage
 ~~~~~~~
 
 - Fix a bug with CDN requests in the CloudFiles driver.
   [Tomaz Muraus]
+
+- Fix a bug with not being able to specify meta_data / tags when uploading an
+  object using Google Storage driver.
+  (LIBCLOUD-612, GITHUB-356)
+  [Stefan Friesel]
 
 Loadbalancer
 ~~~~~~~~~~~~

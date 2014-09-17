@@ -75,7 +75,11 @@ class LinodeResponse(JsonResponse):
        }
 
     libcloud does not take advantage of batching, so a response will always
-    reflect the above format.  A few weird quirks are caught here as well."""
+    reflect the above format.  A few weird quirks are caught here as well.
+    """
+
+    objects = None
+
     def __init__(self, response, connection):
         """Instantiate a LinodeResponse from the HTTP response
 

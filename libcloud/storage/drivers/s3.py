@@ -227,6 +227,7 @@ class BaseS3StorageDriver(StorageDriver):
     supports_s3_multipart_upload = True
     ex_location_name = ''
     namespace = NAMESPACE
+    http_vendor_prefix = 'x-amz'
 
     def iterate_containers(self):
         response = self.connection.request('/')
@@ -602,6 +603,7 @@ class BaseS3StorageDriver(StorageDriver):
 
         if response.status != httplib.OK:
             element = response.object
+            # pylint: disable=maybe-no-member
             code, message = response._parse_error_details(element=element)
             msg = 'Error in multipart commit: %s (%s)' % (message, code)
             raise LibcloudError(msg, driver=self)
@@ -730,6 +732,7 @@ class BaseS3StorageDriver(StorageDriver):
                                     driver=self)
 
             body = response.parse_body()
+            # pylint: disable=maybe-no-member
             for node in body.findall(fixxpath(xpath='Upload',
                                               namespace=self.namespace)):
 
@@ -748,6 +751,7 @@ class BaseS3StorageDriver(StorageDriver):
                                         initiator, owner)
 
             # Check if this is the last entry in the listing
+            # pylint: disable=maybe-no-member
             is_truncated = body.findtext(fixxpath(xpath='IsTruncated',
                                                   namespace=self.namespace))
 
@@ -796,7 +800,8 @@ class BaseS3StorageDriver(StorageDriver):
             raise ValueError(
                 'Invalid storage class value: %s' % (storage_class))
 
-        headers['x-amz-storage-class'] = storage_class.upper()
+        key = self.http_vendor_prefix + '-storage-class'
+        headers[key] = storage_class.upper()
 
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
@@ -804,11 +809,11 @@ class BaseS3StorageDriver(StorageDriver):
 
         if meta_data:
             for key, value in list(meta_data.items()):
-                key = 'x-amz-meta-%s' % (key)
+                key = self.http_vendor_prefix + '-meta-%s' % (key)
                 headers[key] = value
 
         if acl:
-            headers['x-amz-acl'] = acl
+            headers[self.http_vendor_prefix + '-acl'] = acl
 
         request_path = self._get_object_path(container, object_name)
 
@@ -880,10 +885,10 @@ class BaseS3StorageDriver(StorageDriver):
             extra['last_modified'] = headers['last-modified']
 
         for key, value in headers.items():
-            if not key.lower().startswith('x-amz-meta-'):
+            if not key.lower().startswith(self.http_vendor_prefix + '-meta-'):
                 continue
 
-            key = key.replace('x-amz-meta-', '')
+            key = key.replace(self.http_vendor_prefix + '-meta-', '')
             meta_data[key] = value
 
         obj = Object(name=object_name, size=headers['content-length'],

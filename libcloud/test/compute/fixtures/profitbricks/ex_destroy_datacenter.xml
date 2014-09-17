@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:deleteDataCenterResponse xmlns:ns2="http://ws.api.profitbricks.com/">
+         <return>
+            <requestId>3339313</requestId>
+         </return>
+      </ns2:deleteDataCenterResponse>
+   </S:Body>
+</S:Envelope>

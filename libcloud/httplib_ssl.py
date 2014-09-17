@@ -136,9 +136,11 @@ class LibcloudBaseConnection(object):
 
         if hasattr(self, 'set_tunnel'):
             # Python 2.7 and higher
+            # pylint: disable=no-member
             self.set_tunnel(host=self.host, port=self.port, headers=headers)
         elif hasattr(self, '_set_tunnel'):
             # Python 2.6
+            # pylint: disable=no-member
             self._set_tunnel(host=self.host, port=self.port, headers=headers)
         else:
             raise ValueError('Unsupported Python version')
@@ -147,7 +149,7 @@ class LibcloudBaseConnection(object):
 
     def _activate_http_proxy(self, sock):
         self.sock = sock
-        self._tunnel()
+        self._tunnel()  # pylint: disable=no-member
 
     def _set_hostport(self, host, port):
         """
@@ -165,7 +167,7 @@ class LibcloudBaseConnection(object):
                     raise httplib.InvalidURL(msg)
                 host = host[:i]
             else:
-                port = self.default_port
+                port = self.default_port  # pylint: disable=no-member
             if host and host[0] == '[' and host[-1] == ']':
                 host = host[1:-1]
         self.host = host
