@@ -116,6 +116,12 @@ Compute
   (GITHUB-358, LIBCLOUD-611)
   [Katriel Traum]
 
+- Add some methods to CloudStack driver:
+  create_volume_snapshot, list_snapshots, destroy_volume_snapshot
+  create_snapshot_template, ex_list_os_types)
+  (GITHUB-363, LIBCLOUD-616)
+  [Oleg Suharev]
+
 Storage
 ~~~~~~~
 
