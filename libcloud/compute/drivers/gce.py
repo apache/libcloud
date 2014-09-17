@@ -1116,14 +1116,14 @@ class GCENodeDriver(NodeDriver):
     def ex_create_image(self, name, volume, description=None,
                         use_existing=True, wait_for_completion=True):
         """
-        Create an Image.
+        Create an image from the provided volume.
 
         :param  name: The name of the image to create.
         :type   name: ``str``
 
-        :param  volume: The disk to use to create the node, or the Google Cloud
+        :param  volume: The volume to use to create the image, or the Google Cloud
                         Storage URI
-        :type   image: ``str`` or :class:`StorageVolume`
+        :type   volume: ``str`` or :class:`StorageVolume`
 
         :keyword    description: Description of the new Image
         :type       description: ``str``
@@ -1141,7 +1141,7 @@ class GCENodeDriver(NodeDriver):
                                        creation progress
         :type     wait_for_completion: ``bool``
 
-        :return:    A NodeImage object for the new image
+        :return:    A GCENodeImage object for the new image
         :rtype:     :class:`GCENodeImage`
 
         """
