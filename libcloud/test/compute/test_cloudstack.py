@@ -706,6 +706,48 @@ class CloudStackCommonTestCase(TestCaseMixin):
         resp = self.driver.ex_delete_tags([node.id], 'UserVm', tag_keys)
         self.assertTrue(resp)
 
+    def test_list_snapshots(self):
+        snapshots = self.driver.list_snapshots()
+        self.assertEqual(len(snapshots), 3)
+
+        snap = snapshots[0]
+        self.assertEqual(snap.id, 188402)
+        self.assertEqual(snap.extra['name'], "i-123-87654-VM_ROOT-12344_20140917105548")
+        self.assertEqual(snap.extra['volume_id'], 89341)
+
+    def test_create_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        snapshot = self.driver.create_volume_snapshot(volume)
+
+        self.assertEqual(snapshot.id, 190547)
+        self.assertEqual(snapshot.extra['name'], "i-123-87654-VM_ROOT-23456_20140917105548")
+        self.assertEqual(snapshot.extra['volume_id'], "fe1ada16-57a0-40ae-b577-01a153690fb4")
+
+    def test_destroy_volume_snapshot(self):
+        snapshot = self.driver.list_snapshots()[0]
+        resp = self.driver.destroy_volume_snapshot(snapshot)
+        self.assertTrue(resp)
+
+    def test_ex_create_snapshot_template(self):
+        snapshot = self.driver.list_snapshots()[0]
+
+        template = self.driver.ex_create_snapshot_template(snapshot, "test-libcloud-template", 99)
+
+        self.assertEqual(template.id, '10260')
+        self.assertEqual(template.name, "test-libcloud-template")
+        self.assertEqual(template.extra['displaytext'], "test-libcloud-template")
+        self.assertEqual(template.extra['hypervisor'], "VMware")
+        self.assertEqual(template.extra['os'], "Other Linux (64-bit)")
+
+    def test_ex_list_os_types(self):
+        os_types = self.driver.ex_list_os_types()
+
+        self.assertEqual(len(os_types), 146)
+
+        self.assertEqual(os_types[0]['id'], 69)
+        self.assertEqual(os_types[0]['oscategoryid'], 7)
+        self.assertEqual(os_types[0]['description'], "Asianux 3(32-bit)")
+
 
 class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
     def test_driver_instantiation(self):

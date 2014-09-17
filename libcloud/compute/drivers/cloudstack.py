@@ -24,7 +24,7 @@ from libcloud.utils.py3 import urlparse
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
-from libcloud.compute.base import NodeSize, StorageVolume
+from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, LibcloudError
 from libcloud.compute.types import KeyPairDoesNotExistError
@@ -193,6 +193,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': int
         },
         'instance_id': {
+            'key_name': 'virtualmachineid',
+            'transform_func': str
+        },
+        'serviceoffering_id': {
             'key_name': 'serviceofferingid',
             'transform_func': str
         },
@@ -2252,6 +2256,109 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
 
         return True
+
+    def list_snapshots(self):
+        """
+        Describe all snapshots.
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        snapshots = self._sync_request('listSnapshots',
+                                       method='GET')
+        list_snapshots = []
+
+        for snap in snapshots['snapshot']:
+            list_snapshots.append(self._to_snapshot(snap))
+        return list_snapshots
+
+    def create_volume_snapshot(self, volume):
+        """
+        Create snapshot from volume
+
+        :param      volume: Instance of ``StorageVolume``
+        :type       volume: ``StorageVolume``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        snapshot = self._async_request(command='createSnapshot',
+                                       params={'volumeid': volume.id},
+                                       method='GET')
+        return self._to_snapshot(snapshot['snapshot'])
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Destroy snapshot
+
+        :param      snapshot: Instance of ``VolumeSnapshot``
+        :type       volume: ``VolumeSnapshot``
+
+        :rtype: ``bool``
+        """
+        self._async_request(command='deleteSnapshot',
+                            params={'id': snapshot.id},
+                            method='GET')
+        return True
+
+    def ex_create_snapshot_template(self, snapshot, name, ostypeid, displaytext=None):
+        """
+        Create a template from a snapshot
+
+        :param      snapshot: Instance of ``VolumeSnapshot``
+        :type       volume: ``VolumeSnapshot``
+
+        :param  name: the name of the template
+        :type   name: ``str``
+
+        :param  name: the os type id
+        :type   name: ``str``
+
+        :param  name: the display name of the template
+        :type   name: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        if not displaytext:
+            displaytext = name
+        img = self._async_request('createTemplate',
+                                    params={
+                                        'displaytext': displaytext,
+                                        'name': name,
+                                        'ostypeid': ostypeid,
+                                        'snapshotid': snapshot.id
+                                    }).get('template')
+        return NodeImage(id=img['id'],
+                         name=img['name'],
+                         driver=self.connection.driver,
+                         extra={
+                            'hypervisor': img['hypervisor'],
+                            'format': img['format'],
+                            'os': img['ostypename'],
+                            'displaytext': img['displaytext']})
+
+    def ex_list_os_types(self):
+        """
+        List all registered os types (needed for snapshot creation)
+
+        :rtype: ``list``
+        """
+        ostypes = self._sync_request('listOsTypes')
+        return ostypes['ostype']
+
+    def _to_snapshot(self, data):
+        """
+        Create snapshot object from data
+
+        :param data: Node data object.
+        :type data: ``dict``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        extra = {
+            'tags': data.get('tags', None),
+            'name': data.get('name', None),
+            'volume_id': data.get('volumeid', None),
+        }
+        return VolumeSnapshot(data['id'], driver=self, extra=extra)
 
     def _to_node(self, data, public_ips=None):
         """
