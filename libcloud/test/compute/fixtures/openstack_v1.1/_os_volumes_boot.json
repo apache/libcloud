@@ -1,0 +1,16 @@
+{
+    "server": {
+        "id": "62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+        "links": [
+            {
+                "href": "http://127.0.0.1/v2/68/servers/62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+                "rel": "self"
+            },
+            {
+                "href": "http://127.0.0.1/68/servers/62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+                "rel": "bookmark"
+            }
+        ],
+        "adminPass": "racktestvJq7d3"
+    }
+}

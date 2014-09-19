@@ -888,6 +888,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
         self.assertEqual(node.extra['availability_zone'], 'testaz')
 
+    def test_create_node_with_ex_blockdevicemappings(self):
+        image = NodeImage(
+            id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
+        mappings = [
+            {"volume_size": "16", "volume_id": "c820530f-a8b1-47fe-befd-73c8484f0e25", "delete_on_termination": "0",
+             "device_name": "vdb"}
+        ]
+        node = self.driver.create_node(name='racktest', image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+        self.assertEqual(node.id, '62885ac4-6914-4a51-acd8-d5adf75c8dbe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['password'], 'racktestvJq7d3')
+
     def test_create_node_with_ex_disk_config(self):
         OpenStack_1_1_MockHttp.type = 'EX_DISK_CONFIG'
         image = NodeImage(
@@ -1435,6 +1450,23 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         if method == "GET":
             body = self.fixtures.load(
                 '_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_volumes_boot(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_os_volumes_boot.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_62885ac4_6914_4a51_acd8_d5adf75c8dbe(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load(
+                '_servers_62885ac4_6914_4a51_acd8_d5adf75c8dbe.json')
         else:
             raise NotImplementedError()
 
