@@ -910,7 +910,7 @@ class GCENodeDriver(NodeDriver):
         list_zones = [self._to_zone(z) for z in response['items']]
         return list_zones
 
-    def ex_create_address(self, name, region=None):
+    def ex_create_address(self, name, region=None, address=None):
         """
         Create a static address in a region.
 
@@ -919,6 +919,10 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  region: Name of region for the address (e.g. 'us-central1')
         :type     region: ``str`` or :class:`GCERegion`
+
+        :keyword  address: Ephemeral IP address to promote to a static one
+                           (e.g. 'xxx.xxx.xxx.xxx')
+        :type     address: ``str`` or ``None``
 
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
@@ -930,6 +934,8 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('REGION_NOT_SPECIFIED',
                              'Region must be provided for an address')
         address_data = {'name': name}
+        if address:
+            address_data['address'] = address
         request = '/regions/%s/addresses' % (region.name)
         self.connection.async_request(request, method='POST',
                                       data=address_data)
@@ -938,7 +944,8 @@ class GCENodeDriver(NodeDriver):
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
                               interval=None, timeout=None,
                               unhealthy_threshold=None,
-                              healthy_threshold=None):
+                              healthy_threshold=None,
+                              description=None):
         """
         Create an Http Health Check.
 
@@ -969,6 +976,9 @@ class GCENodeDriver(NodeDriver):
                                      healthy.  Defaults to 2.
         :type     healthy_threshold: ``int``
 
+        :keyword  description: The description of the check.  Defaults to None.
+        :type     description: ``str`` or ``None``
+
         :return:  Health Check object
         :rtype:   :class:`GCEHealthCheck`
         """
@@ -976,6 +986,8 @@ class GCENodeDriver(NodeDriver):
         hc_data['name'] = name
         if host:
             hc_data['host'] = host
+        if description:
+            hc_data['description'] = description
         # As of right now, the 'default' values aren't getting set when called
         # through the API, so set them explicitly
         hc_data['requestPath'] = path or '/'
@@ -1046,7 +1058,9 @@ class GCENodeDriver(NodeDriver):
         firewall_data['name'] = name
         firewall_data['allowed'] = allowed
         firewall_data['network'] = nw.extra['selfLink']
-        firewall_data['sourceRanges'] = source_ranges or ['0.0.0.0/0']
+        if source_ranges is None:
+            source_ranges = ['0.0.0.0/0']
+        firewall_data['sourceRanges'] = source_ranges
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
         if target_tags is not None:
@@ -1060,7 +1074,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_forwarding_rule(self, name, targetpool, region=None,
                                   protocol='tcp', port_range=None,
-                                  address=None):
+                                  address=None, description=None):
         """
         Create a forwarding rule.
 
@@ -1085,6 +1099,10 @@ class GCENodeDriver(NodeDriver):
                            in same region.
         :type     address: ``str`` or :class:`GCEAddress`
 
+        :keyword  description: The description of the forwarding rule.
+                               Defaults to None.
+        :type     description: ``str`` or ``None``
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
@@ -1098,13 +1116,15 @@ class GCENodeDriver(NodeDriver):
         forwarding_rule_data['name'] = name
         forwarding_rule_data['region'] = region.extra['selfLink']
         forwarding_rule_data['target'] = targetpool.extra['selfLink']
-        forwarding_rule_data['protocol'] = protocol.upper()
+        forwarding_rule_data['IPProtocol'] = protocol.upper()
         if address:
             if not hasattr(address, 'name'):
                 address = self.ex_get_address(address, region)
-            forwarding_rule_data['IPAddress'] = address.extra['selfLink']
+            forwarding_rule_data['IPAddress'] = address.address
         if port_range:
             forwarding_rule_data['portRange'] = port_range
+        if description:
+            forwarding_rule_data['description'] = description
 
         request = '/regions/%s/forwardingRules' % (region.name)
 
@@ -1613,16 +1633,25 @@ class GCENodeDriver(NodeDriver):
         """
         if not hasattr(targetpool, 'name'):
             targetpool = self.ex_get_targetpool(targetpool)
-        if not hasattr(node, 'name'):
-            node = self.ex_get_node(node, 'all')
+        if hasattr(node, 'name'):
+            node_uri = node.extra['selfLink']
+        else:
+            if node.startswith('https://'):
+                node_uri = node
+            else:
+                node = self.ex_get_node(node, 'all')
+                node_uri = node.extra['selfLink']
 
-        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
+        targetpool_data = {'instances': [{'instance': node_uri}]}
 
         request = '/regions/%s/targetPools/%s/addInstance' % (
             targetpool.region.name, targetpool.name)
         self.connection.async_request(request, method='POST',
                                       data=targetpool_data)
-        targetpool.nodes.append(node)
+        if all((node_uri != n) and
+               (not hasattr(n, 'extra') or n.extra['selfLink'] != node_uri)
+               for n in targetpool.nodes):
+            targetpool.nodes.append(node)
         return True
 
     def ex_targetpool_add_healthcheck(self, targetpool, healthcheck):
@@ -1643,7 +1672,9 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+        targetpool_data = {
+            'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}]
+        }
 
         request = '/regions/%s/targetPools/%s/addHealthCheck' % (
             targetpool.region.name, targetpool.name)
@@ -1667,10 +1698,17 @@ class GCENodeDriver(NodeDriver):
         """
         if not hasattr(targetpool, 'name'):
             targetpool = self.ex_get_targetpool(targetpool)
-        if not hasattr(node, 'name'):
-            node = self.ex_get_node(node, 'all')
 
-        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
+        if hasattr(node, 'name'):
+            node_uri = node.extra['selfLink']
+        else:
+            if node.startswith('https://'):
+                node_uri = node
+            else:
+                node = self.ex_get_node(node, 'all')
+                node_uri = node.extra['selfLink']
+
+        targetpool_data = {'instances': [{'instance': node_uri}]}
 
         request = '/regions/%s/targetPools/%s/removeInstance' % (
             targetpool.region.name, targetpool.name)
@@ -1679,7 +1717,8 @@ class GCENodeDriver(NodeDriver):
         # Remove node object from node list
         index = None
         for i, nd in enumerate(targetpool.nodes):
-            if nd.name == node.name:
+            if nd == node_uri or (hasattr(nd, 'extra') and
+                                  nd.extra['selfLink'] == node_uri):
                 index = i
                 break
         if index is not None:
@@ -1704,7 +1743,9 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+        targetpool_data = {
+            'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}]
+        }
 
         request = '/regions/%s/targetPools/%s/removeHealthCheck' % (
             targetpool.region.name, targetpool.name)

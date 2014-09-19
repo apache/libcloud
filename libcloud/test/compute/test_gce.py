@@ -231,13 +231,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                   'interval': 10,
                   'timeout': 10,
                   'unhealthy_threshold': 4,
-                  'healthy_threshold': 3}
+                  'healthy_threshold': 3,
+                  'description': 'test healthcheck'}
         hc = self.driver.ex_create_healthcheck(healthcheck_name, **kwargs)
         self.assertTrue(isinstance(hc, GCEHealthCheck))
         self.assertEqual(hc.name, healthcheck_name)
         self.assertEqual(hc.path, '/lc')
         self.assertEqual(hc.port, 8000)
         self.assertEqual(hc.interval, 10)
+        self.assertEqual(hc.extra['host'], 'lchost')
+        self.assertEqual(hc.extra['description'], 'test healthcheck')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
@@ -252,11 +255,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         fwr_name = 'lcforwardingrule'
         targetpool = 'lctargetpool'
         region = 'us-central1'
+        port_range='8000-8500'
+        description = 'test forwarding rule'
         fwr = self.driver.ex_create_forwarding_rule(fwr_name, targetpool,
                                                     region=region,
-                                                    port_range='8000-8500')
+                                                    port_range=port_range,
+                                                    description=description)
         self.assertTrue(isinstance(fwr, GCEForwardingRule))
         self.assertEqual(fwr.name, fwr_name)
+        self.assertEqual(fwr.region.name, region)
+        self.assertEqual(fwr.protocol, 'TCP')
+        self.assertEqual(fwr.extra['portRange'], port_range)
+        self.assertEqual(fwr.extra['description'], description)
 
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
@@ -413,7 +423,20 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(remove_node)
         self.assertEqual(len(targetpool.nodes), 1)
 
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra['selfLink'])
+        self.assertTrue(add_node)
+        self.assertEqual(len(targetpool.nodes), 2)
+
+        remove_node = self.driver.ex_targetpool_remove_node(targetpool, node.extra['selfLink'])
+        self.assertTrue(remove_node)
+        self.assertEqual(len(targetpool.nodes), 1)
+
         add_node = self.driver.ex_targetpool_add_node(targetpool, node)
+        self.assertTrue(add_node)
+        self.assertEqual(len(targetpool.nodes), 2)
+
+        # check that duplicates are filtered
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra['selfLink'])
         self.assertTrue(add_node)
         self.assertEqual(len(targetpool.nodes), 2)
 
