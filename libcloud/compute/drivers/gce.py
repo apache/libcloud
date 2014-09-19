@@ -1648,7 +1648,7 @@ class GCENodeDriver(NodeDriver):
             targetpool.region.name, targetpool.name)
         self.connection.async_request(request, method='POST',
                                       data=targetpool_data)
-        if all((node_uri != n) and 
+        if all((node_uri != n) and
                (not hasattr(n, 'extra') or n.extra['selfLink'] != node_uri)
                for n in targetpool.nodes):
             targetpool.nodes.append(node)
@@ -1672,7 +1672,9 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}] }
+        targetpool_data = {
+            'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}]
+        }
 
         request = '/regions/%s/targetPools/%s/addHealthCheck' % (
             targetpool.region.name, targetpool.name)
@@ -1741,7 +1743,9 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
 
-        targetpool_data = {'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}] }
+        targetpool_data = {
+            'healthChecks': [{'healthCheck': healthcheck.extra['selfLink']}]
+        }
 
         request = '/regions/%s/targetPools/%s/removeHealthCheck' % (
             targetpool.region.name, targetpool.name)
