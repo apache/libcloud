@@ -102,6 +102,11 @@ Compute
   (LIBCLOUD-589, GITHUB-352)
   [Matt Baldwin]
 
+- Various improvements and bugs fixes in the GCE driver. For a list, see
+  https://github.com/apache/libcloud/pull/360/commits
+  (GITHUB-360)
+  [Evgeny Egorochkin]
+
 Storage
 ~~~~~~~
 
