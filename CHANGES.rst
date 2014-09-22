@@ -107,6 +107,11 @@ Compute
   (GITHUB-360)
   [Evgeny Egorochkin]
 
+- Allow user to specify virtualization type when registering an EC2 image by
+  passing ``virtualization_type`` argument to the ``ex_register_image`` method.
+  (GITHUB-361)
+  [Andy Grimm]
+
 Storage
 ~~~~~~~
 

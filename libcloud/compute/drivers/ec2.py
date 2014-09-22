@@ -2573,7 +2573,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
-                          ramdisk_id=None):
+                          ramdisk_id=None, virtualization_type=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -2608,6 +2608,11 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      ramdisk_id: RAM disk for AMI (optional)
         :type       ramdisk_id: ``str``
 
+        :param      virtualization_type: The type of virtualization for the
+                                         AMI you are registering, paravirt
+                                         or hvm (optional)
+        :type       virtualization_type: ``str``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -2635,6 +2640,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if ramdisk_id is not None:
             params['RamDiskId'] = ramdisk_id
+
+        if virtualization_type is not None:
+            params['VirtualizationType'] = virtualization_type
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
