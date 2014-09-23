@@ -102,6 +102,16 @@ Compute
   (LIBCLOUD-589, GITHUB-352)
   [Matt Baldwin]
 
+- Various improvements and bugs fixes in the GCE driver. For a list, see
+  https://github.com/apache/libcloud/pull/360/commits
+  (GITHUB-360)
+  [Evgeny Egorochkin]
+
+- Allow user to specify virtualization type when registering an EC2 image by
+  passing ``virtualization_type`` argument to the ``ex_register_image`` method.
+  (GITHUB-361)
+  [Andy Grimm]
+
 Storage
 ~~~~~~~
 

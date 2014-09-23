@@ -34,6 +34,7 @@
           "id": "06342111469679701315",
           "kind": "compute#forwardingRule",
           "name": "lcforwardingrule",
+          "description": "test forwarding rule",
           "portRange": "8000-8500",
           "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
           "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/forwardingRules/lcforwardingrule",
