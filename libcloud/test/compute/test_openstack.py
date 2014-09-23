@@ -894,8 +894,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(
             1, '256 slice', None, None, None, None, driver=self.driver)
         mappings = [
-            {"volume_size": "16", "volume_id": "c820530f-a8b1-47fe-befd-73c8484f0e25", "delete_on_termination": "0",
-             "device_name": "vdb"}
+            {"volume_id": "c820530f-a8b1-47fe-befd-73c8484f0e25",
+             "device_name": "vdb",
+             "delete_on_termination": "0"}
         ]
         node = self.driver.create_node(name='racktest', image=image, size=size,
                                        ex_blockdevicemappings=mappings)
