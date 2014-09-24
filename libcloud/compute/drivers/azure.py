@@ -415,9 +415,6 @@ class AzureNodeDriver(NodeDriver):
             # This mimics the Azure UI behavior.
             ex_admin_user_id = "azureuser"
 
-        if "ex_storage_service_name" not in kwargs:
-            raise ValueError("ex_storage_service_name is required.")
-
         if "size" not in kwargs:
             raise ValueError("size is required. ")
 
@@ -426,12 +423,6 @@ class AzureNodeDriver(NodeDriver):
 
         if "name" not in kwargs:
             raise ValueError("name is required.")
-
-        if "ex_admin_user_id" not in kwargs:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        if "ex_admin_user_id" not in kwargs:
-            raise ValueError("ex_cloud_service_name is required.")
 
         node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
         network_config = ConfigurationSet()
@@ -2665,5 +2656,5 @@ class AzureNodeLocation(NodeLocation):
         return (('<AzureNodeLocation: id=%s, name=%s, country=%s, '
                  'driver=%s services=%s virtualMachineRoleSizes=%s >')
                 % (self.id, self.name, self.country,
-                   self.driver.name, ','.join(self.available_service),
+                   self.driver.name, ','.join(self.available_services),
                    ','.join(self.virtual_machine_role_sizes)))
