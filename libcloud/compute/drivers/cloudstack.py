@@ -2299,7 +2299,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
         return True
 
-    def ex_create_snapshot_template(self, snapshot, name, ostypeid, displaytext=None):
+    def ex_create_snapshot_template(self, snapshot, name, ostypeid,
+                                    displaytext=None):
         """
         Create a template from a snapshot
 
@@ -2319,20 +2320,23 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         if not displaytext:
             displaytext = name
-        img = self._async_request(command='createTemplate',
-                                  params={
-                                      'displaytext': displaytext,
-                                      'name': name,
-                                      'ostypeid': ostypeid,
-                                      'snapshotid': snapshot.id}).get('template')
+        resp = self._async_request(command='createTemplate',
+                                   params={
+                                       'displaytext': displaytext,
+                                       'name': name,
+                                       'ostypeid': ostypeid,
+                                       'snapshotid': snapshot.id})
+        img = resp.get('template')
+        extra = {
+            'hypervisor': img['hypervisor'],
+            'format': img['format'],
+            'os': img['ostypename'],
+            'displaytext': img['displaytext']
+        }
         return NodeImage(id=img['id'],
                          name=img['name'],
                          driver=self.connection.driver,
-                         extra={
-                            'hypervisor': img['hypervisor'],
-                            'format': img['format'],
-                            'os': img['ostypename'],
-                            'displaytext': img['displaytext']})
+                         extra=extra)
 
     def ex_list_os_types(self):
         """
