@@ -2319,13 +2319,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         if not displaytext:
             displaytext = name
-        img = self._async_request('createTemplate',
-                                    params={
-                                        'displaytext': displaytext,
-                                        'name': name,
-                                        'ostypeid': ostypeid,
-                                        'snapshotid': snapshot.id
-                                    }).get('template')
+        img = self._async_request(command='createTemplate',
+                                  params={
+                                      'displaytext': displaytext,
+                                      'name': name,
+                                      'ostypeid': ostypeid,
+                                      'snapshotid': snapshot.id}).get('template')
         return NodeImage(id=img['id'],
                          name=img['name'],
                          driver=self.connection.driver,
