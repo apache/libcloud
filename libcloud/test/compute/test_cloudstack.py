@@ -295,6 +295,58 @@ class CloudStackCommonTestCase(TestCaseMixin):
         result = self.driver.ex_delete_network(network=network)
         self.assertTrue(result)
 
+    def test_ex_list_vpc_offerings(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listVPCOfferings_default.json')
+        fixture_vpcoffers = \
+            fixture['listvpcofferingsresponse']['vpcoffering']
+
+        vpcoffers = self.driver.ex_list_vpc_offerings()
+
+        for i, vpcoffer in enumerate(vpcoffers):
+            self.assertEqual(vpcoffer.id, fixture_vpcoffers[i]['id'])
+            self.assertEqual(vpcoffer.name,
+                             fixture_vpcoffers[i]['name'])
+            self.assertEqual(vpcoffer.display_text,
+                             fixture_vpcoffers[i]['displaytext'])
+
+    def test_ex_list_vpcs(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listVPCs_default.json')
+        fixture_vpcs = fixture['listvpcsresponse']['vpc']
+
+        vpcs = self.driver.ex_list_vpcs()
+
+        for i, vpc in enumerate(vpcs):
+            self.assertEqual(vpc.id, fixture_vpcs[i]['id'])
+            self.assertEqual(vpc.display_text, fixture_vpcs[i]['displaytext'])
+            self.assertEqual(vpc.name, fixture_vpcs[i]['name'])
+            self.assertEqual(vpc.vpc_offering_id,
+                             fixture_vpcs[i]['vpcofferingid'])
+            self.assertEqual(vpc.zone_id, fixture_vpcs[i]['zoneid'])
+
+    def test_ex_create_vpc(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'createVPC_default.json')
+
+        fixture_vpc = fixture['createvpcresponse']
+
+        vpcoffer = self.driver.ex_list_vpc_offerings()[0]
+        vpc = self.driver.ex_create_vpc(cidr='10.1.1.0/16',
+                                        display_text='cloud.local',
+                                        name='cloud.local',
+                                        vpc_offering=vpcoffer,
+                                        zoneid="2")
+
+        self.assertEqual(vpc.id, fixture_vpc['id'])
+
+    def test_ex_delete_vpc(self):
+
+        vpc = self.driver.ex_list_vpcs()[0]
+
+        result = self.driver.ex_delete_vpc(vpc=vpc)
+        self.assertTrue(result)
+
     def test_ex_list_projects(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'listProjects_default.json')
@@ -633,6 +685,44 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(rule.icmp_type, 8)
         self.assertIsNone(rule.start_port)
         self.assertIsNone(rule.end_port)
+
+    def test_ex_list_egress_firewall_rules(self):
+        rules = self.driver.ex_list_egress_firewall_rules()
+        self.assertEqual(len(rules), 1)
+        rule = rules[0]
+        self.assertEqual(rule.network_id, '874be2ca-20a7-4360-80e9-7356c0018c0b')
+        self.assertEqual(rule.cidr_list, '192.168.0.0/16')
+        self.assertEqual(rule.protocol, 'tcp')
+        self.assertIsNone(rule.icmp_code)
+        self.assertIsNone(rule.icmp_type)
+        self.assertEqual(rule.start_port, '80')
+        self.assertEqual(rule.end_port, '80')
+
+    def test_ex_delete_egress_firewall_rule(self):
+        rules = self.driver.ex_list_egress_firewall_rules()
+        res = self.driver.ex_delete_egress_firewall_rule(rules[0])
+        self.assertTrue(res)
+
+    def test_ex_create_egress_firewall_rule(self):
+        network_id = '874be2ca-20a7-4360-80e9-7356c0018c0b'
+        cidr_list = '192.168.0.0/16'
+        protocol = 'TCP'
+        start_port = 33
+        end_port = 34
+        rule = self.driver.ex_create_egress_firewall_rule(
+            network_id,
+            cidr_list,
+            protocol,
+            start_port=start_port,
+            end_port=end_port)
+
+        self.assertEqual(rule.network_id, network_id)
+        self.assertEqual(rule.cidr_list, cidr_list)
+        self.assertEqual(rule.protocol, protocol)
+        self.assertIsNone(rule.icmp_code)
+        self.assertIsNone(rule.icmp_type)
+        self.assertEqual(rule.start_port, start_port)
+        self.assertEqual(rule.end_port, end_port)
 
     def test_ex_list_port_forwarding_rules(self):
         rules = self.driver.ex_list_port_forwarding_rules()

@@ -213,6 +213,40 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': str
         }
     },
+    'vpc': {
+        'created': {
+            'key_name': 'created',
+            'transform_func': str
+        },
+        'domain': {
+            'key_name': 'domain',
+            'transform_func': str
+        },
+        'domain_id': {
+            'key_name': 'domainid',
+            'transform_func': int
+        },
+        'network_domain': {
+            'key_name': 'networkdomain',
+            'transform_func': str
+        },
+        'state': {
+            'key_name': 'state',
+            'transform_func': str
+        },
+        'vpc_offering_id': {
+            'key_name': 'vpcofferingid',
+            'transform_func': str
+        },
+        'zone_name': {
+            'key_name': 'zonename',
+            'transform_func': str
+        },
+        'zone_id': {
+            'key_name': 'zoneid',
+            'transform_func': str
+        }
+    },
     'project': {
         'account': {'key_name': 'account', 'transform_func': str},
         'cpuavailable': {'key_name': 'cpuavailable', 'transform_func': int},
@@ -422,6 +456,62 @@ class CloudStackFirewallRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
+class CloudStackEgressFirewallRule(object):
+    """
+    A egress firewall rule.
+    """
+
+    def __init__(self, id, network_id, cidr_list, protocol,
+                 icmp_code=None, icmp_type=None,
+                 start_port=None, end_port=None):
+
+        """
+        A egress firewall rule.
+
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
+
+        :param      id: Firewall Rule ID
+        :type       id: ``int``
+
+        :param      network_id: the id network network for the egress firwall
+                    services
+        :type       network_id: ``str``
+
+        :param      protocol: TCP/IP Protocol (TCP, UDP)
+        :type       protocol: ``str``
+
+        :param      cidr_list: cidr list
+        :type       cidr_list: ``str``
+
+        :param      icmp_code: Error code for this icmp message
+        :type       icmp_code: ``int``
+
+        :param      icmp_type: Type of the icmp message being sent
+        :type       icmp_type: ``int``
+
+        :param      start_port: start of port range
+        :type       start_port: ``int``
+
+        :param      end_port: end of port range
+        :type       end_port: ``int``
+
+        :rtype: :class:`CloudStackEgressFirewallRule`
+        """
+
+        self.id = id
+        self.network_id = network_id
+        self.cidr_list = cidr_list
+        self.protocol = protocol
+        self.icmp_code = icmp_code
+        self.icmp_type = icmp_type
+        self.start_port = start_port
+        self.end_port = end_port
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+
 class CloudStackIPForwardingRule(object):
     """
     A NAT/firewall forwarding rule.
@@ -557,6 +647,51 @@ class CloudStackNetworkOffering(object):
                  'for_vpc=%s, driver%s>')
                 % (self.id, self.name, self.display_text,
                    self.guest_ip_type, self.service_offering_id, self.for_vpc,
+                   self.driver.name))
+
+
+class CloudStackVPC(object):
+    """
+    Class representing a CloudStack VPC.
+    """
+
+    def __init__(self, display_text, name, vpc_offering_id, id, zone_id, cidr,
+                 driver, extra=None):
+        self.display_text = display_text
+        self.name = name
+        self.vpc_offering_id = vpc_offering_id
+        self.id = id
+        self.zone_id = zone_id
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackVPC: id=%s, displaytext=%s, name=%s, '
+                 'vpc_offering_id=%s, zoneid=%s, cidr=%s, driver%s>')
+                % (self.id, self.displaytext, self.name,
+                   self.vpc_offering_id, self.zoneid, self.cidr,
+                   self.driver.name))
+
+
+class CloudStackVPCOffering(object):
+    """
+    Class representing a CloudStack VPC Offering.
+    """
+
+    def __init__(self, name, display_text, id,
+                 driver, extra=None):
+        self.name = name
+        self.display_text = display_text
+        self.id = id
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackVPCOffering: id=%s, name=%s, '
+                 'display_text=%s, '
+                 'driver%s>')
+                % (self.id, self.name, self.display_text,
                    self.driver.name))
 
 
@@ -1128,6 +1263,125 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
         return True
 
+    def ex_list_vpc_offerings(self):
+        """
+        List the available vpc offerings
+
+        :rtype ``list`` of :class:`CloudStackVPCOffering`
+        """
+        res = self._sync_request(command='listVPCOfferings',
+                                 method='GET')
+        vpcoffers = res.get('vpcoffering', [])
+
+        vpcofferings = []
+
+        for vpcoffer in vpcoffers:
+            vpcofferings.append(CloudStackVPCOffering(
+                                vpcoffer['name'],
+                                vpcoffer['displaytext'],
+                                vpcoffer['id'],
+                                self))
+
+        return vpcofferings
+
+    def ex_list_vpcs(self):
+        """
+        List the available VPCs
+
+        :rtype ``list`` of :class:`CloudStackVPC`
+        """
+
+        res = self._sync_request(command='listVPCs',
+                                 method='GET')
+        vpcs = res.get('vpc', [])
+
+        networks = []
+        for vpc in vpcs:
+
+            networks.append(CloudStackVPC(
+                            vpc['displaytext'],
+                            vpc['name'],
+                            vpc['vpcofferingid'],
+                            vpc['id'],
+                            vpc['zoneid'],
+                            vpc['cidr'],
+                            self))
+
+        return networks
+
+    def ex_create_vpc(self, cidr, display_text, name, vpc_offering,
+                      zoneid):
+        """
+
+        Creates a VPC, only available in advanced zones.
+
+        :param  cidr: the cidr of the VPC. All VPC guest networks' cidrs
+                should be within this CIDR
+
+        :type   display_text: ``str``
+
+        :param  display_text: the display text of the VPC
+        :type   display_text: ``str``
+
+        :param  name: the name of the VPC
+        :type   name: ``str``
+
+        :param  vpc_offering: the ID of the VPC offering
+        :type   vpc_offering: :class:'CloudStackVPCOffering`
+
+        :param  zoneid: the ID of the availability zone
+        :type   zoneid: ``str``
+
+        :rtype: :class:`CloudStackVPC`
+
+        """
+
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpc']
+
+        args = {
+            'cidr': cidr,
+            'displaytext': display_text,
+            'name': name,
+            'vpcofferingid': vpc_offering.id,
+            'zoneid': zoneid,
+        }
+
+        result = self._sync_request(command='createVPC',
+                                    params=args,
+                                    method='GET')
+
+        extra = self._get_extra_dict(result, extra_map)
+
+        vpc = CloudStackVPC(display_text,
+                            name,
+                            vpc_offering.id,
+                            result['id'],
+                            zoneid,
+                            cidr,
+                            self,
+                            extra=extra)
+
+        return vpc
+
+    def ex_delete_vpc(self, vpc):
+        """
+
+        Deletes a VPC, only available in advanced zones.
+
+        :param  vpc: The VPC
+        :type   vpc: :class: 'CloudStackVPC'
+
+        :rtype: ``bool``
+
+        """
+
+        args = {'id': vpc.id}
+
+        self._async_request(command='deleteVPC',
+                            params=args,
+                            method='GET')
+        return True
+
     def ex_list_projects(self):
         """
         List the available projects
@@ -1427,7 +1681,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             ips.append(CloudStackAddress(ip['id'],
                                          ip['ipaddress'],
                                          self,
-                                         ip['associatednetworkid']))
+                                         ip.get('associatednetworkid', [])))
+
         return ips
 
     def ex_allocate_public_ip(self, location=None):
@@ -1554,6 +1809,99 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``bool``
         """
         res = self._async_request(command='deleteFirewallRule',
+                                  params={'id': firewall_rule.id},
+                                  method='GET')
+        return res['success']
+
+    def ex_list_egress_firewall_rules(self):
+        """
+        Lists all agress Firewall Rules
+
+        :rtype: ``list`` of :class:`CloudStackEgressFirewallRule`
+        """
+        rules = []
+        result = self._sync_request(command='listEgressFirewallRules',
+                                    method='GET')
+        for rule in result['firewallrule']:
+            rules.append(CloudStackEgressFirewallRule(rule['id'],
+                                                      rule['networkid'],
+                                                      rule['cidrlist'],
+                                                      rule['protocol'],
+                                                      rule.get('icmpcode'),
+                                                      rule.get('icmptype'),
+                                                      rule.get('startport'),
+                                                      rule.get('endport')))
+
+        return rules
+
+    def ex_create_egress_firewall_rule(self, network_id, cidr_list, protocol,
+                                       icmp_code=None, icmp_type=None,
+                                       start_port=None, end_port=None):
+        """
+        Creates a Firewalle Rule
+
+        :param      network_id: the id network network for the egress firwall
+                    services
+        :type       network_id: ``str``
+
+        :param      cidr_list: cidr list
+        :type       cidr_list: ``str``
+
+        :param      protocol: TCP/IP Protocol (TCP, UDP)
+        :type       protocol: ``str``
+
+        :param      icmp_code: Error code for this icmp message
+        :type       icmp_code: ``int``
+
+        :param      icmp_type: Type of the icmp message being sent
+        :type       icmp_type: ``int``
+
+        :param      start_port: start of port range
+        :type       start_port: ``int``
+
+        :param      end_port: end of port range
+        :type       end_port: ``int``
+
+        :rtype: :class:`CloudStackEgressFirewallRule`
+        """
+        args = {
+            'networkid': network_id,
+            'cidrlist': cidr_list,
+            'protocol': protocol
+        }
+        if icmp_code is not None:
+            args['icmpcode'] = int(icmp_code)
+        if icmp_type is not None:
+            args['icmptype'] = int(icmp_type)
+        if start_port is not None:
+            args['startport'] = int(start_port)
+        if end_port is not None:
+            args['endport'] = int(end_port)
+
+        result = self._async_request(command='createEgressFirewallRule',
+                                     params=args,
+                                     method='GET')
+
+        rule = CloudStackEgressFirewallRule(result['firewallrule']['id'],
+                                            network_id,
+                                            cidr_list,
+                                            protocol,
+                                            icmp_code,
+                                            icmp_type,
+                                            start_port,
+                                            end_port)
+        return rule
+
+    def ex_delete_egress_firewall_rule(self, firewall_rule):
+        """
+        Remove a Firewall rule.
+
+        :param egress_firewall_rule: Firewall rule which should be used
+        :type  egress_firewall_rule: :class:`CloudStackEgressFirewallRule`
+
+        :rtype: ``bool``
+        """
+        res = self._async_request(command='deleteEgressFirewallRule',
                                   params={'id': firewall_rule.id},
                                   method='GET')
         return res['success']
