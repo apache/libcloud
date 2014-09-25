@@ -122,6 +122,10 @@ Compute
   (GITHUB-363, LIBCLOUD-616)
   [Oleg Suharev]
 
+- Added VPC support and Egress Firewall rule support fo CloudStack
+  (GITHUB-363)
+  [Jeroen de Korte]
+
 Storage
 ~~~~~~~
 

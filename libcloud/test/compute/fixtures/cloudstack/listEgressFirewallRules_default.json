@@ -1,0 +1,1 @@
+{ "listegressfirewallrulesresponse" : { "count":1 ,"firewallrule" : [  {"id":"7d4e2924-49b6-4a5a-9a98-69f2f0f73c69","protocol":"tcp","startport":"80","endport":"80","networkid":"874be2ca-20a7-4360-80e9-7356c0018c0b","state":"Active","cidrlist":"192.168.0.0/16","tags":[]} ] } }
