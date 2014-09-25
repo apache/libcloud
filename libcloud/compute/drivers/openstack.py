@@ -2018,6 +2018,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             extra={
                 'description': api_node['displayDescription'],
                 'attachments': [att for att in api_node['attachments'] if att],
+                'state': api_node['status'],
+                'location': api_node['availabilityZone'],
+                'volume_type': api_node['volumeType'],
+                'metadata': api_node['metadata'],
+                'created_at': api_node['createdAt'],
             }
         )
 
