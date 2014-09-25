@@ -131,6 +131,13 @@ Compute
   (GITHUB-366)
   [Gertjan Oude Lohuis]
 
+- Fix ``create_volume`` method in the OpenStack driver to return a created
+  volume object (instance of StorageVolume) on success, instead of a boolean
+  indicating operation success.
+  (GITHUB-365)
+  [Gertjan Oude Lohuis]
+
+
 Storage
 ~~~~~~~
 

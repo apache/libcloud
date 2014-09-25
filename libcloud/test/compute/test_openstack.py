@@ -923,7 +923,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(self.node.reboot())
 
     def test_create_volume(self):
-        self.assertEqual(self.driver.create_volume(1, 'test'), True)
+        volume = self.driver.create_volume(1, 'test')
+        self.assertEqual(volume.name, 'test')
+        self.assertEqual(volume.size, 1)
 
     def test_destroy_volume(self):
         volume = self.driver.ex_get_volume(
