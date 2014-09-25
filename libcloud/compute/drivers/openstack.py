@@ -152,7 +152,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         if snapshot:
             raise NotImplementedError(
                 "create_volume does not yet support create from snapshot")
-        return self.connection.request('/os-volumes',
+        resp = self.connection.request('/os-volumes',
                                        method='POST',
                                        data={
                                            'volume': {
@@ -165,7 +165,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                                                },
                                                'availability_zone': location,
                                            }
-                                       }).success()
+                                       })
+        return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
         return self.connection.request('/os-volumes/%s' % volume.id,
