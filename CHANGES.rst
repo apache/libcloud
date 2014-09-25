@@ -126,6 +126,11 @@ Compute
   (GITHUB-363)
   [Jeroen de Korte]
 
+- Add additional attributes to the ``extra`` dictionary of OpenStack
+  StorageVolume object.
+  (GITHUB-366)
+  [Gertjan Oude Lohuis]
+
 Storage
 ~~~~~~~
 
