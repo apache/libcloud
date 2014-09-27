@@ -37,6 +37,7 @@ Main
     loadbalancer/index
     dns/index
     troubleshooting
+    api_docs
     faq
     other/*
 
