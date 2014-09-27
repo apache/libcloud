@@ -18,7 +18,7 @@ import subprocess
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if on_rtd:
-    cmd = 'sphinx-apidoc -d 2 -o apidocs/ ../libcloud/'
+    cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
