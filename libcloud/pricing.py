@@ -70,7 +70,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     :type driver_type: ``str``
     :param driver_type: Driver type ('compute' or 'storage')
 
-    :type driver_name: ``str`
+    :type driver_name: ``str``
     :param driver_name: Driver name
 
     :type pricing_file_path: ``str``

@@ -63,19 +63,13 @@ class LinodeException(Exception):
 
 
 class LinodeResponse(JsonResponse):
-    """Linode API response
+    """
+    Linode API response
 
-    Wraps the HTTP response returned by the Linode API, which should be JSON in
-    this structure:
-
-       {
-         "ERRORARRAY": [ ... ],
-         "DATA": [ ... ],
-         "ACTION": " ... "
-       }
+    Wraps the HTTP response returned by the Linode API.
 
     libcloud does not take advantage of batching, so a response will always
-    reflect the above format.  A few weird quirks are caught here as well.
+    reflect the above format. A few weird quirks are caught here as well.
     """
 
     objects = None

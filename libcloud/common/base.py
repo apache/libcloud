@@ -852,7 +852,7 @@ class PollingConnection(Connection):
 
         :type context: ``dict``
         :param context: Context dictionary which is passed to the functions
-        which construct initial and poll URL.
+                        which construct initial and poll URL.
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance

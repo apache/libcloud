@@ -192,7 +192,8 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
 
         :type  headers: ``dict``
         :param headers: Default input headers
-        :rtype          ``dict``
+
+        :rtype:         ``dict``
         :return:        Default input headers with the 'Authorization'
                         header
         """

@@ -26,38 +26,40 @@ _Console: https://cloud.google.com/console
 
 Setting up Service Account authentication (note that you need the PyCrypto
 package installed to use this):
-    - Go to the Console
-    - Go to your project and then to "APIs & auth" on the left
-    - Click on "Credentials"
-    - Click on "Create New Client ID..."
-    - Select "Service account" and click on "Create Client ID"
-    - Download the Private Key (should happen automatically).
-    - The key that you download is a PKCS12 key.  It needs to be converted to
-      the PEM format.
-    - Convert the key using OpenSSL (the default password is 'notasecret'):
-      ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-      -passin pass:notasecret | openssl rsa -out PRIV.pem``
-    - Move the .pem file to a safe location.
-    - To Authenticate, you will need to pass the Service Account's "Email
-      address" in as the user_id and the path to the .pem file as the key.
+
+- Go to the Console
+- Go to your project and then to "APIs & auth" on the left
+- Click on "Credentials"
+- Click on "Create New Client ID..."
+- Select "Service account" and click on "Create Client ID"
+- Download the Private Key (should happen automatically).
+- The key that you download is a PKCS12 key.  It needs to be converted to
+  the PEM format.
+- Convert the key using OpenSSL (the default password is 'notasecret'):
+  ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
+  -passin pass:notasecret | openssl rsa -out PRIV.pem``
+- Move the .pem file to a safe location.
+- To Authenticate, you will need to pass the Service Account's "Email
+  address" in as the user_id and the path to the .pem file as the key.
 
 Setting up Installed Application authentication:
-    - Go to the Console
-    - Go to your project and then to "APIs & auth" on the left
-    - Click on "Credentials"
-    - Select "Installed application" and "Other" then click on
-      "Create Client ID"
-    - To Authenticate, pass in the "Client ID" as the user_id and the "Client
-      secret" as the key
-    - The first time that you do this, the libcloud will give you a URL to
-      visit.  Copy and paste the URL into a browser.
-    - When you go to the URL it will ask you to log in (if you aren't already)
-      and ask you if you want to allow the project access to your account.
-    - Click on Accept and you will be given a code.
-    - Paste that code at the prompt given to you by the Google libcloud
-      connection.
-    - At that point, a token & refresh token will be stored in your home
-      directory and will be used for authentication.
+
+- Go to the Console
+- Go to your project and then to "APIs & auth" on the left
+- Click on "Credentials"
+- Select "Installed application" and "Other" then click on
+  "Create Client ID"
+- To Authenticate, pass in the "Client ID" as the user_id and the "Client
+  secret" as the key
+- The first time that you do this, the libcloud will give you a URL to
+  visit.  Copy and paste the URL into a browser.
+- When you go to the URL it will ask you to log in (if you aren't already)
+  and ask you if you want to allow the project access to your account.
+- Click on Accept and you will be given a code.
+- Paste that code at the prompt given to you by the Google libcloud
+  connection.
+- At that point, a token & refresh token will be stored in your home
+  directory and will be used for authentication.
 
 Please remember to secure your keys and access tokens.
 """
