@@ -175,6 +175,10 @@ Compute
   (GITHUB-369)
   [Roeland Kuipers]
 
+- Implements VPC network ACLs for CloudStack drive
+  (GITHUB-371)
+  [Jeroen de Korte]
+
 Storage
 ~~~~~~~
 

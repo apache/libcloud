@@ -1,0 +1,1 @@
+{ "listnetworkaclsresponse" : { "count":1 ,"networkacl" : [  {"id":"54bd8cc6-5db0-4f64-8495-a0dfaf3fb4d5","protocol":"tcp","startport":"80","endport":"80","traffictype":"Ingress","state":"Active","cidrlist":"0.0.0.0/0","tags":[],"aclid":"4b1a2ef9-b53a-4e1b-9a45-0408b3ce3494","number":1,"action":"Allow"} ] } }

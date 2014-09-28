@@ -388,6 +388,20 @@ class CloudStackCommonTestCase(TestCaseMixin):
                              fixture_vpcs[i]['vpcofferingid'])
             self.assertEqual(vpc.zone_id, fixture_vpcs[i]['zoneid'])
 
+    def test_ex_list_routers(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listRouters_default.json')
+        fixture_routers = fixture['listroutersresponse']['router']
+
+        routers = self.driver.ex_list_routers()
+
+        for i, router in enumerate(routers):
+            self.assertEqual(router.id, fixture_routers[i]['id'])
+            self.assertEqual(router.name, fixture_routers[i]['name'])
+            self.assertEqual(router.state, fixture_routers[i]['state'])
+            self.assertEqual(router.public_ip, fixture_routers[i]['publicip'])
+            self.assertEqual(router.vpc_id, fixture_routers[i]['vpcid'])
+
     def test_ex_create_vpc(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'createVPC_default.json')
@@ -399,7 +413,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                         display_text='cloud.local',
                                         name='cloud.local',
                                         vpc_offering=vpcoffer,
-                                        zoneid="2")
+                                        zone_id="2")
 
         self.assertEqual(vpc.id, fixture_vpc['id'])
 
@@ -409,6 +423,53 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         result = self.driver.ex_delete_vpc(vpc=vpc)
         self.assertTrue(result)
+
+    def test_ex_create_network_acllist(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'createNetworkACLList_default.json')
+
+        fixture_network_acllist = fixture['createnetworkacllistresponse']
+
+        vpc = self.driver.ex_list_vpcs()[0]
+        network_acllist = self.driver.ex_create_network_acllist(
+            name='test_acllist',
+            vpc_id=vpc.id,
+            description='test description')
+
+        self.assertEqual(network_acllist.id, fixture_network_acllist['id'])
+
+    def test_ex_list_network_acllist(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listNetworkACLLists_default.json')
+        fixture_acllist = \
+            fixture['listnetworkacllistsresponse']['networkacllist']
+
+        acllist = self.driver.ex_list_network_acllists()
+
+        for i, acllist in enumerate(acllist):
+            self.assertEqual(acllist.id,
+                             fixture_acllist[i]['id'])
+            self.assertEqual(acllist.name,
+                             fixture_acllist[i]['name'])
+            self.assertEqual(acllist.description,
+                             fixture_acllist[i]['description'])
+
+    def test_ex_create_network_acl(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'createNetworkACL_default.json')
+
+        fixture_network_acllist = fixture['createnetworkaclresponse']
+
+        acllist = self.driver.ex_list_network_acllists()[0]
+
+        network_acl = self.driver.ex_create_network_acl(
+            protocol='test_acllist',
+            acl_id=acllist.id,
+            cidr_list='',
+            start_port='80',
+            end_port='80')
+
+        self.assertEqual(network_acl.id, fixture_network_acllist['id'])
 
     def test_ex_list_projects(self):
         _, fixture = CloudStackMockHttp()._load_fixture(

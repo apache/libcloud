@@ -397,13 +397,18 @@ class CloudStackAddress(object):
     :param      associated_network_id: The ID of the network where this address
                                         has been associated with
     :type       associated_network_id: ``str``
+
+    :param      vpc_id: VPC the ip belongs to
+    :type       vpc_id: ``str``
     """
 
-    def __init__(self, id, address, driver, associated_network_id=None):
+    def __init__(self, id, address, driver, associated_network_id=None,
+                 vpc_id=None):
         self.id = id
         self.address = address
         self.driver = driver
         self.associated_network_id = associated_network_id
+        self.vpc_id = vpc_id
 
     def release(self):
         self.driver.ex_release_public_ip(address=self)
@@ -552,7 +557,8 @@ class CloudStackPortForwardingRule(object):
     """
 
     def __init__(self, node, rule_id, address, protocol, public_port,
-                 private_port, public_end_port=None, private_end_port=None):
+                 private_port, public_end_port=None, private_end_port=None,
+                 network_id=None):
         """
         A Port forwarding rule for Source NAT.
 
@@ -584,6 +590,12 @@ class CloudStackPortForwardingRule(object):
         :param      private_end_port: End of internal port range
         :type       private_end_port: ``int``
 
+        :param      network_id: The network of the vm the Port Forwarding rule
+                                will be created for. Required when public Ip
+                                address is not associated with any Guest
+                                network yet (VPC case)
+        :type       network_id: ``str``
+
         :rtype: :class:`CloudStackPortForwardingRule`
         """
         self.node = node
@@ -597,6 +609,102 @@ class CloudStackPortForwardingRule(object):
 
     def delete(self):
         self.node.ex_delete_port_forwarding_rule(rule=self)
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+
+class CloudStackNetworkACLList(object):
+    """
+    a Network ACL for the given VPC
+    """
+
+    def __init__(self, acl_id, name, vpc_id, driver, description=None):
+        """
+        a Network ACL for the given VPC
+
+        @note: This is a non-standard extension API, and only works for
+               Cloudstack.
+
+        :param      acl_id: ACL ID
+        :type       acl_id: ``int``
+
+        :param      name: Name of the network ACL List
+        :type       name: ``str``
+
+        :param      vpc_id: Id of the VPC associated with this network ACL List
+        :type       vpc_id: ``string``
+
+        :param      description: Description of the network ACL List
+        :type       description: ``str``
+
+        :rtype: :class:`CloudStackNetworkACLList`
+        """
+
+        self.id = acl_id
+        self.name = name
+        self.vpc_id = vpc_id
+        self.driver = driver
+        self.description = description
+
+    def __repr__(self):
+        return (('<CloudStackNetworkACLList: id=%s, name=%s, vpc_id=%s, '
+                 'driver=%s, description=%s>')
+                % (self.id, self.name, self.vpc_id,
+                   self.driver.name, self.description))
+
+
+class CloudStackNetworkACL(object):
+    """
+    a ACL rule in the given network (the network has to belong to VPC)
+    """
+
+    def __init__(self, id, protocol, acl_id, action, cidr_list,
+                 start_port, end_port, traffic_type=None):
+        """
+        a ACL rule in the given network (the network has to belong to
+        VPC)
+
+        @note: This is a non-standard extension API, and only works for
+               Cloudstack.
+
+        :param      id: the ID of the ACL Item
+        :type       id ``int``
+
+        :param      protocol: the protocol for the ACL rule. Valid values are
+                    TCP/UDP/ICMP/ALL or valid protocol number
+        :type       protocol: ``string``
+
+        :param      acl_id: Name of the network ACL List
+        :type       acl_id: ``str``
+
+        :param      action: scl entry action, allow or deny
+        :type       action: ``string``
+
+        :param      cidr_list: the cidr list to allow traffic from/to
+        :type       cidr_list: ``str``
+
+        :param      start_port: the starting port of ACL
+        :type       start_port: ``str``
+
+        :param      end_port: the ending port of ACL
+        :type       end_port: ``str``
+
+        :param      traffic_type: the traffic type for the ACL,can be Ingress
+                    or Egress, defaulted to Ingress if not specified
+        :type       traffic_type: ``str``
+
+        :rtype: :class:`CloudStackNetworkACL`
+        """
+
+        self.id = id
+        self.protocol = protocol
+        self.acl_id = acl_id
+        self.action = action
+        self.cidr_list = cidr_list
+        self.start_port = start_port
+        self.end_port = end_port
+        self.traffic_type = traffic_type
 
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
@@ -633,10 +741,11 @@ class CloudStackNetwork(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackNetwork: id=%s, displaytext=%s, name=%s, '
-                 'networkofferingid=%s, zoneid=%s, driver%s>')
-                % (self.id, self.displaytext, self.name,
-                   self.networkofferingid, self.zoneid, self.driver.name))
+        return (('<CloudStackNetwork: displaytext=%s, name=%s, '
+                 'networkofferingid=%s, '
+                 'id=%s, zoneid=%s, driver=%s>')
+                % (self.displaytext, self.name, self.networkofferingid,
+                   self.id, self.zoneid, self.driver.name))
 
 
 class CloudStackNetworkOffering(object):
@@ -658,7 +767,7 @@ class CloudStackNetworkOffering(object):
     def __repr__(self):
         return (('<CloudStackNetworkOffering: id=%s, name=%s, '
                  'display_text=%s, guest_ip_type=%s, service_offering_id=%s, '
-                 'for_vpc=%s, driver%s>')
+                 'for_vpc=%s, driver=%s>')
                 % (self.id, self.name, self.display_text,
                    self.guest_ip_type, self.service_offering_id, self.for_vpc,
                    self.driver.name))
@@ -698,8 +807,8 @@ class CloudStackVPC(object):
     Class representing a CloudStack VPC.
     """
 
-    def __init__(self, display_text, name, vpc_offering_id, id, zone_id, cidr,
-                 driver, extra=None):
+    def __init__(self, name, vpc_offering_id, id, cidr, driver,
+                 zone_id=None, display_text=None, extra=None):
         self.display_text = display_text
         self.name = name
         self.vpc_offering_id = vpc_offering_id
@@ -710,11 +819,11 @@ class CloudStackVPC(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackVPC: id=%s, displaytext=%s, name=%s, '
-                 'vpc_offering_id=%s, zoneid=%s, cidr=%s, driver%s>')
-                % (self.id, self.displaytext, self.name,
-                   self.vpc_offering_id, self.zoneid, self.cidr,
-                   self.driver.name))
+        return (('<CloudStackVPC: name=%s, vpc_offering_id=%s, id=%s, '
+                 'cidr=%s, driver=%s, zone_id=%s, display_text=%s>')
+                % (self.name, self.vpc_offering_id, self.id,
+                   self.cidr, self.driver.name, self.zone_id,
+                   self.display_text))
 
 
 class CloudStackVPCOffering(object):
@@ -731,11 +840,31 @@ class CloudStackVPCOffering(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackVPCOffering: id=%s, name=%s, '
-                 'display_text=%s, '
-                 'driver%s>')
-                % (self.id, self.name, self.display_text,
+        return (('<CloudStackVPCOffering: name=%s, display_text=%s, '
+                 'id=%s, '
+                 'driver=%s>')
+                % (self.name, self.display_text, self.id,
                    self.driver.name))
+
+
+class CloudStackRouter(object):
+    """
+    Class representing a CloudStack Router.
+    """
+
+    def __init__(self, id, name, state, public_ip, vpc_id, driver):
+        self.id = id
+        self.name = name
+        self.state = state
+        self.public_ip = public_ip
+        self.vpc_id = vpc_id
+        self.driver = driver
+
+    def __repr__(self):
+        return (('<CloudStackRouter: id=%s, name=%s, state=%s, '
+                 'public_ip=%s, vpc_id=%s, driver=%s>')
+                % (self.id, self.name, self.state,
+                   self.public_ip, self.vpc_id, self.driver.name))
 
 
 class CloudStackProject(object):
@@ -751,7 +880,7 @@ class CloudStackProject(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackProject: id=%s, display_text=%s, name=%s, '
+        return (('<CloudStackProject: id=%s, name=%s, display_text=%s,'
                  'driver=%s>')
                 % (self.id, self.display_text, self.name,
                    self.driver.name))
@@ -1361,18 +1490,48 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         for vpc in vpcs:
 
             networks.append(CloudStackVPC(
-                            vpc['displaytext'],
                             vpc['name'],
                             vpc['vpcofferingid'],
                             vpc['id'],
-                            vpc['zoneid'],
                             vpc['cidr'],
-                            self))
+                            self,
+                            vpc['zoneid'],
+                            vpc['displaytext']))
 
         return networks
 
+    def ex_list_routers(self, vpc_id=None):
+        """
+        List routers
+
+        :rtype ``list`` of :class:`CloudStackRouter`
+        """
+
+        args = {}
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        res = self._sync_request(command='listRouters',
+                                 params=args,
+                                 method='GET')
+        rts = res.get('router', [])
+
+        routers = []
+        for router in rts:
+
+            routers.append(CloudStackRouter(
+                router['id'],
+                router['name'],
+                router['state'],
+                router['publicip'],
+                router['vpcid'],
+                self))
+
+        return routers
+
     def ex_create_vpc(self, cidr, display_text, name, vpc_offering,
-                      zoneid):
+                      zone_id, network_domain=None):
         """
 
         Creates a VPC, only available in advanced zones.
@@ -1391,8 +1550,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param  vpc_offering: the ID of the VPC offering
         :type   vpc_offering: :class:'CloudStackVPCOffering`
 
-        :param  zoneid: the ID of the availability zone
-        :type   zoneid: ``str``
+        :param  zone_id: the ID of the availability zone
+        :type   zone_id: ``str``
+
+        :param  network_domain: Optional, the DNS domain of the network
+        :type   network_domain: ``str``
 
         :rtype: :class:`CloudStackVPC`
 
@@ -1405,8 +1567,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             'displaytext': display_text,
             'name': name,
             'vpcofferingid': vpc_offering.id,
-            'zoneid': zoneid,
+            'zoneid': zone_id,
         }
+
+        if network_domain is not None:
+            args['networkdomain'] = network_domain
 
         result = self._sync_request(command='createVPC',
                                     params=args,
@@ -1414,13 +1579,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         extra = self._get_extra_dict(result, extra_map)
 
-        vpc = CloudStackVPC(display_text,
-                            name,
+        vpc = CloudStackVPC(name,
                             vpc_offering.id,
                             result['id'],
-                            zoneid,
                             cidr,
                             self,
+                            zone_id,
+                            display_text,
                             extra=extra)
 
         return vpc
@@ -1747,20 +1912,38 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return ips
 
-    def ex_allocate_public_ip(self, location=None):
+    def ex_allocate_public_ip(self, vpc_id=None, network_id=None,
+                              location=None):
         """
         Allocate a public IP.
+
+        :param vpc_id: VPC the ip belongs to
+        :type vpc_id: ``str``
+
+        :param network_id: Network where this IP is connected to.
+        :type network_id: ''str''
 
         :param location: Zone
         :type  location: :class:`NodeLocation`
 
         :rtype: :class:`CloudStackAddress`
         """
-        if location is None:
-            location = self.list_locations()[0]
+
+        args = {}
+
+        if location is not None:
+            args['zoneid'] = location.id
+        else:
+            args['zoneid'] = self.list_locations()[0].id
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        if network_id is not None:
+            args['networkid'] = network_id
 
         addr = self._async_request(command='associateIpAddress',
-                                   params={'zoneid': location.id},
+                                   params=args,
                                    method='GET')
         addr = addr['ipaddress']
         addr = CloudStackAddress(addr['id'], addr['ipaddress'], self)
@@ -2002,7 +2185,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                        protocol,
                                        public_end_port=None,
                                        private_end_port=None,
-                                       openfirewall=True):
+                                       openfirewall=True,
+                                       network_id=None):
         """
         Creates a Port Forwarding Rule, used for Source NAT
 
@@ -2021,6 +2205,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param  node: The virtual machine
         :type   node: :class:`CloudStackNode`
 
+        :param  network_id: The network of the vm the Port Forwarding rule
+                            will be created for. Required when public Ip
+                            address is not associated with any Guest
+                            network yet (VPC case)
+        :type   network_id: ``string``
+
         :rtype: :class:`CloudStackPortForwardingRule`
         """
         args = {
@@ -2035,6 +2225,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args['publicendport'] = int(public_end_port)
         if private_end_port:
             args['privateendport'] = int(private_end_port)
+        if network_id:
+            args['networkid'] = network_id
 
         result = self._async_request(command='createPortForwardingRule',
                                      params=args,
@@ -2047,7 +2239,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                             public_port,
                                             private_port,
                                             public_end_port,
-                                            private_end_port)
+                                            private_end_port,
+                                            network_id)
         node.extra['port_forwarding_rules'].append(rule)
         node.public_ips.append(address.address)
         return rule
@@ -2134,6 +2327,178 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             params={'id': rule.id},
                             method='GET')
         return True
+
+    def ex_create_network_acllist(self, name, vpc_id, description=None):
+        """
+        Create a ACL List for a network within a VPC.
+
+        :param name: Name of the network ACL List
+        :type  name: ``string``
+
+        :param vpc_id: Id of the VPC associated with this network ACL List
+        :type  vpc_id: ``string``
+
+        :param description: Description of the network ACL List
+        :type  description: ``string``
+
+        :rtype: :class:`CloudStackNetworkACLList`
+        """
+
+        args = {
+            'name': name,
+            'vpcid': vpc_id
+        }
+        if description:
+            args['description'] = description
+
+        result = self._sync_request(command='createNetworkACLList',
+                                    params=args,
+                                    method='GET')
+
+        acl_list = CloudStackNetworkACLList(result['id'],
+                                            name,
+                                            vpc_id,
+                                            self,
+                                            description)
+        return acl_list
+
+    def ex_create_network_acl(self, protocol, acl_id, cidr_list,
+                              start_port, end_port, action=None,
+                              traffic_type=None):
+        """
+        Creates a ACL rule in the given network (the network has to belong to
+        VPC)
+
+        :param      protocol: the protocol for the ACL rule. Valid values are
+                    TCP/UDP/ICMP/ALL or valid protocol number
+        :type       protocol: ``string``
+
+        :param      acl_id: Name of the network ACL List
+        :type       acl_id: ``str``
+
+        :param      cidr_list: the cidr list to allow traffic from/to
+        :type       cidr_list: ``str``
+
+        :param      start_port: the starting port of ACL
+        :type       start_port: ``str``
+
+        :param      end_port: the ending port of ACL
+        :type       end_port: ``str``
+
+        :param      action: scl entry action, allow or deny
+        :type       action: ``str``
+
+        :param      traffic_type: the traffic type for the ACL,can be Ingress
+                    or Egress, defaulted to Ingress if not specified
+        :type       traffic_type: ``str``
+
+        :rtype: :class:`CloudStackNetworkACL`
+        """
+
+        args = {
+            'protocol': protocol,
+            'aclid': acl_id,
+            'cidrlist': cidr_list,
+            'startport': start_port,
+            'endport': end_port
+        }
+
+        if action:
+            args['action'] = action
+        else:
+            action = "allow"
+
+        if traffic_type:
+            args['traffictype'] = traffic_type
+
+        result = self._async_request(command='createNetworkACL',
+                                     params=args,
+                                     method='GET')
+
+        acl = CloudStackNetworkACL(result['networkacl']['id'],
+                                   protocol,
+                                   acl_id,
+                                   action,
+                                   cidr_list,
+                                   start_port,
+                                   end_port,
+                                   traffic_type)
+
+        return acl
+
+    def ex_list_network_acllists(self):
+        """
+        Lists all network ACLs
+
+        :rtype: ``list`` of :class:`CloudStackNetworkACLList`
+        """
+        acllists = []
+
+        result = self._sync_request(command='listNetworkACLLists',
+                                    method='GET')
+
+        if not result:
+            return acllists
+
+        for acllist in result['networkacllist']:
+            acllists.append(CloudStackNetworkACLList(acllist['id'],
+                                                     acllist['name'],
+                                                     acllist.get('vpcid', []),
+                                                     self,
+                                                     acllist['description']))
+
+        return acllists
+
+    def ex_replace_network_acllist(self, acl_id, network_id):
+        """
+        Create a ACL List for a network within a VPC.Replaces ACL associated
+        with a Network or private gateway
+
+        :param acl_id: the ID of the network ACL
+        :type  acl_id: ``string``
+
+        :param network_id: the ID of the network
+        :type  network_id: ``string``
+
+        :rtype: :class:`CloudStackNetworkACLList`
+        """
+
+        args = {
+            'aclid': acl_id,
+            'networkid': network_id
+        }
+
+        self._async_request(command='replaceNetworkACLList',
+                            params=args,
+                            method='GET')
+
+        return True
+
+    def ex_list_network_acl(self):
+        """
+        Lists all network ACL items
+
+        :rtype: ``list`` of :class:`CloudStackNetworkACL`
+        """
+        acls = []
+
+        result = self._sync_request(command='listNetworkACLs',
+                                    method='GET')
+
+        if not result:
+            return acls
+
+        for acl in result['networkacl']:
+            acls.append(CloudStackNetworkACL(acl['id'],
+                                             acl['protocol'],
+                                             acl['aclid'],
+                                             acl['action'],
+                                             acl['cidrlist'],
+                                             acl.get('startport', []),
+                                             acl.get('endport', []),
+                                             acl['traffictype']))
+
+        return acls
 
     def ex_list_keypairs(self, **kwargs):
         """
