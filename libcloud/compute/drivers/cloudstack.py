@@ -964,14 +964,23 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return diskOfferings
 
-    def ex_list_networks(self):
+    def ex_list_networks(self, project=None):
         """
         List the available networks
+
+        :param  project: Optional project the networks belongs to.
+        :type   project: :class:`.CloudStackProject`
 
         :rtype ``list`` of :class:`CloudStackNetwork`
         """
 
+        args = {}
+
+        if project is not None:
+            args['projectid'] = project.id
+
         res = self._sync_request(command='listNetworks',
+                                 params=args,
                                  method='GET')
         nets = res.get('network', [])
 
