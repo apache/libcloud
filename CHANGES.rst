@@ -137,6 +137,9 @@ Compute
   (GITHUB-365)
   [Gertjan Oude Lohuis]
 
+- Add optional project parameters for ex_list_networks() to CloudStack driver
+  (GITHUB-367, LIBCLOUD-615)
+  [Rene Moser]
 
 Storage
 ~~~~~~~
