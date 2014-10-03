@@ -181,6 +181,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'project_id': {
             'key_name': 'projectid',
             'transform_func': str
+        },
+        'nics:': {
+            'key_name': 'nic',
+            'transform_func': list
         }
     },
     'volume': {
@@ -302,6 +306,12 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'vpcavailable': {'key_name': 'vpcavailable', 'transform_func': int},
         'vpclimit': {'key_name': 'vpclimit', 'transform_func': int},
         'vpctotal': {'key_name': 'vpctotal', 'transform_func': int}
+    },
+    'nic': {
+        'secondary_ip': {
+            'key_name': 'secondaryip',
+            'transform_func': list
+        }
     }
 }
 
@@ -652,6 +662,35 @@ class CloudStackNetworkOffering(object):
                 % (self.id, self.name, self.display_text,
                    self.guest_ip_type, self.service_offering_id, self.for_vpc,
                    self.driver.name))
+
+
+class CloudStackNic(object):
+    """
+    Class representing a CloudStack Network Interface.
+    """
+
+    def __init__(self, id, network_id, net_mask, gateway, ip_address,
+                 is_default, mac_address, driver, extra=None):
+        self.id = id
+        self.network_id = network_id
+        self.net_mask = net_mask
+        self.gateway = gateway
+        self.ip_address = ip_address
+        self.is_default = is_default
+        self.mac_address = mac_address
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<CloudStackNic: id=%s, network_id=%s, '
+                 'net_mask=%s, gateway=%s, ip_address=%s, '
+                 'is_default=%s, mac_address=%s, driver%s>')
+                % (self.id, self.network_id, self.net_mask,
+                   self.gateway, self.ip_address, self.is_default,
+                   self.mac_address, self.driver.name))
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
 
 
 class CloudStackVPC(object):
@@ -1187,10 +1226,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param  name: the name of the network
         :type   name: ``str``
 
-        :param  network_offering: the network offering id
+        :param  network_offering: NetworkOffering object
         :type   network_offering: :class:'CloudStackNetworkOffering`
 
-        :param location: Zone
+        :param location: Zone object
         :type  location: :class:`NodeLocation`
 
         :param  gateway: Optional, the Gateway of this network
@@ -2711,6 +2750,88 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         ostypes = self._sync_request('listOsTypes')
         return ostypes['ostype']
+
+    def ex_list_nics(self, node):
+        """
+        List the available networks
+
+        :param      vm: Node Object
+        :type       vm: :class:`CloudStackNode
+
+        :rtype ``list`` of :class:`CloudStackNic`
+        """
+
+        res = self._sync_request(command='listNics',
+                                 params={'virtualmachineid': node.id},
+                                 method='GET')
+        items = res.get('nic', [])
+
+        nics = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['nic']
+        for item in items:
+            extra = self._get_extra_dict(item, extra_map)
+
+            nics.append(CloudStackNic(
+                id=item['id'],
+                network_id=item['networkid'],
+                net_mask=item['netmask'],
+                gateway=item['gateway'],
+                ip_address=item['ipaddress'],
+                is_default=item['isdefault'],
+                mac_address=item['macaddress'],
+                driver=self,
+                extra=extra))
+
+        return nics
+
+    def ex_attach_nic_to_node(self, node, network, ip_address=None):
+        """
+        Add an extra Nic to a VM
+
+        :param  network: NetworkOffering object
+        :type   network: :class:'CloudStackNetwork`
+
+        :param  node: Node Object
+        :type   node: :class:'CloudStackNode`
+
+        :param  ip_address: Optional, specific IP for this Nic
+        :type   ip_address: ``str``
+
+
+        :rtype: ``bool``
+        """
+
+        args = {
+            'virtualmachineid': node.id,
+            'networkid': network.id
+        }
+
+        if ip_address is not None:
+            args['ipaddress'] = ip_address
+
+        self._async_request(command='addNicToVirtualMachine',
+                            params=args)
+        return True
+
+    def ex_detach_nic_from_node(self, nic, node):
+
+        """
+        Remove Nic from a VM
+
+        :param  nic: Nic object
+        :type   nic: :class:'CloudStackNetwork`
+
+        :param  node: Node Object
+        :type   node: :class:'CloudStackNode`
+
+        :rtype: ``bool``
+        """
+
+        self._async_request(command='removeNicFromVirtualMachine',
+                            params={'nicid': nic.id,
+                                    'virtualmachineid': node.id})
+
+        return True
 
     def _to_snapshot(self, data):
         """

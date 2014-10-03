@@ -1,0 +1,1 @@
+{ "listnicsresponse" : { "count":1 ,"nic" : [  {"id":"15418e74-25e8-42d3-9bd7-eb55e57825fe","networkid":"de45b0ed-b5ae-4374-ac7c-aff3fb2aefa2","netmask":"255.255.255.0","gateway":"10.1.1.1","ipaddress":"10.1.1.136","isdefault":true,"macaddress":"02:00:00:b9:01:1a"} ] } }
