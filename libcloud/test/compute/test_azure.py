@@ -15,6 +15,7 @@ from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.compute.base import NodeImage
 
 class AzureNodeDriverTests(unittest.TestCase) :
 
@@ -197,8 +198,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = NodeImage("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140416.1-en-us-30GB", "Ubuntu", None)
         kwargs["name"] = "dcoddkinztest03"
 
         result = self.driver.create_node(
@@ -217,8 +217,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = NodeImage("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140416.1-en-us-30GB", "Ubuntu", None)
         kwargs["name"] = "dcoddkinztest03"
 
         node = type('Node', (object,), dict(id="dc14"))
@@ -238,8 +237,7 @@ class AzureNodeDriverTests(unittest.TestCase) :
         kwargs["auth"]= auth
 
         kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["image"] = NodeImage("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140416.1-en-us-30GB", "Ubuntu", None)
         kwargs["name"] = "dcoddkinztest04"
 
         with self.assertRaises(LibcloudError):

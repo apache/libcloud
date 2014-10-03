@@ -398,9 +398,7 @@ class AzureNodeDriver(NodeDriver):
            :type        ex_admin_user_id:  ``str``
 
         """
-        name = kwargs['name']
-        size = kwargs['size']
-        image = kwargs['image']
+
 
         password = None
         auth = self._get_and_check_auth(kwargs["auth"])        
@@ -429,15 +427,15 @@ class AzureNodeDriver(NodeDriver):
 
         if "image" not in kwargs:
             raise ValueError("image is required.")
+        elif not isinstance(kwargs['image'], NodeImage):
+            raise ValueError("image should ne of type NodeImage")
 
         if "name" not in kwargs:
             raise ValueError("name is required.")
 
-        if "ex_admin_user_id" not in kwargs:
-            raise ValueError("ex_cloud_service_name is required.")
-
-        if "ex_admin_user_id" not in kwargs:
-            raise ValueError("ex_cloud_service_name is required.")
+        name = kwargs['name']
+        size = kwargs['size']
+        image = kwargs['image'].id
 
         node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
         network_config = ConfigurationSet()
