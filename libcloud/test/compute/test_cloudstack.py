@@ -318,6 +318,46 @@ class CloudStackCommonTestCase(TestCaseMixin):
         result = self.driver.ex_delete_network(network=network)
         self.assertTrue(result)
 
+    def test_ex_list_nics(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listNics_default.json')
+
+        fixture_nic = fixture['listnicsresponse']['nic']
+        vm = self.driver.list_nodes()[0]
+        nics = self.driver.ex_list_nics(vm)
+
+        for i, nic in enumerate(nics):
+            self.assertEqual(nic.id, fixture_nic[i]['id'])
+            self.assertEqual(nic.network_id,
+                             fixture_nic[i]['networkid'])
+            self.assertEqual(nic.net_mask,
+                             fixture_nic[i]['netmask'])
+            self.assertEqual(nic.gateway,
+                             fixture_nic[i]['gateway'])
+            self.assertEqual(nic.ip_address,
+                             fixture_nic[i]['ipaddress'])
+            self.assertEqual(nic.is_default,
+                             fixture_nic[i]['isdefault'])
+            self.assertEqual(nic.mac_address,
+                             fixture_nic[i]['macaddress'])
+
+    def test_ex_add_nic_to_node(self):
+
+        vm = self.driver.list_nodes()[0]
+        network = self.driver.ex_list_networks()[0]
+        ip = "10.1.4.123"
+
+        result = self.driver.ex_attach_nic_to_node(node=vm, network=network, ip_address=ip)
+        self.assertTrue(result)
+
+    def test_ex_remove_nic_from_node(self):
+
+        vm = self.driver.list_nodes()[0]
+        nic = self.driver.ex_list_nics(node=vm)[0]
+
+        result = self.driver.ex_detach_nic_from_node(node=vm, nic=nic)
+        self.assertTrue(result)
+
     def test_ex_list_vpc_offerings(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
             'listVPCOfferings_default.json')

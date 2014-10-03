@@ -1,0 +1,37 @@
+{
+    "queryasyncjobresultresponse" : {
+        "accountid" : "02c9bf08-6f36-44b1-a57f-df0708f90de4", "userid" : "6ef2b921-4ecf-4651-8188-f9868db73e73", "cmd" : "org.apache.cloudstack.api.command.user.vm.RemoveNicFromVMCmd", "jobstatus" : 1, "jobprocstatus" : 0, "jobresultcode" : 0, "jobresulttype" : "object", "jobresult" : {
+            "virtualmachine" : {
+                "id" : "903897b7-9241-4f93-bd08-3453c36a3c99", "name" : "test", "account" : "rkuipers_admin", "domainid" : "4b6e626c-9d50-4480-bf77-daae632c7ffd", "domain" : "rkuipers", "created" : "2014-10-03T17:24:37+0200", "state" : "Stopped", "haenable" : false, "zoneid" : "2", "zonename" : "BETA-SBP-DC-1", "guestosid" : "278699da-edfc-11e2-a249-005056ba4c5e", "securitygroup" : [], "nic" : [{
+                    "id": "15418e74-25e8-42d3-9bd7-eb55e57825fe",
+                    "networkid": "de45b0ed-b5ae-4374-ac7c-aff3fb2aefa2",
+                    "networkname": "rkuipers-default",
+                    "netmask": "255.255.255.0",
+                    "gateway": "10.1.1.1",
+                    "ipaddress": "10.1.1.136",
+                    "isolationuri": "lswitch:d3eaa05c-4392-4918-93ab-c4a979a7988a",
+                    "broadcasturi": "lswitch:d3eaa05c-4392-4918-93ab-c4a979a7988a",
+                    "traffictype": "Guest",
+                    "type": "Isolated",
+                    "isdefault": true,
+                    "macaddress": "02:00:00:b9:01:1a"
+                }, {
+                    "id": "f71e48da-fe40-458d-9033-ea27a3a92de1",
+                    "networkid": "f59ee08a-66b5-40c6-baa7-392394c6cea9",
+                    "networkname": "node_cellar_network",
+                    "netmask": "255.255.255.0",
+                    "gateway": "10.1.1.1",
+                    "ipaddress": "10.1.1.253",
+                    "isolationuri": "lswitch:bad1ca9f-b039-4ad1-b5fc-1f3147fad7fa",
+                    "broadcasturi": "lswitch:bad1ca9f-b039-4ad1-b5fc-1f3147fad7fa",
+                    "traffictype": "Guest",
+                    "type": "Isolated",
+                    "isdefault": false,
+                    "macaddress": "02:00:4f:84:00:1d"
+                }
+                ], "hypervisor" : "XenServer", "tags" : [], "affinitygroup" : [], "displayvm" : true, "isdynamicallyscalable" : false
+            }
+        }, "created" : "2014-10-03T18:40:30+0200", "jobid" : "23fc6bfc-e354-41c8-bf8b-c0db8227feb4"
+    }
+}
+

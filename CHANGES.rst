@@ -171,6 +171,10 @@ Compute
   (GITHUB-325)
   [Michael Bennett]
 
+- Add methods in CloudStack driver to manage mutiple nics per vm.
+  (GITHUB-369)
+  [Roeland Kuipers]
+
 Storage
 ~~~~~~~
 
