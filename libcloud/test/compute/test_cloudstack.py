@@ -29,6 +29,7 @@ from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.types import KeyPairDoesNotExistError
+from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 
 from libcloud.test import unittest
@@ -148,6 +149,28 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.extra['zone_id'], location.id)
         self.assertEqual(node.extra['image_id'], image.id)
         self.assertEqual(node.private_ips[0], ipaddress)
+
+    def test_create_node_ex_start_vm_false(self):
+        CloudStackMockHttp.fixture_tag = 'stoppedvm'
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+
+        networks = [nw for nw in self.driver.ex_list_networks()
+                    if str(nw.zoneid) == str(location.id)]
+
+        node = self.driver.create_node(name='stopped_vm',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       networks=networks,
+                                       ex_start_vm=False)
+        self.assertEqual(node.name, 'stopped_vm')
+        self.assertEqual(node.extra['size_id'], size.id)
+        self.assertEqual(node.extra['zone_id'], location.id)
+        self.assertEqual(node.extra['image_id'], image.id)
+
+        self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_create_node_ex_security_groups(self):
         size = self.driver.list_sizes()[0]

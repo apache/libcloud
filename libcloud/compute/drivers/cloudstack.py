@@ -952,6 +952,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :keyword    ex_ip_address: String with ipaddress for the default nic
         :type       ex_ip_address: ``str``
 
+        :keyword    ex_start_vm: Boolean to specify to start VM after creation
+                                 Defaults to True
+        :type       ex_start_vm: ``bool``
+
         :rtype:     :class:`.CloudStackNode`
         """
 
@@ -979,6 +983,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         ex_security_groups = kwargs.get('ex_security_groups', None)
         ex_displayname = kwargs.get('ex_displayname', None)
         ex_ip_address = kwargs.get('ex_ip_address', None)
+        ex_start_vm = kwargs.get('ex_start_vm', None)
 
         if name:
             server_params['name'] = name
@@ -1021,6 +1026,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         if ex_ip_address:
             server_params['ipaddress'] = ex_ip_address
+
+        if ex_start_vm is False:
+            server_params['startvm'] = ex_start_vm
 
         return server_params
 

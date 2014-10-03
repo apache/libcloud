@@ -141,6 +141,10 @@ Compute
   (GITHUB-367, LIBCLOUD-615)
   [Rene Moser]
 
+- CLOUDSTACK: option to start VM in a STOPPED state
+  (GITHUB-368)
+  [Roeland Kuipers]
+
 Storage
 ~~~~~~~
 
