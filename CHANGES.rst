@@ -145,6 +145,12 @@ Compute
   (GITHUB-368)
   [Roeland Kuipers]
 
+- Support "config_drive" in the OpenStack driver. Allow users to pass
+  ``ex_config_drive`` argument to the ``create_node`` and ``ex_rebuild_node``
+  method.
+  (GITHUB-370)
+  [Nirmal Ranganathan]
+
 Storage
 ~~~~~~~
 

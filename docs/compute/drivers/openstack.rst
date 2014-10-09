@@ -122,6 +122,20 @@ Connecting to HP Cloud US West and US East (OpenStack Havana).
 .. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
 
+7. Using Cloud-Init with Openstack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows how to use cloud-init using the ``ex_config_drive`` and
+``ex_userdata`` arguments to ``create_node``. This example just installs
+nginx and starts it. More `Cloud-Init examples`_.
+
+Note: You will need to use a cloud-init enabled image. Most Openstack based
+public cloud providers support it.
+
+.. literalinclude:: /examples/compute/openstack/cloud_init.py
+   :language: python
+.. _`Cloud-Init examples`: http://cloudinit.readthedocs.org/en/latest/topics/examples.html
+
 Non-standard functionality and extension methods
 ------------------------------------------------
 
