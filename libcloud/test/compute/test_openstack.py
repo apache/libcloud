@@ -916,6 +916,18 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra['disk_config'], 'AUTO')
 
+    def test_create_node_with_ex_config_drive(self):
+        OpenStack_1_1_MockHttp.type = 'EX_CONFIG_DRIVE'
+        image = NodeImage(
+            id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size,
+                                       ex_config_drive=True)
+        self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['config_drive'], True)
+
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
 
@@ -963,6 +975,16 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                     private_ips=None, driver=self.driver)
         success = self.driver.ex_rebuild(node, image=image,
                                          ex_disk_config='MANUAL')
+        self.assertTrue(success)
+
+    def test_ex_rebuild_with_ex_config_drive(self):
+        image = NodeImage(id=58, name='Ubuntu 10.10 (intrepid)',
+                          driver=self.driver)
+        node = Node(id=12066, name=None, state=None, public_ips=None,
+                    private_ips=None, driver=self.driver)
+        success = self.driver.ex_rebuild(node, image=image,
+                                         ex_disk_config='MANUAL',
+                                         ex_config_drive=True)
         self.assertTrue(success)
 
     def test_ex_resize(self):

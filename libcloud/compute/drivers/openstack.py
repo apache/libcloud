@@ -1175,6 +1175,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
 
+        :keyword    ex_config_drive: If True enables metadata injection in a
+                                     server through a configuration drive.
+        :type       ex_config_drive: ``bool``
+
         :keyword    ex_admin_pass: The root password for the node
         :type       ex_admin_pass: ``str``
 
@@ -1263,6 +1267,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
+
+        if 'ex_config_drive' in kwargs:
+            server_params['config_drive'] = str(kwargs['ex_config_drive'])
 
         if 'ex_admin_pass' in kwargs:
             server_params['adminPass'] = kwargs['ex_admin_pass']
@@ -1357,6 +1364,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_config_drive: If True enables metadata injection in a
+                                     server through a configuration drive.
+        :type       ex_config_drive: ``bool``
 
         :rtype: ``bool``
         """
@@ -1979,6 +1990,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         image = api_node.get('image', None)
         image_id = image.get('id', None) if image else None
 
+        if api_node.get("config_drive", False).lower() == "true":
+            config_drive = True
+        else:
+            config_drive = False
+
         return Node(
             id=api_node['id'],
             name=api_node['name'],
@@ -2003,6 +2019,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
+                config_drive=config_drive,
                 availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
                                                None),
             ),
