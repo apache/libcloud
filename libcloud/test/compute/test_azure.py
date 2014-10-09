@@ -1,6 +1,6 @@
 import libcloud
 from libcloud.common.types import LibcloudError
-from libcloud.compute.base import NodeAuthPassword
+from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
 from libcloud.common.azure import AzureServiceManagementConnection
 
 __author__ = 'david'
@@ -196,9 +196,10 @@ class AzureNodeDriverTests(unittest.TestCase) :
         auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
-        kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["size"] = NodeSize(id="ExtraSmall")
+        kwargs["image"] = NodeImage(
+            id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        )
         kwargs["name"] = "dcoddkinztest03"
 
         result = self.driver.create_node(
@@ -216,9 +217,10 @@ class AzureNodeDriverTests(unittest.TestCase) :
         auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
-        kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["size"] = NodeSize(id="ExtraSmall")
+        kwargs["image"] = NodeImage(
+            id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        )
         kwargs["name"] = "dcoddkinztest03"
 
         node = type('Node', (object,), dict(id="dc14"))
@@ -237,9 +239,10 @@ class AzureNodeDriverTests(unittest.TestCase) :
         auth = NodeAuthPassword("Pa55w0rd", False)
         kwargs["auth"]= auth
 
-        kwargs["size"]= "ExtraSmall"
-        kwargs["image"] = \
-            "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        kwargs["size"] = NodeSize(id="ExtraSmall")
+        kwargs["image"] = NodeImage(
+            id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415"
+        )
         kwargs["name"] = "dcoddkinztest04"
 
         with self.assertRaises(LibcloudError):

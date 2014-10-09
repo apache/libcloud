@@ -16,6 +16,7 @@
 
 """
 import httplib
+import itertools
 import re
 import time
 import collections
@@ -63,7 +64,7 @@ From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
 """
 AZURE_COMPUTE_INSTANCE_TYPES = {
     'A0': {
-        'id': 'A0',
+        'id': 'ExtraSmall',
         'name': 'ExtraSmall Instance',
         'ram': 768,
         'disk': 127,
@@ -73,7 +74,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 'Shared'
     },
     'A1': {
-        'id': 'A1',
+        'id': 'Small',
         'name': 'Small Instance',
         'ram': 1792,
         'disk': 127,
@@ -83,7 +84,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 1
     },
     'A2': {
-        'id': 'A2',
+        'id': 'Medium',
         'name': 'Medium Instance',
         'ram': 3584,
         'disk': 127,
@@ -93,7 +94,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 2
     },
     'A3': {
-        'id': 'A3',
+        'id': 'Large',
         'name': 'Large Instance',
         'ram': 7168,
         'disk': 127,
@@ -103,7 +104,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 4
     },
     'A4': {
-        'id': 'A4',
+        'id': 'ExtraLarge',
         'name': 'ExtraLarge Instance',
         'ram': 14336,
         'disk': 127,
@@ -161,8 +162,8 @@ _KNOWN_SERIALIZATION_XFORMS = {
     'os': 'OS',
     'persistent_vm_downtime_info': 'PersistentVMDowntimeInfo',
     'copy_id': 'CopyId',
-    }
-
+    'os_disk_configuration': 'OSDiskConfiguration'
+}
 
 
 class AzureNodeDriver(NodeDriver):
@@ -174,7 +175,7 @@ class AzureNodeDriver(NodeDriver):
     _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
     _blob_url = ".blob.core.windows.net"
     features = {'create_node': ['password']}
-    service_location = collections.namedtuple('service_location',['is_affinity_group', 'service_location'])
+    service_location = collections.namedtuple('service_location', ['is_affinity_group', 'service_location'])
 
     NODE_STATE_MAP = {
         'RoleStateUnknown': NodeState.UNKNOWN,
@@ -203,8 +204,12 @@ class AzureNodeDriver(NodeDriver):
         """
         self.subscription_id = subscription_id
         self.key_file = key_file
-        super(AzureNodeDriver, self).__init__(self.subscription_id, self.key_file,
-                                           secure=True, **kwargs)
+        super(AzureNodeDriver, self).__init__(
+            self.subscription_id,
+            self.key_file,
+            secure=True,
+            **kwargs
+        )
 
     def list_sizes(self):
         """
@@ -228,9 +233,12 @@ class AzureNodeDriver(NodeDriver):
         """        
         data = self._perform_get(self._get_image_path(), Images)
 
-        images = [self._to_image(i) for i in data]
+        custom_image_data = self._perform_get(self._get_vmimage_path(), VMImages)
 
-        if location != None:
+        images = [self._to_image(i) for i in data]
+        images.extend(self._vm_to_image(j) for j in custom_image_data)
+
+        if location is not None:
             images = [image for image in images if location in image.extra["location"]]
 
         return images
@@ -265,13 +273,17 @@ class AzureNodeDriver(NodeDriver):
         response = self._perform_get(
             self._get_hosted_service_path(ex_cloud_service_name) +
             '?embed-detail=True',
-            None)
-        if response.status != 200 :
-            raise LibcloudError('Message: %s, Body: %s, Status code: %d' %
-                                (response.error, response.body, response.status)
-                                , driver=self)
+            None
+        )
 
-        data =  self._parse_response(response, HostedService)
+        if response.status != 200:
+            raise LibcloudError(
+                'Message: %s, Body: %s, Status code: %d' %
+                (response.error, response.body, response.status),
+                driver=self
+            )
+
+        data = self._parse_response(response, HostedService)
 
         try:
             return [self._to_node(n) for n in
@@ -392,10 +404,6 @@ class AzureNodeDriver(NodeDriver):
            :type        ex_admin_user_id:  ``str``
 
         """
-        name = kwargs['name']
-        size = kwargs['size']
-        image = kwargs['image']
-
         password = None
         auth = self._get_and_check_auth(kwargs["auth"])        
         password = auth.password
@@ -418,11 +426,21 @@ class AzureNodeDriver(NodeDriver):
         if "size" not in kwargs:
             raise ValueError("size is required. ")
 
+        if not isinstance(kwargs['size'], NodeSize):
+            raise ValueError('Size must be an instance of NodeSize')
+
         if "image" not in kwargs:
             raise ValueError("image is required.")
 
         if "name" not in kwargs:
             raise ValueError("name is required.")
+
+        name = kwargs['name']
+        size = kwargs['size']
+        image = kwargs['image']
+
+        if not isinstance(image, NodeImage):
+            raise ValueError("Image must be an instance of NodeImage, produced by list_images()")
 
         node_list = self.list_nodes(ex_cloud_service_name=ex_cloud_service_name)
         network_config = ConfigurationSet()
@@ -431,7 +449,7 @@ class AzureNodeDriver(NodeDriver):
         # We do this because we need to pass a Configuration to the 
         # method. This will be either Linux or Windows. 
         if re.search("Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk",
-                     image, re.I):
+                     image.name, re.I):
             machine_config = WindowsConfigurationSet(
                 computer_name=name, admin_password=password,
                 admin_user_name=ex_admin_user_id)
@@ -494,13 +512,14 @@ class AzureNodeDriver(NodeDriver):
 
         _storage_location = self._get_cloud_service_location(
             service_name=ex_cloud_service_name)
-        
+
         # OK, bit annoying here. You must create a deployment before
         # you can create an instance; however, the deployment function
         # creates the first instance, but all subsequent instances
-        # must be created using the add_role function. 
+        # must be created using the add_role function.
         #
         # So, yeah, annoying.
+
         if node_list is None:
             # This is the first node in this cloud service.
             if "ex_storage_service_name" in kwargs:
@@ -523,30 +542,50 @@ class AzureNodeDriver(NodeDriver):
             else:
                 ex_deployment_name = ex_cloud_service_name
 
-            blob_url = "http://" + ex_storage_service_name \
-                       + ".blob.core.windows.net"
+            if image.extra['vm_image']:
+                response = self._perform_post(
+                    self._get_deployment_path_using_name(ex_cloud_service_name),
+                    AzureXmlSerializer.virtual_machine_deployment_to_xml(
+                        ex_deployment_name,
+                        ex_deployment_slot,
+                        name,
+                        name,
+                        machine_config,
+                        None,
+                        'PersistentVMRole',
+                        None,
+                        None,
+                        None,
+                        size.id,
+                        None,
+                        image.id))
+            else:
+                blob_url = "http://" + ex_storage_service_name \
+                           + ".blob.core.windows.net"
 
-            # Azure's pattern in the UI.
-            disk_name = "{0}-{1}-{2}.vhd".format(
-                ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
-            media_link = blob_url + "/vhds/" + disk_name
-            disk_config = OSVirtualHardDisk(image, media_link)
+                # Azure's pattern in the UI.
+                disk_name = "{0}-{1}-{2}.vhd".format(
+                    ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
+                media_link = blob_url + "/vhds/" + disk_name
 
-            response = self._perform_post(
-                self._get_deployment_path_using_name(ex_cloud_service_name),
-                AzureXmlSerializer.virtual_machine_deployment_to_xml(
-                    ex_deployment_name,
-                    ex_deployment_slot,
-                    name,
-                    name,
-                    machine_config,
-                    disk_config,
-                    'PersistentVMRole',
-                    network_config,
-                    None,
-                    None,
-                    size,
-                    None))
+                disk_config = OSVirtualHardDisk(image.id, media_link)
+
+                response = self._perform_post(
+                    self._get_deployment_path_using_name(ex_cloud_service_name),
+                    AzureXmlSerializer.virtual_machine_deployment_to_xml(
+                        ex_deployment_name,
+                        ex_deployment_slot,
+                        name,
+                        name,
+                        machine_config,
+                        disk_config,
+                        'PersistentVMRole',
+                        network_config,
+                        None,
+                        None,
+                        size.id,
+                        None,
+                        None))
 
             if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' %
@@ -574,25 +613,41 @@ class AzureNodeDriver(NodeDriver):
                         is_affinity_group=_storage_location.is_affinity_group
                         )
 
-            blob_url = "http://" + ex_storage_service_name + \
-                       ".blob.core.windows.net"
-            disk_name = "{0}-{1}-{2}.vhd".format(
-                ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
-            media_link = blob_url + "/vhds/" + disk_name
-            disk_config = OSVirtualHardDisk(image, media_link)
+            if image.extra['vm_image']:
+                response = self._perform_post(
+                    self._get_role_path(ex_cloud_service_name,
+                        image.extra['deployment_name']),
+                    AzureXmlSerializer.add_role_to_xml(
+                        name, # role_name
+                        machine_config, # system_config
+                        None, # os_virtual_hard_disk
+                        'PersistentVMRole', # role_type
+                        None, # network_config
+                        None, # availability_set_name
+                        None, # data_virtual_hard_disks
+                        image.id, #vm_image
+                        size.id)) # role_size
+            else:
+                blob_url = "http://" + ex_storage_service_name + \
+                           ".blob.core.windows.net"
+                disk_name = "{0}-{1}-{2}.vhd".format(
+                    ex_cloud_service_name,name,time.strftime("%Y-%m-%d"))
+                media_link = blob_url + "/vhds/" + disk_name
+                disk_config = OSVirtualHardDisk(image.id, media_link)
 
-            response = self._perform_post(
-                self._get_role_path(ex_cloud_service_name, 
-                    _deployment_name),
-                AzureXmlSerializer.add_role_to_xml(
-                    name, # role_name
-                    machine_config, # system_config 
-                    disk_config, # os_virtual_hard_disk
-                    'PersistentVMRole', # role_type
-                    network_config, # network_config
-                    None, # availability_set_name
-                    None, # data_virtual_hard_disks
-                    size)) # role_size)
+                response = self._perform_post(
+                    self._get_role_path(ex_cloud_service_name,
+                        _deployment_name),
+                    AzureXmlSerializer.add_role_to_xml(
+                        name, # role_name
+                        machine_config, # system_config
+                        disk_config, # os_virtual_hard_disk
+                        'PersistentVMRole', # role_type
+                        network_config, # network_config
+                        None, # availability_set_name
+                        None, # data_virtual_hard_disks
+                        size.id, # role_size
+                        None)) #vm_image)
 
             if response.status != 202:
                 raise LibcloudError('Message: %s, Body: %s, Status code: %d' %
@@ -871,12 +926,29 @@ class AzureNodeDriver(NodeDriver):
             name=data.label,
             driver=self.connection.driver,
             extra={
-                'os' : data.os,
-                'category' : data.category,
-                'description' : data.description,
-                'location' : data.location,
-                'affinity_group' : data.affinity_group,
-                'media_link' : data.media_link
+                'os': data.os,
+                'category': data.category,
+                'description': data.description,
+                'location': data.location,
+                'affinity_group': data.affinity_group,
+                'media_link': data.media_link,
+                'vm_image': False
+            })
+
+    def _vm_to_image(self, data):
+
+        return NodeImage(
+            id=data.name,
+            name=data.label,
+            driver=self.connection.driver,
+            extra={
+                'os': data.os_disk_configuration.os,
+                'category': data.category,
+                'location': data.location,
+                'media_link': data.os_disk_configuration.media_link,
+                'affinity_group': data.affinity_group,
+                'deployment_name': data.deployment_name,
+                'vm_image': True
             })
 
     def _to_volume(self, volume, node):
@@ -1412,6 +1484,9 @@ class AzureNodeDriver(NodeDriver):
     def _get_image_path(self, image_name=None):
         return self._get_path('services/images', image_name)
 
+    def _get_vmimage_path(self, image_name=None):
+        return self._get_path('services/vmimages', image_name)
+
     def _get_hosted_service_path(self, service_name=None):
         return self._get_path('services/hostedservices', service_name)
 
@@ -1786,7 +1861,7 @@ class AzureXmlSerializer():
 
     @staticmethod
     def role_to_xml(availability_set_name, data_virtual_hard_disks,
-                    network_configuration_set, os_virtual_hard_disk, role_name,
+                    network_configuration_set, os_virtual_hard_disk, vm_image_name, role_name,
                     role_size, role_type, system_configuration_set):
         xml = AzureXmlSerializer.data_to_xml([('RoleName', role_name),
                                           ('RoleType', role_type)])
@@ -1839,6 +1914,9 @@ class AzureXmlSerializer():
                  ('SourceImageName', os_virtual_hard_disk.source_image_name)])
             xml += '</OSVirtualHardDisk>'
 
+        if vm_image_name is not None:
+            xml += AzureXmlSerializer.data_to_xml([('VMImageName', vm_image_name)])
+
         if role_size is not None:
             xml += AzureXmlSerializer.data_to_xml([('RoleSize', role_size)])
 
@@ -1848,12 +1926,13 @@ class AzureXmlSerializer():
     def add_role_to_xml(role_name, system_configuration_set,
                         os_virtual_hard_disk, role_type,
                         network_configuration_set, availability_set_name,
-                        data_virtual_hard_disks, role_size):
+                        data_virtual_hard_disks, vm_image_name, role_size):
         xml = AzureXmlSerializer.role_to_xml(
             availability_set_name,
             data_virtual_hard_disks,
             network_configuration_set,
             os_virtual_hard_disk,
+            vm_image_name,
             role_name,
             role_size,
             role_type,
@@ -1906,7 +1985,7 @@ class AzureXmlSerializer():
                                           network_configuration_set,
                                           availability_set_name,
                                           data_virtual_hard_disks, role_size,
-                                          virtual_network_name):
+                                          virtual_network_name, vm_image_name):
         xml = AzureXmlSerializer.data_to_xml([('Name', deployment_name),
                                           ('DeploymentSlot', deployment_slot),
                                           ('Label', label)])
@@ -1917,6 +1996,7 @@ class AzureXmlSerializer():
             data_virtual_hard_disks,
             network_configuration_set,
             os_virtual_hard_disk,
+            vm_image_name,
             role_name,
             role_size,
             role_type,
@@ -2243,6 +2323,13 @@ class Images(WindowsAzureData):
     def __getitem__(self, index):
         return self.images[index]
 
+
+class VMImages(Images):
+
+    def __init__(self):
+        self.images = _list_of(VMImage)
+
+
 class OSImage(WindowsAzureData):
 
     def __init__(self):
@@ -2256,6 +2343,19 @@ class OSImage(WindowsAzureData):
         self.os = u''
         self.eula = u''
         self.description = u''
+
+class VMImage(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.label = u''
+        self.category = u''
+        self.os_disk_configuration = OSDiskConfiguration()
+        self.service_name = u''
+        self.deployment_name = u''
+        self.role_name = u''
+        self.location = u''
+        self.affinity_group = u''
 
 class HostedServices(WindowsAzureData):
 
@@ -2503,6 +2603,16 @@ class OperatingSystem(WindowsAzureData):
         self.is_active = True
         self.family = 0
         self.family_label = _Base64String()
+
+class OSDiskConfiguration(WindowsAzureData):
+
+    def __init__(self):
+        self.name = u''
+        self.host_caching = u''
+        self.os_state = u''
+        self.os = u''
+        self.media_link = u''
+        self.logical_disk_size_in_gb = 0
 
 class OperatingSystems(WindowsAzureData):
 
