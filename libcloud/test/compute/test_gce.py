@@ -302,6 +302,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node_data['tags']['items'][0], 'libcloud')
         self.assertEqual(node_data['name'], 'lcnode')
         self.assertTrue(node_data['disks'][0]['boot'])
+        self.assertIsInstance(node_data['serviceAccounts'], list)
+        self.assertIsInstance(node_data['serviceAccounts'][0], dict)
+        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
+        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 1)
 
     def test_create_node(self):
         node_name = 'node-name'
@@ -310,6 +315,25 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         node = self.driver.create_node(node_name, size, image)
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
+
+    def test_create_node_req_with_serviceaccounts(self):
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        location = self.driver.zone
+        network = self.driver.ex_get_network('default')
+        # ex_service_accounts with specific scopes, default 'email'
+        ex_sa = [{'scopes': ['compute-ro', 'pubsub', 'storage-ro']}]
+        node_request, node_data = self.driver._create_node_req('lcnode', size,
+                image, location, network, ex_service_accounts=ex_sa)
+        self.assertIsInstance(node_data['serviceAccounts'], list)
+        self.assertIsInstance(node_data['serviceAccounts'][0], dict)
+        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
+        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 3)
+        self.assertTrue('https://www.googleapis.com/auth/devstorage.read_only'
+                in node_data['serviceAccounts'][0]['scopes'])
+        self.assertTrue('https://www.googleapis.com/auth/compute.readonly'
+                in node_data['serviceAccounts'][0]['scopes'])
 
     def test_create_node_with_metadata(self):
         node_name = 'node-name'
