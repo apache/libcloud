@@ -324,16 +324,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         # ex_service_accounts with specific scopes, default 'email'
         ex_sa = [{'scopes': ['compute-ro', 'pubsub', 'storage-ro']}]
         node_request, node_data = self.driver._create_node_req('lcnode', size,
-                image, location, network, ex_service_accounts=ex_sa)
+                                                               image, location,
+                                                               network,
+                                                               ex_service_accounts=ex_sa)
         self.assertIsInstance(node_data['serviceAccounts'], list)
         self.assertIsInstance(node_data['serviceAccounts'][0], dict)
         self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
         self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 3)
         self.assertTrue('https://www.googleapis.com/auth/devstorage.read_only'
-                in node_data['serviceAccounts'][0]['scopes'])
+                        in node_data['serviceAccounts'][0]['scopes'])
         self.assertTrue('https://www.googleapis.com/auth/compute.readonly'
-                in node_data['serviceAccounts'][0]['scopes'])
+                        in node_data['serviceAccounts'][0]['scopes'])
 
     def test_create_node_with_metadata(self):
         node_name = 'node-name'
