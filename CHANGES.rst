@@ -151,6 +151,11 @@ Compute
   (GITHUB-370)
   [Nirmal Ranganathan]
 
+- Add support for service scopes to the ``create_node`` method in the GCE
+  driver.
+  (LIBCLOUD-578, GITHUB-373)
+  [Eric Johnson]
+
 Storage
 ~~~~~~~
 
