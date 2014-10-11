@@ -27,6 +27,11 @@ Compute
   (GITHUB-389)
   [Loic Lambiel]
 
+- Add ``ex_security_group_ids`` argument to the create_node method in the
+  EC2 driver. This way users can launch VPC nodes with security groups.
+  (GITHUB-373)
+  [Itxaka Serrano]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
