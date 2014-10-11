@@ -34,6 +34,7 @@ from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
+from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
 from libcloud.compute.types import KeyPairDoesNotExistError
@@ -880,10 +881,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
 
+        subnet = EC2NetworkSubnet(12345, "test_subnet", "waiting")
         security_groups = ['sg-1aa11a1a', 'sg-2bb22b2b']
 
         self.driver.create_node(name='foo', image=image, size=size,
-                                ex_security_group_ids=security_groups)
+                                ex_security_group_ids=security_groups,
+                                ex_subnet=subnet)
 
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id='ami-be3adfd7',
