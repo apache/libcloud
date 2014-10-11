@@ -2191,7 +2191,7 @@ class BaseEC2NodeDriver(NodeDriver):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
                     security_groups[sig]
 
-        if 'ex_security_group_ids' in kwargs and not 'ex_subnet' in kwargs:
+        if 'ex_security_group_ids' in kwargs and 'ex_subnet' not in kwargs:
             raise ValueError('You can only supply ex_security_group_id'
                              ' combinated with ex_subnet')
 
