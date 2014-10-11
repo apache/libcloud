@@ -534,6 +534,22 @@ class GCENodeDriver(NodeDriver):
         "TERMINATED": NodeState.TERMINATED
     }
 
+    AUTH_URL = "https://www.googleapis.com/auth/"
+    SA_SCOPES_MAP = {
+        # list derived from 'gcloud compute instances create --help'
+        "bigquery": "bigquery",
+        "compute-ro": "compute.readonly",
+        "compute-rw": "compute",
+        "datastore": "datastore",
+        "sql": "sqlservice",
+        "sql-admin": "sqlservice.admin",
+        "storage-full": "devstorage.full_control",
+        "storage-ro": "devstorage.read_only",
+        "storage-rw": "devstorage.read_write",
+        "taskqueue": "taskqueue",
+        "userinfo-email": "userinfo.email"
+    }
+
     def __init__(self, user_id, key, datacenter=None, project=None,
                  auth_type=None, scopes=None, **kwargs):
         """
@@ -1222,7 +1238,7 @@ class GCENodeDriver(NodeDriver):
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
-                    ex_disk_auto_delete=True):
+                    ex_disk_auto_delete=True, ex_service_accounts=None):
         """
         Create a new node and return a node object for the node.
 
@@ -1273,6 +1289,20 @@ class GCENodeDriver(NodeDriver):
                                        True by default.
         :type     ex_disk_auto_delete: ``bool``
 
+        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
+                                       creating the instance. The format is a
+                                       list of dictionaries containing email
+                                       and list of scopes, e.g.
+                                       [{'email':'default',
+                                         'scopes':['compute', ...]}, ...]
+                                       Scopes can either be full URLs or short
+                                       names. If not provided, use the
+                                       'default' service account email and a
+                                       scope of 'devstorage.read_only'. Also
+                                       accepts the aliases defined in
+                                       'gcloud cmopute'.
+        :type     ex_service_accounts: ``list``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1315,7 +1345,8 @@ class GCENodeDriver(NodeDriver):
                                                    ex_tags, ex_metadata,
                                                    ex_boot_disk, external_ip,
                                                    ex_disk_type,
-                                                   ex_disk_auto_delete)
+                                                   ex_disk_auto_delete,
+                                                   ex_service_accounts)
         self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
@@ -1327,6 +1358,7 @@ class GCENodeDriver(NodeDriver):
                                  poll_interval=2, external_ip='ephemeral',
                                  ex_disk_type='pd-standard',
                                  ex_auto_disk_delete=True,
+                                 ex_service_accounts=None,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1392,6 +1424,20 @@ class GCENodeDriver(NodeDriver):
                                        True by default.
         :type     ex_disk_auto_delete: ``bool``
 
+        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
+                                       creating the instance. The format is a
+                                       list of dictionaries containing email
+                                       and list of scopes, e.g.
+                                       [{'email':'default',
+                                         'scopes':['compute', ...]}, ...]
+                                       Scopes can either be full URLs or short
+                                       names. If not provided, use the
+                                       'default' service account email and a
+                                       scope of 'devstorage.read_only'. Also
+                                       accepts the aliases defined in
+                                       'gcloud cmopute'.
+        :type     ex_service_accounts: ``list``
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
         :type     timeout: ``int``
@@ -1418,7 +1464,8 @@ class GCENodeDriver(NodeDriver):
                       'ignore_errors': ignore_errors,
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
-                      'ex_disk_type': ex_disk_type}
+                      'ex_disk_type': ex_disk_type,
+                      'ex_service_accounts': ex_service_accounts}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -1930,7 +1977,8 @@ class GCENodeDriver(NodeDriver):
         return success
 
     def deploy_node(self, name, size, image, script, location=None,
-                    ex_network='default', ex_tags=None):
+                    ex_network='default', ex_tags=None,
+                    ex_service_accounts=None):
         """
         Create a new node and run a script on start-up.
 
@@ -1956,6 +2004,20 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
 
+        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
+                                       creating the instance. The format is a
+                                       list of dictionaries containing email
+                                       and list of scopes, e.g.
+                                       [{'email':'default',
+                                         'scopes':['compute', ...]}, ...]
+                                       Scopes can either be full URLs or short
+                                       names. If not provided, use the
+                                       'default' service account email and a
+                                       scope of 'devstorage.read_only'. Also
+                                       accepts the aliases defined in
+                                       'gcloud cmopute'.
+        :type     ex_service_accounts: ``list``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1966,7 +2028,8 @@ class GCENodeDriver(NodeDriver):
 
         return self.create_node(name, size, image, location=location,
                                 ex_network=ex_network, ex_tags=ex_tags,
-                                ex_metadata=metadata)
+                                ex_metadata=metadata,
+                                ex_service_accounts=ex_service_accounts)
 
     def attach_volume(self, node, volume, device=None, ex_mode=None,
                       ex_boot=False):
@@ -2863,7 +2926,7 @@ class GCENodeDriver(NodeDriver):
     def _create_node_req(self, name, size, image, location, network,
                          tags=None, metadata=None, boot_disk=None,
                          external_ip='ephemeral', ex_disk_type='pd-standard',
-                         ex_disk_auto_delete=True):
+                         ex_disk_auto_delete=True, ex_service_accounts=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -2910,6 +2973,20 @@ class GCENodeDriver(NodeDriver):
                                        True by default.
         :type     ex_disk_auto_delete: ``bool``
 
+        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
+                                       creating the instance. The format is a
+                                       list of dictionaries containing email
+                                       and list of scopes, e.g.
+                                       [{'email':'default',
+                                         'scopes':['compute', ...]}, ...]
+                                       Scopes can either be full URLs or short
+                                       names. If not provided, use the
+                                       'default' service account email and a
+                                       scope of 'devstorage.read_only'. Also
+                                       accepts the aliases defined in
+                                       'gcloud cmopute'.
+        :type     ex_service_accounts: ``list``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -2920,6 +2997,38 @@ class GCENodeDriver(NodeDriver):
             node_data['tags'] = {'items': tags}
         if metadata:
             node_data['metadata'] = metadata
+
+        # by default, new instances will match the same serviceAccount and
+        # scope set in the Developers Console and Cloud SDK
+        if not ex_service_accounts:
+            set_scopes = [{
+                'email': 'default',
+                'scopes': [self.AUTH_URL + 'devstorage.read_only']
+            }]
+        elif not isinstance(ex_service_accounts, list):
+            raise ValueError("ex_service_accounts field is not a list.")
+        else:
+            set_scopes = []
+            for sa in ex_service_accounts:
+                if not isinstance(sa, dict):
+                    raise ValueError("ex_service_accounts needs to be a list "
+                                     "of dicts, got: '%s - %s'" % (
+                                         str(type(sa)), str(sa)))
+                if 'email' not in sa:
+                    sa['email'] = 'default'
+                if 'scopes' not in sa:
+                    sa['scopes'] = [self.AUTH_URL + 'devstorage.read_only']
+                ps = []
+                for scope in sa['scopes']:
+                    if scope.startswith(self.AUTH_URL):
+                        ps.append(scope)
+                    elif scope in self.SA_SCOPES_MAP:
+                        ps.append(self.AUTH_URL + self.SA_SCOPES_MAP[scope])
+                    else:
+                        ps.append(self.AUTH_URL + scope)
+                sa['scopes'] = ps
+                set_scopes.append(sa)
+        node_data['serviceAccounts'] = set_scopes
 
         if boot_disk:
             disks = [{'kind': 'compute#attachedDisk',
@@ -3040,7 +3149,8 @@ class GCENodeDriver(NodeDriver):
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
             node_attrs['metadata'], boot_disk=status['disk'],
-            external_ip=node_attrs['external_ip'])
+            external_ip=node_attrs['external_ip'],
+            ex_service_accounts=node_attrs['ex_service_accounts'])
         try:
             node_res = self.connection.request(
                 request, method='POST', data=node_data).object

@@ -15,6 +15,7 @@ Google Compute Engine features:
 * High-performance virtual machines
 * Minute-level billing (10-minute minimum)
 * Fast VM provisioning
+* Persistent block storage (SSD and standard)
 * Native Load Balancing
 
 Connecting to Google Compute Engine
@@ -68,6 +69,14 @@ To set up Installed Account authentication:
 7. You will also need your "Project ID" which can be found by clicking on the
    "Overview" link on the left sidebar.
 
+Accessing Google Cloud services from your Libcloud nodes
+--------------------------------------------------------
+In order for nodes created with libcloud to be able to access or manage other
+Google Cloud Platform services, you will need to specify a list of Service
+Account Scopes.  By default libcloud will create nodes that only allow
+read-only access to Google Cloud Storage. A few of the examples below
+illustrate how to use Service Account Scopes.
+
 Examples
 --------
 
@@ -88,6 +97,11 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/compute/gce/gce_datacenter.py
+
+4. Specifying Service Account Scopes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/gce/gce_service_account_scopes.py
 
 API Docs
 --------
