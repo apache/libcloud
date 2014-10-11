@@ -2135,6 +2135,10 @@ class BaseEC2NodeDriver(NodeDriver):
                                         assign to the node.
         :type       ex_security_groups:   ``list``
 
+        :keyword    ex_security_group_ids: A list of ids of security groups to
+                                        assign to the node.[for VPC nodes only]
+        :type       ex_security_group_ids:   ``list``
+
         :keyword    ex_metadata: Key/Value metadata to associate with a node
         :type       ex_metadata: ``dict``
 
@@ -2186,6 +2190,20 @@ class BaseEC2NodeDriver(NodeDriver):
             for sig in range(len(security_groups)):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
                     security_groups[sig]
+
+        if 'ex_security_group_ids' in kwargs and not 'ex_subnet' in kwargs:
+            raise ValueError('You can only supply ex_security_group_id'
+                             ' combinated with ex_subnet')
+
+        security_group_id = kwargs.get('ex_security_group_ids', None)
+
+        if security_group_id:
+            if not isinstance(security_group_id, (tuple, list)):
+                security_group_id = [security_group_id]
+
+            for sig in range(len(security_group_id)):
+                params['SecurityGroupId.%d' % (sig + 1,)] =\
+                    security_group_id[sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],

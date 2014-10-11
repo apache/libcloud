@@ -871,6 +871,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                           ex_securitygroup=security_groups,
                           ex_security_groups=security_groups)
 
+    def test_create_node_ex_security_group_id(self):
+        EC2MockHttp.type = 'ex_security_group_ids'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        security_groups = ['sg-1aa11a1a', 'sg-2bb22b2b']
+
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_security_group_ids=security_groups)
+
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
@@ -1185,6 +1199,13 @@ class EC2MockHttp(MockHttpTestCase):
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
         self.assertUrlContainsQueryParams(url, {'SecurityGroup.1': 'group1'})
         self.assertUrlContainsQueryParams(url, {'SecurityGroup.2': 'group2'})
+
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_security_group_ids_RunInstances(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {'SecurityGroupId.1': 'sg-1aa11a1a'})
+        self.assertUrlContainsQueryParams(url, {'SecurityGroupId.2': 'sg-2bb22b2b'})
 
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
