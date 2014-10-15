@@ -1,0 +1,23 @@
+<VMImages xmlns="http://schemas.microsoft.com/windowsazure" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+    <VMImage>
+        <Name>test-vm-20140926-782617</Name>
+        <Label>test-vm</Label>
+        <Category>User</Category>
+        <OSDiskConfiguration>
+            <Name>test-vm-20140926-782617-os-2014-09-26</Name>
+            <HostCaching>ReadWrite</HostCaching>
+            <OSState>Generalized</OSState>
+            <OS>Linux</OS>
+            <MediaLink>https://portal.blob.core.windows.net/vhds/test-vm-20140926-782617-os-2014-09-26.vhd</MediaLink>
+            <LogicalDiskSizeInGB>30</LogicalDiskSizeInGB>
+        </OSDiskConfiguration>
+        <DataDiskConfigurations/>
+        <ServiceName>test-service</ServiceName>
+        <DeploymentName>test-deployment</DeploymentName>
+        <RoleName>test-role</RoleName>
+        <Location>Central US</Location>
+        <CreatedTime>2014-09-26T17:39:34.5199416Z</CreatedTime>
+        <ModifiedTime>2014-09-26T17:39:34.5199416Z</ModifiedTime>
+        <IsPremium>false</IsPremium>
+    </VMImage>
+</VMImages>
