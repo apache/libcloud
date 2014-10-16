@@ -71,7 +71,7 @@ class RackspaceUSTests(unittest.TestCase):
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals(self.endpoint_url, driver.connection.get_endpoint())
+        self.assertEqual(self.endpoint_url, driver.connection.get_endpoint())
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()

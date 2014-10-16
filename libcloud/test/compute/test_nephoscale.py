@@ -74,7 +74,7 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
     def test_list_password_keys(self):
         password_keys = self.driver.ex_list_keypairs(password=True)
         self.assertEqual(len(password_keys), 1)
-        self.assertEquals(password_keys[0].password, '23d493j5')
+        self.assertEqual(password_keys[0].password, '23d493j5')
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
