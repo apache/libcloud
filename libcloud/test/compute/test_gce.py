@@ -247,8 +247,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         volume = self.driver.ex_get_volume('lcdisk')
         image = self.driver.ex_create_image('coreos', volume)
         self.assertTrue(isinstance(image, GCENodeImage))
-        self.assertEquals(image.name, 'coreos')
-        self.assertEquals(image.extra['description'], 'CoreOS test image')
+        self.assertEqual(image.name, 'coreos')
+        self.assertEqual(image.extra['description'], 'CoreOS test image')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'

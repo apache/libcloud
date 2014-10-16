@@ -40,18 +40,18 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(len(nodes), 3)
 
         node = nodes[0]
-        self.assertEquals(node.id, "c8e57d7b-e731-46ad-a913-1828c0562246")
-        self.assertEquals(node.name, "server001")
-        self.assertEquals(node.state, 0)
-        self.assertEquals(node.public_ips, ['162.254.25.197'])
-        self.assertEquals(node.private_ips, ['10.10.108.12', '10.13.198.11'])
-        self.assertEquals(node.extra['datacenter_id'], "e1e8ec0d-b47f-4d39-a91b-6e885483c899")
-        self.assertEquals(node.extra['datacenter_version'], "5")
-        self.assertEquals(node.extra['provisioning_state'], 0)
-        self.assertEquals(node.extra['creation_time'], "2014-07-14T20:52:20.839Z")
-        self.assertEquals(node.extra['last_modification_time'], "2014-07-14T22:11:09.324Z")
-        self.assertEquals(node.extra['os_type'], "LINUX")
-        self.assertEquals(node.extra['availability_zone'], "ZONE_1")
+        self.assertEqual(node.id, "c8e57d7b-e731-46ad-a913-1828c0562246")
+        self.assertEqual(node.name, "server001")
+        self.assertEqual(node.state, 0)
+        self.assertEqual(node.public_ips, ['162.254.25.197'])
+        self.assertEqual(node.private_ips, ['10.10.108.12', '10.13.198.11'])
+        self.assertEqual(node.extra['datacenter_id'], "e1e8ec0d-b47f-4d39-a91b-6e885483c899")
+        self.assertEqual(node.extra['datacenter_version'], "5")
+        self.assertEqual(node.extra['provisioning_state'], 0)
+        self.assertEqual(node.extra['creation_time'], "2014-07-14T20:52:20.839Z")
+        self.assertEqual(node.extra['last_modification_time'], "2014-07-14T22:11:09.324Z")
+        self.assertEqual(node.extra['os_type'], "LINUX")
+        self.assertEqual(node.extra['availability_zone'], "ZONE_1")
 
     def test_ex_describe_node(self):
         image = type('NodeImage', (object,),
@@ -68,7 +68,7 @@ class ProfitBricksTests(unittest.TestCase):
                                        image=image,
                                        size=size)
 
-        self.assertEquals(node.id, "7b18b85f-cc93-4c2d-abcc-5ce732d35750")
+        self.assertEqual(node.id, "7b18b85f-cc93-4c2d-abcc-5ce732d35750")
 
     def test_reboot_node(self):
         node = type('Node', (object,),
@@ -117,16 +117,16 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(len(volumes), 4)
 
         volume = volumes[0]
-        self.assertEquals(volume.id, "453582cf-8d54-4ec8-bc0b-f9962f7fd232")
-        self.assertEquals(volume.name, "storage001")
-        self.assertEquals(volume.size, 50)
-        self.assertEquals(volume.extra['server_id'], "ebee7d83-912b-42f1-9b62-b953351a7e29")
-        self.assertEquals(volume.extra['provisioning_state'], 0)
-        self.assertEquals(volume.extra['creation_time'], "2014-07-15T03:19:38.252Z")
-        self.assertEquals(volume.extra['last_modification_time'], "2014-07-15T03:28:58.724Z")
-        self.assertEquals(volume.extra['image_id'], "d2f627c4-0289-11e4-9f63-52540066fee9")
-        self.assertEquals(volume.extra['image_name'], "CentOS-6-server-2014-07-01")
-        self.assertEquals(volume.extra['datacenter_id'], "06eac419-c2b3-4761-aeb9-10efdd2cf292")
+        self.assertEqual(volume.id, "453582cf-8d54-4ec8-bc0b-f9962f7fd232")
+        self.assertEqual(volume.name, "storage001")
+        self.assertEqual(volume.size, 50)
+        self.assertEqual(volume.extra['server_id'], "ebee7d83-912b-42f1-9b62-b953351a7e29")
+        self.assertEqual(volume.extra['provisioning_state'], 0)
+        self.assertEqual(volume.extra['creation_time'], "2014-07-15T03:19:38.252Z")
+        self.assertEqual(volume.extra['last_modification_time'], "2014-07-15T03:28:58.724Z")
+        self.assertEqual(volume.extra['image_id'], "d2f627c4-0289-11e4-9f63-52540066fee9")
+        self.assertEqual(volume.extra['image_name'], "CentOS-6-server-2014-07-01")
+        self.assertEqual(volume.extra['datacenter_id'], "06eac419-c2b3-4761-aeb9-10efdd2cf292")
 
     def test_create_volume(self):
         datacenter = type('Datacenter', (object,),
@@ -286,9 +286,9 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(len(datacenters), 2)
 
         dc1 = datacenters[0]
-        self.assertEquals(dc1.id, "a3e6f83a-8982-4d6a-aebc-60baf5755ede")
-        self.assertEquals(dc1.name, "StackPointCloud")
-        self.assertEquals(dc1.version, "1")
+        self.assertEqual(dc1.id, "a3e6f83a-8982-4d6a-aebc-60baf5755ede")
+        self.assertEqual(dc1.name, "StackPointCloud")
+        self.assertEqual(dc1.version, "1")
 
     def test_ex_rename_datacenter(self):
         datacenter = type('Datacenter', (object,),
@@ -306,7 +306,7 @@ class ProfitBricksTests(unittest.TestCase):
         locationNamesResult = sorted(list(a.name for a in locations))
         locationNamesExpected = ['de/fkb', 'de/fra', 'us/las']
 
-        self.assertEquals(locationNamesResult, locationNamesExpected)
+        self.assertEqual(locationNamesResult, locationNamesExpected)
 
     ''' Availability Zone Tests
     '''
@@ -318,7 +318,7 @@ class ProfitBricksTests(unittest.TestCase):
         zoneNamesResult = sorted(list(a.name for a in zones))
         zoneNamesExpected = ['AUTO', 'ZONE_1', 'ZONE_2']
 
-        self.assertEquals(zoneNamesResult, zoneNamesExpected)
+        self.assertEqual(zoneNamesResult, zoneNamesExpected)
 
     ''' Interface Tests
     '''
@@ -329,16 +329,16 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(len(interfaces), 3)
 
         interface = interfaces[0]
-        self.assertEquals(interface.id, "6b38a4f3-b851-4614-9e3a-5ddff4727727")
-        self.assertEquals(interface.name, "StackPointCloud")
-        self.assertEquals(interface.state, 0)
-        self.assertEquals(interface.extra['server_id'], "234f0cf9-1efc-4ade-b829-036456584116")
-        self.assertEquals(interface.extra['lan_id'], '3')
-        self.assertEquals(interface.extra['internet_access'], 'false')
-        self.assertEquals(interface.extra['mac_address'], "02:01:40:47:90:04")
-        self.assertEquals(interface.extra['dhcp_active'], "true")
-        self.assertEquals(interface.extra['gateway_ip'], None)
-        self.assertEquals(interface.extra['ips'], ['10.14.96.11', '162.254.26.14', '162.254.26.15'])
+        self.assertEqual(interface.id, "6b38a4f3-b851-4614-9e3a-5ddff4727727")
+        self.assertEqual(interface.name, "StackPointCloud")
+        self.assertEqual(interface.state, 0)
+        self.assertEqual(interface.extra['server_id'], "234f0cf9-1efc-4ade-b829-036456584116")
+        self.assertEqual(interface.extra['lan_id'], '3')
+        self.assertEqual(interface.extra['internet_access'], 'false')
+        self.assertEqual(interface.extra['mac_address'], "02:01:40:47:90:04")
+        self.assertEqual(interface.extra['dhcp_active'], "true")
+        self.assertEqual(interface.extra['gateway_ip'], None)
+        self.assertEqual(interface.extra['ips'], ['10.14.96.11', '162.254.26.14', '162.254.26.15'])
 
     def test_ex_create_network_interface(self):
         node = type('Node', (object,),
@@ -374,18 +374,18 @@ class ProfitBricksTests(unittest.TestCase):
 
         describe = self.driver.ex_describe_network_interface(network_interface=network_interface)
 
-        self.assertEquals(describe.id, "f1c7a244-2fa6-44ee-8fb6-871f337683a3")
-        self.assertEquals(describe.name, None)
-        self.assertEquals(describe.state, 0)
-        self.assertEquals(describe.extra['datacenter_id'], "a3a2e730-0dc3-47e6-bac6-4c056d5e2aee")
-        self.assertEquals(describe.extra['datacenter_version'], "6")
-        self.assertEquals(describe.extra['server_id'], "c09f4f31-336c-4ad2-9ec7-591778513408")
-        self.assertEquals(describe.extra['lan_id'], "1")
-        self.assertEquals(describe.extra['internet_access'], "false")
-        self.assertEquals(describe.extra['mac_address'], "02:01:96:d7:60:e0")
-        self.assertEquals(describe.extra['dhcp_active'], "true")
-        self.assertEquals(describe.extra['gateway_ip'], None)
-        self.assertEquals(describe.extra['ips'], ['10.10.38.12'])
+        self.assertEqual(describe.id, "f1c7a244-2fa6-44ee-8fb6-871f337683a3")
+        self.assertEqual(describe.name, None)
+        self.assertEqual(describe.state, 0)
+        self.assertEqual(describe.extra['datacenter_id'], "a3a2e730-0dc3-47e6-bac6-4c056d5e2aee")
+        self.assertEqual(describe.extra['datacenter_version'], "6")
+        self.assertEqual(describe.extra['server_id'], "c09f4f31-336c-4ad2-9ec7-591778513408")
+        self.assertEqual(describe.extra['lan_id'], "1")
+        self.assertEqual(describe.extra['internet_access'], "false")
+        self.assertEqual(describe.extra['mac_address'], "02:01:96:d7:60:e0")
+        self.assertEqual(describe.extra['dhcp_active'], "true")
+        self.assertEqual(describe.extra['gateway_ip'], None)
+        self.assertEqual(describe.extra['ips'], ['10.10.38.12'])
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
