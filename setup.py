@@ -20,7 +20,6 @@ from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
-from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
 try:
@@ -217,6 +216,10 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
+install_requires = ['backports.ssl_match_hostname']
+if pre_python26:
+    install_requires.extend(['ssl', 'simplejson'])
+
 setup(
     name='apache-libcloud',
     version=read_version_string(),
@@ -225,7 +228,7 @@ setup(
                 ' and documentation, please see http://libcloud.apache.org',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    install_requires=install_requires,
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',

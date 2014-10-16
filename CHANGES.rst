@@ -4,6 +4,15 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Use ``match_hostname`` function from ``backports.ssl_match_hostname``
+  package to verify the SSL certificate hostname instead of relying on
+  our own logic.
+  (GITHUB-374)
+  [Alex Gaynor]
+
 Compute
 ~~~~~~~
 
