@@ -945,9 +945,9 @@ class AzureBlobsTests(unittest.TestCase):
         host2 = driver2.connection.host
         host3 = driver3.connection.host
 
-        self.assertEquals(host1, 'fakeaccount1.blob.core.windows.net')
-        self.assertEquals(host2, 'fakeaccount2.blob.core.windows.net')
-        self.assertEquals(host3, 'test.foo.bar.com')
+        self.assertEqual(host1, 'fakeaccount1.blob.core.windows.net')
+        self.assertEqual(host2, 'fakeaccount2.blob.core.windows.net')
+        self.assertEqual(host3, 'test.foo.bar.com')
 
 
 if __name__ == '__main__':

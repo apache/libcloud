@@ -119,7 +119,7 @@ class GoGridTests(unittest.TestCase):
         self.assertEqual(len(members2), 3)
         self.assertEqual(expected_members,
                          set(["%s:%s" % (member.ip, member.port) for member in members1]))
-        self.assertEquals(members1[0].balancer, balancer)
+        self.assertEqual(members1[0].balancer, balancer)
 
     def test_balancer_attach_compute_node(self):
         balancer = LoadBalancer(23530, None, None, None, None, self.driver)
