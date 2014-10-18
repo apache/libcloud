@@ -31,6 +31,7 @@ from libcloud.common.google import (GoogleAuthError,
                                     GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
+                                    GoogleGCEServiceAcctAuthConnection,
                                     GoogleBaseConnection)
 from libcloud.test.secrets import GCE_PARAMS
 
@@ -125,6 +126,8 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
     GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
     GoogleServiceAcctAuthConnection.get_new_token = \
         lambda x: x._token_request({})
+    GoogleGCEServiceAcctAuthConnection.get_new_token = \
+        lambda x: x._token_request({})
     GoogleBaseConnection._now = lambda x: datetime.datetime(2013, 6, 26,
                                                             19, 0, 0)
 
@@ -151,6 +154,11 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         conn2 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
         self.assertTrue(isinstance(conn2.auth_conn,
                                    GoogleInstalledAppAuthConnection))
+
+        kwargs['auth_type'] = 'GCE'
+        conn3 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+        self.assertTrue(isinstance(conn3.auth_conn,
+                                   GoogleGCEServiceAcctAuthConnection))
 
     def test_add_default_headers(self):
         old_headers = {}

@@ -20,8 +20,8 @@ Google Compute Engine features:
 
 Connecting to Google Compute Engine
 -----------------------------------
-Libcloud supports two different methods for authenticating to Compute Engine:
-`Service Account`_ and `Installed Application`_
+Libcloud supports three different methods for authenticating:
+`Service Account`_ and `Installed Application`_ and `Internal Authentication_`
 
 Which one should I use?
 
@@ -33,6 +33,11 @@ Which one should I use?
   creating an application that may be used by third-parties interactively. For
   example, a desktop application for managing VMs that would be used by many
   different people with different Google accounts.
+
+* If you are running your code on an instance inside Google Compute Engine,
+  the GCE driver will consult the internal metadata service to obtain an
+  authorization token. The only parameter required for this type of
+  authorization is your Project ID.
 
 Once you have set up the authentication as described below, you pass the
 authentication information to the driver as described in `Examples`_
@@ -69,6 +74,13 @@ To set up Installed Account authentication:
 7. You will also need your "Project ID" which can be found by clicking on the
    "Overview" link on the left sidebar.
 
+Internal Authentication
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To use GCE's internal metadata service to authenticate, simply specify
+your Project ID and let the driver handle the rest.  See the `Examples`_
+below for a sample.
+
 Accessing Google Cloud services from your Libcloud nodes
 --------------------------------------------------------
 In order for nodes created with libcloud to be able to access or manage other
@@ -102,6 +114,11 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/compute/gce/gce_service_account_scopes.py
+
+5. Using GCE Internal Authorization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/gce/gce_internal_auth.py
 
 API Docs
 --------

@@ -78,6 +78,7 @@ import os
 import socket
 import sys
 
+from libcloud.utils.connection import get_response_object
 from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
@@ -97,6 +98,23 @@ except ImportError:
     PKCS1_v1_5 = None
 
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+
+def _is_gce():
+    http_code, http_reason, body = _get_gce_metadata()
+    if http_code == httplib.OK and body:
+        return True
+    return False
+
+
+def _get_gce_metadata(path=''):
+    try:
+        url = "http://metadata/computeMetadata/v1/" + path.lstrip('/')
+        headers = {'Metadata-Flavor': 'Google'}
+        response = get_response_object(url, headers)
+        return response.status, "", response.body
+    except Exception as e:
+        return -1, str(e), None
 
 
 class GoogleAuthError(LibcloudError):
@@ -123,7 +141,16 @@ class JsonParseError(GoogleBaseError):
 
 
 class ResourceNotFoundError(GoogleBaseError):
-    pass
+    def __init__(self, value, http_code, code, driver=None):
+        self.code = code
+        if isinstance(value, dict) and 'message' in value and \
+                value['message'].count('/') == 1 and \
+                value['message'].count('projects/') == 1:
+            value['message'] = value['message'] + ". A missing project " \
+                "error may be an authentication issue. " \
+                "Please  ensure your auth credentials match " \
+                "your project. "
+        super(GoogleBaseError, self).__init__(value, http_code, driver)
 
 
 class QuotaExceededError(GoogleBaseError):
@@ -255,7 +282,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     host = 'accounts.google.com'
     auth_path = '/o/oauth2/auth'
 
-    def __init__(self, user_id, key, scopes=None,
+    def __init__(self, user_id, key=None, scopes=None,
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
         """
@@ -317,6 +344,21 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                 seconds=token_info['expires_in'])
             token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
         return token_info
+
+    def refresh_token(self, token_info):
+        """
+        Refresh the current token.
+
+        Fetch an updated refresh token from internal metadata service.
+
+        :param  token_info: Dictionary containing token information.
+                            (Not used, but here for compatibility)
+        :type   token_info: ``dict``
+
+        :return:  A dictionary containing updated token information.
+        :rtype:   ``dict``
+        """
+        return self.get_new_token()
 
 
 class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
@@ -450,21 +492,32 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
         return self._token_request(request)
 
-    def refresh_token(self, token_info):
+
+class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
+    """Authentication class for self-authentication when used with a GCE
+    istance that supports serviceAccounts.
+    """
+    def get_new_token(self):
         """
-        Refresh the current token.
+        Get a new token from the internal metadata service.
 
-        Service Account authentication doesn't supply a "refresh token" so
-        this simply gets a new token using the email address/key.
-
-        :param  token_info: Dictionary containing token information.
-                            (Not used, but here for compatibility)
-        :type   token_info: ``dict``
-
-        :return:  A dictionary containing updated token information.
+        :return:  Dictionary containing token information
         :rtype:   ``dict``
         """
-        return self.get_new_token()
+        path = '/instance/service-accounts/default/token'
+        http_code, http_reason, token_info = _get_gce_metadata(path)
+        if http_code == httplib.NOT_FOUND:
+            raise ValueError("Service Accounts are not enabled for this "
+                             "GCE instance.")
+        if http_code != httplib.OK:
+            raise ValueError("Internal GCE Authorization failed: "
+                             "'%s'" % str(http_reason))
+        token_info = json.loads(token_info)
+        if 'expires_in' in token_info:
+            expire_time = self._now() + datetime.timedelta(
+                seconds=token_info['expires_in'])
+            token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
+        return token_info
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
@@ -475,7 +528,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     poll_interval = 2.0
     timeout = 180
 
-    def __init__(self, user_id, key, auth_type=None,
+    def __init__(self, user_id, key=None, auth_type=None,
                  credential_file=None, scopes=None, **kwargs):
         """
         Determine authentication type, set up appropriate authentication
@@ -490,10 +543,16 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                      authentication.
         :type   key: ``str``
 
-        :keyword  auth_type: Accepted values are "SA" or "IA"
-                             ("Service Account" or "Installed Application").
+        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
+                             ("Service Account" or "Installed Application" or
+                             "GCE" if libcloud is being used on a GCE instance
+                             with service account enabled).
                              If not supplied, auth_type will be guessed based
-                             on value of user_id.
+                             on value of user_id or if the code is being
+                             executed in a GCE instance.).
+                             If not supplied, auth_type will be guessed based
+                             on value of user_id or if the code is running
+                             on a GCE instance.
         :type     auth_type: ``str``
 
         :keyword  credential_file: Path to file for caching authentication
@@ -507,10 +566,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         self.credential_file = credential_file or '~/.gce_libcloud_auth'
 
         if auth_type is None:
-            # Try to guess.  Service accounts use an email address
-            # as the user id.
+            # Try to guess.
             if '@' in user_id:
                 auth_type = 'SA'
+            elif _is_gce():
+                auth_type = 'GCE'
             else:
                 auth_type = 'IA'
 
@@ -525,14 +585,20 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             ]
         self.token_info = self._get_token_info_from_file()
 
-        if auth_type == 'SA':
+        if auth_type == 'GCE':
+            self.auth_conn = GoogleGCEServiceAcctAuthConnection(
+                user_id, self.scopes, **kwargs)
+        elif auth_type == 'SA':
+            if '@' not in user_id:
+                raise GoogleAuthError('Service Account auth requires a '
+                                      'valid email address')
             self.auth_conn = GoogleServiceAcctAuthConnection(
                 user_id, key, self.scopes, **kwargs)
         elif auth_type == 'IA':
             self.auth_conn = GoogleInstalledAppAuthConnection(
                 user_id, key, self.scopes, **kwargs)
         else:
-            raise GoogleAuthError('auth_type should be \'SA\' or \'IA\'')
+            raise GoogleAuthError('Invalid auth_type: %s' % str(auth_type))
 
         if self.token_info is None:
             self.token_info = self.auth_conn.get_new_token()

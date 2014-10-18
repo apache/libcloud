@@ -550,8 +550,8 @@ class GCENodeDriver(NodeDriver):
         "userinfo-email": "userinfo.email"
     }
 
-    def __init__(self, user_id, key, datacenter=None, project=None,
-                 auth_type=None, scopes=None, **kwargs):
+    def __init__(self, user_id, key=None, datacenter=None, project=None,
+                 auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -569,19 +569,30 @@ class GCENodeDriver(NodeDriver):
         :keyword  project: Your GCE project name. (required)
         :type     project: ``str``
 
-        :keyword  auth_type: Accepted values are "SA" or "IA"
-                             ("Service Account" or "Installed Application").
+        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
+                             ("Service Account" or "Installed Application" or
+                             "GCE" if libcloud is being used on a GCE instance
+                             with service account enabled).
                              If not supplied, auth_type will be guessed based
-                             on value of user_id.
+                             on value of user_id or if the code is being
+                             executed in a GCE instance.
         :type     auth_type: ``str``
 
         :keyword  scopes: List of authorization URLs. Default is empty and
                           grants read/write to Compute, Storage, DNS.
         :type     scopes: ``list``
+
+        :keyword  credential_file: Path to file for caching authentication
+                                   information used by GCEConnection.
+        :type     credential_file: ``str``
         """
+
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
+        self.credential_file = credential_file or \
+            '~/.gce_libcloud_auth' + '.' + self.project
+
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
@@ -2749,7 +2760,8 @@ class GCENodeDriver(NodeDriver):
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project,
-                'scopes': self.scopes}
+                'scopes': self.scopes,
+                'credential_file': self.credential_file}
 
     def _catch_error(self, ignore_errors=False):
         """
