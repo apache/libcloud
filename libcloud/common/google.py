@@ -174,7 +174,7 @@ class GoogleResponse(JsonResponse):
             code = err.get('code')
             message = err.get('message')
         else:
-            code = None
+            code = err.get('reason', None)
             message = body.get('error_description', err)
 
         return (code, message)
@@ -199,14 +199,14 @@ class GoogleResponse(JsonResponse):
             body = self.body
             json_error = True
 
-        if self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]:
+        if self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED, httplib.CONFLICT]:
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif 'error' in body:
                 (code, message) = self._get_error(body)
                 if code == 'QUOTA_EXCEEDED':
                     raise QuotaExceededError(message, self.status, code)
-                elif code == 'RESOURCE_ALREADY_EXISTS':
+                elif (code == 'RESOURCE_ALREADY_EXISTS' or code == 'alreadyExists'):
                     raise ResourceExistsError(message, self.status, code)
                 elif code.startswith('RESOURCE_IN_USE'):
                     raise ResourceInUseError(message, self.status, code)
