@@ -70,7 +70,7 @@ class GoogleDNSDriver(DNSDriver):
         if not self.project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
-        super(GoogleDNSDriver, self).__init__(user_id, key, scopes, **kwargs)
+        super(GoogleDNSDriver, self).__init__(user_id, key, **kwargs)
 
     def iterate_zones(self):
         """
