@@ -953,7 +953,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type       ex_ip_address: ``str``
 
         :keyword    ex_start_vm: Boolean to specify to start VM after creation
-                                 Defaults to True
+                                 Default Cloudstack behaviour is to start a VM,
+                                 if not specified.
+
         :type       ex_start_vm: ``bool``
 
         :rtype:     :class:`.CloudStackNode`
@@ -1027,7 +1029,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if ex_ip_address:
             server_params['ipaddress'] = ex_ip_address
 
-        if ex_start_vm is False:
+        if ex_start_vm is not None:
             server_params['startvm'] = ex_start_vm
 
         return server_params
