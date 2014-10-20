@@ -5,8 +5,8 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
-Libcloud in development
------------------------
+Libcloud 0.16.0
+---------------
 
 Changes in the OpenStack authentication and service catalog classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
