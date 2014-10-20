@@ -208,7 +208,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        ttl = data.get('ttl', None)
+        ttl = data.get('ttl', 0)
         rrdatas = data.get('rrdatas', [])
 
         data = {
