@@ -156,6 +156,10 @@ Compute
   (LIBCLOUD-578, GITHUB-373)
   [Eric Johnson]
 
+- Update GCE driver to allow for authentication with internal metadata service.
+  (LIBCLOUD-625, LIBCLOUD-276, GITHUB-276)
+  [Eric Johnson]
+
 Storage
 ~~~~~~~
 
