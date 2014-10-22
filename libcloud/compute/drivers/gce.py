@@ -586,6 +586,9 @@ class GCENodeDriver(NodeDriver):
                                    information used by GCEConnection.
         :type     credential_file: ``str``
         """
+        if not project:
+            raise ValueError('Project name must be specified using '
+                             '"project" keyword.')
 
         self.auth_type = auth_type
         self.project = project
@@ -593,9 +596,6 @@ class GCENodeDriver(NodeDriver):
         self.credential_file = credential_file or \
             '~/.gce_libcloud_auth' + '.' + self.project
 
-        if not self.project:
-            raise ValueError('Project name must be specified using '
-                             '"project" keyword.')
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
         # Cache Zone and Region information to reduce API calls and
