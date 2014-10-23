@@ -179,6 +179,13 @@ Loadbalancer
   (LIBCLOUD-595, GITHUB-341)
   [Lee Verberne, Eric Johnson]
 
+DNS
+~~~
+
+- Various fixes in the Google DNS driver.
+  (GITHUB-378)
+  [Franck Cuny]
+
 Changes with Apache Libcloud 0.15.1
 -----------------------------------
 
