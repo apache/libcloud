@@ -731,10 +731,11 @@ class CloudStackNetwork(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackNetwork: id=%s, displaytext=%s, name=%s, '
-                 'networkofferingid=%s, zoneid=%s, driver%s>')
-                % (self.id, self.displaytext, self.name,
-                   self.networkofferingid, self.zoneid, self.driver.name))
+        return (('<CloudStackNetwork: displaytext=%s, name=%s, '
+                 'networkofferingid=%s, '
+                 'id=%s, zoneid=%s, driver=%s>')
+                % (self.displaytext, self.name, self.networkofferingid,
+                   self.id, self.zoneid, self.driver.name))
 
 
 class CloudStackNetworkOffering(object):
@@ -756,7 +757,7 @@ class CloudStackNetworkOffering(object):
     def __repr__(self):
         return (('<CloudStackNetworkOffering: id=%s, name=%s, '
                  'display_text=%s, guest_ip_type=%s, service_offering_id=%s, '
-                 'for_vpc=%s, driver%s>')
+                 'for_vpc=%s, driver=%s>')
                 % (self.id, self.name, self.display_text,
                    self.guest_ip_type, self.service_offering_id, self.for_vpc,
                    self.driver.name))
@@ -779,12 +780,11 @@ class CloudStackVPC(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackVPC: id=%s, name=%s, displaytext=%s, '
-                 'vpc_offering_id=%s, zoneid=%s, cidr=%s, '
-                 'driver%s>')
-                % (self.id, self.name, self.display_text,
-                   self.vpc_offering_id, self.zone_id, self.cidr,
-                   self.driver.name))
+        return (('<CloudStackVPC: name=%s, vpc_offering_id=%s, id=%s, '
+                 'cidr=%s, driver=%s, zone_id=%s, display_text=%s>')
+                % (self.name, self.vpc_offering_id, self.id,
+                   self.cidr, self.driver.name, self.zone_id,
+                   self.display_text))
 
 
 class CloudStackVPCOffering(object):
@@ -801,10 +801,10 @@ class CloudStackVPCOffering(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackVPCOffering: id=%s, name=%s, '
-                 'display_text=%s, '
-                 'driver%s>')
-                % (self.id, self.name, self.display_text,
+        return (('<CloudStackVPCOffering: name=%s, display_text=%s, '
+                 'id=%s, '
+                 'driver=%s>')
+                % (self.name, self.display_text, self.id,
                    self.driver.name))
 
 
@@ -823,7 +823,7 @@ class CloudStackRouter(object):
 
     def __repr__(self):
         return (('<CloudStackRouter: id=%s, name=%s, state=%s, '
-                 'public_ip=%s, vpc_id=%s, driver%s>')
+                 'public_ip=%s, vpc_id=%s, driver=%s>')
                 % (self.id, self.name, self.state,
                    self.public_ip, self.vpc_id, self.driver.name))
 
@@ -841,7 +841,7 @@ class CloudStackProject(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<CloudStackProject: id=%s, display_text=%s, name=%s, '
+        return (('<CloudStackProject: id=%s, name=%s, display_text=%s,'
                  'driver=%s>')
                 % (self.id, self.display_text, self.name,
                    self.driver.name))
@@ -1873,7 +1873,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return ips
 
-    def ex_allocate_public_ip(self, vpc_id=None, network_id=None, location=None):
+    def ex_allocate_public_ip(self, vpc_id=None, network_id=None,
+                              location=None):
         """
         Allocate a public IP.
 
