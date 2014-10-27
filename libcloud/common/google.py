@@ -111,7 +111,7 @@ def _get_gce_metadata(path=''):
     try:
         url = "http://metadata/computeMetadata/v1/" + path.lstrip('/')
         headers = {'Metadata-Flavor': 'Google'}
-        response = get_response_object(url, headers)
+        response = get_response_object(url, headers=headers)
         return response.status, "", response.body
     except Exception as e:
         return -1, str(e), None
