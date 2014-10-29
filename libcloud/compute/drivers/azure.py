@@ -286,7 +286,10 @@ class AzureNodeDriver(NodeDriver):
 
         data = self._parse_response(response, HostedService)
 
-        vips = [vip.address for vip in data.deployments[0].virtual_ips]
+        vips = None
+
+        if data.deployments[0].virtual_ips is not None:
+            vips = [vip.address for vip in data.deployments[0].virtual_ips]
 
         try:
             return [
@@ -735,22 +738,17 @@ class AzureNodeDriver(NodeDriver):
                 _deployment_name,
                 node.id
             )
-            path += '?comp=media'  # forces deletion of attached disks
-
-            self._perform_delete(path)
-
-            return True
         else:
             path = self._get_deployment_path_using_name(
                 ex_cloud_service_name,
                 _deployment_name
             )
 
-            path += '?comp=media'
+        path += '?comp=media'
 
-            self._perform_delete(path)
+        self._perform_delete(path)
 
-            return True
+        return True
 
     def create_cloud_service(self,
                              ex_cloud_service_name=None,
