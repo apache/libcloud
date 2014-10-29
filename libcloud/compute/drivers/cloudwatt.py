@@ -1,3 +1,4 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +17,10 @@
 Cloudwatt driver.
 """
 import sys
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 from libcloud.utils.py3 import httplib
 from libcloud.compute.types import Provider
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
@@ -91,6 +95,7 @@ class CloudwattConnection(OpenStack_1_1_Connection):
     """
     auth_url = BASE_URL
     service_region = 'fr1'
+    service_type = 'compute'
 
     def __init__(self, *args, **kwargs):
         self.ex_tenant_id = kwargs.pop('ex_tenant_id')
@@ -116,8 +121,6 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
     name = 'Cloudwatt'
     website = 'https://www.cloudwatt.com/'
     connectionCls = CloudwattConnection
-    auth_url = BASE_URL
-    service_type = 'compute'
     type = Provider.CLOUDWATT
 
     def __init__(self, key, secret, tenant_id, secure=True, tenant_name=None,
@@ -129,6 +132,7 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
         :type tenant_id: ``str``
         """
         self.ex_tenant_id = tenant_id
+        self.extra = {}
         super(CloudwattNodeDriver, self).__init__(
             key=key,
             secret=secret,
