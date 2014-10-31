@@ -180,21 +180,21 @@ There are many different things which could cause this error:
 
 1. Service catalog is empty
 2. You have not specified a value for one of the following arguments
-   ``ex_service_type``, ``ex_service_name``, ``ex_service_region`` and the
+   ``ex_force_service_type``, ``ex_force_service_name``, ``ex_force_service_region`` and the
    driver is using the default values which don't match your installation.
 3. You have specified invalid value for one or all of the following arguments:
-   ``ex_service_type``, ``ex_service_name``, ``ex_service_region``
+   ``ex_force_service_type``, ``ex_force_service_name``, ``ex_force_service_region``
 
 The best way to troubleshoot this issue is to use ``LIBCLOUD_DEBUG``
 functionality which is documented in the debugging section. This
 functionality allows you to introspect the response from the authentication
-service and you can make sure that ``ex_service_type``, ``ex_service_name``,
-``ex_service_region`` arguments match values returned in the service catalog.
+service and you can make sure that ``ex_force_service_type``, ``ex_force_service_name``,
+``ex_force_service_region`` arguments match values returned in the service catalog.
 
 If the service catalog is empty, you have two options:
 
-1. Populate the service catalog and makes sure the ``ex_service_type``,
-   ``ex_service_name`` and ``ex_service_region`` arguments match the values
+1. Populate the service catalog and makes sure the ``ex_force_service_type``,
+   ``ex_force_service_name`` and ``ex_force_service_region`` arguments match the values
    defined in the service catalog.
 2. Provide the API endpoint url using ``ex_force_base_url`` argument and skip
    the "endpoint selection using the service catalog" step all together
