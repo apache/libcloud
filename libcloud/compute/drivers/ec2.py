@@ -2192,18 +2192,18 @@ class BaseEC2NodeDriver(NodeDriver):
                     security_groups[sig]
 
         if 'ex_security_group_ids' in kwargs and 'ex_subnet' not in kwargs:
-            raise ValueError('You can only supply ex_security_group_id'
+            raise ValueError('You can only supply ex_security_group_ids'
                              ' combinated with ex_subnet')
 
-        security_group_id = kwargs.get('ex_security_group_ids', None)
+        security_group_ids = kwargs.get('ex_security_group_ids', None)
 
-        if security_group_id:
-            if not isinstance(security_group_id, (tuple, list)):
-                security_group_id = [security_group_id]
+        if security_group_ids:
+            if not isinstance(security_group_ids, (tuple, list)):
+                security_group_ids = [security_group_ids]
 
-            for sig in range(len(security_group_id)):
+            for sig in range(len(security_group_ids)):
                 params['SecurityGroupId.%d' % (sig + 1,)] =\
-                    security_group_id[sig]
+                    security_group_ids[sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
