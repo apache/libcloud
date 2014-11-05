@@ -872,7 +872,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                           ex_securitygroup=security_groups,
                           ex_security_groups=security_groups)
 
-    def test_create_node_ex_security_group_id(self):
+    def test_create_node_ex_security_group_ids(self):
         EC2MockHttp.type = 'ex_security_group_ids'
 
         image = NodeImage(id='ami-be3adfd7',
@@ -881,12 +881,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
 
-        subnet = EC2NetworkSubnet(12345, "test_subnet", "waiting")
+        subnet = EC2NetworkSubnet(12345, "test_subnet", "pending")
         security_groups = ['sg-1aa11a1a', 'sg-2bb22b2b']
 
         self.driver.create_node(name='foo', image=image, size=size,
                                 ex_security_group_ids=security_groups,
                                 ex_subnet=subnet)
+        self.assertRaises(ValueError, self.driver.create_node,
+                          name='foo', image=image, size=size,
+                          ex_security_group_ids=security_groups)
 
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id='ami-be3adfd7',
