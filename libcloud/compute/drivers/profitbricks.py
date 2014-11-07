@@ -522,7 +522,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param node: The node you wish to destroy.
         :type volume: :class:`Node`
 
-        :param ex_remove_attached_disks: True to destory all attached volumes.
+        :param ex_remove_attached_disks: True to destroy all attached volumes.
         :type ex_remove_attached_disks: : ``bool``
 
         :rtype:     : ``bool``

@@ -1,7 +1,7 @@
 Third Party Drivers
 ===================
 
-Libcloud includes most of the drivers in it's core, but some providers and
+Libcloud includes most of the drivers in its core, but some providers and
 developers for various reasons decide to release their driver as a separate
 PyPi package.
 

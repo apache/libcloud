@@ -21,7 +21,7 @@ except ImportError:
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.compute.drivers.gce import GCEConnection, GCENodeDriver
 
-# GCE doesn't actually give you a algorithm choice, but this is here simply as
+# GCE doesn't actually give you an algorithm choice, but this is here simply as
 # the closest match.  The actual algorithm is described here:
 # https://developers.google.com/compute/docs/load-balancing/#overview
 DEFAULT_ALGORITHM = Algorithm.RANDOM

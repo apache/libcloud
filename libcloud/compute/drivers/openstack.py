@@ -227,7 +227,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def get_image(self, image_id):
         """
-        Get an image based on a image_id
+        Get an image based on an image_id
 
         @inherits: :class:`NodeDriver.get_image`
 

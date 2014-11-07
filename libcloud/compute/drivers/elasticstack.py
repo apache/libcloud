@@ -224,7 +224,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return nodes
 
     def create_node(self, **kwargs):
-        """Creates a ElasticStack instance
+        """Creates an ElasticStack instance
 
         @inherits: :class:`NodeDriver.create_node`
 

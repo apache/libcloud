@@ -732,7 +732,7 @@ REGION_DETAILS = {
 
 """
 Sizes must be hardcoded because Outscale doesn't provide an API to fetch them.
-Outscale cloud instances share some names with EC2 but have differents
+Outscale cloud instances share some names with EC2 but have different
 specifications so declare them in another constant.
 """
 OUTSCALE_INSTANCE_TYPES = {
@@ -974,7 +974,7 @@ OUTSCALE_INSTANCE_TYPES = {
 
 
 """
-The function manipulating Outscale cloud regions will be overriden because
+The function manipulating Outscale cloud regions will be overridden because
 Outscale instances types are in a separate dict so also declare Outscale cloud
 regions in some other constants.
 """
@@ -2079,7 +2079,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def get_image(self, image_id):
         """
-        Get an image based on a image_id
+        Get an image based on an image_id
 
         :param image_id: Image identifier
         :type image_id: ``str``
@@ -2595,7 +2595,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type       image_location: ``str``
 
         :param      root_device_name: The device name for the root device
-                                      Required if registering a EBS-backed AMI
+                                      Required if registering an EBS-backed AMI
         :type       root_device_name: ``str``
 
         :param      block_device_mapping: A dictionary of the disk layout
@@ -3652,7 +3652,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_attach_network_interface_to_node(self, network_interface,
                                             node, device_index):
         """
-        Attatch a network interface to an instance.
+        Attach a network interface to an instance.
 
         :param      network_interface: EC2NetworkInterface instance
         :type       network_interface: :class:`EC2NetworkInterface`
@@ -3680,7 +3680,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_detach_network_interface(self, attachment_id, force=False):
         """
-        Detatch a network interface from an instance.
+        Detach a network interface from an instance.
 
         :param      attachment_id: The attachment ID associated with the
                                    interface
@@ -4159,7 +4159,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_attach_internet_gateway(self, gateway, network):
         """
-        Attach a Internet gateway to a VPC
+        Attach an Internet gateway to a VPC
 
         :param      gateway: The gateway to attach
         :type       gateway: :class:`.VPCInternetGateway`
@@ -4179,7 +4179,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_detach_internet_gateway(self, gateway, network):
         """
-        Detach a Internet gateway from a VPC
+        Detach an Internet gateway from a VPC
 
         :param      gateway: The gateway to detach
         :type       gateway: :class:`.VPCInternetGateway`
@@ -4200,7 +4200,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_list_route_tables(self, route_table_ids=None, filters=None):
         """
         Describes one or more of a VPC's route tables.
-        These are are used to determine where network traffic is directed.
+        These are used to determine where network traffic is directed.
 
         :param      route_table_ids: Return only route tables matching the
                                 provided route table IDs. If not specified,
@@ -4848,7 +4848,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_interface(self, element, name=None):
         """
-        Parse the XML element and return a EC2NetworkInterface object.
+        Parse the XML element and return an EC2NetworkInterface object.
 
         :param      name: An optional name for the interface. If not provided
                           then either tag with a key "Name" or the interface ID
@@ -5760,7 +5760,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         :type       architecture: ``str``
 
         :param      root_device_name: The device name for the root device
-                                      Required if registering a EBS-backed AMI
+                                      Required if registering an EBS-backed AMI
         :type       root_device_name: ``str``
 
         :param      block_device_mapping: A dictionary of the disk layout

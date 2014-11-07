@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-HP Public cloud driver which is esentially just a small wrapper around
+HP Public cloud driver which is essentially just a small wrapper around
 OpenStack driver.
 """
 

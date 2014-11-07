@@ -40,7 +40,7 @@ to the driver constructor
 Examples
 --------
 
-1. Connect by specfiying a host
+1. Connect by specifying a host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/compute/vsphere/connect_host.py

@@ -19,7 +19,7 @@ Outscale users can start virtual machines in the following regions:
 * (Soon) US East (New Jersey) Region
 * (Soon) Asia (Hong Kong) Region
 
-Outscale SAS is an european company: prices are in €.
+Outscale SAS is a European company: prices are in €.
 
 API Docs
 --------
