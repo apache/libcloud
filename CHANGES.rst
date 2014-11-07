@@ -175,7 +175,7 @@ Compute
   (GITHUB-369)
   [Roeland Kuipers]
 
-- Implements VPC network ACLs for CloudStack drive
+- Implements VPC network ACLs for CloudStack driver.
   (GITHUB-371)
   [Jeroen de Korte]
 
