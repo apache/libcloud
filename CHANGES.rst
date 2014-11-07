@@ -19,6 +19,10 @@ Compute
   (GITHUB-388)
   [Matt Lehman]
 
+- Add option to expunge VM on destroy in CloudStack driver.
+  (GITHUB-382)
+  [Roeland Kuipers]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
