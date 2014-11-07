@@ -1311,7 +1311,7 @@ class GCENodeDriver(NodeDriver):
                                        'default' service account email and a
                                        scope of 'devstorage.read_only'. Also
                                        accepts the aliases defined in
-                                       'gcloud cmopute'.
+                                       'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
         :return:  A Node object for the new node.
@@ -1446,7 +1446,7 @@ class GCENodeDriver(NodeDriver):
                                        'default' service account email and a
                                        scope of 'devstorage.read_only'. Also
                                        accepts the aliases defined in
-                                       'gcloud cmopute'.
+                                       'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
         :keyword  timeout: The number of seconds to wait for all nodes to be
@@ -2026,7 +2026,7 @@ class GCENodeDriver(NodeDriver):
                                        'default' service account email and a
                                        scope of 'devstorage.read_only'. Also
                                        accepts the aliases defined in
-                                       'gcloud cmopute'.
+                                       'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
         :return:  A Node object for the new node.
@@ -2126,7 +2126,7 @@ class GCENodeDriver(NodeDriver):
         :keyword auto_delete: Flag to set for the auto-delete value
         :type    auto_delete: ``bool`` (default True)
 
-        :return:  True if successfull
+        :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/setDiskAutoDelete' % (
@@ -2163,7 +2163,7 @@ class GCENodeDriver(NodeDriver):
         :param  image: Image object to delete
         :type   image: ``str`` or :class:`GCENodeImage`
 
-        :return: True if successfull
+        :return: True if successful
         :rtype:  ``bool``
         """
         if not hasattr(image, 'name'):
@@ -2186,7 +2186,7 @@ class GCENodeDriver(NodeDriver):
         :param  state: State of the image
         :type   state: ``str``
 
-        :return: True if successfull
+        :return: True if successful
         :rtype:  ``bool``
         """
         if not hasattr(image, 'name'):
@@ -2996,7 +2996,7 @@ class GCENodeDriver(NodeDriver):
                                        'default' service account email and a
                                        scope of 'devstorage.read_only'. Also
                                        accepts the aliases defined in
-                                       'gcloud cmopute'.
+                                       'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
         :return:  A tuple containing a request string and a node_data dict.

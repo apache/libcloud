@@ -62,7 +62,7 @@ class VSphereConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, url=None, timeout=None):
         if host and url:
-            raise ValueError('host and url arguments are mutally exclusive')
+            raise ValueError('host and url arguments are mutually exclusive')
 
         if host:
             host_or_url = host

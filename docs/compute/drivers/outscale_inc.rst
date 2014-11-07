@@ -19,7 +19,7 @@ Outscale users can start virtual machines in the following regions:
 * (Soon) US East (New Jersey) Region
 * (Soon) Asia (Hong Kong) Region
 
-Outscale INC is an american company: prices are in $.
+Outscale INC is an American company: prices are in $.
 
 API Docs
 --------
