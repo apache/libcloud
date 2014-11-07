@@ -65,7 +65,7 @@ Load Balancing interface for AWS.
 
 The first step in accessing ELB is to create a connection to the service.
 
-So, when you instantiate a ELB driver you need to pass the following arguments
+So, when you instantiate an ELB driver you need to pass the following arguments
 to the driver constructor:
 
 * ``key`` - Your AWS API key
@@ -138,7 +138,7 @@ attributes depending on the policy type
 .. literalinclude:: /examples/loadbalancer/elb/create_lb_policy.py
    :language: python
 
-If you get ``True``, then congratulation you have succesfully created
+If you get ``True``, then congratulation you have successfully created
 the load balancer policy.
 
 Now there are some extension methods to look on

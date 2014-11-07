@@ -2330,7 +2330,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_create_network_acllist(self, name, vpc_id, description=None):
         """
-        Create a ACL List for a network within a VPC.
+        Create an ACL List for a network within a VPC.
 
         :param name: Name of the network ACL List
         :type  name: ``string``
@@ -2366,7 +2366,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                               start_port, end_port, action=None,
                               traffic_type=None):
         """
-        Creates a ACL rule in the given network (the network has to belong to
+        Creates an ACL rule in the given network (the network has to belong to
         VPC)
 
         :param      protocol: the protocol for the ACL rule. Valid values are
@@ -2451,7 +2451,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_replace_network_acllist(self, acl_id, network_id):
         """
-        Create a ACL List for a network within a VPC.Replaces ACL associated
+        Create an ACL List for a network within a VPC.Replaces ACL associated
         with a Network or private gateway
 
         :param acl_id: the ID of the network ACL
