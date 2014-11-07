@@ -486,6 +486,11 @@ class CloudStackCommonTestCase(TestCaseMixin):
         res = node.destroy()
         self.assertTrue(res)
 
+    def test_expunge_node(self):
+        node = self.driver.list_nodes()[0]
+        res = self.driver.destroy_node(node, ex_expunge=True)
+        self.assertTrue(res)
+
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
         res = node.reboot()

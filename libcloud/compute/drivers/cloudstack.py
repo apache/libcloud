@@ -1034,15 +1034,27 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return server_params
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, ex_expunge=False):
         """
         @inherits: :class:`NodeDriver.reboot_node`
         :type node: :class:`CloudStackNode`
 
+        :keyword    ex_expunge: If true is passed, the vm is expunged
+                                immediately. False by default.
+        :type       ex_expunge: ``bool``
+
         :rtype: ``bool``
         """
+
+        args = {
+            'id': node.id,
+        }
+
+        if ex_expunge:
+            args['expunge'] = ex_expunge
+
         self._async_request(command='destroyVirtualMachine',
-                            params={'id': node.id},
+                            params=args,
                             method='GET')
         return True
 
