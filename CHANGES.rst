@@ -455,7 +455,7 @@ Compute
   (GITHUB-301)
   [Csaba Hoch]
 
-- Add extension methods for manging floating IPs (ex_get_floating_ip,
+- Add extension methods for managing floating IPs (ex_get_floating_ip,
   ex_create_floating_ip, ex_delete_floating_ip) to the Openstack 1.1 driver.
   (GITHUB-301)
   [Csaba Hoch]
@@ -518,7 +518,7 @@ Storage
   [Tomaz MUraus]
 
 - Fix a bug in the OpenStack Swift driver which prevented the driver to work
-  with installations where region names in the service catalog werent upper
+  with installations where region names in the service catalog weren't upper
   case.
   (LIBCLOUD-576, GITHUB-311)
   [Zak Estrada]
