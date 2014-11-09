@@ -29,6 +29,11 @@ Compute
   (LIBCLOUD-668, GITHUB-462)
   [Allard Hoeve]
 
+- Add the following new methods to the Linode driver: ``ex_list_volumes``,
+  ``ex_create_volume``, ``ex_destroy_volume``.
+  (LIBCLOUD-649, GITHUB-430)
+  [Wojciech Wirkijowski]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
