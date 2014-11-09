@@ -46,7 +46,7 @@ from libcloud.common.linode import (API_ROOT, LinodeException,
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.base import NodeImage
+from libcloud.compute.base import NodeImage, StorageVolume
 
 
 class LinodeNodeDriver(NodeDriver):
@@ -64,6 +64,7 @@ class LinodeNodeDriver(NodeDriver):
         list_sizes              avail.linodeplans
         list_images             avail.distributions
         list_locations          avail.datacenters
+        list_volumes            linode.disk.list
 
     For more information on the Linode API, be sure to read the reference:
 
@@ -151,6 +152,32 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
+    def create_volume(self, size, name, node, fs_type):
+        """Create disk for the given Linode
+
+            EXPERIMENTAL VERSION
+
+        """
+
+        params = {"api_action": "linode.disk.create", "LinodeID": node.id,
+            "Label": name, "Type": fs_type, "Size": size}
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        volume = data["DiskID"] 
+        
+        # Make a volume out of it and hand it back
+        params = {
+            "api_action": "linode.disk.list", "LinodeID": node.id, 
+            "DiskID": volume}
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)[0]
+
+    def list_volumes(self, node=None):
+        params = {
+            "api_action": "linode.disk.list", "LinodeID": node.id,}
+
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)
+        
     def create_node(self, **kwargs):
         """Create a new Linode, deploy a Linux distribution, and boot
 
@@ -479,6 +506,23 @@ class LinodeNodeDriver(NodeDriver):
         dcs = ", ".join([d["DATACENTERID"] for d in data])
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
+
+    def _to_volumes(self, objs):
+        """Covert returned JSON volumes into StorageVolume instances
+
+        :keyword obs: ``list`` of JSON dictionaries representing the
+        StorageVolumes
+        :type objs: ``list``
+        :return: ``list`` if :class:`StorageVolume`s"""
+
+        volumes = {}
+        for o in objs:
+            vid = o["DISKID"]
+            volumes[vid] = vol = StorageVolume(id=vid, name=o["LABEL"],
+                                            size=int(o["SIZE"]),
+                                            driver=self.connection.driver)
+            vol.extra = copy(o)
+        return list(volumes.values()) 
 
     def _to_nodes(self, objs):
         """Convert returned JSON Linodes into Node instances
