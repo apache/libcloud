@@ -11,6 +11,10 @@ Compute
   (LIBCLOUD-632, GITHUB-385)
   [Borja Martin]
 
+- Add new `us-east-2` and `us-east-3` region to the Joyent driver.
+  (GITHUB-386)
+  [ZuluPro]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
