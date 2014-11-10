@@ -46,7 +46,12 @@ NODE_STATE_MAP = {
     'deleted': NodeState.TERMINATED
 }
 
-VALID_REGIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
+VALID_REGIONS = [
+    'us-east-1', 'us-east-2', 'us-east-3',
+    'us-west-1',
+    'us-sw-1',
+    'eu-ams-1'
+]
 DEFAULT_REGION = 'us-east-1'
 
 
