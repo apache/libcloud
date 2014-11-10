@@ -2548,7 +2548,8 @@ class GCENodeDriver(NodeDriver):
                 image = self._match_images('coreos-cloud', partial_name)
             elif partial_name.startswith('opensuse'):
                 image = self._match_images('opensuse-cloud', partial_name)
-
+            elif partial_name.startswith('ubuntu'):
+                image = self._match_images('ubuntu-os-cloud', partial_name)
         return image
 
     def ex_get_network(self, name):

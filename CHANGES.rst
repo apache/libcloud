@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+Compute
+~~~~~~~
+
+- Add missing ``ubuntu-os-cloud`` images to the GCE driver.
+  (LIBCLOUD-632, GITHUB-385)
+  [Borja Martin]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
