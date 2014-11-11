@@ -64,6 +64,7 @@ Provider                              list volumes create volume destroy volume 
 `Voxel VoxCLOUD`_                     no           no            no             no            no            no             no             
 `vps.net`_                            no           no            no             no            no            no             no             
 `VMware vSphere`_                     no           no            no             no            no            no             no             
+`Vultr`_                              no           no            no             no            no            no             no             
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -129,3 +130,4 @@ Provider                              list volumes create volume destroy volume 
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
 .. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
+.. _`Vultr`: https://www.vultr.com

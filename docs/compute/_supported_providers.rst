@@ -64,6 +64,7 @@ Provider                              Documentation                             
 `Voxel VoxCLOUD`_                                                                  VOXEL               :mod:`libcloud.compute.drivers.voxel`          :class:`VoxelNodeDriver`            
 `vps.net`_                                                                         VPSNET              :mod:`libcloud.compute.drivers.vpsnet`         :class:`VPSNetNodeDriver`           
 `VMware vSphere`_                     :doc:`Click </compute/drivers/vsphere>`      VSPHERE             :mod:`libcloud.compute.drivers.vsphere`        :class:`VSphereNodeDriver`          
+`Vultr`_                              :doc:`Click </compute/drivers/vultr>`        VULTR               :mod:`libcloud.compute.drivers.vultr`          :class:`VultrNodeDriver`            
 ===================================== ============================================ =================== ============================================== ====================================
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -129,3 +130,4 @@ Provider                              Documentation                             
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
 .. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
+.. _`Vultr`: https://www.vultr.com
