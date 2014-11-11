@@ -1139,7 +1139,7 @@ class NodeDriver(BaseDriver):
         :type source_region: ``str``
 
         :param node_image: NodeImage to copy.
-        :type node_image: :class`.NodeImage`:
+        :type node_image: :class:`.NodeImage`:
 
         :param name: name for new image.
         :type name: ``str``
@@ -1228,7 +1228,7 @@ class NodeDriver(BaseDriver):
         Delete an existing key pair.
 
         :param key_pair: Key pair object.
-        :type key_pair: :class`.KeyPair`
+        :type key_pair: :class:`.KeyPair`
         """
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')

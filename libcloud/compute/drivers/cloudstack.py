@@ -1864,7 +1864,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         Delete an existing key pair.
 
         :param key_pair: Key pair object.
-        :type key_pair: :class`libcloud.compute.base.KeyPair`
+        :type key_pair: :class:`libcloud.compute.base.KeyPair`
 
         :param     projectid: The project associated with keypair
         :type      projectid: ``str``
