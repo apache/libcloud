@@ -20,8 +20,9 @@ Google Compute Engine features:
 
 Connecting to Google Compute Engine
 -----------------------------------
+
 Libcloud supports three different methods for authenticating:
-`Service Account`_ and `Installed Application`_ and `Internal Authentication_`
+`Service Account`_, `Installed Application`_ and `Internal Authentication`_.
 
 Which one should I use?
 
@@ -48,11 +49,11 @@ Service Account
 
 To set up Service Account authentication:
 
-1. Follow the instructions at 
+1. Follow the instructions at
    https://developers.google.com/console/help/new/#serviceaccounts
    to create and download a PKCS-12 private key.
 2. Convert the PKCS-12 private key to a .pem file using the following:
-   ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts 
+   ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
    | openssl rsa -out PRIV.pem``
 3. Move the .pem file to a safe location
 4. You will need the Service Account's "Email Address" and the path to the
@@ -78,8 +79,8 @@ Internal Authentication
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 To use GCE's internal metadata service to authenticate, simply specify
-your Project ID and let the driver handle the rest.  See the `Examples`_
-below for a sample.
+your Project ID and let the driver handle the rest. See the
+`5. Using GCE Internal Authorization`_ example bellow.
 
 Accessing Google Cloud services from your Libcloud nodes
 --------------------------------------------------------
