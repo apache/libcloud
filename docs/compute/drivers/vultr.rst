@@ -3,6 +3,12 @@ Vultr Compute Driver Documentation
 
 `Vultr`_ is a public cloud provider based in mulitiple counties.
 
+.. figure:: /_static/images/provider_logos/vultr.png
+    :align: center
+    :width: 200
+    :target: http://www.vultr.com
+
+
 How to get API Key
 ------------------
 
