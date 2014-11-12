@@ -146,7 +146,7 @@ def convert_to_markdown(contributors_map, include_tickets=False):
         else:
             line = '* %(name)s' % {'name': name}
 
-        result.append(line)
+        result.append(line.strip())
 
     result = '\n'.join(result)
     return result
