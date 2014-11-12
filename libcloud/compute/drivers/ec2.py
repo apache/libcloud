@@ -448,7 +448,10 @@ REGION_DETAILS = {
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
-            'r3.8xlarge'
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
         ]
     },
     # US West (Oregon) Region

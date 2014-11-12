@@ -15,6 +15,10 @@ Compute
   (GITHUB-386)
   [ZuluPro]
 
+- Add missing t2. instance types to the us-west-1 region in the EC2 driver.
+  (GITHUB-388)
+  [Matt Lehman]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
