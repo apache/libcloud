@@ -23,6 +23,10 @@ Compute
   (GITHUB-382)
   [Roeland Kuipers]
 
+- Add extra attribute in list_images for CloudStack driver.
+  (GITHUB-389)
+  [Loic Lambiel]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 

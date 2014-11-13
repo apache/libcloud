@@ -982,6 +982,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra={
                     'hypervisor': img['hypervisor'],
                     'format': img['format'],
+                    'size': img['size'],
                     'os': img['ostypename'],
                     'displaytext': img['displaytext']}))
         return images
