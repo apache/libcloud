@@ -937,7 +937,8 @@ class GCENodeDriver(NodeDriver):
         list_zones = [self._to_zone(z) for z in response['items']]
         return list_zones
 
-    def ex_create_address(self, name, region=None, address=None):
+    def ex_create_address(self, name, region=None, address=None,
+                          description=None):
         """
         Create a static address in a region.
 
@@ -951,6 +952,9 @@ class GCENodeDriver(NodeDriver):
                            (e.g. 'xxx.xxx.xxx.xxx')
         :type     address: ``str`` or ``None``
 
+        :keyword  description: Optional descriptive comment.
+        :type     description: ``str`` or ``None``
+
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
         """
@@ -963,6 +967,8 @@ class GCENodeDriver(NodeDriver):
         address_data = {'name': name}
         if address:
             address_data['address'] = address
+        if description:
+            address_data['description'] = description
         request = '/regions/%s/addresses' % (region.name)
         self.connection.async_request(request, method='POST',
                                       data=address_data)
@@ -2145,11 +2151,14 @@ class GCENodeDriver(NodeDriver):
         Destroy a static address.
 
         :param  address: Address object to destroy
-        :type   address: :class:`GCEAddress`
+        :type   address: ``str`` or :class:`GCEAddress`
 
         :return:  True if successful
         :rtype:   ``bool``
         """
+        if not hasattr(address, 'name'):
+            address = self.ex_get_address(address)
+
         request = '/regions/%s/addresses/%s' % (address.region.name,
                                                 address.name)
 
@@ -3285,6 +3294,9 @@ class GCENodeDriver(NodeDriver):
 
         extra['selfLink'] = address.get('selfLink')
         extra['status'] = address.get('status')
+        extra['description'] = address.get('description', None)
+        if address.get('users', None) is not None:
+            extra['users'] = address.get('users')
         extra['creationTimestamp'] = address.get('creationTimestamp')
 
         return GCEAddress(id=address['id'], name=address['name'],
