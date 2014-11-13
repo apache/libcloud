@@ -1,0 +1,112 @@
+{
+ "kind": "compute#diskTypeAggregatedList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/aggregated/diskTypes",
+ "items": {
+  "zones/us-central1-a": {
+   "diskTypes": [
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+     "name": "pd-ssd",
+     "description": "SSD Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-ssd",
+     "defaultDiskSizeGb": "100"
+    },
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+     "name": "local-ssd",
+     "description": "Local SSD",
+     "validDiskSize": "375GB-375",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/local-ssd",
+     "defaultDiskSizeGb": "375"
+    },
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.530-07:00",
+     "name": "pd-standard",
+     "description": "Standard Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-standard",
+     "defaultDiskSizeGb": "500"
+    }
+   ]
+  },
+  "zones/us-central1-b": {
+   "diskTypes": [
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+     "name": "pd-ssd",
+     "description": "SSD Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/diskTypes/pd-ssd",
+     "defaultDiskSizeGb": "100"
+    },
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.530-07:00",
+     "name": "pd-standard",
+     "description": "Standard Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/diskTypes/pd-standard",
+     "defaultDiskSizeGb": "500"
+    }
+   ]
+  },
+  "zones/europe-west1-a": {
+   "diskTypes": [
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+     "name": "pd-ssd",
+     "description": "SSD Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/diskTypes/pd-ssd",
+     "defaultDiskSizeGb": "100"
+    },
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.530-07:00",
+     "name": "pd-standard",
+     "description": "Standard Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/diskTypes/pd-standard",
+     "defaultDiskSizeGb": "500"
+    }
+   ]
+  },
+  "zones/europe-west1-b": {
+   "diskTypes": [
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+     "name": "pd-ssd",
+     "description": "SSD Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b/diskTypes/pd-ssd",
+     "defaultDiskSizeGb": "100"
+    },
+    {
+     "kind": "compute#diskType",
+     "creationTimestamp": "2014-06-02T11:07:28.530-07:00",
+     "name": "pd-standard",
+     "description": "Standard Persistent Disk",
+     "validDiskSize": "10GB-10240GB",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b",
+     "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b/diskTypes/pd-standard",
+     "defaultDiskSizeGb": "500"
+    }
+   ]
+  }
+ }
+}

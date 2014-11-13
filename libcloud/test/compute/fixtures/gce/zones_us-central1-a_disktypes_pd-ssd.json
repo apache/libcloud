@@ -1,0 +1,10 @@
+{
+ "kind": "compute#diskType",
+ "creationTimestamp": "2014-06-02T11:07:28.529-07:00",
+ "name": "pd-ssd",
+ "description": "SSD Persistent Disk",
+ "validDiskSize": "10GB-10240GB",
+ "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+ "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-ssd",
+ "defaultDiskSizeGb": "100"
+}

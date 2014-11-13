@@ -201,6 +201,19 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         names = [s.name for s in sizes_all]
         self.assertEqual(names.count('n1-standard-1'), 5)
 
+    def test_list_disktypes(self):
+        disktypes = self.driver.ex_list_disktypes()
+        disktypes_all = self.driver.ex_list_disktypes('all')
+        disktypes_uc1a = self.driver.ex_list_disktypes('us-central1-a')
+        self.assertEqual(len(disktypes), 2)
+        self.assertEqual(len(disktypes_all), 9)
+        self.assertEqual(len(disktypes_uc1a), 2)
+        self.assertEqual(disktypes[0].name, 'pd-ssd')
+        self.assertEqual(disktypes_uc1a[0].name, 'pd-ssd')
+        names = [v.name for v in disktypes_all]
+        self.assertTrue('pd-standard' in names)
+        self.assertTrue('local-ssd' in names)
+
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
         volumes_all = self.driver.list_volumes('all')
@@ -701,6 +714,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(volume.extra['status'], 'READY')
         self.assertEqual(volume.extra['type'], 'pd-ssd')
 
+    def test_ex_get_disktype(self):
+        disktype_name = 'pd-ssd'
+        disktype_zone = 'us-central1-a'
+        disktype = self.driver.ex_get_disktype(disktype_name, disktype_zone)
+        self.assertEqual(disktype.name, disktype_name)
+        self.assertEqual(disktype.zone.name, disktype_zone)
+        self.assertEqual(disktype.extra['description'], 'SSD Persistent Disk')
+        self.assertEqual(disktype.extra['valid_disk_size'], '10GB-10240GB')
+        self.assertEqual(disktype.extra['default_disk_size_gb'], '100')
+
     def test_ex_get_zone(self):
         zone_name = 'us-central1-b'
         zone = self.driver.ex_get_zone(zone_name)
@@ -734,6 +757,10 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _aggregated_addresses(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_addresses.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _aggregated_diskTypes(self, method, url, body, headers):
+        body = self.fixtures.load('aggregated_disktypes.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_disks(self, method, url, body, headers):
@@ -1183,6 +1210,16 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _zones(self, method, url, body, headers):
         body = self.fixtures.load('zones.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_diskTypes(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('zones_us-central1-a_diskTypes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_diskTypes_pd_ssd(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_ssd.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks(self, method, url, body, headers):

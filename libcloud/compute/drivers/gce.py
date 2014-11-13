@@ -26,6 +26,7 @@ from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
 from libcloud.common.google import ResourceNotFoundError
 from libcloud.common.google import ResourceExistsError
+from libcloud.common.types import ProviderError
 
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
@@ -74,6 +75,24 @@ class GCEConnection(GoogleBaseConnection):
                                             **kwargs)
         self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                          project)
+
+
+class GCEDiskType(UuidMixin):
+    """A GCE DiskType resource."""
+    def __init__(self, id, name, zone, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.zone = zone
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        raise ProviderError("Can not destroy a DiskType resource.")
+
+    def __repr__(self):
+        return '<GCEDiskType id="%s" name="%s" zone="%s">' % (
+            self.id, self.name, self.zone)
 
 
 class GCEAddress(UuidMixin):
@@ -620,6 +639,38 @@ class GCENodeDriver(NodeDriver):
             self.region = self._get_region_from_zone(self.zone)
         else:
             self.region = None
+
+    def ex_list_disktypes(self, zone=None):
+        """
+        Return a list of DiskTypes for a zone or all.
+
+        :keyword  zone: The zone to return DiskTypes from. For example:
+                        'us-central1-a'.  If None, will return DiskTypes from
+                        self.zone.  If 'all', will return all DiskTypes.
+        :type     zone: ``str`` or ``None``
+
+        :return: A list of static DiskType objects.
+        :rtype: ``list`` of :class:`GCEDiskType`
+        """
+        list_disktypes = []
+        zone = self._set_zone(zone)
+        if zone is None:
+            request = '/aggregated/diskTypes'
+        else:
+            request = '/zones/%s/diskTypes' % (zone.name)
+        response = self.connection.request(request, method='GET').object
+
+        if 'items' in response:
+            # The aggregated result returns dictionaries for each region
+            if zone is None:
+                for v in response['items'].values():
+                    zone_disktypes = [self._to_disktype(a) for a in
+                                      v.get('diskTypes', [])]
+                    list_disktypes.extend(zone_disktypes)
+            else:
+                list_disktypes = [self._to_disktype(a) for a in
+                                  response['items']]
+        return list_disktypes
 
     def ex_list_addresses(self, region=None):
         """
@@ -2446,6 +2497,25 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_get_disktype(self, name, zone=None):
+        """
+        Return a DiskType object based on a name and optional zone.
+
+        :param  name: The name of the DiskType
+        :type   name: ``str``
+
+        :keyword  zone: The zone to search for the DiskType in (set to
+                          'all' to search all zones)
+        :type     zone: ``str`` :class:`GCEZone` or ``None``
+
+        :return:  A DiskType object for the name
+        :rtype:   :class:`GCEDiskType`
+        """
+        zone = self._set_zone(zone)
+        request = '/zones/%s/diskTypes/%s' % (zone.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_disktype(response)
+
     def ex_get_address(self, name, region=None):
         """
         Return an Address object based on an address name and optional region.
@@ -3268,6 +3338,30 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/disks' % (location.name)
 
         return request, volume_data, params
+
+    def _to_disktype(self, disktype):
+        """
+        Return a DiskType object from the json-response dictionary.
+
+        :param  disktype: The dictionary describing the disktype.
+        :type   disktype: ``dict``
+
+        :return: DiskType object
+        :rtype: :class:`GCEDiskType`
+        """
+        extra = {}
+
+        zone = self.ex_get_zone(disktype['zone'])
+
+        extra['selfLink'] = disktype.get('selfLink')
+        extra['creationTimestamp'] = disktype.get('creationTimestamp')
+        extra['description'] = disktype.get('description')
+        extra['valid_disk_size'] = disktype.get('validDiskSize')
+        extra['default_disk_size_gb'] = disktype.get('defaultDiskSizeGb')
+        type_id = "%s:%s" % (zone.name, disktype['name'])
+
+        return GCEDiskType(id=type_id, name=disktype['name'],
+                           zone=zone, driver=self, extra=extra)
 
     def _to_address(self, address):
         """
