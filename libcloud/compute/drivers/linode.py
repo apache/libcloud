@@ -152,32 +152,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
-    def create_volume(self, size, name, node, fs_type):
-        """Create disk for the given Linode
-
-            EXPERIMENTAL VERSION
-
-        """
-
-        params = {"api_action": "linode.disk.create", "LinodeID": node.id,
-            "Label": name, "Type": fs_type, "Size": size}
-        data = self.connection.request(API_ROOT, params=params).objects[0]
-        volume = data["DiskID"] 
-        
-        # Make a volume out of it and hand it back
-        params = {
-            "api_action": "linode.disk.list", "LinodeID": node.id, 
-            "DiskID": volume}
-        data = self.connection.request(API_ROOT, params=params).objects[0]
-        return self._to_volumes(data)[0]
-
-    def list_volumes(self, node=None):
-        params = {
-            "api_action": "linode.disk.list", "LinodeID": node.id,}
-
-        data = self.connection.request(API_ROOT, params=params).objects[0]
-        return self._to_volumes(data)
-        
+       
     def create_node(self, **kwargs):
         """Create a new Linode, deploy a Linux distribution, and boot
 
@@ -507,6 +482,32 @@ class LinodeNodeDriver(NodeDriver):
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
 
+    def ex_create_volume(self, size, name, node, fs_type):
+        """Create disk for the given Linode
+
+            EXPERIMENTAL VERSION
+
+        """
+
+        params = {"api_action": "linode.disk.create", "LinodeID": node.id,
+            "Label": name, "Type": fs_type, "Size": size}
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        volume = data["DiskID"] 
+        # Make a volume out of it and hand it back
+        params = {
+            "api_action": "linode.disk.list", "LinodeID": node.id, 
+            "DiskID": volume}
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)[0]
+
+    def ex_list_volumes(self, node=None):
+        params = {
+            "api_action": "linode.disk.list", "LinodeID": node.id,}
+
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)
+ 
+
     def _to_volumes(self, objs):
         """Covert returned JSON volumes into StorageVolume instances
 
@@ -590,3 +591,6 @@ def _izip_longest(*args, **kwds):
             yield tup
     except IndexError:
         pass
+
+
+
