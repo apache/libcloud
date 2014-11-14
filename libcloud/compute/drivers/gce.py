@@ -737,9 +737,13 @@ class GCENodeDriver(NodeDriver):
             new_request_path = save_request_path.replace(self.project,
                                                          ex_project)
             self.connection.request_path = new_request_path
-            response = self.connection.request(request, method='GET').object
+            try:
+                response = self.connection.request(request, method='GET').object
+            except:
+                response = {}
             # Restore the connection request_path
-            self.connection.request_path = save_request_path
+            finally:
+                self.connection.request_path = save_request_path
         list_images = [self._to_node_image(i) for i in
                        response.get('items', [])]
         return list_images
