@@ -1935,7 +1935,7 @@ class EC2SubnetAssociation(object):
 
     def __init__(self, id, route_table_id, subnet_id, main=False):
         """
-        :param      id: The ID of the subent association in the VPC.
+        :param      id: The ID of the subnet association in the VPC.
         :type       id: ``str``
 
         :param      route_table_id: The ID of a route table in the VPC.
