@@ -190,6 +190,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(snapshots), 2)
         self.assertEqual(snapshots[0].name, 'lcsnapshot')
 
+    def test_ex_list_targetinstances(self):
+        target_instances = self.driver.ex_list_targetinstances()
+        target_instances_all = self.driver.ex_list_targetinstances('all')
+        target_instances_uc1 = self.driver.ex_list_targetinstances('us-central1-a')
+        self.assertEqual(len(target_instances), 2)
+        self.assertEqual(len(target_instances_all), 2)
+        self.assertEqual(len(target_instances_uc1), 2)
+        self.assertEqual(target_instances[0].name, 'hello')
+        self.assertEqual(target_instances_uc1[0].name, 'hello')
+        names = [t.name for t in target_instances_all]
+        self.assertTrue('lctargetinstance' in names)
+
     def test_ex_list_targetpools(self):
         target_pools = self.driver.ex_list_targetpools()
         target_pools_all = self.driver.ex_list_targetpools('all')
@@ -428,6 +440,15 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(nodes[0].name, '%s-000' % base_name)
         self.assertEqual(nodes[1].name, '%s-001' % base_name)
 
+    def test_ex_create_targetinstance(self):
+        targetinstance_name = 'lctargetinstance'
+        zone = 'us-central1-a'
+        node = self.driver.ex_get_node('node-name', zone)
+        targetinstance = self.driver.ex_create_targetinstance(
+            targetinstance_name, zone=zone, node=node)
+        self.assertEqual(targetinstance.name, targetinstance_name)
+        self.assertEqual(targetinstance.zone.name, zone)
+
     def test_ex_create_targetpool(self):
         targetpool_name = 'lctargetpool'
         region = 'us-central1'
@@ -627,6 +648,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         for d in destroyed:
             self.assertTrue(d)
 
+    def test_destroy_targetinstance(self):
+        targetinstance = self.driver.ex_get_targetinstance('lctargetinstance')
+        self.assertEqual(targetinstance.name, 'lctargetinstance')
+        destroyed = targetinstance.destroy()
+        self.assertTrue(destroyed)
+
     def test_destroy_targetpool(self):
         targetpool = self.driver.ex_get_targetpool('lctargetpool')
         destroyed = targetpool.destroy()
@@ -763,6 +790,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(size.ram, 3840)
         self.assertEqual(size.extra['guestCpus'], 1)
 
+    def test_ex_get_targetinstance(self):
+        targetinstance_name = 'lctargetinstance'
+        targetinstance = self.driver.ex_get_targetinstance(targetinstance_name)
+        self.assertEqual(targetinstance.name, targetinstance_name)
+        self.assertEqual(targetinstance.zone.name, 'us-central1-a')
+
     def test_ex_get_targetpool(self):
         targetpool_name = 'lctargetpool'
         targetpool = self.driver.ex_get_targetpool(targetpool_name)
@@ -848,6 +881,10 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _aggregated_machineTypes(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_machineTypes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _aggregated_targetInstances(self, method, url, body, headers):
+        body = self.fixtures.load('aggregated_targetInstances.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_targetPools(self, method, url, body, headers):
@@ -1087,10 +1124,22 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_regions_us-central1_forwardingRules_lcforwardingrule_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_targetInstances_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_operations_operation_regions_us_central1_targetPools_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_regions_us-central1_targetPools_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_lctargetinstance_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_targetInstances_lctargetinstance_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_delete(
@@ -1279,12 +1328,31 @@ class GCEMockHttp(MockHttpTestCase):
                 'regions_us-central1_forwardingRules_lcforwardingrule.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_targetInstances(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load(
+                'zones_us-central1-a_targetInstances_post.json')
+        else:
+            body = self.fixtures.load('zones_us-central1-a_targetInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_targetPools(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(
                 'regions_us-central1_targetPools_post.json')
         else:
             body = self.fixtures.load('regions_us-central1_targetPools.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_targetInstances_lctargetinstance(self, method,
+                                                              url, body,
+                                                              headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'zones_us-central1-a_targetInstances_lctargetinstance_delete.json')
+        else:
+            body = self.fixtures.load(
+                'zones_us-central1-a_targetInstances_lctargetinstance.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_lctargetpool(self, method, url,

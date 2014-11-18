@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Adding TargetInstances resource to GCE driver.
+  (GITHUB-393)
+  [Eric Johnson]
+
 - Adding DiskTypes resource to GCE driver.
   (GITHUB-391)
   [Eric Johnson]

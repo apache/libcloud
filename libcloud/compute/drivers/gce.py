@@ -392,6 +392,31 @@ class GCESnapshot(VolumeSnapshot):
         super(GCESnapshot, self).__init__(id, driver, size, extra)
 
 
+class GCETargetInstance(UuidMixin):
+    def __init__(self, id, name, zone, node, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.zone = zone
+        self.node = node
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        """
+        Destroy this Target Instance
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_targetinstance(targetinstance=self)
+
+    def __repr__(self):
+        return '<GCETargetInstance id="%s" name="%s" zone="%s" node="%s">' % (
+            self.id, self.name, self.zone.name,
+            (hasattr(self.node, 'name') and self.node.name or self.node))
+
+
 class GCETargetPool(UuidMixin):
     def __init__(self, id, name, region, healthchecks, nodes, driver,
                  extra=None):
@@ -978,6 +1003,33 @@ class GCENodeDriver(NodeDriver):
         list_snapshots = [self._to_snapshot(s) for s in
                           response.get('items', [])]
         return list_snapshots
+
+    def ex_list_targetinstances(self, zone=None):
+        """
+        Return the list of target instances.
+
+        :return:  A list of target instance objects
+        :rtype:   ``list`` of :class:`GCETargetInstance`
+        """
+        list_targetinstances = []
+        zone = self._set_zone(zone)
+        if zone is None:
+            request = '/aggregated/targetInstances'
+        else:
+            request = '/zones/%s/targetInstances' % (zone.name)
+        response = self.connection.request(request, method='GET').object
+
+        if 'items' in response:
+            # The aggregated result returns dictionaries for each region
+            if zone is None:
+                for v in response['items'].values():
+                    zone_targetinstances = [self._to_targetinstance(t) for t in
+                                            v.get('targetInstances', [])]
+                    list_targetinstances.extend(zone_targetinstances)
+            else:
+                list_targetinstances = [self._to_targetinstance(t) for t in
+                                        response['items']]
+        return list_targetinstances
 
     def ex_list_targetpools(self, region=None):
         """
@@ -1720,6 +1772,49 @@ class GCENodeDriver(NodeDriver):
         for status in status_list:
             node_list.append(status['node'])
         return node_list
+
+    def ex_create_targetinstance(self, name, zone=None, node=None,
+                                 description=None, nat_policy="NO_NAT"):
+        """
+        Create a target instance.
+
+        :param  name: Name of target instance
+        :type   name: ``str``
+
+        :keyword  region: Zone to create the target pool in. Defaults to
+                          self.zone
+        :type     region: ``str`` or :class:`GCEZone` or ``None``
+
+        :keyword  node: The actual instance to be used as the traffic target.
+        :type     node: ``str`` or :class:`Node`
+
+        :keyword  description: A text description for the target instance
+        :type     description: ``str`` or ``None``
+
+        :keyword  nat_policy: The NAT option for how IPs are NAT'd to the node.
+        :type     nat_policy: ``str``
+
+        :return:  Target Instance object
+        :rtype:   :class:`GCETargetInstance`
+        """
+        zone = zone or self.zone
+        targetinstance_data = {}
+        targetinstance_data['name'] = name
+        if not hasattr(zone, 'name'):
+            zone = self.ex_get_zone(zone)
+        targetinstance_data['zone'] = zone.extra['selfLink']
+        if node is not None:
+            if not hasattr(node, 'name'):
+                node = self.ex_get_node(node, zone)
+            targetinstance_data['instance'] = node.extra['selfLink']
+        targetinstance_data['natPolicy'] = nat_policy
+        if description:
+            targetinstance_data['description'] = description
+
+        request = '/zones/%s/targetInstances' % (zone.name)
+        self.connection.async_request(request, method='POST',
+                                      data=targetinstance_data)
+        return self.ex_get_targetinstance(name, zone)
 
     def ex_create_targetpool(self, name, region=None, healthchecks=None,
                              nodes=None, session_affinity=None):
@@ -2646,6 +2741,21 @@ class GCENodeDriver(NodeDriver):
             success.append(s)
         return success
 
+    def ex_destroy_targetinstance(self, targetinstance):
+        """
+        Destroy a target instance.
+
+        :param  targetinstance: TargetInstance object to destroy
+        :type   targetinstance: :class:`GCETargetInstance`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/targetInstances/%s' % (targetinstance.zone.name,
+                                                    targetinstance.name)
+        self.connection.async_request(request, method='DELETE')
+        return True
+
     def ex_destroy_targetpool(self, targetpool):
         """
         Destroy a target pool.
@@ -2957,6 +3067,26 @@ class GCENodeDriver(NodeDriver):
         # Otherwise, look up region information
         response = self.connection.request(request, method='GET').object
         return self._to_region(response)
+
+    def ex_get_targetinstance(self, name, zone=None):
+        """
+        Return a TargetInstance object based on a name and optional zone.
+
+        :param  name: The name of the target instance
+        :type   name: ``str``
+
+        :keyword  zone: The zone to search for the target instance in (set to
+                          'all' to search all zones).
+        :type     zone: ``str`` or :class:`GCEZone` or ``None``
+
+        :return:  A TargetInstance object for the instance
+        :rtype:   :class:`GCETargetInstance`
+        """
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'targetInstances', res_name='TargetInstance')
+        request = '/zones/%s/targetInstances/%s' % (zone.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_targetinstance(response)
 
     def ex_get_targetpool(self, name, region=None):
         """
@@ -3970,6 +4100,33 @@ class GCENodeDriver(NodeDriver):
 
         return StorageVolume(id=volume['id'], name=volume['name'],
                              size=volume['sizeGb'], driver=self, extra=extra)
+
+    def _to_targetinstance(self, targetinstance):
+        """
+        Return a Target Instance object from the json-response dictionary.
+
+        :param  targetinstance: The dictionary describing the target instance.
+        :type   targetinstance: ``dict``
+
+        :return: Target Instance object
+        :rtype:  :class:`GCETargetInstance`
+        """
+        node = None
+        extra = {}
+        extra['selfLink'] = targetinstance.get('selfLink')
+        extra['description'] = targetinstance.get('description')
+        extra['natPolicy'] = targetinstance.get('natPolicy')
+        zone = self.ex_get_zone(targetinstance['zone'])
+        if 'instance' in targetinstance:
+            node_name = targetinstance['instance'].split('/')[-1]
+            try:
+                node = self.ex_get_node(node_name, zone)
+            except ResourceNotFoundError:
+                node = targetinstance['instance']
+
+        return GCETargetInstance(id=targetinstance['id'],
+                                 name=targetinstance['name'], zone=zone,
+                                 node=node, driver=self, extra=extra)
 
     def _to_targetpool(self, targetpool):
         """
