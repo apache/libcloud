@@ -110,10 +110,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         address_list = self.driver.ex_list_addresses()
         address_list_all = self.driver.ex_list_addresses('all')
         address_list_uc1 = self.driver.ex_list_addresses('us-central1')
+        address_list_global = self.driver.ex_list_addresses('global')
         self.assertEqual(len(address_list), 2)
-        self.assertEqual(len(address_list_all), 4)
+        self.assertEqual(len(address_list_all), 5)
+        self.assertEqual(len(address_list_global), 1)
         self.assertEqual(address_list[0].name, 'libcloud-demo-address')
         self.assertEqual(address_list_uc1[0].name, 'libcloud-demo-address')
+        self.assertEqual(address_list_global[0].name, 'lcaddressglobal')
         names = [a.name for a in address_list_all]
         self.assertTrue('libcloud-demo-address' in names)
 
@@ -219,6 +222,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         zones = self.driver.ex_list_zones()
         self.assertEqual(len(zones), 5)
         self.assertEqual(zones[0].name, 'europe-west1-a')
+
+    def test_ex_create_address_global(self):
+        address_name = 'lcaddressglobal'
+        address = self.driver.ex_create_address(address_name, 'global')
+        self.assertTrue(isinstance(address, GCEAddress))
+        self.assertEqual(address.name, address_name)
+        self.assertEqual(address.region, 'global')
 
     def test_ex_create_address(self):
         address_name = 'lcaddress'
@@ -517,6 +527,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         detach = self.driver.detach_volume(volume, node)
         self.assertTrue(detach)
 
+    def test_ex_destroy_address_global(self):
+        address = self.driver.ex_get_address('lcaddressglobal', 'global')
+        self.assertTrue(address.name, 'lcaddressglobal')
+        self.assertTrue(address.region, 'global')
+        destroyed = address.destroy()
+        self.assertTrue(destroyed)
+
     def test_ex_destroy_address(self):
         address = self.driver.ex_get_address('lcaddress')
         destroyed = address.destroy()
@@ -595,6 +612,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         snapshot = self.driver.ex_get_snapshot('lcsnapshot')
         destroyed = snapshot.destroy()
         self.assertTrue(destroyed)
+
+    def test_ex_get_address_global(self):
+        address_name = 'lcaddressglobal'
+        address = self.driver.ex_get_address(address_name, 'global')
+        self.assertEqual(address.name, address_name)
+        self.assertEqual(address.address, '173.99.99.99')
+        self.assertEqual(address.region, 'global')
+        self.assertEqual(address.extra['status'], 'RESERVED')
 
     def test_ex_get_address(self):
         address_name = 'lcaddress'
@@ -1056,10 +1081,22 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_global_image_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_global_addresses_lcaddressglobal_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_addresses_lcaddressglobal_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_regions_us-central1_addresses_lcaddress_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_addresses_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_addresses_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_post(
@@ -1213,12 +1250,28 @@ class GCEMockHttp(MockHttpTestCase):
             'regions.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_addresses(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load(
+                'global_addresses_post.json')
+        else:
+            body = self.fixtures.load('global_addresses.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_addresses(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(
                 'regions_us-central1_addresses_post.json')
         else:
             body = self.fixtures.load('regions_us-central1_addresses.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_addresses_lcaddressglobal(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'global_addresses_lcaddressglobal_delete.json')
+        else:
+            body = self.fixtures.load('global_addresses_lcaddressglobal.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_addresses_lcaddress(self, method, url, body,
