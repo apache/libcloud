@@ -17,11 +17,12 @@ Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
 import os
-import re
 import socket
 import ssl
 import base64
 import warnings
+
+from backports.ssl_match_hostname import match_hostname, CertificateError
 
 import libcloud.security
 from libcloud.utils.py3 import b
@@ -277,55 +278,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                                     ca_certs=self.ca_cert,
                                     ssl_version=ssl.PROTOCOL_TLSv1)
         cert = self.sock.getpeercert()
-        if not self._verify_hostname(self.host, cert):
+        try:
+            match_hostname(cert, self.host)
+        except CertificateError:
             raise ssl.SSLError('Failed to verify hostname')
-
-    def _verify_hostname(self, hostname, cert):
-        """
-        Verify hostname against peer cert
-
-        Check both commonName and entries in subjectAltName, using a
-        rudimentary glob to dns regex check to find matches
-        """
-        common_name = self._get_common_name(cert)
-        alt_names = self._get_subject_alt_names(cert)
-
-        # replace * with alphanumeric and dash
-        # replace . with literal .
-        # http://www.dns.net/dnsrd/trick.html#legal-hostnames
-        valid_patterns = [
-            re.compile('^' + pattern.replace(r".", r"\.")
-                                    .replace(r"*", r"[0-9A-Za-z\-]+") + '$')
-            for pattern in (set(common_name) | set(alt_names))]
-
-        return any(
-            pattern.search(hostname)
-            for pattern in valid_patterns
-        )
-
-    def _get_subject_alt_names(self, cert):
-        """
-        Get SubjectAltNames
-
-        Retrieve 'subjectAltName' attributes from cert data structure
-        """
-        if 'subjectAltName' not in cert:
-            values = []
-        else:
-            values = [value
-                      for field, value in cert['subjectAltName']
-                      if field == 'DNS']
-        return values
-
-    def _get_common_name(self, cert):
-        """
-        Get Common Name
-
-        Retrieve 'commonName' attribute from cert data structure
-        """
-        if 'subject' not in cert:
-            return None
-        values = [value[0][1]
-                  for value in cert['subject']
-                  if value[0][0] == 'commonName']
-        return values
