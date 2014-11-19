@@ -46,6 +46,11 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
+TEST_REQUIREMENTS = [
+    'backports.ssl_match_hostname',
+    'mock'
+]
+
 if sys.version_info <= (2, 4):
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
@@ -91,14 +96,15 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        try:
-            import mock
-            mock
-        except ImportError:
-            print('Missing "mock" library. mock is library is needed '
-                  'to run the tests. You can install it using pip: '
-                  'pip install mock')
-            sys.exit(1)
+        for module_name in TEST_REQUIREMENTS:
+            try:
+                __import__(module_name)
+            except ImportError:
+                print('Missing "%s" library. %s is library is needed '
+                      'to run the tests. You can install it using pip: '
+                      'pip install %s' % (module_name, module_name,
+                                          module_name))
+                sys.exit(1)
 
         if unittest2_required:
             try:
