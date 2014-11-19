@@ -17,6 +17,7 @@ Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
 import os
+import sys
 import socket
 import ssl
 import base64
@@ -281,4 +282,5 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         try:
             match_hostname(cert, self.host)
         except CertificateError:
-            raise ssl.SSLError('Failed to verify hostname')
+            e = sys.exc_info()[1]
+            raise ssl.SSLError('Failed to verify hostname: %s' % (str(e)))
