@@ -97,8 +97,9 @@ class GCEAddress(UuidMixin):
         return self.driver.ex_destroy_address(address=self)
 
     def __repr__(self):
-        return '<GCEAddress id="%s" name="%s" address="%s">' % (
-            self.id, self.name, self.address)
+        return '<GCEAddress id="%s" name="%s" address="%s" region="%s">' % (
+            self.id, self.name, self.address,
+            (hasattr(self.region, "name") and self.region.name or self.region))
 
 
 class GCEFailedDisk(object):
@@ -623,21 +624,25 @@ class GCENodeDriver(NodeDriver):
 
     def ex_list_addresses(self, region=None):
         """
-        Return a list of static addresses for a region or all.
+        Return a list of static addresses for a region, 'global', or all.
 
         :keyword  region: The region to return addresses from. For example:
                           'us-central1'.  If None, will return addresses from
                           region of self.zone.  If 'all', will return all
-                          addresses.
+                          addresses. If 'global', it will return addresses in
+                          the global namespace.
         :type     region: ``str`` or ``None``
 
         :return: A list of static address objects.
         :rtype: ``list`` of :class:`GCEAddress`
         """
         list_addresses = []
-        region = self._set_region(region)
+        if region != 'global':
+            region = self._set_region(region)
         if region is None:
             request = '/aggregated/addresses'
+        elif region == 'global':
+            request = '/global/addresses'
         else:
             request = '/regions/%s/addresses' % (region.name)
         response = self.connection.request(request, method='GET').object
@@ -940,12 +945,13 @@ class GCENodeDriver(NodeDriver):
     def ex_create_address(self, name, region=None, address=None,
                           description=None):
         """
-        Create a static address in a region.
+        Create a static address in a region, or a global address.
 
         :param  name: Name of static address
         :type   name: ``str``
 
         :keyword  region: Name of region for the address (e.g. 'us-central1')
+                          Use 'global' to create a global address.
         :type     region: ``str`` or :class:`GCERegion`
 
         :keyword  address: Ephemeral IP address to promote to a static one
@@ -959,7 +965,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEAddress`
         """
         region = region or self.region
-        if not hasattr(region, 'name'):
+        if region != 'global' and not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         elif region is None:
             raise ValueError('REGION_NOT_SPECIFIED',
@@ -969,7 +975,10 @@ class GCENodeDriver(NodeDriver):
             address_data['address'] = address
         if description:
             address_data['description'] = description
-        request = '/regions/%s/addresses' % (region.name)
+        if region == 'global':
+            request = '/global/addresses'
+        else:
+            request = '/regions/%s/addresses' % (region.name)
         self.connection.async_request(request, method='POST',
                                       data=address_data)
         return self.ex_get_address(name, region=region)
@@ -2159,8 +2168,11 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(address, 'name'):
             address = self.ex_get_address(address)
 
-        request = '/regions/%s/addresses/%s' % (address.region.name,
-                                                address.name)
+        if hasattr(address.region, 'name'):
+            request = '/regions/%s/addresses/%s' % (address.region.name,
+                                                    address.name)
+        else:
+            request = '/global/addresses/%s' % (address.name)
 
         self.connection.async_request(request, method='DELETE')
         return True
@@ -2469,9 +2481,12 @@ class GCENodeDriver(NodeDriver):
         :return:  An Address object for the address
         :rtype:   :class:`GCEAddress`
         """
-        region = self._set_region(region) or self._find_zone_or_region(
-            name, 'addresses', region=True, res_name='Address')
-        request = '/regions/%s/addresses/%s' % (region.name, name)
+        if region == 'global':
+            request = '/global/addresses/%s' % (name)
+        else:
+            region = self._set_region(region) or self._find_zone_or_region(
+                name, 'addresses', region=True, res_name='Address')
+            request = '/regions/%s/addresses/%s' % (region.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_address(response)
 
@@ -3290,7 +3305,10 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
 
-        region = self.ex_get_region(address['region'])
+        if 'region' in address:
+            region = self.ex_get_region(address['region'])
+        else:
+            region = 'global'
 
         extra['selfLink'] = address.get('selfLink')
         extra['status'] = address.get('status')
