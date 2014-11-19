@@ -53,6 +53,10 @@ Compute
   (GITHUB-395)
   [Eric Johnson]
 
+- GCE: Support for global IP addresses.
+  (GITHUB-390, GITHUB-394)
+  [Eric Johnson]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
