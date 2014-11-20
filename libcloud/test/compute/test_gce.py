@@ -142,8 +142,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_list_images(self):
         local_images = self.driver.list_images()
         debian_images = self.driver.list_images(ex_project='debian-cloud')
+        local_plus_deb = self.driver.list_images(['debian-cloud', 'project_name'])
         self.assertEqual(len(local_images), 3)
         self.assertEqual(len(debian_images), 19)
+        self.assertEqual(len(local_plus_deb), 22)
         self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
         self.assertEqual(local_images[1].name, 'centos-6-v20131118')
 
@@ -531,9 +533,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(deleted)
 
     def test_ex_deprecate_image(self):
-        image = self.driver.ex_get_image('debian-6')
-        deprecated = image.deprecate('debian-7', 'DEPRECATED')
+        dep_ts = '2064-03-11T20:18:36.194-07:00'
+        obs_ts = '2074-03-11T20:18:36.194-07:00'
+        del_ts = '2084-03-11T20:18:36.194-07:00'
+        image = self.driver.ex_get_image('debian-6-squeeze-v20130926')
+        deprecated = image.deprecate('debian-7', 'DEPRECATED',
+                                     deprecated=dep_ts,
+                                     obsolete=obs_ts,
+                                     deleted=del_ts)
         self.assertTrue(deprecated)
+        self.assertTrue(image.extra['deprecated']['deprecated'], dep_ts)
+        self.assertTrue(image.extra['deprecated']['obsolete'], obs_ts)
+        self.assertTrue(image.extra['deprecated']['deleted'], del_ts)
 
     def test_ex_destroy_firewall(self):
         firewall = self.driver.ex_get_firewall('lcfirewall')
@@ -627,6 +638,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
         self.assertTrue(image.extra['description'].startswith('Debian'))
 
+        partial_name = 'debian-7'
+        image = self.driver.ex_get_image(partial_name, ['debian-cloud'])
+        self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
+
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
@@ -676,12 +691,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         size = self.driver.ex_get_size(size_name)
         self.assertEqual(size.name, size_name)
         self.assertEqual(size.extra['zone'].name, 'us-central1-a')
-        self.assertEqual(size.disk, 10240)
+        self.assertEqual(size.disk, 10)
         self.assertEqual(size.ram, 3840)
         self.assertEqual(size.extra['guestCpus'], 1)
-        self.assertEqual(size.extra['memoryMb'], 3840)
-        self.assertEqual(size.extra['maximumPersistentDisks'], 16)
-        self.assertEqual(size.extra['maximumPersistentDisksSizeGb'], 10240)
 
     def test_ex_get_targetpool(self):
         targetpool_name = 'lctargetpool'

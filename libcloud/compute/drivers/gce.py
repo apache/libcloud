@@ -243,7 +243,8 @@ class GCENodeImage(NodeImage):
         """
         return self.driver.ex_delete_image(image=self)
 
-    def deprecate(self, replacement, state):
+    def deprecate(self, replacement, state, deprecated=None, obsolete=None,
+                  deleted=None):
         """
         Deprecate this image
 
@@ -254,10 +255,20 @@ class GCENodeImage(NodeImage):
                        \'DELETED\', \'DEPRECATED\' or \'OBSOLETE\'.
         :type   state: ``str``
 
+        :param  deprecated: RFC3339 timestamp to mark DEPRECATED
+        :type   deprecated: ``str`` or ``None``
+
+        :param  obsolete: RFC3339 timestamp to mark OBSOLETE
+        :type   obsolete: ``str`` or ``None``
+
+        :param  deleted: RFC3339 timestamp to mark DELETED
+        :type   deleted: ``str`` or ``None``
+
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_deprecate_image(self, replacement, state)
+        return self.driver.ex_deprecate_image(self, replacement, state,
+                                              deprecated, obsolete, deleted)
 
 
 class GCENetwork(UuidMixin):
@@ -722,7 +733,7 @@ class GCENodeDriver(NodeDriver):
         Return a list of image objects for a project.
 
         :keyword  ex_project: Optional alternate project name.
-        :type     ex_project: ``str`` or ``None``
+        :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
 
         :return:  List of GCENodeImage objects
         :rtype:   ``list`` of :class:`GCENodeImage`
@@ -730,18 +741,25 @@ class GCENodeDriver(NodeDriver):
         request = '/global/images'
         if ex_project is None:
             response = self.connection.request(request, method='GET').object
+            list_images = [self._to_node_image(i) for i in
+                           response.get('items', [])]
         else:
+            list_images = []
             # Save the connection request_path
             save_request_path = self.connection.request_path
-            # Override the connection request path
-            new_request_path = save_request_path.replace(self.project,
-                                                         ex_project)
-            self.connection.request_path = new_request_path
-            response = self.connection.request(request, method='GET').object
+            if isinstance(ex_project, str):
+                ex_project = [ex_project]
+            for proj in ex_project:
+                # Override the connection request path
+                new_request_path = save_request_path.replace(self.project,
+                                                             proj)
+                self.connection.request_path = new_request_path
+                response = self.connection.request(request,
+                                                   method='GET').object
+                list_images.extend([self._to_node_image(i) for i in
+                                    response.get('items', [])])
             # Restore the connection request_path
             self.connection.request_path = save_request_path
-        list_images = [self._to_node_image(i) for i in
-                       response.get('items', [])]
         return list_images
 
     def list_locations(self):
@@ -2186,7 +2204,8 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def ex_deprecate_image(self, image, replacement, state=None):
+    def ex_deprecate_image(self, image, replacement, state=None,
+                           deprecated=None, obsolete=None, deleted=None):
         """
         Deprecate a specific image resource.
 
@@ -2198,6 +2217,15 @@ class GCENodeDriver(NodeDriver):
 
         :param  state: State of the image
         :type   state: ``str``
+
+        :param  deprecated: RFC3339 timestamp to mark DEPRECATED
+        :type   deprecated: ``str`` or ``None``
+
+        :param  obsolete: RFC3339 timestamp to mark OBSOLETE
+        :type   obsolete: ``str`` or ``None``
+
+        :param  deleted: RFC3339 timestamp to mark DELETED
+        :type   deleted: ``str`` or ``None``
 
         :return: True if successful
         :rtype:  ``bool``
@@ -2221,6 +2249,27 @@ class GCENodeDriver(NodeDriver):
             'state': state,
             'replacement': replacement.extra['selfLink'],
         }
+
+        if deprecated is not None:
+            try:
+                _ = timestamp_to_datetime(deprecated)    # NOQA
+            except:
+                raise ValueError('deprecated must be an RFC3339 timestamp')
+            image_data['deprecated'] = deprecated
+
+        if obsolete is not None:
+            try:
+                _ = timestamp_to_datetime(obsolete)      # NOQA
+            except:
+                raise ValueError('obsolete must be an RFC3339 timestamp')
+            image_data['obsolete'] = obsolete
+
+        if deleted is not None:
+            try:
+                _ = timestamp_to_datetime(deleted)       # NOQA
+            except:
+                raise ValueError('deleted must be an RFC3339 timestamp')
+            image_data['deleted'] = deleted
 
         request = '/global/images/%s/deprecate' % (image.name)
 
@@ -2527,7 +2576,7 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
 
-    def ex_get_image(self, partial_name):
+    def ex_get_image(self, partial_name, ex_project_list=None):
         """
         Return an GCENodeImage object based on the name or link provided.
 
@@ -2542,10 +2591,11 @@ class GCENodeDriver(NodeDriver):
         if partial_name.startswith('https://'):
             response = self.connection.request(partial_name, method='GET')
             return self._to_node_image(response.object)
-        image = self._match_images(None, partial_name)
+        image = self._match_images(ex_project_list, partial_name)
         if not image:
             if (partial_name.startswith('debian') or
-                    partial_name.startswith('backports')):
+                    partial_name.startswith('backports') or
+                    partial_name.startswith('nvme-backports')):
                 image = self._match_images('debian-cloud', partial_name)
             elif partial_name.startswith('centos'):
                 image = self._match_images('centos-cloud', partial_name)
@@ -3420,11 +3470,24 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCENodeImage`
         """
         extra = {}
-        extra['preferredKernel'] = image.get('preferredKernel', None)
+        if 'preferredKernel' in image:
+            extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
         extra['creationTimestamp'] = image.get('creationTimestamp')
         extra['selfLink'] = image.get('selfLink')
-        extra['deprecated'] = image.get('deprecated', None)
+        if 'deprecated' in image:
+            extra['deprecated'] = image.get('deprecated', None)
+        extra['sourceType'] = image.get('sourceType', None)
+        extra['rawDisk'] = image.get('rawDisk', None)
+        extra['status'] = image.get('status', None)
+        extra['archiveSizeBytes'] = image.get('archiveSizeBytes', None)
+        extra['diskSizeGb'] = image.get('diskSizeGb', None)
+        if 'sourceDisk' in image:
+            extra['sourceDisk'] = image.get('sourceDisk', None)
+        if 'sourceDiskId' in image:
+            extra['sourceDiskId'] = image.get('sourceDiskId', None)
+        if 'licenses' in image:
+            extra['licenses'] = image.get('licenses', None)
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)
@@ -3512,27 +3575,11 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCENodeSize`
         """
         extra = {}
-        disk_size = 10
         extra['selfLink'] = machine_type.get('selfLink')
-        extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         extra['zone'] = self.ex_get_zone(machine_type['zone'])
         extra['description'] = machine_type.get('description')
         extra['guestCpus'] = machine_type.get('guestCpus')
-        extra['memoryMb'] = machine_type.get('memoryMb')
-        extra['maximumPersistentDisks'] = \
-            machine_type.get('maximumPersistentDisks')
-        if 'imageSpaceGb' in machine_type:
-            extra['imageSpaceGb'] = machine_type.get('imageSpaceGb')
-            disk_size = extra['imageSpaceGb']
-        if 'maximumPersistentDisksSizeGb' in machine_type:
-            extra['maximumPersistentDisksSizeGb'] = \
-                int(machine_type.get('maximumPersistentDisksSizeGb'))
-            disk_size = extra['maximumPersistentDisksSizeGb']
-        if 'deprecated' in machine_type:
-            extra['deprecated'] = machine_type.get('deprecated')
-        if 'scratchDisks' in machine_type:
-            extra['scratchDisks'] = machine_type.get('scratchDisks')
-
+        extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         try:
             price = self._get_size_price(size_id=machine_type['name'])
         except KeyError:
@@ -3540,8 +3587,8 @@ class GCENodeDriver(NodeDriver):
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],
                            ram=machine_type.get('memoryMb'),
-                           disk=disk_size, bandwidth=0, price=price,
-                           driver=self, extra=extra)
+                           disk=machine_type.get('imageSpaceGb'),
+                           bandwidth=0, price=price, driver=self, extra=extra)
 
     def _to_project(self, project):
         """

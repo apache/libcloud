@@ -49,6 +49,10 @@ Compute
   (GITHUB-396)
   [Eric Johnson]
 
+- GCE: Improved Images coverage
+  (GITHUB-395)
+  [Eric Johnson]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
