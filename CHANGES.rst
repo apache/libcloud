@@ -45,6 +45,10 @@ Compute
   (GITHUB-397)
   [Eric Johnson]
 
+- GCE: Improve MachineType (size) coverage of GCE API
+  (GITHUB-396)
+  [Eric Johnson]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
