@@ -3646,11 +3646,27 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCENodeSize`
         """
         extra = {}
+        disk_size = 10
         extra['selfLink'] = machine_type.get('selfLink')
+        extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         extra['zone'] = self.ex_get_zone(machine_type['zone'])
         extra['description'] = machine_type.get('description')
         extra['guestCpus'] = machine_type.get('guestCpus')
-        extra['creationTimestamp'] = machine_type.get('creationTimestamp')
+        extra['memoryMb'] = machine_type.get('memoryMb')
+        extra['maximumPersistentDisks'] = \
+            machine_type.get('maximumPersistentDisks')
+        if 'imageSpaceGb' in machine_type:
+            extra['imageSpaceGb'] = machine_type.get('imageSpaceGb')
+            disk_size = extra['imageSpaceGb']
+        if 'maximumPersistentDisksSizeGb' in machine_type:
+            extra['maximumPersistentDisksSizeGb'] = \
+                int(machine_type.get('maximumPersistentDisksSizeGb'))
+            disk_size = extra['maximumPersistentDisksSizeGb']
+        if 'deprecated' in machine_type:
+            extra['deprecated'] = machine_type.get('deprecated')
+        if 'scratchDisks' in machine_type:
+            extra['scratchDisks'] = machine_type.get('scratchDisks')
+
         try:
             price = self._get_size_price(size_id=machine_type['name'])
         except KeyError:
@@ -3658,8 +3674,8 @@ class GCENodeDriver(NodeDriver):
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],
                            ram=machine_type.get('memoryMb'),
-                           disk=machine_type.get('imageSpaceGb'),
-                           bandwidth=0, price=price, driver=self, extra=extra)
+                           disk=disk_size, bandwidth=0, price=price,
+                           driver=self, extra=extra)
 
     def _to_project(self, project):
         """
