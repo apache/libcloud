@@ -641,6 +641,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, '10.11.0.0/16')
         self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+        self.assertEqual(network.extra['description'], 'A custom network')
 
     def test_ex_get_node(self):
         node_name = 'node-name'

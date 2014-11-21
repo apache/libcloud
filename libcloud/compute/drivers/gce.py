@@ -1227,7 +1227,7 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_image(name)
 
-    def ex_create_network(self, name, cidr):
+    def ex_create_network(self, name, cidr, description=None):
         """
         Create a network.
 
@@ -1235,7 +1235,10 @@ class GCENodeDriver(NodeDriver):
         :type   name: ``str``
 
         :param  cidr: Address range of network in CIDR format.
-        :type  cidr: ``str``
+        :type   cidr: ``str``
+
+        :param  description: Custom description for the network.
+        :type   description: ``str`` or ``None``
 
         :return:  Network object
         :rtype:   :class:`GCENetwork`
@@ -1243,6 +1246,7 @@ class GCENodeDriver(NodeDriver):
         network_data = {}
         network_data['name'] = name
         network_data['IPv4Range'] = cidr
+        network_data['description'] = description
 
         request = '/global/networks'
 
