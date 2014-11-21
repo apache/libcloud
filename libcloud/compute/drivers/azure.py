@@ -27,7 +27,7 @@ import base64
 
 from libcloud.utils.py3 import urlquote as url_quote
 from libcloud.utils.py3 import urlunquote as url_unquote
-from libcloud.common.azure import AzureServiceManagementConnection
+from libcloud.common.azure import AzureServiceManagementConnection, AzureRedirectException
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
@@ -210,6 +210,7 @@ class AzureNodeDriver(NodeDriver):
         """
         self.subscription_id = subscription_id
         self.key_file = key_file
+        self.follow_redirects = kwargs.get('follow_redirects', True)
         super(AzureNodeDriver, self).__init__(
             self.subscription_id,
             self.key_file,
@@ -293,7 +294,7 @@ class AzureNodeDriver(NodeDriver):
 
         vips = None
 
-        if data.deployments[0].virtual_ips is not None:
+        if len(data.deployments) > 0 and data.deployments[0].virtual_ips is not None:
             vips = [vip.address for vip in data.deployments[0].virtual_ips]
 
         try:
@@ -1233,11 +1234,18 @@ class AzureNodeDriver(NodeDriver):
         try:
             return self.connection.request(
                 action="https://%s%s" % (request.host, request.path),
-                data=request.body, headers=request.headers,
+                data=request.body,
+                headers=request.headers,
                 method=request.method
             )
+        except AzureRedirectException as e:
+            from libcloud.utils.py3 import urlparse
+            parsed_url = urlparse.urlparse(e.location)
+            request.host = parsed_url.netloc
+            return self._perform_request(request)
         except Exception, e:
-            print e.message
+            import traceback
+            print "Exception performing request: {}".format(traceback.format_exc())
 
     def _update_request_uri_query(self, request):
         """
@@ -2404,12 +2412,12 @@ class AzureXmlSerializer(object):
 
             return xml
 
-
 """
 Data Classes
 
 Borrowed from the Azure SDK for Python. 
 """
+
 
 class WindowsAzureData(object):
 

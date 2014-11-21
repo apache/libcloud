@@ -1,6 +1,7 @@
 import libcloud
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
+from libcloud.compute.drivers.azure import azure_service_management_host
 from libcloud.common.azure import AzureServiceManagementConnection
 
 __author__ = 'david'
@@ -506,8 +507,24 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+        redirect_host = "ussouth.management.core.windows.net"
 
-        return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
+        if not getattr(AzureMockHttp, "in_redirect", False):
+            setattr(AzureMockHttp, "in_redirect", True)
+            headers["Location"] = url.replace(azure_service_management_host, redirect_host)
+            return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
+        else:
+            delattr(AzureMockHttp, "in_redirect")
+            if redirect_host not in url:
+                if azure_service_management_host in url:
+                    return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
+                else:
+                    return (httplib.REQUEST_TIMEOUT, None, None, httplib.responses[httplib.REQUEST_TIMEOUT])
+
+            if method == "GET":
+                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
+
+            return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(self, method, url, body, headers):
 

@@ -41,6 +41,12 @@ API_VERSION = '2012-02-12'
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 
 
+class AzureRedirectException(Exception):
+
+    def __init__(self, response):
+        self.location = response.headers['location']
+
+
 class AzureResponse(XmlResponse):
 
     valid_response_codes = [
@@ -83,6 +89,12 @@ class AzureResponse(XmlResponse):
             '%s Status code: %d.' % (error_msg, self.status),
             driver=self
         )
+
+    def parse_body(self):
+        if int(self.status) == httplib.TEMPORARY_REDIRECT and self.connection.driver.follow_redirects:
+            raise AzureRedirectException(self)
+        else:
+            return super(AzureResponse, self).parse_body()
 
 
 class AzureRawResponse(RawResponse):
