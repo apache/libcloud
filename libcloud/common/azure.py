@@ -31,8 +31,7 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, \
-    CertificateConnection
+from libcloud.common.base import ConnectionUserAndKey, RawResponse, CertificateConnection
 from libcloud.common.base import XmlResponse
 
 # Azure API version

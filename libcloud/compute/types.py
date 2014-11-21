@@ -74,10 +74,13 @@ class Provider(object):
     :cvar NEPHOSCALE: NephoScale driver
     :cvar EXOSCALE: Exoscale driver.
     :cvar IKOULA: Ikoula driver.
+<<<<<<< HEAD
     :cvar OUTSCALE_SAS: Outscale SAS driver.
     :cvar OUTSCALE_INC: Outscale INC driver.
     :cvar PROFIT_BRICKS: ProfitBricks driver.
     :cvar VULTR: vultr driver.
+=======
+>>>>>>> LIBCLOUD-556_azure_compute_driver
     :cvar AZURE: Azure driver.
     """
     AZURE = 'azure'
