@@ -41,6 +41,10 @@ Compute
   (GITHUB-373)
   [Itxaka Serrano]
 
+- Add description argument to GCE Network
+  (GITHUB-397)
+  [Eric Johnson]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
