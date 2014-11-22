@@ -277,7 +277,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                                     self.cert_file,
                                     cert_reqs=ssl.CERT_REQUIRED,
                                     ca_certs=self.ca_cert,
-                                    ssl_version=ssl.PROTOCOL_TLSv1)
+                                    ssl_version=libcloud.security.SSL_VERSION)
         cert = self.sock.getpeercert()
         try:
             match_hostname(cert, self.host)
