@@ -15,6 +15,7 @@ import libcloud.security
 
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.base import Node, NodeState
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
@@ -54,7 +55,12 @@ class AzureNodeDriverTests(unittest.TestCase):
             if location.name == 'Southeast Asia'
         )
         services_result = matched_location.available_services
-        services_expected = ['Compute','Storage','PersistentVMRole','HighMemory']
+        services_expected = [
+            'Compute',
+            'Storage',
+            'PersistentVMRole',
+            'HighMemory'
+        ]
         self.assertListEqual(services_result, services_expected)
 
         vm_role_sizes_result = matched_location.virtual_machine_role_sizes
@@ -112,11 +118,18 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_list_nodes_returned_no_cloud_service(self):
         with self.assertRaises(LibcloudError):
-           self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest04")
+            self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest04")
 
     def test_restart_node_success(self):
 
-        node = type('Node', (object,), dict(id="dc03"))
+        node = Node(
+            id="dc03",
+            name="dc03",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
         result = self.driver.reboot_node(
             node=node,
             ex_cloud_service_name="dcoddkinztest01",
@@ -128,7 +141,14 @@ class AzureNodeDriverTests(unittest.TestCase):
     #simulating attempting to reboot a node that ifas already rebooting
     def test_restart_node_fail_no_deployment(self):
 
-        node = type('Node', (object,), dict(id="dc03"))
+        node = Node(
+            id="dc03",
+            name="dc03",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         with self.assertRaises(LibcloudError):
             self.driver.reboot_node(
@@ -139,7 +159,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_restart_node_fail_no_cloud_service(self):
 
-        node = type('Node', (object,), dict(id="dc03"))
+        node = Node(
+            id="dc03",
+            name="dc03",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         with self.assertRaises(LibcloudError):
             self.driver.reboot_node(
@@ -150,7 +177,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_restart_node_fail_node_not_found(self):
 
-        node = type('Node', (object,), dict(id="dc13"))
+        node = Node(
+            id="dc13",
+            name="dc13",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         result = self.driver.reboot_node(
             node=node,
@@ -161,7 +195,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_destroy_node_success_single_node_in_cloud_service(self):
 
-        node = type('Node', (object,), dict(id="oddkinz1"))
+        node = Node(
+            id="oddkinz1",
+            name="oddkinz1",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         result = self.driver.destroy_node(
             node=node,
@@ -172,7 +213,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_destroy_node_success_multiple_nodes_in_cloud_service(self):
 
-        node = type('Node', (object,), dict(id="oddkinz1"))
+        node = Node(
+            id="oddkinz1",
+            name="oddkinz1",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         result = self.driver.destroy_node(
             node=node,
@@ -183,7 +231,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_destroy_node_fail_node_does_not_exist(self):
 
-        node = type('Node', (object,), dict(id="oddkinz2"))
+        node = Node(
+            id="oddkinz2",
+            name="oddkinz2",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         with self.assertRaises(LibcloudError):
             self.driver.destroy_node(
@@ -194,8 +249,14 @@ class AzureNodeDriverTests(unittest.TestCase):
 
     def test_destroy_node_success_cloud_service_not_found(self):
 
-        node = dict()
-        node["name"]="cloudredis"
+        node = Node(
+            id="cloudredis",
+            name="cloudredis",
+            state=NodeState.RUNNING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.driver
+        )
 
         with self.assertRaises(LibcloudError):
             self.driver.destroy_node(
@@ -296,7 +357,6 @@ class AzureNodeDriverTests(unittest.TestCase):
         )
         kwargs["name"] = "dcoddkinztest03"
 
-        node = type('Node', (object,), dict(id="dc14"))
         result = self.driver.create_node(
             ex_cloud_service_name="testdcabc2",
             **kwargs
@@ -304,15 +364,15 @@ class AzureNodeDriverTests(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node_307_response(self):
-        kwargs = {}
-
-        kwargs["ex_storage_service_name"]="mtlytics"
-        kwargs["ex_deployment_name"]="dcoddkinztest04"
-        kwargs["ex_deployment_slot"]="Production"
-        kwargs["ex_admin_user_id"]="azurecoder"
+        kwargs = {
+            "ex_storage_service_name": "mtlytics",
+            "ex_deployment_name": "dcoddkinztest04",
+            "ex_deployment_slot": "Production",
+            "ex_admin_user_id": "azurecoder"
+        }
 
         auth = NodeAuthPassword("Pa55w0rd", False)
-        kwargs["auth"]= auth
+        kwargs["auth"] = auth
 
         kwargs["size"] = NodeSize(
             id="ExtraSmall",
@@ -458,7 +518,7 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
-        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
+        headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         if method == "GET":
             body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments.xml')
 
