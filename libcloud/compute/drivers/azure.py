@@ -70,7 +70,7 @@ From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
 """
 AZURE_COMPUTE_INSTANCE_TYPES = {
     'A0': {
-        'id': 'extra small',
+        'id': 'ExtraSmall',
         'name': 'Extra Small Instance',
         'ram': 768,
         'disk': 127,
@@ -80,7 +80,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 'Shared'
     },
     'A1': {
-        'id': 'small',
+        'id': 'Small',
         'name': 'Small Instance',
         'ram': 1792,
         'disk': 127,
@@ -90,7 +90,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 1
     },
     'A2': {
-        'id': 'medium',
+        'id': 'Medium',
         'name': 'Medium Instance',
         'ram': 3584,
         'disk': 127,
@@ -100,7 +100,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 2
     },
     'A3': {
-        'id': 'large',
+        'id': 'Large',
         'name': 'Large Instance',
         'ram': 7168,
         'disk': 127,
@@ -110,7 +110,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'cores': 4
     },
     'A4': {
-        'id': 'extra large',
+        'id': 'ExtraLarge',
         'name': 'Extra Large Instance',
         'ram': 14336,
         'disk': 127,
@@ -2326,8 +2326,9 @@ class AzureXmlSerializer(object):
             )
 
         if vm_image_name is not None:
-            xml += AzureXmlSerializer.data_to_xml(
-                [('VMImageName', vm_image_name)]
+            AzureXmlSerializer.data_to_xml(
+                [('VMImageName', vm_image_name)],
+                xml
             )
 
         if role_size is not None:
