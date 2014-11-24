@@ -559,7 +559,7 @@ class AzureNodeDriver(NodeDriver):
         if ex_storage_service_name is None:
             ex_storage_service_name = ex_cloud_service_name
             ex_storage_service_name = re.sub(
-                ur'[\W_]+',
+                ur'[\W_-]+',
                 u'',
                 ex_storage_service_name.lower(),
                 flags=re.UNICODE
@@ -1094,6 +1094,8 @@ class AzureNodeDriver(NodeDriver):
             ),
             AvailabilityResponse
         )
+
+        self.raise_for_response(_check_availability, 200)
                 
         return _check_availability.result
 
