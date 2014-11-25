@@ -3911,6 +3911,7 @@ class GCENodeDriver(NodeDriver):
         extra['selfLink'] = zone.get('selfLink')
         extra['creationTimestamp'] = zone.get('creationTimestamp')
         extra['description'] = zone.get('description')
+        extra['region'] = zone.get('region')
 
         deprecated = zone.get('deprecated')
 
