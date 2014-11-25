@@ -3808,6 +3808,16 @@ class GCENodeDriver(NodeDriver):
         extra['selfLink'] = snapshot.get('selfLink')
         extra['creationTimestamp'] = snapshot.get('creationTimestamp')
         extra['sourceDisk'] = snapshot.get('sourceDisk')
+        if 'description' in snapshot:
+            extra['description'] = snapshot['description']
+        if 'sourceDiskId' in snapshot:
+            extra['sourceDiskId'] = snapshot['sourceDiskId']
+        if 'storageBytes' in snapshot:
+            extra['storageBytes'] = snapshot['storageBytes']
+        if 'storageBytesStatus' in snapshot:
+            extra['storageBytesStatus'] = snapshot['storageBytesStatus']
+        if 'licenses' in snapshot:
+            extra['licenses'] = snapshot['licenses']
 
         return GCESnapshot(id=snapshot['id'], name=snapshot['name'],
                            size=snapshot['diskSizeGb'],
