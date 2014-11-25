@@ -57,6 +57,10 @@ Compute
   (GITHUB-390, GITHUB-394)
   [Eric Johnson]
 
+- GCE: Add missing snapshot attributes.
+  (GITHUB-401)
+  [Eric Johnson]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
