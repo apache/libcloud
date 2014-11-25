@@ -1,0 +1,27 @@
+{
+ "kind": "compute#route",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/routes/lcdemoroute",
+ "id": "14575183394193523469",
+ "creationTimestamp": "2014-11-25T11:00:45.062-08:00",
+ "name": "lcdemoroute",
+ "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+ "tags": [
+  "tag1",
+  "tag2"
+ ],
+ "destRange": "192.168.25.0/24",
+ "priority": 1000,
+ "nextHopInstance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100",
+ "warnings": [
+  {
+   "code": "NEXT_HOP_CANNOT_IP_FORWARD",
+   "message": "Next hop instance 'https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100' cannot forward ip traffic. The next hop instance must have canIpForward set.",
+   "data": [
+    {
+     "key": "instance",
+     "value": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100"
+    }
+   ]
+  }
+ ]
+}

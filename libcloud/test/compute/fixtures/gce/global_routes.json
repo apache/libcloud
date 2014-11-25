@@ -1,0 +1,58 @@
+{
+ "kind": "compute#routeList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/routes",
+ "id": "projects/project_name/global/routes",
+ "items": [
+  {
+   "kind": "compute#route",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/routes/default-route-17d11bbbba01ce80",
+   "id": "15220239546867835355",
+   "creationTimestamp": "2014-01-21T10:30:55.592-08:00",
+   "name": "default-route-17d11bbbba01ce80",
+   "description": "Default route to the virtual network.",
+   "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+   "destRange": "10.240.0.0/16",
+   "priority": 1000,
+   "nextHopNetwork": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default"
+  },
+  {
+   "kind": "compute#route",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/routes/default-route-e1808a2caeaf17fb",
+   "id": "4898173129042082424",
+   "creationTimestamp": "2014-01-21T10:30:55.584-08:00",
+   "name": "default-route-e1808a2caeaf17fb",
+   "description": "Default route to the Internet.",
+   "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+   "destRange": "0.0.0.0/0",
+   "priority": 1000,
+   "nextHopGateway": "https://www.googleapis.com/compute/v1/projects/project_name/global/gateways/default-internet-gateway"
+  },
+  {
+   "kind": "compute#route",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/routes/lcdemoroute",
+   "id": "14575183394193523469",
+   "creationTimestamp": "2014-11-25T11:00:45.062-08:00",
+   "name": "lcdemoroute",
+   "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+   "tags": [
+    "tag1",
+    "tag2"
+   ],
+   "destRange": "192.168.25.0/24",
+   "priority": 1000,
+   "nextHopInstance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100",
+   "warnings": [
+    {
+     "code": "NEXT_HOP_CANNOT_IP_FORWARD",
+     "message": "Next hop instance 'https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100' cannot forward ip traffic. The next hop instance must have canIpForward set.",
+     "data": [
+      {
+       "key": "instance",
+       "value": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-f/instances/libcloud-100"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

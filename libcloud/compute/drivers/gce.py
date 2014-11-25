@@ -296,6 +296,34 @@ class GCENetwork(UuidMixin):
             self.id, self.name, self.cidr)
 
 
+class GCERoute(UuidMixin):
+    """A GCE Route object class."""
+    def __init__(self, id, name, dest_range, priority, network="default",
+                 tags=None, driver=None, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.dest_range = dest_range
+        self.priority = priority
+        self.network = network
+        self.tags = tags
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        """
+        Destroy this route
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_destroy_route(route=self)
+
+    def __repr__(self):
+        return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
+            self.id, self.name, self.dest_range, self.network.name)
+
+
 class GCENodeSize(NodeSize):
     """A GCE Node Size (MachineType) class."""
     def __init__(self, id, name, ram, disk, bandwidth, price, driver,
@@ -783,6 +811,20 @@ class GCENodeDriver(NodeDriver):
         list_locations = [self._to_node_location(l) for l in response['items']]
         return list_locations
 
+    def ex_list_routes(self):
+        """
+        Return the list of routes.
+
+        :return: A list of route objects.
+        :rtype: ``list`` of :class:`GCERoute`
+        """
+        list_routes = []
+        request = '/global/routes'
+        response = self.connection.request(request, method='GET').object
+        list_routes = [self._to_route(n) for n in
+                       response.get('items', [])]
+        return list_routes
+
     def ex_list_networks(self):
         """
         Return the list of networks.
@@ -1253,6 +1295,70 @@ class GCENodeDriver(NodeDriver):
                 raise e
 
         return self.ex_get_image(name)
+
+    def ex_create_route(self, name, dest_range, priority=500,
+                        network="default", tags=None, next_hop=None,
+                        description=None):
+        """
+        Create a route.
+
+        :param  name: Name of route to be created
+        :type   name: ``str``
+
+        :param  dest_range: Address range of route in CIDR format.
+        :type   dest_range: ``str``
+
+        :param  priority: Priority value, lower values take precedence
+        :type   priority: ``int``
+
+        :param  network: The network the route belongs to. Can be either the
+                         full URL of the network or a libcloud object.
+        :type   network: ``str`` or ``GCENetwork``
+
+        :param  tags: List of instance-tags for routing, empty for all nodes
+        :type   tags: ``list`` of ``str`` or ``None``
+
+        :param  next_hop: Next traffic hop. Use ``None`` for the default
+                          Internet gateway, or specify an instance or IP
+                          address.
+        :type   next_hop: ``str``, ``GCENode``, or ``None``
+
+        :param  description: Custom description for the route.
+        :type   description: ``str`` or ``None``
+
+        :return:  Route object
+        :rtype:   :class:`GCERoute`
+        """
+        route_data = {}
+        route_data['name'] = name
+        route_data['destRange'] = dest_range
+        route_data['priority'] = priority
+        route_data['description'] = description
+        if isinstance(network, str) and network.startswith('https://'):
+            network_uri = network
+        elif isinstance(network, str):
+            network = self.ex_get_network(network)
+            network_uri = network.extra['selfLink']
+        else:
+            network_uri = network.extra['selfLink']
+        route_data['network'] = network_uri
+        route_data['tags'] = tags
+        if next_hop is None:
+            url = 'https://www.googleapis.com/compute/%s/projects/%s/%s' % (
+                  API_VERSION, self.project,
+                  "global/gateways/default-internet-gateway")
+            route_data['nextHopGateway'] = url
+        elif isinstance(next_hop, str):
+            route_data['nextHopIp'] = next_hop
+        else:
+            node = self.ex_get_node(next_hop)
+            route_data['nextHopInstance'] = node.extra['selfLink']
+
+        request = '/global/routes'
+        self.connection.async_request(request, method='POST',
+                                      data=route_data)
+
+        return self.ex_get_route(name)
 
     def ex_create_network(self, name, cidr, description=None):
         """
@@ -2333,6 +2439,20 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_destroy_route(self, route):
+        """
+        Destroy a route.
+
+        :param  route: Route object to destroy
+        :type   route: :class:`GCERoute`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/routes/%s' % (route.name)
+        self.connection.async_request(request, method='DELETE')
+        return True
+
     def ex_destroy_network(self, network):
         """
         Destroy a network.
@@ -2629,6 +2749,20 @@ class GCENodeDriver(NodeDriver):
             elif partial_name.startswith('ubuntu'):
                 image = self._match_images('ubuntu-os-cloud', partial_name)
         return image
+
+    def ex_get_route(self, name):
+        """
+        Return a Route object based on a route name.
+
+        :param  name: The name of the route
+        :type   name: ``str``
+
+        :return:  A Route object for the named route
+        :rtype:   :class:`GCERoute`
+        """
+        request = '/global/routes/%s' % (name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_route(response)
 
     def ex_get_network(self, name):
         """
@@ -3476,6 +3610,40 @@ class GCENodeDriver(NodeDriver):
         return GCENetwork(id=network['id'], name=network['name'],
                           cidr=network.get('IPv4Range'),
                           driver=self, extra=extra)
+
+    def _to_route(self, route):
+        """
+        Return a Route object from the json-response dictionary.
+
+        :param  route: The dictionary describing the route.
+        :type   route: ``dict``
+
+        :return: Route object
+        :rtype: :class:`GCERoute`
+        """
+        extra = {}
+
+        extra['selfLink'] = route.get('selfLink')
+        extra['description'] = route.get('description')
+        extra['creationTimestamp'] = route.get('creationTimestamp')
+        network = route.get('network')
+        priority = route.get('priority')
+
+        if 'nextHopInstance' in route:
+            extra['nextHopInstance'] = route['nextHopInstance']
+        if 'nextHopIp' in route:
+            extra['nextHopIp'] = route['nextHopIp']
+        if 'nextHopNetwork' in route:
+            extra['nextHopNetwork'] = route['nextHopNetwork']
+        if 'nextHopGateway' in route:
+            extra['nextHopGateway'] = route['nextHopGateway']
+        if 'warnings' in route:
+            extra['warnings'] = route['warnings']
+
+        return GCERoute(id=route['id'], name=route['name'],
+                        dest_range=route.get('destRange'), priority=priority,
+                        network=network, tags=route.get('tags'),
+                        driver=self, extra=extra)
 
     def _to_node_image(self, image):
         """
