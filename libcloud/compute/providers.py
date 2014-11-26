@@ -155,8 +155,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
-    Provider.AZURE_COMPUTE:
-    ('libcloud.compute.drivers.azure_compute', 'AzureNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

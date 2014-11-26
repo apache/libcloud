@@ -131,7 +131,6 @@ class Provider(object):
     VSPHERE = 'vsphere'
     PROFIT_BRICKS = 'profitbricks'
     VULTR = 'vultr'
-    AZURE_COMPUTE = 'azure_compute'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
