@@ -61,6 +61,16 @@ Compute
   (GITHUB-401)
   [Eric Johnson]
 
+Storage
+~~~~~~~
+
+- Allow user to pass ``headers`` argument to the ``upload_object`` and
+  ``upload_object_via_stream`` method.
+
+  This way user can specify CORS headers with the drivers which support that.
+  (GITHUB-403, GITHUB-404)
+  [Peter Schmidt]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 

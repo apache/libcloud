@@ -20,7 +20,6 @@ import os.path                          # pylint: disable-msg=W0404
 import math
 import sys
 import copy
-import unittest
 
 import mock
 
@@ -45,6 +44,7 @@ from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import unittest
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
@@ -634,6 +634,53 @@ class CloudFilesTests(unittest.TestCase):
         func_kwargs = tuple(mocked__put_object.call_args)[1]
         self.assertEqual(func_kwargs['object_name'], expected_name)
         self.assertEqual(func_kwargs['container'], container)
+
+    def test_upload_object_via_stream_with_cors_headers(self):
+        """
+        Test we can add some ``Cross-origin resource sharing`` headers
+        to the request about to be sent.
+        """
+        cors_headers = {
+            'Access-Control-Allow-Origin': 'http://mozilla.com',
+            'Origin': 'http://storage.clouddrive.com',
+        }
+        expected_headers = {
+            # Automatically added headers
+            'Content-Type': 'application/octet-stream',
+            'Transfer-Encoding': 'chunked',
+        }
+        expected_headers.update(cors_headers)
+
+        def intercept_request(request_path,
+                              method=None, data=None,
+                              headers=None, raw=True):
+
+            # What we're actually testing
+            self.assertDictEqual(expected_headers, headers)
+
+            raise NotImplementedError('oops')
+        self.driver.connection.request = intercept_request
+
+        container = Container(name='CORS', extra={}, driver=self.driver)
+
+        try:
+            self.driver.upload_object_via_stream(
+                # We never reach the Python 3 only bytes vs int error
+                # currently at libcloud/utils/py3.py:89
+                #     raise TypeError("Invalid argument %r for b()" % (s,))
+                # because I raise a NotImplementedError.
+                iterator=iter(b'blob data like an image or video'),
+                container=container,
+                object_name="test_object",
+                headers=cors_headers,
+            )
+        except NotImplementedError:
+            # Don't care about the response we'd have to mock anyway
+            # as long as we intercepted the request and checked its headers
+            pass
+        else:
+            self.fail('Expected NotImplementedError to be thrown to '
+                      'verify we actually checked the expected headers')
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
