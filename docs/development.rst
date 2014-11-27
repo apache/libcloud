@@ -36,7 +36,7 @@ Code style guide
 * Use 79 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
 * You can verify that your modifications don't break any rules by running the
-  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py.`` or
+  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py`` or
   ``tox -e lint``.
   Second command fill run flake8 on all the files in the repository.
 
