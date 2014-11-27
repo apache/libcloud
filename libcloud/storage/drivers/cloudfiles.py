@@ -414,7 +414,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object.
 
@@ -427,10 +427,11 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
-                                verify_hash=verify_hash)
+                                verify_hash=verify_hash, headers=headers)
 
     def upload_object_via_stream(self, iterator,
-                                 container, object_name, extra=None):
+                                 container, object_name, extra=None,
+                                 headers=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
@@ -440,7 +441,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return self._put_object(container=container, object_name=object_name,
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, iterator=iterator)
+                                extra=extra, iterator=iterator,
+                                headers=headers)
 
     def delete_object(self, obj):
         container_name = self._encode_container_name(obj.container.name)
@@ -752,7 +754,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, verify_hash=True):
+                    iterator=None, verify_hash=True, headers=None):
         extra = extra or {}
         container_name_encoded = self._encode_container_name(container.name)
         object_name_encoded = self._encode_object_name(object_name)
@@ -760,7 +762,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         meta_data = extra.get('meta_data', None)
         content_disposition = extra.get('content_disposition', None)
 
-        headers = {}
+        headers = headers or {}
         if meta_data:
             for key, value in list(meta_data.items()):
                 key = 'X-Object-Meta-%s' % (key)

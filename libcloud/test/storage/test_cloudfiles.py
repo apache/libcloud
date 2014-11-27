@@ -635,6 +635,51 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(func_kwargs['object_name'], expected_name)
         self.assertEqual(func_kwargs['container'], container)
 
+    def test_upload_object_via_stream_with_cors_headers(self):
+        """
+        Test we can add some ``Cross-origin resource sharing`` headers
+        to the request about to be sent.
+        """
+        cors_headers = {
+            'Access-Control-Allow-Origin': 'http://mozilla.com',
+            'Origin': 'http://storage.clouddrive.com',
+        }
+        expected_headers = {
+            # Automatically added headers
+            'Content-Type': 'application/octet-stream',
+            'Transfer-Encoding': 'chunked',
+        }
+        expected_headers.update(cors_headers)
+
+        def intercept_request(request_path,
+                              method=None, data=None,
+                              headers=None, raw=True):
+
+            # What we're actually testing
+            # ... would prefer assertDictEqual but for Python <=2.6 support
+            self.assertEqual(expected_headers, headers)
+
+            raise NotImplementedError('oops')
+        self.driver.connection.request = intercept_request
+
+        container = Container(name='CORS', extra={}, driver=self.driver)
+
+        try:
+            self.driver.upload_object_via_stream(
+                # We never reach the Python 3 only bytes vs int error
+                # currently at libcloud/utils/py3.py:89
+                #     raise TypeError("Invalid argument %r for b()" % (s,))
+                # because I raise a NotImplementedError.
+                iterator=iter(b'blob data like an image or video'),
+                container=container,
+                object_name="test_object",
+                headers=cors_headers,
+            )
+        except NotImplementedError:
+            # Don't care about the response we'd have to mock anyway
+            # as long as we intercepted the request and checked its headers
+            pass
+
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
         hash_function.update(b(''))
