@@ -666,6 +666,10 @@ class CloudFilesTests(unittest.TestCase):
 
         try:
             self.driver.upload_object_via_stream(
+                # We never reach the Python 3 only bytes vs int error
+                # currently at libcloud/utils/py3.py:89
+                #     raise TypeError("Invalid argument %r for b()" % (s,))
+                # because I raise a NotImplementedError.
                 iterator=iter(b'blob data like an image or video'),
                 container=container,
                 object_name="test_object",
