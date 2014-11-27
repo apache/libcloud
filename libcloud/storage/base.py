@@ -361,7 +361,7 @@ class StorageDriver(BaseDriver):
             'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object currently located on a disk.
 
@@ -380,6 +380,11 @@ class StorageDriver(BaseDriver):
         :param extra: Extra attributes (driver specific). (optional)
         :type extra: ``dict``
 
+        :type headers: ``dict``
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
+
         :rtype: :class:`Object`
         """
         raise NotImplementedError(
@@ -387,7 +392,8 @@ class StorageDriver(BaseDriver):
 
     def upload_object_via_stream(self, iterator, container,
                                  object_name,
-                                 extra=None):
+                                 extra=None,
+                                 headers=None):
         """
         Upload an object using an iterator.
 
@@ -418,6 +424,11 @@ class StorageDriver(BaseDriver):
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
+
+        :type headers: ``dict``
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
 
         :rtype: ``object``
         """
