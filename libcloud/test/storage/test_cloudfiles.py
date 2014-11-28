@@ -678,6 +678,9 @@ class CloudFilesTests(unittest.TestCase):
             # Don't care about the response we'd have to mock anyway
             # as long as we intercepted the request and checked its headers
             pass
+        else:
+            self.fail('Expected NotImplementedError to be thrown to '
+                      'verify we actually checked the expected headers')
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
