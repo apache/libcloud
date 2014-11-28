@@ -61,6 +61,10 @@ Compute
   (GITHUB-401)
   [Eric Johnson]
 
+- AWS: Set proper disk size in c3.X instance types
+  (GITHUB-405)
+  [Itxaka Serrano]
+
 Storage
 ~~~~~~~
 
