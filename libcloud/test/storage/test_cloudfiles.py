@@ -20,7 +20,6 @@ import os.path                          # pylint: disable-msg=W0404
 import math
 import sys
 import copy
-import unittest
 
 import mock
 
@@ -45,6 +44,7 @@ from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import unittest
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
@@ -656,8 +656,7 @@ class CloudFilesTests(unittest.TestCase):
                               headers=None, raw=True):
 
             # What we're actually testing
-            # ... would prefer assertDictEqual but for Python <=2.6 support
-            self.assertEqual(expected_headers, headers)
+            self.assertDictEqual(expected_headers, headers)
 
             raise NotImplementedError('oops')
         self.driver.connection.request = intercept_request
