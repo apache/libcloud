@@ -219,35 +219,35 @@ INSTANCE_TYPES = {
         'id': 'c3.large',
         'name': 'Compute Optimized Large Instance',
         'ram': 3750,
-        'disk': 16,
+        'disk': 32,  # x2
         'bandwidth': None
     },
     'c3.xlarge': {
         'id': 'c3.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7000,
-        'disk': 40,
+        'ram': 7500,
+        'disk': 80,  # x2
         'bandwidth': None
     },
     'c3.2xlarge': {
         'id': 'c3.2xlarge',
         'name': 'Compute Optimized Double Extra Large Instance',
         'ram': 15000,
-        'disk': 80,
+        'disk': 160,  # x2
         'bandwidth': None
     },
     'c3.4xlarge': {
         'id': 'c3.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
         'ram': 30000,
-        'disk': 160,
+        'disk': 320,  # x2
         'bandwidth': None
     },
     'c3.8xlarge': {
         'id': 'c3.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
         'ram': 60000,
-        'disk': 320,
+        'disk': 640,  # x2
         'bandwidth': None
     },
     'cr1.8xlarge': {
