@@ -79,6 +79,11 @@ Storage
   (GITHUB-403, GITHUB-404)
   [Peter Schmidt]
 
+- Fix upload_object_via_stream so it works correctly under Python 3.x if user
+  manually passes an iterator to the method.
+  (GITHUB-408, LIBCLOUD-639)
+  [Peter Schmidt]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
