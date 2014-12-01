@@ -53,6 +53,7 @@ S3_US_STANDARD_HOST = 's3.amazonaws.com'
 S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
+S3_EU_CENTRAL_HOST = 's3-eu-central-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
 S3_AP_NORTHEAST_HOST = 's3-ap-northeast-1.amazonaws.com'
 
