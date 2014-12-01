@@ -665,10 +665,6 @@ class CloudFilesTests(unittest.TestCase):
 
         try:
             self.driver.upload_object_via_stream(
-                # We never reach the Python 3 only bytes vs int error
-                # currently at libcloud/utils/py3.py:89
-                #     raise TypeError("Invalid argument %r for b()" % (s,))
-                # because I raise a NotImplementedError.
                 iterator=iter(b'blob data like an image or video'),
                 container=container,
                 object_name="test_object",
@@ -681,6 +677,17 @@ class CloudFilesTests(unittest.TestCase):
         else:
             self.fail('Expected NotImplementedError to be thrown to '
                       'verify we actually checked the expected headers')
+
+    def test_upload_object_via_stream_python3_bytes_error(self):
+        container = Container(name='py3', extra={}, driver=self.driver)
+        bytes_blob = b'blob data like an image or video'
+
+        # This is mostly to check we didn't discover other errors along the way
+        mocked_response = container.upload_object_via_stream(
+            iterator=iter(bytes_blob),
+            object_name="img_or_vid",
+        )
+        self.assertEqual(len(bytes_blob), mocked_response.size)
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
@@ -1086,6 +1093,11 @@ class CloudFilesMockRawResponse(MockRawResponse):
 
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
+        headers = {'etag': 'e2378cace8712661ce7beec3d9362ef6'}
+        headers.update(self.base_headers)
+        return httplib.CREATED, '', headers, httplib.responses[httplib.CREATED]
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_upload(
             self, method, url, body, headers):
