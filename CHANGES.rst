@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Add Routes to GCE driver.
+  (GITHUB-410)
+  [Eric Johnson]
+
 - Add missing ``ubuntu-os-cloud`` images to the GCE driver.
   (LIBCLOUD-632, GITHUB-385)
   [Borja Martin]

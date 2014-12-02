@@ -28,7 +28,8 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           GCEFirewall, GCEForwardingRule,
                                           GCENetwork,
                                           GCEZone,
-                                          GCENodeImage)
+                                          GCENodeImage,
+                                          GCERoute)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleBaseConnection,
@@ -156,6 +157,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 5)
         self.assertEqual(locations[0].name, 'europe-west1-a')
+
+    def test_ex_list_routes(self):
+        routes = self.driver.ex_list_routes()
+        self.assertEqual(len(routes), 3)
+        self.assertTrue('lcdemoroute' in [route.name for route in routes])
 
     def test_ex_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -287,6 +293,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(fwr.protocol, 'TCP')
         self.assertEqual(fwr.extra['portRange'], port_range)
         self.assertEqual(fwr.extra['description'], description)
+
+    def test_ex_create_route(self):
+        route_name = 'lcdemoroute'
+        dest_range = '192.168.25.0/24'
+        priority = 1000
+        route = self.driver.ex_create_route(route_name, dest_range)
+        self.assertTrue(isinstance(route, GCERoute))
+        self.assertEqual(route.name, route_name)
+        self.assertEqual(route.priority, priority)
+        self.assertTrue("tag1" in route.tags)
+        self.assertTrue(route.extra['nextHopInstance'].endswith('libcloud-100'))
+        self.assertEqual(route.dest_range, dest_range)
 
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
@@ -573,6 +591,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = fwr.destroy()
         self.assertTrue(destroyed)
 
+    def test_ex_destroy_route(self):
+        route = self.driver.ex_get_route('lcdemoroute')
+        destroyed = route.destroy()
+        self.assertTrue(destroyed)
+
     def test_ex_destroy_network(self):
         network = self.driver.ex_get_network('lcnetwork')
         destroyed = network.destroy()
@@ -674,6 +697,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         image = self.driver.ex_copy_image(name, url, description)
         self.assertEqual(image.name, name)
         self.assertEqual(image.extra['description'], description)
+
+    def test_ex_get_route(self):
+        route_name = 'lcdemoroute'
+        route = self.driver.ex_get_route(route_name)
+        self.assertEqual(route.name, route_name)
+        self.assertEqual(route.dest_range, '192.168.25.0/24')
+        self.assertEqual(route.priority, 1000)
 
     def test_ex_get_network(self):
         network_name = 'lcnetwork'
@@ -861,6 +891,13 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('global_images_debian_6_squeeze_v20130926_deprecate.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_routes(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('global_routes_post.json')
+        else:
+            body = self.fixtures.load('global_routes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_networks(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('global_networks_post.json')
@@ -881,6 +918,13 @@ class GCEMockHttp(MockHttpTestCase):
                                                       headers):
         body = self.fixtures.load(
             'global_networks_libcloud-demo-europe-network.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_routes_lcdemoroute(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = self.fixtures.load('global_routes_lcdemoroute_delete.json')
+        else:
+            body = self.fixtures.load('global_routes_lcdemoroute.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_networks_lcnetwork(self, method, url, body, headers):
@@ -944,10 +988,22 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_global_firewalls_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_global_routes_lcdemoroute_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_routes_lcdemoroute_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_operations_operation_global_networks_lcnetwork_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_global_networks_lcnetwork_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_routes_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_routes_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_networks_post(
