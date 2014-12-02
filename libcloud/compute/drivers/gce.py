@@ -363,6 +363,54 @@ class GCEProject(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
+    def set_common_instance_metadata(self, metadata=None, force=False):
+        """
+        Set common instance metadata for the project. Common uses
+        are for setting 'sshKeys', or setting a project-wide
+        'startup-script' for all nodes (instances).  Passing in
+        ``None`` for the 'metadata' parameter will clear out all common
+        instance metadata *except* for 'sshKeys'. If you also want to
+        update 'sshKeys', set the 'force' paramater to ``True``.
+
+        :param  metadata: Dictionay of metadata. Can be either a standard
+                          python dictionary, or the format expected by
+                          GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
+        :type   metadata: ``dict`` or ``None``
+
+        :param  force: Force update of 'sshKeys'. If force is ``False`` (the
+                       default), existing sshKeys will be retained. Setting
+                       force to ``True`` will either replace sshKeys if a new
+                       a new value is supplied, or deleted if no new value
+                       is supplied.
+        :type   force: ``bool``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_set_common_instance_metadata(self, metadata)
+
+    def set_usage_export_bucket(self, bucket, prefix=None):
+        """
+        Used to retain Compute Engine resource usage, storing the CSV data in
+        a Google Cloud Storage bucket. See the
+        `docs <https://cloud.google.com/compute/docs/usage-export>`_ for more
+        information. Please ensure you have followed the necessary setup steps
+        prior to enabling this feature (e.g. bucket exists, ACLs are in place,
+        etc.)
+
+        :param  bucket: Name of the Google Cloud Storage bucket. Specify the
+                        name in either 'gs://<bucket_name>' or the full URL
+                        'https://storage.googleapis.com/<bucket_name>'.
+        :type   bucket: ``str``
+
+        :param  prefix: Optional prefix string for all reports.
+        :type   prefix: ``str`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_set_usage_export_bucket(self, bucket, prefix)
+
     def __repr__(self):
         return '<GCEProject id="%s" name="%s">' % (self.id, self.name)
 
@@ -769,6 +817,92 @@ class GCENodeDriver(NodeDriver):
                 list_disktypes = [self._to_disktype(a) for a in
                                   response['items']]
         return list_disktypes
+
+    def ex_set_usage_export_bucket(self, bucket, prefix=None):
+        """
+        Used to retain Compute Engine resource usage, storing the CSV data in
+        a Google Cloud Storage bucket. See the
+        `docs <https://cloud.google.com/compute/docs/usage-export>`_ for more
+        information. Please ensure you have followed the necessary setup steps
+        prior to enabling this feature (e.g. bucket exists, ACLs are in place,
+        etc.)
+
+        :param  bucket: Name of the Google Cloud Storage bucket. Specify the
+                        name in either 'gs://<bucket_name>' or the full URL
+                        'https://storage.googleapis.com/<bucket_name>'.
+        :type   bucket: ``str``
+
+        :param  prefix: Optional prefix string for all reports.
+        :type   prefix: ``str`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if bucket.startswith('https://www.googleapis.com/') or \
+                bucket.startswith('gs://'):
+            data = {'bucketName': bucket}
+        else:
+            raise ValueError("Invalid bucket name: %s" % bucket)
+        if prefix:
+            data['reportNamePrefix'] = prefix
+
+        request = '/setUsageExportBucket'
+        self.connection.async_request(request, method='POST', data=data)
+        return True
+
+    def ex_set_common_instance_metadata(self, metadata=None, force=False):
+        """
+        Set common instance metadata for the project. Common uses
+        are for setting 'sshKeys', or setting a project-wide
+        'startup-script' for all nodes (instances).  Passing in
+        ``None`` for the 'metadata' parameter will clear out all common
+        instance metadata *except* for 'sshKeys'. If you also want to
+        update 'sshKeys', set the 'force' paramater to ``True``.
+
+        :param  metadata: Dictionay of metadata. Can be either a standard
+                          python dictionary, or the format expected by
+                          GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
+        :type   metadata: ``dict`` or ``None``
+
+        :param  force: Force update of 'sshKeys'. If force is ``False`` (the
+                       default), existing sshKeys will be retained. Setting
+                       force to ``True`` will either replace sshKeys if a new
+                       a new value is supplied, or deleted if no new value
+                       is supplied.
+        :type   force: ``bool``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if metadata:
+            if not isinstance(metadata, dict):
+                raise ValueError("Metadata must be a python dictionary.")
+
+            if 'items' not in metadata:
+                items = []
+                for k, v in metadata.items():
+                    items.append({'key': k, 'value': v})
+                metadata = {'items': items}
+            elif not isinstance(metadata['items'], list):
+                raise ValueError("Invalid GCE metadata format.")
+
+        request = '/setCommonInstanceMetadata'
+
+        project = self.ex_get_project()
+        current_metadata = project.extra['commonInstanceMetadata']
+        fingerprint = current_metadata['fingerprint']
+
+        # grab copy of current 'sshKeys' in case we want to retain them
+        current_keys = ""
+        for md in current_metadata['items']:
+            if md['key'] == 'sshKeys':
+                current_keys = md['value']
+
+        new_md = self._set_project_metadata(metadata, force, current_keys)
+
+        md = {'fingerprint': fingerprint, 'items': new_md}
+        self.connection.async_request(request, method='POST', data=md)
+        return True
 
     def ex_list_addresses(self, region=None):
         """
@@ -4142,6 +4276,11 @@ class GCENodeDriver(NodeDriver):
         extra['creationTimestamp'] = project.get('creationTimestamp')
         extra['description'] = project.get('description')
         metadata = project['commonInstanceMetadata'].get('items')
+        if 'commonInstanceMetadata' in project:
+            # add this struct to get 'fingerprint' too
+            extra['commonInstanceMetadata'] = project['commonInstanceMetadata']
+        if 'usageExportLocation' in project:
+            extra['usageExportLocation'] = project['usageExportLocation']
 
         return GCEProject(id=project['id'], name=project['name'],
                           metadata=metadata, quotas=project.get('quotas'),
@@ -4313,3 +4452,48 @@ class GCENodeDriver(NodeDriver):
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
                        maintenance_windows=zone.get('maintenanceWindows'),
                        deprecated=deprecated, driver=self, extra=extra)
+
+    def _set_project_metadata(self, metadata=None, force=False,
+                              current_keys=""):
+        """
+        Return the GCE-friendly dictionary of metadata with/without an
+        entry for 'sshKeys' based on params for 'force' and 'current_keys'.
+        This method was added to simplify the set_common_instance_metadata
+        method and make it easier to test.
+
+        :param  metadata: The GCE-formatted dict (e.g. 'items' list of dicts)
+        :type   metadata: ``dict`` or ``None``
+
+        :param  force: Flag to specify user preference for keeping current_keys
+        :type   force: ``bool``
+
+        :param  current_keys: The value, if any, of existing 'sshKeys'
+        :type   current_keys: ``str``
+
+        :return: GCE-friendly metadata dict
+        :rtype:  ``dict``
+        """
+        if metadata is None:
+            # User wants to delete metdata, but if 'force' is False
+            # and we already have sshKeys, we should retain them.
+            # Otherwise, delete ALL THE THINGS!
+            if not force and current_keys:
+                new_md = [{'key': 'sshKeys', 'value': current_keys}]
+            else:
+                new_md = []
+        else:
+            # User is providing new metadata. If 'force' is False, they
+            # want to preserve existing sshKeys, otherwise 'force' is True
+            # and the user wants to add/replace sshKeys.
+            new_md = metadata['items']
+            if not force and current_keys:
+                # not sure how duplicate keys would be resolved, so ensure
+                # existing 'sshKeys' entry is removed.
+                updated_md = []
+                for d in new_md:
+                    if d['key'] != 'sshKeys':
+                        updated_md.append({'key': d['key'],
+                                          'value': d['value']})
+                new_md = updated_md
+                new_md.append({'key': 'sshKeys', 'value': current_keys})
+        return new_md

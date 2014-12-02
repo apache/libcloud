@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE Projects support common instance metadata and usage export buckets
+  (GITHUB-409)
+  [Eric Johnson]
+
 - Improvements to TargetPool resource in GCE driver.
   (GITHUB-414)
   [Eric Johnson]

@@ -1,0 +1,14 @@
+{
+ "kind": "compute#operation",
+ "id": "17203609782824174066",
+ "name": "operation-setUsageExportBucket",
+ "operationType": "setUsageExportBucket",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name",
+ "targetId": "8116069320260064853",
+ "status": "DONE",
+ "user": "erjohnso@google.com",
+ "progress": 100,
+ "insertTime": "2014-11-21T06:58:03.602-08:00",
+ "startTime": "2014-11-21T06:58:04.018-08:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation-setUsageExportBucket"
+}
