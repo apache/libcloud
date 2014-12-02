@@ -742,7 +742,8 @@ class StorageDriver(BaseDriver):
         if calculate_hash:
             data_hash = self._get_hash_function()
 
-        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size)
+        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size,
+                                                        fill_size=True)
 
         bytes_transferred = 0
         try:
