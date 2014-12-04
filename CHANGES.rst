@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Fix boot disk auto_delete in GCE driver.
+  (GITHUB-412)
+  [Igor Bogomazov]
+
 - Add Routes to GCE driver.
   (GITHUB-410)
   [Eric Johnson]

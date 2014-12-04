@@ -3256,11 +3256,14 @@ class GCENodeDriver(NodeDriver):
         node_data['serviceAccounts'] = set_scopes
 
         if boot_disk:
+            if not isinstance(ex_disk_auto_delete, bool):
+                raise ValueError("ex_disk_auto_delete field is not a bool.")
             disks = [{'kind': 'compute#attachedDisk',
                       'boot': True,
                       'type': 'PERSISTENT',
                       'mode': 'READ_WRITE',
                       'deviceName': boot_disk.name,
+                      'autoDelete': ex_disk_auto_delete,
                       'zone': boot_disk.extra['zone'].extra['selfLink'],
                       'source': boot_disk.extra['selfLink']}]
             node_data['disks'] = disks
