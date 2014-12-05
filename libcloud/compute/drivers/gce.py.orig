@@ -408,39 +408,6 @@ class GCETargetPool(UuidMixin):
         return self.driver.ex_targetpool_remove_healthcheck(
             targetpool=self, healthcheck=healthcheck)
 
-    def set_backup_targetpool(self, backup_targetpool, failover_ratio=0.1):
-        """
-        Set a backup targetpool.
-
-        :param  backup_targetpool: The existing targetpool to use for
-                                   failover traffic.
-        :type   backup_targetpool: :class:`GCETargetPool`
-
-        :param  failover_ratio: The percentage of healthy VMs must fall at or
-                                below this value before traffic will be sent
-                                to the backup targetpool (default 0.10)
-        :type   failover_ratio: ``float``
-
-        :return:  True if successful
-        :rtype:   ``bool``
-        """
-        return self.driver.ex_targetpool_set_backup_targetpool(
-            targetpool=self, backup_targetpool=backup_targetpool,
-            failover_ratio=failover_ratio)
-
-    def get_health(self, node=None):
-        """
-        Return a hash of target pool instances and their health.
-
-        :param  node: Optional node to specify if only a specific node's
-                      health status should be returned
-        :type   node: ``str``, ``GCENode``, or ``None``
-
-        :return: List of hashes of nodes and their respective health
-        :rtype:  ``list`` of ``dict``
-        """
-        return self.driver.ex_targetpool_get_health(targetpool=self, node=node)
-
     def destroy(self):
         """
         Destroy this Target Pool
@@ -1598,8 +1565,7 @@ class GCENodeDriver(NodeDriver):
         return node_list
 
     def ex_create_targetpool(self, name, region=None, healthchecks=None,
-                             nodes=None, session_affinity=None,
-                             backup_pool=None, failover_ratio=None):
+                             nodes=None, session_affinity=None):
         """
         Create a target pool.
 
@@ -1620,27 +1586,11 @@ class GCENodeDriver(NodeDriver):
                                      affinity.
         :type     session_affinity:  ``str``
 
-        :keyword  backup_pool: Optional backup targetpool to take over traffic
-                               if the failover_ratio is exceeded.
-        :type     backup_pool: ``GCETargetPool`` or ``None``
-
-        :keyword  failover_ratio: The percentage of healthy VMs must fall at
-                                  or below this value before traffic will be
-                                  sent to the backup_pool.
-        :type     failover_ratio: :class:`GCETargetPool` or ``None``
-
         :return:  Target Pool object
         :rtype:   :class:`GCETargetPool`
         """
-        targetpool_data = {}
         region = region or self.region
-        if backup_pool and not failover_ratio:
-            failover_ratio = 0.1
-            targetpool_data['failoverRatio'] = failover_ratio
-            targetpool_data['backupPool'] = backup_pool.extra['selfLink']
-        if failover_ratio and not backup_pool:
-            e = "Must supply a backup targetPool when setting failover_ratio"
-            raise ValueError(e)
+        targetpool_data = {}
         targetpool_data['name'] = name
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
@@ -1823,80 +1773,6 @@ class GCENodeDriver(NodeDriver):
                                       data=firewall_data)
 
         return self.ex_get_firewall(firewall.name)
-
-    def ex_targetpool_get_health(self, targetpool, node=None):
-        """
-        Return a hash of target pool instances and their health.
-
-        :param  targetpool: Targetpool containing healthchecked instances.
-        :type   targetpool: :class:`GCETargetPool`
-
-        :param  node: Optional node to specify if only a specific node's
-                      health status should be returned
-        :type   node: ``str``, ``GCENode``, or ``None``
-
-        :return: List of hashes of instances and their respective health,
-                 e.g. [{'node': ``GCENode``, 'health': 'UNHEALTHY'}, ...]
-        :rtype:  ``list`` of ``dict``
-        """
-        health = []
-        region_name = targetpool.region.name
-        request = '/regions/%s/targetPools/%s/getHealth' % (region_name,
-                                                            targetpool.name)
-
-        if node is not None:
-            if hasattr(node, 'name'):
-                node_name = node.name
-            else:
-                node_name = node
-
-        nodes = targetpool.nodes
-        for node_object in nodes:
-            if node:
-                if node_name == node_object.name:
-                    body = {'instance': node_object.extra['selfLink']}
-                    resp = self.connection.request(request, method='POST',
-                                                   data=body).object
-                    status = resp['healthStatus'][0]['healthState']
-                    health.append({'node': node_object, 'health': status})
-            else:
-                body = {'instance': node_object.extra['selfLink']}
-                resp = self.connection.request(request, method='POST',
-                                               data=body).object
-                status = resp['healthStatus'][0]['healthState']
-                health.append({'node': node_object, 'health': status})
-        return health
-
-    def ex_targetpool_set_backup_targetpool(self, targetpool,
-                                            backup_targetpool,
-                                            failover_ratio=0.1):
-        """
-        Set a backup targetpool.
-
-        :param  targetpool: The existing primary targetpool
-        :type   targetpool: :class:`GCETargetPool`
-
-        :param  backup_targetpool: The existing targetpool to use for
-                                   failover traffic.
-        :type   backup_targetpool: :class:`GCETargetPool`
-
-        :param  failover_ratio: The percentage of healthy VMs must fall at or
-                                below this value before traffic will be sent
-                                to the backup targetpool (default 0.10)
-        :type   failover_ratio: ``float``
-
-        :return:  True if successful
-        :rtype:   ``bool``
-        """
-        region = targetpool.region.name
-        name = targetpool.name
-        req_data = {'target': backup_targetpool.extra['selfLink']}
-        params = {'failoverRatio': failover_ratio}
-
-        request = '/regions/%s/targetPools/%s/setBackup' % (region, name)
-        self.connection.async_request(request, method='POST', data=req_data,
-                                      params=params)
-        return True
 
     def ex_targetpool_add_node(self, targetpool, node):
         """
@@ -3858,13 +3734,6 @@ class GCENodeDriver(NodeDriver):
             except ResourceNotFoundError:
                 node = n
             node_list.append(node)
-
-        if 'failoverRatio' in targetpool:
-            extra['failoverRatio'] = targetpool['failoverRatio']
-        if 'backupPool' in targetpool:
-            tp_split = targetpool['backupPool'].split('/')
-            extra['backupPool'] = self.ex_get_targetpool(tp_split[10],
-                                                         tp_split[8])
 
         return GCETargetPool(id=targetpool['id'], name=targetpool['name'],
                              region=region, healthchecks=healthcheck_list,
