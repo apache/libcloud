@@ -700,100 +700,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         project = self.driver.ex_get_project()
         self.assertEqual(project.name, 'project_name')
         networks_quota = project.quotas[1]
-        self.assertEqual(networks_quota['usage'], 3)
-        self.assertEqual(networks_quota['limit'], 5)
+        self.assertEqual(networks_quota['usage'], 3.0)
+        self.assertEqual(networks_quota['limit'], 5.0)
         self.assertEqual(networks_quota['metric'], 'NETWORKS')
-        self.assertTrue('fingerprint' in project.extra['commonInstanceMetadata'])
-        self.assertTrue('items' in project.extra['commonInstanceMetadata'])
-        self.assertTrue('usageExportLocation' in project.extra)
-        self.assertTrue('bucketName' in project.extra['usageExportLocation'])
-        self.assertTrue(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
-
-    def test_ex_set_usage_export_bucket(self):
-        self.assertRaises(ValueError,
-                          self.driver.ex_set_usage_export_bucket, 'foo')
-        bucket_name = 'gs://foo'
-        self.driver.ex_set_usage_export_bucket(bucket_name)
-
-        bucket_name = 'https://www.googleapis.com/foo'
-        self.driver.ex_set_usage_export_bucket(bucket_name)
-
-    def test__set_project_metadata(self):
-        self.assertEqual(len(self.driver._set_project_metadata(None, False, "")), 0)
-
-        # 'delete' metadata, but retain current sshKeys
-        md = self.driver._set_project_metadata(None, False, "this is a test")
-        self.assertEqual(len(md), 1)
-        self.assertEqual(md[0]['key'], 'sshKeys')
-        self.assertEqual(md[0]['value'], 'this is a test')
-
-        # 'delete' metadata *and* any existing sshKeys
-        md = self.driver._set_project_metadata(None, True, "this is a test")
-        self.assertEqual(len(md), 0)
-
-        # add new metadata, keep existing sshKeys, since the new value also
-        # has 'sshKeys', we want the final struct to only have one ke/value
-        # of sshKeys and it should be the "current_keys"
-        gce_md = {'items': [{'key': 'foo', 'value': 'one'},
-                            {'key': 'sshKeys', 'value': 'another test'}]}
-        md = self.driver._set_project_metadata(gce_md, False, "this is a test")
-        self.assertEqual(len(md), 2, str(md))
-        sshKeys = ""
-        count = 0
-        for d in md:
-            if d['key'] == 'sshKeys':
-                count += 1
-                sshKeys = d['value']
-        self.assertEqual(sshKeys, 'this is a test')
-        self.assertEqual(count, 1)
-
-        # add new metadata, overwrite existing sshKeys, in this case, the
-        # existing 'sshKeys' value should be replaced
-        gce_md = {'items': [{'key': 'foo', 'value': 'one'},
-                            {'key': 'sshKeys', 'value': 'another test'}]}
-        md = self.driver._set_project_metadata(gce_md, True, "this is a test")
-        self.assertEqual(len(md), 2, str(md))
-        sshKeys = ""
-        count = 0
-        for d in md:
-            if d['key'] == 'sshKeys':
-                count += 1
-                sshKeys = d['value']
-        self.assertEqual(sshKeys, 'another test')
-        self.assertEqual(count, 1)
-
-        # add new metadata, remove existing sshKeys. in this case, we had an
-        # 'sshKeys' entry, but it will be removed entirely
-        gce_md = {'items': [{'key': 'foo', 'value': 'one'},
-                            {'key': 'nokeys', 'value': 'two'}]}
-        md = self.driver._set_project_metadata(gce_md, True, "this is a test")
-        self.assertEqual(len(md), 2, str(md))
-        sshKeys = ""
-        count = 0
-        for d in md:
-            if d['key'] == 'sshKeys':
-                count += 1
-                sshKeys = d['value']
-        self.assertEqual(sshKeys, '')
-        self.assertEqual(count, 0)
-
-    def test_ex_set_common_instance_metadata(self):
-        # test non-dict
-        self.assertRaises(ValueError,
-                          self.driver.ex_set_common_instance_metadata,
-                          ['bad', 'type'])
-        # test standard python dict
-        pydict = {'foo': 'pydict', 'one': 1}
-        self.driver.ex_set_common_instance_metadata(pydict)
-        # test GCE badly formatted dict
-        bad_gcedict = {'items': 'foo'}
-        self.assertRaises(ValueError,
-                          self.driver.ex_set_common_instance_metadata,
-                          bad_gcedict)
-        # test gce formatted dict
-        gcedict = {'items': [{'key': 'gcedict', 'value': 'v1'},
-                             {'key': 'gcedict', 'value': 'v2'}]}
-        self.driver.ex_set_common_instance_metadata(gcedict)
 
     def test_ex_get_region(self):
         region_name = 'us-central1'
@@ -863,16 +772,6 @@ class GCEMockHttp(MockHttpTestCase):
                                                                 use_param,
                                                                 qs, path)
         return method_name
-
-    def _setUsageExportBucket(self, method, url, body, headers):
-        if method == 'POST':
-            body = self.fixtures.load('setUsageExportBucket_post.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
-    def _setCommonInstanceMetadata(self, method, url, body, headers):
-        if method == 'POST':
-            body = self.fixtures.load('setCommonInstanceMetadata_post.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_addresses(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_addresses.json')
@@ -1001,18 +900,6 @@ class GCEMockHttp(MockHttpTestCase):
                 'global_snapshots_lcsnapshot_delete.json')
         else:
             body = self.fixtures.load('global_snapshots_lcsnapshot.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
-    def _global_operations_operation_setUsageExportBucket(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'operations_operation_setUsageExportBucket.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
-    def _global_operations_operation_setCommonInstanceMetadata(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'operations_operation_setCommonInstanceMetadata.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_delete(
