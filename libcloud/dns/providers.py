@@ -33,6 +33,8 @@ DRIVERS = {
     Provider.GANDI:
     ('libcloud.dns.drivers.gandi', 'GandiDNSDriver'),
     Provider.GOOGLE: ('libcloud.dns.drivers.google', 'GoogleDNSDriver'),
+    Provider.SOFTLAYER:
+    ('libcloud.dns.drivers.softlayer', 'SoftLayerDNSDriver'),
     # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),

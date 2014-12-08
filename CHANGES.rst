@@ -111,6 +111,13 @@ Storage
   (GITHUB-408, LIBCLOUD-639)
   [Peter Schmidt]
 
+DNS
+~~~
+
+- New driver for Softlayer DNS service.
+  (GITHUB-413, LIBCLOUD-640)
+  [Vanč Levstik]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
