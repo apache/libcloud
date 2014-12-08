@@ -30,7 +30,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.storage.base import Container, Object
+from libcloud.storage.base import CHUNK_SIZE, Container, Object
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -688,6 +688,53 @@ class CloudFilesTests(unittest.TestCase):
             object_name="img_or_vid",
         )
         self.assertEqual(len(bytes_blob), mocked_response.size)
+
+    def test_upload_object_via_stream_chunked_encoding(self):
+
+        # Create enough bytes it should get split into two chunks
+        bytes_blob = ''.join(['\0' for _ in range(CHUNK_SIZE + 1)])
+        hex_chunk_size = ('%X' % CHUNK_SIZE).encode('utf8')
+        expected = [
+            # Chunk 1
+            hex_chunk_size + b'\r\n',
+            bytes(bytes_blob[:CHUNK_SIZE].encode('utf8')),
+            b'\r\n',
+
+            # Chunk 2
+            b'1\r\n',
+            bytes(bytes_blob[CHUNK_SIZE:].encode('utf8')),
+            b'\r\n',
+
+            # If chunked, also send a final message
+            b'0\r\n\r\n',
+        ]
+        logged_data = []
+
+        class InterceptResponse(CloudFilesMockRawResponse):
+            def __init__(self, connection):
+                super(InterceptResponse, self).__init__(connection=connection)
+                old_send = self.connection.connection.send
+
+                def intercept_send(data):
+                    old_send(data)
+                    logged_data.append(data)
+                self.connection.connection.send = intercept_send
+
+            def _v1_MossoCloudFS_py3_img_or_vid2(self,
+                                                 method, url, body, headers):
+                headers = {'etag': 'd79fb00c27b50494a463e680d459c90c'}
+                headers.update(self.base_headers)
+                _201 = httplib.CREATED
+                return _201, '', headers, httplib.responses[_201]
+
+        self.driver_klass.connectionCls.rawResponseCls = InterceptResponse
+
+        container = Container(name='py3', extra={}, driver=self.driver)
+        container.upload_object_via_stream(
+            iterator=iter(bytes_blob),
+            object_name="img_or_vid2",
+        )
+        self.assertListEqual(expected, logged_data)
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
