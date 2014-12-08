@@ -36,6 +36,7 @@ class Provider(object):
     HOSTVIRTUAL = 'hostvirtual'
     GANDI = 'gandi'
     GOOGLE = 'google'
+    SOFTLAYER = 'softlayer'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
