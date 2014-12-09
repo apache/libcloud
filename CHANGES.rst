@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Adding DiskTypes resource to GCE driver.
+  (GITHUB-391)
+  [Eric Johnson]
+
 - Fix boot disk auto_delete in GCE driver.
   (GITHUB-412)
   [Igor Bogomazov]
