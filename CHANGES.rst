@@ -81,6 +81,13 @@ Storage
 
 - Fix upload_object_via_stream so it works correctly under Python 3.x if user
   manually passes an iterator to the method.
+
+  Also improve how reading a file in chunks works with drivers which support
+  chunked encoding - always try to fill a chunk with CHUNK_SIZE bytes instead
+  of directly streaming the chunk which iterator returns.
+
+  Previously, if iterator returned 1 byte in one iteration, we would directly
+  send this as a single chunk to the API.
   (GITHUB-408, LIBCLOUD-639)
   [Peter Schmidt]
 
