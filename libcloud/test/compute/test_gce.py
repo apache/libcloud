@@ -786,9 +786,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         size = self.driver.ex_get_size(size_name)
         self.assertEqual(size.name, size_name)
         self.assertEqual(size.extra['zone'].name, 'us-central1-a')
-        self.assertEqual(size.disk, 10)
+        self.assertEqual(size.disk, 10240)
         self.assertEqual(size.ram, 3840)
         self.assertEqual(size.extra['guestCpus'], 1)
+        self.assertEqual(size.extra['memoryMb'], 3840)
+        self.assertEqual(size.extra['maximumPersistentDisks'], 16)
+        self.assertEqual(size.extra['maximumPersistentDisksSizeGb'], 10240)
 
     def test_ex_get_targetinstance(self):
         targetinstance_name = 'lctargetinstance'
