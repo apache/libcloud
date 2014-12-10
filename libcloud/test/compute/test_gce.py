@@ -206,9 +206,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         target_pools = self.driver.ex_list_targetpools()
         target_pools_all = self.driver.ex_list_targetpools('all')
         target_pools_uc1 = self.driver.ex_list_targetpools('us-central1')
-        self.assertEqual(len(target_pools), 2)
-        self.assertEqual(len(target_pools_all), 3)
-        self.assertEqual(len(target_pools_uc1), 2)
+        self.assertEqual(len(target_pools), 4)
+        self.assertEqual(len(target_pools_all), 5)
+        self.assertEqual(len(target_pools_uc1), 4)
         self.assertEqual(target_pools[0].name, 'lctargetpool')
         self.assertEqual(target_pools_uc1[0].name, 'lctargetpool')
         names = [t.name for t in target_pools_all]
@@ -512,6 +512,25 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         firewall.source_tags = ['libcloud', 'test']
         firewall2 = self.driver.ex_update_firewall(firewall)
         self.assertTrue(isinstance(firewall2, GCEFirewall))
+
+    def test_ex_targetpool_gethealth(self):
+        targetpool = self.driver.ex_get_targetpool('lb-pool')
+        health = targetpool.get_health('libcloud-lb-demo-www-000')
+        self.assertEqual(len(health), 1)
+        self.assertTrue('node' in health[0])
+        self.assertTrue('health' in health[0])
+        self.assertEqual(health[0]['health'], 'UNHEALTHY')
+
+    def test_ex_targetpool_with_backup_pool(self):
+        targetpool = self.driver.ex_get_targetpool('lb-pool')
+        self.assertTrue('backupPool' in targetpool.extra)
+        self.assertTrue('failoverRatio' in targetpool.extra)
+
+    def test_ex_targetpool_setbackup(self):
+        targetpool = self.driver.ex_get_targetpool('lb-pool')
+        backup_targetpool = self.driver.ex_get_targetpool('backup-pool')
+        self.assertTrue(targetpool.set_backup_targetpool(backup_targetpool,
+                                                         0.1))
 
     def test_ex_targetpool_remove_add_node(self):
         targetpool = self.driver.ex_get_targetpool('lctargetpool')
@@ -898,6 +917,10 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_httpHealthChecks.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_httpHealthChecks_default_health_check(self, method, url, body, headers):
+        body = self.fixtures.load('global_httpHealthChecks_basic-check.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_httpHealthChecks_basic_check(self, method, url, body, headers):
         body = self.fixtures.load('global_httpHealthChecks_basic-check.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -1166,6 +1189,12 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_regions_us-central1_targetPools_lctargetpool_removeInstance_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lb_pool_setBackup_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lb_pool_setBackup_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_addInstance_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -1344,15 +1373,23 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('regions_us-central1_targetPools.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_targetInstances_lctargetinstance(self, method,
-                                                              url, body,
-                                                              headers):
+    def _zones_us_central1_a_targetInstances_lctargetinstance(self, method, url, body, headers):
         if method == 'DELETE':
             body = self.fixtures.load(
                 'zones_us-central1-a_targetInstances_lctargetinstance_delete.json')
         else:
             body = self.fixtures.load(
                 'zones_us-central1-a_targetInstances_lctargetinstance.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lb_pool_getHealth(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lb_pool_getHealth.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lb_pool(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lb_pool.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_lctargetpool(self, method, url,
@@ -1369,6 +1406,12 @@ class GCEMockHttp(MockHttpTestCase):
                                                              body, headers):
         body = self.fixtures.load(
             'regions_us-central1_targetPools_lctargetpool_sticky.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_backup_pool(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_backup_pool.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_libcloud_lb_demo_lb_tp(
@@ -1393,6 +1436,12 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'regions_us-central1_targetPools_lctargetpool_removeInstance_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lb_pool_setBackup(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lb_pool_setBackup_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_lctargetpool_addInstance(

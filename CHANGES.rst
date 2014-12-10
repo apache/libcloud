@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Improvements to TargetPool resource in GCE driver.
+  (GITHUB-414)
+  [Eric Johnson]
+
 - Adding TargetInstances resource to GCE driver.
   (GITHUB-393)
   [Eric Johnson]
