@@ -65,6 +65,7 @@ __all__ = [
     'EC2NodeLocation',
     'EC2ReservedNode',
     'EC2SecurityGroup',
+    'EC2PlacementGroup',
     'EC2Network',
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
@@ -1730,6 +1731,21 @@ class EC2SecurityGroup(object):
                 % (self.id, self.name))
 
 
+class EC2PlacementGroup(object):
+    """Represents information about a Placement Grous
+
+    Note: This class is EC2 specific.
+    """
+    def __init__(self, name, state, strategy='cluster', extra=None):
+        self.name = name
+        self.strategy = strategy
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<EC2PlacementGroup: name={}, state={}'.format(self.name,
+                                                              self.strategy)
+
+
 class EC2Network(object):
     """
     Represents information about a VPC (Virtual Private Cloud) network
@@ -2597,6 +2613,44 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
+
+    def ex_create_placement_group(self, name):
+        """Creates new Placemetn Group
+
+        :param name: Name for new placement Group
+        :type: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'CreatePlacementGroup',
+                  'GroupName': name}
+        responce = self.connection.request(self.path, params=params).object
+        return self._get_boolean(responce)
+
+    def ex_delete_placement_group(self, name):
+        """Deletes Placement Group
+
+        :param name: Placement Group name
+        :type: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeletePlacementGroup',
+                  'GroupName': name}
+        responce = self.connection.request(self.path, params=params).object
+        return self._get_boolean(responce)
+
+    def ex_list_placement_groups(self):
+        """List Placement Groups
+
+        :param name: Placement Group name
+        :type: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DescribePlacementGroups'}
+        responce = self.connection.request(self.path, params=params).object
+        return self._to_placement_groups(responce)
 
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
@@ -4838,6 +4892,24 @@ class BaseEC2NodeDriver(NodeDriver):
             return None
 
         return ElasticIP(public_ip, domain, instance_id, extra=extra)
+
+    def _to_placement_groups(self, response):
+        return [self._to_placement_group(el)
+                for el in response.findall(
+                    fixxpath(xpath='placementGroupSet/item',
+                             namespace=NAMESPACE))]
+
+    def _to_placement_group(self, element):
+        name = findtext(element=element,
+                        xpath='groupName',
+                        namespace=NAMESPACE)
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+        strategy = findtext(element=element,
+                            xpath='strategy',
+                            namespace=NAMESPACE)
+        return EC2PlacementGroup(name, state, strategy)
 
     def _to_subnets(self, response):
         return [self._to_subnet(el) for el in response.findall(
