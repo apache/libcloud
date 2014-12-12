@@ -2211,7 +2211,6 @@ class BaseEC2NodeDriver(NodeDriver):
             for sig in range(len(security_group_ids)):
                 params['SecurityGroupId.%d' % (sig + 1,)] =\
                     security_group_ids[sig]
-        print(params)
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
