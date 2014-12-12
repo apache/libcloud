@@ -2166,6 +2166,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_subnet: The subnet to launch the instance into.
         :type       ex_subnet: :class:`.EC2Subnet`
+
+        :keyword    ex_placement_group: The placement group to launch
+                                        the instance into.
+        :type       ex_placement_group: ``str``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -2207,6 +2211,7 @@ class BaseEC2NodeDriver(NodeDriver):
             for sig in range(len(security_group_ids)):
                 params['SecurityGroupId.%d' % (sig + 1,)] =\
                     security_group_ids[sig]
+        print(params)
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
@@ -2253,6 +2258,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_subnet' in kwargs:
             params['SubnetId'] = kwargs['ex_subnet'].id
+
+        if 'ex_placement_group' in kwargs and kwargs['ex_placement_group']:
+            params['Placement.GroupName'] = kwargs['ex_placement_group']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
