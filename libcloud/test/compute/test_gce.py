@@ -19,8 +19,6 @@ import sys
 import unittest
 import datetime
 
-from mock import Mock
-
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
@@ -106,6 +104,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
         image = self.driver._match_images(project, 'backports')
         self.assertEqual(image.name, 'backports-debian-7-wheezy-v20131127')
+
+    def test_ex_get_serial_output(self):
+        self.assertRaises(ValueError, self.driver.ex_get_serial_output, 'foo')
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        self.assertTrue(self.driver.ex_get_serial_output(node),
+                        'This is some serial\r\noutput for you.')
 
     def test_ex_list_addresses(self):
         address_list = self.driver.ex_list_addresses()
@@ -353,7 +357,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                                                metadata,
                                                                boot_disk)
         self.assertEqual(node_request, '/zones/%s/instances' % location.name)
-        self.assertEqual(node_data['metadata'][0]['key'], 'test_key')
+        self.assertEqual(node_data['metadata']['items'][0]['key'], 'test_key')
         self.assertEqual(node_data['tags']['items'][0], 'libcloud')
         self.assertEqual(node_data['name'], 'lcnode')
         self.assertTrue(node_data['disks'][0]['boot'])
@@ -392,33 +396,102 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('https://www.googleapis.com/auth/compute.readonly'
                         in node_data['serviceAccounts'][0]['scopes'])
 
+    def test_format_metadata(self):
+        in_md = [{'key': 'k0', 'value': 'v0'}, {'key': 'k1', 'value': 'v1'}]
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 2)
+        self.assertTrue(out_md['items'][0]['key'] in ['k0', 'k1'])
+        self.assertTrue(out_md['items'][0]['value'] in ['v0', 'v1'])
+
+        in_md = [{'k0': 'v0'}, {'k1': 'v1'}]
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 2)
+        self.assertTrue(out_md['items'][0]['key'] in ['k0', 'k1'])
+        self.assertTrue(out_md['items'][0]['value'] in ['v0', 'v1'])
+
+        in_md = {'key': 'k0', 'value': 'v0'}
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 1, out_md)
+        self.assertEqual(out_md['items'][0]['key'], 'k0')
+        self.assertEqual(out_md['items'][0]['value'], 'v0')
+
+        in_md = {'k0': 'v0'}
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 1)
+        self.assertEqual(out_md['items'][0]['key'], 'k0')
+        self.assertEqual(out_md['items'][0]['value'], 'v0')
+
+        in_md = {'k0': 'v0', 'k1': 'v1', 'k2': 'v2'}
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 3)
+        keys = [x['key'] for x in out_md['items']]
+        vals = [x['value'] for x in out_md['items']]
+        keys.sort()
+        vals.sort()
+        self.assertTrue(keys, ['k0', 'k1', 'k2'])
+        self.assertTrue(vals, ['v0', 'v1', 'v2'])
+
+        in_md = {'items': [{'key': 'k0', 'value': 'v0'},
+                           {'key': 'k1', 'value': 'v1'}]}
+        out_md = self.driver._format_metadata('fp', in_md)
+        self.assertTrue('fingerprint' in out_md)
+        self.assertEqual(out_md['fingerprint'], 'fp')
+        self.assertTrue('items' in out_md)
+        self.assertEqual(len(out_md['items']), 2)
+        self.assertTrue(out_md['items'][0]['key'] in ['k0', 'k1'])
+        self.assertTrue(out_md['items'][0]['value'] in ['v0', 'v1'])
+
+        in_md = {'items': 'foo'}
+        self.assertRaises(ValueError, self.driver._format_metadata, 'fp', in_md)
+        in_md = {'items': {'key': 'k1', 'value': 'v0'}}
+        self.assertRaises(ValueError, self.driver._format_metadata, 'fp', in_md)
+        in_md = ['k0', 'v1']
+        self.assertRaises(ValueError, self.driver._format_metadata, 'fp', in_md)
+
     def test_create_node_with_metadata(self):
         node_name = 'node-name'
         image = self.driver.ex_get_image('debian-7')
         size = self.driver.ex_get_size('n1-standard-1')
+        zone = self.driver.ex_get_zone('us-central1-a')
 
-        self.driver._create_node_req = Mock()
-        self.driver._create_node_req.return_value = (None, None)
-        self.driver.connection.async_request = Mock()
-        self.driver.ex_get_node = Mock()
+        # md is a list of dicts, each with 'key' and 'value' for
+        # backwards compatibility
+        md = [{'key': 'k0', 'value': 'v0'}, {'key': 'k1', 'value': 'v1'}]
+        request, data = self.driver._create_node_req(node_name, size, image,
+                                                     zone, metadata=md)
+        self.assertTrue('items' in data['metadata'])
+        self.assertEqual(len(data['metadata']['items']), 2)
 
-        # ex_metadata doesn't contain "items" key
-        ex_metadata = {'key1': 'value1', 'key2': 'value2'}
-        self.driver.create_node(node_name, size, image,
-                                ex_metadata=ex_metadata)
+        # md doesn't contain "items" key
+        md = {'key': 'key1', 'value': 'value1'}
+        request, data = self.driver._create_node_req(node_name, size, image,
+                                                     zone, metadata=md)
+        self.assertTrue('items' in data['metadata'])
+        self.assertEqual(len(data['metadata']['items']), 1)
 
-        actual = self.driver._create_node_req.call_args[0][6]
-        self.assertTrue('items' in actual)
-        self.assertEqual(len(actual['items']), 2)
-
-        # ex_metadata contains "items" key
-        ex_metadata = {'items': [{'key0': 'value0'}]}
-        self.driver.create_node(node_name, size, image,
-                                ex_metadata=ex_metadata)
-        actual = self.driver._create_node_req.call_args[0][6]
-        self.assertTrue('items' in actual)
-        self.assertEqual(len(actual['items']), 1)
-        self.assertEqual(actual['items'][0], {'key0': 'value0'})
+        # md contains "items" key
+        md = {'items': [{'key': 'k0', 'value': 'v0'}]}
+        request, data = self.driver._create_node_req(node_name, size, image,
+                                                     zone, metadata=md)
+        self.assertTrue('items' in data['metadata'])
+        self.assertEqual(len(data['metadata']['items']), 1)
+        self.assertEqual(data['metadata']['items'][0]['key'], 'k0')
+        self.assertEqual(data['metadata']['items'][0]['value'], 'v0')
 
     def test_create_node_existing(self):
         node_name = 'libcloud-demo-europe-np-node'
@@ -581,6 +654,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         node = self.driver.ex_get_node('node-name')
         set_tags = self.driver.ex_set_node_tags(node, new_tags)
         self.assertTrue(set_tags)
+
+    def test_attach_volume_invalid_usecase(self):
+        node = self.driver.ex_get_node('node-name')
+        self.assertRaises(ValueError, self.driver.attach_volume, node, None)
+        self.assertRaises(ValueError, self.driver.attach_volume, node, None,
+                          ex_source='foo/bar', device=None)
 
     def test_attach_volume(self):
         volume = self.driver.ex_get_volume('lcdisk')
@@ -798,6 +877,18 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('bucketName' in project.extra['usageExportLocation'])
         self.assertTrue(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
 
+    def test_ex_add_access_config(self):
+        self.assertRaises(ValueError, self.driver.ex_add_access_config,
+                          'node', 'name')
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        self.assertTrue(self.driver.ex_add_access_config(node, 'foo'))
+
+    def test_ex_delete_access_config(self):
+        self.assertRaises(ValueError, self.driver.ex_add_access_config,
+                          'node', 'name', 'nic')
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        self.assertTrue(self.driver.ex_delete_access_config(node, 'foo', 'bar'))
+
     def test_ex_set_usage_export_bucket(self):
         self.assertRaises(ValueError,
                           self.driver.ex_set_usage_export_bucket, 'foo')
@@ -872,7 +963,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                           self.driver.ex_set_common_instance_metadata,
                           ['bad', 'type'])
         # test standard python dict
-        pydict = {'foo': 'pydict', 'one': 1}
+        pydict = {'key': 'pydict', 'value': 1}
         self.driver.ex_set_common_instance_metadata(pydict)
         # test GCE badly formatted dict
         bad_gcedict = {'items': 'foo'}
@@ -880,9 +971,26 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                           self.driver.ex_set_common_instance_metadata,
                           bad_gcedict)
         # test gce formatted dict
-        gcedict = {'items': [{'key': 'gcedict', 'value': 'v1'},
-                             {'key': 'gcedict', 'value': 'v2'}]}
+        gcedict = {'items': [{'key': 'gcedict1', 'value': 'v1'},
+                             {'key': 'gcedict2', 'value': 'v2'}]}
         self.driver.ex_set_common_instance_metadata(gcedict)
+
+    def test_ex_set_node_metadata(self):
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        # test non-dict
+        self.assertRaises(ValueError, self.driver.ex_set_node_metadata,
+                          node, ['bad', 'type'])
+        # test standard python dict
+        pydict = {'key': 'pydict', 'value': 1}
+        self.driver.ex_set_node_metadata(node, pydict)
+        # test GCE badly formatted dict
+        bad_gcedict = {'items': 'foo'}
+        self.assertRaises(ValueError, self.driver.ex_set_node_metadata,
+                          node, bad_gcedict)
+        # test gce formatted dict
+        gcedict = {'items': [{'key': 'gcedict1', 'value': 'v1'},
+                             {'key': 'gcedict2', 'value': 'v2'}]}
+        self.driver.ex_set_node_metadata(node, gcedict)
 
     def test_ex_get_region(self):
         region_name = 'us-central1'
@@ -972,6 +1080,10 @@ class GCEMockHttp(MockHttpTestCase):
     def _setUsageExportBucket(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('setUsageExportBucket_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_setMetadata(self, method, url, body, headers):
+        body = self.fixtures.load('zones_us_central1_a_instances_node_name_setMetadata_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _setCommonInstanceMetadata(self, method, url, body, headers):
@@ -1260,6 +1372,26 @@ class GCEMockHttp(MockHttpTestCase):
             'operations_operation_regions_us-central1_forwardingRules_lcforwardingrule_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_instances_node_name_deleteAccessConfig(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_instances_node_name_deleteAccessConfig_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_serialPort(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instances_node_name_getSerialOutput.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_addAccessConfig(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_instances_node_name_addAccessConfig_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_setMetadata_post(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_node_name_setMetadata_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -1270,6 +1402,18 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_regions_us-central1_targetPools_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instances_node_name_addAccessConfig_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_instances_node_name_addAccessConfig_done.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instances_node_name_deleteAccessConfig_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_instances_node_name_deleteAccessConfig_done.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_lctargetinstance_delete(
