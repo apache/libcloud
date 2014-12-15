@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Improve GCE API coverage for create_node()
+  (GITHUB-419)
+  [Eric Johnson]
+
 - GCE Licenses added to the GCE driver.
   (GITHUB-420)
   [Eric Johnson]
