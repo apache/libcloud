@@ -1742,8 +1742,8 @@ class EC2PlacementGroup(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return '<EC2PlacementGroup: name={}, state={}'.format(self.name,
-                                                              self.strategy)
+        return '<EC2PlacementGroup: name=%s, state=%s' % (self.name,
+                                                          self.strategy)
 
 
 class EC2Network(object):
@@ -2615,7 +2615,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return self._get_boolean(response)
 
     def ex_create_placement_group(self, name):
-        """Creates new Placemetn Group
+        """Creates new Placement Group
 
         :param name: Name for new placement Group
         :type: ``str``
@@ -2623,9 +2623,10 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         params = {'Action': 'CreatePlacementGroup',
+                  'Strategy': 'cluster',
                   'GroupName': name}
-        responce = self.connection.request(self.path, params=params).object
-        return self._get_boolean(responce)
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
 
     def ex_delete_placement_group(self, name):
         """Deletes Placement Group
@@ -2637,20 +2638,24 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DeletePlacementGroup',
                   'GroupName': name}
-        responce = self.connection.request(self.path, params=params).object
-        return self._get_boolean(responce)
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
 
-    def ex_list_placement_groups(self):
+    def ex_list_placement_groups(self, names=()):
         """List Placement Groups
 
-        :param name: Placement Group name
-        :type: ``str``
+        :param names: Placement Group names
+        :type: ``list`` of ``str``
 
-        :rtype: ``bool``
+        :rtype: ``list`` of :class:`.EC2PlacementGroup`
         """
         params = {'Action': 'DescribePlacementGroups'}
-        responce = self.connection.request(self.path, params=params).object
-        return self._to_placement_groups(responce)
+
+        for n, name in enumerate(names, 1):
+            params['GroupName.%s' % n] = name
+
+        response = self.connection.request(self.path, params=params).object
+        return self._to_placement_groups(response)
 
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,

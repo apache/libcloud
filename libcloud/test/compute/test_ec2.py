@@ -29,6 +29,7 @@ from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
 from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
+from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
@@ -942,6 +943,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_list_placement_groups(self):
         pgs = self.driver.ex_list_placement_groups()
         self.assertEqual(len(pgs), 2)
+        self.assertIsInstance(pgs[0], EC2PlacementGroup)
 
     def test_ex_list_networks(self):
         vpcs = self.driver.ex_list_networks()
