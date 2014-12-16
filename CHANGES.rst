@@ -296,6 +296,11 @@ Compute
   (GITHUB-371)
   [Jeroen de Korte]
 
+- Fix a bug with handling of the ``ex_keyname`` argument in the Softlayer
+  driver.
+  (GITHUB-416, LIBCLOUD-647)
+  [Dustin Oberloh]
+
 Storage
 ~~~~~~~
 
