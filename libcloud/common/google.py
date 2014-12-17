@@ -698,10 +698,14 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         Write token_info to credential file.
         """
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        data = json.dumps(self.token_info)
-        with open(filename, 'w') as f:
-            f.write(data)
+        try:
+            filename = os.path.realpath(os.path.expanduser(
+                self.credential_file))
+            data = json.dumps(self.token_info)
+            with open(filename, 'w') as f:
+                f.write(data)
+        except IOError:
+            pass
 
     def has_completed(self, response):
         """
