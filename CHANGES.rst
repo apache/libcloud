@@ -89,6 +89,11 @@ Compute
   (GITHUB-405)
   [Itxaka Serrano]
 
+- Fix a bug with handling of the ``ex_keyname`` argument in the Softlayer
+  driver.
+  (GITHUB-416, LIBCLOUD-647)
+  [Dustin Oberloh]
+
 - Update CloudSigma region list (remove Las Vegas, NV region and add new San
   Jose, CA and Miami, FL region).
   (GITHUB-417)
@@ -300,11 +305,6 @@ Compute
 - Implements VPC network ACLs for CloudStack driver.
   (GITHUB-371)
   [Jeroen de Korte]
-
-- Fix a bug with handling of the ``ex_keyname`` argument in the Softlayer
-  driver.
-  (GITHUB-416, LIBCLOUD-647)
-  [Dustin Oberloh]
 
 Storage
 ~~~~~~~
