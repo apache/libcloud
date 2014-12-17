@@ -89,6 +89,11 @@ Compute
   (GITHUB-405)
   [Itxaka Serrano]
 
+- Update CloudSigma region list (remove Las Vegas, NV region and add new San
+  Jose, CA and Miami, FL region).
+  (GITHUB-417)
+  [Viktor Petersson]
+
 Storage
 ~~~~~~~
 
