@@ -107,6 +107,10 @@ Compute
   (GITHUB-421)
   [ZuluPro]
 
+- Add support for placement group management to the EC2 driver.
+  (GITHUB-418)
+  [Mikhail Ovsyannikov]
+
 Storage
 ~~~~~~~
 
