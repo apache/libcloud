@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE Licenses added to the GCE driver.
+  (GITHUB-420)
+  [Eric Johnson]
+
 - GCE Projects support common instance metadata and usage export buckets
   (GITHUB-409)
   [Eric Johnson]

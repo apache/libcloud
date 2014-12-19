@@ -224,6 +224,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         names = [s.name for s in sizes_all]
         self.assertEqual(names.count('n1-standard-1'), 5)
 
+    def test_ex_get_license(self):
+        license = self.driver.ex_get_license('suse-cloud', 'sles-12')
+        self.assertTrue(license.name, 'sles-12')
+        self.assertTrue(license.charges_use_fee)
+
     def test_list_disktypes(self):
         disktypes = self.driver.ex_list_disktypes()
         disktypes_all = self.driver.ex_list_disktypes('all')
@@ -732,6 +737,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(fwr.extra['portRange'], '8000-8500')
         self.assertEqual(fwr.targetpool.name, 'lctargetpool')
         self.assertEqual(fwr.protocol, 'TCP')
+
+    def test_ex_get_image_license(self):
+        image = self.driver.ex_get_image('sles-12-v20141023')
+        self.assertTrue('licenses' in image.extra)
+        self.assertTrue(image.extra['licenses'][0].name, 'sles-12')
+        self.assertTrue(image.extra['licenses'][0].charges_use_fee)
 
     def test_ex_get_image(self):
         partial_name = 'debian-7'
@@ -1400,6 +1411,18 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _project(self, method, url, body, headers):
         body = self.fixtures.load('project.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_cloud_global_licenses_sles_11(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-cloud_global_licenses_sles_11.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-cloud_global_licenses_sles_12.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_cloud_global_images(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_debian_cloud_global_images(self, method, url, body, headers):
