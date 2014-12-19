@@ -77,6 +77,21 @@ class GCEConnection(GoogleBaseConnection):
                                                          project)
 
 
+class GCELicense(UuidMixin):
+    """A GCE License used to track software usage in GCE nodes."""
+    def __init__(self, id, name, driver, charges_use_fee, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.driver = driver
+        self.charges_use_fee = charges_use_fee
+        self.extra = extra or {}
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
+            self.id, self.name, self.charges_use_fee)
+
+
 class GCEDiskType(UuidMixin):
     """A GCE DiskType resource."""
     def __init__(self, id, name, zone, driver, extra=None):
@@ -3059,6 +3074,29 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_get_license(self, project, name):
+        """
+        Return a License object for specified project and name.
+
+        :param  name: The project to reference when looking up the license.
+        :type   name: ``str``
+
+        :param  name: The name of the License
+        :type   name: ``str``
+
+        :return:  A DiskType object for the name
+        :rtype:   :class:`GCEDiskType`
+        """
+        saved_request_path = self.connection.request_path
+        new_request_path = saved_request_path.replace(self.project, project)
+        self.connection.request_path = new_request_path
+
+        request = '/global/licenses/%s' % (name)
+        response = self.connection.request(request, method='GET').object
+        self.connection.request_path = saved_request_path
+
+        return self._to_license(response)
+
     def ex_get_disktype(self, name, zone=None):
         """
         Return a DiskType object based on a name and optional zone.
@@ -4158,7 +4196,8 @@ class GCENodeDriver(NodeDriver):
         if 'sourceDiskId' in image:
             extra['sourceDiskId'] = image.get('sourceDiskId', None)
         if 'licenses' in image:
-            extra['licenses'] = image.get('licenses', None)
+            lic_objs = self._licenses_from_urls(licenses=image['licenses'])
+            extra['licenses'] = lic_objs
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)
@@ -4336,7 +4375,8 @@ class GCENodeDriver(NodeDriver):
         if 'storageBytesStatus' in snapshot:
             extra['storageBytesStatus'] = snapshot['storageBytesStatus']
         if 'licenses' in snapshot:
-            extra['licenses'] = snapshot['licenses']
+            lic_objs = self._licenses_from_urls(licenses=snapshot['licenses'])
+            extra['licenses'] = lic_objs
 
         return GCESnapshot(id=snapshot['id'], name=snapshot['name'],
                            size=snapshot['diskSizeGb'],
@@ -4453,6 +4493,24 @@ class GCENodeDriver(NodeDriver):
                        maintenance_windows=zone.get('maintenanceWindows'),
                        deprecated=deprecated, driver=self, extra=extra)
 
+    def _to_license(self, license):
+        """
+        Return a License object from the json-response dictionary.
+
+        :param  license: The dictionary describing the license.
+        :type   license: ``dict``
+
+        :return: License object
+        :rtype: :class:`GCELicense`
+        """
+        extra = {}
+        extra['selfLink'] = license.get('selfLink')
+        extra['kind'] = license.get('kind')
+
+        return GCELicense(id=license['name'], name=license['name'],
+                          charges_use_fee=license['chargesUseFee'],
+                          driver=self, extra=extra)
+
     def _set_project_metadata(self, metadata=None, force=False,
                               current_keys=""):
         """
@@ -4497,3 +4555,23 @@ class GCENodeDriver(NodeDriver):
                 new_md = updated_md
                 new_md.append({'key': 'sshKeys', 'value': current_keys})
         return new_md
+
+    def _licenses_from_urls(self, licenses):
+        """
+        Convert a list of license selfLinks into a list of :class:`GCELicense`
+        objects.
+
+        :param  licenses: A list of GCE license selfLink URLs.
+        :type   licenses: ``list`` of ``str``
+
+        :return: List of :class:`GCELicense` objects.
+        :rtype:  ``list``
+        """
+        return_list = []
+        for license in licenses:
+            selfLink_parts = license.split('/')
+            lic_proj = selfLink_parts[6]
+            lic_name = selfLink_parts[-1]
+            return_list.append(self.ex_get_license(project=lic_proj,
+                                                   name=lic_name))
+        return return_list
