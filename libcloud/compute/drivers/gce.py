@@ -164,7 +164,7 @@ class GCEBackendService(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_destroy_backend_service(backend_service=self)
+        return self.driver.ex_destroy_backendservice(backendservice=self)
 
 
 class GCEFailedDisk(object):
@@ -489,10 +489,10 @@ class GCESnapshot(VolumeSnapshot):
 
 
 class GCETargetHttpProxy(UuidMixin):
-    def __init__(self, id, name, url_map, driver, extra=None):
+    def __init__(self, id, name, urlmap, driver, extra=None):
         self.id = str(id)
         self.name = name
-        self.url_map = url_map
+        self.urlmap = urlmap
         self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
@@ -508,7 +508,7 @@ class GCETargetHttpProxy(UuidMixin):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        return self.driver.ex_destroy_target_http_proxy(target_http_proxy=self)
+        return self.driver.ex_destroy_targethttpproxy(targethttpproxy=self)
 
 
 class GCETargetInstance(UuidMixin):
@@ -672,7 +672,7 @@ class GCEUrlMap(UuidMixin):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        return self.driver.ex_destroy_url_map(url_map=self)
+        return self.driver.ex_destroy_urlmap(urlmap=self)
 
 
 class GCEZone(NodeLocation):
@@ -1041,21 +1041,21 @@ class GCENodeDriver(NodeDriver):
                                   response['items']]
         return list_addresses
 
-    def ex_list_backend_services(self):
+    def ex_list_backendservices(self):
         """
         Return a list of backend services.
 
         :return: A list of backend service objects.
         :rtype: ``list`` of :class:`GCEBackendService`
         """
-        list_backend_services = []
+        list_backendservices = []
         response = self.connection.request('/global/backendServices',
                                            method='GET').object
 
-        list_backend_services = [self._to_backend_service(d) for d in
-                                 response.get('items', [])]
+        list_backendservices = [self._to_backendservice(d) for d in
+                                response.get('items', [])]
 
-        return list_backend_services
+        return list_backendservices
 
     def ex_list_healthchecks(self):
         """
@@ -1297,6 +1297,18 @@ class GCENodeDriver(NodeDriver):
                           response.get('items', [])]
         return list_snapshots
 
+    def ex_list_targethttpproxies(self):
+        """
+        Return the list of target HTTP proxies.
+
+        :return:  A list of target http proxy objects
+        :rtype:   ``list`` of :class:`GCETargetHttpProxy`
+        """
+        request = '/global/targetHttpProxies'
+        response = self.connection.request(request, method='GET').object
+        return [self._to_targethttpproxy(u) for u in
+                response.get('items', [])]
+
     def ex_list_targetinstances(self, zone=None):
         """
         Return the list of target instances.
@@ -1351,19 +1363,7 @@ class GCENodeDriver(NodeDriver):
                                     response['items']]
         return list_targetpools
 
-    def ex_list_target_http_proxies(self):
-        """
-        Return the list of target HTTP proxies.
-
-        :return:  A list of target http proxy objects
-        :rtype:   ``list`` of :class:`GCETargetHttpProxy`
-        """
-        request = '/global/targetHttpProxies'
-        response = self.connection.request(request, method='GET').object
-        return [self._to_target_http_proxy(u) for u in
-                response.get('items', [])]
-
-    def ex_list_url_maps(self):
+    def ex_list_urlmaps(self):
         """
         Return the list of URL Maps in the project.
 
@@ -1372,7 +1372,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/global/urlMaps'
         response = self.connection.request(request, method='GET').object
-        return [self._to_url_map(u) for u in response.get('items', [])]
+        return [self._to_urlmap(u) for u in response.get('items', [])]
 
     def list_volumes(self, ex_zone=None):
         """
@@ -1462,7 +1462,7 @@ class GCENodeDriver(NodeDriver):
                                       data=address_data)
         return self.ex_get_address(name, region=region)
 
-    def ex_create_backend_service(self, name, healthcheck):
+    def ex_create_backendservice(self, name, healthcheck):
         """
         Create a global backend service.
 
@@ -1477,14 +1477,14 @@ class GCENodeDriver(NodeDriver):
         """
         if not hasattr(healthcheck, 'name'):
             healthcheck = self.ex_get_healthcheck(healthcheck)
-        backend_service_data = {
+        backendservice_data = {
             'name': name,
             'healthChecks': [healthcheck.extra['selfLink']]}
 
         request = '/global/backendServices'
         self.connection.async_request(request, method='POST',
-                                      data=backend_service_data)
-        return self.ex_get_backend_service(name)
+                                      data=backendservice_data)
+        return self.ex_get_backendservice(name)
 
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
                               interval=None, timeout=None,
@@ -1654,19 +1654,17 @@ class GCENodeDriver(NodeDriver):
                                Defaults to None.
         :type     description: ``str`` or ``None``
 
-        :param  targetpool: Deprecated parameter for backwards compatibility.
-                            Use target instead.
-        :param  targetpool: ``str`` or :class:`GCETargetPool`
+        :keyword  targetpool: Deprecated parameter for backwards compatibility.
+                              Use target instead.
+        :type     targetpool: ``str`` or :class:`GCETargetPool`
 
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
-        # TODO: should global forwarding rules instead be separate libcloud
-        # objects?
         forwarding_rule_data = {'name': name}
         if global_rule:
             if not hasattr(target, 'name'):
-                target = self.ex_get_target_http_proxy(target)
+                target = self.ex_get_targethttpproxy(target)
         else:
             region = region or self.region
             if not hasattr(region, 'name'):
@@ -1680,10 +1678,10 @@ class GCENodeDriver(NodeDriver):
 
         forwarding_rule_data['target'] = target.extra['selfLink']
         forwarding_rule_data['IPProtocol'] = protocol.upper()
-        # TODO: Support for global addresses
-        if address and not global_rule:
+        if address:
             if not hasattr(address, 'name'):
-                address = self.ex_get_address(address, region)
+                address = self.ex_get_address(
+                    address, 'global' if global_rule else region)
             forwarding_rule_data['IPAddress'] = address.address
         if port_range:
             forwarding_rule_data['portRange'] = port_range
@@ -2135,6 +2133,32 @@ class GCENodeDriver(NodeDriver):
             node_list.append(status['node'])
         return node_list
 
+    def ex_create_targethttpproxy(self, name, urlmap):
+        """
+        Create a target HTTP proxy.
+
+        :param  name: Name of target HTTP proxy
+        :type   name: ``str``
+
+        :keyword  urlmap: URL map defining the mapping from URl to the
+                           backendservice.
+        :type     healthchecks: ``str`` or :class:`GCEUrlMap`
+
+        :return:  Target Pool object
+        :rtype:   :class:`GCETargetPool`
+        """
+        targetproxy_data = {'name': name}
+
+        if not hasattr(urlmap, 'name'):
+            urlmap = self.ex_get_urlmap(urlmap)
+        targetproxy_data['urlMap'] = urlmap.extra['selfLink']
+
+        request = '/global/targetHttpProxies'
+        self.connection.async_request(request, method='POST',
+                                      data=targetproxy_data)
+
+        return self.ex_get_targethttpproxy(name)
+
     def ex_create_targetinstance(self, name, zone=None, node=None,
                                  description=None, nat_policy="NO_NAT"):
         """
@@ -2251,33 +2275,7 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_targetpool(name, region)
 
-    def ex_create_target_http_proxy(self, name, url_map):
-        """
-        Create a target HTTP proxy.
-
-        :param  name: Name of target HTTP proxy
-        :type   name: ``str``
-
-        :keyword  url_map: URL map defining the mapping from URl to the
-                           backend_service.
-        :type     healthchecks: ``str`` or :class:`GCEUrlMap`
-
-        :return:  Target Pool object
-        :rtype:   :class:`GCETargetPool`
-        """
-        targetproxy_data = {'name': name}
-
-        if not hasattr(url_map, 'name'):
-            url_map = self.ex_get_url_map(url_map)
-        targetproxy_data['urlMap'] = url_map.extra['selfLink']
-
-        request = '/global/targetHttpProxies'
-        self.connection.async_request(request, method='POST',
-                                      data=targetproxy_data)
-
-        return self.ex_get_target_http_proxy(name)
-
-    def ex_create_url_map(self, name, default_service):
+    def ex_create_urlmap(self, name, default_service):
         """
         Create a URL Map.
 
@@ -2290,18 +2288,18 @@ class GCENodeDriver(NodeDriver):
         :return:  URL Map object
         :rtype:   :class:`GCEUrlMap`
         """
-        url_map_data = {'name': name}
+        urlmap_data = {'name': name}
 
         # TODO: support hostRules, pathMatchers, tests
         if not hasattr(default_service, 'name'):
-            default_service = self.ex_get_backend_service(default_service)
-        url_map_data['defaultService'] = default_service.extra['selfLink']
+            default_service = self.ex_get_backendservice(default_service)
+        urlmap_data['defaultService'] = default_service.extra['selfLink']
 
         request = '/global/urlMaps'
         self.connection.async_request(request, method='POST',
-                                      data=url_map_data)
+                                      data=urlmap_data)
 
-        return self.ex_get_url_map(name)
+        return self.ex_get_urlmap(name)
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
@@ -2956,17 +2954,17 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def ex_destroy_backend_service(self, backend_service):
+    def ex_destroy_backendservice(self, backendservice):
         """
         Destroy a Backend Service.
 
-        :param  backend_service: BackendService object to destroy
-        :type   backend_service: :class:`GCEBackendService`
+        :param  backendservice: BackendService object to destroy
+        :type   backendservice: :class:`GCEBackendService`
 
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/global/backendServices/%s' % backend_service.name
+        request = '/global/backendServices/%s' % backendservice.name
 
         self.connection.async_request(request, method='DELETE')
         return True
@@ -3264,6 +3262,20 @@ class GCENodeDriver(NodeDriver):
             success.append(s)
         return success
 
+    def ex_destroy_targethttpproxy(self, targethttpproxy):
+        """
+        Destroy a target HTTP proxy.
+
+        :param  targethttpproxy: TargetHttpProxy object to destroy
+        :type   targethttpproxy: :class:`GCETargetHttpProxy`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/targetHttpProxies/%s' % targethttpproxy.name
+        self.connection.async_request(request, method='DELETE')
+        return True
+
     def ex_destroy_targetinstance(self, targetinstance):
         """
         Destroy a target instance.
@@ -3276,20 +3288,6 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/targetInstances/%s' % (targetinstance.zone.name,
                                                     targetinstance.name)
-        self.connection.async_request(request, method='DELETE')
-        return True
-
-    def ex_destroy_target_http_proxy(self, target_http_proxy):
-        """
-        Destroy a target HTTP proxy.
-
-        :param  target_http_proxy: TargetHttpProxy object to destroy
-        :type   target_http_proxy: :class:`GCETargetHttpProxy`
-
-        :return:  True if successful
-        :rtype:   ``bool``
-        """
-        request = '/global/targetHttpProxies/%s' % target_http_proxy.name
         self.connection.async_request(request, method='DELETE')
         return True
 
@@ -3309,17 +3307,17 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def ex_destroy_url_map(self, url_map):
+    def ex_destroy_urlmap(self, urlmap):
         """
         Destroy a URL map.
 
-        :param  url_map: UrlMap object to destroy
-        :type   url_map: :class:`GCEUrlMap`
+        :param  urlmap: UrlMap object to destroy
+        :type   urlmap: :class:`GCEUrlMap`
 
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/global/urlMaps/%s' % url_map.name
+        request = '/global/urlMaps/%s' % urlmap.name
 
         self.connection.async_request(request, method='DELETE')
         return True
@@ -3418,7 +3416,7 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_address(response)
 
-    def ex_get_backend_service(self, name):
+    def ex_get_backendservice(self, name):
         """
         Return a Backend Service object based on name
 
@@ -3430,7 +3428,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/global/backendServices/%s' % name
         response = self.connection.request(request, method='GET').object
-        return self._to_backend_service(response)
+        return self._to_backendservice(response)
 
     def ex_get_healthcheck(self, name):
         """
@@ -3666,6 +3664,20 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_region(response)
 
+    def ex_get_targethttpproxy(self, name):
+        """
+        Return a Target HTTP Proxy object based on its name.
+
+        :param  name: The name of the target HTTP proxy.
+        :type   name: ``str``
+
+        :return:  A Target HTTP Proxy object for the pool
+        :rtype:   :class:`GCETargetHttpProxy`
+        """
+        request = '/global/targetHttpProxies/%s' % name
+        response = self.connection.request(request, method='GET').object
+        return self._to_targethttpproxy(response)
+
     def ex_get_targetinstance(self, name, zone=None):
         """
         Return a TargetInstance object based on a name and optional zone.
@@ -3706,21 +3718,7 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_targetpool(response)
 
-    def ex_get_target_http_proxy(self, name):
-        """
-        Return a Target HTTP Proxy object based on its name.
-
-        :param  name: The name of the target HTTP proxy.
-        :type   name: ``str``
-
-        :return:  A Target HTTP Proxy object for the pool
-        :rtype:   :class:`GCETargetHttpProxy`
-        """
-        request = '/global/targetHttpProxies/%s' % name
-        response = self.connection.request(request, method='GET').object
-        return self._to_target_http_proxy(response)
-
-    def ex_get_url_map(self, name):
+    def ex_get_urlmap(self, name):
         """
         Return a URL Map object based on name
 
@@ -3732,7 +3730,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/global/urlMaps/%s' % name
         response = self.connection.request(request, method='GET').object
-        return self._to_url_map(response)
+        return self._to_urlmap(response)
 
     def ex_get_zone(self, name):
         """
@@ -4382,12 +4380,12 @@ class GCENodeDriver(NodeDriver):
                           address=address['address'],
                           region=region, driver=self, extra=extra)
 
-    def _to_backend_service(self, backend_service):
+    def _to_backendservice(self, backendservice):
         """
         Return a Backend Service object from the json-response dictionary.
 
-        :param  backend_service: The dictionary describing the backend service.
-        :type   backend_service: ``dict``
+        :param  backendservice: The dictionary describing the backend service.
+        :type   backendservice: ``dict``
 
         :return: BackendService object
         :rtype: :class:`GCEBackendService`
@@ -4396,20 +4394,20 @@ class GCENodeDriver(NodeDriver):
 
         for extra_key in ('selfLink', 'creationTimestamp', 'fingerprint',
                           'description'):
-            extra[extra_key] = backend_service.get(extra_key)
+            extra[extra_key] = backendservice.get(extra_key)
 
-        backends = backend_service.get('backends', [])
+        backends = backendservice.get('backends', [])
         healthchecks = [self._get_object_by_kind(h) for h in
-                        backend_service.get('healthChecks', [])]
+                        backendservice.get('healthChecks', [])]
 
-        return GCEBackendService(id=backend_service['id'],
-                                 name=backend_service['name'],
+        return GCEBackendService(id=backendservice['id'],
+                                 name=backendservice['name'],
                                  backends=backends,
                                  healthchecks=healthchecks,
-                                 port=backend_service['port'],
-                                 port_name=backend_service['portName'],
-                                 protocol=backend_service['protocol'],
-                                 timeout=backend_service['timeoutSec'],
+                                 port=backendservice['port'],
+                                 port_name=backendservice['portName'],
+                                 protocol=backendservice['protocol'],
+                                 timeout=backendservice['timeoutSec'],
                                  driver=self, extra=extra)
 
     def _to_healthcheck(self, healthcheck):
@@ -4784,6 +4782,25 @@ class GCENodeDriver(NodeDriver):
         return StorageVolume(id=volume['id'], name=volume['name'],
                              size=volume['sizeGb'], driver=self, extra=extra)
 
+    def _to_targethttpproxy(self, targethttpproxy):
+        """
+        Return a Target HTTP Proxy object from the json-response dictionary.
+
+        :param  targethttpproxy: The dictionary describing the proxy.
+        :type   targethttpproxy: ``dict``
+
+        :return: Target HTTP Proxy object
+        :rtype:  :class:`GCETargetHttpProxy`
+        """
+        extra = dict([(k, targethttpproxy.get(k)) for k in (
+            'creationTimestamp', 'description', 'selfLink')])
+
+        urlmap = self._get_object_by_kind(targethttpproxy.get('urlMap'))
+
+        return GCETargetHttpProxy(id=targethttpproxy['id'],
+                                  name=targethttpproxy['name'],
+                                  urlmap=urlmap, driver=self, extra=extra)
+
     def _to_targetinstance(self, targetinstance):
         """
         Return a Target Instance object from the json-response dictionary.
@@ -4851,26 +4868,7 @@ class GCENodeDriver(NodeDriver):
                              region=region, healthchecks=healthcheck_list,
                              nodes=node_list, driver=self, extra=extra)
 
-    def _to_target_http_proxy(self, target_http_proxy):
-        """
-        Return a Target HTTP Proxy object from the json-response dictionary.
-
-        :param  target_http_proxy: The dictionary describing the proxy.
-        :type   target_http_proxy: ``dict``
-
-        :return: Target HTTP Proxy object
-        :rtype:  :class:`GCETargetHttpProxy`
-        """
-        extra = dict([(k, target_http_proxy.get(k)) for k in (
-            'creationTimestamp', 'description', 'selfLink')])
-
-        url_map = self._get_object_by_kind(target_http_proxy.get('urlMap'))
-
-        return GCETargetHttpProxy(id=target_http_proxy['id'],
-                                  name=target_http_proxy['name'],
-                                  url_map=url_map, driver=self, extra=extra)
-
-    def _to_url_map(self, url_map):
+    def _to_urlmap(self, urlmap):
         """
         Return a UrlMap object from the json-response dictionary.
 
@@ -4880,17 +4878,17 @@ class GCENodeDriver(NodeDriver):
         :return: Zone object
         :rtype: :class:`GCEUrlMap`
         """
-        extra = dict([(k, url_map.get(k)) for k in (
+        extra = dict([(k, urlmap.get(k)) for k in (
             'creationTimestamp', 'description', 'fingerprint', 'selfLink')])
 
         default_service = self._get_object_by_kind(
-            url_map.get('defaultService'))
+            urlmap.get('defaultService'))
 
-        host_rules = url_map.get('hostRules', [])
-        path_matchers = url_map.get('pathMatchers', [])
-        tests = url_map.get('tests', [])
+        host_rules = urlmap.get('hostRules', [])
+        path_matchers = urlmap.get('pathMatchers', [])
+        tests = urlmap.get('tests', [])
 
-        return GCEUrlMap(id=url_map['id'], name=url_map['name'],
+        return GCEUrlMap(id=urlmap['id'], name=urlmap['name'],
                          default_service=default_service,
                          host_rules=host_rules, path_matchers=path_matchers,
                          tests=tests, driver=self, extra=extra)
@@ -5002,7 +5000,7 @@ class GCENodeDriver(NodeDriver):
 
     KIND_METHOD_MAP = {
         'compute#address': _to_address,
-        'compute#backendService': _to_backend_service,
+        'compute#backendService': _to_backendservice,
         'compute#disk': _to_storage_volume,
         'compute#firewall': _to_firewall,
         'compute#forwardingRule': _to_forwarding_rule,
@@ -5014,9 +5012,9 @@ class GCENodeDriver(NodeDriver):
         'compute#project': _to_project,
         'compute#region': _to_region,
         'compute#snapshot': _to_snapshot,
-        'compute#targetHttpProxy': _to_target_http_proxy,
+        'compute#targetHttpProxy': _to_targethttpproxy,
         'compute#targetInstance': _to_targetinstance,
         'compute#targetPool': _to_targetpool,
-        'compute#urlMap': _to_url_map,
+        'compute#urlMap': _to_urlmap,
         'compute#zone': _to_zone,
     }
