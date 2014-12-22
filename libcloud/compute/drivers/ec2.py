@@ -2183,8 +2183,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_subnet: The subnet to launch the instance into.
         :type       ex_subnet: :class:`.EC2Subnet`
 
-        :keyword    ex_placement_group: The placement group to launch
-                                        the instance into.
+        :keyword    ex_placement_group: The name of the placement group to
+                                        launch the instance into.
         :type       ex_placement_group: ``str``
         """
         image = kwargs["image"]
@@ -2618,7 +2618,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """Creates new Placement Group
 
         :param name: Name for new placement Group
-        :type: ``str``
+        :type name: ``str``
 
         :rtype: ``bool``
         """
@@ -2632,7 +2632,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """Deletes Placement Group
 
         :param name: Placement Group name
-        :type: ``str``
+        :type name: ``str``
 
         :rtype: ``bool``
         """
@@ -2645,14 +2645,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """List Placement Groups
 
         :param names: Placement Group names
-        :type: ``list`` of ``str``
+        :type names: ``list`` of ``str``
 
         :rtype: ``list`` of :class:`.EC2PlacementGroup`
         """
         params = {'Action': 'DescribePlacementGroups'}
 
-        for n, name in enumerate(names, 1):
-            params['GroupName.%s' % n] = name
+        for index, name in enumerate(names):
+            params['GroupName.%s' % index + 1] = name
 
         response = self.connection.request(self.path, params=params).object
         return self._to_placement_groups(response)
