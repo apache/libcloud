@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "7514147734702416613",
+ "name": "operation_global_targetHttpProxies_post",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+ "targetId": "5242670162541625113",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-27T16:22:40.726-07:00",
+ "startTime": "2014-10-27T16:22:41.027-07:00",
+ "endTime": "2014-10-27T16:22:41.657-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_targetHttpProxies_post"
+}

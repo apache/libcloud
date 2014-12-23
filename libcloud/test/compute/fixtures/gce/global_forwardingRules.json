@@ -1,0 +1,29 @@
+{
+ "kind": "compute#forwardingRuleList",
+ "id": "projects/project_name/global/forwardingRules",
+ "items": [
+  {
+   "kind": "compute#forwardingRule",
+   "id": "16224943838916174114",
+   "creationTimestamp": "2014-08-22T11:15:26.174-07:00",
+   "name": "http-rule",
+   "IPAddress": "192.0.2.1",
+   "IPProtocol": "TCP",
+   "portRange": "80-80",
+   "target": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules/http-rule"
+  },
+  {
+   "kind": "compute#forwardingRule",
+   "id": "16224943838916174115",
+   "creationTimestamp": "2014-08-22T11:15:26.174-07:00",
+   "name": "http-rule2",
+   "IPAddress": "192.0.2.2",
+   "IPProtocol": "TCP",
+   "portRange": "80-80",
+   "target": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules/http-rule2"
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules"
+}

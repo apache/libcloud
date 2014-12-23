@@ -730,7 +730,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         In many places, the Google API returns a full URL to a resource.
         This will strip the scheme and host off of the path and just return
-        the request.  Otherwise, it will append the base request_path to
+        the request.  Otherwise, it will prepend the base request_path to
         the action.
 
         :param  action: The action to be called in the http request

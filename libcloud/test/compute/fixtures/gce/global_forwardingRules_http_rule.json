@@ -1,0 +1,12 @@
+{
+ "kind": "compute#forwardingRule",
+ "id": "16224243838919174114",
+ "creationTimestamp": "2014-08-22T11:15:26.174-07:00",
+ "name": "http-rule",
+ "IPAddress": "192.0.2.1",
+ "IPProtocol": "TCP",
+ "portRange": "80-80",
+ "target": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+ "description": "global forwarding rule",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules/http-rule"
+}
