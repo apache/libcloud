@@ -136,6 +136,27 @@ class GCEAddress(UuidMixin):
             (hasattr(self.region, "name") and self.region.name or self.region))
 
 
+class GCEBackendService(UuidMixin):
+    """A GCE Backend Service."""
+
+    def __init__(self, id, name, backends, healthchecks, port, port_name,
+                 protocol, timeout, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.backends = backends or []
+        self.healthchecks = healthchecks or []
+        self.port = port
+        self.port_name = port_name
+        self.protocol = protocol
+        self.timeout = timeout
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCEBackendService id="%s" name="%s">' % (
+            self.id, self.name)
+
+
 class GCEFailedDisk(object):
     """Dummy Node object for disks that are not created."""
     def __init__(self, name, error, code):
@@ -245,6 +266,8 @@ class GCEForwardingRule(UuidMixin):
         self.region = region
         self.address = address
         self.protocol = protocol
+        # TODO: 'targetpool' should more correctly be 'target' since a
+        # forwarding rule's target can be something besides a targetpool
         self.targetpool = targetpool
         self.driver = driver
         self.extra = extra
@@ -455,6 +478,20 @@ class GCESnapshot(VolumeSnapshot):
         super(GCESnapshot, self).__init__(id, driver, size, extra)
 
 
+class GCETargetHttpProxy(UuidMixin):
+    def __init__(self, id, name, url_map, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.url_map = url_map
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCETargetHttpProxy id="%s" name="%s">' % (
+            self.id, self.name)
+
+
 class GCETargetInstance(UuidMixin):
     def __init__(self, id, name, zone, node, driver, extra=None):
         self.id = str(id)
@@ -588,6 +625,26 @@ class GCETargetPool(UuidMixin):
     def __repr__(self):
         return '<GCETargetPool id="%s" name="%s" region="%s">' % (
             self.id, self.name, self.region.name)
+
+
+class GCEUrlMap(UuidMixin):
+    """A GCE URL Map."""
+
+    def __init__(self, id, name, default_service, host_rules, path_matchers,
+                 tests, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.default_service = default_service
+        self.host_rules = host_rules or []
+        self.path_matchers = path_matchers or []
+        self.tests = tests or []
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCEUrlMap id="%s" name="%s">' % (
+            self.id, self.name)
 
 
 class GCEZone(NodeLocation):
@@ -956,6 +1013,22 @@ class GCENodeDriver(NodeDriver):
                                   response['items']]
         return list_addresses
 
+    def ex_list_backend_services(self):
+        """
+        Return a list of backend services.
+
+        :return: A list of backend service objects.
+        :rtype: ``list`` of :class:`GCEBackendService`
+        """
+        list_backend_services = []
+        response = self.connection.request('/global/backendServices',
+                                           method='GET').object
+
+        list_backend_services = [self._to_backend_service(d) for d in
+                                 response.get('items', [])]
+
+        return list_backend_services
+
     def ex_list_healthchecks(self):
         """
         Return the list of health checks.
@@ -984,7 +1057,7 @@ class GCENodeDriver(NodeDriver):
                           response.get('items', [])]
         return list_firewalls
 
-    def ex_list_forwarding_rules(self, region=None):
+    def ex_list_forwarding_rules(self, region=None, global_rules=False):
         """
         Return the list of forwarding rules for a region or all.
 
@@ -992,23 +1065,33 @@ class GCENodeDriver(NodeDriver):
                           example: 'us-central1'.  If None, will return
                           forwarding rules from the region of self.region
                           (which is based on self.zone).  If 'all', will
-                          return all forwarding rules.
+                          return forwarding rules for all regions, which does
+                          not include the global forwarding rules.
         :type     region: ``str`` or :class:`GCERegion` or ``None``
+
+        :keyword  global_rules: List global forwarding rules instead of
+                                per-region rules.  Setting True will cause
+                                'region' parameter to be ignored.
+        :type     global_rules: ``bool``
 
         :return: A list of forwarding rule objects.
         :rtype: ``list`` of :class:`GCEForwardingRule`
         """
         list_forwarding_rules = []
-        region = self._set_region(region)
-        if region is None:
-            request = '/aggregated/forwardingRules'
+        if global_rules:
+            region = None
+            request = '/global/forwardingRules'
         else:
-            request = '/regions/%s/forwardingRules' % (region.name)
+            region = self._set_region(region)
+            if region is None:
+                request = '/aggregated/forwardingRules'
+            else:
+                request = '/regions/%s/forwardingRules' % (region.name)
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
-            if region is None:
+            if not global_rules and region is None:
                 for v in response['items'].values():
                     region_forwarding_rules = [self._to_forwarding_rule(f) for
                                                f in v.get('forwardingRules',
@@ -1239,6 +1322,29 @@ class GCENodeDriver(NodeDriver):
                 list_targetpools = [self._to_targetpool(t) for t in
                                     response['items']]
         return list_targetpools
+
+    def ex_list_target_http_proxies(self):
+        """
+        Return the list of target HTTP proxies.
+
+        :return:  A list of target http proxy objects
+        :rtype:   ``list`` of :class:`GCETargetHttpProxy`
+        """
+        request = '/global/targetHttpProxies'
+        response = self.connection.request(request, method='GET').object
+        return [self._to_target_http_proxy(u) for u in
+                response.get('items', [])]
+
+    def ex_list_url_maps(self):
+        """
+        Return the list of URL Maps in the project.
+
+        :return:  A list of url map objects
+        :rtype:   ``list`` of :class:`GCEUrlMap`
+        """
+        request = '/global/urlMaps'
+        response = self.connection.request(request, method='GET').object
+        return [self._to_url_map(u) for u in response.get('items', [])]
 
     def list_volumes(self, ex_zone=None):
         """
@@ -3139,6 +3245,20 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_address(response)
 
+    def ex_get_backend_service(self, name):
+        """
+        Return a Backend Service object based on name
+
+        :param  name: The name of the backend service
+        :type   name: ``str``
+
+        :return:  A BackendService object for the backend service
+        :rtype:   :class:`GCEBackendService`
+        """
+        request = '/global/backendServices/%s' % name
+        response = self.connection.request(request, method='GET').object
+        return self._to_backend_service(response)
+
     def ex_get_healthcheck(self, name):
         """
         Return a HealthCheck object based on the healthcheck name.
@@ -3167,7 +3287,7 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_firewall(response)
 
-    def ex_get_forwarding_rule(self, name, region=None):
+    def ex_get_forwarding_rule(self, name, region=None, global_rules=False):
         """
         Return a Forwarding Rule object based on the forwarding rule name.
 
@@ -3178,12 +3298,20 @@ class GCENodeDriver(NodeDriver):
                           to search all regions).
         :type     region: ``str`` or ``None``
 
+        :keyword  global_rules: Set to True to get a global forwarding rule.
+                                Region will be ignored if True.
+        :type     global_rules: ``bool``
+
         :return:  A GCEForwardingRule object
         :rtype:   :class:`GCEForwardingRule`
         """
-        region = self._set_region(region) or self._find_zone_or_region(
-            name, 'forwardingRules', region=True, res_name='ForwardingRule')
-        request = '/regions/%s/forwardingRules/%s' % (region.name, name)
+        if global_rules:
+            request = '/global/forwardingRules/%s' % name
+        else:
+            region = self._set_region(region) or self._find_zone_or_region(
+                name, 'forwardingRules', region=True, res_name='ForwardingRule')
+            request = '/regions/%s/forwardingRules/%s' % (region.name, name)
+
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
 
@@ -3404,6 +3532,34 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_targetpool(response)
 
+    def ex_get_target_http_proxy(self, name):
+        """
+        Return a Target HTTP Proxy object based on its name.
+
+        :param  name: The name of the target HTTP proxy.
+        :type   name: ``str``
+
+        :return:  A Target HTTP Proxy object for the pool
+        :rtype:   :class:`GCETargetHttpProxy`
+        """
+        request = '/global/targetHttpProxies/%s' % name
+        response = self.connection.request(request, method='GET').object
+        return self._to_target_http_proxy(response)
+
+    def ex_get_url_map(self, name):
+        """
+        Return a URL Map object based on name
+
+        :param  name: The name of the url map
+        :type   name: ``str``
+
+        :return:  A URL Map object for the backend service
+        :rtype:   :class:`GCEUrlMap`
+        """
+        request = '/global/urlMaps/%s' % name
+        response = self.connection.request(request, method='GET').object
+        return self._to_url_map(response)
+
     def ex_get_zone(self, name):
         """
         Return a Zone object based on the zone name.
@@ -3498,7 +3654,7 @@ class GCENodeDriver(NodeDriver):
         :type   path: ``str``
 
         :return:  Dictionary containing name and zone/region of resource
-        :rtype    ``dict``
+        :rtype:   ``dict``
         """
         region = None
         zone = None
@@ -3513,6 +3669,26 @@ class GCENodeDriver(NodeDriver):
             glob = True
 
         return {'name': name, 'region': region, 'zone': zone, 'global': glob}
+
+    def _get_object_by_kind(self, url):
+        """
+        Fetch a resource and return its object representation by mapping its
+        'kind' parameter to the appropriate class.  Returns ``None`` if url is
+        ``None``
+
+        :param  url: fully qualified URL of the resource to request from GCE
+        :type   url: ``str``
+
+        :return:  Object representation of the requested resource.
+        "rtype:   :class:`object` or ``None``
+        """
+        if not url:
+            return None
+
+        # Relies on GoogleBaseConnection.morph_action_hook to rewrite
+        # the URL to a request
+        response = self.connection.request(url, method='GET').object
+        return GCENodeDriver.KIND_METHOD_MAP[response['kind']](self, response)
 
     def _get_region_from_zone(self, zone):
         """
@@ -4032,6 +4208,36 @@ class GCENodeDriver(NodeDriver):
                           address=address['address'],
                           region=region, driver=self, extra=extra)
 
+    def _to_backend_service(self, backend_service):
+        """
+        Return a Backend Service object from the json-response dictionary.
+
+        :param  backend_service: The dictionary describing the backend service.
+        :type   backend_service: ``dict``
+
+        :return: BackendService object
+        :rtype: :class:`GCEBackendService`
+        """
+        extra = {}
+
+        for extra_key in ('selfLink', 'creationTimestamp', 'fingerprint',
+                          'description'):
+            extra[extra_key] = backend_service.get(extra_key)
+
+        backends = backend_service.get('backends', [])
+        healthchecks = [self._get_object_by_kind(h) for h in
+                        backend_service.get('healthChecks', [])]
+
+        return GCEBackendService(id=backend_service['id'],
+                                 name=backend_service['name'],
+                                 backends=backends,
+                                 healthchecks=healthchecks,
+                                 port=backend_service['port'],
+                                 port_name=backend_service['portName'],
+                                 protocol=backend_service['protocol'],
+                                 timeout=backend_service['timeoutSec'],
+                                 driver=self, extra=extra)
+
     def _to_healthcheck(self, healthcheck):
         """
         Return a HealthCheck object from the json-response dictionary.
@@ -4102,16 +4308,16 @@ class GCENodeDriver(NodeDriver):
         extra['creationTimestamp'] = forwarding_rule.get('creationTimestamp')
         extra['description'] = forwarding_rule.get('description')
 
-        region = self.ex_get_region(forwarding_rule['region'])
-        targetpool = self.ex_get_targetpool(
-            self._get_components_from_path(forwarding_rule['target'])['name'])
+        region = forwarding_rule.get('region')
+        if region:
+            region = self.ex_get_region(region)
+        target = self._get_object_by_kind(forwarding_rule['target'])
 
         return GCEForwardingRule(id=forwarding_rule['id'],
                                  name=forwarding_rule['name'], region=region,
                                  address=forwarding_rule.get('IPAddress'),
                                  protocol=forwarding_rule.get('IPProtocol'),
-                                 targetpool=targetpool,
-                                 driver=self, extra=extra)
+                                 targetpool=target, driver=self, extra=extra)
 
     def _to_network(self, network):
         """
@@ -4471,6 +4677,50 @@ class GCENodeDriver(NodeDriver):
                              region=region, healthchecks=healthcheck_list,
                              nodes=node_list, driver=self, extra=extra)
 
+    def _to_target_http_proxy(self, target_http_proxy):
+        """
+        Return a Target HTTP Proxy object from the json-response dictionary.
+
+        :param  target_http_proxy: The dictionary describing the proxy.
+        :type   target_http_proxy: ``dict``
+
+        :return: Target HTTP Proxy object
+        :rtype:  :class:`GCETargetHttpProxy`
+        """
+        extra = dict([(k, target_http_proxy.get(k)) for k in (
+            'creationTimestamp', 'description', 'selfLink')])
+
+        url_map = self._get_object_by_kind(target_http_proxy.get('urlMap'))
+
+        return GCETargetHttpProxy(id=target_http_proxy['id'],
+                                  name=target_http_proxy['name'],
+                                  url_map=url_map, driver=self, extra=extra)
+
+    def _to_url_map(self, url_map):
+        """
+        Return a UrlMap object from the json-response dictionary.
+
+        :param  zone: The dictionary describing the url-map.
+        :type   zone: ``dict``
+
+        :return: Zone object
+        :rtype: :class:`GCEUrlMap`
+        """
+        extra = dict([(k, url_map.get(k)) for k in (
+            'creationTimestamp', 'description', 'fingerprint', 'selfLink')])
+
+        default_service = self._get_object_by_kind(
+            url_map.get('defaultService'))
+
+        host_rules = url_map.get('hostRules', [])
+        path_matchers = url_map.get('pathMatchers', [])
+        tests = url_map.get('tests', [])
+
+        return GCEUrlMap(id=url_map['id'], name=url_map['name'],
+                         default_service=default_service,
+                         host_rules=host_rules, path_matchers=path_matchers,
+                         tests=tests, driver=self, extra=extra)
+
     def _to_zone(self, zone):
         """
         Return a Zone object from the json-response dictionary.
@@ -4575,3 +4825,24 @@ class GCENodeDriver(NodeDriver):
             return_list.append(self.ex_get_license(project=lic_proj,
                                                    name=lic_name))
         return return_list
+
+    KIND_METHOD_MAP = {
+        'compute#address': _to_address,
+        'compute#backendService': _to_backend_service,
+        'compute#disk': _to_storage_volume,
+        'compute#firewall': _to_firewall,
+        'compute#forwardingRule': _to_forwarding_rule,
+        'compute#httpHealthCheck': _to_healthcheck,
+        'compute#image': _to_node_image,
+        'compute#instance': _to_node,
+        'compute#machineType': _to_node_size,
+        'compute#network': _to_network,
+        'compute#project': _to_project,
+        'compute#region': _to_region,
+        'compute#snapshot': _to_snapshot,
+        'compute#targetHttpProxy': _to_target_http_proxy,
+        'compute#targetInstance': _to_targetinstance,
+        'compute#targetPool': _to_targetpool,
+        'compute#urlMap': _to_url_map,
+        'compute#zone': _to_zone,
+    }
