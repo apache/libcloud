@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver support for HTTP load-balancer resources
+  (LIBCLOUD-605, GITHUB-429)
+  [Lee Verberne]
+
 - GCE driver updated to make better use of GCEDiskTypes
   (GITHUB-428)
   [Eric Johnson]

@@ -1,0 +1,14 @@
+{
+ "kind": "compute#operation",
+ "id": "3333333333333333333",
+ "name": "operation_global_backendServices_web_service_delete",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/backendServices/web-service",
+ "targetId": "15555555555223232737",
+ "status": "PENDING",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 0,
+ "insertTime": "2014-10-28T12:51:20.402-07:00",
+ "startTime": "2014-10-28T12:51:20.623-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_backendServices_web_service_delete"
+}

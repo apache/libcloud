@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "8150500072597970926",
+ "name": "operation_global_backendServices_post",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/backendServices/web-service",
+ "targetId": "4582947879210482708",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-10T16:39:17.206-07:00",
+ "startTime": "2014-10-10T16:39:17.613-07:00",
+ "endTime": "2014-10-10T16:39:18.330-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_backendServices_post"
+}

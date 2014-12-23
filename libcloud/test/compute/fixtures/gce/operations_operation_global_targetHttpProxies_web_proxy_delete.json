@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "12025659947133083605",
+ "name": "operation_global_targetHttpProxies_web_proxy_delete",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+ "targetId": "5243939392541625113",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-28T12:21:47.406-07:00",
+ "startTime": "2014-10-28T12:21:47.666-07:00",
+ "endTime": "2014-10-28T12:21:48.419-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_targetHttpProxies_web_proxy_delete"
+}
