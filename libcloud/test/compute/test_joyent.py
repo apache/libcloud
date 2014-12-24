@@ -100,6 +100,15 @@ class JoyentTestCase(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_start_node(node))
 
+    def test_ex_get_node(self):
+        node_id = '2fb67f5f-53f2-40ab-9d99-b9ff68cfb2ab'
+        node = self.driver.ex_get_node(node_id)
+        self.assertEqual(node.name, 'testlc')
+
+        missing_node = 'dummy-node'
+        self.assertRaises(Exception, self.driver.ex_get_node,
+                          missing_node, 'all')
+
 
 class JoyentHttp(MockHttp):
     fixtures = ComputeFileFixtures('joyent')
@@ -121,7 +130,8 @@ class JoyentHttp(MockHttp):
 
     def _my_machines_2fb67f5f_53f2_40ab_9d99_b9ff68cfb2ab(self, method, url,
                                                           body, headers):
-        return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
+        body = self.fixtures.load('my_machines_create.json')
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
 
 if __name__ == '__main__':

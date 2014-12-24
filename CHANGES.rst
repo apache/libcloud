@@ -103,6 +103,10 @@ Compute
   (GITHUB-417)
   [Viktor Petersson]
 
+- Add ``ex_get_node`` method to the Joyent driver.
+  (GITHUB-421)
+  [ZuluPro]
+
 Storage
 ~~~~~~~
 
