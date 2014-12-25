@@ -205,7 +205,6 @@ class JoyentNodeDriver(NodeDriver):
         result = self.connection.request('/my/machines/%s' % (node.id),
                                          data=data, method='POST')
         return result.status == httplib.ACCEPTED
-        
 
     def ex_get_node(self, node_id):
         """
@@ -217,7 +216,7 @@ class JoyentNodeDriver(NodeDriver):
         :return:  A Node object for the node
         :rtype:   :class:`Node`
         """
-        result = self.connection.request('/my/machines/%s' % node.id)
+        result = self.connection.request('/my/machines/%s' % node_id)
         return self._to_node(result.object)
 
     def _to_node(self, data):
