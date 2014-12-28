@@ -1607,6 +1607,10 @@ VALID_EC2_REGIONS = REGION_DETAILS.keys()
 VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 
 
+# Marker object to detect passing of deprecated parameters
+_unspecified = object()
+
+
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
         super(EC2NodeLocation, self).__init__(id, name, country, driver)
@@ -3417,7 +3421,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._to_address(response, only_associated=False)
 
-    def ex_release_address(self, elastic_ip, domain=None):
+    def ex_release_address(self, elastic_ip, domain=_unspecified):
         """
         Release an Elastic IP address using the IP (EC2-Classic) or
         using the allocation ID (VPC)
@@ -3425,7 +3429,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      elastic_ip: Elastic IP instance
         :type       elastic_ip: :class:`ElasticIP`
 
-        :param      domain: The domain where the IP resides (vpc only)
+        :param      domain: (deprecated) The domain where the IP resides (vpc
+                            only)
         :type       domain: ``str``
 
         :return:    True on success, False otherwise.
@@ -3433,10 +3438,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'ReleaseAddress'}
 
-        if domain is not None and domain != 'vpc':
-            raise AttributeError('Domain can only be set to vpc')
+        if domain is not _unspecified:
+            warnings.warn('The domain is automatically detected now.',
+                    stacklevel=2)
 
-        if domain is None:
+        if elastic_ip.domain == 'standard':
             params['PublicIp'] = elastic_ip.ip
         else:
             params['AllocationId'] = elastic_ip.extra['allocation_id']
@@ -3464,7 +3470,7 @@ class BaseEC2NodeDriver(NodeDriver):
         # shape how the return data is sent back
         return self._to_addresses(response, only_associated)
 
-    def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
+    def ex_associate_address_with_node(self, node, elastic_ip, domain=_unspecified):
         """
         Associate an Elastic IP address with a particular node.
 
@@ -3484,10 +3490,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        if domain is not None and domain != 'vpc':
-            raise AttributeError('Domain can only be set to vpc')
+        if domain is not _unspecified:
+            warnings.warn('The domain is automatically detected now.',
+                    stacklevel=2)
 
-        if domain is None:
+        if elastic_ip.domain == 'standard':
             params.update({'PublicIp': elastic_ip.ip})
         else:
             params.update({'AllocationId': elastic_ip.extra['allocation_id']})
@@ -3508,7 +3515,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                                    elastic_ip=elastic_ip,
                                                    domain=domain)
 
-    def ex_disassociate_address(self, elastic_ip, domain=None):
+    def ex_disassociate_address(self, elastic_ip, domain=_unspecified):
         """
         Disassociate an Elastic IP address using the IP (EC2-Classic)
         or the association ID (VPC)
@@ -3524,12 +3531,12 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DisassociateAddress'}
 
-        if domain is not None and domain != 'vpc':
-            raise AttributeError('Domain can only be set to vpc')
+        if domain is not _unspecified:
+            warnings.warn('The domain is automatically detected now.',
+                    stacklevel=2)
 
-        if domain is None:
+        if elastic_ip.domain == 'standard':
             params['PublicIp'] = elastic_ip.ip
-
         else:
             params['AssociationId'] = elastic_ip.extra['association_id']
 
