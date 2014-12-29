@@ -770,6 +770,7 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
 
+        self.page_token_cache = {}
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
@@ -801,7 +802,8 @@ class GCENodeDriver(NodeDriver):
         else:
             self.region = None
 
-    def ex_list_disktypes(self, zone=None):
+    def ex_list_disktypes(self, zone=None, ex_filter=None, ex_max_results=None,
+                          ex_reset_page_token=False):
         """
         Return a list of DiskTypes for a zone or all.
 
@@ -810,16 +812,53 @@ class GCENodeDriver(NodeDriver):
                         self.zone.  If 'all', will return all DiskTypes.
         :type     zone: ``str`` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return: A list of static DiskType objects.
         :rtype: ``list`` of :class:`GCEDiskType`
         """
         list_disktypes = []
+        if ex_max_results and \
+                self.page_token_cache.get('disktypes', None) == 'END_MARKER':
+            return []
+
         zone = self._set_zone(zone)
         if zone is None:
             request = '/aggregated/diskTypes'
         else:
             request = '/zones/%s/diskTypes' % (zone.name)
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'disktypes' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['disktypes']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['disktypes'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('disktypes', None)
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
@@ -831,6 +870,8 @@ class GCENodeDriver(NodeDriver):
             else:
                 list_disktypes = [self._to_disktype(a) for a in
                                   response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['disktypes'] = 'END_MARKER'
         return list_disktypes
 
     def ex_set_usage_export_bucket(self, bucket, prefix=None):
@@ -919,7 +960,8 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=md)
         return True
 
-    def ex_list_addresses(self, region=None):
+    def ex_list_addresses(self, region=None, ex_filter=None,
+                          ex_max_results=None, ex_reset_page_token=False):
         """
         Return a list of static addresses for a region, 'global', or all.
 
@@ -930,10 +972,32 @@ class GCENodeDriver(NodeDriver):
                           the global namespace.
         :type     region: ``str`` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return: A list of static address objects.
         :rtype: ``list`` of :class:`GCEAddress`
         """
         list_addresses = []
+        if ex_max_results and \
+                self.page_token_cache.get('addresses', None) == 'END_MARKER':
+            return []
+
         if region != 'global':
             region = self._set_region(region)
         if region is None:
@@ -942,7 +1006,22 @@ class GCENodeDriver(NodeDriver):
             request = '/global/addresses'
         else:
             request = '/regions/%s/addresses' % (region.name)
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'addresses' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['addresses']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['addresses'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('addresses', None)
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
@@ -954,37 +1033,122 @@ class GCENodeDriver(NodeDriver):
             else:
                 list_addresses = [self._to_address(a) for a in
                                   response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['disktypes'] = 'END_MARKER'
         return list_addresses
 
-    def ex_list_healthchecks(self):
+    def ex_list_healthchecks(self, ex_filter=None, ex_max_results=None,
+                             ex_reset_page_token=False):
         """
         Return the list of health checks.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of health check objects.
         :rtype: ``list`` of :class:`GCEHealthCheck`
         """
         list_healthchecks = []
+        if ex_max_results and \
+                self.page_token_cache.get('healthcheck', None) == 'END_MARKER':
+            return []
+
         request = '/global/httpHealthChecks'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'healthcheck' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['healthcheck']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['healthcheck'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('healthcheck', None)
+
         list_healthchecks = [self._to_healthcheck(h) for h in
                              response.get('items', [])]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['healthcheck'] = 'END_MARKER'
         return list_healthchecks
 
-    def ex_list_firewalls(self):
+    def ex_list_firewalls(self, ex_filter=None, ex_max_results=None,
+                          ex_reset_page_token=False):
         """
         Return the list of firewalls.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of firewall objects.
         :rtype: ``list`` of :class:`GCEFirewall`
         """
         list_firewalls = []
+        if ex_max_results and \
+                self.page_token_cache.get('firewalls', None) == 'END_MARKER':
+            return []
         request = '/global/firewalls'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'firewalls' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['firewalls']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['firewalls'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('firewalls', None)
+
         list_firewalls = [self._to_firewall(f) for f in
                           response.get('items', [])]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['firewalls'] = 'END_MARKER'
         return list_firewalls
 
-    def ex_list_forwarding_rules(self, region=None):
+    def ex_list_forwarding_rules(self, region=None, ex_filter=None,
+                                 ex_max_results=None,
+                                 ex_reset_page_token=False):
         """
         Return the list of forwarding rules for a region or all.
 
@@ -995,16 +1159,52 @@ class GCENodeDriver(NodeDriver):
                           return all forwarding rules.
         :type     region: ``str`` or :class:`GCERegion` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return: A list of forwarding rule objects.
         :rtype: ``list`` of :class:`GCEForwardingRule`
         """
         list_forwarding_rules = []
+        if ex_max_results and \
+                self.page_token_cache.get('fwdrules', None) == 'END_MARKER':
+            return []
         region = self._set_region(region)
         if region is None:
             request = '/aggregated/forwardingRules'
         else:
             request = '/regions/%s/forwardingRules' % (region.name)
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'fwdrules' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['fwdrules']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['fwdrules'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('fwdrules', None)
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
@@ -1017,21 +1217,63 @@ class GCENodeDriver(NodeDriver):
             else:
                 list_forwarding_rules = [self._to_forwarding_rule(f) for f in
                                          response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['fwdrules'] = 'END_MARKER'
         return list_forwarding_rules
 
-    def list_images(self, ex_project=None):
+    def list_images(self, ex_project=None, ex_filter=None,
+                    ex_max_results=None, ex_reset_page_token=False):
         """
         Return a list of image objects for a project.
 
         :keyword  ex_project: Optional alternate project name.
         :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return:  List of GCENodeImage objects
         :rtype:   ``list`` of :class:`GCENodeImage`
         """
         request = '/global/images'
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+
         if ex_project is None:
-            response = self.connection.request(request, method='GET').object
+            if ex_max_results and \
+                    self.page_token_cache.get('gimages', None) == 'END_MARKER':
+                return []
+            if params and not ex_reset_page_token and \
+                    'gimages' in self.page_token_cache:
+                params['pageToken'] = self.page_token_cache['gimages']
+            response = self.connection.request(request, method='GET',
+                                               params=params).object
+
+            if 'nextPageToken' in response:
+                self.page_token_cache['gimages'] = response['nextPageToken']
+            if ex_reset_page_token:
+                self.page_token_cache.pop('gimages', None)
+
+            if ex_max_results and 'nextPageToken' not in response:
+                self.page_token_cache['gimages'] = 'END_MARKER'
             list_images = [self._to_node_image(i) for i in
                            response.get('items', [])]
         else:
@@ -1045,59 +1287,195 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project,
                                                              proj)
                 self.connection.request_path = new_request_path
+
+                ptok = 'pimg_' + proj
+
+                if ex_max_results and \
+                        self.page_token_cache.get(ptok,
+                                                  None) == 'END_MARKER':
+                    continue
+                if params and not ex_reset_page_token and \
+                        ptok in self.page_token_cache:
+                    params['pageToken'] = self.page_token_cache[ptok]
                 response = self.connection.request(request,
-                                                   method='GET').object
+                                                   method='GET',
+                                                   params=params).object
+                if 'nextPageToken' in response:
+                    self.page_token_cache[ptok] = response['nextPageToken']
+                if ex_reset_page_token:
+                    self.page_token_cache.pop(ptok, None)
+
+                if ex_max_results and 'nextPageToken' not in response:
+                    self.page_token_cache[ptok] = 'END_MARKER'
                 list_images.extend([self._to_node_image(i) for i in
                                     response.get('items', [])])
             # Restore the connection request_path
             self.connection.request_path = save_request_path
         return list_images
 
-    def list_locations(self):
+    def list_locations(self, ex_filter=None, ex_max_results=None,
+                       ex_reset_page_token=False):
         """
         Return a list of locations (zones).
 
         The :class:`ex_list_zones` method returns more comprehensive results,
         but this is here for compatibility.
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return: List of NodeLocation objects
         :rtype: ``list`` of :class:`NodeLocation`
         """
         list_locations = []
+        if ex_max_results and \
+                self.page_token_cache.get('locations', None) == 'END_MARKER':
+            return []
         request = '/zones'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'locations' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['locations']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['locations'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('locations', None)
         list_locations = [self._to_node_location(l) for l in response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['locations'] = 'END_MARKER'
         return list_locations
 
-    def ex_list_routes(self):
+    def ex_list_routes(self, ex_filter=None, ex_max_results=None,
+                       ex_reset_page_token=False):
         """
         Return the list of routes.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of route objects.
         :rtype: ``list`` of :class:`GCERoute`
         """
         list_routes = []
+        if ex_max_results and \
+                self.page_token_cache.get('routes', None) == 'END_MARKER':
+            return []
         request = '/global/routes'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'routes' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['routes']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['routes'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('routes', None)
         list_routes = [self._to_route(n) for n in
                        response.get('items', [])]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['routes'] = 'END_MARKER'
         return list_routes
 
-    def ex_list_networks(self):
+    def ex_list_networks(self, ex_filter=None, ex_max_results=None,
+                         ex_reset_page_token=False):
         """
         Return the list of networks.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of network objects.
         :rtype: ``list`` of :class:`GCENetwork`
         """
         list_networks = []
+        if ex_max_results and \
+                self.page_token_cache.get('networks', None) == 'END_MARKER':
+            return []
         request = '/global/networks'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'networks' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['networks']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['networks'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('networks', None)
         list_networks = [self._to_network(n) for n in
                          response.get('items', [])]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['networks'] = 'END_MARKER'
         return list_networks
 
-    def list_nodes(self, ex_zone=None):
+    def list_nodes(self, ex_zone=None, ex_filter=None, ex_max_results=None,
+                   ex_reset_page_token=False):
         """
         Return a list of nodes in the current zone or all zones.
 
@@ -1105,17 +1483,52 @@ class GCENodeDriver(NodeDriver):
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return:  List of Node objects
         :rtype:   ``list`` of :class:`Node`
         """
         list_nodes = []
+        if ex_max_results and \
+                self.page_token_cache.get('nodes', None) == 'END_MARKER':
+            return []
         zone = self._set_zone(ex_zone)
         if zone is None:
             request = '/aggregated/instances'
         else:
             request = '/zones/%s/instances' % (zone.name)
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'nodes' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['nodes']
 
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['nodes'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('nodes', None)
 
         if 'items' in response:
             # The aggregated response returns a dict for each zone
@@ -1126,22 +1539,65 @@ class GCENodeDriver(NodeDriver):
                     list_nodes.extend(zone_nodes)
             else:
                 list_nodes = [self._to_node(i) for i in response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['nodes'] = 'END_MARKER'
         return list_nodes
 
-    def ex_list_regions(self):
+    def ex_list_regions(self, ex_filter=None, ex_max_results=None,
+                        ex_reset_page_token=False):
         """
         Return the list of regions.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of region objects.
         :rtype: ``list`` of :class:`GCERegion`
         """
         list_regions = []
+        if ex_max_results and \
+                self.page_token_cache.get('regions', None) == 'END_MARKER':
+            return []
         request = '/regions'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'regions' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['regions']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['regions'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('regions', None)
+
         list_regions = [self._to_region(r) for r in response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['regions'] = 'END_MARKER'
         return list_regions
 
-    def list_sizes(self, location=None):
+    def list_sizes(self, location=None, ex_filter=None, ex_max_results=None,
+                   ex_reset_page_token=False):
         """
         Return a list of sizes (machineTypes) in a zone.
 
@@ -1149,17 +1605,53 @@ class GCENodeDriver(NodeDriver):
         :type     location: ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return:  List of GCENodeSize objects
         :rtype:   ``list`` of :class:`GCENodeSize`
         """
         list_sizes = []
+        if ex_max_results and \
+                self.page_token_cache.get('machinetypes',
+                                          None) == 'END_MARKER':
+            return []
         zone = self._set_zone(location)
         if zone is None:
             request = '/aggregated/machineTypes'
         else:
             request = '/zones/%s/machineTypes' % (zone.name)
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'machinetypes' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['machinetypes']
 
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['machinetypes'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('machinetypes', None)
 
         if 'items' in response:
             # The aggregated response returns a dict for each zone
@@ -1170,36 +1662,115 @@ class GCENodeDriver(NodeDriver):
                     list_sizes.extend(zone_sizes)
             else:
                 list_sizes = [self._to_node_size(s) for s in response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['machinetypes'] = 'END_MARKER'
         return list_sizes
 
-    def ex_list_snapshots(self):
+    def ex_list_snapshots(self, ex_filter=None, ex_max_results=None,
+                          ex_reset_page_token=False):
         """
         Return the list of disk snapshots in the project.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return:  A list of snapshot objects
         :rtype:   ``list`` of :class:`GCESnapshot`
         """
         list_snapshots = []
+        if ex_max_results and \
+                self.page_token_cache.get('snapshots', None) == 'END_MARKER':
+            return []
         request = '/global/snapshots'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'snapshots' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['snapshots']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['snapshots'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('snapshots', None)
         list_snapshots = [self._to_snapshot(s) for s in
                           response.get('items', [])]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['snapshots'] = 'END_MARKER'
         return list_snapshots
 
-    def ex_list_targetinstances(self, zone=None):
+    def ex_list_targetinstances(self, zone=None, ex_filter=None,
+                                ex_max_results=None,
+                                ex_reset_page_token=False):
         """
         Return the list of target instances.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return:  A list of target instance objects
         :rtype:   ``list`` of :class:`GCETargetInstance`
         """
         list_targetinstances = []
+        if ex_max_results and \
+                self.page_token_cache.get('target_inst', None) == 'END_MARKER':
+            return []
         zone = self._set_zone(zone)
         if zone is None:
             request = '/aggregated/targetInstances'
         else:
             request = '/zones/%s/targetInstances' % (zone.name)
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'target_inst' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['target_inst']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['target_inst'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('target_inst', None)
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
@@ -1211,11 +1782,32 @@ class GCENodeDriver(NodeDriver):
             else:
                 list_targetinstances = [self._to_targetinstance(t) for t in
                                         response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['target_inst'] = 'END_MARKER'
         return list_targetinstances
 
-    def ex_list_targetpools(self, region=None):
+    def ex_list_targetpools(self, region=None, ex_filter=None,
+                            ex_max_results=None, ex_reset_page_token=False):
         """
         Return the list of target pools.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return:  A list of target pool objects
         :rtype:   ``list`` of :class:`GCETargetPool`
@@ -1226,7 +1818,22 @@ class GCENodeDriver(NodeDriver):
             request = '/aggregated/targetPools'
         else:
             request = '/regions/%s/targetPools' % (region.name)
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'target_pool' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['target_pool']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['target_pool'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('target_pool', None)
 
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
@@ -1240,7 +1847,8 @@ class GCENodeDriver(NodeDriver):
                                     response['items']]
         return list_targetpools
 
-    def list_volumes(self, ex_zone=None):
+    def list_volumes(self, ex_zone=None, ex_filter=None, ex_max_results=None,
+                     ex_reset_page_token=False):
         """
         Return a list of volumes for a zone or all.
 
@@ -1251,6 +1859,24 @@ class GCENodeDriver(NodeDriver):
         :type     ex_zone: ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
+
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
@@ -1260,8 +1886,23 @@ class GCENodeDriver(NodeDriver):
             request = '/aggregated/disks'
         else:
             request = '/zones/%s/disks' % (zone.name)
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'disks' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['disks']
 
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['disks'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('disks', None)
+
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
@@ -1274,17 +1915,57 @@ class GCENodeDriver(NodeDriver):
                                 response['items']]
         return list_volumes
 
-    def ex_list_zones(self):
+    def ex_list_zones(self, ex_filter=None, ex_max_results=None,
+                      ex_reset_page_token=False):
         """
         Return the list of zones.
+
+        :keyword  ex_filter: Apply a filter to only return matching results
+                             from the GCE API. See the GCE API docs for exact
+                             syntax.
+        :type     ex_filter: ``str``
+
+        :keyword  ex_max_results: Only return up to the specified amount of
+                                  results in this request. Subsequent calls
+                                  will return addtional results in chunks of
+                                  specified result. The GCE driver caches a
+                                  'page token' allowing users to iteratively
+                                  step through a large result set.
+        :type     ex_max_results: ``int``
+
+        :keyword  ex_reset_page_token: If set to True, this will reset the GCE
+                                       driver's internal page token cache for
+                                       this list request.
+        :type     ex_reset_page_token: ``bool``
 
         :return: A list of zone objects.
         :rtype: ``list`` of :class:`GCEZone`
         """
         list_zones = []
+        if ex_max_results and \
+                self.page_token_cache.get('zones', None) == 'END_MARKER':
+            return []
         request = '/zones'
-        response = self.connection.request(request, method='GET').object
+        params = {}
+        if ex_max_results:
+            params['maxResults'] = ex_max_results
+        if ex_filter:
+            params['filter'] = ex_filter
+        if params and not ex_reset_page_token and \
+                'zones' in self.page_token_cache:
+            params['pageToken'] = self.page_token_cache['zones']
+
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
+
+        if 'nextPageToken' in response:
+            self.page_token_cache['zones'] = response['nextPageToken']
+        if ex_reset_page_token:
+            self.page_token_cache.pop('zones', None)
+
         list_zones = [self._to_zone(z) for z in response['items']]
+        if ex_max_results and 'nextPageToken' not in response:
+            self.page_token_cache['zones'] = 'END_MARKER'
         return list_zones
 
     def ex_create_address(self, name, region=None, address=None,

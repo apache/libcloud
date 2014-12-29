@@ -1,0 +1,18 @@
+{
+ "kind": "compute#diskTypeList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/graphite-demos/zones/us-central1-a/diskTypes",
+ "id": "projects/graphite-demos/zones/us-central1-a/diskTypes",
+ "items": [
+  {
+   "kind": "compute#diskType",
+   "creationTimestamp": "2014-10-17T16:09:45.266-07:00",
+   "name": "local-ssd",
+   "description": "Local SSD",
+   "validDiskSize": "375GB-375GB",
+   "zone": "https://content.googleapis.com/compute/v1/projects/graphite-demos/zones/us-central1-a",
+   "selfLink": "https://content.googleapis.com/compute/v1/projects/graphite-demos/zones/us-central1-a/diskTypes/local-ssd",
+   "defaultDiskSizeGb": "375"
+  }
+ ],
+ "nextPageToken": "CjII2Mu46ZLswgI6JwoCGAEKAiAACgIYAQoCIAAKAhgbCgsqCWxvY2FsLXNzZAoEILPqAQ=="
+}
