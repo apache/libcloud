@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver list_images() now returns all non-deprecated images by default
+  (LIBCLOUD-602, GITHUB-423)
+  [Eric Johnson]
+
 - Improve GCE API coverage for create_node()
   (GITHUB-419)
   [Eric Johnson]

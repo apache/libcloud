@@ -5,7 +5,7 @@
     "startTime": "2014-03-11T20:18:36.194-07:00",
     "insertTime": "2014-03-11T20:18:36.110-07:00",
     "targetId": "10034929421075729520",
-    "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/debian_6_squeeze_v20130926",
+    "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/debian_7_wheezy_v20131014",
     "operationType": "setDeprecation",
     "progress": 0,
     "id": "11223768474922166090",
