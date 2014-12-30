@@ -150,7 +150,7 @@ class GCEBackendService(UuidMixin):
         self.protocol = protocol
         self.timeout = timeout
         self.driver = driver
-        self.extra = extra
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):
@@ -204,7 +204,7 @@ class GCEHealthCheck(UuidMixin):
         self.unhealthy_threshold = unhealthy_threshold
         self.healthy_threshold = healthy_threshold
         self.driver = driver
-        self.extra = extra
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def destroy(self):
@@ -494,7 +494,7 @@ class GCETargetHttpProxy(UuidMixin):
         self.name = name
         self.urlmap = urlmap
         self.driver = driver
-        self.extra = extra
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):
@@ -658,7 +658,7 @@ class GCEUrlMap(UuidMixin):
         self.path_matchers = path_matchers or []
         self.tests = tests or []
         self.driver = driver
-        self.extra = extra
+        self.extra = extra or {}
         UuidMixin.__init__(self)
 
     def __repr__(self):
@@ -1462,24 +1462,27 @@ class GCENodeDriver(NodeDriver):
                                       data=address_data)
         return self.ex_get_address(name, region=region)
 
-    def ex_create_backendservice(self, name, healthcheck):
+    def ex_create_backendservice(self, name, healthchecks):
         """
         Create a global backend service.
 
         :param  name: Name of the backend service
         :type   name: ``str``
 
-        :keyword  healthcheck: HTTP health check to use with this service
-        :type     healthcheck: ``str`` or :class:`GCEHealthCheck`
+        :keyword  healthchecks: A list of HTTP Health Checks to use for this
+                                service.  There must be at least one.
+        :type     healthchecks: ``list`` of (``str`` or
+                                :class:`GCEHealthCheck`)
 
         :return:  A Backend Service object
         :rtype:   :class:`GCEBackendService`
         """
-        if not hasattr(healthcheck, 'name'):
-            healthcheck = self.ex_get_healthcheck(healthcheck)
-        backendservice_data = {
-            'name': name,
-            'healthChecks': [healthcheck.extra['selfLink']]}
+        backendservice_data = {'name': name, 'healthChecks': []}
+
+        for hc in healthchecks:
+            if not hasattr(hc, 'extra'):
+                hc = self.ex_get_healthcheck(name=hc)
+            backendservice_data['healthChecks'].append(hc.extra['selfLink'])
 
         request = '/global/backendServices'
         self.connection.async_request(request, method='POST',
@@ -1627,12 +1630,16 @@ class GCENodeDriver(NodeDriver):
         :param  name: Name of forwarding rule to be created
         :type   name: ``str``
 
-        :param  target: REQUIRED. The target of this forwarding rule.  For
-                        regional forwarding rules this should be a TargetPool
-                        in the same region.  For global rules this must be a
-                        global TargetHttpProxy.
-        :param  target: ``str`` or :class:`GCETargetPool` or
-                        :class:`GCETargetHttpProxy`
+        :keyword  target: The target of this forwarding rule.  For global
+                          forwarding rules this must be a global
+                          TargetHttpProxy. For regional rules this may be
+                          either a TargetPool or TargetInstance. If passed
+                          a string instead of the object, it will be the name
+                          of a TargetHttpProxy for global rules or a
+                          TargetPool for regional rules.  A TargetInstance
+                          must be passed by object. (required)
+        :type     target: ``str`` or :class:`GCETargetHttpProxy` or
+                          :class:`GCETargetInstance` or :class:`GCETargetPool`
 
         :keyword  region: Region to create the forwarding rule in.  Defaults to
                           self.region.  Ignored if global_rule is True.
@@ -1672,7 +1679,7 @@ class GCENodeDriver(NodeDriver):
             forwarding_rule_data['region'] = region.extra['selfLink']
 
             if not target:
-                target = targetpool
+                target = targetpool  # Backwards compatibility
             if not hasattr(target, 'name'):
                 target = self.ex_get_targetpool(target, region)
 

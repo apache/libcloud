@@ -319,8 +319,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_create_backendservice(self):
         backendservice_name = 'web-service'
         backendservice = self.driver.ex_create_backendservice(
-            backendservice_name,
-            'lchealthcheck')
+            name=backendservice_name,
+            healthchecks=['lchealthcheck'])
         self.assertTrue(isinstance(backendservice, GCEBackendService))
         self.assertEqual(backendservice.name, backendservice_name)
 
