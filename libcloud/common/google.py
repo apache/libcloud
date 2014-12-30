@@ -488,6 +488,9 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         # The message contains both the header and claim set
         message = '%s.%s' % (header_enc, claim_set_enc)
         # Then the message is signed using the key supplied
+        if not os.access(self.key, os.F_OK | os.R_OK):
+            raise ValueError("Missing (or not readable) key "
+                             "file: '%s'" % (self.key))
         key = RSA.importKey(self.key)
         hash_func = SHA256.new(message)
         signer = PKCS1_v1_5.new(key)
