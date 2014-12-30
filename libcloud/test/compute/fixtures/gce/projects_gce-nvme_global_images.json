@@ -1,0 +1,55 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/gce-nvme/global/images",
+ "id": "projects/gce-nvme/global/images",
+ "items": [
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/gce-nvme/global/images/nvme-backports-debian-7-wheezy-v20140904",
+   "id": "11933993573261788709",
+   "creationTimestamp": "2014-11-05T20:09:29.302-08:00",
+   "name": "nvme-backports-debian-7-wheezy-v20140904",
+   "description": "NVMe optimized Debian GNU/Linux 7.6 (wheezy) amd64 with backports kernel and SSH packages built on 2014-09-04",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "158683343",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/gce-nvme/global/images/nvme-backports-debian-7-wheezy-v20140926",
+   "id": "16689990597272015714",
+   "creationTimestamp": "2014-10-20T22:01:24.039-07:00",
+   "name": "nvme-backports-debian-7-wheezy-v20140926",
+   "description": "NVMe optimized Debian GNU/Linux 7.6 (wheezy) amd64 with backports kernel and SSH packages built on 2014-09-26",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "221456136",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/gce-nvme/global/images/nvme-backports-debian-7-wheezy-v20141108",
+   "id": "9219956677399420856",
+   "creationTimestamp": "2014-11-14T10:55:03.809-08:00",
+   "name": "nvme-backports-debian-7-wheezy-v20141108",
+   "description": "NVMe optimized Debian GNU/Linux 7.6 (wheezy) amd64 with backports kernel and SSH packages built on 2014-11-08",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "162245079",
+   "diskSizeGb": "10"
+  }
+ ]
+}

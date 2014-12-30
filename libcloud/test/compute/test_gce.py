@@ -145,13 +145,15 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_list_images(self):
         local_images = self.driver.list_images()
+        all_deprecated_images = self.driver.list_images(ex_include_deprecated=True)
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 3)
-        self.assertEqual(len(debian_images), 19)
-        self.assertEqual(len(local_plus_deb), 22)
-        self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
-        self.assertEqual(local_images[1].name, 'centos-6-v20131118')
+        self.assertEqual(len(local_images), 23)
+        self.assertEqual(len(all_deprecated_images), 156)
+        self.assertEqual(len(debian_images), 2)
+        self.assertEqual(len(local_plus_deb), 3)
+        self.assertEqual(local_images[0].name, 'aws-ubuntu')
+        self.assertEqual(debian_images[1].name, 'debian-7-wheezy-v20131120')
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
@@ -295,8 +297,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         volume = self.driver.ex_get_volume('lcdisk')
         image = self.driver.ex_create_image('coreos', volume)
         self.assertTrue(isinstance(image, GCENodeImage))
-        self.assertEqual(image.name, 'coreos')
-        self.assertEqual(image.extra['description'], 'CoreOS test image')
+        self.assertTrue(image.name.startswith('coreos'))
+        self.assertEqual(image.extra['description'], 'CoreOS beta 522.3.0')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
@@ -629,7 +631,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         dep_ts = '2064-03-11T20:18:36.194-07:00'
         obs_ts = '2074-03-11T20:18:36.194-07:00'
         del_ts = '2084-03-11T20:18:36.194-07:00'
-        image = self.driver.ex_get_image('debian-6-squeeze-v20130926')
+        image = self.driver.ex_get_image('debian-7-wheezy-v20131014')
         deprecated = image.deprecate('debian-7', 'DEPRECATED',
                                      deprecated=dep_ts,
                                      obsolete=obs_ts,
@@ -747,9 +749,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_get_image(self):
         partial_name = 'debian-7'
         image = self.driver.ex_get_image(partial_name)
-        self.assertEqual(image.name, 'debian-7-wheezy-v20130617')
+        self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
         # A 'debian-7' image exists in the local project
-        self.assertTrue(image.extra['description'].startswith('Local'))
+        self.assertTrue(image.extra['description'].startswith('Debian'))
 
         partial_name = 'debian-6'
         image = self.driver.ex_get_image(partial_name)
@@ -763,9 +765,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
-        description = 'CoreOS test image'
+        description = 'CoreOS beta 522.3.0'
         image = self.driver.ex_copy_image(name, url, description)
-        self.assertEqual(image.name, name)
+        self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
 
     def test_ex_get_route(self):
@@ -1080,14 +1082,14 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_images_debian_7_wheezy_v20130617(
+    def _global_images_debian_7_wheezy_v20131120(
             self, method, url, body, headers):
-        body = self.fixtures.load('global_images_debian_7_wheezy_v20130617_delete.json')
+        body = self.fixtures.load('global_images_debian_7_wheezy_v20131120_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_images_debian_6_squeeze_v20130926_deprecate(
+    def _global_images_debian_7_wheezy_v20131014_deprecate(
             self, method, url, body, headers):
-        body = self.fixtures.load('global_images_debian_6_squeeze_v20130926_deprecate.json')
+        body = self.fixtures.load('global_images_debian_7_wheezy_v20131014_deprecate.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_routes(self, method, url, body, headers):
@@ -1413,12 +1415,52 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('project.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_windows_cloud_global_licenses_windows_server_2008_r2_dc(self, method, url, body, headers):
+        body = self.fixtures.load('projects_windows-cloud_global_licenses_windows_server_2008_r2_dc.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_suse_cloud_global_licenses_sles_11(self, method, url, body, headers):
         body = self.fixtures.load('projects_suse-cloud_global_licenses_sles_11.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_rhel_cloud_global_licenses_rhel_7_server(self, method, url, body, headers):
+        body = self.fixtures.load('projects_rhel-cloud_global_licenses_rhel_server.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body, headers):
         body = self.fixtures.load('projects_suse-cloud_global_licenses_sles_12.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_windows_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_windows-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_rhel_cloud_global_images(self, method, url, boyd, header):
+        body = self.fixtures.load('projects_rhel-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_gce_nvme_global_images(self, method, url, boyd, header):
+        body = self.fixtures.load('projects_gce-nvme_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_coreos_cloud_global_images(self, method, url, boyd, header):
+        body = self.fixtures.load('projects_coreos-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_opensuse_cloud_global_images(self, method, url, boyd, header):
+        body = self.fixtures.load('projects_opensuse-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_google_containers_global_images(self, method, url, boyd, header):
+        body = self.fixtures.load('projects_google-containers_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_ubuntu_os_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_ubuntu-os-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_centos_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_centos-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_suse_cloud_global_images(self, method, url, body, headers):

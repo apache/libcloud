@@ -730,6 +730,19 @@ class GCENodeDriver(NodeDriver):
         "userinfo-email": "userinfo.email"
     }
 
+    IMAGE_PROJECTS = {
+        "centos-cloud": ["centos"],
+        "coreos-cloud": ["coreos"],
+        "debian-cloud": ["debian", "backports"],
+        "gce-nvme": ["nvme-backports"],
+        "google-containers": ["container-vm"],
+        "opensuse-cloud": ["opensuse"],
+        "rhel-cloud": ["rhel"],
+        "suse-cloud": ["sles", "suse"],
+        "ubuntu-os-cloud": ["ubuntu"],
+        "windows-cloud": ["windows"],
+    }
+
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
@@ -1019,21 +1032,60 @@ class GCENodeDriver(NodeDriver):
                                          response['items']]
         return list_forwarding_rules
 
-    def list_images(self, ex_project=None):
+    def list_images(self, ex_project=None, ex_include_deprecated=False):
         """
-        Return a list of image objects for a project.
+        Return a list of image objects. If no project is specified, a list of
+        all non-deprecated global and vendor images images is returned. By
+        default, only non-deprecated images are returned.
 
         :keyword  ex_project: Optional alternate project name.
         :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
 
+        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
+                                         be returned.
+        :type     ex_include_deprecated: ``bool``
+
         :return:  List of GCENodeImage objects
         :rtype:   ``list`` of :class:`GCENodeImage`
         """
+        dep = ex_include_deprecated
+        if ex_project is not None:
+            return self.ex_list_project_images(ex_project=ex_project,
+                                               ex_include_deprecated=dep)
+        image_list = self.ex_list_project_images(ex_project=None,
+                                                 ex_include_deprecated=dep)
+        for img_proj in list(self.IMAGE_PROJECTS.keys()):
+            image_list.extend(
+                self.ex_list_project_images(ex_project=img_proj,
+                                            ex_include_deprecated=dep))
+        return image_list
+
+    def ex_list_project_images(self, ex_project=None,
+                               ex_include_deprecated=False):
+        """
+        Return a list of image objects for a project. If no project is
+        specified, only a list of 'global' images is returned.
+
+        :keyword  ex_project: Optional alternate project name.
+        :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
+
+        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
+                                         be returned.
+        :type     ex_include_deprecated: ``bool``
+
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
+        """
+        list_images = []
         request = '/global/images'
         if ex_project is None:
             response = self.connection.request(request, method='GET').object
-            list_images = [self._to_node_image(i) for i in
-                           response.get('items', [])]
+            for img in response.get('items', []):
+                if 'deprecated' not in img:
+                    list_images.append(self._to_node_image(img))
+                else:
+                    if ex_include_deprecated:
+                        list_images.append(self._to_node_image(img))
         else:
             list_images = []
             # Save the connection request_path
@@ -1047,8 +1099,12 @@ class GCENodeDriver(NodeDriver):
                 self.connection.request_path = new_request_path
                 response = self.connection.request(request,
                                                    method='GET').object
-                list_images.extend([self._to_node_image(i) for i in
-                                    response.get('items', [])])
+                for img in response.get('items', []):
+                    if 'deprecated' not in img:
+                        list_images.append(self._to_node_image(img))
+                    else:
+                        if ex_include_deprecated:
+                            list_images.append(self._to_node_image(img))
             # Restore the connection request_path
             self.connection.request_path = save_request_path
         return list_images
@@ -3204,26 +3260,10 @@ class GCENodeDriver(NodeDriver):
             return self._to_node_image(response.object)
         image = self._match_images(ex_project_list, partial_name)
         if not image:
-            if (partial_name.startswith('debian') or
-                    partial_name.startswith('backports') or
-                    partial_name.startswith('nvme-backports')):
-                image = self._match_images('debian-cloud', partial_name)
-            elif partial_name.startswith('centos'):
-                image = self._match_images('centos-cloud', partial_name)
-            elif partial_name.startswith('sles'):
-                image = self._match_images('suse-cloud', partial_name)
-            elif partial_name.startswith('rhel'):
-                image = self._match_images('rhel-cloud', partial_name)
-            elif partial_name.startswith('windows'):
-                image = self._match_images('windows-cloud', partial_name)
-            elif partial_name.startswith('container-vm'):
-                image = self._match_images('google-containers', partial_name)
-            elif partial_name.startswith('coreos'):
-                image = self._match_images('coreos-cloud', partial_name)
-            elif partial_name.startswith('opensuse'):
-                image = self._match_images('opensuse-cloud', partial_name)
-            elif partial_name.startswith('ubuntu'):
-                image = self._match_images('ubuntu-os-cloud', partial_name)
+            for img_proj, short_list in self.IMAGE_PROJECTS.items():
+                for short_name in short_list:
+                    if partial_name.startswith(short_name):
+                        image = self._match_images(img_proj, partial_name)
         return image
 
     def ex_get_route(self, name):
@@ -3593,7 +3633,8 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images = self.list_images(project)
+        project_images = self.list_images(ex_project=project,
+                                          ex_include_deprecated=True)
         partial_match = []
         for image in project_images:
             if image.name == partial_name:
