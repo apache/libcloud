@@ -16,10 +16,6 @@ General
 Compute
 ~~~~~~~
 
-- GCE improved error checking / message if missing API PEM file.
-  (LIBCLOUD-610, GITHUB-424)
-  [Eric Johnson]
-
 - GCE Licenses added to the GCE driver.
   (GITHUB-420)
   [Eric Johnson]
