@@ -97,22 +97,22 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
 
     def test_ex_create_volume(self):
-        #should return a StorageVolume object
+        # should return a StorageVolume object
         node = self.driver.list_nodes()[0]
         volume = self.driver.ex_create_volume(size=4096,
-                                            name="Another test image",
-                                            node=node,
-                                            fs_type="ext4")
+                                              name="Another test image",
+                                              node=node,
+                                              fs_type="ext4")
         self.assertTrue(isinstance(volume, StorageVolume))
 
     def test_ex_list_volumes(self):
-        #should return list of StorageVolume objects
+        # should return list of StorageVolume objects
         node = self.driver.list_nodes()[0]
         volumes = self.driver.ex_list_volumes(node=node)
 
         self.assertTrue(isinstance(volumes, list))
         self.assertTrue(isinstance(volumes[0], StorageVolume))
-        self.assertEqual(len(volumes), 3)
+        self.assertEqual(len(volumes), 2)
 
 
 class LinodeMockHttp(MockHttp):
@@ -160,10 +160,6 @@ class LinodeMockHttp(MockHttp):
 
     def _avail_kernels(self, method, url, body, headers):
         body = self.fixtures.load('_avail_kernels.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _linode_disk_create(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1299,"DiskID":55648}}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_boot(self, method, url, body, headers):

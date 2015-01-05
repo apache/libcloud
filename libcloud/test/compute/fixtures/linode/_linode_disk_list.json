@@ -23,18 +23,6 @@
             "STATUS":1,
             "CREATE_DT":"2008-04-04 10:08:06.0",
             "SIZE":256
-        },
-        {
-            "UPDATE_DT":"2014-11-13 21:21:052.0",
-            "DISKID":55647,
-            "LABEL":"Another test image",
-            "TYPE":"ext4",
-            "LINODEID":8098,
-            "ISREADONLY":0,
-            "STATUS":1,
-            "CREATE_DT":"2014-11-11 21:00:012.0",
-            "SIZE":1024
         }
-
     ]
 }
