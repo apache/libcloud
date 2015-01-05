@@ -229,6 +229,19 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(license.name, 'sles-12')
         self.assertTrue(license.charges_use_fee)
 
+    def test_list_disktypes_ex_max_results(self):
+        disktypes = self.driver.ex_list_disktypes(ex_max_results=1)
+        self.assertEqual(len(disktypes), 1)
+        self.assertTrue(disktypes[0].name, 'pd-ssd')
+        disktypes = self.driver.ex_list_disktypes(ex_max_results=1)
+        self.assertEqual(len(disktypes), 1)
+        self.assertTrue(disktypes[0].name, 'pd-standard')
+
+    def test_list_disktypes_ex_filter(self):
+        disktypes = self.driver.ex_list_disktypes(ex_filter='name eq "pd-ss.*"')
+        self.assertEqual(len(disktypes), 1)
+        self.assertTrue(disktypes[0].name, 'pd-ssd')
+
     def test_list_disktypes(self):
         disktypes = self.driver.ex_list_disktypes()
         disktypes_all = self.driver.ex_list_disktypes('all')
@@ -1591,13 +1604,19 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_diskTypes(self, method, url, body, headers):
-        if method == 'GET':
+        if url.find("filter") != -1:
+            body = self.fixtures.load('zones_us-central1-a_diskTypes-filter.json')
+        elif url.find("maxResults") != -1:
+            if url.find("pageToken") != -1:
+                body = self.fixtures.load('zones_us-central1-a_diskTypes-maxResults-cont.json')
+            else:
+                body = self.fixtures.load('zones_us-central1-a_diskTypes-maxResults.json')
+        else:
             body = self.fixtures.load('zones_us-central1-a_diskTypes.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_diskTypes_pd_ssd(self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_ssd.json')
+        body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_ssd.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks(self, method, url, body, headers):
