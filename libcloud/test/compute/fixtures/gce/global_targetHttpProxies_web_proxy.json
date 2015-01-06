@@ -1,0 +1,8 @@
+{
+ "kind": "compute#targetHttpProxy",
+ "id": "2276970411950672658",
+ "creationTimestamp": "2014-08-22T09:47:35.425-07:00",
+ "name": "web-proxy",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/targetHttpProxies/web-proxy",
+ "urlMap": "https://www.googleapis.com/compute/v1/projects/project_name/global/urlMaps/web-map"
+}

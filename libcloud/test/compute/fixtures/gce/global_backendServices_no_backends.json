@@ -1,0 +1,15 @@
+{
+ "kind": "compute#backendService",
+ "id": "12158223690162062306",
+ "creationTimestamp": "2014-08-14T14:37:36.728-07:00",
+ "name": "web-service",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/backendServices/web-service",
+ "healthChecks": [
+  "https://www.googleapis.com/compute/v1/projects/project_name/global/httpHealthChecks/basic-check"
+ ],
+ "timeoutSec": 30,
+ "port": 80,
+ "protocol": "HTTP",
+ "fingerprint": "5qm-QyYGyzw=",
+ "portName": ""
+}
