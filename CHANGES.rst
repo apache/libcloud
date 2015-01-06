@@ -16,6 +16,14 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver list_images() now returns all non-deprecated images by default
+  (LIBCLOUD-602, GITHUB-423)
+  [Eric Johnson]
+
+- Improve GCE API coverage for create_node()
+  (GITHUB-419)
+  [Eric Johnson]
+
 - GCE Licenses added to the GCE driver.
   (GITHUB-420)
   [Eric Johnson]
@@ -102,6 +110,14 @@ Compute
   Jose, CA and Miami, FL region).
   (GITHUB-417)
   [Viktor Petersson]
+
+- Add ``ex_get_node`` method to the Joyent driver.
+  (GITHUB-421)
+  [ZuluPro]
+
+- Add support for placement group management to the EC2 driver.
+  (GITHUB-418)
+  [Mikhail Ovsyannikov]
 
 Storage
 ~~~~~~~

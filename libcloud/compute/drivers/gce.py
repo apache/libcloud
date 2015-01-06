@@ -625,7 +625,7 @@ class GCETargetPool(UuidMixin):
 
         :param  node: Optional node to specify if only a specific node's
                       health status should be returned
-        :type   node: ``str``, ``GCENode``, or ``None``
+        :type   node: ``str``, ``Node``, or ``None``
 
         :return: List of hashes of nodes and their respective health
         :rtype:  ``list`` of ``dict``
@@ -815,6 +815,19 @@ class GCENodeDriver(NodeDriver):
         "userinfo-email": "userinfo.email"
     }
 
+    IMAGE_PROJECTS = {
+        "centos-cloud": ["centos"],
+        "coreos-cloud": ["coreos"],
+        "debian-cloud": ["debian", "backports"],
+        "gce-nvme": ["nvme-backports"],
+        "google-containers": ["container-vm"],
+        "opensuse-cloud": ["opensuse"],
+        "rhel-cloud": ["rhel"],
+        "suse-cloud": ["sles", "suse"],
+        "ubuntu-os-cloud": ["ubuntu"],
+        "windows-cloud": ["windows"],
+    }
+
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
@@ -885,6 +898,122 @@ class GCENodeDriver(NodeDriver):
             self.region = self._get_region_from_zone(self.zone)
         else:
             self.region = None
+
+    def ex_add_access_config(self, node, name, nat_ip=None, config_type=None):
+        """
+        Add a network interface access configuration to a node.
+
+        :keyword  node: The existing target Node (instance) that will receive
+                        the new access config.
+        :type     node: ``Node``
+
+        :keyword  name: Name of the new access config.
+        :type     node: ``str``
+
+        :keyword  nat_ip: The external existing static IP Address to use for
+                          the access config. If not provided, an ephemeral
+                          IP address will be allocated.
+        :type     nat_ip: ``str`` or ``None``
+
+        :keyword  config_type: The type of access config to create. Currently
+                               the only supported type is 'ONE_TO_ONE_NAT'.
+        :type     config_type: ``str`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+
+        config = {'name': name}
+        if config_type is None:
+            config_type = 'ONE_TO_ONE_NAT'
+        config['type'] = config_type
+
+        if nat_ip is not None:
+            config['natIP'] = nat_ip
+
+        request = '/zones/%s/instances/%s/addAccessConfig' % (zone_name,
+                                                              node_name)
+        self.connection.async_request(request, method='POST', data=config)
+        return True
+
+    def ex_delete_access_config(self, node, name, nic):
+        """
+        Delete a network interface access configuration from a node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :keyword  name: Name of the access config.
+        :type     node: ``str``
+
+        :keyword  nic: Name of the network interface.
+        :type     nic: ``str``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+
+        params = {'accessConfig': name, 'networkInterface': nic}
+        request = '/zones/%s/instances/%s/deleteAccessConfig' % (zone_name,
+                                                                 node_name)
+        self.connection.async_request(request, method='POST', params=params)
+        return True
+
+    def ex_set_node_metadata(self, node, metadata):
+        """
+        Set metadata for the specified node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :keyword  metadata: Set (or clear with None) metadata for this
+                            particular node.
+        :type     metadata: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+        if 'metadata' in node.extra and \
+                'fingerprint' in node.extra['metadata']:
+            current_fp = node.extra['metadata']['fingerprint']
+        else:
+            current_fp = 'absent'
+        body = self._format_metadata(current_fp, metadata)
+        request = '/zones/%s/instances/%s/setMetadata' % (zone_name,
+                                                          node_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
+    def ex_get_serial_output(self, node):
+        """
+        Fetch the console/serial port output from the node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :return: A string containing serial port output of the node.
+        :rtype:  ``str``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+        request = '/zones/%s/instances/%s/serialPort' % (zone_name,
+                                                         node_name)
+        response = self.connection.request(request, method='GET').object
+        return response['contents']
 
     def ex_list_disktypes(self, zone=None):
         """
@@ -975,16 +1104,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:  ``bool``
         """
         if metadata:
-            if not isinstance(metadata, dict):
-                raise ValueError("Metadata must be a python dictionary.")
-
-            if 'items' not in metadata:
-                items = []
-                for k, v in metadata.items():
-                    items.append({'key': k, 'value': v})
-                metadata = {'items': items}
-            elif not isinstance(metadata['items'], list):
-                raise ValueError("Invalid GCE metadata format.")
+            metadata = self._format_metadata('na', metadata)
 
         request = '/setCommonInstanceMetadata'
 
@@ -1130,21 +1250,60 @@ class GCENodeDriver(NodeDriver):
                                          response['items']]
         return list_forwarding_rules
 
-    def list_images(self, ex_project=None):
+    def list_images(self, ex_project=None, ex_include_deprecated=False):
         """
-        Return a list of image objects for a project.
+        Return a list of image objects. If no project is specified, a list of
+        all non-deprecated global and vendor images images is returned. By
+        default, only non-deprecated images are returned.
 
         :keyword  ex_project: Optional alternate project name.
         :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
 
+        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
+                                         be returned.
+        :type     ex_include_deprecated: ``bool``
+
         :return:  List of GCENodeImage objects
         :rtype:   ``list`` of :class:`GCENodeImage`
         """
+        dep = ex_include_deprecated
+        if ex_project is not None:
+            return self.ex_list_project_images(ex_project=ex_project,
+                                               ex_include_deprecated=dep)
+        image_list = self.ex_list_project_images(ex_project=None,
+                                                 ex_include_deprecated=dep)
+        for img_proj in list(self.IMAGE_PROJECTS.keys()):
+            image_list.extend(
+                self.ex_list_project_images(ex_project=img_proj,
+                                            ex_include_deprecated=dep))
+        return image_list
+
+    def ex_list_project_images(self, ex_project=None,
+                               ex_include_deprecated=False):
+        """
+        Return a list of image objects for a project. If no project is
+        specified, only a list of 'global' images is returned.
+
+        :keyword  ex_project: Optional alternate project name.
+        :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
+
+        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
+                                         be returned.
+        :type     ex_include_deprecated: ``bool``
+
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
+        """
+        list_images = []
         request = '/global/images'
         if ex_project is None:
             response = self.connection.request(request, method='GET').object
-            list_images = [self._to_node_image(i) for i in
-                           response.get('items', [])]
+            for img in response.get('items', []):
+                if 'deprecated' not in img:
+                    list_images.append(self._to_node_image(img))
+                else:
+                    if ex_include_deprecated:
+                        list_images.append(self._to_node_image(img))
         else:
             list_images = []
             # Save the connection request_path
@@ -1158,8 +1317,12 @@ class GCENodeDriver(NodeDriver):
                 self.connection.request_path = new_request_path
                 response = self.connection.request(request,
                                                    method='GET').object
-                list_images.extend([self._to_node_image(i) for i in
-                                    response.get('items', [])])
+                for img in response.get('items', []):
+                    if 'deprecated' not in img:
+                        list_images.append(self._to_node_image(img))
+                    else:
+                        if ex_include_deprecated:
+                            list_images.append(self._to_node_image(img))
             # Restore the connection request_path
             self.connection.request_path = save_request_path
         return list_images
@@ -1791,7 +1954,7 @@ class GCENodeDriver(NodeDriver):
         :param  next_hop: Next traffic hop. Use ``None`` for the default
                           Internet gateway, or specify an instance or IP
                           address.
-        :type   next_hop: ``str``, ``GCENode``, or ``None``
+        :type   next_hop: ``str``, ``Node``, or ``None``
 
         :param  description: Custom description for the route.
         :type   description: ``str`` or ``None``
@@ -1862,7 +2025,10 @@ class GCENodeDriver(NodeDriver):
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
-                    ex_disk_auto_delete=True, ex_service_accounts=None):
+                    ex_disk_auto_delete=True, ex_service_accounts=None,
+                    description=None, ex_can_ip_forward=None,
+                    ex_disks_gce_struct=None, ex_nic_gce_struct=None,
+                    ex_on_host_maintenance=None, ex_automatic_restart=None):
         """
         Create a new node and return a node object for the node.
 
@@ -1874,7 +2040,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the node (or, if attaching
                        a persistent disk, the image used to create the disk)
-        :type   image: ``str`` or :class:`GCENodeImage`
+        :type   image: ``str`` or :class:`GCENodeImage` or ``None``
 
         :keyword  location: The location (zone) to create the node in.
         :type     location: ``str`` or :class:`NodeLocation` or
@@ -1927,9 +2093,56 @@ class GCENodeDriver(NodeDriver):
                                        'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
+        :keyword  description: The description of the node (instance).
+        :type     description: ``str`` or ``None``
+
+        :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
+                                  send/receive non-matching src/dst packets.
+        :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
+                                       formatted disks[] structure. No attempt
+                                       is made to ensure proper formatting of
+                                       the disks[] structure. Using this
+                                       structure obviates the need of using
+                                       other disk params like 'ex_boot_disk',
+                                       etc. See the GCE docs for specific
+                                       details.
+        :type     ex_disks_gce_struct: ``list`` or ``None``
+
+        :keyword  ex_nic_gce_struct: Support passing in the GCE-specific
+                                     formatted networkInterfaces[] structure.
+                                     No attempt is made to ensure proper
+                                     formatting of the networkInterfaces[]
+                                     data. Using this structure obviates the
+                                     need of using 'external_ip' and
+                                     'ex_network'.  See the GCE docs for
+                                     details.
+        :type     ex_nic_gce_struct: ``list`` or ``None``
+n
+        :keyword  ex_on_host_maintenance: Defines whether node should be
+                                          terminated or migrated when host
+                                          machine goes down. Acceptable values
+                                          are: 'MIGRATE' or 'TERMINATE' (If
+                                          not supplied, value will be reset to
+                                          GCE default value for the instance
+                                          type.)
+        :type     ex_on_host_maintenance: ``str`` or ``None``
+
+        :keyword  ex_automatic_restart: Defines whether the instance should be
+                                        automatically restarted when it is
+                                        terminated by Compute Engine. (If not
+                                        supplied, value will be set to the GCE
+                                        default value for the instance type.)
+        :type     ex_automatic_restart: ``bool`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
+        if ex_boot_disk and ex_disks_gce_struct:
+            raise ValueError("Cannot specify both 'ex_boot_disk' and "
+                             "'ex_disks_gce_struct'")
+
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -1937,32 +2150,22 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if not hasattr(image, 'name'):
+        if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
 
-        if not ex_boot_disk:
-            ex_boot_disk = self.create_volume(None, name, location=location,
-                                              image=image,
-                                              use_existing=use_existing_disk,
-                                              ex_disk_type=ex_disk_type)
-
-        if not ex_metadata:
-            ex_metadata = None
-        elif not isinstance(ex_metadata, dict):
-            raise ValueError('metadata field is not a dictionnary.')
-        else:
-            if 'items' not in ex_metadata:
-                # The expected GCE format is odd:
-                # items: [{'value': '1', 'key': 'one'},
-                #        {'value': '2', 'key': 'two'},
-                #        {'value': 'N', 'key': 'N'}]
-                # So the only real key is items, and the values are tuples
-                # Since arbitrary values are fine, we only check for the key.
-                # If missing, we prefix it to the items.
-                items = []
-                for k, v in ex_metadata.items():
-                    items.append({'key': k, 'value': v})
-                ex_metadata = {'items': items}
+        # Use disks[].initializeParams to auto-create the boot disk
+        if not ex_disks_gce_struct and not ex_boot_disk:
+            ex_disks_gce_struct = [{
+                'autoDelete': ex_disk_auto_delete,
+                'boot': True,
+                'type': 'PERSISTENT',
+                'mode': 'READ_WRITE',
+                'deviceName': name,
+                'initializeParams': {
+                    'diskName': name,
+                    'sourceImage': image.extra['selfLink']
+                }
+            }]
 
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
@@ -1970,9 +2173,14 @@ class GCENodeDriver(NodeDriver):
                                                    ex_boot_disk, external_ip,
                                                    ex_disk_type,
                                                    ex_disk_auto_delete,
-                                                   ex_service_accounts)
+                                                   ex_service_accounts,
+                                                   description,
+                                                   ex_can_ip_forward,
+                                                   ex_disks_gce_struct,
+                                                   ex_nic_gce_struct,
+                                                   ex_on_host_maintenance,
+                                                   ex_automatic_restart)
         self.connection.async_request(request, method='POST', data=node_data)
-
         return self.ex_get_node(name, location.name)
 
     def ex_create_multiple_nodes(self, base_name, size, image, number,
@@ -1981,9 +2189,15 @@ class GCENodeDriver(NodeDriver):
                                  ignore_errors=True, use_existing_disk=True,
                                  poll_interval=2, external_ip='ephemeral',
                                  ex_disk_type='pd-standard',
-                                 ex_auto_disk_delete=True,
+                                 ex_disk_auto_delete=True,
                                  ex_service_accounts=None,
-                                 timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
+                                 timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
+                                 description=None,
+                                 ex_can_ip_forward=None,
+                                 ex_disks_gce_struct=None,
+                                 ex_nic_gce_struct=None,
+                                 ex_on_host_maintenance=None,
+                                 ex_automatic_restart=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -2066,6 +2280,49 @@ class GCENodeDriver(NodeDriver):
                            created before timing out.
         :type     timeout: ``int``
 
+        :keyword  description: The description of the node (instance).
+        :type     description: ``str`` or ``None``
+
+        :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
+                                  send/receive non-matching src/dst packets.
+        :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
+                                       formatted disks[] structure. No attempt
+                                       is made to ensure proper formatting of
+                                       the disks[] structure. Using this
+                                       structure obviates the need of using
+                                       other disk params like 'ex_boot_disk',
+                                       etc. See the GCE docs for specific
+                                       details.
+        :type     ex_disks_gce_struct: ``list`` or ``None``
+
+        :keyword  ex_nic_gce_struct: Support passing in the GCE-specific
+                                     formatted networkInterfaces[] structure.
+                                     No attempt is made to ensure proper
+                                     formatting of the networkInterfaces[]
+                                     data. Using this structure obviates the
+                                     need of using 'external_ip' and
+                                     'ex_network'.  See the GCE docs for
+                                     details.
+        :type     ex_nic_gce_struct: ``list`` or ``None``
+n
+        :keyword  ex_on_host_maintenance: Defines whether node should be
+                                          terminated or migrated when host
+                                          machine goes down. Acceptable values
+                                          are: 'MIGRATE' or 'TERMINATE' (If
+                                          not supplied, value will be reset to
+                                          GCE default value for the instance
+                                          type.)
+        :type     ex_on_host_maintenance: ``str`` or ``None``
+
+        :keyword  ex_automatic_restart: Defines whether the instance should be
+                                        automatically restarted when it is
+                                        terminated by Compute Engine. (If not
+                                        supplied, value will be set to the GCE
+                                        default value for the instance type.)
+        :type     ex_automatic_restart: ``bool`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
@@ -2089,7 +2346,13 @@ class GCENodeDriver(NodeDriver):
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
                       'ex_disk_type': ex_disk_type,
-                      'ex_service_accounts': ex_service_accounts}
+                      'ex_service_accounts': ex_service_accounts,
+                      'description': description,
+                      'ex_can_ip_forward': ex_can_ip_forward,
+                      'ex_disks_gce_struct': ex_disks_gce_struct,
+                      'ex_nic_gce_struct': ex_nic_gce_struct,
+                      'ex_on_host_maintenance': ex_on_host_maintenance,
+                      'ex_automatic_restart': ex_automatic_restart}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -2471,10 +2734,10 @@ class GCENodeDriver(NodeDriver):
 
         :param  node: Optional node to specify if only a specific node's
                       health status should be returned
-        :type   node: ``str``, ``GCENode``, or ``None``
+        :type   node: ``str``, ``Node``, or ``None``
 
         :return: List of hashes of instances and their respective health,
-                 e.g. [{'node': ``GCENode``, 'health': 'UNHEALTHY'}, ...]
+                 e.g. [{'node': ``Node``, 'health': 'UNHEALTHY'}, ...]
         :rtype:  ``list`` of ``dict``
         """
         health = []
@@ -2833,6 +3096,7 @@ class GCENodeDriver(NodeDriver):
         """
         with open(script, 'r') as f:
             script_data = f.read()
+        # TODO(erjohnso): allow user defined metadata here...
         metadata = {'items': [{'key': 'startup-script',
                                'value': script_data}]}
 
@@ -2842,17 +3106,18 @@ class GCENodeDriver(NodeDriver):
                                 ex_service_accounts=ex_service_accounts)
 
     def attach_volume(self, node, volume, device=None, ex_mode=None,
-                      ex_boot=False):
+                      ex_boot=False, ex_type=None, ex_source=None,
+                      ex_auto_delete=None, ex_initialize_params=None,
+                      ex_licenses=None, ex_interface=None):
         """
         Attach a volume to a node.
 
-        If volume is None, a scratch disk will be created and attached.
+        If volume is None, an ex_source URL must be provided.
 
         :param  node: The node to attach the volume to
-        :type   node: :class:`Node`
+        :type   node: :class:`Node` or ``None``
 
-        :param  volume: The volume to attach. If none, a scratch disk will be
-                        attached.
+        :param  volume: The volume to attach.
         :type   volume: :class:`StorageVolume` or ``None``
 
         :keyword  device: The device name to attach the volume as. Defaults to
@@ -2865,16 +3130,53 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_boot: If true, disk will be attached as a boot disk
         :type     ex_boot: ``bool``
 
+        :keyword  ex_type: Specify either 'PERSISTENT' (default) or 'SCRATCH'.
+        :type     ex_type: ``str``
+
+        :keyword  ex_source: URL (full or partial) of disk source. Must be
+                             present if not using an existing StorageVolume.
+        :type     ex_source: ``str`` or ``None``
+
+        :keyword  ex_auto_delete: If set, the disk will be auto-deleted
+                                  if the parent node/instance is deleted.
+        :type     ex_auto_delete: ``bool`` or ``None``
+
+        :keyword  ex_initialize_params: Allow user to pass in full JSON
+                                        struct of `initializeParams` as
+                                        documented in GCE's API.
+        :type     ex_initialize_params: ``dict`` or ``None``
+
+        :keyword  ex_licenses: List of strings representing licenses
+                               associated with the volume/disk.
+        :type     ex_licenses: ``list`` of ``str``
+
+        :keyword  ex_interface: User can specify either 'SCSI' (default) or
+                                'NVME'.
+        :type     ex_interface: ``str`` or ``None``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
+        if volume is None and ex_source is None:
+            raise ValueError("Must supply either a StorageVolume or "
+                             "set `ex_source` URL for an existing disk.")
+        if volume is None and device is None:
+            raise ValueError("Must supply either a StorageVolume or "
+                             "set `device` name.")
+
         volume_data = {}
-        if volume is None:
-            volume_data['type'] = 'SCRATCH'
-        else:
-            volume_data['type'] = 'PERSISTENT'
-            volume_data['source'] = volume.extra['selfLink']
-        volume_data['kind'] = 'compute#attachedDisk'
+        if ex_source:
+            volume_data['source'] = ex_source
+        if ex_initialize_params:
+            volume_data['initialzeParams'] = ex_initialize_params
+        if ex_licenses:
+            volume_data['licenses'] = ex_licenses
+        if ex_interface:
+            volume_data['interface'] = ex_interface
+        if ex_type:
+            volume_data['type'] = ex_type
+
+        volume_data['source'] = ex_source or volume.extra['selfLink']
         volume_data['mode'] = ex_mode or 'READ_WRITE'
 
         if device:
@@ -2932,7 +3234,7 @@ class GCENodeDriver(NodeDriver):
             node.extra['zone'].name, node.name
         )
         delete_params = {
-            'deviceName': volume,
+            'deviceName': volume.name,
             'autoDelete': auto_delete,
         }
         self.connection.async_request(request, method='POST',
@@ -3039,26 +3341,17 @@ class GCENodeDriver(NodeDriver):
             'replacement': replacement.extra['selfLink'],
         }
 
-        if deprecated is not None:
-            try:
-                _ = timestamp_to_datetime(deprecated)    # NOQA
-            except:
-                raise ValueError('deprecated must be an RFC3339 timestamp')
-            image_data['deprecated'] = deprecated
+        for attribute, value in [('deprecated', deprecated),
+                                 ('obsolete', obsolete),
+                                 ('deleted', deleted)]:
+            if value is None:
+                continue
 
-        if obsolete is not None:
             try:
-                _ = timestamp_to_datetime(obsolete)      # NOQA
+                timestamp_to_datetime(value)
             except:
-                raise ValueError('obsolete must be an RFC3339 timestamp')
-            image_data['obsolete'] = obsolete
-
-        if deleted is not None:
-            try:
-                _ = timestamp_to_datetime(deleted)       # NOQA
-            except:
-                raise ValueError('deleted must be an RFC3339 timestamp')
-            image_data['deleted'] = deleted
+                raise ValueError('%s must be an RFC3339 timestamp' % attribute)
+            image_data[attribute] = value
 
         request = '/global/images/%s/deprecate' % (image.name)
 
@@ -3511,26 +3804,10 @@ class GCENodeDriver(NodeDriver):
             return self._to_node_image(response.object)
         image = self._match_images(ex_project_list, partial_name)
         if not image:
-            if (partial_name.startswith('debian') or
-                    partial_name.startswith('backports') or
-                    partial_name.startswith('nvme-backports')):
-                image = self._match_images('debian-cloud', partial_name)
-            elif partial_name.startswith('centos'):
-                image = self._match_images('centos-cloud', partial_name)
-            elif partial_name.startswith('sles'):
-                image = self._match_images('suse-cloud', partial_name)
-            elif partial_name.startswith('rhel'):
-                image = self._match_images('rhel-cloud', partial_name)
-            elif partial_name.startswith('windows'):
-                image = self._match_images('windows-cloud', partial_name)
-            elif partial_name.startswith('container-vm'):
-                image = self._match_images('google-containers', partial_name)
-            elif partial_name.startswith('coreos'):
-                image = self._match_images('coreos-cloud', partial_name)
-            elif partial_name.startswith('opensuse'):
-                image = self._match_images('opensuse-cloud', partial_name)
-            elif partial_name.startswith('ubuntu'):
-                image = self._match_images('ubuntu-os-cloud', partial_name)
+            for img_proj, short_list in self.IMAGE_PROJECTS.items():
+                for short_name in short_list:
+                    if partial_name.startswith(short_name):
+                        image = self._match_images(img_proj, partial_name)
         return image
 
     def ex_get_route(self, name):
@@ -3948,7 +4225,8 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images = self.list_images(project)
+        project_images = self.list_images(ex_project=project,
+                                          ex_include_deprecated=True)
         partial_match = []
         for image in project_images:
             if image.name == partial_name:
@@ -3999,10 +4277,14 @@ class GCENodeDriver(NodeDriver):
             zone = self.ex_get_zone(zone)
         return zone
 
-    def _create_node_req(self, name, size, image, location, network,
+    def _create_node_req(self, name, size, image, location, network=None,
                          tags=None, metadata=None, boot_disk=None,
                          external_ip='ephemeral', ex_disk_type='pd-standard',
-                         ex_disk_auto_delete=True, ex_service_accounts=None):
+                         ex_disk_auto_delete=True, ex_service_accounts=None,
+                         description=None, ex_can_ip_forward=None,
+                         ex_disks_gce_struct=None, ex_nic_gce_struct=None,
+                         ex_on_host_maintenance=None,
+                         ex_automatic_restart=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -4016,7 +4298,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the node (or, if using a
                        persistent disk, the image the disk was created from).
-        :type   image: :class:`GCENodeImage`
+        :type   image: :class:`GCENodeImage` or ``None``
 
         :param  location: The location (zone) to create the node in.
         :type   location: :class:`NodeLocation` or :class:`GCEZone`
@@ -4030,8 +4312,8 @@ class GCENodeDriver(NodeDriver):
         :keyword  metadata: Metadata dictionary for instance.
         :type     metadata: ``dict``
 
-        :keyword  boot_disk:  Persistent boot disk to attach.
-        :type     :class:`StorageVolume`
+        :keyword  boot_disk: Persistent boot disk to attach.
+        :type     :class:`StorageVolume` or ``None``
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
                                (default), a new non-static address will be
@@ -4063,6 +4345,49 @@ class GCENodeDriver(NodeDriver):
                                        'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
+        :keyword  description: The description of the node (instance).
+        :type     description: ``str`` or ``None``
+
+        :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
+                                  send/receive non-matching src/dst packets.
+        :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
+                                       formatted disks[] structure. No attempt
+                                       is made to ensure proper formatting of
+                                       the disks[] structure. Using this
+                                       structure obviates the need of using
+                                       other disk params like 'ex_boot_disk',
+                                       etc. See the GCE docs for specific
+                                       details.
+        :type     ex_disks_gce_struct: ``list`` or ``None``
+
+        :keyword  ex_nic_gce_struct: Support passing in the GCE-specific
+                                     formatted networkInterfaces[] structure.
+                                     No attempt is made to ensure proper
+                                     formatting of the networkInterfaces[]
+                                     data. Using this structure obviates the
+                                     need of using 'external_ip' and
+                                     'ex_network'.  See the GCE docs for
+                                     details.
+        :type     ex_nic_gce_struct: ``list`` or ``None``
+n
+        :keyword  ex_on_host_maintenance: Defines whether node should be
+                                          terminated or migrated when host
+                                          machine goes down. Acceptable values
+                                          are: 'MIGRATE' or 'TERMINATE' (If
+                                          not supplied, value will be reset to
+                                          GCE default value for the instance
+                                          type.)
+        :type     ex_on_host_maintenance: ``str`` or ``None``
+
+        :keyword  ex_automatic_restart: Defines whether the instance should be
+                                        automatically restarted when it is
+                                        terminated by Compute Engine. (If not
+                                        supplied, value will be set to the GCE
+                                        default value for the instance type.)
+        :type     ex_automatic_restart: ``bool`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -4072,7 +4397,8 @@ class GCENodeDriver(NodeDriver):
         if tags:
             node_data['tags'] = {'items': tags}
         if metadata:
-            node_data['metadata'] = metadata
+            node_data['metadata'] = self._format_metadata(fingerprint='na',
+                                                          metadata=metadata)
 
         # by default, new instances will match the same serviceAccount and
         # scope set in the Developers Console and Cloud SDK
@@ -4106,11 +4432,14 @@ class GCENodeDriver(NodeDriver):
                 set_scopes.append(sa)
         node_data['serviceAccounts'] = set_scopes
 
+        if boot_disk and ex_disks_gce_struct:
+            raise ValueError("Cannot specify both 'boot_disk' and "
+                             "'ex_disks_gce_struct'. Use one or the other.")
+
         if boot_disk:
             if not isinstance(ex_disk_auto_delete, bool):
                 raise ValueError("ex_disk_auto_delete field is not a bool.")
-            disks = [{'kind': 'compute#attachedDisk',
-                      'boot': True,
+            disks = [{'boot': True,
                       'type': 'PERSISTENT',
                       'mode': 'READ_WRITE',
                       'deviceName': boot_disk.name,
@@ -4118,21 +4447,44 @@ class GCENodeDriver(NodeDriver):
                       'zone': boot_disk.extra['zone'].extra['selfLink'],
                       'source': boot_disk.extra['selfLink']}]
             node_data['disks'] = disks
-        else:
-            node_data['image'] = image.extra['selfLink']
 
-        ni = [{'kind': 'compute#instanceNetworkInterface',
-               'network': network.extra['selfLink']}]
-        if external_ip:
-            access_configs = [{'name': 'External NAT',
-                               'type': 'ONE_TO_ONE_NAT'}]
-            if hasattr(external_ip, 'address'):
-                access_configs[0]['natIP'] = external_ip.address
-            ni[0]['accessConfigs'] = access_configs
+        if ex_disks_gce_struct:
+            node_data['disks'] = ex_disks_gce_struct
+
+        if network and ex_nic_gce_struct:
+            raise ValueError("Cannot specify both 'network' and "
+                             "'ex_nic_gce_struct'. Use one or the other.")
+
+        if network:
+            ni = [{'kind': 'compute#instanceNetworkInterface',
+                   'network': network.extra['selfLink']}]
+            if external_ip:
+                access_configs = [{'name': 'External NAT',
+                                   'type': 'ONE_TO_ONE_NAT'}]
+                if hasattr(external_ip, 'address'):
+                    access_configs[0]['natIP'] = external_ip.address
+                ni[0]['accessConfigs'] = access_configs
+        else:
+            ni = ex_nic_gce_struct
         node_data['networkInterfaces'] = ni
 
-        request = '/zones/%s/instances' % (location.name)
+        if description:
+            node_data['description'] = str(description)
+        if ex_can_ip_forward:
+            node_data['canIpForward'] = True
+        scheduling = {}
+        if ex_on_host_maintenance:
+            if isinstance(ex_on_host_maintenance, str) and \
+                    ex_on_host_maintenance in ['MIGRATE', 'TERMINATE']:
+                scheduling['onHostMaintenance'] = ex_on_host_maintenance
+            else:
+                scheduling['onHostMaintenance'] = 'MIGRATE'
+        if ex_automatic_restart is not None:
+            scheduling['automaticRestart'] = ex_automatic_restart
+        if scheduling:
+            node_data['scheduling'] = scheduling
 
+        request = '/zones/%s/instances' % (location.name)
         return request, node_data
 
     def _multi_create_disk(self, status, node_attrs):
@@ -4229,7 +4581,14 @@ class GCENodeDriver(NodeDriver):
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
             node_attrs['metadata'], boot_disk=status['disk'],
             external_ip=node_attrs['external_ip'],
-            ex_service_accounts=node_attrs['ex_service_accounts'])
+            ex_service_accounts=node_attrs['ex_service_accounts'],
+            description=node_attrs['description'],
+            ex_can_ip_forward=node_attrs['ex_can_ip_forward'],
+            ex_disks_gce_struct=node_attrs['ex_disks_gce_struct'],
+            ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
+            ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
+            ex_automatic_restart=node_attrs['ex_automatic_restart'])
+
         try:
             node_res = self.connection.request(
                 request, method='POST', data=node_data).object
@@ -4616,6 +4975,7 @@ class GCENodeDriver(NodeDriver):
         extra = {}
 
         extra['status'] = node.get('status')
+        extra['statusMessage'] = node.get('statusMessage')
         extra['description'] = node.get('description')
         extra['zone'] = self.ex_get_zone(node['zone'])
         extra['image'] = node.get('image')
@@ -4624,11 +4984,16 @@ class GCENodeDriver(NodeDriver):
         extra['networkInterfaces'] = node.get('networkInterfaces')
         extra['id'] = node['id']
         extra['selfLink'] = node.get('selfLink')
+        extra['kind'] = node.get('kind')
+        extra['creationTimestamp'] = node.get('creationTimestamp')
         extra['name'] = node['name']
         extra['metadata'] = node.get('metadata', {})
         extra['tags_fingerprint'] = node['tags']['fingerprint']
         extra['scheduling'] = node.get('scheduling', {})
         extra['deprecated'] = True if node.get('deprecated', None) else False
+        extra['canIpForward'] = node.get('canIpForward')
+        extra['serviceAccounts'] = node.get('serviceAccounts', [])
+        extra['scheduling'] = node.get('scheduling', {})
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
@@ -4899,6 +5264,90 @@ class GCENodeDriver(NodeDriver):
                          default_service=default_service,
                          host_rules=host_rules, path_matchers=path_matchers,
                          tests=tests, driver=self, extra=extra)
+
+    def _format_metadata(self, fingerprint, metadata=None):
+        """
+        Convert various data formats into the metadata format expected by
+        Google Compute Engine and suitable for passing along to the API. Can
+        accept the following formats:
+
+          (a) [{'key': 'k1', 'value': 'v1'}, ...]
+          (b) [{'k1': 'v1'}, ...]
+          (c) {'key': 'k1', 'value': 'v1'}
+          (d) {'k1': 'v1', 'k2': v2', ...}
+          (e) {'items': [...]}       # does not check for valid list contents
+
+        The return value is a 'dict' that GCE expects, e.g.
+
+          {'fingerprint': 'xx...',
+           'items': [{'key': 'key1', 'value': 'val1'},
+                     {'key': 'key2', 'value': 'val2'},
+                     ...,
+                    ]
+          }
+
+        :param  fingerprint: Current metadata fingerprint
+        :type   fingerprint: ``str``
+
+        :param  metadata: Variety of input formats.
+        :type   metadata: ``list``, ``dict``, or ``None``
+
+        :return: GCE-friendly metadata dict
+        :rtype:  ``dict``
+        """
+        if not metadata:
+            return {'fingerprint': fingerprint, 'items': []}
+        md = {'fingerprint': fingerprint}
+
+        # Check `list` format. Can support / convert the following:
+        # (a) [{'key': 'k1', 'value': 'v1'}, ...]
+        # (b) [{'k1': 'v1'}, ...]
+        if isinstance(metadata, list):
+            item_list = []
+            for i in metadata:
+                if isinstance(i, dict):
+                    # check (a)
+                    if 'key' in i and 'value' in i and len(i) == 2:
+                        item_list.append(i)
+                    # check (b)
+                    elif len(i) == 1:
+                        item_list.append({'key': list(i.keys())[0],
+                                          'value': list(i.values())[0]})
+                    else:
+                        raise ValueError("Unsupported metadata format.")
+                else:
+                    raise ValueError("Unsupported metadata format.")
+            md['items'] = item_list
+
+        # Check `dict` format. Can support / convert the following:
+        # (c) {'key': 'k1', 'value': 'v1'}
+        # (d) {'k1': 'v1', 'k2': 'v2', ...}
+        # (e) {'items': [...]}
+        if isinstance(metadata, dict):
+            # Check (c)
+            if 'key' in metadata and 'value' in metadata and \
+                    len(metadata) == 2:
+                md['items'] = [metadata]
+            # check (d)
+            elif len(metadata) == 1:
+                if 'items' in metadata:
+                    # check (e)
+                    if isinstance(metadata['items'], list):
+                        md['items'] = metadata['items']
+                    else:
+                        raise ValueError("Unsupported metadata format.")
+                else:
+                    md['items'] = [{'key': list(metadata.keys())[0],
+                                   'value': list(metadata.values())[0]}]
+            else:
+                # check (d)
+                md['items'] = []
+                for k, v in metadata.items():
+                    md['items'].append({'key': k, 'value': v})
+
+        if 'items' not in md:
+            raise ValueError("Unsupported metadata format.")
+        return md
 
     def _to_zone(self, zone):
         """

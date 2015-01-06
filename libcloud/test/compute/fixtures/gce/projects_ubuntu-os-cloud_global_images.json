@@ -1,0 +1,169 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images",
+ "id": "projects/ubuntu-os-cloud/global/images",
+ "items": [
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1204-precise-v20141028",
+   "id": "15508054221909398824",
+   "creationTimestamp": "2014-10-29T09:51:42.018-07:00",
+   "name": "ubuntu-1204-precise-v20141028",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1204-precise-v20141212"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "378614228",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1204-precise-v20141031",
+   "id": "3216640293232429175",
+   "creationTimestamp": "2014-11-07T00:48:18.673-08:00",
+   "name": "ubuntu-1204-precise-v20141031",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1204-precise-v20141212"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1137275331",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1204-precise-v20141212",
+   "id": "12756823774499736482",
+   "creationTimestamp": "2014-12-17T11:31:59.126-08:00",
+   "name": "ubuntu-1204-precise-v20141212",
+   "description": "Canonical, Ubuntu, 12.04 LTS, amd64 precise image built on 2014-12-12",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1140352383",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20141028",
+   "id": "17781692821175088041",
+   "creationTimestamp": "2014-10-29T09:51:42.072-07:00",
+   "name": "ubuntu-1404-trusty-v20141028",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20141212"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "375105326",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20141031a",
+   "id": "6500942514398264968",
+   "creationTimestamp": "2014-11-07T00:48:04.471-08:00",
+   "name": "ubuntu-1404-trusty-v20141031a",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20141212"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1015791618",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20141212",
+   "id": "14921913565797044708",
+   "creationTimestamp": "2014-12-17T11:31:37.868-08:00",
+   "name": "ubuntu-1404-trusty-v20141212",
+   "description": "Canonical, Ubuntu, 14.04 LTS, amd64 trusty image built on 2014-12-12",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "981936603",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1410-utopic-v20141029",
+   "id": "13898107879086076373",
+   "creationTimestamp": "2014-10-29T09:51:39.609-07:00",
+   "name": "ubuntu-1410-utopic-v20141029",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1410-utopic-v20141217"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "348037877",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1410-utopic-v20141030a",
+   "id": "2412636152371793564",
+   "creationTimestamp": "2014-11-07T00:47:53.082-08:00",
+   "name": "ubuntu-1410-utopic-v20141030a",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1410-utopic-v20141217"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1044175299",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1410-utopic-v20141217",
+   "id": "6363233028234584116",
+   "creationTimestamp": "2014-12-17T11:31:26.695-08:00",
+   "name": "ubuntu-1410-utopic-v20141217",
+   "description": "Canonical, Ubuntu, 14.10, amd64 utopic image built on 2014-12-17",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1048366941",
+   "diskSizeGb": "10"
+  }
+ ]
+}

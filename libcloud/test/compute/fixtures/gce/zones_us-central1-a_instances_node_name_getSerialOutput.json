@@ -1,0 +1,5 @@
+{
+ "kind": "compute#serialPortOutput",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/node-name/serialPort",
+ "contents": "This is some serial\r\noutput for you."
+}

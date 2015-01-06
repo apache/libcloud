@@ -1,0 +1,6 @@
+{
+ "kind": "compute#license",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-2008-r2-dc",
+ "name": "windows-2008-r2-dc",
+ "chargesUseFee": true
+}
