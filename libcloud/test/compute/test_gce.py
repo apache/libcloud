@@ -121,6 +121,45 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(self.driver.ex_get_serial_output(node),
                         'This is some serial\r\noutput for you.')
 
+    def test_ex_list(self):
+        d = self.driver
+        # Test the default case for all list methods
+        # (except list_volume_snapshots, which requires an arg)
+        for list_fn in (d.ex_list_addresses,
+                        d.ex_list_backendservices,
+                        d.ex_list_disktypes,
+                        d.ex_list_firewalls,
+                        d.ex_list_forwarding_rules,
+                        d.ex_list_healthchecks,
+                        d.ex_list_networks,
+                        d.ex_list_project_images,
+                        d.ex_list_regions,
+                        d.ex_list_routes,
+                        d.ex_list_snapshots,
+                        d.ex_list_targethttpproxies,
+                        d.ex_list_targetinstances,
+                        d.ex_list_targetpools,
+                        d.ex_list_urlmaps,
+                        d.ex_list_zones,
+                        d.list_images,
+                        d.list_locations,
+                        d.list_nodes,
+                        d.list_sizes,
+                        d.list_volumes):
+            full_list = [item.name for item in list_fn()]
+            li = d.ex_list(list_fn)
+            iter_list = [item.name for sublist in li for item in sublist]
+            self.assertEqual(full_list, iter_list)
+
+        # Test paging & filtering with a single list function as they require
+        # additional test fixtures
+        list_fn = d.ex_list_regions
+        for count, sublist in zip((2, 1), d.ex_list(list_fn).page(2)):
+            self.assertTrue(len(sublist) == count)
+        for sublist in d.ex_list(list_fn).filter('name eq us-central1'):
+            self.assertTrue(len(sublist) == 1)
+            self.assertEqual(sublist[0].name, 'us-central1')
+
     def test_ex_list_addresses(self):
         address_list = self.driver.ex_list_addresses()
         address_list_all = self.driver.ex_list_addresses('all')
@@ -190,8 +229,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
-        self.assertEqual(len(locations), 5)
-        self.assertEqual(locations[0].name, 'europe-west1-a')
+        self.assertEqual(len(locations), 6)
+        self.assertEqual(locations[0].name, 'asia-east1-a')
 
     def test_ex_list_routes(self):
         routes = self.driver.ex_list_routes()
@@ -306,8 +345,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_list_zones(self):
         zones = self.driver.ex_list_zones()
-        self.assertEqual(len(zones), 5)
-        self.assertEqual(zones[0].name, 'europe-west1-a')
+        self.assertEqual(len(zones), 6)
+        self.assertEqual(zones[0].name, 'asia-east1-a')
 
     def test_ex_create_address_global(self):
         address_name = 'lcaddressglobal'
@@ -1398,8 +1437,10 @@ class GCEMockHttp(MockHttpTestCase):
         if method == 'POST':
             body = self.fixtures.load('global_backendServices_post.json')
         else:
+            backend_name = getattr(self.test, 'backendservices_mock',
+                                   'web-service')
             body = self.fixtures.load('global_backendServices-%s.json' %
-                                      self.test.backendservices_mock)
+                                      backend_name)
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_backendServices_no_backends(self, method, url, body, headers):
@@ -1987,8 +2028,12 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions(self, method, url, body, headers):
-        body = self.fixtures.load(
-            'regions.json')
+        if 'pageToken' in url or 'filter' in url:
+            body = self.fixtures.load('regions-paged-2.json')
+        elif 'maxResults' in url:
+            body = self.fixtures.load('regions-paged-1.json')
+        else:
+            body = self.fixtures.load('regions.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_addresses(self, method, url, body, headers):
@@ -2145,6 +2190,10 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _zones(self, method, url, body, headers):
         body = self.fixtures.load('zones.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_asia_east_1a(self, method, url, body, headers):
+        body = self.fixtures.load('zones_asia-east1-a.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_diskTypes(self, method, url, body, headers):
