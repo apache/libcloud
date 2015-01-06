@@ -64,7 +64,28 @@ class GCEResponse(GoogleResponse):
 
 
 class GCEConnection(GoogleBaseConnection):
-    """Connection class for the GCE driver."""
+    """
+    Connection class for the GCE driver.
+
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+      1. modify request_path for GCE URI.
+      2. Implement gce_params functionality described below.
+
+    If the parameter gce_params is set to a dict prior to calling request(),
+    the URL parameters will be updated to include those key/values FOR A
+    SINGLE REQUEST. If the response contains a nextPageToken,
+    gce_params['pageToken'] will be set to its value. This can be used to
+    implement paging in list:
+
+    >>> params, more_results = {'maxResults': 2}, True
+    >>> while more_results:
+    ...     driver.connection.gce_params=params
+    ...     driver.ex_list_urlmaps()
+    ...     more_results = 'pageToken' in params
+    ...
+    [<GCEUrlMap id="..." name="cli-map">, <GCEUrlMap id="..." name="lc-map">]
+    [<GCEUrlMap id="..." name="web-map">]
+    """
     host = 'www.googleapis.com'
     responseCls = GCEResponse
 
@@ -76,6 +97,138 @@ class GCEConnection(GoogleBaseConnection):
                                             **kwargs)
         self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                          project)
+        self.gce_params = None
+
+    def pre_connect_hook(self, params, headers):
+        """
+        Update URL parameters with values from self.gce_params.
+
+        @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
+        """
+        params, headers = super(GCEConnection, self).pre_connect_hook(params,
+                                                                      headers)
+        if self.gce_params:
+            params.update(self.gce_params)
+        return params, headers
+
+    def request(self, *args, **kwargs):
+        """
+        Perform request then do GCE-specific processing of URL params.
+
+        @inherits: :class:`GoogleBaseConnection.request`
+        """
+        response = super(GCEConnection, self).request(*args, **kwargs)
+
+        # If gce_params has been set, then update the pageToken with the
+        # nextPageToken so it can be used in the next request.
+        if self.gce_params:
+            if 'nextPageToken' in response.object:
+                self.gce_params['pageToken'] = response.object['nextPageToken']
+            elif 'pageToken' in self.gce_params:
+                del self.gce_params['pageToken']
+            self.gce_params = None
+
+        return response
+
+
+class GCEList(object):
+    """
+    An Iterator that wraps list functions to provide additional features.
+
+    GCE enforces a limit on the number of objects returned by a list operation,
+    so users with more than 500 objects of a particular type will need to use
+    filter(), page() or both.
+
+    >>> l=GCEList(driver, driver.ex_list_urlmaps)
+    >>> for sublist in l.filter('name eq ...-map').page(1):
+    ...   sublist
+    ...
+    [<GCEUrlMap id="..." name="cli-map">]
+    [<GCEUrlMap id="..." name="web-map">]
+
+    One can create a GCEList manually, but it's slightly easier to use the
+    ex_list() method of :class:`GCENodeDriver`.
+    """
+
+    def __init__(self, driver, list_fn, **kwargs):
+        """
+        :param  driver: An initialized :class:``GCENodeDriver``
+        :type   driver: :class:``GCENodeDriver``
+
+        :param  list_fn: A bound list method from :class:`GCENodeDriver`.
+        :type   list_fn: ``instancemethod``
+        """
+        self.driver = driver
+        self.list_fn = list_fn
+        self.kwargs = kwargs
+        self.params = {}
+
+    def __iter__(self):
+        list_fn = self.list_fn
+        more_results = True
+        while more_results:
+            self.driver.connection.gce_params = self.params
+            yield list_fn(**self.kwargs)
+            more_results = 'pageToken' in self.params
+
+    def __repr__(self):
+        return '<GCEList list="%s" params="%s">' % (
+            self.list_fn.__name__, repr(self.params))
+
+    def filter(self, expression):
+        """
+        Filter results of a list operation.
+
+        GCE supports server-side filtering of resources returned by a list
+        operation. Syntax of the filter expression is fully descripted in the
+        GCE API reference doc, but in brief it is::
+
+            FIELD_NAME COMPARISON_STRING LITERAL_STRING
+
+        where FIELD_NAME is the resource's property name, COMPARISON_STRING is
+        'eq' or 'ne', and LITERAL_STRING is a regular expression in RE2 syntax.
+
+        >>> for sublist in l.filter('name eq ...-map'):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">, \
+                <GCEUrlMap id="..." name="web-map">]
+
+        API reference: https://cloud.google.com/compute/docs/reference/latest/
+        RE2 syntax: https://github.com/google/re2/blob/master/doc/syntax.txt
+
+        :param  expression: Filter expression described above.
+        :type   expression: ``str``
+
+        :return: This :class:`GCEList` instance
+        :rtype:  :class:`GCEList`
+        """
+        self.params['filter'] = expression
+        return self
+
+    def page(self, max_results=500):
+        """
+        Limit the number of results by each iteration.
+
+        This implements the paging functionality of the GCE list methods and
+        returns this GCEList instance so that results can be chained:
+
+        >>> for sublist in GCEList(driver, driver.ex_list_urlmaps).page(2):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">, \
+                <GCEUrlMap id="..." name="lc-map">]
+        [<GCEUrlMap id="..." name="web-map">]
+
+        :keyword  max_results: Maximum number of results to return per
+                               iteration. Defaults to the GCE default of 500.
+        :type     max_results: ``int``
+
+        :return: This :class:`GCEList` instance
+        :rtype:  :class:`GCEList`
+        """
+        self.params['maxResults'] = max_results
+        return self
 
 
 class GCELicense(UuidMixin):
@@ -1031,6 +1184,25 @@ class GCENodeDriver(NodeDriver):
                                                          node_name)
         response = self.connection.request(request, method='GET').object
         return response['contents']
+
+    def ex_list(self, list_fn, **kwargs):
+        """
+        Wrap a list method in a :class:`GCEList` iterator.
+
+        >>> for sublist in driver.ex_list(driver.ex_list_urlmaps).page(1):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">]
+        [<GCEUrlMap id="..." name="lc-map">]
+        [<GCEUrlMap id="..." name="web-map">]
+
+        :param  list_fn: A bound list method from :class:`GCENodeDriver`.
+        :type   list_fn: ``instancemethod``
+
+        :return: An iterator that returns sublists from list_fn.
+        :rtype: :class:`GCEList`
+        """
+        return GCEList(driver=self, list_fn=list_fn, **kwargs)
 
     def ex_list_disktypes(self, zone=None):
         """

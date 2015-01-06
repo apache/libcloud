@@ -25,6 +25,10 @@ General
 Compute
 ~~~~~~~
 
+- Google Compute now supports paginated lists including filtering.
+  (GITHUB-491)
+  [Lee Verberne]
+
 - OpenStackNodeSize objects now support optional, additional fields that are
   supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
   (GITHUB-488, LIBCLOUD-682)
