@@ -566,8 +566,8 @@ class LinodeNodeDriver(NodeDriver):
             "DiskID": volume.id,
         }
         try:
-            data = self.connection.request(API_ROOT, params=params)
-        except LinodeException: 
+            self.connection.request(API_ROOT, params=params)
+        except LinodeException:
             return False
 
         return True
