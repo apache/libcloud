@@ -1887,7 +1887,7 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     ex_disk_type: ``str``
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
         :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
                                        deleted when the Node is deleted. Set to
@@ -1958,6 +1958,11 @@ n
             raise ValueError("Cannot specify both 'ex_boot_disk' and "
                              "'ex_disks_gce_struct'")
 
+        if not image and not ex_boot_disk and not ex_disks_gce_struct:
+            raise ValueError("Missing root device or image. Must specify an "
+                             "'image', existing 'ex_boot_disk', or use the "
+                             "'ex_disks_gce_struct'.")
+
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -1967,6 +1972,8 @@ n
             ex_network = self.ex_get_network(ex_network)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
+        if not hasattr(ex_disk_type, 'name'):
+            ex_disk_type = self.ex_get_disktype(ex_disk_type)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -1978,6 +1985,7 @@ n
                 'deviceName': name,
                 'initializeParams': {
                     'diskName': name,
+                    'diskType': ex_disk_type.extra['selfLink'],
                     'sourceImage': image.extra['selfLink']
                 }
             }]
@@ -2070,7 +2078,7 @@ n
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     ex_disk_type: ``str``
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
         :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
                                        deleted when the Node is deleted. Set to
@@ -2148,8 +2156,10 @@ n
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if not hasattr(image, 'name'):
+        if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
+        if not hasattr(ex_disk_type, 'name'):
+            ex_disk_type = self.ex_get_disktype(ex_disk_type)
 
         node_attrs = {'size': size,
                       'image': image,
@@ -2161,6 +2171,7 @@ n
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
                       'ex_disk_type': ex_disk_type,
+                      'ex_disk_auto_delete': ex_disk_auto_delete,
                       'ex_service_accounts': ex_service_accounts,
                       'description': description,
                       'ex_can_ip_forward': ex_can_ip_forward,
@@ -2364,7 +2375,7 @@ n
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     ex_disk_type: ``str``
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
@@ -3969,7 +3980,7 @@ n
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     ex_disk_type: ``str``
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType` or ``None``
 
         :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
                                        deleted when the Node is deleted. Set to
@@ -4080,6 +4091,11 @@ n
         if boot_disk and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'boot_disk' and "
                              "'ex_disks_gce_struct'. Use one or the other.")
+
+        if not image and not boot_disk and not ex_disks_gce_struct:
+            raise ValueError("Missing root device or image. Must specify an "
+                             "'image', existing 'boot_disk', or use the "
+                             "'ex_disks_gce_struct'.")
 
         if boot_disk:
             if not isinstance(ex_disk_auto_delete, bool):
@@ -4300,7 +4316,7 @@ n
         :type     image: :class:`GCENodeImage` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify pd-standard (default) or pd-ssd
-        :type     ex_disk_type: ``str``
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
         :return:  Tuple containing the request string, the data dictionary and
                   the URL parameters
@@ -4329,7 +4345,9 @@ n
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        if ex_disk_type.startswith('https'):
+        if hasattr(ex_disk_type, 'name'):
+            volume_data['type'] = ex_disk_type.extra['selfLink']
+        elif ex_disk_type.startswith('https'):
             volume_data['type'] = ex_disk_type
         else:
             volume_data['type'] = 'https://www.googleapis.com/compute/'

@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver updated to make better use of GCEDiskTypes
+  (GITHUB-428)
+  [Eric Johnson]
+
 - GCE driver list_images() now returns all non-deprecated images by default
   (LIBCLOUD-602, GITHUB-423)
   [Eric Johnson]
