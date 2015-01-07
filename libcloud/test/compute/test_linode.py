@@ -105,6 +105,14 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
                                               fs_type="ext4")
         self.assertTrue(isinstance(volume, StorageVolume))
 
+    def test_destroy_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = StorageVolume(id=55648, name="test", size=1024,
+                               driver=self.driver, extra={"LINODEID": node.id})
+        is_destroyed = self.driver.destroy_volume(volume)
+
+        self.assertTrue(is_destroyed)
+
     def test_ex_list_volumes(self):
         # should return list of StorageVolume objects
         node = self.driver.list_nodes()[0]
@@ -136,6 +144,10 @@ class LinodeMockHttp(MockHttp):
 
     def _linode_disk_create(self, method, url, body, headers):
         body = '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1298,"DiskID":55647}}'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _linode_disk_delete(self, method, url, body, headers):
+        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.delete","DATA":{"JobID":1298,"DiskID":55648}}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_createfromdistribution(self, method, url, body, headers):

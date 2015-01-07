@@ -542,6 +542,36 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_volumes(data)[0]
 
+    def destroy_volume(self, volume):
+        """
+        Destroys disk volume for the Linode. Linode id is to be provided as
+        extra["LinodeId"] whithin :class:`StorageVolume`. It can be retrieved
+        by :meth:`libcloud.compute.drivers.linode.LinodeNodeDriver\
+                 .ex_list_volumes`.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        if not isinstance(volume, StorageVolume):
+            raise LinodeException(0xFD, "Invalid volume instance")
+
+        if volume.extra["LINODEID"] is None:
+            raise LinodeException(0xFD, "Missing LinodeID")
+
+        params = {
+            "api_action": "linode.disk.delete",
+            "LinodeID": volume.extra["LINODEID"],
+            "DiskID": volume.id,
+        }
+        try:
+            data = self.connection.request(API_ROOT, params=params)
+        except LinodeException: 
+            return False
+
+        return True
+
     def ex_list_volumes(self, node, disk_id=None):
         """
         List existing disk volumes for for given Linode.
