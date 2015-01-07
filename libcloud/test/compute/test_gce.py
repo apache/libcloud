@@ -374,6 +374,48 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
         self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 1)
 
+    def test_create_node_disk_opts(self):
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        image = self.driver.ex_get_image('debian-7')
+        boot_disk = self.driver.ex_get_volume('lcdisk')
+        disk_type = self.driver.ex_get_disktype('pd-ssd', 'us-central1-a')
+        DEMO_BASE_NAME = "lc-test"
+        gce_disk_struct = [
+            {
+                "type": "PERSISTENT",
+                "deviceName": '%s-gstruct' % DEMO_BASE_NAME,
+                "initializeParams": {
+                    "diskName": '%s-gstruct' % DEMO_BASE_NAME,
+                    "sourceImage": image.extra['selfLink']
+                },
+                "boot": True,
+                "autoDelete": True
+            },
+            {
+                "type": "SCRATCH",
+                "deviceName": '%s-gstruct-lssd' % DEMO_BASE_NAME,
+                "initializeParams": {
+                    "diskType": disk_type.extra['selfLink']
+                },
+                "autoDelete": True
+            }
+        ]
+
+        self.assertRaises(ValueError, self.driver.create_node, node_name,
+                          size, None)
+        node = self.driver.create_node(node_name, size, image)
+        self.assertTrue(isinstance(node, Node))
+        node = self.driver.create_node(node_name, size, None,
+                                       ex_boot_disk=boot_disk)
+        self.assertTrue(isinstance(node, Node))
+        node = self.driver.create_node(node_name, size, None,
+                                       ex_disks_gce_struct=gce_disk_struct)
+        self.assertTrue(isinstance(node, Node))
+        self.assertRaises(ValueError, self.driver.create_node, node_name,
+                          size, None, ex_boot_disk=boot_disk,
+                          ex_disks_gce_struct=gce_disk_struct)
+
     def test_create_node(self):
         node_name = 'node-name'
         image = self.driver.ex_get_image('debian-7')
@@ -1777,13 +1819,15 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_diskTypes(self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('zones_us-central1-a_diskTypes.json')
+        body = self.fixtures.load('zones_us-central1-a_diskTypes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_diskTypes_pd_standard(self, method, url, body, headers):
+        body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_standard.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_diskTypes_pd_ssd(self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_ssd.json')
+        body = self.fixtures.load('zones_us-central1-a_diskTypes_pd_ssd.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks(self, method, url, body, headers):

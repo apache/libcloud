@@ -293,7 +293,7 @@ def main():
 
     # == Setting Metadata for Node ==
     print('Setting Metadata for %s' % node_2.name)
-    if gce.ex_set_node_metadata(node_2, {'foo': 'bar'}):
+    if gce.ex_set_node_metadata(node_2, {'foo': 'bar', 'baz': 'foobarbaz'}):
         print('   Metadata updated for %s' % node_2.name)
     check_node = gce.ex_get_node(node_2.name)
     print('   New Metadata: %s' % check_node.extra['metadata'])
@@ -306,7 +306,7 @@ def main():
         multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
                                                    number,
                                                    ex_tags=['libcloud'],
-                                                   ex_disk_auto_delete=False)
+                                                   ex_disk_auto_delete=True)
         for node in multi_nodes:
             print('   Node %s created.' % node.name)
 
@@ -341,9 +341,6 @@ def main():
     addresses = gce.ex_list_addresses()
     display('Addresses', addresses)
 
-    volumes = gce.list_volumes()
-    display('Volumes', volumes)
-
     firewalls = gce.ex_list_firewalls()
     display('Firewalls', firewalls)
 
@@ -356,7 +353,9 @@ def main():
     if CLEANUP:
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
         clean_up(gce, DEMO_BASE_NAME, nodes,
-                 addresses + volumes + firewalls + networks + snapshots)
+                 addresses + firewalls + networks + snapshots)
+        volumes = gce.list_volumes()
+        clean_up(gce, DEMO_BASE_NAME, None, volumes)
 
 if __name__ == '__main__':
     main()
