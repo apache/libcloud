@@ -66,6 +66,7 @@ class LinodeNodeDriver(NodeDriver):
         list_images             avail.distributions
         list_locations          avail.datacenters
         list_volumes            linode.disk.list
+        destroy_volume          linode.disk.delete
 
     For more information on the Linode API, be sure to read the reference:
 
@@ -483,6 +484,33 @@ class LinodeNodeDriver(NodeDriver):
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
 
+    def destroy_volume(self, volume):
+        """
+        Destroys disk volume for the Linode. Linode id is to be provided as
+        extra["LinodeId"] whithin :class:`StorageVolume`. It can be retrieved
+        by :meth:`libcloud.compute.drivers.linode.LinodeNodeDriver\
+                 .ex_list_volumes`.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        if not isinstance(volume, StorageVolume):
+            raise LinodeException(0xFD, "Invalid volume instance")
+
+        if volume.extra["LINODEID"] is None:
+            raise LinodeException(0xFD, "Missing LinodeID")
+
+        params = {
+            "api_action": "linode.disk.delete",
+            "LinodeID": volume.extra["LINODEID"],
+            "DiskID": volume.id,
+        }
+        self.connection.request(API_ROOT, params=params)
+
+        return True
+
     def ex_create_volume(self, size, name, node, fs_type):
         """
         Create disk for the Linode.
@@ -541,36 +569,6 @@ class LinodeNodeDriver(NodeDriver):
         }
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_volumes(data)[0]
-
-    def destroy_volume(self, volume):
-        """
-        Destroys disk volume for the Linode. Linode id is to be provided as
-        extra["LinodeId"] whithin :class:`StorageVolume`. It can be retrieved
-        by :meth:`libcloud.compute.drivers.linode.LinodeNodeDriver\
-                 .ex_list_volumes`.
-
-        :param volume: Volume to be destroyed
-        :type volume: :class:`StorageVolume`
-
-        :rtype: ``bool``
-        """
-        if not isinstance(volume, StorageVolume):
-            raise LinodeException(0xFD, "Invalid volume instance")
-
-        if volume.extra["LINODEID"] is None:
-            raise LinodeException(0xFD, "Missing LinodeID")
-
-        params = {
-            "api_action": "linode.disk.delete",
-            "LinodeID": volume.extra["LINODEID"],
-            "DiskID": volume.id,
-        }
-        try:
-            self.connection.request(API_ROOT, params=params)
-        except LinodeException:
-            return False
-
-        return True
 
     def ex_list_volumes(self, node, disk_id=None):
         """

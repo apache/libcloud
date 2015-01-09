@@ -96,6 +96,13 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
                                        auth=NodeAuthPassword("foobar"))
         self.assertTrue(isinstance(node, Node))
 
+    def test_destroy_volume(self):
+        # Will exception on failure
+        node = self.driver.list_nodes()[0]
+        volume = StorageVolume(id=55648, name="test", size=1024,
+                               driver=self.driver, extra={"LINODEID": node.id})
+        self.driver.destroy_volume(volume)
+
     def test_ex_create_volume(self):
         # should return a StorageVolume object
         node = self.driver.list_nodes()[0]
@@ -104,14 +111,6 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
                                               node=node,
                                               fs_type="ext4")
         self.assertTrue(isinstance(volume, StorageVolume))
-
-    def test_destroy_volume(self):
-        node = self.driver.list_nodes()[0]
-        volume = StorageVolume(id=55648, name="test", size=1024,
-                               driver=self.driver, extra={"LINODEID": node.id})
-        is_destroyed = self.driver.destroy_volume(volume)
-
-        self.assertTrue(is_destroyed)
 
     def test_ex_list_volumes(self):
         # should return list of StorageVolume objects
