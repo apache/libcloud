@@ -361,6 +361,11 @@ class Route53DNSDriver(DNSDriver):
         changes = ET.SubElement(batch, 'Changes')
 
         for action, name, type_, data, extra in changes_list:
+            # Multiple value records need to be handled specially - we need to
+            # pass values for other records as well
+            multiple_value_record = extra.get('_multi_value', False)
+            other_records = extra.get('_other_records', [])
+
             change = ET.SubElement(changes, 'Change')
             ET.SubElement(change, 'Action').text = action
 
@@ -370,6 +375,10 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
 
             rrecs = ET.SubElement(rrs, 'ResourceRecords')
+            if multiple_value_record and other_records:
+                for record in other_records:
+                    rrec = ET.SubElement(rrecs, 'ResourceRecord')
+                    ET.SubElement(rrec, 'Value').text = record['data']
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
             ET.SubElement(rrec, 'Value').text = data
 
