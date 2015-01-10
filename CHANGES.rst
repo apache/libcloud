@@ -156,6 +156,11 @@ DNS
   (GITHUB-413, LIBCLOUD-640)
   [Vanč Levstik]
 
+- Fix a bug with ``ex_create_multi_value_record`` method in the Route53 driver
+  only returning a single record.
+  (GITHUB-431, LIBCLOUD-650)
+  [Itxaka Serrano]
+
 Changes with Apache Libcloud 0.16.0
 -----------------------------------
 
