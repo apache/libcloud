@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<virtualmachinewithnode>
+<virtualMachine>
     <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/virtualappliances/6/virtualmachines/3/network/configurations" type="application/vnd.abiquo.virtualmachinenetworkconfigurations+xml" rel="configurations"/>
     <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/virtualappliances/6/virtualmachines/3/action/deploy" type="application/vnd.abiquo.acceptedrequest+xml" rel="deploy"/>
     <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/virtualappliances/6/virtualmachines/3/storage/disks" type="application/vnd.abiquo.harddisks+xml" rel="disks"/>
@@ -32,7 +32,7 @@
     <uuid>914f8125-33d3-4fe3-a162-5d6f5bf32614</uuid>
     <vdrpPort>0</vdrpPort>
     <nodeId>3</nodeId>
-    <nodeName>node-name</nodeName>
+    <label>node-name</label>
     <x>0</x>
     <y>0</y>
-</virtualmachinewithnode>
+</virtualMachine>

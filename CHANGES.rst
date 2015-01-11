@@ -149,6 +149,10 @@ Compute
   (GITHUB-433)
   [quilombo]
 
+- Add support for Abiquo API v3.x, remove support for now obsolete API v2.x.
+  (GUTHUB-433, LIBCLOUD-652)
+  [David Freedman]
+
 Storage
 ~~~~~~~
 
