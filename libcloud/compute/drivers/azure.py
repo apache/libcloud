@@ -811,6 +811,83 @@ class AzureNodeDriver(NodeDriver):
             HostedServices
         )
 
+    def ex_add_instance_endpoints(self,
+                                  node,
+                                  endpoints,
+                                  ex_deployment_slot="Production"):
+
+        all_endpoints = [
+            {
+                "name": endpoint.name,
+                "protocol": endpoint.protocol,
+                "port": endpoint.public_port,
+                "local_port": endpoint.local_port,
+
+            }
+            for endpoint in node.extra['instance_endpoints']
+        ]
+
+        all_endpoints.extend(endpoints)
+
+        return self.ex_set_instance_endpoints(node, all_endpoints, ex_deployment_slot)
+
+    def ex_set_instance_endpoints(self,
+                                  node,
+                                  endpoints,
+                                  ex_deployment_slot="Production"):
+        """
+        endpoint = ConfigurationSetInputEndpoint(
+            name=u'SSH',
+            protocol=u'tcp',
+            port=port,
+            local_port=u'22',
+            load_balanced_endpoint_set_name=None,
+            enable_direct_server_return=False
+        )
+        {
+            'name': u'SSH',
+            'protocol': u'tcp',
+            'port': port,
+            'local_port': u'22'
+        }
+        """
+
+        ex_cloud_service_name = node.extra['ex_cloud_service_name']
+        vm_role_name = node.name
+
+        network_config = ConfigurationSet()
+        network_config.configuration_set_type = 'NetworkConfiguration'
+
+        for endpoint in endpoints:
+            new_endpoint = ConfigurationSetInputEndpoint(**endpoint)
+            network_config.input_endpoints.items.append(new_endpoint)
+
+        _deployment_name = self._get_deployment(
+            service_name=ex_cloud_service_name,
+            deployment_slot=ex_deployment_slot
+        ).name
+
+        response = self._perform_put(
+            self._get_role_path(
+                ex_cloud_service_name,
+                _deployment_name,
+                vm_role_name
+            ),
+            AzureXmlSerializer.add_role_to_xml(
+                None,  # role_name
+                None,  # system_config
+                None,  # os_virtual_hard_disk
+                'PersistentVMRole',  # role_type
+                network_config,  # network_config
+                None,  # availability_set_name
+                None,  # data_virtual_hard_disks
+                None,  # vm_image
+                None  # role_size
+            )
+        )
+
+        self.raise_for_response(response, 202)
+
     """
     Functions not implemented
     """
@@ -902,6 +979,7 @@ class AzureNodeDriver(NodeDriver):
             private_ips=[data.ip_address],
             driver=self.connection.driver,
             extra={
+                'instance_endpoints': data.instance_endpoints,
                 'remote_desktop_port': remote_desktop_port,
                 'ssh_port': ssh_port,
                 'power_state': data.power_state,
@@ -1162,6 +1240,18 @@ class AzureNodeDriver(NodeDriver):
     def _perform_post(self, path, body, response_type=None, async=False):
         request = AzureHTTPRequest()
         request.method = 'POST'
+        request.host = azure_service_management_host
+        request.path = path
+        request.body = self._get_request_body(body)
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def _perform_put(self, path, body, response_type=None, async=False):
+        request = AzureHTTPRequest()
+        request.method = 'PUT'
         request.host = azure_service_management_host
         request.path = path
         request.body = self._get_request_body(body)
@@ -1669,12 +1759,10 @@ class AzureNodeDriver(NodeDriver):
     #def get_connection(self):
     #    certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
     #    port = HTTPS_PORT
-
     #    connection = HTTPSConnection(
     #        azure_service_management_host,
     #        int(port),
     #        cert_file=certificate_path)
-
     #    return connection
 
 """
