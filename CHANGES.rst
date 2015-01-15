@@ -149,6 +149,13 @@ Storage
   (GITHUB-408, LIBCLOUD-639)
   [Peter Schmidt]
 
+Loadbalancer
+~~~~~~~~~~~~
+
+- Updates to CloudStack Load-Balancer
+  (GITHUB-434)
+  [Jeroen de Korte]
+
 DNS
 ~~~
 

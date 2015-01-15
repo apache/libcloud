@@ -970,21 +970,27 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         }
         if location is not None:
             args['zoneid'] = location.id
+
         imgs = self._sync_request(command='listTemplates',
                                   params=args,
                                   method='GET')
         images = []
         for img in imgs.get('template', []):
+
+            extra = {'hypervisor': img['hypervisor'],
+                     'format': img['format'],
+                     'os': img['ostypename'],
+                     'displaytext': img['displaytext']}
+
+            size = img.get('size', None)
+            if size is not None:
+                extra.update({'size': img['size']})
+
             images.append(NodeImage(
                 id=img['id'],
                 name=img['name'],
                 driver=self.connection.driver,
-                extra={
-                    'hypervisor': img['hypervisor'],
-                    'format': img['format'],
-                    'size': img['size'],
-                    'os': img['ostypename'],
-                    'displaytext': img['displaytext']}))
+                extra=extra))
         return images
 
     def list_locations(self):
