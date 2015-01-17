@@ -38,7 +38,7 @@ more information.
 Documentation
 =============
 
-Documentation can be found at https://libcloud.readthedocs.org.
+Documentation can be found at <https://libcloud.readthedocs.org>.
 
 Feedback
 ========
