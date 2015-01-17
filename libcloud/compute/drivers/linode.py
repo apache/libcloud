@@ -578,7 +578,7 @@ class LinodeNodeDriver(NodeDriver):
         :type       node: :class:`Node`
 
         :keyword    disk_id: Id for specific disk volume. (optional)
-        :keyword     disk_id: ``int``
+        :type       disk_id: ``int``
 
         :rtype: ``list`` of :class:`StorageVolume`
         """
