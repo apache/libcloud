@@ -1093,9 +1093,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_add_access_config(self):
         self.assertRaises(ValueError, self.driver.ex_add_access_config,
-                          'node', 'name')
+                          'node', 'name', 'nic')
         node = self.driver.ex_get_node('node-name', 'us-central1-a')
-        self.assertTrue(self.driver.ex_add_access_config(node, 'foo'))
+        self.assertTrue(self.driver.ex_add_access_config(node, 'foo', 'bar'))
 
     def test_ex_delete_access_config(self):
         self.assertRaises(ValueError, self.driver.ex_add_access_config,

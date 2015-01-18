@@ -899,7 +899,8 @@ class GCENodeDriver(NodeDriver):
         else:
             self.region = None
 
-    def ex_add_access_config(self, node, name, nat_ip=None, config_type=None):
+    def ex_add_access_config(self, node, name, nic, nat_ip=None,
+                             config_type=None):
         """
         Add a network interface access configuration to a node.
 
@@ -934,10 +935,11 @@ class GCENodeDriver(NodeDriver):
 
         if nat_ip is not None:
             config['natIP'] = nat_ip
-
+        params = {'networkInterface': nic}
         request = '/zones/%s/instances/%s/addAccessConfig' % (zone_name,
                                                               node_name)
-        self.connection.async_request(request, method='POST', data=config)
+        self.connection.async_request(request, method='POST',
+                                      data=config, params=params)
         return True
 
     def ex_delete_access_config(self, node, name, nic):
