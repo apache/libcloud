@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver fixed for missing param on ex_add_access_config
+  (GITHUB-435)
+  [Peter Mooshammer]
+
 - GCE driver support for HTTP load-balancer resources
   (LIBCLOUD-605, GITHUB-429)
   [Lee Verberne]
