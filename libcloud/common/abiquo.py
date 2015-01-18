@@ -134,7 +134,7 @@ class AbiquoResponse(XmlResponse):
                 # Most of the exceptions only have one error
                 raise LibcloudError(errors[0].findtext('message'))
             else:
-                raise LibcloudError('unparseable body')
+                raise LibcloudError(self.body)
 
     def success(self):
         """

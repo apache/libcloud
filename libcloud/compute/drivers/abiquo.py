@@ -280,7 +280,7 @@ class AbiquoNodeDriver(NodeDriver):
         self.connection.cache['locations'] = {}
         for e_vdc in e_vdcs.findall('virtualDatacenter'):
             loc = get_href(e_vdc, 'location')
-            if (loc is not None):
+            if loc is not None:
                 self.connection.cache['locations'][loc] = get_href(e_vdc,
                                                                    'edit')
 
