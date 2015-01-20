@@ -131,6 +131,10 @@ Compute
   (GITHUB-418)
   [Mikhail Ovsyannikov]
 
+- Add new tok02 region to the Softlayer drive.
+  (GITHUB-436, LIBCLOUD-656)
+  [Dustin Oberloh]
+
 Storage
 ~~~~~~~
 
