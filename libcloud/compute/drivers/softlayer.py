@@ -47,6 +47,7 @@ DATACENTERS = {
     'sjc01': {'country': 'US', 'name': 'San Jose - West Coast U.S.'},
     'sng01': {'country': 'SG', 'name': 'Singapore - Southeast Asia'},
     'ams01': {'country': 'NL', 'name': 'Amsterdam - Western Europe'},
+    'tok02': {'country': 'JP', 'name': 'Tokyo - Japan'},
 }
 
 NODE_STATE_MAP = {
