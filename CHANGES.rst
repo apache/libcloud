@@ -144,6 +144,11 @@ Compute
   (GITHUB-439)
   [Stephen D. Spencer]
 
+- Fix a bug with config_drive attribute in the OpenStack driver. New versions
+  of OpenStack now return a boolean and not a string.
+  (GITHUB-433)
+  [quilombo]
+
 Storage
 ~~~~~~~
 

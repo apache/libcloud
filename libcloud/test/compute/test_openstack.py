@@ -926,7 +926,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                                        ex_config_drive=True)
         self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
         self.assertEqual(node.name, 'racktest')
-        self.assertEqual(node.extra['config_drive'], True)
+        self.assertTrue(node.extra['config_drive'])
 
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
