@@ -1989,7 +1989,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         # state
         image = api_node.get('image', None)
         image_id = image.get('id', None) if image else None
-        config_drive = api_node.get("config_drive", "false")
+        config_drive = api_node.get("config_drive", False)
 
         return Node(
             id=api_node['id'],
