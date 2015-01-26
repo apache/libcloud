@@ -16,6 +16,11 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver update to support JSON format Service Account files and a PY3
+  fix from Siim Põder for LIBCLOUD-627.
+  (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)
+  [Eric Johnson]
+
 - GCE driver fixed for missing param on ex_add_access_config
   (GITHUB-435)
   [Peter Mooshammer]

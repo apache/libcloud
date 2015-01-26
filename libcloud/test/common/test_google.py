@@ -18,6 +18,7 @@ Tests for Google Connection classes.
 import datetime
 import sys
 import unittest
+import os
 
 try:
     import simplejson as json
@@ -33,13 +34,28 @@ from libcloud.common.google import (GoogleAuthError,
                                     GoogleServiceAcctAuthConnection,
                                     GoogleGCEServiceAcctAuthConnection,
                                     GoogleBaseConnection)
-from libcloud.test.secrets import GCE_PARAMS
+
 
 # Skip some tests if PyCrypto is unavailable
 try:
     from Crypto.Hash import SHA256
 except ImportError:
     SHA256 = None
+
+
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+PEM_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.pem")
+JSON_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.json")
+with open(JSON_KEY, 'r') as f:
+    KEY_STR = json.loads(f.read())['private_key']
+
+
+GCE_PARAMS = ('email@developer.gserviceaccount.com', 'key')
+GCE_PARAMS_PEM_KEY = ('email@developer.gserviceaccount.com', PEM_KEY)
+GCE_PARAMS_JSON_KEY = ('email@developer.gserviceaccount.com', JSON_KEY)
+GCE_PARAMS_KEY = ('email@developer.gserviceaccount.com', KEY_STR)
+GCE_PARAMS_IA = ('client_id', 'client_secret')
+GCE_PARAMS_GCE = ('foo', 'bar')
 
 
 class MockJsonResponse(object):
@@ -146,17 +162,25 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
 
         if SHA256:
             kwargs['auth_type'] = 'SA'
-            conn1 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+            conn1 = GoogleBaseConnection(*GCE_PARAMS_PEM_KEY, **kwargs)
+            self.assertTrue(isinstance(conn1.auth_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+            conn1 = GoogleBaseConnection(*GCE_PARAMS_JSON_KEY, **kwargs)
+            self.assertTrue(isinstance(conn1.auth_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+            conn1 = GoogleBaseConnection(*GCE_PARAMS_KEY, **kwargs)
             self.assertTrue(isinstance(conn1.auth_conn,
                                        GoogleServiceAcctAuthConnection))
 
         kwargs['auth_type'] = 'IA'
-        conn2 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+        conn2 = GoogleBaseConnection(*GCE_PARAMS_IA, **kwargs)
         self.assertTrue(isinstance(conn2.auth_conn,
                                    GoogleInstalledAppAuthConnection))
 
         kwargs['auth_type'] = 'GCE'
-        conn3 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+        conn3 = GoogleBaseConnection(*GCE_PARAMS_GCE, **kwargs)
         self.assertTrue(isinstance(conn3.auth_conn,
                                    GoogleGCEServiceAcctAuthConnection))
 

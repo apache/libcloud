@@ -85,7 +85,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         obj = self.driver._get_object_by_kind(
             'https://www.googleapis.com/compute/v1/projects/project_name/'
             'global/targetHttpProxies/web-proxy')
-        self.assertEquals(obj.name, 'web-proxy')
+        self.assertEqual(obj.name, 'web-proxy')
 
     def test_get_region_from_zone(self):
         zone1 = self.driver.ex_get_zone('us-central1-a')
