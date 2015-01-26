@@ -55,6 +55,11 @@ API_ENDPOINTS_2_0 = {
         'name': 'Washington, DC',
         'country': 'United States',
         'host': 'wdc.cloudsigma.com'
+    },
+    'hnl': {
+        'name': 'Honolulu, HI',
+        'country': 'United States',
+        'host': 'hnl.cloudsigma.com'
     }
 }
 

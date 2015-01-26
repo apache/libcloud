@@ -135,6 +135,10 @@ Compute
   (GITHUB-436, LIBCLOUD-656)
   [Dustin Oberloh]
 
+- Add new Honolulu, HI endpoint to the CloudSigma driver.
+  (GITHUB-439)
+  [Stephen D. Spencer]
+
 Storage
 ~~~~~~~
 
