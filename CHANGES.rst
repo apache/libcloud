@@ -150,8 +150,12 @@ Compute
   [quilombo]
 
 - Add support for Abiquo API v3.x, remove support for now obsolete API v2.x.
-  (GUTHUB-433, LIBCLOUD-652)
+  (GITHUB-433, LIBCLOUD-652)
   [David Freedman]
+
+- Allow rootdisksize parameter in create_node CloudStack driver
+  (GITHUB-440, LIBCLOUD-658)
+  [Loic Lambiel]
 
 Storage
 ~~~~~~~
