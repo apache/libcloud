@@ -1133,6 +1133,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :type       ex_start_vm: ``bool``
 
+        :keyword    ex_rootdisksize: String with rootdisksize for the template
+        :type       ex_rootdisksize: ``str``
+
         :rtype:     :class:`.CloudStackNode`
         """
 
@@ -1161,6 +1164,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         ex_displayname = kwargs.get('ex_displayname', None)
         ex_ip_address = kwargs.get('ex_ip_address', None)
         ex_start_vm = kwargs.get('ex_start_vm', None)
+        ex_rootdisksize = kwargs.get('ex_rootdisksize', None)
 
         if name:
             server_params['name'] = name
@@ -1203,6 +1207,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         if ex_ip_address:
             server_params['ipaddress'] = ex_ip_address
+
+        if ex_rootdisksize:
+            server_params['rootdisksize'] = ex_rootdisksize
 
         if ex_start_vm is not None:
             server_params['startvm'] = ex_start_vm
