@@ -16,6 +16,13 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver now raises ResourceNotFoundError when the specified image is
+  not found in any image project. Previously, this would return None but now
+  raises the not-found exception instead. This fixes a bug where returning
+  None caused ex_delete_image to raise an AttributeError.
+  (GITHUB-441)
+  [Eric Johnson]
+
 - GCE driver update to support JSON format Service Account files and a PY3
   fix from Siim Põder for LIBCLOUD-627.
   (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)

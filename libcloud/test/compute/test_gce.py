@@ -858,6 +858,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(destroyed)
 
     def test_ex_delete_image(self):
+        self.assertRaises(ResourceNotFoundError,
+                          self.driver.ex_get_image, 'missing-image')
+        self.assertRaises(ResourceNotFoundError,
+                          self.driver.ex_delete_image, 'missing-image')
+
         image = self.driver.ex_get_image('debian-7')
         deleted = self.driver.ex_delete_image(image)
         self.assertTrue(deleted)

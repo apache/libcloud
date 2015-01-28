@@ -3810,7 +3810,7 @@ n
 
         :return:  GCENodeImage object based on provided information or None if
                   an image with that name is not found.
-        :rtype:   :class:`GCENodeImage` or ``None``
+        :rtype:   :class:`GCENodeImage` or raise ``ResourceNotFoundError``
         """
         if partial_name.startswith('https://'):
             response = self.connection.request(partial_name, method='GET')
@@ -3821,6 +3821,10 @@ n
                 for short_name in short_list:
                     if partial_name.startswith(short_name):
                         image = self._match_images(img_proj, partial_name)
+
+        if not image:
+            raise ResourceNotFoundError('Could not find image \'%s\'' % (
+                                        partial_name), None, None)
         return image
 
     def ex_get_route(self, name):
