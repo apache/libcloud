@@ -3447,6 +3447,36 @@ n
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_start_node(self, node):
+        """
+        Start a node that is stopped and in TERMINATED state.
+
+        :param  node: Node object to start
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/instances/%s/start' % (node.extra['zone'].name,
+                                                    node.name)
+        self.connection.async_request(request, method='POST')
+        return True
+
+    def ex_stop_node(self, node):
+        """
+        Stop a running node.
+
+        :param  node: Node object to stop
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/instances/%s/stop' % (node.extra['zone'].name,
+                                                   node.name)
+        self.connection.async_request(request, method='POST')
+        return True
+
     def destroy_node(self, node, destroy_boot_disk=False):
         """
         Destroy a node.

@@ -443,6 +443,21 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, cidr)
 
+    def test_ex_node_start(self):
+        zone = 'us-central1-a'
+        node = self.driver.ex_get_node('stopped-node', zone)
+        self.assertTrue(self.driver.ex_start_node(node))
+
+    def test_ex_node_stop(self):
+        zone = 'us-central1-a'
+        node = self.driver.ex_get_node('node-name', zone)
+        self.assertTrue(self.driver.ex_stop_node(node))
+
+        # try and stop a stopped node (should work)
+        zone = 'us-central1-a'
+        node = self.driver.ex_get_node('stopped-node', zone)
+        self.assertTrue(self.driver.ex_stop_node(node))
+
     def test_create_node_req(self):
         image = self.driver.ex_get_image('debian-7')
         size = self.driver.ex_get_size('n1-standard-1')
@@ -1312,6 +1327,30 @@ class GCEMockHttp(MockHttpTestCase):
     def _setUsageExportBucket(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('setUsageExportBucket_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_startnode(self, method, url, body, header):
+        body = self.fixtures.load('zones_us_central1_a_operations_operation_startnode.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_stopped_node_start(self, method, url, body, header):
+        body = self.fixtures.load('zones_us_central1_a_instances_stopped_node_start.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_stopped_node_stop(self, method, url, body, header):
+        body = self.fixtures.load('zones_us_central1_a_instances_stopped_node_stop.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_stopped_node(self, method, url, body, headers):
+        body = self.fixtures.load('zones_us_central1_a_instances_stopped_node.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_stopnode(self, method, url, body, headers):
+        body = self.fixtures.load('zones_us_central1_a_operations_operation_stopnode.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_stop(self, method, url, body, headers):
+        body = self.fixtures.load('zones_us_central1_a_instances_node_name_stop.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_node_name_setMetadata(self, method, url, body, headers):

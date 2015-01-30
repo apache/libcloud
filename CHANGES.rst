@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver updated to include ex_stop_node() and ex_start_node() methods
+  (GITHUB-442)
+  [Eric Johnson]
+
 - GCE driver now raises ResourceNotFoundError when the specified image is
   not found in any image project. Previously, this would return None but now
   raises the not-found exception instead. This fixes a bug where returning
