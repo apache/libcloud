@@ -1,0 +1,14 @@
+{
+  "image": {
+    "id": 12345,
+    "name": "My snapshot",
+    "distribution": "Ubuntu",
+    "slug": null,
+    "public": false,
+    "regions": [
+      "nyc2"
+    ],
+    "created_at": "2014-11-04T22:23:02Z",
+    "min_disk_size": 20
+  }
+}
