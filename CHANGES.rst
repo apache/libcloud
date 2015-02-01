@@ -129,6 +129,14 @@ Compute
   (LIBCLOUD-670, GITHUB-472)
   [Dinesh Bhoopathy]
 
+- Add support for DigitalOcean API v2.0 while maintaining support for the old
+  API v2.0.
+
+  Note: API v2.0 is now used by default. To use the old API v1.0, pass
+  ``api_version='1.0'`` argument to the driver constructor.
+  (GITHUB-442)
+  [Andrew Starr-Bochicchio]
+
 DNS
 ~~~
 

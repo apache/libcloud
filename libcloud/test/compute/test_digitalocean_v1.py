@@ -28,17 +28,18 @@ from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
 from libcloud.test import LibcloudTestCase, MockHttpTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import DIGITAL_OCEAN_PARAMS
+from libcloud.test.secrets import DIGITALOCEAN_v1_PARAMS
 
 
 # class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
-class DigitalOceanTests(LibcloudTestCase):
+class DigitalOcean_v1_Tests(LibcloudTestCase):
 
     def setUp(self):
         DigitalOceanNodeDriver.connectionCls.conn_classes = \
             (None, DigitalOceanMockHttp)
         DigitalOceanMockHttp.type = None
-        self.driver = DigitalOceanNodeDriver(*DIGITAL_OCEAN_PARAMS)
+        self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v1_PARAMS,
+                                             api_version='v1')
 
     def test_authentication(self):
         DigitalOceanMockHttp.type = 'UNAUTHORIZED_CLIENT'
@@ -124,56 +125,56 @@ class DigitalOceanTests(LibcloudTestCase):
 
 
 class DigitalOceanMockHttp(MockHttpTestCase):
-    fixtures = ComputeFileFixtures('digitalocean')
+    fixtures = ComputeFileFixtures('digitalocean_v1')
 
-    def _regions(self, method, url, body, headers):
+    def _v1_regions(self, method, url, body, headers):
         body = self.fixtures.load('list_locations.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _images(self, method, url, body, headers):
+    def _v1_images(self, method, url, body, headers):
         body = self.fixtures.load('list_images.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _sizes(self, method, url, body, headers):
+    def _v1_sizes(self, method, url, body, headers):
         body = self.fixtures.load('list_sizes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _droplets(self, method, url, body, headers):
+    def _v1_droplets(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _droplets_new_INVALID_IMAGE(self, method, url, body, headers):
+    def _v1_droplets_new_INVALID_IMAGE(self, method, url, body, headers):
         # reboot_node
         body = self.fixtures.load('error_invalid_image.json')
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _droplets_119461_reboot(self, method, url, body, headers):
+    def _v1_droplets_119461_reboot(self, method, url, body, headers):
         # reboot_node
         body = self.fixtures.load('reboot_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _droplets_119461_destroy(self, method, url, body, headers):
+    def _v1_droplets_119461_destroy(self, method, url, body, headers):
         # destroy_node
         self.assertUrlContainsQueryParams(url, {'scrub_data': '1'})
         body = self.fixtures.load('destroy_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _droplets_119461_rename(self, method, url, body, headers):
+    def _v1_droplets_119461_rename(self, method, url, body, headers):
         # reboot_node
         self.assertUrlContainsQueryParams(url, {'name': 'fedora helios'})
         body = self.fixtures.load('ex_rename_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _ssh_keys(self, method, url, body, headers):
+    def _v1_ssh_keys(self, method, url, body, headers):
         body = self.fixtures.load('ex_list_ssh_keys.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _ssh_keys_7717_destroy(self, method, url, body, headers):
+    def _v1_ssh_keys_7717_destroy(self, method, url, body, headers):
         # destroy_ssh_key
         body = self.fixtures.load('ex_destroy_ssh_key.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _droplets_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
+    def _v1_droplets_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
         body = self.fixtures.load('error.txt')
         return (httplib.FOUND, body, {}, httplib.responses[httplib.FOUND])
 
