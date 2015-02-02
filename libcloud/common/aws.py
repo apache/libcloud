@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import base64
+from datetime import datetime
+import hashlib
 import hmac
 import time
 from hashlib import sha256
@@ -133,15 +135,73 @@ class AWSTokenConnection(ConnectionUserAndKey):
 class SignedAWSConnection(AWSTokenConnection):
 
     def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
         params['Version'] = self.version
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
+
+        if self.signature_version == 2:
+            params['SignatureVersion'] = '2'
+            params['SignatureMethod'] = 'HmacSHA256'
+            params['AWSAccessKeyId'] = self.user_id
+            params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
+                                                time.gmtime())
+            params['Signature'] = self._get_aws_auth_param(params, self.key,
+                                                           self.action)
         return params
+
+    def pre_connect_hook(self, params, headers):
+        if self.signature_version == 4:
+            now = datetime.utcnow()
+            headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+            headers['Authorization'] = self._get_authorization_v4_header(params, headers, now)
+
+        return params, headers
+
+    def _get_authorization_v4_header(self, params, headers, dt):
+        # TODO: according to AWS spec (and RFC 2616 Section 4.2.) excess whitespace
+        # from inside non-quoted strings should be stripped. Now we only strip the
+        # start and end of the string. See http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+        canonical_headers = '\n'.join([':'.join([k.lower(), v.strip()])
+                                       for k, v in sorted(headers.items())])
+        canonical_headers += '\n'
+
+        signed_headers = ';'.join([k.lower() for k in sorted(headers.keys())])
+
+        # For self.method == GET
+        request_params = '&'.join(["%s=%s" % (urlquote(k, safe=''), urlquote(v, safe='-_~'))
+                                   for k, v in sorted(params.items())])
+        payload_hash = hashlib.sha256('').hexdigest()
+
+        canonical_request = '\n'.join([self.method,
+                                       self.action,
+                                       request_params,
+                                       canonical_headers,
+                                       signed_headers,
+                                       payload_hash])
+
+        credential_scope = '/'.join([dt.strftime('%Y%m%d'),
+                                     self.driver.region_name,
+                                     self.service_name,
+                                     'aws4_request'])
+        string_to_sign = '\n'.join(['AWS4-HMAC-SHA256',
+                                    dt.strftime('%Y%m%dT%H%M%SZ'),
+                                    credential_scope,
+                                    hashlib.sha256(canonical_request).hexdigest()])
+
+        # Key derivation functions. See:
+        # http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-python
+        def getSignatureKey(key, date_stamp, regionName, serviceName):
+            def sign(key, msg):
+                return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
+
+            signed_date = sign(('AWS4' + key).encode('utf-8'), date_stamp)
+            signed_region = sign(signed_date, regionName)
+            signed_service = sign(signed_region, serviceName)
+            return sign(signed_service, 'aws4_request')
+
+        signing_key = getSignatureKey(self.key, dt.strftime('%Y%m%d'), self.driver.region_name, self.service_name)
+        signature = hmac.new(signing_key, string_to_sign.encode('utf-8'), hashlib.sha256).hexdigest()
+
+        return 'AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s' % \
+               (self.user_id, credential_scope, signed_headers, signature)
 
     def _get_aws_auth_param(self, params, secret_key, path='/'):
         """

@@ -1674,6 +1674,15 @@ class EC2Connection(SignedAWSConnection):
     version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
+    signature_version = 2
+    service_name = 'ec2'
+
+
+class EC2V4Connection(EC2Connection):
+    """
+    Represents a single connection to an EC2 Endpoint using signature version 4.
+    """
+    signature_version = 4
 
 
 class ExEC2AvailabilityZone(object):
@@ -5541,6 +5550,8 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
+
+    connectionCls = EC2V4Connection
     name = 'Amazon EC2 (eu-west-1)'
     _region = 'eu-west-1'
 
