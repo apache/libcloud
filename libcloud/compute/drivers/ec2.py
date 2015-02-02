@@ -539,6 +539,35 @@ REGION_DETAILS = {
             't2.medium'
         ]
     },
+    # EU (Frankfurt) Region
+    'eu-central-1': {
+        'endpoint': 'ec2.eu-central-1.amazonaws.com',
+        'api_name': 'ec2_eu_central',
+        'country': 'Frankfurt',
+        'instance_types': [
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
+        ]
+    },
     # Asia Pacific (Singapore) Region
     'ap-southeast-1': {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
@@ -5527,9 +5556,19 @@ class EC2EUNodeDriver(EC2NodeDriver):
     Driver class for EC2 in the Western Europe Region.
     """
 
-    connectionCls = EC2V4Connection
+    connectionCls = EC2Connection
     name = 'Amazon EC2 (eu-west-1)'
     _region = 'eu-west-1'
+
+
+class EC2EUCentralNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Central Europe Region.
+    """
+
+    connectionCls = EC2V4Connection
+    name = 'Amazon EC2 (eu-central-1)'
+    _region = 'eu-central-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
