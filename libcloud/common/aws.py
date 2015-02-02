@@ -135,23 +135,61 @@ class AWSTokenConnection(ConnectionUserAndKey):
 class SignedAWSConnection(AWSTokenConnection):
 
     def add_default_params(self, params):
+        params['SignatureVersion'] = '2'
+        params['SignatureMethod'] = 'HmacSHA256'
+        params['AWSAccessKeyId'] = self.user_id
         params['Version'] = self.version
+        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
+                                            time.gmtime())
+        params['Signature'] = self._get_aws_auth_param(params, self.key,
+                                                       self.action)
+        return params
 
-        if self.signature_version == 2:
-            params['SignatureVersion'] = '2'
-            params['SignatureMethod'] = 'HmacSHA256'
-            params['AWSAccessKeyId'] = self.user_id
-            params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                                time.gmtime())
-            params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                           self.action)
+    def _get_aws_auth_param(self, params, secret_key, path='/'):
+        """
+        Creates the signature required for AWS, per
+        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
+
+        StringToSign = HTTPVerb + "\n" +
+                       ValueOfHostHeaderInLowercase + "\n" +
+                       HTTPRequestURI + "\n" +
+                       CanonicalizedQueryString <from the preceding step>
+        """
+        keys = list(params.keys())
+        keys.sort()
+        pairs = []
+        for key in keys:
+            value = str(params[key])
+            pairs.append(urlquote(key, safe='') + '=' +
+                         urlquote(value, safe='-_~'))
+
+        qs = '&'.join(pairs)
+
+        hostname = self.host
+        if (self.secure and self.port != 443) or \
+           (not self.secure and self.port != 80):
+            hostname += ":" + str(self.port)
+
+        string_to_sign = '\n'.join(('GET', hostname, path, qs))
+
+        b64_hmac = base64.b64encode(
+            hmac.new(b(secret_key), b(string_to_sign),
+                     digestmod=sha256).digest()
+        )
+
+        return b64_hmac.decode('utf-8')
+
+
+class V4SignedAWSConnection(AWSTokenConnection):
+
+    def add_default_params(self, params):
+        params['Version'] = self.version
         return params
 
     def pre_connect_hook(self, params, headers):
-        if self.signature_version == 4:
-            now = datetime.utcnow()
-            headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
-            headers['Authorization'] = self._get_authorization_v4_header(params, headers, now)
+        now = datetime.utcnow()
+        headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+        headers['Authorization'] = self._get_authorization_v4_header(params, headers, now)
 
         return params, headers
 
@@ -202,40 +240,6 @@ class SignedAWSConnection(AWSTokenConnection):
 
         return 'AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s' % \
                (self.user_id, credential_scope, signed_headers, signature)
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            value = str(params[key])
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(value, safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-
-        return b64_hmac.decode('utf-8')
 
 
 class AWSDriver(BaseDriver):

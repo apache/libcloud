@@ -34,7 +34,7 @@ from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
-from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
+from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection, V4SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
@@ -1703,15 +1703,17 @@ class EC2Connection(SignedAWSConnection):
     version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
-    signature_version = 2
     service_name = 'ec2'
 
 
-class EC2V4Connection(EC2Connection):
+class EC2V4Connection(V4SignedAWSConnection):
     """
     Represents a single connection to an EC2 Endpoint using signature version 4.
     """
-    signature_version = 4
+    version = API_VERSION
+    host = REGION_DETAILS['us-east-1']['endpoint']
+    responseCls = EC2Response
+    service_name = 'ec2'
 
 
 class ExEC2AvailabilityZone(object):
@@ -5531,7 +5533,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     Amazon EC2 node driver.
     """
 
-    connectionCls = EC2Connection
+    connectionCls = EC2V4Connection
     type = Provider.EC2
     name = 'Amazon EC2'
     website = 'http://aws.amazon.com/ec2/'
