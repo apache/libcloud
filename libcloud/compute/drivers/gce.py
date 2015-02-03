@@ -790,13 +790,23 @@ class GCENodeDriver(NodeDriver):
     type = Provider.GCE
     website = 'https://cloud.google.com/'
 
+    # Google Compute Engine node states are mapped to Libcloud node states
+    # per the following dict. GCE does not have an actual 'stopped' state
+    # but instead uses a 'terminated' state to indicate the node exists
+    # but is not running. In order to better match libcloud, GCE maps this
+    # 'terminated' state to 'STOPPED'.
+    # Also, when a node is deleted from GCE, it no longer exists and instead
+    # will result in a ResourceNotFound error versus returning a placeholder
+    # node in a 'terminated' state.
+    # For more details, please see GCE's docs,
+    # https://cloud.google.com/compute/docs/instances#checkmachinestatus
     NODE_STATE_MAP = {
         "PROVISIONING": NodeState.PENDING,
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
-        "STOPPED": NodeState.TERMINATED,
-        "STOPPING": NodeState.TERMINATED,
-        "TERMINATED": NodeState.TERMINATED
+        "STOPPING": NodeState.PENDING,
+        "TERMINATED": NodeState.STOPPED,
+        "UNKNOWN": NodeState.UNKNOWN
     }
 
     AUTH_URL = "https://www.googleapis.com/auth/"
@@ -5028,7 +5038,7 @@ n
         private_ips = []
         extra = {}
 
-        extra['status'] = node.get('status')
+        extra['status'] = node.get('status', "UNKNOWN")
         extra['statusMessage'] = node.get('statusMessage')
         extra['description'] = node.get('description')
         extra['zone'] = self.ex_get_zone(node['zone'])
