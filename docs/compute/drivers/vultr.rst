@@ -1,7 +1,7 @@
 Vultr Compute Driver Documentation
 ==================================
 
-`Vultr`_ is a public cloud provider based in mulitiple counties.
+`Vultr`_ is a public cloud provider based in multiple countries.
 
 .. figure:: /_static/images/provider_logos/vultr.png
     :align: center
