@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Changes with Apache Libcloud in development
--------------------------------------------
+Changes with Apache Libcloud 0.17.0
+-----------------------------------
 
 General
 ~~~~~~~
@@ -16,7 +16,7 @@ General
 Compute
 ~~~~~~~
 
-- GCE driver updated to include ex_stop_node() and ex_start_node() methods
+- GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)
   [Eric Johnson]
 
@@ -32,23 +32,23 @@ Compute
   (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)
   [Eric Johnson]
 
-- GCE driver fixed for missing param on ex_add_access_config
+- GCE driver fixed for missing param on ex_add_access_config.
   (GITHUB-435)
   [Peter Mooshammer]
 
-- GCE driver support for HTTP load-balancer resources
+- GCE driver support for HTTP load-balancer resources.
   (LIBCLOUD-605, GITHUB-429)
   [Lee Verberne]
 
-- GCE driver updated to make better use of GCEDiskTypes
+- GCE driver updated to make better use of GCEDiskTypes.
   (GITHUB-428)
   [Eric Johnson]
 
-- GCE driver list_images() now returns all non-deprecated images by default
+- GCE driver list_images() now returns all non-deprecated images by default.
   (LIBCLOUD-602, GITHUB-423)
   [Eric Johnson]
 
-- Improve GCE API coverage for create_node()
+- Improve GCE API coverage for create_node().
   (GITHUB-419)
   [Eric Johnson]
 
@@ -56,7 +56,7 @@ Compute
   (GITHUB-420)
   [Eric Johnson]
 
-- GCE Projects support common instance metadata and usage export buckets
+- GCE Projects support common instance metadata and usage export buckets.
   (GITHUB-409)
   [Eric Johnson]
 
@@ -105,15 +105,15 @@ Compute
   (GITHUB-373)
   [Itxaka Serrano]
 
-- Add description argument to GCE Network
+- Add description argument to GCE Network.
   (GITHUB-397)
   [Eric Johnson]
 
-- GCE: Improve MachineType (size) coverage of GCE API
+- GCE: Improve MachineType (size) coverage of GCE API.
   (GITHUB-396)
   [Eric Johnson]
 
-- GCE: Improved Images coverage
+- GCE: Improved Images coverage.
   (GITHUB-395)
   [Eric Johnson]
 
@@ -125,7 +125,7 @@ Compute
   (GITHUB-401)
   [Eric Johnson]
 
-- AWS: Set proper disk size in c3.X instance types
+- AWS: Set proper disk size in c3.X instance types.
   (GITHUB-405)
   [Itxaka Serrano]
 
@@ -147,7 +147,7 @@ Compute
   (GITHUB-418)
   [Mikhail Ovsyannikov]
 
-- Add new tok02 region to the Softlayer drive.
+- Add new tok02 region to the Softlayer driver.
   (GITHUB-436, LIBCLOUD-656)
   [Dustin Oberloh]
 
@@ -193,7 +193,7 @@ Storage
 Loadbalancer
 ~~~~~~~~~~~~
 
-- Updates to CloudStack Load-Balancer
+- Updates to CloudStack driver.
   (GITHUB-434)
   [Jeroen de Korte]
 
