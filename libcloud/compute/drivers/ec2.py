@@ -2530,7 +2530,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'CopyImage',
                   'SourceRegion': source_region,
-                  'SourceImageId':    image.id}
+                  'SourceImageId': image.id}
 
         if name is not None:
             params['Name'] = name
@@ -2791,7 +2791,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'CreateVpc',
                   'CidrBlock': cidr_block,
-                  'InstanceTenancy':  instance_tenancy}
+                  'InstanceTenancy': instance_tenancy}
 
         response = self.connection.request(self.path, params=params).object
         element = response.findall(fixxpath(xpath='vpc',
@@ -5422,9 +5422,9 @@ class BaseEC2NodeDriver(NodeDriver):
                             xpath='groupSet/item',
                             namespace=NAMESPACE):
             groups.append({
-                'group_id':   findtext(element=item,
-                                       xpath='groupId',
-                                       namespace=NAMESPACE),
+                'group_id': findtext(element=item,
+                                     xpath='groupId',
+                                     namespace=NAMESPACE),
                 'group_name': findtext(element=item,
                                        xpath='groupName',
                                        namespace=NAMESPACE)

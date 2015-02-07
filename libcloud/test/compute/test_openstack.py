@@ -616,7 +616,7 @@ class OpenStackMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
-        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'},
+        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>", {'content-type': 'text/html'},
                 httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
 

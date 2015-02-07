@@ -164,9 +164,9 @@ class LibcloudBaseConnection(object):
             j = host.rfind(']')         # ipv6 addresses have [...]
             if i > j:
                 try:
-                    port = int(host[i+1:])
+                    port = int(host[i + 1:])
                 except ValueError:
-                    msg = "nonnumeric port: '%s'" % host[i+1:]
+                    msg = "nonnumeric port: '%s'" % (host[i + 1:])
                     raise httplib.InvalidURL(msg)
                 host = host[:i]
             else:

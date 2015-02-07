@@ -720,8 +720,9 @@ class BaseS3StorageDriver(StorageDriver):
         if delimiter:
             params['delimiter'] = delimiter
 
-        finder = lambda node, text: node.findtext(fixxpath(xpath=text,
-                                                  namespace=self.namespace))
+        def finder(node, text):
+            return node.findtext(fixxpath(xpath=text,
+                                          namespace=self.namespace))
 
         while True:
             response = self.connection.request(request_path, params=params)
