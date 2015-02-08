@@ -87,6 +87,9 @@ class GCELicense(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
+    def destroy(self):
+        raise ProviderError("Can not destroy a License resource.")
+
     def __repr__(self):
         return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
             self.id, self.name, self.charges_use_fee)
