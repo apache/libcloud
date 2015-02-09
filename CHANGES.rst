@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)
   [Eric Johnson]
