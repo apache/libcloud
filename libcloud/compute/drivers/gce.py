@@ -1285,9 +1285,13 @@ class GCENodeDriver(NodeDriver):
         image_list = self.ex_list_project_images(ex_project=None,
                                                  ex_include_deprecated=dep)
         for img_proj in list(self.IMAGE_PROJECTS.keys()):
-            image_list.extend(
-                self.ex_list_project_images(ex_project=img_proj,
-                                            ex_include_deprecated=dep))
+            try:
+                image_list.extend(
+                    self.ex_list_project_images(ex_project=img_proj,
+                                                ex_include_deprecated=dep))
+            except:
+                # do not break if an OS type is invalid
+                pass
         return image_list
 
     def ex_list_project_images(self, ex_project=None,
@@ -1327,16 +1331,20 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project,
                                                              proj)
                 self.connection.request_path = new_request_path
-                response = self.connection.request(request,
-                                                   method='GET').object
+                try:
+                    response = self.connection.request(request,
+                                                       method='GET').object
+                except:
+                    raise
+                finally:
+                    # Restore the connection request_path
+                    self.connection.request_path = save_request_path
                 for img in response.get('items', []):
                     if 'deprecated' not in img:
                         list_images.append(self._to_node_image(img))
                     else:
                         if ex_include_deprecated:
                             list_images.append(self._to_node_image(img))
-            # Restore the connection request_path
-            self.connection.request_path = save_request_path
         return list_images
 
     def list_locations(self):
