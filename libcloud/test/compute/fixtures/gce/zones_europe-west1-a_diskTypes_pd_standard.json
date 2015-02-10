@@ -1,0 +1,10 @@
+{
+"creationTimestamp": "2014-06-02T11:07:28.530-07:00",
+ "defaultDiskSizeGb": "500",
+ "description": "Standard Persistent Disk",
+ "kind": "compute#diskType",
+ "name": "pd-standard",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/gifted-electron-225/zones/europe-west1-a/diskTypes/pd-standard",
+ "validDiskSize": "10GB-10240GB",
+ "zone": "https://www.googleapis.com/compute/v1/projects/gifted-electron-225/zones/europe-west1-a"
+}

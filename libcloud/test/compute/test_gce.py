@@ -2259,6 +2259,10 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('zones_europe-west1-a_instances.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_europe_west1_a_diskTypes_pd_standard(self, method, url, body, headers):
+        body = self.fixtures.load('zones_europe-west1-a_diskTypes_pd_standard.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_instances(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(

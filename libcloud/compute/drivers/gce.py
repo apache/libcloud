@@ -2160,7 +2160,7 @@ n
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
-            ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -2346,7 +2346,7 @@ n
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
-            ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
 
         node_attrs = {'size': size,
                       'image': image,
