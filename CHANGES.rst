@@ -16,6 +16,10 @@ General
 Compute
 ~~~~~~~
 
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
 - GCE driver fix to handle unknown image projects
   (GITHUB-447)
   [Markos Gogoulos]
