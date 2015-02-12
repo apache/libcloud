@@ -51,7 +51,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
-            self.assertTrue(True)
+            pass
 
     def test_list_nodes(self):
         """
