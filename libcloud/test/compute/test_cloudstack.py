@@ -74,25 +74,19 @@ class CloudStackCommonTestCase(TestCaseMixin):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         CloudStackMockHttp.fixture_tag = 'deployfail'
-        try:
-            self.driver.create_node(name='node-name',
-                                    image=image,
-                                    size=size)
-        except:
-            return
-        self.assertTrue(False)
+        self.assertRaises(
+            Exception,
+            self.driver.create_node,
+            name='node-name', image=image, size=size)
 
     def test_create_node_delayed_failure(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         CloudStackMockHttp.fixture_tag = 'deployfail2'
-        try:
-            self.driver.create_node(name='node-name',
-                                    image=image,
-                                    size=size)
-        except:
-            return
-        self.assertTrue(False)
+        self.assertRaises(
+            Exception,
+            self.driver.create_node,
+            name='node-name', image=image, size=size)
 
     def test_create_node_default_location_success(self):
         size = self.driver.list_sizes()[0]
