@@ -1395,8 +1395,20 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.conn_classes[1].type = 'RACKSPACE'
 
         snapshots = self.driver.ex_list_snapshots()
-        self.assertEqual(len(snapshots), 2)
+        self.assertEqual(len(snapshots), 3)
         self.assertEqual(snapshots[0].extra['name'], 'snap-001')
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+
+        # rackspace needs a different mocked response for snapshots, but not for volumes
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 1)
+        self.assertEqual(snapshots[0].id, '4fbbdccf-e058-6502-8844-6feeffdf4cb5')
 
     def test_ex_create_snapshot(self):
         volume = self.driver.list_volumes()[0]
