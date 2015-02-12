@@ -36,8 +36,7 @@ def _filter_names(names):
     # copy (likely a checkout) rather than a pristine export:
     for pattern in EXCLUDE_PATTERNS:
         names = [n for n in names
-                 if (not fnmatch.fnmatch(n, pattern))
-                 and (not n.endswith('.py'))]
+                 if not fnmatch.fnmatch(n, pattern) and not n.endswith('.py')]
     return names
 
 

@@ -127,8 +127,8 @@ class LinodeResponse(JsonResponse):
             ret = []
             errs = []
             for obj in js:
-                if ("DATA" not in obj or "ERRORARRAY" not in obj
-                        or "ACTION" not in obj):
+                if ("DATA" not in obj or "ERRORARRAY" not in obj or
+                        "ACTION" not in obj):
                     ret.append(None)
                     errs.append(self.invalid)
                     continue

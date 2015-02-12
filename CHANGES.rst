@@ -20,6 +20,11 @@ Compute
   (GITHUB-398, LIBCLOUD-637)
   [Allard Hoeve]
 
+- Fix ``list_volume_snapshots`` method in the EC2 driver so it comforms to the
+  base API.
+  (LIBCLOUD-664, GITHUB-451)
+  [Allard Hoeve]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
