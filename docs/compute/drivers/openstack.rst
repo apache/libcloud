@@ -48,6 +48,7 @@ Available arguments:
 
   Unless you are working with a very old version of OpenStack you will either
   want to use ``2.0_apikey`` or ``2.0_password``.
+* ``ex_tenant_name`` - tenant / project name
 * ``ex_force_auth_token`` - token which is used for authentication. If this
   argument is provided, normal authentication flow is skipped and the OpenStack
   API endpoint is directly hit with the provided token.
@@ -104,13 +105,36 @@ token before the currently used one is about to expire.
 .. literalinclude:: /examples/compute/openstack/force_auth_token.py
    :language: python
 
-5. HP Cloud (www.hpcloud.com)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Connecting and specifying a tenant
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows how to connect to OpenStack installation which requires you
+to specify a tenant (``ex_tenant_name`` argument).
+
+.. literalinclude:: /examples/compute/openstack/tenant_name.py
+   :language: python
+
+6. HP Cloud (www.hpcloud.com)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Connecting to HP Cloud US West and US East (OpenStack Havana).
 
 .. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
+
+7. Using Cloud-Init with Openstack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows how to use cloud-init using the ``ex_config_drive`` and
+``ex_userdata`` arguments to ``create_node``. This example just installs
+nginx and starts it. More `Cloud-Init examples`_.
+
+Note: You will need to use a cloud-init enabled image. Most Openstack based
+public cloud providers support it.
+
+.. literalinclude:: /examples/compute/openstack/cloud_init.py
+   :language: python
+.. _`Cloud-Init examples`: http://cloudinit.readthedocs.org/en/latest/topics/examples.html
 
 Non-standard functionality and extension methods
 ------------------------------------------------
@@ -156,21 +180,21 @@ There are many different things which could cause this error:
 
 1. Service catalog is empty
 2. You have not specified a value for one of the following arguments
-   ``ex_service_type``, ``ex_service_name``, ``ex_service_region`` and the
+   ``ex_force_service_type``, ``ex_force_service_name``, ``ex_force_service_region`` and the
    driver is using the default values which don't match your installation.
 3. You have specified invalid value for one or all of the following arguments:
-   ``ex_service_type``, ``ex_service_name``, ``ex_service_region``
+   ``ex_force_service_type``, ``ex_force_service_name``, ``ex_force_service_region``
 
 The best way to troubleshoot this issue is to use ``LIBCLOUD_DEBUG``
 functionality which is documented in the debugging section. This
 functionality allows you to introspect the response from the authentication
-service and you can make sure that ``ex_service_type``, ``ex_service_name``,
-``ex_service_region`` arguments match values returned in the service catalog.
+service and you can make sure that ``ex_force_service_type``, ``ex_force_service_name``,
+``ex_force_service_region`` arguments match values returned in the service catalog.
 
 If the service catalog is empty, you have two options:
 
-1. Populate the service catalog and makes sure the ``ex_service_type``,
-   ``ex_service_name`` and ``ex_service_region`` arguments match the values
+1. Populate the service catalog and makes sure the ``ex_force_service_type``,
+   ``ex_force_service_name`` and ``ex_force_service_region`` arguments match the values
    defined in the service catalog.
 2. Provide the API endpoint url using ``ex_force_base_url`` argument and skip
    the "endpoint selection using the service catalog" step all together

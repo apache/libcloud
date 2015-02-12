@@ -51,6 +51,7 @@ Provider                              list nodes create node reboot node destroy
 `Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
+`ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
@@ -62,6 +63,8 @@ Provider                              list nodes create node reboot node destroy
 `vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
 `Voxel VoxCLOUD`_                     yes        yes         yes         yes          yes         yes        no         
 `vps.net`_                            yes        yes         yes         yes          yes         yes        no         
+`VMware vSphere`_                     yes        no          yes         yes          yes         no         no         
+`Vultr`_                              yes        yes         yes         yes          yes         yes        no         
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -114,6 +117,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
@@ -125,3 +129,5 @@ Provider                              list nodes create node reboot node destroy
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
+.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
+.. _`Vultr`: https://www.vultr.com

@@ -30,6 +30,7 @@ except ImportError:
 
 PY2 = False
 PY25 = False
+PY26 = False
 PY27 = False
 PY3 = False
 PY32 = False
@@ -37,10 +38,13 @@ PY32 = False
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
     PY2 = True
 
-if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+if sys.version_info >= (2, 5) and sys.version_info < (2, 6):
     PY25 = True
 
-if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+    PY26 = True
+
+if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
     PY27 = True
 
 if sys.version_info >= (3, 0):
@@ -54,6 +58,7 @@ if PY3:
     from io import StringIO
     import urllib
     import urllib as urllib2
+    # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
 
@@ -80,6 +85,8 @@ if PY3:
             return s.encode('utf-8')
         elif isinstance(s, bytes):
             return s
+        elif isinstance(s, int):
+            return bytes([s])
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
 
@@ -176,6 +183,7 @@ if PY25:
 
     # Taken from http://jimmyg.org/work/code/barenecessities/index.html
     # (MIT license)
+    # pylint: disable=function-redefined
     def relpath(path, start=posixpath.curdir):   # NOQA
         """Return a relative version of a path"""
         if not path:

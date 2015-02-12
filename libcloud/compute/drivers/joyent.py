@@ -46,7 +46,12 @@ NODE_STATE_MAP = {
     'deleted': NodeState.TERMINATED
 }
 
-VALID_REGIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
+VALID_REGIONS = [
+    'us-east-1', 'us-east-2', 'us-east-3',
+    'us-west-1',
+    'us-sw-1',
+    'eu-ams-1'
+]
 DEFAULT_REGION = 'us-east-1'
 
 
@@ -200,6 +205,19 @@ class JoyentNodeDriver(NodeDriver):
         result = self.connection.request('/my/machines/%s' % (node.id),
                                          data=data, method='POST')
         return result.status == httplib.ACCEPTED
+
+    def ex_get_node(self, node_id):
+        """
+        Return a Node object based on a node ID.
+
+        :param  node_id: ID of the node
+        :type   node_id: ``str``
+
+        :return:  A Node object for the node
+        :rtype:   :class:`Node`
+        """
+        result = self.connection.request('/my/machines/%s' % (node_id))
+        return self._to_node(result.object)
 
     def _to_node(self, data):
         state = NODE_STATE_MAP[data['state']]

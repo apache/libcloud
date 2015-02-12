@@ -224,7 +224,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return nodes
 
     def create_node(self, **kwargs):
-        """Creates a ElasticStack instance
+        """Creates an ElasticStack instance
 
         @inherits: :class:`NodeDriver.create_node`
 
@@ -453,15 +453,22 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
-        if isinstance(data['nic:0:dhcp'], list):
-            public_ip = data['nic:0:dhcp']
+        if 'nic:0:dhcp:ip' in data:
+            if isinstance(data['nic:0:dhcp:ip'], list):
+                public_ip = data['nic:0:dhcp:ip']
+            else:
+                public_ip = [data['nic:0:dhcp:ip']]
         else:
-            public_ip = [data['nic:0:dhcp']]
+            public_ip = []
 
         extra = {'cpu': data['cpu'],
-                 'smp': data['smp'],
-                 'mem': data['mem'],
-                 'started': data['started']}
+                 'mem': data['mem']}
+
+        if 'started' in data:
+            extra['started'] = data['started']
+
+        if 'smp' in data:
+            extra['smp'] = data['smp']
 
         if 'vnc:ip' in data:
             extra['vnc:ip'] = data['vnc:ip']

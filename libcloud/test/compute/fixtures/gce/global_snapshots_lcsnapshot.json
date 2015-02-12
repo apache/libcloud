@@ -1,7 +1,7 @@
 {
   "creationTimestamp": "2013-12-16T13:03:51.345-08:00",
   "description": "",
-  "diskSizeGb": "1",
+  "diskSizeGb": "10",
   "id": "17482266715940883688",
   "kind": "compute#snapshot",
   "name": "lcsnapshot",

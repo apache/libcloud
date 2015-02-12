@@ -1,0 +1,18 @@
+{
+    "user": 
+      {
+          "name": "cloud",
+          "links": {
+              "self": "http://192.168.18.100:5000/v3/users/a"
+          },
+          "domain_id": "default",
+          "enabled": true,
+          "email": "openstack-test@localhost",
+          "id": "a"
+      },
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/users",
+        "previous": null,
+        "next": null
+    }
+}

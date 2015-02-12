@@ -20,7 +20,6 @@ from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
-from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
 try:
@@ -46,6 +45,11 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.dns.drivers.dummy']
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
+
+TEST_REQUIREMENTS = [
+    'backports.ssl_match_hostname',
+    'mock'
+]
 
 if sys.version_info <= (2, 4):
     version = '.'.join([str(x) for x in sys.version_info[:3]])
@@ -92,14 +96,15 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        try:
-            import mock
-            mock
-        except ImportError:
-            print('Missing "mock" library. mock is library is needed '
-                  'to run the tests. You can install it using pip: '
-                  'pip install mock')
-            sys.exit(1)
+        for module_name in TEST_REQUIREMENTS:
+            try:
+                __import__(module_name)
+            except ImportError:
+                print('Missing "%s" library. %s is library is needed '
+                      'to run the tests. You can install it using pip: '
+                      'pip install %s' % (module_name, module_name,
+                                          module_name))
+                sys.exit(1)
 
         if unittest2_required:
             try:
@@ -217,6 +222,10 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
+install_requires = ['backports.ssl_match_hostname']
+if pre_python26:
+    install_requires.extend(['ssl', 'simplejson'])
+
 setup(
     name='apache-libcloud',
     version=read_version_string(),
@@ -225,7 +234,7 @@ setup(
                 ' and documentation, please see http://libcloud.apache.org',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    install_requires=install_requires,
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',

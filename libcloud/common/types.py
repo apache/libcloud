@@ -29,6 +29,7 @@ class LibcloudError(Exception):
     """The base class for other libcloud exceptions"""
 
     def __init__(self, value, driver=None):
+        super(LibcloudError, self).__init__(value)
         self.value = value
         self.driver = driver
 
@@ -74,11 +75,9 @@ class ProviderError(LibcloudError):
     HTTP 404 : NodeNotFoundError, ContainerDoesNotExistError
     """
 
-    def __init__(self, value, http_code,
-                 driver=None):
-        self.value = value
+    def __init__(self, value, http_code, driver=None):
+        super(ProviderError, self).__init__(value=value, driver=driver)
         self.http_code = http_code
-        self.driver = driver
 
     def __str__(self):
         return self.__repr__()

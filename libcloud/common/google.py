@@ -26,38 +26,40 @@ _Console: https://cloud.google.com/console
 
 Setting up Service Account authentication (note that you need the PyCrypto
 package installed to use this):
-    - Go to the Console
-    - Go to your project and then to "APIs & auth" on the left
-    - Click on "Credentials"
-    - Click on "Create New Client ID..."
-    - Select "Service account" and click on "Create Client ID"
-    - Download the Private Key (should happen automatically).
-    - The key that you download is a PKCS12 key.  It needs to be converted to
-      the PEM format.
-    - Convert the key using OpenSSL (the default password is 'notasecret'):
-      ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-      -passin pass:notasecret | openssl rsa -out PRIV.pem``
-    - Move the .pem file to a safe location.
-    - To Authenticate, you will need to pass the Service Account's "Email
-      address" in as the user_id and the path to the .pem file as the key.
+
+- Go to the Console
+- Go to your project and then to "APIs & auth" on the left
+- Click on "Credentials"
+- Click on "Create New Client ID..."
+- Select "Service account" and click on "Create Client ID"
+- Download the Private Key (should happen automatically).
+- The key that you download is a PKCS12 key.  It needs to be converted to
+  the PEM format.
+- Convert the key using OpenSSL (the default password is 'notasecret'):
+  ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
+  -passin pass:notasecret | openssl rsa -out PRIV.pem``
+- Move the .pem file to a safe location.
+- To Authenticate, you will need to pass the Service Account's "Email
+  address" in as the user_id and the path to the .pem file as the key.
 
 Setting up Installed Application authentication:
-    - Go to the Console
-    - Go to your project and then to "APIs & auth" on the left
-    - Click on "Credentials"
-    - Select "Installed application" and "Other" then click on
-      "Create Client ID"
-    - To Authenticate, pass in the "Client ID" as the user_id and the "Client
-      secret" as the key
-    - The first time that you do this, the libcloud will give you a URL to
-      visit.  Copy and paste the URL into a browser.
-    - When you go to the URL it will ask you to log in (if you aren't already)
-      and ask you if you want to allow the project access to your account.
-    - Click on Accept and you will be given a code.
-    - Paste that code at the prompt given to you by the Google libcloud
-      connection.
-    - At that point, a token & refresh token will be stored in your home
-      directory and will be used for authentication.
+
+- Go to the Console
+- Go to your project and then to "APIs & auth" on the left
+- Click on "Credentials"
+- Select "Installed application" and "Other" then click on
+  "Create Client ID"
+- To Authenticate, pass in the "Client ID" as the user_id and the "Client
+  secret" as the key
+- The first time that you do this, the libcloud will give you a URL to
+  visit.  Copy and paste the URL into a browser.
+- When you go to the URL it will ask you to log in (if you aren't already)
+  and ask you if you want to allow the project access to your account.
+- Click on Accept and you will be given a code.
+- Paste that code at the prompt given to you by the Google libcloud
+  connection.
+- At that point, a token & refresh token will be stored in your home
+  directory and will be used for authentication.
 
 Please remember to secure your keys and access tokens.
 """
@@ -76,7 +78,8 @@ import os
 import socket
 import sys
 
-from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
+from libcloud.utils.connection import get_response_object
+from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
 from libcloud.common.types import (ProviderError,
@@ -95,6 +98,23 @@ except ImportError:
     PKCS1_v1_5 = None
 
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+
+def _is_gce():
+    http_code, http_reason, body = _get_gce_metadata()
+    if http_code == httplib.OK and body:
+        return True
+    return False
+
+
+def _get_gce_metadata(path=''):
+    try:
+        url = "http://metadata/computeMetadata/v1/" + path.lstrip('/')
+        headers = {'Metadata-Flavor': 'Google'}
+        response = get_response_object(url, headers=headers)
+        return response.status, "", response.body
+    except Exception as e:
+        return -1, str(e), None
 
 
 class GoogleAuthError(LibcloudError):
@@ -121,7 +141,16 @@ class JsonParseError(GoogleBaseError):
 
 
 class ResourceNotFoundError(GoogleBaseError):
-    pass
+    def __init__(self, value, http_code, code, driver=None):
+        self.code = code
+        if isinstance(value, dict) and 'message' in value and \
+                value['message'].count('/') == 1 and \
+                value['message'].count('projects/') == 1:
+            value['message'] = value['message'] + ". A missing project " \
+                "error may be an authentication issue. " \
+                "Please  ensure your auth credentials match " \
+                "your project. "
+        super(GoogleBaseError, self).__init__(value, http_code, driver)
 
 
 class QuotaExceededError(GoogleBaseError):
@@ -172,7 +201,7 @@ class GoogleResponse(JsonResponse):
             code = err.get('code')
             message = err.get('message')
         else:
-            code = None
+            code = err.get('reason', None)
             message = body.get('error_description', err)
 
         return (code, message)
@@ -197,7 +226,13 @@ class GoogleResponse(JsonResponse):
             body = self.body
             json_error = True
 
-        if self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]:
+        valid_http_codes = [
+            httplib.OK,
+            httplib.CREATED,
+            httplib.ACCEPTED,
+            httplib.CONFLICT,
+        ]
+        if self.status in valid_http_codes:
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif 'error' in body:
@@ -205,6 +240,8 @@ class GoogleResponse(JsonResponse):
                 if code == 'QUOTA_EXCEEDED':
                     raise QuotaExceededError(message, self.status, code)
                 elif code == 'RESOURCE_ALREADY_EXISTS':
+                    raise ResourceExistsError(message, self.status, code)
+                elif code == 'alreadyExists':
                     raise ResourceExistsError(message, self.status, code)
                 elif code.startswith('RESOURCE_IN_USE'):
                     raise ResourceInUseError(message, self.status, code)
@@ -253,7 +290,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     host = 'accounts.google.com'
     auth_path = '/o/oauth2/auth'
 
-    def __init__(self, user_id, key, scopes=None,
+    def __init__(self, user_id, key=None, scopes=None,
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
         """
@@ -308,13 +345,33 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         """
         data = urlencode(request_body)
         now = self._now()
-        response = self.request('/o/oauth2/token', method='POST', data=data)
+        try:
+            response = self.request('/o/oauth2/token', method='POST',
+                                    data=data)
+        except AttributeError:
+            raise GoogleAuthError('Invalid authorization response, please '
+                                  'check your credentials.')
         token_info = response.object
         if 'expires_in' in token_info:
             expire_time = now + datetime.timedelta(
                 seconds=token_info['expires_in'])
             token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
         return token_info
+
+    def refresh_token(self, token_info):
+        """
+        Refresh the current token.
+
+        Fetch an updated refresh token from internal metadata service.
+
+        :param  token_info: Dictionary containing token information.
+                            (Not used, but here for compatibility)
+        :type   token_info: ``dict``
+
+        :return:  A dictionary containing updated token information.
+        :rtype:   ``dict``
+        """
+        return self.get_new_token()
 
 
 class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
@@ -338,12 +395,12 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         data = urlencode(auth_params)
 
         url = 'https://%s%s?%s' % (self.host, self.auth_path, data)
-        print('Please Go to the following URL and sign in:')
+        print('\nPlease Go to the following URL and sign in:')
         print(url)
         if PY3:
-            code = input('Enter Code:')
+            code = input('Enter Code: ')
         else:
-            code = raw_input('Enter Code:')
+            code = raw_input('Enter Code: ')
         return code
 
     def get_new_token(self):
@@ -406,11 +463,21 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
             raise GoogleAuthError('PyCrypto library required for '
                                   'Service Account Authentication.')
         # Check to see if 'key' is a file and read the file if it is.
-        keypath = os.path.expanduser(key)
-        is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-        if is_file_path:
+        if key.find("PRIVATE KEY---") == -1:
+            # key is a file
+            keypath = os.path.expanduser(key)
+            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+            if not is_file_path:
+                raise ValueError("Missing (or not readable) key "
+                                 "file: '%s'" % key)
             with open(keypath, 'r') as f:
-                key = f.read()
+                contents = f.read()
+            try:
+                key = json.loads(contents)
+                key = key['private_key']
+            except ValueError:
+                key = contents
+
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)
 
@@ -423,7 +490,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         """
         # The header is always the same
         header = {'alg': 'RS256', 'typ': 'JWT'}
-        header_enc = base64.urlsafe_b64encode(json.dumps(header))
+        header_enc = base64.urlsafe_b64encode(b(json.dumps(header)))
 
         # Construct a claim set
         claim_set = {'iss': self.user_id,
@@ -431,10 +498,10 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                      'aud': 'https://accounts.google.com/o/oauth2/token',
                      'exp': int(time.time()) + 3600,
                      'iat': int(time.time())}
-        claim_set_enc = base64.urlsafe_b64encode(json.dumps(claim_set))
+        claim_set_enc = base64.urlsafe_b64encode(b(json.dumps(claim_set)))
 
         # The message contains both the header and claim set
-        message = '%s.%s' % (header_enc, claim_set_enc)
+        message = b'.'.join((header_enc, claim_set_enc))
         # Then the message is signed using the key supplied
         key = RSA.importKey(self.key)
         hash_func = SHA256.new(message)
@@ -442,27 +509,38 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         signature = base64.urlsafe_b64encode(signer.sign(hash_func))
 
         # Finally the message and signature are sent to get a token
-        jwt = '%s.%s' % (message, signature)
+        jwt = b'.'.join((message, signature))
         request = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                    'assertion': jwt}
 
         return self._token_request(request)
 
-    def refresh_token(self, token_info):
+
+class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
+    """Authentication class for self-authentication when used with a GCE
+    istance that supports serviceAccounts.
+    """
+    def get_new_token(self):
         """
-        Refresh the current token.
+        Get a new token from the internal metadata service.
 
-        Service Account authentication doesn't supply a "refresh token" so
-        this simply gets a new token using the email address/key.
-
-        :param  token_info: Dictionary containing token information.
-                            (Not used, but here for compatibility)
-        :type   token_info: ``dict``
-
-        :return:  A dictionary containing updated token information.
+        :return:  Dictionary containing token information
         :rtype:   ``dict``
         """
-        return self.get_new_token()
+        path = '/instance/service-accounts/default/token'
+        http_code, http_reason, token_info = _get_gce_metadata(path)
+        if http_code == httplib.NOT_FOUND:
+            raise ValueError("Service Accounts are not enabled for this "
+                             "GCE instance.")
+        if http_code != httplib.OK:
+            raise ValueError("Internal GCE Authorization failed: "
+                             "'%s'" % str(http_reason))
+        token_info = json.loads(token_info)
+        if 'expires_in' in token_info:
+            expire_time = self._now() + datetime.timedelta(
+                seconds=token_info['expires_in'])
+            token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
+        return token_info
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
@@ -473,7 +551,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     poll_interval = 2.0
     timeout = 180
 
-    def __init__(self, user_id, key, auth_type=None,
+    def __init__(self, user_id, key=None, auth_type=None,
                  credential_file=None, scopes=None, **kwargs):
         """
         Determine authentication type, set up appropriate authentication
@@ -488,10 +566,16 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                      authentication.
         :type   key: ``str``
 
-        :keyword  auth_type: Accepted values are "SA" or "IA"
-                             ("Service Account" or "Installed Application").
+        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
+                             ("Service Account" or "Installed Application" or
+                             "GCE" if libcloud is being used on a GCE instance
+                             with service account enabled).
                              If not supplied, auth_type will be guessed based
-                             on value of user_id.
+                             on value of user_id or if the code is being
+                             executed in a GCE instance.).
+                             If not supplied, auth_type will be guessed based
+                             on value of user_id or if the code is running
+                             on a GCE instance.
         :type     auth_type: ``str``
 
         :keyword  credential_file: Path to file for caching authentication
@@ -505,10 +589,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         self.credential_file = credential_file or '~/.gce_libcloud_auth'
 
         if auth_type is None:
-            # Try to guess.  Service accounts use an email address
-            # as the user id.
+            # Try to guess.
             if '@' in user_id:
                 auth_type = 'SA'
+            elif _is_gce():
+                auth_type = 'GCE'
             else:
                 auth_type = 'IA'
 
@@ -523,14 +608,20 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             ]
         self.token_info = self._get_token_info_from_file()
 
-        if auth_type == 'SA':
+        if auth_type == 'GCE':
+            self.auth_conn = GoogleGCEServiceAcctAuthConnection(
+                user_id, self.scopes, **kwargs)
+        elif auth_type == 'SA':
+            if '@' not in user_id:
+                raise GoogleAuthError('Service Account auth requires a '
+                                      'valid email address')
             self.auth_conn = GoogleServiceAcctAuthConnection(
                 user_id, key, self.scopes, **kwargs)
         elif auth_type == 'IA':
             self.auth_conn = GoogleInstalledAppAuthConnection(
                 user_id, key, self.scopes, **kwargs)
         else:
-            raise GoogleAuthError('auth_type should be \'SA\' or \'IA\'')
+            raise GoogleAuthError('Invalid auth_type: %s' % str(auth_type))
 
         if self.token_info is None:
             self.token_info = self.auth_conn.get_new_token()
@@ -654,7 +745,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         In many places, the Google API returns a full URL to a resource.
         This will strip the scheme and host off of the path and just return
-        the request.  Otherwise, it will append the base request_path to
+        the request.  Otherwise, it will prepend the base request_path to
         the action.
 
         :param  action: The action to be called in the http request

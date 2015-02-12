@@ -36,9 +36,9 @@ Code style guide
 * Use 79 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
 * You can verify that your modifications don't break any rules by running the
-  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py.`` or
+  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py`` or
   ``tox -e lint``.
-  Second command fill run flake8 on all the files in the repository.
+  Second command will run flake8 on all the files in the repository.
 
 And most importantly, follow the existing style in the file you are editing and
 **be consistent**.
@@ -212,8 +212,8 @@ Bad (please avoid):
         description = kwargs.get('description', None)
         public_ips = kwargs.get('public_ips', None)
 
-5. When returning a dictionary, document it's structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. When returning a dictionary, document its structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dynamic nature of Python can be very nice and useful, but if (ab)use it in a
 wrong way it can also make it hard for the API consumer to understand what is

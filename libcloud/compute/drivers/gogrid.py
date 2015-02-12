@@ -403,7 +403,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         :type       ex_description: ``str``
 
         :keyword    name: name of the image
-        :type       name ``str``
+        :type       name: ``str``
 
         :rtype: :class:`NodeImage`
         """

@@ -183,30 +183,25 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         self.cdn_request = False
         self.use_internal_url = use_internal_url
 
-    def _get_endpoint_key(self):
-        if self.use_internal_url:
-            endpoint_key = INTERNAL_ENDPOINT_KEY
-        else:
-            endpoint_key = PUBLIC_ENDPOINT_KEY
-
-        if self.cdn_request:
-            # cdn endpoints don't have internal urls
-            endpoint_key = PUBLIC_ENDPOINT_KEY
-
-        return endpoint_key
-
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
+
+        if self.use_internal_url:
+            endpoint_type = 'internal'
+        else:
+            endpoint_type = 'external'
 
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
                 name='cloudFiles',
-                region=region)
+                region=region,
+                endpoint_type=endpoint_type)
             cdn_ep = self.service_catalog.get_endpoint(
                 service_type='rax:object-cdn',
                 name='cloudFilesCDN',
-                region=region)
+                region=region,
+                endpoint_type=endpoint_type)
         else:
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
@@ -215,15 +210,10 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         if self.cdn_request:
             ep = cdn_ep
 
-        endpoint_key = self._get_endpoint_key()
-
-        if not ep:
+        if not ep or not ep.url:
             raise LibcloudError('Could not find specified endpoint')
 
-        if endpoint_key in ep:
-            return ep[endpoint_key]
-        else:
-            raise LibcloudError('Could not find specified endpoint')
+        return ep.url
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False, cdn_request=False):
@@ -242,7 +232,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
             action=action,
             params=params, data=data,
             method=method, headers=headers,
-            raw=raw)
+            raw=raw, cdn_request=cdn_request)
 
 
 class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
@@ -317,6 +307,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
+        # pylint: disable=unexpected-keyword-arg
         container_name_encoded = self._encode_container_name(container.name)
         response = self.connection.request('/%s' % (container_name_encoded),
                                            method='HEAD',
@@ -343,12 +334,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :param ex_ttl: cache time to live
         :type ex_ttl: ``int``
         """
-        container_name = container.name
+        container_name = self._encode_container_name(container.name)
         headers = {'X-CDN-Enabled': 'True'}
 
         if ex_ttl:
             headers['X-TTL'] = ex_ttl
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='PUT',
                                            headers=headers,
@@ -422,7 +414,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object.
 
@@ -435,10 +427,11 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
-                                verify_hash=verify_hash)
+                                verify_hash=verify_hash, headers=headers)
 
     def upload_object_via_stream(self, iterator,
-                                 container, object_name, extra=None):
+                                 container, object_name, extra=None,
+                                 headers=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
@@ -448,7 +441,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return self._put_object(container=container, object_name=object_name,
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, iterator=iterator)
+                                extra=extra, iterator=iterator,
+                                headers=headers)
 
     def delete_object(self, obj):
         container_name = self._encode_container_name(obj.container.name)
@@ -477,6 +471,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name = self._encode_object_name(obj.name)
         headers = {'X-Purge-Email': email} if email else {}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
                                            method='DELETE',
@@ -548,6 +543,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = container.name
         headers = {'X-Container-Meta-Web-Index': index_file}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='POST',
                                            headers=headers,
@@ -571,6 +567,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = container.name
         headers = {'X-Container-Meta-Web-Error': file_name}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('/%s' % (container_name),
                                            method='POST',
                                            headers=headers,
@@ -590,6 +587,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         headers = {'X-Account-Meta-Temp-URL-Key': key}
 
+        # pylint: disable=unexpected-keyword-arg
         response = self.connection.request('',
                                            method='POST',
                                            headers=headers,
@@ -617,6 +615,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
         path = '%s/%s/%s' % (self.connection.request_path,
@@ -664,6 +663,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name_encoded = self._encode_object_name(object_name)
         request_path = '/%s/%s' % (container_name_encoded, object_name_encoded)
 
+        # pylint: disable=no-member
         headers = {'X-Auth-Token': self.connection.auth_token,
                    'X-Object-Manifest': '%s/%s/' %
                                         (container_name_encoded,
@@ -754,7 +754,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, verify_hash=True):
+                    iterator=None, verify_hash=True, headers=None):
         extra = extra or {}
         container_name_encoded = self._encode_container_name(container.name)
         object_name_encoded = self._encode_object_name(object_name)
@@ -762,7 +762,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         meta_data = extra.get('meta_data', None)
         content_disposition = extra.get('content_disposition', None)
 
-        headers = {}
+        headers = headers or {}
         if meta_data:
             for key, value in list(meta_data.items()):
                 key = 'X-Object-Meta-%s' % (key)

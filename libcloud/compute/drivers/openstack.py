@@ -21,6 +21,11 @@ try:
 except ImportError:
     import json
 
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 import warnings
 import base64
 
@@ -29,23 +34,18 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.types import MalformedResponseError, ProviderError
-from libcloud.utils.networking import is_private_subnet
+from libcloud.common.openstack import OpenStackException
+from libcloud.common.openstack import OpenStackResponse
+from libcloud.utils.networking import is_public_subnet
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.pricing import get_size_price
-from libcloud.common.base import Response
 from libcloud.utils.xml import findall
 
 __all__ = [
@@ -67,98 +67,11 @@ ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
 DEFAULT_API_VERSION = '1.1'
 
 
-class OpenStackException(ProviderError):
-    pass
-
-
-class OpenStackResponse(Response):
-    node_driver = None
-
-    def success(self):
-        i = int(self.status)
-        return i >= 200 and i <= 299
-
-    def has_content_type(self, content_type):
-        content_type_value = self.headers.get('content-type') or ''
-        content_type_value = content_type_value.lower()
-        return content_type_value.find(content_type.lower()) > -1
-
-    def parse_body(self):
-        if self.status == httplib.NO_CONTENT or not self.body:
-            return None
-
-        if self.has_content_type('application/xml'):
-            try:
-                return ET.XML(self.body)
-            except:
-                raise MalformedResponseError(
-                    'Failed to parse XML',
-                    body=self.body,
-                    driver=self.node_driver)
-
-        elif self.has_content_type('application/json'):
-            try:
-                return json.loads(self.body)
-            except:
-                raise MalformedResponseError(
-                    'Failed to parse JSON',
-                    body=self.body,
-                    driver=self.node_driver)
-        else:
-            return self.body
-
-    def parse_error(self):
-        text = None
-        body = self.parse_body()
-
-        if self.has_content_type('application/xml'):
-            text = '; '.join([err.text or '' for err in body.getiterator()
-                              if err.text])
-        elif self.has_content_type('application/json'):
-            values = list(body.values())
-
-            context = self.connection.context
-            driver = self.connection.driver
-            key_pair_name = context.get('key_pair_name', None)
-
-            if len(values) > 0 and values[0]['code'] == 404 and key_pair_name:
-                raise KeyPairDoesNotExistError(name=key_pair_name,
-                                               driver=driver)
-            elif len(values) > 0 and 'message' in values[0]:
-                text = ';'.join([fault_data['message'] for fault_data
-                                 in values])
-            else:
-                text = body
-        else:
-            # while we hope a response is always one of xml or json, we have
-            # seen html or text in the past, its not clear we can really do
-            # something to make it more readable here, so we will just pass
-            # it along as the whole response body in the text variable.
-            text = body
-
-        return '%s %s %s' % (self.status, self.error, text)
-
-
 class OpenStackComputeConnection(OpenStackBaseConnection):
     # default config for http://devstack.org/
     service_type = 'compute'
     service_name = 'nova'
     service_region = 'RegionOne'
-
-    def request(self, action, params=None, data='', headers=None,
-                method='GET'):
-        if not headers:
-            headers = {}
-        if not params:
-            params = {}
-
-        if method in ("POST", "PUT"):
-            headers = {'Content-Type': self.default_content_type}
-
-        return super(OpenStackComputeConnection, self).request(
-            action=action,
-            params=params, data=data,
-            method=method, headers=headers)
 
 
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
@@ -173,7 +86,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'BUILD': NodeState.PENDING,
         'REBUILD': NodeState.PENDING,
         'ACTIVE': NodeState.RUNNING,
-        'SUSPENDED': NodeState.TERMINATED,
+        'SUSPENDED': NodeState.STOPPED,
+        'SHUTOFF': NodeState.STOPPED,
         'DELETED': NodeState.TERMINATED,
         'QUEUE_RESIZE': NodeState.PENDING,
         'PREP_RESIZE': NodeState.PENDING,
@@ -185,6 +99,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'SHARE_IP': NodeState.PENDING,
         'SHARE_IP_NO_CONFIG': NodeState.PENDING,
         'DELETE_IP': NodeState.PENDING,
+        'ERROR': NodeState.ERROR,
         'UNKNOWN': NodeState.UNKNOWN
     }
 
@@ -237,7 +152,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         if snapshot:
             raise NotImplementedError(
                 "create_volume does not yet support create from snapshot")
-        return self.connection.request('/os-volumes',
+        resp = self.connection.request('/os-volumes',
                                        method='POST',
                                        data={
                                            'volume': {
@@ -250,7 +165,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                                                },
                                                'availability_zone': location,
                                            }
-                                       }).success()
+                                       })
+        return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
         return self.connection.request('/os-volumes/%s' % volume.id,
@@ -311,7 +227,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def get_image(self, image_id):
         """
-        Get an image based on a image_id
+        Get an image based on an image_id
 
         @inherits: :class:`NodeDriver.get_image`
 
@@ -1083,7 +999,7 @@ class OpenStackSecurityGroup(object):
         :type       description: ``str``
 
         :keyword    rules: Rules associated with this group.
-        :type       description: ``list`` of
+        :type       rules: ``list`` of
                     :class:`OpenStackSecurityGroupRule`
 
         :keyword    extra: Extra attributes associated with this group.
@@ -1253,11 +1169,18 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
 
         :keyword    networks: The server is launched into a set of Networks.
-        :type       networks: :class:`OpenStackNetwork`
+        :type       networks: ``list`` of :class:`OpenStackNetwork`
 
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_config_drive: If True enables metadata injection in a
+                                     server through a configuration drive.
+        :type       ex_config_drive: ``bool``
+
+        :keyword    ex_admin_pass: The root password for the node
+        :type       ex_admin_pass: ``str``
 
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
@@ -1344,6 +1267,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
+
+        if 'ex_config_drive' in kwargs:
+            server_params['config_drive'] = str(kwargs['ex_config_drive'])
+
+        if 'ex_admin_pass' in kwargs:
+            server_params['adminPass'] = kwargs['ex_admin_pass']
 
         if 'networks' in kwargs:
             networks = kwargs['networks']
@@ -1435,6 +1364,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
         :type       ex_disk_config: ``str``
+
+        :keyword    ex_config_drive: If True enables metadata injection in a
+                                     server through a configuration drive.
+        :type       ex_config_drive: ``bool``
 
         :rtype: ``bool``
         """
@@ -1653,8 +1586,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a snapshot based off of a volume.
 
-        :param      node: volume
-        :type       node: :class:`StorageVolume`
+        :param      volume: volume
+        :type       volume: :class:`StorageVolume`
 
         :keyword    name: New name for the volume snapshot
         :type       name: ``str``
@@ -1680,8 +1613,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a VolumeSnapshot
 
-        :param      node: snapshot
-        :type       node: :class:`VolumeSnapshot`
+        :param      snapshot: snapshot
+        :type       snapshot: :class:`VolumeSnapshot`
 
         :rtype:     ``bool``
         """
@@ -2021,25 +1954,42 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         public_ips, private_ips = [], []
 
         for label, values in api_node['addresses'].items():
-            ips = [v['addr'] for v in values]
+            for value in values:
+                ip = value['addr']
 
-            if label in public_networks_labels:
-                public_ips.extend(ips)
-            else:
-                for ip in ips:
-                    # is_private_subnet does not check for ipv6
-                    try:
-                        if is_private_subnet(ip):
-                            private_ips.append(ip)
-                        else:
-                            public_ips.append(ip)
-                    except:
-                        private_ips.append(ip)
+                is_public_ip = False
+
+                try:
+                    public_subnet = is_public_subnet(ip)
+                except:
+                    # IPv6
+                    public_subnet = False
+
+                # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
+                # public and 'fixed' for private
+                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+
+                if explicit_ip_type == 'floating':
+                    is_public_ip = True
+                elif explicit_ip_type == 'fixed':
+                    is_public_ip = False
+                elif label in public_networks_labels:
+                    # Try label next
+                    is_public_ip = True
+                elif public_subnet:
+                    # Check for public subnet
+                    is_public_ip = True
+
+                if is_public_ip:
+                    public_ips.append(ip)
+                else:
+                    private_ips.append(ip)
 
         # Sometimes 'image' attribute is not present if the node is in an error
         # state
         image = api_node.get('image', None)
         image_id = image.get('id', None) if image else None
+        config_drive = api_node.get("config_drive", False)
 
         return Node(
             id=api_node['id'],
@@ -2065,6 +2015,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
+                config_drive=config_drive,
                 availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
                                                None),
             ),
@@ -2081,6 +2032,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             extra={
                 'description': api_node['displayDescription'],
                 'attachments': [att for att in api_node['attachments'] if att],
+                'state': api_node.get('status', None),
+                'location': api_node.get('availabilityZone', None),
+                'volume_type': api_node.get('volumeType', None),
+                'metadata': api_node.get('metadata', None),
+                'created_at': api_node.get('createdAt', None)
             }
         )
 

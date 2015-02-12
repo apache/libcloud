@@ -1,0 +1,1 @@
+{ "queryasyncjobresultresponse" : {"jobid":1149343,"jobstatus":1,"jobprocstatus":0,"jobresultcode":0,"jobresulttype":"object","jobresult":{"firewallrule":{"id":172466,"protocol":"icmp","ipaddressid":34000,"ipaddress":"1.1.1.116","state":"Active","cidrlist":"192.168.0.0/16","icmptype":8,"icmpcode":0}}} }

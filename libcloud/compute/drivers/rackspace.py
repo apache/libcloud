@@ -62,8 +62,6 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
         super(RackspaceFirstGenConnection, self).__init__(*args, **kwargs)
 
     def get_endpoint(self):
-        ep = {}
-
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='compute',
                                                    name='cloudServers')
@@ -71,7 +69,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
 
-        public_url = ep.get('publicURL', None)
+        public_url = ep.url
 
         if not public_url:
             raise LibcloudError('Could not find specified endpoint')
@@ -165,7 +163,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
 
-        public_url = ep.get('publicURL', None)
+        public_url = ep.url
 
         if not public_url:
             raise LibcloudError('Could not find specified endpoint')

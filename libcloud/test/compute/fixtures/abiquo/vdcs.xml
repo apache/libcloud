@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <virtualDatacenters>
     <virtualDatacenter>
-        <link href="http://10.60.12.7:80/api/admin/datacenters/2" type="application/vnd.abiquo.datacenter+xml" rel="datacenter"/>
+        <link href="http://10.60.12.7:80/api/cloud/locations/2" type="application/vnd.abiquo.datacenter+xml" rel="location"/>
         <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/privatenetworks/2" type="application/vnd.abiquo.vlan+xml" rel="defaultnetwork"/>
         <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/action/dhcpinfo" type="text/plain" rel="dhcpinfo"/>
         <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/disks" type="application/vnd.abiquo.harddisks+xml" rel="disks"/>

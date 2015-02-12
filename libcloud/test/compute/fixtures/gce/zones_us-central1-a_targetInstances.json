@@ -1,0 +1,27 @@
+{
+ "kind": "compute#targetInstanceList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/targetInstances",
+ "id": "projects/project_name/zones/us-central1-a/targetInstances",
+ "items": [
+  {
+   "kind": "compute#targetInstance",
+   "id": "8092539649535704539",
+   "creationTimestamp": "2014-08-07T12:46:10.372-07:00",
+   "name": "hello",
+   "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+   "natPolicy": "NO_NAT",
+   "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/node-name",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/targetInstances/hello"
+  },
+  {
+   "kind": "compute#targetInstance",
+   "id": "9539205115599811578",
+   "creationTimestamp": "2014-08-07T13:09:19.634-07:00",
+   "name": "lctargetinstance",
+   "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+   "natPolicy": "NO_NAT",
+   "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/node-name",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/targetInstances/lctargetinstance"
+  }
+ ]
+}

@@ -40,7 +40,7 @@ class NewZoneVersion(object):
     In effect, this is a transaction.
 
     Any calls made inside this context manager will be applied to a new version
-    id. If your changes are succesful (and only if they are successful) they
+    id. If your changes are successful (and only if they are successful) they
     are activated.
     """
 

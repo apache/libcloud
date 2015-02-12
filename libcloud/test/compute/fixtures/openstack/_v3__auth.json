@@ -1,0 +1,182 @@
+{
+    "token": {
+        "methods": [
+            "password"
+        ],
+        "roles": [
+            {
+                "id": "9fe2ff9ee4384b1894a90878d3e92bab",
+                "name": "_member_"
+            },
+            {
+                "id": "b258b68172db4403892320f784c4d503",
+                "name": "admin"
+            }
+        ],
+        "expires_at": "2014-08-10T19:15:57.096078Z",
+        "project": {
+            "domain": {
+                "id": "default",
+                "name": "Default"
+            },
+            "id": "9c4693dce56b493b9b83197d900f7fba",
+            "name": "admin"
+        },
+        "catalog": [
+            {
+                "endpoints": [
+                    {
+                        "url": "http://controller:8774/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "b3bfb29033ff4add9c97e523e1022794"
+                    },
+                    {
+                        "url": "http://192.168.18.100:8774/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "b52ee215ded7473f94a46512cb94dbf1"
+                    },
+                    {
+                        "url": "http://192.168.18.100:8774/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "ca8a6e39b9334300bf036c0c4226a173"
+                    }
+                ],
+                "type": "compute",
+                "id": "03f123b2253e4852a86b994f86489c0a"
+            },
+            {
+                "endpoints": [
+                    {
+                        "url": "http://192.168.18.100:8776/v1/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "20bf617f334c4bcf82746820f5006599"
+                    },
+                    {
+                        "url": "http://192.168.18.100:8776/v1/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "2da639c26463424fa9775e0bf4e9f29e"
+                    },
+                    {
+                        "url": "http://controller:8776/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "d568ed6f8c5a4649a6e68b7bcb86694b"
+                    }
+                ],
+                "type": "volume",
+                "id": "47f77ba8f3864a03b66024e910ad7247"
+            },
+            {
+                "endpoints": [
+                    {
+                        "url": "http://192.168.18.100:9696",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "720303f92f81404aa80caa32cd9c7d23"
+                    },
+                    {
+                        "url": "http://192.168.18.100:9696",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "8823b9edba354bb6bdc944a6b3bb5404"
+                    },
+                    {
+                        "url": "http://controller:9696",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "c2a522538037492dbec2173f271ecb32"
+                    }
+                ],
+                "type": "network",
+                "id": "9bd61e09d372427f81eca9328f33c510"
+            },
+            {
+                "endpoints": [
+                    {
+                        "url": "http://controller:5000/v2.0",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "802622da0a874cac8fe2ec7a02d87c44"
+                    },
+                    {
+                        "url": "http://192.168.18.100:35357/v2.0",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "8a4eed85ddc748b18cc2b92e64291eb5"
+                    },
+                    {
+                        "url": "http://192.168.18.100:5000/v2.0",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "9ef69c1600a944b9904f34efb6dc67eb"
+                    }
+                ],
+                "type": "identity",
+                "id": "aef833a14f4240d0bbb699f0154add8e"
+            },
+            {
+                "endpoints": [
+                    {
+                        "url": "http://192.168.18.100:9292",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "1aa84aebd3e2467e898e3c18428e3feb"
+                    },
+                    {
+                        "url": "http://192.168.18.100:9292",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "3f6aa4ffd0ec47d2862eee1648993bef"
+                    },
+                    {
+                        "url": "http://192.168.200.1:9292",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "9f66f90af36949479a6365680afabe12"
+                    }
+                ],
+                "type": "image",
+                "id": "c0be10ea61e240f99567f328b9adf3d6"
+            },
+            {
+                "endpoints": [
+                    {
+                        "url": "http://192.168.18.100:8776/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "public",
+                        "id": "6c6b0990ccf84f1890e404fddad7b6e5"
+                    },
+                    {
+                        "url": "http://192.168.18.100:8776/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "admin",
+                        "id": "ab0f0bd770494d4399036867935c52ea"
+                    },
+                    {
+                        "url": "http://controller:8776/v2/9c4693dce56b493b9b83197d900f7fba",
+                        "region": "regionOne",
+                        "interface": "internal",
+                        "id": "fc7c82deda034e52a544da7d00cd28de"
+                    }
+                ],
+                "type": "volumev2",
+                "id": "e097b64d701e4ce29f2a69eed4e69856"
+            }
+        ],
+        "extras": {},
+        "user": {
+            "domain": {
+                "id": "default",
+                "name": "Default"
+            },
+            "id": "55fba80f022b4855acfc700ae13b2b24",
+            "name": "admin"
+        },
+        "issued_at": "2014-08-10T18:15:57.096107Z"
+    }
+}

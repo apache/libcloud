@@ -31,15 +31,16 @@ __all__ = [
 API_HOST = 'api.linode.com'
 API_ROOT = '/'
 
-# Constants that map a RAM figure to a PlanID (updated 4/25/14)
-LINODE_PLAN_IDS = {2048: '1',
-                   4096: '3',
-                   8192: '5',
-                   16384: '6',
-                   32768: '7',
-                   49152: '8',
-                   65536: '9',
-                   98304: '11'}
+# Constants that map a RAM figure to a PlanID (updated 2014-08-25)
+LINODE_PLAN_IDS = {1024: '1',
+                   2048: '2',
+                   4096: '4',
+                   8192: '6',
+                   16384: '7',
+                   32768: '8',
+                   49152: '9',
+                   65536: '10',
+                   98304: '12'}
 
 
 class LinodeException(Exception):
@@ -62,19 +63,17 @@ class LinodeException(Exception):
 
 
 class LinodeResponse(JsonResponse):
-    """Linode API response
+    """
+    Linode API response
 
-    Wraps the HTTP response returned by the Linode API, which should be JSON in
-    this structure:
-
-       {
-         "ERRORARRAY": [ ... ],
-         "DATA": [ ... ],
-         "ACTION": " ... "
-       }
+    Wraps the HTTP response returned by the Linode API.
 
     libcloud does not take advantage of batching, so a response will always
-    reflect the above format.  A few weird quirks are caught here as well."""
+    reflect the above format. A few weird quirks are caught here as well.
+    """
+
+    objects = None
+
     def __init__(self, response, connection):
         """Instantiate a LinodeResponse from the HTTP response
 
@@ -87,8 +86,16 @@ class LinodeResponse(JsonResponse):
         self.error = response.reason
         self.status = response.status
 
-        self.body = self._decompress_response(body=response.read(),
-                                              headers=self.headers)
+        # This attribute is set when using LoggingConnection.
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data:
+            # LoggingConnection already decompresses data so it can log it
+            # which means we don't need to decompress it here.
+            self.body = response._original_data
+        else:
+            self.body = self._decompress_response(body=response.read(),
+                                                  headers=self.headers)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')

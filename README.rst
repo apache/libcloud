@@ -1,27 +1,36 @@
 Apache Libcloud - a unified interface into the cloud
 ====================================================
 
-.. image:: https://badge.fury.io/py/apache-libcloud.png
-    :target: http://badge.fury.io/py/apache-libcloud
+.. image:: https://pypip.in/version/apache-libcloud/badge.png
+    :target: https://pypi.python.org/pypi/apache-libcloud/
 
 .. image:: https://pypip.in/d/apache-libcloud/badge.png
-        :target: https://crate.io/packages/apache-libcloud/
+        :target: https://pypi.python.org/pypi/apache-libcloud/
 
 .. image:: https://secure.travis-ci.org/apache/libcloud.png?branch=trunk
         :target: http://travis-ci.org/apache/libcloud
+
+.. image:: https://pypip.in/py_versions/apache-libcloud/badge.png
+        :target: https://pypi.python.org/pypi/apache-libcloud/
+
+.. image:: https://pypip.in/wheel/apache-libcloud/badge.png
+        :target: https://pypi.python.org/pypi/apache-libcloud/
+
+.. image:: https://pypip.in/license/apache-libcloud/badge.png
+        :target: https://github.com/apache/libcloud/blob/trunk/LICENSE
 
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
 through a unified and easy to use API.
 
-Resource you can manage with Libcloud are divided in the following categories:
+Resources you can manage with Libcloud are divided into the following categories:
 
-* Cloud Servers and Block Storage - services such as Amazon EC2 and Rackspace
+* **Compute** - Cloud Servers and Block Storage - services such as Amazon EC2 and Rackspace
   Cloud Servers (``libcloud.compute.*``)
-* Cloud Object Storage and CDN  - services such as Amazon S3 and Rackspace
+* **Storage** - Cloud Object Storage and CDN  - services such as Amazon S3 and Rackspace
   CloudFiles (``libcloud.storage.*``)
-* Load Balancers as a Service, LBaaS (``libcloud.loadbalancer.*``)
-* DNS as a Service, DNSaaS (``libcloud.dns.*``)
+* **Load Balancers** - Load Balancers as a Service, LBaaS (``libcloud.loadbalancer.*``)
+* **DNS** - DNS as a Service, DNSaaS (``libcloud.dns.*``)
 
 Apache Libcloud is an Apache project, see <http://libcloud.apache.org> for
 more information.
@@ -29,7 +38,7 @@ more information.
 Documentation
 =============
 
-Documentation can be found at https://libcloud.readthedocs.org.
+Documentation can be found at <https://libcloud.readthedocs.org>.
 
 Feedback
 ========

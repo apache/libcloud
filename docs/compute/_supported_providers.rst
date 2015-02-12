@@ -51,6 +51,7 @@ Provider                              Documentation                             
 `Opsource`_                                                                        OPSOURCE            :mod:`libcloud.compute.drivers.opsource`       :class:`OpsourceNodeDriver`         
 `Outscale INC`_                       :doc:`Click </compute/drivers/outscale_inc>` OUTSCALE_INC        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleINCNodeDriver`      
 `Outscale SAS`_                       :doc:`Click </compute/drivers/outscale_sas>` OUTSCALE_SAS        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleSASNodeDriver`      
+`ProfitBricks`_                                                                    PROFIT_BRICKS       :mod:`libcloud.compute.drivers.profitbricks`   :class:`ProfitBricksNodeDriver`     
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`    RACKSPACE           :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceNodeDriver`        
 `Rackspace Cloud (First Gen)`_                                                     RACKSPACE_FIRST_GEN :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceFirstGenNodeDriver`
 `RimuHosting`_                                                                     RIMUHOSTING         :mod:`libcloud.compute.drivers.rimuhosting`    :class:`RimuHostingNodeDriver`      
@@ -62,6 +63,8 @@ Provider                              Documentation                             
 `vCloud`_                             :doc:`Click </compute/drivers/vcloud>`       VCLOUD              :mod:`libcloud.compute.drivers.vcloud`         :class:`VCloudNodeDriver`           
 `Voxel VoxCLOUD`_                                                                  VOXEL               :mod:`libcloud.compute.drivers.voxel`          :class:`VoxelNodeDriver`            
 `vps.net`_                                                                         VPSNET              :mod:`libcloud.compute.drivers.vpsnet`         :class:`VPSNetNodeDriver`           
+`VMware vSphere`_                     :doc:`Click </compute/drivers/vsphere>`      VSPHERE             :mod:`libcloud.compute.drivers.vsphere`        :class:`VSphereNodeDriver`          
+`Vultr`_                              :doc:`Click </compute/drivers/vultr>`        VULTR               :mod:`libcloud.compute.drivers.vultr`          :class:`VultrNodeDriver`            
 ===================================== ============================================ =================== ============================================== ====================================
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -114,6 +117,7 @@ Provider                              Documentation                             
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
@@ -125,3 +129,5 @@ Provider                              Documentation                             
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
+.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
+.. _`Vultr`: https://www.vultr.com

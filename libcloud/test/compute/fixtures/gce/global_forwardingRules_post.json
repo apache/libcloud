@@ -1,0 +1,13 @@
+{
+ "kind": "compute#operation",
+ "id": "33333333333333333333",
+ "name": "operation_global_forwardingRules_post",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules/http-rule",
+ "status": "PENDING",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 0,
+ "insertTime": "2014-10-27T17:10:54.102-07:00",
+ "startTime": "2014-10-27T17:10:54.531-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_forwardingRules_post"
+}

@@ -97,6 +97,13 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         """
         self.assertRaises(LibcloudError, self.driver.create_node)
 
+    def test_list_locations_response(self):
+        if not self.should_list_locations:
+            return None
+
+        locations = self.driver.list_locations()
+        self.assertTrue(isinstance(locations, list))
+
     def test_create_node_specify_location(self):
         """
         Test you can create a node specifying the location.

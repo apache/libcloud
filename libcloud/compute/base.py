@@ -35,10 +35,19 @@ from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
+from libcloud.compute.ssh import have_paramiko
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
 
+if have_paramiko:
+    from paramiko.ssh_exception import SSHException
+    from paramiko.ssh_exception import AuthenticationException
+
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (AuthenticationException, SSHException,
+                                     IOError, socket.gaierror, socket.error)
+else:
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -242,9 +251,11 @@ class Node(UuidMixin):
         return self.driver.destroy_node(self)
 
     def __repr__(self):
+        state = NodeState.tostring(self.state)
+
         return (('<Node: uuid=%s, name=%s, state=%s, public_ips=%s, '
                  'private_ips=%s, provider=%s ...>')
-                % (self.uuid, self.name, self.state, self.public_ips,
+                % (self.uuid, self.name, state, self.public_ips,
                    self.private_ips, self.driver.name))
 
 
@@ -1128,7 +1139,7 @@ class NodeDriver(BaseDriver):
         :type source_region: ``str``
 
         :param node_image: NodeImage to copy.
-        :type node_image: :class`.NodeImage`:
+        :type node_image: :class:`.NodeImage`:
 
         :param name: name for new image.
         :type name: ``str``
@@ -1217,7 +1228,7 @@ class NodeDriver(BaseDriver):
         Delete an existing key pair.
 
         :param key_pair: Key pair object.
-        :type key_pair: :class`.KeyPair`
+        :type key_pair: :class:`.KeyPair`
         """
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
@@ -1372,9 +1383,17 @@ class NodeDriver(BaseDriver):
         while time.time() < end:
             try:
                 ssh_client.connect()
-            except (IOError, socket.gaierror, socket.error):
-                # Retry if a connection is refused or timeout
-                # occurred
+            except SSH_TIMEOUT_EXCEPTION_CLASSES:
+                e = sys.exc_info()[1]
+                message = str(e).lower()
+                expected_msg = 'no such file or directory'
+
+                if isinstance(e, IOError) and expected_msg in message:
+                    # Propagate (key) file doesn't exist errors
+                    raise e
+
+                # Retry if a connection is refused, timeout occurred,
+                # or the connection fails due to failed authentication.
                 ssh_client.close()
                 time.sleep(wait_period)
                 continue
@@ -1401,7 +1420,6 @@ class NodeDriver(BaseDriver):
                                key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
-        # Connect to the SSH server running on the node
         ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
                                               timeout=timeout)
 

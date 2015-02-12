@@ -185,7 +185,7 @@ class Driver(BaseDriver):
         :type  members: ``list`` of :class:`Member`
 
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
-        :type algorithm: :class:`Algorithm`
+        :type algorithm: :class:`.Algorithm`
 
         :rtype: :class:`LoadBalancer`
         """
@@ -230,7 +230,7 @@ class Driver(BaseDriver):
         :type    name: ``str``
 
         :param algorithm: New load balancer algorithm
-        :type    algorithm: :class:`Algorithm`
+        :type    algorithm: :class:`.Algorithm`
 
         :param protocol: New load balancer protocol
         :type    protocol: ``str``
@@ -317,12 +317,12 @@ class Driver(BaseDriver):
 
     def _value_to_algorithm(self, value):
         """
-        Return :class`Algorithm` based on the value.
+        Return :class:`.Algorithm` based on the value.
 
         :param value: Algorithm name (e.g. http, tcp, ...).
         :type  value: ``str``
 
-        @rype :class:`Algorithm`
+        :rtype: :class:`.Algorithm`
         """
         try:
             return self._VALUE_TO_ALGORITHM_MAP[value]
@@ -337,7 +337,7 @@ class Driver(BaseDriver):
         :param value: Algorithm enum.
         :type  value: :class:`Algorithm`
 
-        @rype ``str``
+        :rtype: ``str``
         """
         try:
             return self._ALGORITHM_TO_VALUE_MAP[algorithm]

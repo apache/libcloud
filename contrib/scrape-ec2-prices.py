@@ -18,13 +18,22 @@
 #  under the License.
 
 import os
+import re
 import json
 import time
 from collections import defaultdict, OrderedDict
 
 import requests
+import demjson
 
-ON_DEMAND_LINUX_URL = 'http://aws.amazon.com/ec2/pricing/json/linux-od.json'
+LINUX_PRICING_URLS = [
+    # Deprecated instances (JSON format)
+    'http://aws.amazon.com/ec2/pricing/json/linux-od.json',
+    # Previous generation instances (JavaScript file)
+    'http://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js',
+    # New generation instances (JavaScript file)
+    'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
+]
 
 EC2_REGIONS = [
     'us-east-1',
@@ -68,6 +77,14 @@ EC2_INSTANCE_TYPES = [
     'i2.2xlarge',
     'i2.4xlarge',
     'i2.8xlarge',
+    'r3.large',
+    'r3.xlarge',
+    'r3.2xlarge',
+    'r3.4xlarge',
+    'r3.8xlarge',
+    't2.micro',
+    't2.small',
+    't2.medium'
 ]
 
 # Maps EC2 region name to region name used in the pricing file
@@ -88,23 +105,34 @@ PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
 
 def scrape_ec2_pricing():
-    response = requests.get(ON_DEMAND_LINUX_URL)
-    data = response.json()
-
-    regions = data['config']['regions']
-
     result = defaultdict(OrderedDict)
-    for region_data in regions:
-        region_name = region_data['region']
-        libcloud_region_name = REGION_NAME_MAP[region_name]
-        instance_types = region_data['instanceTypes']
 
-        for instance_type in instance_types:
-            sizes = instance_type['sizes']
+    for url in LINUX_PRICING_URLS:
+        response = requests.get(url)
 
-            for size in sizes:
-                price = size['valueColumns'][0]['prices']['USD']
-                result[libcloud_region_name][size['size']] = price
+        if re.match('.*?\.json$', url):
+            data = response.json()
+        elif re.match('.*?\.js$', url):
+            data = response.content
+            match = re.match('^.*callback\((.*?)\);?$', data,
+                             re.MULTILINE | re.DOTALL)
+            data = match.group(1)
+            # demjson supports non-strict mode and can parse unquoted objects
+            data = demjson.decode(data)
+
+        regions = data['config']['regions']
+
+        for region_data in regions:
+            region_name = region_data['region']
+            libcloud_region_name = REGION_NAME_MAP[region_name]
+            instance_types = region_data['instanceTypes']
+
+            for instance_type in instance_types:
+                sizes = instance_type['sizes']
+
+                for size in sizes:
+                    price = size['valueColumns'][0]['prices']['USD']
+                    result[libcloud_region_name][size['size']] = price
 
     return result
 
@@ -118,7 +146,7 @@ def update_pricing_file(pricing_file_path, pricing_data):
     data['compute'].update(pricing_data)
 
     # Always sort the pricing info
-    data = OrderedDict(sorted(data.items()))
+    data = sort_nested_dict(data)
 
     content = json.dumps(data, indent=4)
     lines = content.splitlines()
@@ -127,6 +155,21 @@ def update_pricing_file(pricing_file_path, pricing_data):
 
     with open(pricing_file_path, 'w') as fp:
         fp.write(content)
+
+
+def sort_nested_dict(value):
+    """
+    Recursively sort a nested dict.
+    """
+    result = OrderedDict()
+
+    for key, value in sorted(value.items()):
+        if isinstance(value, (dict, OrderedDict)):
+            result[key] = sort_nested_dict(value)
+        else:
+            result[key] = value
+
+    return result
 
 
 def main():

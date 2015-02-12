@@ -1,0 +1,17 @@
+{
+    "tenants": [
+        {
+            "description": "test project",
+            "enabled": true,
+            "id": "a",
+            "name": "test"
+        },
+        {
+            "description": "admin tenant",
+            "enabled": true,
+            "id": "b",
+            "name": "admin"
+        }
+    ],
+    "tenants_links": []
+}

@@ -1,0 +1,9 @@
+{
+  "creationTimestamp": "2014-07-11T15:52:43.720-07:00",
+  "id": "13598380121688918358",
+  "kind": "compute#targetPool",
+  "name": "lctargetpool-sticky",
+  "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/targetPools/lctargetpool-sticky",
+  "sessionAffinity": "CLIENT_IP_PROTO"
+}

@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "18431811683007150988",
+ "name": "operation-startnode",
+ "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+ "operationType": "start",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/stopped-node",
+ "targetId": "12335588484913203363",
+ "status": "DONE",
+ "user": "erjohnso@google.com",
+ "progress": 100,
+ "insertTime": "2015-01-30T06:55:11.503-08:00",
+ "startTime": "2015-01-30T06:55:11.847-08:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-startnode"
+}

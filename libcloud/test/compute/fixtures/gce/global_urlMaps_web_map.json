@@ -1,0 +1,9 @@
+{
+ "kind": "compute#urlMap",
+ "id": "4266107551250249032",
+ "creationTimestamp": "2014-08-15T16:16:54.084-07:00",
+ "name": "web-map",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/urlMaps/web-map",
+ "defaultService": "https://www.googleapis.com/compute/v1/projects/project_name/global/backendServices/web-service",
+ "fingerprint": "JiV2ACVOAlg="
+}

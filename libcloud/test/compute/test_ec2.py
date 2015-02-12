@@ -29,11 +29,13 @@ from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
 from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
+from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
+from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
 from libcloud.compute.types import KeyPairDoesNotExistError
@@ -56,8 +58,14 @@ class BaseEC2Tests(LibcloudTestCase):
         regions = REGION_DETAILS.keys()
         regions = [d for d in regions if d != 'nimbus']
 
-        for region in regions:
-            EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+        region_endpoints = [
+            EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
+        ]
+
+        # Verify that each driver doesn't get the same API host endpoint
+        self.assertEqual(len(region_endpoints),
+                         len(set(region_endpoints)),
+                         "Multiple Region Drivers were given the same API endpoint")
 
     def test_instantiate_driver_invalid_regions(self):
         for region in ['invalid', 'nimbus']:
@@ -373,20 +381,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 33)
+                self.assertEqual(len(sizes), 36)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 29)
+                self.assertEqual(len(sizes), 32)
             if region_name == 'us-west-2':
                 self.assertEqual(len(sizes), 29)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 24)
+                self.assertEqual(len(sizes), 27)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 29)
+                self.assertEqual(len(sizes), 32)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 31)
+                self.assertEqual(len(sizes), 34)
 
         self.driver.region_name = region_old
 
@@ -871,6 +879,25 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                           ex_securitygroup=security_groups,
                           ex_security_groups=security_groups)
 
+    def test_create_node_ex_security_group_ids(self):
+        EC2MockHttp.type = 'ex_security_group_ids'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        subnet = EC2NetworkSubnet(12345, "test_subnet", "pending")
+        security_groups = ['sg-1aa11a1a', 'sg-2bb22b2b']
+
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_security_group_ids=security_groups,
+                                ex_subnet=subnet)
+        self.assertRaises(ValueError, self.driver.create_node,
+                          name='foo', image=image, size=size,
+                          ex_security_group_ids=security_groups)
+
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
@@ -901,6 +928,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                                      "vpc-143cab4")
 
         self.assertEqual(group["group_id"], "sg-52e2f530")
+
+    def test_ex_create_placement_groups(self):
+        resp = self.driver.ex_create_placement_group("NewPG")
+        self.assertTrue(resp)
+
+    def test_ex_delete_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        pg = pgs[0]
+
+        resp = self.driver.ex_delete_placement_group(pg.name)
+        self.assertTrue(resp)
+
+    def test_ex_list_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        self.assertEqual(len(pgs), 2)
+        self.assertIsInstance(pgs[0], EC2PlacementGroup)
 
     def test_ex_list_networks(self):
         vpcs = self.driver.ex_list_networks()
@@ -1189,6 +1232,13 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ex_security_group_ids_RunInstances(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {'SecurityGroupId.1': 'sg-1aa11a1a'})
+        self.assertUrlContainsQueryParams(url, {'SecurityGroupId.2': 'sg-2bb22b2b'})
+
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
         expected_params = {
             'BlockDeviceMapping.1.DeviceName': '/dev/sda1',
@@ -1459,6 +1509,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DetachInternetGateway(self, method, url, body, headers):
         body = self.fixtures.load('detach_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreatePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('create_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeletePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('delete_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribePlacementGroups(self, method, url, body, headers):
+        body = self.fixtures.load('describe_placement_groups.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

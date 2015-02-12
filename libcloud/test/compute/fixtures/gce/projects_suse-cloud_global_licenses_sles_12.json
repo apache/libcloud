@@ -1,0 +1,6 @@
+{
+ "kind": "compute#license",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-cloud/global/licenses/sles-12",
+ "name": "sles-12",
+ "chargesUseFee": true
+}

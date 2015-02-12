@@ -102,7 +102,9 @@ class BrightboxLBDriver(Driver):
 
         data = self.connection.request(path).object
 
-        func = lambda data: self._node_to_member(data, balancer)
+        def func(data):
+            return self._node_to_member(data, balancer)
+
         return list(map(func, data['nodes']))
 
     def _post(self, path, data={}):

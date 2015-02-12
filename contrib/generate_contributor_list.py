@@ -146,7 +146,7 @@ def convert_to_markdown(contributors_map, include_tickets=False):
         else:
             line = '* %(name)s' % {'name': name}
 
-        result.append(line)
+        result.append(line.strip())
 
     result = '\n'.join(result)
     return result
@@ -154,7 +154,7 @@ def convert_to_markdown(contributors_map, include_tickets=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Assemble provider logos '
                                                  ' in a single image')
-    parser.add_argument('--changes-path', action='store',
+    parser.add_argument('--changes-path', action='store', required=True,
                         help='Path to the changes file')
     parser.add_argument('--versions', action='store', nargs='+',
                         type=str,

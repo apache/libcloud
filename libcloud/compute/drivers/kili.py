@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-HP Public cloud driver which is esentially just a small wrapper around
+HP Public cloud driver which is essentially just a small wrapper around
 OpenStack driver.
 """
 
@@ -53,7 +53,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
 
-        public_url = ep.get('publicURL', None)
+        public_url = ep.url
 
         if not public_url:
             raise LibcloudError('Could not find specified endpoint')

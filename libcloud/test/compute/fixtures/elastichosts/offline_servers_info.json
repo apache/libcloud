@@ -1,0 +1,16 @@
+[
+  {
+    "boot": "ide:0:0",
+    "cpu": 2000,
+    "ide:0:0": "b6049e7a-aa1b-47f9-b21d-cdf2354e28d3",
+    "mem": 1024,
+    "name": "test api node",
+    "nic:0:block": "tcp/21 tcp/22 tcp/23 tcp/25",
+    "nic:0:dhcp": "auto",
+    "nic:0:model": "virtio",
+    "server": "b605ca90-c3e6-4cee-85f8-a8ebdf8f9903",
+    "status": "stopped",
+    "user": "2164ce57-591a-43ee-ade5-e2fe0ee13c3f",
+    "vnc:password": "testvncpass"
+  }
+]

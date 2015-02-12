@@ -40,6 +40,7 @@ from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import b
 
 __all__ = [
     'BaseSSHClient',
@@ -118,8 +119,8 @@ class BaseSSHClient(object):
         """
         Connect to the remote node over SSH.
 
-        :return: True if the connection has been successfuly established, False
-                 otherwise.
+        :return: True if the connection has been successfully established,
+                 False otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -154,7 +155,7 @@ class BaseSSHClient(object):
         :type path: ``str``
         :keyword path: File path on the remote node.
 
-        :return: True if the file has been successfuly deleted, False
+        :return: True if the file has been successfully deleted, False
                  otherwise.
         :rtype: ``bool``
         """
@@ -177,7 +178,7 @@ class BaseSSHClient(object):
         """
         Shutdown connection to the remote node.
 
-        :return: True if the connection has been successfuly closed, False
+        :return: True if the connection has been successfully closed, False
                  otherwise.
         :rtype: ``bool``
         """
@@ -364,7 +365,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv(CHUNK_SIZE)
 
                 while data:
-                    stdout.write(data)
+                    stdout.write(b(data).decode('utf-8'))
                     ready = chan.recv_ready()
 
                     if not ready:
@@ -376,7 +377,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv_stderr(CHUNK_SIZE)
 
                 while data:
-                    stderr.write(data)
+                    stderr.write(b(data).decode('utf-8'))
                     ready = chan.recv_stderr_ready()
 
                     if not ready:

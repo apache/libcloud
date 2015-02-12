@@ -3,8 +3,10 @@
   "id": "16109451798967042451",
   "kind": "compute#disk",
   "name": "lcdisk",
+  "description": "I'm a happy little SSD",
+  "type": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-ssd",
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/lcdisk",
-  "sizeGb": "1",
+  "sizeGb": "10",
   "status": "READY",
   "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
 }

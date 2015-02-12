@@ -42,7 +42,9 @@
       "archiveSizeBytes": "255972840",
       "creationTimestamp": "2013-05-09T12:56:21.720-07:00",
       "deprecated": {
-        "deprecated": "2013-11-12T21:00:00Z",
+        "deprecated": "2064-03-11T20:18:36.194-07:00",
+        "obsolete": "2074-03-11T20:18:36.194-07:00",
+        "deleted": "2084-03-11T20:18:36.194-07:00",
         "replacement": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
         "state": "DEPRECATED"
       },
@@ -162,7 +164,9 @@
       "archiveSizeBytes": "300710522",
       "creationTimestamp": "2013-10-11T09:26:47.736-07:00",
       "deprecated": {
-        "deprecated": "2013-11-14T00:00:00Z",
+        "deprecated": "2064-03-11T20:18:36.194-07:00",
+        "obsolete": "2074-03-11T20:18:36.194-07:00",
+        "deleted": "2084-03-11T20:18:36.194-07:00",
         "replacement": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
         "state": "DEPRECATED"
       },
@@ -342,7 +346,9 @@
       "archiveSizeBytes": "405683884",
       "creationTimestamp": "2013-10-28T13:52:08.233-07:00",
       "deprecated": {
-        "deprecated": "2013-12-02T12:00:00Z",
+        "deprecated": "2064-03-11T20:18:36.194-07:00",
+        "obsolete":  "2074-03-11T20:18:36.194-07:00",
+        "deleted": "2084-03-11T20:18:36.194-07:00",
         "replacement": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-7-wheezy-v20131120",
         "state": "DEPRECATED"
       },
