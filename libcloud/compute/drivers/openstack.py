@@ -1586,6 +1586,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_snapshots(
             self.connection.request('/os-snapshots').object)
 
+    def list_volume_snapshots(self, volume):
+        return [snapshot for snapshot in self.ex_list_snapshots()
+                if snapshot.extra['volume_id'] == volume.id]
+
     def ex_create_snapshot(self, volume, name, description=None, force=False):
         """
         Create a snapshot based off of a volume.

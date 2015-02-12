@@ -25,7 +25,7 @@ Compute
   (LIBCLOUD-664, GITHUB-451)
   [Allard Hoeve]
 
-- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver..
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver.
   (LIBCLOUD-668, GITHUB-462)
   [Allard Hoeve]
 
@@ -33,6 +33,10 @@ Compute
   ``ex_create_volume``, ``ex_destroy_volume``.
   (LIBCLOUD-649, GITHUB-430)
   [Wojciech Wirkijowski]
+
+- Add ``list_volume_snapshots`` method to the OpenStack driver.
+  (LIBCLOUD-663, GITHUB-450)
+  [Allard Hoeve]
 
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
