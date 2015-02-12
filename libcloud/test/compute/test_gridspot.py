@@ -46,12 +46,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         Tests the error-handling for passing a bad API Key to the Gridspot API
         """
         GridspotMockHttp.type = 'BAD_AUTH'
-        try:
-            self.driver.list_nodes()
-            # Above command should have thrown an InvalidCredsException
-            self.assertTrue(False)
-        except InvalidCredsError:
-            pass
+        self.assertRaises(InvalidCredsError, self.driver.list_nodes)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
