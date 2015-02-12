@@ -273,7 +273,7 @@ class Route53DNSDriver(DNSDriver):
                             driver=self, extra=extra)
             records.append(record)
 
-        return record
+        return records
 
     def ex_delete_all_records(self, zone):
         """
@@ -346,7 +346,6 @@ class Route53DNSDriver(DNSDriver):
         for other_record in other_records:
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
             ET.SubElement(rrec, 'Value').text = other_record['data']
-
         uri = API_ROOT + 'hostedzone/' + record.zone.id + '/rrset'
         data = ET.tostring(changeset)
         self.connection.set_context({'zone_id': record.zone.id})

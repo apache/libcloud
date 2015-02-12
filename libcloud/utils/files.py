@@ -38,7 +38,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
     """
     Return a generator which yields data in chunks.
 
-    :param terator: An object which implements an iterator interface
+    :param iterator: An object which implements an iterator interface
                      or a File like object with read method.
     :type iterator: :class:`object` which implements iterator interface.
 

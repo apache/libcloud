@@ -1,0 +1,4 @@
+<CreatePlacementGroupResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+   <requestId>d4904fd9-82c2-4ea5-adfe-a9cc3EXAMPLE</requestId>
+   <return>true</return>
+</CreatePlacementGroupResponse>

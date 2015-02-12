@@ -29,6 +29,7 @@ from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
 from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
+from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
@@ -928,6 +929,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(group["group_id"], "sg-52e2f530")
 
+    def test_ex_create_placement_groups(self):
+        resp = self.driver.ex_create_placement_group("NewPG")
+        self.assertTrue(resp)
+
+    def test_ex_delete_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        pg = pgs[0]
+
+        resp = self.driver.ex_delete_placement_group(pg.name)
+        self.assertTrue(resp)
+
+    def test_ex_list_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        self.assertEqual(len(pgs), 2)
+        self.assertIsInstance(pgs[0], EC2PlacementGroup)
+
     def test_ex_list_networks(self):
         vpcs = self.driver.ex_list_networks()
 
@@ -1492,6 +1509,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DetachInternetGateway(self, method, url, body, headers):
         body = self.fixtures.load('detach_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreatePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('create_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeletePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('delete_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribePlacementGroups(self, method, url, body, headers):
+        body = self.fixtures.load('describe_placement_groups.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

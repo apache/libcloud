@@ -1,0 +1,15 @@
+<DescribePlacementGroupsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+    <requestID>d4904fd9-82c2-4ea5-adfe-a9cc3EXAMPLE</requestID>
+    <placementGroupSet>
+        <item>
+            <groupName>XYZ-cluster</groupName>
+            <strategy>cluster</strategy>
+            <state>available</state>
+        </item>
+        <item>
+            <groupName>XYZ-cluster2</groupName>
+            <strategy>cluster</strategy>
+            <state>available</state>
+        </item>
+    </placementGroupSet>
+</DescribePlacementGroupsResponse>

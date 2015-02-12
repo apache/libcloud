@@ -85,6 +85,8 @@ if PY3:
             return s.encode('utf-8')
         elif isinstance(s, bytes):
             return s
+        elif isinstance(s, int):
+            return bytes([s])
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
 

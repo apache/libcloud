@@ -11,14 +11,16 @@ lists.
 
 * `announce@libcloud.apache.org`_ - Moderated and low volume mailing list which
   is only used for distributing important project announcements and updates.
+  (`announce-archive <https://mail-archives.apache.org/mod_mbox/libcloud-announce/>`_)
 * `users@libcloud.apache.org`_ - Mailing list for general talk about Libcloud
   and other off-topic things
   (`users-archive <https://mail-archives.apache.org/mod_mbox/libcloud-users/>`_)
 * `dev@libcloud.apache.org`_ - General mailing list for developers
   (`dev-archive <https://mail-archives.apache.org/mod_mbox/libcloud-dev/>`_)
-* `commits@libcloud.apache.org`_ - Commits messages go to this mailing list.
+* `notifications@libcloud.apache.org`_ - Commits messages and other automatically
+  generated notifications go to this mailing list.
   Keep in mind that unlike the others, this mailing list is fairly noisy.
-  (`commits-archive <https://mail-archives.apache.org/mod_mbox/libcloud-commits/>`_)
+  (`notifications-archive <https://mail-archives.apache.org/mod_mbox/libcloud-notifications/>`_, `commits-archive <https://mail-archives.apache.org/mod_mbox/libcloud-commits/>`_)
 
 Archive of old incubator mailing lists:
 
@@ -67,6 +69,6 @@ found at http://ci.apache.org/projects/libcloud/coverage.
 .. _`announce@libcloud.apache.org`: mailto:announce-subscribe@libcloud.apache.org
 .. _`users@libcloud.apache.org`: mailto:users-subscribe@libcloud.apache.org
 .. _`dev@libcloud.apache.org`: mailto:dev-subscribe@libcloud.apache.org
-.. _`commits@libcloud.apache.org`: mailto:commits-subscribe@libcloud.apache.org
+.. _`notifications@libcloud.apache.org`: mailto:notifications-subscribe@libcloud.apache.org
 .. _`incubator-libcloud`: http://mail-archives.apache.org/mod_mbox/incubator-libcloud/
 .. _`incubator-libcloud-commits`: http://mail-archives.apache.org/mod_mbox/incubator-libcloud-commits/

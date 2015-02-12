@@ -16,6 +16,59 @@ General
 Compute
 ~~~~~~~
 
+- GCE driver update to support JSON format Service Account files and a PY3
+  fix from Siim Põder for LIBCLOUD-627.
+  (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)
+  [Eric Johnson]
+
+- GCE driver fixed for missing param on ex_add_access_config
+  (GITHUB-435)
+  [Peter Mooshammer]
+
+- GCE driver support for HTTP load-balancer resources
+  (LIBCLOUD-605, GITHUB-429)
+  [Lee Verberne]
+
+- GCE driver updated to make better use of GCEDiskTypes
+  (GITHUB-428)
+  [Eric Johnson]
+
+- GCE driver list_images() now returns all non-deprecated images by default
+  (LIBCLOUD-602, GITHUB-423)
+  [Eric Johnson]
+
+- Improve GCE API coverage for create_node()
+  (GITHUB-419)
+  [Eric Johnson]
+
+- GCE Licenses added to the GCE driver.
+  (GITHUB-420)
+  [Eric Johnson]
+
+- GCE Projects support common instance metadata and usage export buckets
+  (GITHUB-409)
+  [Eric Johnson]
+
+- Improvements to TargetPool resource in GCE driver.
+  (GITHUB-414)
+  [Eric Johnson]
+
+- Adding TargetInstances resource to GCE driver.
+  (GITHUB-393)
+  [Eric Johnson]
+
+- Adding DiskTypes resource to GCE driver.
+  (GITHUB-391)
+  [Eric Johnson]
+
+- Fix boot disk auto_delete in GCE driver.
+  (GITHUB-412)
+  [Igor Bogomazov]
+
+- Add Routes to GCE driver.
+  (GITHUB-410)
+  [Eric Johnson]
+
 - Add missing ``ubuntu-os-cloud`` images to the GCE driver.
   (LIBCLOUD-632, GITHUB-385)
   [Borja Martin]
@@ -39,6 +92,102 @@ Compute
 - Add ``ex_security_group_ids`` argument to the create_node method in the
   EC2 driver. This way users can launch VPC nodes with security groups.
   (GITHUB-373)
+  [Itxaka Serrano]
+
+- Add description argument to GCE Network
+  (GITHUB-397)
+  [Eric Johnson]
+
+- GCE: Improve MachineType (size) coverage of GCE API
+  (GITHUB-396)
+  [Eric Johnson]
+
+- GCE: Improved Images coverage
+  (GITHUB-395)
+  [Eric Johnson]
+
+- GCE: Support for global IP addresses.
+  (GITHUB-390, GITHUB-394)
+  [Eric Johnson]
+
+- GCE: Add missing snapshot attributes.
+  (GITHUB-401)
+  [Eric Johnson]
+
+- AWS: Set proper disk size in c3.X instance types
+  (GITHUB-405)
+  [Itxaka Serrano]
+
+- Fix a bug with handling of the ``ex_keyname`` argument in the Softlayer
+  driver.
+  (GITHUB-416, LIBCLOUD-647)
+  [Dustin Oberloh]
+
+- Update CloudSigma region list (remove Las Vegas, NV region and add new San
+  Jose, CA and Miami, FL region).
+  (GITHUB-417)
+  [Viktor Petersson]
+
+- Add ``ex_get_node`` method to the Joyent driver.
+  (GITHUB-421)
+  [ZuluPro]
+
+- Add support for placement group management to the EC2 driver.
+  (GITHUB-418)
+  [Mikhail Ovsyannikov]
+
+- Add new tok02 region to the Softlayer drive.
+  (GITHUB-436, LIBCLOUD-656)
+  [Dustin Oberloh]
+
+- Add new Honolulu, HI endpoint to the CloudSigma driver.
+  (GITHUB-439)
+  [Stephen D. Spencer]
+
+- Fix a bug with config_drive attribute in the OpenStack driver. New versions
+  of OpenStack now return a boolean and not a string.
+  (GITHUB-433)
+  [quilombo]
+
+Storage
+~~~~~~~
+
+- Allow user to pass ``headers`` argument to the ``upload_object`` and
+  ``upload_object_via_stream`` method.
+
+  This way user can specify CORS headers with the drivers which support that.
+  (GITHUB-403, GITHUB-404)
+  [Peter Schmidt]
+
+- Fix upload_object_via_stream so it works correctly under Python 3.x if user
+  manually passes an iterator to the method.
+
+  Also improve how reading a file in chunks works with drivers which support
+  chunked encoding - always try to fill a chunk with CHUNK_SIZE bytes instead
+  of directly streaming the chunk which iterator returns.
+
+  Previously, if iterator returned 1 byte in one iteration, we would directly
+  send this as a single chunk to the API.
+  (GITHUB-408, LIBCLOUD-639)
+  [Peter Schmidt]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Updates to CloudStack Load-Balancer
+  (GITHUB-434)
+  [Jeroen de Korte]
+
+DNS
+~~~
+
+- New driver for Softlayer DNS service.
+  (GITHUB-413, LIBCLOUD-640)
+  [Vanč Levstik]
+
+- Fix a bug with ``ex_create_multi_value_record`` method in the Route53 driver
+  only returning a single record.
+  (GITHUB-431, LIBCLOUD-650)
   [Itxaka Serrano]
 
 Changes with Apache Libcloud 0.16.0

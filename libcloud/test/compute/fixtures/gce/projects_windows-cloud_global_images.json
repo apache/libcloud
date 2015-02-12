@@ -1,0 +1,26 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/images",
+ "id": "projects/windows-cloud/global/images",
+ "items": [
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/images/windows-server-2008-r2-dc-v20141120",
+   "id": "10752443450426453317",
+   "creationTimestamp": "2014-12-02T10:31:56.162-08:00",
+   "name": "windows-server-2008-r2-dc-v20141120",
+   "description": "Microsoft Windows Server 2008 R2 Datacenter Edition built on 2014-11-20",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "6974709077",
+   "diskSizeGb": "100",
+   "licenses": [
+    "https://content.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2008-r2-dc"
+   ]
+  }
+ ]
+}

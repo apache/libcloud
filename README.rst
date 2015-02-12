@@ -23,14 +23,14 @@ Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
 through a unified and easy to use API.
 
-Resource you can manage with Libcloud are divided in the following categories:
+Resources you can manage with Libcloud are divided into the following categories:
 
-* Cloud Servers and Block Storage - services such as Amazon EC2 and Rackspace
+* **Compute** - Cloud Servers and Block Storage - services such as Amazon EC2 and Rackspace
   Cloud Servers (``libcloud.compute.*``)
-* Cloud Object Storage and CDN  - services such as Amazon S3 and Rackspace
+* **Storage** - Cloud Object Storage and CDN  - services such as Amazon S3 and Rackspace
   CloudFiles (``libcloud.storage.*``)
-* Load Balancers as a Service, LBaaS (``libcloud.loadbalancer.*``)
-* DNS as a Service, DNSaaS (``libcloud.dns.*``)
+* **Load Balancers** - Load Balancers as a Service, LBaaS (``libcloud.loadbalancer.*``)
+* **DNS** - DNS as a Service, DNSaaS (``libcloud.dns.*``)
 
 Apache Libcloud is an Apache project, see <http://libcloud.apache.org> for
 more information.
@@ -38,7 +38,7 @@ more information.
 Documentation
 =============
 
-Documentation can be found at https://libcloud.readthedocs.org.
+Documentation can be found at <https://libcloud.readthedocs.org>.
 
 Feedback
 ========

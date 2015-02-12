@@ -1,0 +1,49 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/rhel-cloud/global/images",
+ "id": "projects/rhel-cloud/global/images",
+ "items": [
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/rhel-cloud/global/images/rhel-7-v20141108",
+   "id": "9656001643961289198",
+   "creationTimestamp": "2014-11-10T14:15:28.054-08:00",
+   "name": "rhel-7-v20141108",
+   "description": "Red Hat Enterprise Linux 7.0 x86_64 built on 2014-11-08",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/rhel-cloud/global/images/rhel-7-v20141205"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1201321944",
+   "diskSizeGb": "10",
+   "licenses": [
+    "https://content.googleapis.com/compute/v1/projects/rhel-cloud/global/licenses/rhel-7-server"
+   ]
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/rhel-cloud/global/images/rhel-7-v20141205",
+   "id": "9718957591079040023",
+   "creationTimestamp": "2014-12-08T17:07:02.804-08:00",
+   "name": "rhel-7-v20141205",
+   "description": "Red Hat Enterprise Linux 7.0 x86_64 built on 2014-12-05",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "1204146084",
+   "diskSizeGb": "10",
+   "licenses": [
+    "https://content.googleapis.com/compute/v1/projects/rhel-cloud/global/licenses/rhel-7-server"
+   ]
+  }
+ ]
+}

@@ -55,6 +55,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.common.google import ResourceNotFoundError
 
 # Maximum number of 1-CPU nodes to allow to run simultaneously
 MAX_NODES = 5
@@ -134,10 +135,16 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
     # Destroy everything else with just the destroy method
     for resource in resource_list:
         if resource.name.startswith(base_name):
-            if resource.destroy():
-                print('   Deleted %s' % resource.name)
-            else:
-                print('   Failed to Delete %s' % resource.name)
+            try:
+                resource.destroy()
+            except ResourceNotFoundError:
+                print('   Not found: %s(%s)' % (resource.name,
+                                                resource.__class__.__name__))
+            except:
+                class_name = resource.__class__.__name__
+                print('   Failed to Delete %s(%s)' % (resource.name,
+                                                      class_name))
+                raise
 
 
 # ==== DEMO CODE STARTS HERE ====
@@ -190,10 +197,44 @@ def main():
 
     # == Create Node with disk auto-created ==
     if MAX_NODES > 1:
+        print('Creating a node with multiple disks using GCE structure:')
+        name = '%s-gstruct' % DEMO_BASE_NAME
+        img_url = "projects/debian-cloud/global/images/"
+        img_url += "backports-debian-7-wheezy-v20141205"
+        disk_type_url = "projects/graphite-demos/zones/us-central1-f/"
+        disk_type_url += "diskTypes/local-ssd"
+        gce_disk_struct = [
+            {
+                "type": "PERSISTENT",
+                "deviceName": '%s-gstruct' % DEMO_BASE_NAME,
+                "initializeParams": {
+                    "diskName": '%s-gstruct' % DEMO_BASE_NAME,
+                    "sourceImage": img_url
+                },
+                "boot": True,
+                "autoDelete": True
+            },
+            {
+                "type": "SCRATCH",
+                "deviceName": '%s-gstruct-lssd' % DEMO_BASE_NAME,
+                "initializeParams": {
+                    "diskType": disk_type_url
+                },
+                "autoDelete": True
+            }
+        ]
+        node_gstruct = gce.create_node(name, 'n1-standard-1', None,
+                                       'us-central1-f',
+                                       ex_disks_gce_struct=gce_disk_struct)
+        num_disks = len(node_gstruct.extra['disks'])
+        print('    Node %s created with %d disks' % (node_gstruct.name,
+                                                     num_disks))
+
         print('Creating Node with auto-created SSD:')
         name = '%s-np-node' % DEMO_BASE_NAME
         node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
-                                 ex_tags=['libcloud'], ex_disk_type='pd-ssd')
+                                 ex_tags=['libcloud'], ex_disk_type='pd-ssd',
+                                 ex_disk_auto_delete=False)
         print('   Node %s created' % name)
 
         # == Create, and attach a disk ==
@@ -202,6 +243,9 @@ def main():
         volume = gce.create_volume(10, disk_name)
         if volume.attach(node_1):
             print ('   Attached %s to %s' % (volume.name, node_1.name))
+        print ('   Disabled auto-delete for %s on %s' % (volume.name,
+                                                         node_1.name))
+        gce.ex_set_volume_auto_delete(volume, node_1, auto_delete=False)
 
         if CLEANUP:
             # == Detach the disk ==
@@ -233,7 +277,8 @@ def main():
     print('   Created %s from snapshot' % volume.name)
     # Create Node with Disk
     node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
-                             ex_boot_disk=volume)
+                             ex_boot_disk=volume,
+                             ex_disk_auto_delete=False)
     print('   Node %s created with attached disk %s' % (node_2.name,
                                                         volume.name))
 
@@ -246,6 +291,13 @@ def main():
     check_node = gce.ex_get_node(node_2.name)
     print('   New tags: %s' % check_node.extra['tags'])
 
+    # == Setting Metadata for Node ==
+    print('Setting Metadata for %s' % node_2.name)
+    if gce.ex_set_node_metadata(node_2, {'foo': 'bar', 'baz': 'foobarbaz'}):
+        print('   Metadata updated for %s' % node_2.name)
+    check_node = gce.ex_get_node(node_2.name)
+    print('   New Metadata: %s' % check_node.extra['metadata'])
+
     # == Create Multiple nodes at once ==
     base_name = '%s-multiple-nodes' % DEMO_BASE_NAME
     number = MAX_NODES - 2
@@ -253,7 +305,8 @@ def main():
         print('Creating Multiple Nodes (%s):' % number)
         multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
                                                    number,
-                                                   ex_tags=['libcloud'])
+                                                   ex_tags=['libcloud'],
+                                                   ex_disk_auto_delete=True)
         for node in multi_nodes:
             print('   Node %s created.' % node.name)
 
@@ -288,9 +341,6 @@ def main():
     addresses = gce.ex_list_addresses()
     display('Addresses', addresses)
 
-    volumes = gce.list_volumes()
-    display('Volumes', volumes)
-
     firewalls = gce.ex_list_firewalls()
     display('Firewalls', firewalls)
 
@@ -303,7 +353,9 @@ def main():
     if CLEANUP:
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
         clean_up(gce, DEMO_BASE_NAME, nodes,
-                 addresses + volumes + firewalls + networks + snapshots)
+                 addresses + firewalls + networks + snapshots)
+        volumes = gce.list_volumes()
+        clean_up(gce, DEMO_BASE_NAME, None, volumes)
 
 if __name__ == '__main__':
     main()

@@ -65,6 +65,7 @@ __all__ = [
     'EC2NodeLocation',
     'EC2ReservedNode',
     'EC2SecurityGroup',
+    'EC2PlacementGroup',
     'EC2Network',
     'EC2NetworkSubnet',
     'EC2NetworkInterface',
@@ -219,35 +220,35 @@ INSTANCE_TYPES = {
         'id': 'c3.large',
         'name': 'Compute Optimized Large Instance',
         'ram': 3750,
-        'disk': 16,
+        'disk': 32,  # x2
         'bandwidth': None
     },
     'c3.xlarge': {
         'id': 'c3.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7000,
-        'disk': 40,
+        'ram': 7500,
+        'disk': 80,  # x2
         'bandwidth': None
     },
     'c3.2xlarge': {
         'id': 'c3.2xlarge',
         'name': 'Compute Optimized Double Extra Large Instance',
         'ram': 15000,
-        'disk': 80,
+        'disk': 160,  # x2
         'bandwidth': None
     },
     'c3.4xlarge': {
         'id': 'c3.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
         'ram': 30000,
-        'disk': 160,
+        'disk': 320,  # x2
         'bandwidth': None
     },
     'c3.8xlarge': {
         'id': 'c3.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
         'ram': 60000,
-        'disk': 320,
+        'disk': 640,  # x2
         'bandwidth': None
     },
     'cr1.8xlarge': {
@@ -1730,6 +1731,22 @@ class EC2SecurityGroup(object):
                 % (self.id, self.name))
 
 
+class EC2PlacementGroup(object):
+    """
+    Represents information about a Placement Grous
+
+    Note: This class is EC2 specific.
+    """
+    def __init__(self, name, state, strategy='cluster', extra=None):
+        self.name = name
+        self.strategy = strategy
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<EC2PlacementGroup: name=%s, state=%s>' % (self.name,
+                                                           self.strategy)
+
+
 class EC2Network(object):
     """
     Represents information about a VPC (Virtual Private Cloud) network
@@ -2166,6 +2183,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :keyword    ex_subnet: The subnet to launch the instance into.
         :type       ex_subnet: :class:`.EC2Subnet`
+
+        :keyword    ex_placement_group: The name of the placement group to
+                                        launch the instance into.
+        :type       ex_placement_group: ``str``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -2253,6 +2274,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_subnet' in kwargs:
             params['SubnetId'] = kwargs['ex_subnet'].id
+
+        if 'ex_placement_group' in kwargs and kwargs['ex_placement_group']:
+            params['Placement.GroupName'] = kwargs['ex_placement_group']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
@@ -2590,6 +2614,53 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
+
+    def ex_create_placement_group(self, name):
+        """
+        Creates new Placement Group
+
+        :param name: Name for new placement Group
+        :type name: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'CreatePlacementGroup',
+                  'Strategy': 'cluster',
+                  'GroupName': name}
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_delete_placement_group(self, name):
+        """
+        Deletes Placement Group
+
+        :param name: Placement Group name
+        :type name: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeletePlacementGroup',
+                  'GroupName': name}
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_list_placement_groups(self, names=None):
+        """
+        List Placement Groups
+
+        :param names: Placement Group names
+        :type names: ``list`` of ``str``
+
+        :rtype: ``list`` of :class:`.EC2PlacementGroup`
+        """
+        names = names or []
+        params = {'Action': 'DescribePlacementGroups'}
+
+        for index, name in enumerate(names):
+            params['GroupName.%s' % index + 1] = name
+
+        response = self.connection.request(self.path, params=params).object
+        return self._to_placement_groups(response)
 
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
@@ -4831,6 +4902,24 @@ class BaseEC2NodeDriver(NodeDriver):
             return None
 
         return ElasticIP(public_ip, domain, instance_id, extra=extra)
+
+    def _to_placement_groups(self, response):
+        return [self._to_placement_group(el)
+                for el in response.findall(
+                    fixxpath(xpath='placementGroupSet/item',
+                             namespace=NAMESPACE))]
+
+    def _to_placement_group(self, element):
+        name = findtext(element=element,
+                        xpath='groupName',
+                        namespace=NAMESPACE)
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+        strategy = findtext(element=element,
+                            xpath='strategy',
+                            namespace=NAMESPACE)
+        return EC2PlacementGroup(name, state, strategy)
 
     def _to_subnets(self, response):
         return [self._to_subnet(el) for el in response.findall(

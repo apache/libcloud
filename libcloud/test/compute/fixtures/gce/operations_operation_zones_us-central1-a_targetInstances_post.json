@@ -1,0 +1,14 @@
+{
+ "kind": "compute#operation",
+ "id": "17976948162128740230",
+ "name": "operation-zones_us-central1-a_targetInstances_post",
+ "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/targetInstances/lctargetinstance",
+ "status": "DONE",
+ "user": "erjohnso@google.com",
+ "progress": 100,
+ "insertTime": "2014-11-14T13:21:20.789-08:00",
+ "startTime": "2014-11-14T13:21:21.118-08:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_targetInstances_post"
+}

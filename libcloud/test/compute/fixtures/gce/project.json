@@ -1,59 +1,98 @@
 {
-  "commonInstanceMetadata": {
-    "items": [
-      {
-        "key": "sshKeys",
-        "value": "ASDFASDF"
-      }
-    ],
-    "kind": "compute#metadata"
+ "kind": "compute#project",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name",
+ "id": "8116069320260064853",
+ "creationTimestamp": "2014-01-21T10:30:53.390-08:00",
+ "name": "project_name",
+ "description": "",
+ "commonInstanceMetadata": {
+  "kind": "compute#metadata",
+  "fingerprint": "3zEcGBxH6Vs=",
+  "items": [
+   {
+    "key": "sshKeys",
+    "value": "ABCDEF"
+   },
+   {
+    "key": "startup-script",
+    "value": "#!/bin/bash\n\nAUTO_SCRIPT=$(curl -s http://metadata/computeMetadata/v1/instance/attributes/my-auto-script -H \"Metadata-Flavor: Google\")\nCHECK=${AUTO_SCRIPT:-disabled}\n\nif [ \"${CHECK}\" = \"enabled\" -a -f /etc/debian_version ]; then\n    export DEBIAN_FRONTEND=noninteractive\n    apt-get -q -y update\n    apt-get -q -y install git vim tmux\n    fi\nexit 0\n"
+   }
+  ]
+ },
+ "quotas": [
+  {
+   "metric": "SNAPSHOTS",
+   "limit": 1000,
+   "usage": 1
   },
-  "creationTimestamp": "2013-02-05T16:19:20.516-08:00",
-  "description": "",
-  "id": "2193465259114366848",
-  "kind": "compute#project",
-  "name": "project_name",
-  "quotas": [
-    {
-      "limit": 1000.0,
-      "metric": "SNAPSHOTS",
-      "usage": 0.0
-    },
-    {
-      "limit": 5.0,
-      "metric": "NETWORKS",
-      "usage": 3.0
-    },
-    {
-      "limit": 100.0,
-      "metric": "FIREWALLS",
-      "usage": 5.0
-    },
-    {
-      "limit": 100.0,
-      "metric": "IMAGES",
-      "usage": 0.0
-    },
-    {
-      "limit": 100.0,
-      "metric": "ROUTES",
-      "usage": 6.0
-    },
-    {
-      "limit": 50.0,
-      "metric": "FORWARDING_RULES",
-      "usage": 0.0
-    },
-    {
-      "limit": 50.0,
-      "metric": "TARGET_POOLS",
-      "usage": 1.0
-    },
-    {
-      "limit": 50.0,
-      "metric": "HEALTH_CHECKS",
-      "usage": 1.0
-    }
-  ],
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name"
+  {
+   "metric": "NETWORKS",
+   "limit": 5,
+   "usage": 3
+  },
+  {
+   "metric": "FIREWALLS",
+   "limit": 100,
+   "usage": 6
+  },
+  {
+   "metric": "IMAGES",
+   "limit": 100,
+   "usage": 1
+  },
+  {
+   "metric": "STATIC_ADDRESSES",
+   "limit": 7,
+   "usage": 1
+  },
+  {
+   "metric": "ROUTES",
+   "limit": 100,
+   "usage": 2
+  },
+  {
+   "metric": "FORWARDING_RULES",
+   "limit": 50,
+   "usage": 0
+  },
+  {
+   "metric": "TARGET_POOLS",
+   "limit": 50,
+   "usage": 0
+  },
+  {
+   "metric": "HEALTH_CHECKS",
+   "limit": 50,
+   "usage": 1
+  },
+  {
+   "metric": "IN_USE_ADDRESSES",
+   "limit": 23,
+   "usage": 0
+  },
+  {
+   "metric": "TARGET_INSTANCES",
+   "limit": 50,
+   "usage": 3
+  },
+  {
+   "metric": "TARGET_HTTP_PROXIES",
+   "limit": 50,
+   "usage": 0
+  },
+  {
+   "metric": "URL_MAPS",
+   "limit": 50,
+   "usage": 1
+  },
+  {
+   "metric": "BACKEND_SERVICES",
+   "limit": 50,
+   "usage": 1
+  }
+ ],
+ "usageExportLocation": {
+  "bucketName": "gs://graphite-usage-reports",
+  "reportNamePrefix": "graphite-report"
+ }
 }

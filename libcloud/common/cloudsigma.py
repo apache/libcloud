@@ -41,17 +41,26 @@ API_ENDPOINTS_2_0 = {
         'country': 'Switzerland',
         'host': 'zrh.cloudsigma.com'
     },
-    'lvs': {
-        'name': 'Las Vegas',
+    'sjc': {
+        'name': 'San Jose, CA',
         'country': 'United States',
-        'host': 'lvs.cloudsigma.com'
+        'host': 'sjc.cloudsigma.com'
+    },
+    'mia': {
+        'name': 'Miami, FL',
+        'country': 'United States',
+        'host': 'mia.cloudsigma.com'
     },
     'wdc': {
-        'name': 'Washington DC',
+        'name': 'Washington, DC',
         'country': 'United States',
         'host': 'wdc.cloudsigma.com'
+    },
+    'hnl': {
+        'name': 'Honolulu, HI',
+        'country': 'United States',
+        'host': 'hnl.cloudsigma.com'
     }
-
 }
 
 DEFAULT_REGION = 'zrh'
