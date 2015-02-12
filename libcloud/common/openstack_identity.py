@@ -1052,6 +1052,21 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
         return self
 
+    def authenticated_request(self, action, params=None, data=None,
+                              headers=None, method='GET', raw=False):
+        """
+        Perform an authenticated request against the identity API.
+        """
+        self.authenticate()
+        if not self.auth_token:
+            raise ValueError('Not to be authenticated to perform this request')
+
+        headers = headers or {}
+        headers['X-Auth-Token'] = self.auth_token
+
+        return self.request(action=action, params=params, data=data,
+                            headers=headers, method=method, raw=raw)
+
     def list_domains(self):
         """
         List the available domains.
