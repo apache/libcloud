@@ -828,7 +828,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_snapshots(self):
         snaps = self.driver.list_snapshots()
 
-        self.assertEqual(len(snaps), 2)
+        self.assertEqual(len(snaps), 3)
 
         self.assertEqual('snap-428abd35', snaps[0].id)
         self.assertEqual('vol-e020df80', snaps[0].extra['volume_id'])
@@ -840,6 +840,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(15, snaps[1].size)
         self.assertEqual('Weekly backup', snaps[1].extra['description'])
         self.assertEqual('DB Backup 1', snaps[1].extra['name'])
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+        assert volume.id == 'vol-10ae5e2b'
+
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 1)
+        self.assertEqual(snapshots[0].id, 'snap-18349160')
 
     def test_destroy_snapshot(self):
         snap = VolumeSnapshot(id='snap-428abd35', size=10, driver=self.driver)

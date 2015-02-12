@@ -2407,8 +2407,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return snapshot
 
-    def list_volume_snapshots(self, snapshot):
-        return self.list_snapshots(snapshot)
+    def list_volume_snapshots(self, volume):
+        return [snapshot for snapshot in self.list_snapshots(owner='self')
+                if snapshot.extra["volume_id"] == volume.id]
 
     def list_snapshots(self, snapshot=None, owner=None):
         """
