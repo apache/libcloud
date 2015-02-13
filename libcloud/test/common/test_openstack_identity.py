@@ -254,7 +254,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                               key='test',
                                                               tenant_name='test')
         self.auth_instance.auth_token = 'mock'
-        self.auth_instance.auth_token_expires = datetime.datetime.today() + datetime.timedelta(1) 
+        self.auth_instance.auth_token_expires = datetime.datetime.today() + datetime.timedelta(1)
 
     def test_token_scope_argument(self):
         # Invalid token_scope value
