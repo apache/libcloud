@@ -66,6 +66,10 @@ Compute
   (LIBCLOUD-671, GITHUB-468)
   [Mateusz Korszun]
 
+- Allow Filtering in EC2 list_images() driver
+  (GITHUB-456, LIBCLOUD-667)
+  [Katriel Traum]
+
 DNS
 ~~~
 
