@@ -886,6 +886,85 @@ class CloudStackProject(object):
                    self.driver.name))
 
 
+class CloudStackAffinityGroup(object):
+    """
+    Class representing a CloudStack AffinityGroup.
+    """
+
+    def __init__(self, id, account, description, domain, domainid, name,
+                 group_type, virtualmachine_ids):
+        """
+        A CloudStack Affinity Group.
+
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
+
+        :param      id: CloudStack Affinity Group ID
+        :type       id: ``str``
+
+        :param      account: An account for the affinity group. Must be used
+                             with domainId.
+        :type       account: ``str``
+
+        :param      description: optional description of the affinity group
+        :type       description: ``str``
+
+        :param      domain: the domain name of the affinity group
+        :type       domain: ``str``
+
+        :param      domainid: domain ID of the account owning the affinity
+                              group
+        :type       domainid: ``str``
+
+        :param      name: name of the affinity group
+        :type       name: ``str``
+
+        :param      group_type: the type of the affinity group
+        :type       group_type: :class:`CloudStackAffinityGroupType`
+
+        :param      virtualmachine_ids: virtual machine Ids associated with
+                                        this affinity group
+        :type       virtualmachine_ids: ``str``
+
+        :rtype:     :class:`CloudStackAffinityGroup`
+        """
+        self.id = id
+        self.account = account
+        self.description = description
+        self.domain = domain
+        self.domainid = domainid
+        self.name = name
+        self.type = group_type
+        self.virtualmachine_ids = virtualmachine_ids
+
+    def __repr__(self):
+        return (('<CloudStackAffinityGroup: id=%s, name=%s, type=%s>')
+                % (self.id, self.name, self.type))
+
+
+class CloudStackAffinityGroupType(object):
+    """
+    Class representing a CloudStack AffinityGroupType.
+    """
+
+    def __init__(self, type_name):
+        """
+        A CloudStack Affinity Group Type.
+
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
+
+        :param      type_name: the type of the affinity group
+        :type       type_name: ``str``
+
+        :rtype: :class:`CloudStackAffinityGroupType`
+        """
+        self.type = type_name
+
+    def __repr__(self):
+        return (('<CloudStackAffinityGroupType: type=%s>') % self.type)
+
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """
     Driver for the CloudStack API.
@@ -1136,6 +1215,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :keyword    ex_rootdisksize: String with rootdisksize for the template
         :type       ex_rootdisksize: ``str``
 
+        :keyword    ex_affinity_groups: List of affinity groups to assign to
+                                        the node
+        :type       ex_affinity_groups: ``list`` of
+                                        :class:`.CloudStackAffinityGroup`
+
         :rtype:     :class:`.CloudStackNode`
         """
 
@@ -1165,6 +1249,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         ex_ip_address = kwargs.get('ex_ip_address', None)
         ex_start_vm = kwargs.get('ex_start_vm', None)
         ex_rootdisksize = kwargs.get('ex_rootdisksize', None)
+        ex_affinity_groups = kwargs.get('ex_affinity_groups', None)
 
         if name:
             server_params['name'] = name
@@ -1213,6 +1298,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         if ex_start_vm is not None:
             server_params['startvm'] = ex_start_vm
+
+        if ex_affinity_groups:
+            affinity_group_ids = ','.join(ag.id for ag in ex_affinity_groups)
+            server_params['affinitygroupids'] = affinity_group_ids
 
         return server_params
 
@@ -2910,6 +2999,111 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
         return True
 
+    def ex_create_affinity_group(self, name, group_type):
+        """
+        Creates a new Affinity Group
+
+        :param name: Name of the affinity group
+        :type  name: ``str``
+
+        :param group_type: Type of the affinity group from the available
+                           affinity/anti-affinity group types
+        :type  group_type: :class:`CloudStackAffinityGroupType`
+
+        :param description: Optional description of the affinity group
+        :type  description: ``str``
+
+        :param domainid: domain ID of the account owning the affinity group
+        :type  domainid: ``str``
+
+        :rtype: :class:`CloudStackAffinityGroup`
+        """
+
+        for ag in self.ex_list_affinity_groups():
+            if name == ag.name:
+                raise LibcloudError('This Affinity Group name already exists')
+
+        params = {'name': name, 'type': group_type.type}
+
+        result = self._async_request(command='createAffinityGroup',
+                                     params=params,
+                                     method='GET')
+
+        return self._to_affinity_group(result['affinitygroup'])
+
+    def ex_delete_affinity_group(self, affinity_group):
+        """
+        Delete an Affinity Group
+
+        :param affinity_group: Instance of affinity group
+        :type  affinity_group: :class:`CloudStackAffinityGroup`
+
+        :rtype ``bool``
+        """
+        return self._async_request(command='deleteAffinityGroup',
+                                   params={'id': affinity_group.id},
+                                   method='GET')['success']
+
+    def ex_update_node_affinity_group(self, node, affinity_group_list):
+        """
+        Updates the affinity/anti-affinity group associations of a virtual
+        machine. The VM has to be stopped and restarted for the new properties
+        to take effect.
+
+        :param node: Node to update.
+        :type node: :class:`CloudStackNode`
+
+        :param affinity_group_list: List of CloudStackAffinityGroup to
+                                    associate
+        :type affinity_group_list: ``list`` of :class:`CloudStackAffinityGroup`
+
+        :rtype :class:`CloudStackNode`
+        """
+        affinity_groups = ','.join(ag.id for ag in affinity_group_list)
+
+        result = self._async_request(command='updateVMAffinityGroup',
+                                     params={
+                                         'id': node.id,
+                                         'affinitygroupids': affinity_groups},
+                                     method='GET')
+        return self._to_node(data=result['virtualmachine'])
+
+    def ex_list_affinity_groups(self):
+        """
+        List Affinity Groups
+
+        :rtype ``list`` of :class:`CloudStackAffinityGroup`
+        """
+        result = self._sync_request(command='listAffinityGroups', method='GET')
+
+        if not result.get('count'):
+            return []
+
+        affinity_groups = []
+        for ag in result['affinitygroup']:
+            affinity_groups.append(self._to_affinity_group(ag))
+
+        return affinity_groups
+
+    def ex_list_affinity_group_types(self):
+        """
+        List Affinity Group Types
+
+        :rtype ``list`` of :class:`CloudStackAffinityGroupTypes`
+        """
+        result = self._sync_request(command='listAffinityGroupTypes',
+                                    method='GET')
+
+        if not result.get('count'):
+            return []
+
+        affinity_group_types = []
+        for agt in result['affinityGroupType']:
+            affinity_group_types.append(
+                CloudStackAffinityGroupType(agt['type']))
+
+        return affinity_group_types
+
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """
         Registers an existing ISO by URL.
@@ -3276,6 +3470,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if security_groups:
             security_groups = [sg['name'] for sg in security_groups]
 
+        affinity_groups = data.get('affinitygroup', [])
+
+        if affinity_groups:
+            affinity_groups = [ag['id'] for ag in affinity_groups]
+
         created = data.get('created', False)
 
         extra = self._get_extra_dict(data,
@@ -3283,6 +3482,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         # Add additional parameters to extra
         extra['security_group'] = security_groups
+        extra['affinity_group'] = affinity_groups
         extra['ip_addresses'] = []
         extra['ip_forwarding_rules'] = []
         extra['port_forwarding_rules'] = []
@@ -3307,6 +3507,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                            private_key=data.get('privatekey', None),
                            driver=self)
         return key_pair
+
+    def _to_affinity_group(self, data):
+        affinity_group = CloudStackAffinityGroup(
+            id=data['id'],
+            name=data['name'],
+            group_type=CloudStackAffinityGroupType(data['type']),
+            account=data.get('account', ''),
+            domain=data.get('domain', ''),
+            domainid=data.get('domainid', ''),
+            description=data.get('description', ''),
+            virtualmachine_ids=data.get('virtualmachineIds', ''))
+
+        return affinity_group
 
     def _get_resource_tags(self, tag_set):
         """
