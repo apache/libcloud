@@ -42,6 +42,10 @@ Compute
   (GITHUB-465)
   [Avi Nanhkoesingh]
 
+- Add affinity group support to CloudStack driver
+  (LIBCLOUD-671, GITHUB-468)
+  [Mateusz Korszun]
+
 DNS
 ~~~
 
