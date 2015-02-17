@@ -1,0 +1,58 @@
+{
+    "server": {
+        "status": "BUILD",
+        "updated": "2014-09-19T14:19:37Z",
+        "hostId": "",
+        "addresses": {},
+        "links": [
+            {
+                "href": "http://127.0.0.1/v2/68/servers/62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+                "rel": "self"
+            }, {
+                "href": "http://127.0.0.1/68/servers/62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+                "rel": "bookmark"
+            }
+        ],
+        "key_name": "devstack",
+        "image": {
+            "id": "fcf5582a-ad13-4d98-90a6-742116f1793c",
+            "links": [
+                {
+                    "href": "http://127.0.0.1/68/images/fcf5582a-ad13-4d98-90a6-742116f1793c",
+                    "rel": "bookmark"
+                }
+            ]
+        },
+        "OS-EXT-STS:task_state": "scheduling",
+        "OS-EXT-STS:vm_state": "building",
+        "OS-SRV-USG:launched_at": null,
+        "flavor": {
+            "id": "1",
+            "links": [
+                {
+                    "href": "http://127.0.0.1/68/flavors/1",
+                    "rel": "bookmark"
+                }
+            ]
+        },
+        "id": "62885ac4-6914-4a51-acd8-d5adf75c8dbe",
+        "OS-SRV-USG:terminated_at": null,
+        "OS-EXT-AZ:availability_zone": "nova",
+        "user_id": "reach6",
+        "name": "racktest",
+        "created": "2014-09-19T14:19:36Z",
+        "tenant_id": "68",
+        "OS-DCF:diskConfig": "MANUAL",
+        "os-extended-volumes:volumes_attached": [
+            {
+                "id": "c820530f-a8b1-47fe-befd-73c8484f0e25"
+            }
+        ],
+        "accessIPv4": "",
+        "accessIPv6": "",
+        "progress": 0,
+        "OS-EXT-STS:power_state": 0,
+        "config_drive": "",
+        "metadata": {}
+    }
+}

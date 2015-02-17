@@ -1184,11 +1184,19 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
+
+        :keyword    ex_blockdevicemappings: Block device mappings
+        :type       ex_blockdevicemappings: ``dict``
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
 
-        resp = self.connection.request("/servers",
+        if 'ex_blockdevicemappings' in kwargs:
+            resource_url = "/os-volumes_boot"
+        else:
+            resource_url = "/servers"
+
+        resp = self.connection.request(resource_url,
                                        method='POST',
                                        data={'server': server_params})
 
@@ -1284,6 +1292,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             for security_group in kwargs['ex_security_groups']:
                 name = security_group.name
                 server_params['security_groups'].append({'name': name})
+
+        if 'ex_blockdevicemappings' in kwargs:
+            server_params['block_device_mapping'] = \
+                kwargs['ex_blockdevicemappings']
 
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
