@@ -25,6 +25,10 @@ Compute
   (LIBCLOUD-664, GITHUB-451)
   [Allard Hoeve]
 
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver..
+  (LIBCLOUD-668, GITHUB-462)
+  [Allard Hoeve]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
