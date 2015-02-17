@@ -1,6 +1,25 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+Compute
+~~~~~~~
+
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
+- Allow user to pass ``ex_blockdevicemappings`` argument to the create_node
+  method in the OpenStack driver.
+  (GITHUB-398, LIBCLOUD-637)
+  [Allard Hoeve]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
@@ -15,14 +34,6 @@ General
 
 Compute
 ~~~~~~~
-
-- Improve GCE create_node, make sure ex_get_disktype function
-  (GITHUB-448)
-  [Markos Gogoulos]
-
-- GCE driver fix to handle unknown image projects
-  (GITHUB-447)
-  [Markos Gogoulos]
 
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)
