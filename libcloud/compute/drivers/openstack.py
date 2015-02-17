@@ -1994,6 +1994,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         image = api_node.get('image', None)
         image_id = image.get('id', None) if image else None
         config_drive = api_node.get("config_drive", False)
+        volumes_attached = api_node.get('os-extended-volumes:volumes_attached')
 
         return Node(
             id=api_node['id'],
@@ -2020,8 +2021,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
                 config_drive=config_drive,
-                availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
-                                               None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone'),
+                volumes_attached=volumes_attached,
             ),
         )
 
