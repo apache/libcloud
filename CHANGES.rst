@@ -38,6 +38,14 @@ Compute
   (LIBCLOUD-663, GITHUB-450)
   [Allard Hoeve]
 
+DNS
+~~~
+
+- Fix a bug when a ZoneDoesntExist exception was thrown when listing records
+  for a zone which has no records in the HostVirtual driver.
+  (GITHUB-460)
+  [Vanč Levstik]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
