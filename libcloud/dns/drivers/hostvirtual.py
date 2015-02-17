@@ -105,7 +105,8 @@ class HostVirtualDNSDriver(DNSDriver):
     def _to_record(self, item, zone=None):
         extra = {'ttl': item['ttl']}
         type = self._string_to_record_type(item['type'])
-        record = Record(id=item['id'], name=item['name'],
+        name = item['name'][:-len(zone.domain) - 1]
+        record = Record(id=item['id'], name=name,
                         type=type, data=item['content'],
                         zone=zone, driver=self, extra=extra)
         return record
