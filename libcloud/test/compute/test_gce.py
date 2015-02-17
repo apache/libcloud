@@ -268,7 +268,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_get_license(self):
         license = self.driver.ex_get_license('suse-cloud', 'sles-12')
-        self.assertTrue(license.name, 'sles-12')
+        self.assertEqual(license.name, 'sles-12')
         self.assertTrue(license.charges_use_fee)
 
     def test_list_disktypes(self):
@@ -478,9 +478,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(node_data['disks'][0]['boot'])
         self.assertIsInstance(node_data['serviceAccounts'], list)
         self.assertIsInstance(node_data['serviceAccounts'][0], dict)
-        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertEqual(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
-        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 1)
+        self.assertEqual(len(node_data['serviceAccounts'][0]['scopes']), 1)
 
     def test_create_node_disk_opts(self):
         node_name = 'node-name'
@@ -545,9 +545,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                                                ex_service_accounts=ex_sa)
         self.assertIsInstance(node_data['serviceAccounts'], list)
         self.assertIsInstance(node_data['serviceAccounts'][0], dict)
-        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertEqual(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
-        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 3)
+        self.assertEqual(len(node_data['serviceAccounts'][0]['scopes']), 3)
         self.assertTrue('https://www.googleapis.com/auth/devstorage.read_only'
                         in node_data['serviceAccounts'][0]['scopes'])
         self.assertTrue('https://www.googleapis.com/auth/compute.readonly'
@@ -600,8 +600,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         vals = [x['value'] for x in out_md['items']]
         keys.sort()
         vals.sort()
-        self.assertTrue(keys, ['k0', 'k1', 'k2'])
-        self.assertTrue(vals, ['v0', 'v1', 'v2'])
+        self.assertEqual(keys, ['k0', 'k1', 'k2'])
+        self.assertEqual(vals, ['v0', 'v1', 'v2'])
 
         in_md = {'items': [{'key': 'k0', 'value': 'v0'},
                            {'key': 'k1', 'value': 'v1'}]}
@@ -852,8 +852,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_destroy_address_global(self):
         address = self.driver.ex_get_address('lcaddressglobal', 'global')
-        self.assertTrue(address.name, 'lcaddressglobal')
-        self.assertTrue(address.region, 'global')
+        self.assertEqual(address.name, 'lcaddressglobal')
+        self.assertEqual(address.region, 'global')
         destroyed = address.destroy()
         self.assertTrue(destroyed)
 
@@ -892,9 +892,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                      obsolete=obs_ts,
                                      deleted=del_ts)
         self.assertTrue(deprecated)
-        self.assertTrue(image.extra['deprecated']['deprecated'], dep_ts)
-        self.assertTrue(image.extra['deprecated']['obsolete'], obs_ts)
-        self.assertTrue(image.extra['deprecated']['deleted'], del_ts)
+        self.assertEqual(image.extra['deprecated']['deprecated'], dep_ts)
+        self.assertEqual(image.extra['deprecated']['obsolete'], obs_ts)
+        self.assertEqual(image.extra['deprecated']['deleted'], del_ts)
 
     def test_ex_destroy_firewall(self):
         firewall = self.driver.ex_get_firewall('lcfirewall')
@@ -1043,7 +1043,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_get_image_license(self):
         image = self.driver.ex_get_image('sles-12-v20141023')
         self.assertTrue('licenses' in image.extra)
-        self.assertTrue(image.extra['licenses'][0].name, 'sles-12')
+        self.assertEqual(image.extra['licenses'][0].name, 'sles-12')
         self.assertTrue(image.extra['licenses'][0].charges_use_fee)
 
     def test_ex_get_image(self):
@@ -1109,7 +1109,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('items' in project.extra['commonInstanceMetadata'])
         self.assertTrue('usageExportLocation' in project.extra)
         self.assertTrue('bucketName' in project.extra['usageExportLocation'])
-        self.assertTrue(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
+        self.assertEqual(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
 
     def test_ex_add_access_config(self):
         self.assertRaises(ValueError, self.driver.ex_add_access_config,
