@@ -40,11 +40,13 @@ class HostVirtualDNSResponse(HostVirtualResponse):
 
         if status == httplib.NOT_FOUND:
             if context['resource'] == 'zone':
-                raise ZoneDoesNotExistError(value='', driver=self,
-                                            zone_id=context['id'])
+                raise ZoneDoesNotExistError(
+                    value=self.parse_body()['error']['message'],
+                    driver=self,zone_id=context['id'])
             elif context['resource'] == 'record':
-                raise RecordDoesNotExistError(value='', driver=self,
-                                              record_id=context['id'])
+                raise RecordDoesNotExistError(
+                    value=self.parse_body()['error']['message'],
+                    driver=self, record_id=context['id'])
 
         super(HostVirtualDNSResponse, self).parse_error()
         return self.body
@@ -115,8 +117,13 @@ class HostVirtualDNSDriver(DNSDriver):
     def list_records(self, zone):
         params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        result = self.connection.request(
-            API_ROOT + '/dns/records/', params=params).object
+        try:
+            result = self.connection.request(
+                API_ROOT + '/dns/records/', params=params).object
+        except ZoneDoesNotExistError as e:
+            if e.value == u'Not Found: No Records Found':
+                return []
+            raise e
         records = self._to_records(items=result, zone=zone)
         return records
 
