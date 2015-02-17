@@ -153,7 +153,7 @@ class HostVirtualDNSDriver(DNSDriver):
         return record
 
     def delete_zone(self, zone):
-        params = {'zone_id': zone.id}
+        params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         result = self.connection.request(
             API_ROOT + '/dns/zone/', params=params, method='DELETE').object
