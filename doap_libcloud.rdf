@@ -186,63 +186,70 @@
       <Version>
         <name>0.13.1</name>
         <created>2013-09-05</created>
-        <revision>0.13.1</revision>
+        <revision>v0.13.1</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.13.2</name>
         <created>2013-09-18</created>
-        <revision>0.13.2</revision>
+        <revision>v0.13.2</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.13.3</name>
         <created>2013-12-31</created>
-        <revision>0.13.3</revision>
+        <revision>v0.13.3</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.14.0-beta3</name>
         <created>2013-11-21</created>
-        <revision>0.14.0-beta3</revision>
+        <revision>v0.14.0-beta3</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.14.0</name>
         <created>2014-01-22</created>
-        <revision>0.14.0</revision>
+        <revision>v0.14.0</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.14.1</name>
         <created>2014-02-08</created>
-        <revision>0.14.1</revision>
+        <revision>v0.14.1</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.15.0</name>
         <created>2014-06-26</created>
-        <revision>0.15.0</revision>
+        <revision>v0.15.0</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.15.1</name>
         <created>2014-07-10</created>
-        <revision>0.15.1</revision>
+        <revision>v0.15.1</revision>
       </Version>
   </release>
   <release>
       <Version>
         <name>0.16.0</name>
         <created>2014-11-12</created>
-        <revision>0.16.0</revision>
+        <revision>v0.16.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.17.0</name>
+        <created>2015-02-18</created>
+        <revision>v0.17.0</revision>
       </Version>
   </release>
     <repository>
