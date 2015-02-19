@@ -1,0 +1,22 @@
+{
+    "listvpncustomergatewaysresponse": {
+        "count": 1,
+        "vpncustomergateway": [
+            {
+                "account": "some_account",
+                "cidrlist": "10.2.2.0/24",
+                "domain": "some_domain",
+                "domainid": "9b397dea-25ef-4c5d-b47d-627eaebe8ed8",
+                "dpd": false,
+                "esplifetime": 3600,
+                "esppolicy": "3des-md5",
+                "gateway": "10.2.2.1",
+                "id": "ea67eaae-1c2a-4e65-b910-441e77f69bea",
+                "ikelifetime": 86400,
+                "ikepolicy": "3des-md5",
+                "ipsecpsk": "some_psk",
+                "name": "some_name"
+            }
+        ]
+    }
+}

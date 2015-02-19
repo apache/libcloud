@@ -38,6 +38,10 @@ Compute
   (LIBCLOUD-663, GITHUB-450)
   [Allard Hoeve]
 
+- Add Site to Site VPN functionality to CloudStack driver.
+  (GITHUB-465)
+  [Avi Nanhkoesingh]
+
 DNS
 ~~~
 
