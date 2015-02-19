@@ -174,7 +174,7 @@ class HostVirtualMockHttp(MockHttp):
         body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_server_build(self, method, url, body, headers):
+    def _cloud_server_build_62291(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
