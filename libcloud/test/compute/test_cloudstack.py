@@ -992,6 +992,93 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(os_types[0]['oscategoryid'], 7)
         self.assertEqual(os_types[0]['description'], "Asianux 3(32-bit)")
 
+    def test_ex_list_vpn_gateways(self):
+        vpn_gateways = self.driver.ex_list_vpn_gateways()
+
+        self.assertEqual(len(vpn_gateways), 1)
+
+        self.assertEqual(vpn_gateways[0].id, 'cffa0cab-d1da-42a7-92f6-41379267a29f')
+        self.assertEqual(vpn_gateways[0].account, 'some_account')
+        self.assertEqual(vpn_gateways[0].domain, 'some_domain')
+        self.assertEqual(vpn_gateways[0].domain_id, '9b397dea-25ef-4c5d-b47d-627eaebe8ed8')
+        self.assertEqual(vpn_gateways[0].public_ip, '1.2.3.4')
+        self.assertEqual(vpn_gateways[0].vpc_id, '4d25e181-8850-4d52-8ecb-a6f35bbbabde')
+
+    def test_ex_create_vpn_gateway(self):
+        vpc = self.driver.ex_list_vpcs()[0]
+
+        vpn_gateway = self.driver.ex_create_vpn_gateway(vpc)
+
+        self.assertEqual(vpn_gateway.id, '5ef6794e-cec8-4018-9fef-c4dacbadee14')
+        self.assertEqual(vpn_gateway.account, 'some_account')
+        self.assertEqual(vpn_gateway.domain, 'some_domain')
+        self.assertEqual(vpn_gateway.domain_id, '9b397dea-25ef-4c5d-b47d-627eaebe8ed8')
+        self.assertEqual(vpn_gateway.public_ip, '2.3.4.5')
+        self.assertEqual(vpn_gateway.vpc_id, vpc.id)
+
+    def test_ex_delete_vpn_gateway(self):
+        vpn_gateway = self.driver.ex_list_vpn_gateways()[0]
+        self.assertTrue(vpn_gateway.delete())
+
+    def test_ex_list_vpn_customer_gateways(self):
+        vpn_customer_gateways = self.driver.ex_list_vpn_customer_gateways()
+
+        self.assertEqual(len(vpn_customer_gateways), 1)
+
+        self.assertEqual(vpn_customer_gateways[0].id, 'ea67eaae-1c2a-4e65-b910-441e77f69bea')
+        self.assertEqual(vpn_customer_gateways[0].cidr_list, '10.2.2.0/24')
+        self.assertEqual(vpn_customer_gateways[0].esp_policy, '3des-md5')
+        self.assertEqual(vpn_customer_gateways[0].gateway, '10.2.2.1')
+        self.assertEqual(vpn_customer_gateways[0].ike_policy, '3des-md5')
+        self.assertEqual(vpn_customer_gateways[0].ipsec_psk, 'some_psk')
+
+    def test_ex_create_vpn_customer_gateway(self):
+        vpn_customer_gateway = self.driver.ex_create_vpn_customer_gateway(
+            cidr_list='10.0.0.0/24',
+            esp_policy='3des-md5',
+            gateway='10.0.0.1',
+            ike_policy='3des-md5',
+            ipsec_psk='ipsecpsk')
+
+        self.assertEqual(vpn_customer_gateway.id, 'cef3c766-116a-4e83-9844-7d08ab7d3fd4')
+        self.assertEqual(vpn_customer_gateway.esp_policy, '3des-md5')
+        self.assertEqual(vpn_customer_gateway.gateway, '10.0.0.1')
+        self.assertEqual(vpn_customer_gateway.ike_policy, '3des-md5')
+        self.assertEqual(vpn_customer_gateway.ipsec_psk, 'ipsecpsk')
+
+    def test_ex_ex_delete_vpn_customer_gateway(self):
+        vpn_customer_gateway = self.driver.ex_list_vpn_customer_gateways()[0]
+        self.assertTrue(vpn_customer_gateway.delete())
+
+    def test_ex_list_vpn_connections(self):
+        vpn_connections = self.driver.ex_list_vpn_connections()
+
+        self.assertEqual(len(vpn_connections), 1)
+
+        self.assertEqual(vpn_connections[0].id, '8f482d9a-6cee-453b-9e78-b0e1338ffce9')
+        self.assertEqual(vpn_connections[0].passive, False)
+        self.assertEqual(vpn_connections[0].vpn_customer_gateway_id, 'ea67eaae-1c2a-4e65-b910-441e77f69bea')
+        self.assertEqual(vpn_connections[0].vpn_gateway_id, 'cffa0cab-d1da-42a7-92f6-41379267a29f')
+        self.assertEqual(vpn_connections[0].state, 'Connected')
+
+    def test_ex_create_vpn_connection(self):
+        vpn_customer_gateway = self.driver.ex_list_vpn_customer_gateways()[0]
+        vpn_gateway = self.driver.ex_list_vpn_gateways()[0]
+
+        vpn_connection = self.driver.ex_create_vpn_connection(
+            vpn_customer_gateway,
+            vpn_gateway)
+
+        self.assertEqual(vpn_connection.id, 'f45c3af8-f909-4f16-9d40-ed4409c575f8')
+        self.assertEqual(vpn_connection.passive, False)
+        self.assertEqual(vpn_connection.vpn_customer_gateway_id, 'ea67eaae-1c2a-4e65-b910-441e77f69bea')
+        self.assertEqual(vpn_connection.vpn_gateway_id, 'cffa0cab-d1da-42a7-92f6-41379267a29f')
+        self.assertEqual(vpn_connection.state, 'Connected')
+
+    def test_ex_delete_vpn_connection(self):
+        vpn_connection = self.driver.ex_list_vpn_connections()[0]
+        self.assertTrue(vpn_connection.delete())
+
 
 class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
     def test_driver_instantiation(self):

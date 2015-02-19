@@ -312,6 +312,80 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'key_name': 'secondaryip',
             'transform_func': list
         }
+    },
+    'vpngateway': {
+        'for_display': {
+            'key_name': 'fordisplay',
+            'transform_func': str
+        },
+        'project': {
+            'key_name': 'project',
+            'transform_func': str
+        },
+        'project_id': {
+            'key_name': 'projectid',
+            'transform_func': str
+        },
+        'removed': {
+            'key_name': 'removed',
+            'transform_func': str
+        }
+    },
+    'vpncustomergateway': {
+        'account': {
+            'key_name': 'account',
+            'transform_func': str
+        },
+        'domain': {
+            'key_name': 'domain',
+            'transform_func': str
+        },
+        'domain_id': {
+            'key_name': 'domainid',
+            'transform_func': str
+        },
+        'dpd': {
+            'key_name': 'dpd',
+            'transform_func': bool
+        },
+        'esp_lifetime': {
+            'key_name': 'esplifetime',
+            'transform_func': int
+        },
+        'ike_lifetime': {
+            'key_name': 'ikelifetime',
+            'transform_func': int
+        },
+        'name': {
+            'key_name': 'name',
+            'transform_func': str
+        }
+    },
+    'vpnconnection': {
+        'account': {
+            'key_name': 'account',
+            'transform_func': str
+        },
+        'domain': {
+            'key_name': 'domain',
+            'transform_func': str
+        },
+        'domain_id': {
+            'key_name': 'domainid',
+            'transform_func': str
+        },
+        'for_display': {
+            'key_name': 'fordisplay',
+            'transform_func': str
+        },
+        'project': {
+            'key_name': 'project',
+            'transform_func': str
+        },
+        'project_id': {
+            'key_name': 'projectid',
+            'transform_func': str
+        }
     }
 }
 
@@ -845,6 +919,109 @@ class CloudStackVPCOffering(object):
                  'driver=%s>')
                 % (self.name, self.display_text, self.id,
                    self.driver.name))
+
+
+class CloudStackVpnGateway(object):
+    """
+    Class representing a CloudStack VPN Gateway.
+    """
+    def __init__(self, id, account, domain, domain_id,
+                 public_ip, vpc_id, driver, extra=None):
+        self.id = id
+        self.account = account
+        self.domain = domain
+        self.domain_id = domain_id
+        self.public_ip = public_ip
+        self.vpc_id = vpc_id
+        self.driver = driver
+        self.extra = extra or {}
+
+    @property
+    def vpc(self):
+        for vpc in self.ex_list_vpcs():
+            if self.vpc_id == vpc.id:
+                break
+        else:
+            raise LibcloudError('VPC with id=%s not found' % self.vpc_id)
+
+    def delete(self):
+        return self.driver.ex_delete_vpn_gateway(vpn_gateway=self)
+
+    def __repr__(self):
+        return (('<CloudStackVpnGateway: account=%s, domain=%s, '
+                 'domain_id=%s, id=%s, public_ip=%s, vpc_id=%s, '
+                 'driver=%s>')
+                % (self.account, self.domain, self.domain_id,
+                   self.id, self.public_ip, self.vpc_id, self.driver.name))
+
+
+class CloudStackVpnCustomerGateway(object):
+    """
+    Class representing a CloudStack VPN Customer Gateway.
+    """
+    def __init__(self, id, cidr_list, esp_policy, gateway,
+                 ike_policy, ipsec_psk, driver, extra=None):
+        self.id = id
+        self.cidr_list = cidr_list
+        self.esp_policy = esp_policy
+        self.gateway = gateway
+        self.ike_policy = ike_policy
+        self.ipsec_psk = ipsec_psk
+        self.driver = driver
+        self.extra = extra or {}
+
+    def delete(self):
+        return self.driver.ex_delete_vpn_customer_gateway(
+            vpn_customer_gateway=self)
+
+    def __repr__(self):
+        return (('<CloudStackVpnCustomerGateway: id=%s, cidr_list=%s, '
+                 'esp_policy=%s, gateway=%s, ike_policy=%s, ipsec_psk=%s, '
+                 'driver=%s>')
+                % (self.id, self.cidr_list, self.esp_policy, self.gateway,
+                   self.ike_policy, self.ipsec_psk, self.driver.name))
+
+
+class CloudStackVpnConnection(object):
+    """
+    Class representing a CloudStack VPN Connection.
+    """
+    def __init__(self, id, passive, vpn_customer_gateway_id,
+                 vpn_gateway_id, state, driver, extra=None):
+        self.id = id
+        self.passive = passive
+        self.vpn_customer_gateway_id = vpn_customer_gateway_id
+        self.vpn_gateway_id = vpn_gateway_id
+        self.state = state
+        self.driver = driver
+        self.extra = extra or {}
+
+    @property
+    def vpn_customer_gateway(self):
+        try:
+            return self.driver.ex_list_vpn_customer_gateways(
+                id=self.vpn_customer_gateway_id)[0]
+        except IndexError:
+            raise LibcloudError('VPN Customer Gateway with id=%s not found' %
+                                self.vpn_customer_gateway_id)
+
+    @property
+    def vpn_gateway(self):
+        try:
+            return self.driver.ex_list_vpn_gateways(id=self.vpn_gateway_id)[0]
+        except IndexError:
+            raise LibcloudError('VPN Gateway with id=%s not found' %
+                                self.vpn_gateway_id)
+
+    def delete(self):
+        return self.driver.ex_delete_vpn_connection(vpn_connection=self)
+
+    def __repr__(self):
+        return (('<CloudStackVpnConnection: id=%s, passive=%s, '
+                 'vpn_customer_gateway_id=%s, vpn_gateway_id=%s, state=%s, '
+                 'driver=%s>')
+                % (self.id, self.passive, self.vpn_customer_gateway_id,
+                   self.vpn_gateway_id, self.state, self.driver.name))
 
 
 class CloudStackRouter(object):
@@ -3225,6 +3402,537 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                     'virtualmachineid': node.id})
 
         return True
+
+    def ex_list_vpn_gateways(self, account=None, domain_id=None,
+                             for_display=None, id=None, is_recursive=None,
+                             keyword=None, list_all=None, page=None,
+                             page_size=None, project_id=None, vpc_id=None):
+        """
+        List VPN Gateways.
+
+        :param   account: List resources by account (must be
+                          used with the domain_id parameter).
+        :type    account: ``str``
+
+        :param   domain_id: List only resources belonging
+                            to the domain specified.
+        :type    domain_id: ``str``
+
+        :param   for_display: List resources by display flag (only root
+                              admin is eligible to pass this parameter).
+        :type    for_display: ``bool``
+
+        :param   id: ID of the VPN Gateway.
+        :type    id: ``str``
+
+        :param   is_recursive: Defaults to False, but if true, lists all
+                               resources from the parent specified by the
+                               domain ID till leaves.
+        :type    is_recursive: ``bool``
+
+        :param   keyword: List by keyword.
+        :type    keyword: ``str``
+
+        :param   list_all: If set to False, list only resources belonging to
+                           the command's caller; if set to True - list
+                           resources that the caller is authorized to see.
+                           Default value is False.
+        :type    list_all: ``str``
+
+        :param   page: Start from page.
+        :type    page: ``int``
+
+        :param   page_size: Items per page.
+        :type    page_size: ``int``
+
+        :param   project_id: List objects by project.
+        :type    project_id: ``str``
+
+        :param   vpc_id: List objects by VPC.
+        :type    vpc_id: ``str``
+
+        :rtype: ``list`` of :class:`CloudStackVpnGateway`
+        """
+        args = {}
+
+        if account is not None:
+            args['account'] = account
+
+        if domain_id is not None:
+            args['domainid'] = domain_id
+
+        if for_display is not None:
+            args['fordisplay'] = for_display
+
+        if id is not None:
+            args['id'] = id
+
+        if is_recursive is not None:
+            args['isrecursive'] = is_recursive
+
+        if keyword is not None:
+            args['keyword'] = keyword
+
+        if list_all is not None:
+            args['listall'] = list_all
+
+        if page is not None:
+            args['page'] = page
+
+        if page_size is not None:
+            args['pagesize'] = page_size
+
+        if project_id is not None:
+            args['projectid'] = project_id
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        res = self._sync_request(command='listVpnGateways',
+                                 params=args,
+                                 method='GET')
+
+        items = res.get('vpngateway', [])
+        vpn_gateways = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpngateway']
+
+        for item in items:
+            extra = self._get_extra_dict(item, extra_map)
+
+            vpn_gateways.append(CloudStackVpnGateway(
+                id=item['id'],
+                account=item['account'],
+                domain=item['domain'],
+                domain_id=item['domainid'],
+                public_ip=item['publicip'],
+                vpc_id=item['vpcid'],
+                driver=self,
+                extra=extra))
+
+        return vpn_gateways
+
+    def ex_create_vpn_gateway(self, vpc, for_display=None):
+        """
+        Creates a VPN Gateway.
+
+        :param vpc: VPC to create the Gateway for (required).
+        :type  vpc: :class: `CloudStackVPC`
+
+        :param for_display: Display the VPC to the end user or not.
+        :type  for_display: ``bool``
+
+        :rtype: :class: `CloudStackVpnGateway`
+        """
+        args = {
+            'vpcid': vpc.id,
+        }
+
+        if for_display is not None:
+            args['fordisplay'] = for_display
+
+        res = self._async_request(command='createVpnGateway',
+                                  params=args,
+                                  method='GET')
+
+        item = res['vpngateway']
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpngateway']
+
+        return CloudStackVpnGateway(id=item['id'],
+                                    account=item['account'],
+                                    domain=item['domain'],
+                                    domain_id=item['domainid'],
+                                    public_ip=item['publicip'],
+                                    vpc_id=vpc.id,
+                                    driver=self,
+                                    extra=self._get_extra_dict(item,
+                                                               extra_map))
+
+    def ex_delete_vpn_gateway(self, vpn_gateway):
+        """
+        Deletes a VPN Gateway.
+
+        :param vpn_gateway: The VPN Gateway (required).
+        :type  vpn_gateway: :class:`CloudStackVpnGateway`
+
+        :rtype: ``bool``
+        """
+        res = self._async_request(command='deleteVpnGateway',
+                                  params={'id': vpn_gateway.id},
+                                  method='GET')
+
+        return res['success']
+
+    def ex_list_vpn_customer_gateways(self, account=None, domain_id=None,
+                                      id=None, is_recursive=None,
+                                      keyword=None, list_all=None,
+                                      page=None, page_size=None,
+                                      project_id=None):
+        """
+        List VPN Customer Gateways.
+
+        :param   account: List resources by account (must be
+                          used with the domain_id parameter).
+        :type    account: ``str``
+
+        :param   domain_id: List only resources belonging
+                            to the domain specified.
+        :type    domain_id: ``str``
+
+        :param   id: ID of the VPN Customer Gateway.
+        :type    id: ``str``
+
+        :param   is_recursive: Defaults to False, but if true, lists all
+                               resources from the parent specified by the
+                               domain_id till leaves.
+        :type    is_recursive: ``bool``
+
+        :param   keyword: List by keyword.
+        :type    keyword: ``str``
+
+        :param   list_all: If set to False, list only resources belonging to
+                           the command's caller; if set to True - list
+                           resources that the caller is authorized to see.
+                           Default value is False.
+        :type    list_all: ``str``
+
+        :param   page: Start from page.
+        :type    page: ``int``
+
+        :param   page_size: Items per page.
+        :type    page_size: ``int``
+
+        :param   project_id: List objects by project.
+        :type    project_id: ``str``
+
+        :rtype: ``list`` of :class:`CloudStackVpnCustomerGateway`
+        """
+        args = {}
+
+        if account is not None:
+            args['account'] = account
+
+        if domain_id is not None:
+            args['domainid'] = domain_id
+
+        if id is not None:
+            args['id'] = id
+
+        if is_recursive is not None:
+            args['isrecursive'] = is_recursive
+
+        if keyword is not None:
+            args['keyword'] = keyword
+
+        if list_all is not None:
+            args['listall'] = list_all
+
+        if page is not None:
+            args['page'] = page
+
+        if page_size is not None:
+            args['pagesize'] = page_size
+
+        if project_id is not None:
+            args['projectid'] = project_id
+
+        res = self._sync_request(command='listVpnCustomerGateways',
+                                 params=args,
+                                 method='GET')
+
+        items = res.get('vpncustomergateway', [])
+        vpn_customer_gateways = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpncustomergateway']
+
+        for item in items:
+            extra = self._get_extra_dict(item, extra_map)
+
+            vpn_customer_gateways.append(CloudStackVpnCustomerGateway(
+                id=item['id'],
+                cidr_list=item['cidrlist'],
+                esp_policy=item['esppolicy'],
+                gateway=item['gateway'],
+                ike_policy=item['ikepolicy'],
+                ipsec_psk=item['ipsecpsk'],
+                driver=self,
+                extra=extra))
+
+        return vpn_customer_gateways
+
+    def ex_create_vpn_customer_gateway(self, cidr_list, esp_policy, gateway,
+                                       ike_policy, ipsec_psk, account=None,
+                                       domain_id=None, dpd=None,
+                                       esp_lifetime=None, ike_lifetime=None,
+                                       name=None):
+        """
+        Creates a VPN Customer Gateway.
+
+        :param cidr_list: Guest CIDR list of the Customer Gateway (required).
+        :type  cidr_list: ``str``
+
+        :param esp_policy: ESP policy of the Customer Gateway (required).
+        :type  esp_policy: ``str``
+
+        :param gateway: Public IP address of the Customer Gateway (required).
+        :type  gateway: ``str``
+
+        :param ike_policy: IKE policy of the Customer Gateway (required).
+        :type  ike_policy: ``str``
+
+        :param ipsec_psk: IPsec preshared-key of the Customer Gateway
+                          (required).
+        :type  ipsec_psk: ``str``
+
+        :param account: The associated account with the Customer Gateway
+                        (must be used with the domain_id param).
+        :type  account: ``str``
+
+        :param domain_id: The domain ID associated with the Customer Gateway.
+                          If used with the account parameter returns the
+                          gateway associated with the account for the
+                          specified domain.
+        :type  domain_id: ``str``
+
+        :param dpd: If DPD is enabled for the VPN connection.
+        :type  dpd: ``bool``
+
+        :param esp_lifetime: Lifetime of phase 2 VPN connection to the
+                             Customer Gateway, in seconds.
+        :type  esp_lifetime: ``int``
+
+        :param ike_lifetime: Lifetime of phase 1 VPN connection to the
+                             Customer Gateway, in seconds.
+        :type  ike_lifetime: ``int``
+
+        :param name: Name of the Customer Gateway.
+        :type  name: ``str``
+
+        :rtype: :class: `CloudStackVpnCustomerGateway`
+        """
+        args = {
+            'cidrlist': cidr_list,
+            'esppolicy': esp_policy,
+            'gateway': gateway,
+            'ikepolicy': ike_policy,
+            'ipsecpsk': ipsec_psk
+        }
+
+        if account is not None:
+            args['account'] = account
+
+        if domain_id is not None:
+            args['domainid'] = domain_id
+
+        if dpd is not None:
+            args['dpd'] = dpd
+
+        if esp_lifetime is not None:
+            args['esplifetime'] = esp_lifetime
+
+        if ike_lifetime is not None:
+            args['ikelifetime'] = ike_lifetime
+
+        if name is not None:
+            args['name'] = name
+
+        res = self._async_request(command='createVpnCustomerGateway',
+                                  params=args,
+                                  method='GET')
+
+        item = res['vpncustomergateway']
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpncustomergateway']
+
+        return CloudStackVpnCustomerGateway(id=item['id'],
+                                            cidr_list=cidr_list,
+                                            esp_policy=esp_policy,
+                                            gateway=gateway,
+                                            ike_policy=ike_policy,
+                                            ipsec_psk=ipsec_psk,
+                                            driver=self,
+                                            extra=self._get_extra_dict(
+                                                item, extra_map))
+
+    def ex_delete_vpn_customer_gateway(self, vpn_customer_gateway):
+        """
+        Deletes a VPN Customer Gateway.
+
+        :param vpn_customer_gateway: The VPN Customer Gateway (required).
+        :type  vpn_customer_gateway: :class:`CloudStackVpnCustomerGateway`
+
+        :rtype: ``bool``
+        """
+        res = self._async_request(command='deleteVpnCustomerGateway',
+                                  params={'id': vpn_customer_gateway.id},
+                                  method='GET')
+
+        return res['success']
+
+    def ex_list_vpn_connections(self, account=None, domain_id=None,
+                                for_display=None, id=None, is_recursive=None,
+                                keyword=None, list_all=None, page=None,
+                                page_size=None, project_id=None, vpc_id=None):
+        """
+        List VPN Connections.
+
+        :param   account: List resources by account (must be
+                          used with the domain_id parameter).
+        :type    account: ``str``
+
+        :param   domain_id: List only resources belonging
+                            to the domain specified.
+        :type    domain_id: ``str``
+
+        :param   for_display: List resources by display flag (only root
+                              admin is eligible to pass this parameter).
+        :type    for_display: ``bool``
+
+        :param   id: ID of the VPN Connection.
+        :type    id: ``str``
+
+        :param   is_recursive: Defaults to False, but if true, lists all
+                               resources from the parent specified by the
+                               domain_id till leaves.
+        :type    is_recursive: ``bool``
+
+        :param   keyword: List by keyword.
+        :type    keyword: ``str``
+
+        :param   list_all: If set to False, list only resources belonging to
+                           the command's caller; if set to True - list
+                           resources that the caller is authorized to see.
+                           Default value is False.
+        :type    list_all: ``str``
+
+        :param   page: Start from page.
+        :type    page: ``int``
+
+        :param   page_size: Items per page.
+        :type    page_size: ``int``
+
+        :param   project_id: List objects by project.
+        :type    project_id: ``str``
+
+        :param   vpc_id: List objects by VPC.
+        :type    vpc_id: ``str``
+
+        :rtype: ``list`` of :class:`CloudStackVpnConnection`
+        """
+        args = {}
+
+        if account is not None:
+            args['account'] = account
+
+        if domain_id is not None:
+            args['domainid'] = domain_id
+
+        if for_display is not None:
+            args['fordisplay'] = for_display
+
+        if id is not None:
+            args['id'] = id
+
+        if is_recursive is not None:
+            args['isrecursive'] = is_recursive
+
+        if keyword is not None:
+            args['keyword'] = keyword
+
+        if list_all is not None:
+            args['listall'] = list_all
+
+        if page is not None:
+            args['page'] = page
+
+        if page_size is not None:
+            args['pagesize'] = page_size
+
+        if project_id is not None:
+            args['projectid'] = project_id
+
+        if vpc_id is not None:
+            args['vpcid'] = vpc_id
+
+        res = self._sync_request(command='listVpnConnections',
+                                 params=args,
+                                 method='GET')
+
+        items = res.get('vpnconnection', [])
+        vpn_connections = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpnconnection']
+
+        for item in items:
+            extra = self._get_extra_dict(item, extra_map)
+
+            vpn_connections.append(CloudStackVpnConnection(
+                id=item['id'],
+                passive=item['passive'],
+                vpn_customer_gateway_id=item['s2scustomergatewayid'],
+                vpn_gateway_id=item['s2svpngatewayid'],
+                state=item['state'],
+                driver=self,
+                extra=extra))
+
+        return vpn_connections
+
+    def ex_create_vpn_connection(self, vpn_customer_gateway, vpn_gateway,
+                                 for_display=None, passive=None):
+        """
+        Creates a VPN Connection.
+
+        :param   vpn_customer_gateway: The VPN Customer Gateway (required).
+        :type    vpn_customer_gateway: :class:`CloudStackVpnCustomerGateway`
+
+        :param   vpn_gateway: The VPN Gateway (required).
+        :type    vpn_gateway: :class:`CloudStackVpnGateway`
+
+        :param   for_display: Display the Connection to the end user or not.
+        :type    for_display: ``str``
+
+        :param   passive: If True, sets the connection to be passive.
+        :type    passive: ``bool``
+
+        :rtype: :class: `CloudStackVpnConnection`
+        """
+        args = {
+            's2scustomergatewayid': vpn_customer_gateway.id,
+            's2svpngatewayid': vpn_gateway.id,
+        }
+
+        if for_display is not None:
+            args['fordisplay'] = for_display
+
+        if passive is not None:
+            args['passive'] = passive
+
+        res = self._async_request(command='createVpnConnection',
+                                  params=args,
+                                  method='GET')
+
+        item = res['vpnconnection']
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['vpnconnection']
+
+        return CloudStackVpnConnection(
+            id=item['id'],
+            passive=item['passive'],
+            vpn_customer_gateway_id=vpn_customer_gateway.id,
+            vpn_gateway_id=vpn_gateway.id,
+            state=item['state'],
+            driver=self,
+            extra=self._get_extra_dict(item, extra_map))
+
+    def ex_delete_vpn_connection(self, vpn_connection):
+        """
+        Deletes a VPN Connection.
+
+        :param vpn_connection: The VPN Connection (required).
+        :type  vpn_connection: :class:`CloudStackVpnConnection`
+
+        :rtype: ``bool``
+        """
+        res = self._async_request(command='deleteVpnConnection',
+                                  params={'id': vpn_connection.id},
+                                  method='GET')
+
+        return res['success']
 
     def _to_snapshot(self, data):
         """

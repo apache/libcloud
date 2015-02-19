@@ -1,0 +1,35 @@
+{
+   "queryasyncjobresultresponse" : {
+      "cmd" : "org.apache.cloudstack.api.command.user.vpn.CreateVpnConnectionCmd",
+      "jobid" : "createVpnConnection",
+      "userid" : "user_id",
+      "accountid" : "account_id",
+      "jobprocstatus" : 0,
+      "created" : "2015-02-23T08:36:09+0100",
+      "jobstatus" : 1,
+      "jobresult" : {
+         "vpnconnection" : {
+            "esplifetime" : 3600,
+            "cidrlist" : "10.0.0.0/24",
+            "gateway" : "10.0.0.1",
+            "ikelifetime" : 86400,
+            "state" : "Connected",
+            "ikepolicy" : "3des-md5",
+            "domain" : "domain",
+            "dpd" : false,
+            "id" : "f45c3af8-f909-4f16-9d40-ed4409c575f8",
+            "s2svpngatewayid" : "515aefbc-448b-484b-8d6a-ff3b67637bf1",
+            "s2scustomergatewayid" : "201fc1d1-05e1-4e9c-a025-d72e954dd856",
+            "account" : "account",
+            "domainid" : "domain_id",
+            "esppolicy" : "3des-md5",
+            "created" : "2015-02-23T08:36:09+0100",
+            "passive" : false,
+            "ipsecpsk" : "ipsecpsk",
+            "publicip" : "1.2.3.4"
+         }
+      },
+      "jobresultcode" : 0,
+      "jobresulttype" : "object"
+   }
+}
