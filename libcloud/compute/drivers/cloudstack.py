@@ -940,18 +940,6 @@ class CloudStackAffinityGroup(object):
         return (('<CloudStackAffinityGroup: id=%s, name=%s, type=%s>')
                 % (self.id, self.name, self.type))
 
-    @staticmethod
-    def from_dictionary(dictionary):
-        return CloudStackAffinityGroup(
-            id=dictionary['id'],
-            name=dictionary['name'],
-            group_type=CloudStackAffinityGroupType(dictionary['type']),
-            account=dictionary.get('account', ''),
-            domain=dictionary.get('domain', ''),
-            domainid=dictionary.get('domainid', ''),
-            description=dictionary.get('description', ''),
-            virtualmachine_ids=dictionary.get('virtualmachineIds', ''))
-
 
 class CloudStackAffinityGroupType(object):
     """
@@ -3033,7 +3021,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra_args = kwargs.copy()
 
         for ag in self.ex_list_affinity_groups():
-            if name in ag.name and group_type == ag.type:
+            if name in ag.name:
                 raise LibcloudError('This Affinity Group name already exists')
 
         params = {'name': name, 'type': group_type.type}
@@ -3043,7 +3031,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                      params=params,
                                      method='GET')
 
-        return CloudStackAffinityGroup.from_dictionary(result['affinitygroup'])
+        return self._to_affinity_group(result['affinitygroup'])
 
     def ex_delete_affinity_group(self, affinity_group):
         """
@@ -3093,7 +3081,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         affinity_groups = []
         for ag in result['affinitygroup']:
-            affinity_groups.append(CloudStackAffinityGroup.from_dictionary(ag))
+            affinity_groups.append(self._to_affinity_group(ag))
 
         return affinity_groups
 
@@ -3513,6 +3501,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                            private_key=data.get('privatekey', None),
                            driver=self)
         return key_pair
+
+    def _to_affinity_group(self, data):
+        affinity_group = CloudStackAffinityGroup(
+            id=data['id'],
+            name=data['name'],
+            group_type=CloudStackAffinityGroupType(data['type']),
+            account=data.get('account', ''),
+            domain=data.get('domain', ''),
+            domainid=data.get('domainid', ''),
+            description=data.get('description', ''),
+            virtualmachine_ids=data.get('virtualmachineIds', ''))
+
+        return affinity_group
 
     def _get_resource_tags(self, tag_set):
         """

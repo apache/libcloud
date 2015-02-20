@@ -1,1 +1,1 @@
-{ "listaffinitygrouptypesresponse" : {"count": 1, "affinityGroupType": [{"type": "ag_type"}] }}
+{ "listaffinitygrouptypesresponse" : {"count": 1, "affinityGroupType": [{"type": "MyAGType"}] }}
