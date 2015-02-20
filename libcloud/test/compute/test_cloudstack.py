@@ -27,7 +27,7 @@ except ImportError:
 
 from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, \
-    CloudStackAffinityGroup
+    CloudStackAffinityGroup, CloudStackAffinityGroupType
 from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.compute.types import NodeState
@@ -738,9 +738,9 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertTrue(res)
 
     def test_ex_create_affinity_group(self):
-        res = self.driver.ex_create_affinity_group('MyAG', 'MyAGType')
+        res = self.driver.ex_create_affinity_group('MyAG', CloudStackAffinityGroupType('MyAGType'))
         self.assertEqual(res.name, 'MyAG')
-        self.assertEqual(res.type, 'MyAGType')
+        self.assertEqual(res.type, CloudStackAffinityGroupType('MyAGType'))
 
     def test_ex_create_affinity_group_already_exists(self):
         self.assertRaises(LibcloudError,
@@ -758,7 +758,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(len(res), 1)
         self.assertEqual(res[0].id, '11112')
         self.assertEqual(res[0].name, 'ag')
-        self.assertEqual(res[0].type, 'ag_type')
+        self.assertEqual(res[0].type, CloudStackAffinityGroupType('ag_type'))
 
     def test_ex_list_affinity_group_types(self):
         res = self.driver.ex_list_affinity_group_types()

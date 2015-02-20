@@ -891,15 +891,49 @@ class CloudStackAffinityGroup(object):
     Class representing a CloudStack AffinityGroup.
     """
 
-    def __init__(self, id, account, description, domain, domainid, name, type,
-                 virtualmachine_ids):
+    def __init__(self, id, account, description, domain, domainid, name,
+                 group_type, virtualmachine_ids):
+        """
+        A CloudStack Affinity Group.
+
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
+
+        :param      id: CloudStack Affinity Group ID
+        :type       id: ``str``
+
+        :param      account: An account for the affinity group. Must be used
+                             with domainId.
+        :type       account: ``str``
+
+        :param      description: optional description of the affinity group
+        :type       description: ``str``
+
+        :param      domain: the domain name of the affinity group
+        :type       domain: ``str``
+
+        :param      domainid: domainId of the account owning the affinity group
+        :type       domainid: ``str``
+
+        :param      name: name of the affinity group
+        :type       name: ``str``
+
+        :param      group_type: the type of the affinity group
+        :type       group_type: :class:`CloudStackAffinityGroupType`
+
+        :param      virtualmachine_ids: virtual machine Ids associated with
+                                        this affinity group
+        :type       virtualmachine_ids: ``str``
+
+        :rtype:     :class:`CloudStackAffinityGroup`
+        """
         self.id = id
         self.account = account
         self.description = description
         self.domain = domain
         self.domainid = domainid
         self.name = name
-        self.type = type
+        self.type = group_type
         self.virtualmachine_ids = virtualmachine_ids
 
     def __repr__(self):
@@ -911,7 +945,7 @@ class CloudStackAffinityGroup(object):
         return CloudStackAffinityGroup(
             id=dictionary['id'],
             name=dictionary['name'],
-            type=dictionary['type'],
+            group_type=CloudStackAffinityGroupType(dictionary['type']),
             account=dictionary.get('account', ''),
             domain=dictionary.get('domain', ''),
             domainid=dictionary.get('domainid', ''),
@@ -925,6 +959,17 @@ class CloudStackAffinityGroupType(object):
     """
 
     def __init__(self, type_name):
+        """
+        A CloudStack Affinity Group Type.
+
+        @note: This is a non-standard extension API, and only works for
+               CloudStack.
+
+        :param      type_name: the type of the affinity group
+        :type       type_name: ``str``
+
+        :rtype: :class:`CloudStackAffinityGroupType`
+        """
         self.type = type_name
 
     def __repr__(self):
@@ -2991,7 +3036,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             if name in ag.name and group_type == ag.type:
                 raise LibcloudError('This Affinity Group name already exists')
 
-        params = {'name': name, 'type': group_type}
+        params = {'name': name, 'type': group_type.type}
         params.update(extra_args)
 
         result = self._async_request(command='createAffinityGroup',
