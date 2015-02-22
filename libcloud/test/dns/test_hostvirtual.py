@@ -59,6 +59,14 @@ class HostVirtualTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
 
+    def test_list_records_none(self):
+
+        zone = self.driver.list_zones()[0]
+
+        HostVirtualMockHttp.type = 'NO_RECORDS'
+        records = self.driver.list_records(zone=zone)
+        self.assertEqual(len(records), 0)
+
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')
         self.assertEqual(zone.id, '47234')
@@ -244,6 +252,11 @@ class HostVirtualMockHttp(MockHttp):
     def _dns_records_ZONE_DOES_NOT_EXIST(self, method,
                                          url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
+        return (httplib.NOT_FOUND, body,
+                {}, httplib.responses[httplib.NOT_FOUND])
+
+    def _dns_records_NO_RECORDS(self, method, url, body, headers):
+        body = self.fixtures.load('list_records_none.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
