@@ -372,6 +372,8 @@ class Route53DNSDriver(DNSDriver):
 
             rrecs = ET.SubElement(rrs, 'ResourceRecords')
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
+            if 'priority' in extra:
+                data = '{0} {1}'.format(extra['priority'], data)
             ET.SubElement(rrec, 'Value').text = data
 
         uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
