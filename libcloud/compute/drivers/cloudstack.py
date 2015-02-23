@@ -2998,7 +2998,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             method='GET')
         return True
 
-    def ex_create_affinity_group(self, name, group_type, **kwargs):
+    def ex_create_affinity_group(self, name, group_type):
         """
         Creates a new Affinity Group
 
@@ -3018,14 +3018,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: :class:`CloudStackAffinityGroup`
         """
-        extra_args = kwargs.copy()
 
         for ag in self.ex_list_affinity_groups():
             if name in ag.name:
                 raise LibcloudError('This Affinity Group name already exists')
 
         params = {'name': name, 'type': group_type.type}
-        params.update(extra_args)
 
         result = self._async_request(command='createAffinityGroup',
                                      params=params,
