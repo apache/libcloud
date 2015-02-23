@@ -26,7 +26,8 @@ except ImportError:
     import json
 
 from libcloud.common.types import ProviderError
-from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
+from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, \
+    CloudStackAffinityGroupType
 from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.compute.types import NodeState
@@ -735,6 +736,38 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                                               '22',
                                                               '0.0.0.0/0')
         self.assertTrue(res)
+
+    def test_ex_create_affinity_group(self):
+        res = self.driver.ex_create_affinity_group('MyAG2',
+                                                   CloudStackAffinityGroupType('MyAGType'))
+        self.assertEqual(res.name, 'MyAG2')
+        self.assertIsInstance(res.type, CloudStackAffinityGroupType)
+        self.assertEqual(res.type.type, 'MyAGType')
+
+    def test_ex_create_affinity_group_already_exists(self):
+        self.assertRaises(LibcloudError,
+                          self.driver.ex_create_affinity_group,
+                          'MyAG', CloudStackAffinityGroupType('MyAGType'))
+
+    def test_delete_ex_affinity_group(self):
+        afg = self.driver.ex_create_affinity_group('MyAG3',
+                                                   CloudStackAffinityGroupType('MyAGType'))
+        res = self.driver.ex_delete_affinity_group(afg)
+        self.assertTrue(res)
+
+    def test_ex_list_affinity_groups(self):
+        res = self.driver.ex_list_affinity_groups()
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0].id, '11112')
+        self.assertEqual(res[0].name, 'MyAG')
+        self.assertIsInstance(res[0].type, CloudStackAffinityGroupType)
+        self.assertEqual(res[0].type.type, 'MyAGType')
+
+    def test_ex_list_affinity_group_types(self):
+        res = self.driver.ex_list_affinity_group_types()
+        self.assertEqual(len(res), 1)
+        self.assertIsInstance(res[0], CloudStackAffinityGroupType)
+        self.assertEqual(res[0].type, 'MyAGType')
 
     def test_ex_list_public_ips(self):
         ips = self.driver.ex_list_public_ips()
