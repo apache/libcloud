@@ -912,7 +912,7 @@ class CloudStackAffinityGroup(object):
         :param      domain: the domain name of the affinity group
         :type       domain: ``str``
 
-        :param      domainid: domainId of the account owning the affinity group
+        :param      domainid: domain ID of the account owning the affinity group
         :type       domainid: ``str``
 
         :param      name: name of the affinity group
@@ -3012,8 +3012,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param description: Optional description of the affinity group
         :type  description: ``str``
 
-        :param domainid: domainId of the account owning the affinity
-                         group false
+        :param domainid: domain ID of the account owning the affinity group
         :type  domainid: ``str``
 
         :rtype: :class:`CloudStackAffinityGroup`
