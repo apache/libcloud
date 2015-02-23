@@ -3019,7 +3019,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         for ag in self.ex_list_affinity_groups():
-            if name in ag.name:
+            if name == ag.name:
                 raise LibcloudError('This Affinity Group name already exists')
 
         params = {'name': name, 'type': group_type.type}
@@ -3032,7 +3032,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_delete_affinity_group(self, affinity_group):
         """
-        Delete a Affinity Group
+        Delete an Affinity Group
 
         :param affinity_group: Instance of affinity group
         :type  affinity_group: :class:`CloudStackAffinityGroup`
@@ -3073,7 +3073,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         result = self._sync_request(command='listAffinityGroups', method='GET')
 
-        if result.get('count', 0) == 0:
+        if not result.get('count'):
             return []
 
         affinity_groups = []
@@ -3091,7 +3091,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         result = self._sync_request(command='listAffinityGroupTypes',
                                     method='GET')
 
-        if result.get('count', 0) == 0:
+        if not result.get('count'):
             return []
 
         affinity_group_types = []
