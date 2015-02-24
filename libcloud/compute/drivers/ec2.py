@@ -2314,6 +2314,23 @@ class BaseEC2NodeDriver(NodeDriver):
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None):
         """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param snapshot:  Snapshot from which to create the new
+                               volume.  (optional)
+        :type snapshot:  :class:`.VolumeSnapshot`
+
         :param location: Datacenter in which to create a volume in.
         :type location: :class:`.ExEC2AvailabilityZone`
 
@@ -2324,6 +2341,9 @@ class BaseEC2NodeDriver(NodeDriver):
                      that the volume supports. Only used if ex_volume_type
                      is io1.
         :type iops: ``int``
+
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
         """
         valid_volume_types = ['standard', 'io1', 'gp2']
 
@@ -2334,6 +2354,9 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type and ex_volume_type not in valid_volume_types:
             raise ValueError('Invalid volume type specified: %s' %
                              (ex_volume_type))
+
+        if snapshot:
+            params['SnapshotId'] = snapshot.id
 
         if location is not None:
             params['AvailabilityZone'] = location.availability_zone.name
