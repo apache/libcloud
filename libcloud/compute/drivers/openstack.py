@@ -150,23 +150,43 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             self.connection.request('/servers/detail', params=params).object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot:  :class:`.VolumeSnapshot`
+
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        volume = {
+            'display_name': name,
+            'display_description': name,
+            'size': size,
+            'volume_type': None,
+            'metadata': {
+                'contents': name,
+            }
+        }
+
         if snapshot:
-            raise NotImplementedError(
-                "create_volume does not yet support create from snapshot")
+            volume['snapshot_id'] = snapshot.id
+
         resp = self.connection.request('/os-volumes',
                                        method='POST',
-                                       data={
-                                           'volume': {
-                                               'display_name': name,
-                                               'display_description': name,
-                                               'size': size,
-                                               'volume_type': None,
-                                               'metadata': {
-                                                   'contents': name,
-                                               },
-                                               'availability_zone': location,
-                                           }
-                                       })
+                                       data={'volume': volume})
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
