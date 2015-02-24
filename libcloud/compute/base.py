@@ -1012,9 +1012,9 @@ class NodeDriver(BaseDriver):
                                (optional)
         :type location: :class:`.NodeLocation`
 
-        :param snapshot:  Name of snapshot from which to create the new
-                               volume.  (optional)
-        :type snapshot:  ``str``
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot: :class:`.VolumeSnapshot`
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
