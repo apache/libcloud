@@ -65,9 +65,9 @@ class HostVirtualDNSDriver(DNSDriver):
         RecordType.AAAA: 'AAAA',
         RecordType.CNAME: 'CNAME',
         RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT',
         RecordType.NS: 'SPF',
         RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
 
     def __init__(self, key, secure=True, host=None, port=None):

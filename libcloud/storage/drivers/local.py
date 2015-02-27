@@ -90,9 +90,9 @@ class LocalStorageDriver(StorageDriver):
         if not os.path.isdir(self.base_path):
             raise LibcloudError('The base path is not a directory')
 
-        super(StorageDriver, self).__init__(key=key, secret=secret,
-                                            secure=secure, host=host,
-                                            port=port, **kwargs)
+        super(LocalStorageDriver, self).__init__(key=key, secret=secret,
+                                                 secure=secure, host=host,
+                                                 port=port, **kwargs)
 
     def _make_path(self, path, ignore_existing=True):
         """
@@ -253,7 +253,7 @@ class LocalStorageDriver(StorageDriver):
         :param container: Container instance
         :type  container: :class:`Container`
 
-        :param check: Indicates if the path's existance must be checked
+        :param check: Indicates if the path's existence must be checked
         :type check: ``bool``
 
         :return: A CDN URL for this container.
@@ -285,7 +285,7 @@ class LocalStorageDriver(StorageDriver):
 
     def get_object_cdn_url(self, obj):
         """
-        Return a object CDN URL.
+        Return an object CDN URL.
 
         :param obj: Object instance
         :type  obj: :class:`Object`

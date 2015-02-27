@@ -20,20 +20,25 @@ from __future__ import with_statement
 import os
 import sys
 import tempfile
-import unittest
 
 from libcloud import _init_once
+from libcloud.test import LibcloudTestCase
+from libcloud.test import unittest
 from libcloud.compute.ssh import ParamikoSSHClient
 from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
+
+from libcloud.utils.py3 import StringIO
 
 from mock import patch, Mock
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
+else:
+    import paramiko
 
 
-class ParamikoSSHClientTests(unittest.TestCase):
+class ParamikoSSHClientTests(LibcloudTestCase):
 
     @patch('paramiko.SSHClient', Mock)
     def setUp(self):
@@ -68,10 +73,74 @@ class ParamikoSSHClientTests(unittest.TestCase):
         self.assertLogMsg('Connecting to server')
 
     @patch('paramiko.SSHClient', Mock)
-    def test_create_with_key(self):
+    def test_deprecated_key_argument(self):
         conn_params = {'hostname': 'dummy.host.org',
                        'username': 'ubuntu',
                        'key': 'id_rsa'}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+
+        expected_conn = {'username': 'ubuntu',
+                         'allow_agent': False,
+                         'hostname': 'dummy.host.org',
+                         'look_for_keys': False,
+                         'key_filename': 'id_rsa',
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
+
+    def test_key_files_and_key_material_arguments_are_mutual_exclusive(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': 'id_rsa',
+                       'key_material': 'key'}
+
+        expected_msg = ('key_files and key_material arguments are mutually '
+                        'exclusive')
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                ParamikoSSHClient, **conn_params)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_key_material_argument(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc', 'dummy_rsa')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+
+        pkey = paramiko.RSAKey.from_private_key(StringIO(private_key))
+        expected_conn = {'username': 'ubuntu',
+                         'allow_agent': False,
+                         'hostname': 'dummy.host.org',
+                         'look_for_keys': False,
+                         'pkey': pkey,
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_key_material_argument_invalid_key(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': 'id_rsa'}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'Invalid or unsupported key type'
+        self.assertRaisesRegexp(paramiko.ssh_exception.SSHException,
+                                expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_create_with_key(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': 'id_rsa'}
         mock = ParamikoSSHClient(**conn_params)
         mock.connect()
 
@@ -185,11 +254,11 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
 
 if not ParamikoSSHClient:
-    class ParamikoSSHClientTests(unittest.TestCase):  # NOQA
+    class ParamikoSSHClientTests(LibcloudTestCase):  # NOQA
         pass
 
 
-class ShellOutSSHClientTests(unittest.TestCase):
+class ShellOutSSHClientTests(LibcloudTestCase):
 
     def test_password_auth_not_supported(self):
         try:

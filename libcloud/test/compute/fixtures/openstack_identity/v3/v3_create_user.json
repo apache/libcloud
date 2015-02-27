@@ -1,0 +1,12 @@
+{
+    "user": {
+        "name": "test2",
+        "links": {
+            "self": "http://192.168.18.100:5000/v3/users/c"
+        },
+        "domain_id": "default",
+        "enabled": true,
+        "email": "test2@localhost",
+        "id": "c"
+    }
+}

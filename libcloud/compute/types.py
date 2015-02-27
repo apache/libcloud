@@ -74,6 +74,13 @@ class Provider(object):
     :cvar NEPHOSCALE: NephoScale driver
     :cvar EXOSCALE: Exoscale driver.
     :cvar IKOULA: Ikoula driver.
+<<<<<<< HEAD
+    :cvar OUTSCALE_SAS: Outscale SAS driver.
+    :cvar OUTSCALE_INC: Outscale INC driver.
+    :cvar PROFIT_BRICKS: ProfitBricks driver.
+    :cvar VULTR: vultr driver.
+=======
+>>>>>>> LIBCLOUD-556_azure_compute_driver
     :cvar AZURE: Azure driver.
     """
     AZURE = 'azure'
@@ -119,7 +126,15 @@ class Provider(object):
     CLOUDFRAMES = 'cloudframes'
     EXOSCALE = 'exoscale'
     IKOULA = 'ikoula'
-    AZURE_COMPUTE = 'azure_compute'
+    OUTSCALE_SAS = 'outscale_sas'
+    OUTSCALE_INC = 'outscale_inc'
+    VSPHERE = 'vsphere'
+    PROFIT_BRICKS = 'profitbricks'
+    VULTR = 'vultr'
+
+    # OpenStack based providers
+    HPCLOUD = 'hpcloud'
+    KILI = 'kili'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
@@ -179,6 +194,11 @@ class NodeState(object):
     :cvar TERMINATED: Node is terminated. This node can't be started later on.
     :cvar STOPPED: Node is stopped. This node can be started later on.
     :cvar PENDING: Node is pending.
+    :cvar STOPPED: Node is stopped.
+    :cvar SUSPENDED: Node is suspended.
+    :cvar ERROR: Node is an error state. Usually no operations can be performed
+                 on the node once it ends up in the error state.
+    :cvar PAUSED: Node is paused.
     :cvar UNKNOWN: Node state is unknown.
     """
     RUNNING = 0
@@ -187,6 +207,23 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
     STOPPED = 5
+    SUSPENDED = 6
+    ERROR = 7
+    PAUSED = 8
+
+    @classmethod
+    def tostring(cls, value):
+        values = cls.__dict__
+        values = dict([(key, string) for key, string in values.items() if
+                       not key.startswith('__')])
+
+        for item_key, item_value in values.items():
+            if value == item_value:
+                return item_key
+
+    @classmethod
+    def fromstring(cls, value):
+        return getattr(cls, value.upper(), None)
 
 
 class Architecture(object):

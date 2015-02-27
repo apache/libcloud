@@ -1,0 +1,25 @@
+{
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/roles",
+        "previous": null,
+        "next": null
+    },
+    "roles": [
+        {
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/roles/a"
+            },
+            "enabled": "True",
+            "description": "Default role for project membership",
+            "name": "_member_",
+            "id": "a"
+        },
+        {
+            "id": "b",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/roles/b"
+            },
+            "name": "admin"
+        }
+    ]
+}

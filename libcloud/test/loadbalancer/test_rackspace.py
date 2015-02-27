@@ -158,7 +158,7 @@ class RackspaceLBTests(unittest.TestCase):
                                                    Member(
                                                        None, '10.1.0.10', 80,
                                                        extra={'condition': MemberCondition.DISABLED,
-                                                             'weight': 10}),
+                                                              'weight': 10}),
                                                    Member(None, '10.1.0.11', 80))
                                                )
 

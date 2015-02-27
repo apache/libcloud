@@ -145,7 +145,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
     connectionCls = CloudSigma_1_0_Connection
 
     IMAGING_TIMEOUT = 20 * 60  # Default timeout (in seconds) for the drive
-                               # imaging process
+    # imaging process
 
     NODE_STATE_MAP = {
         'active': NodeState.RUNNING,
@@ -673,7 +673,7 @@ class CloudSigmaError(ProviderError):
         :param error_msg: A description of the error that occurred.
         :type error_msg: ``str``
 
-        :param error_point: Point at which the error occured. Can be None.
+        :param error_point: Point at which the error occurred. Can be None.
         :type error_point: ``str`` or ``None``
         """
         super(CloudSigmaError, self).__init__(http_code=http_code,
@@ -918,7 +918,7 @@ class CloudSigma_2_0_Response(JsonResponse):
             return None
 
         for item in body:
-            if not 'error_type' in item:
+            if 'error_type' not in item:
                 # Unrecognized error
                 continue
 
@@ -974,11 +974,12 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
     website = 'http://www.cloudsigma.com/'
     connectionCls = CloudSigma_2_0_Connection
 
-    DRIVE_TRANSITION_TIMEOUT = 500  # Default drive transition timeout in
-                                    # seconds
-    DRIVE_TRANSITION_SLEEP_INTERVAL = 5  # How long to sleep between different
-                                         # polling periods while waiting for
-                                         # drive transition
+    # Default drive transition timeout in seconds
+    DRIVE_TRANSITION_TIMEOUT = 500
+
+    # How long to sleep between different polling periods while waiting for
+    # drive transition
+    DRIVE_TRANSITION_SLEEP_INTERVAL = 5
 
     NODE_STATE_MAP = {
         'starting': NodeState.PENDING,
@@ -991,7 +992,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def __init__(self, key, secret, secure=True, host=None, port=None,
                  region=DEFAULT_REGION, **kwargs):
-        if not region in API_ENDPOINTS_2_0:
+        if region not in API_ENDPOINTS_2_0:
             raise ValueError('Invalid region: %s' % (region))
 
         if not secure:
@@ -1106,8 +1107,9 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             vnc_password = get_secure_random_string(size=12)
 
         drive_name = '%s-drive' % (name)
-        drive_size = (size.disk * 1024 * 1024 * 1024)  # size is specified in
-                                                       # GB
+
+        # size is specified in GB
+        drive_size = (size.disk * 1024 * 1024 * 1024)
 
         if not is_installation_cd:
             # 1. Clone library drive so we can use it
@@ -1609,8 +1611,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Retrieve a single tag.
 
-        :param id: ID of the tag to retrieve.
-        :type id: ``str``
+        :param tag_id: ID of the tag to retrieve.
+        :type tag_id: ``str``
 
         :rtype: ``list`` of :class:`.CloudSigmaTag` objects
         """
@@ -1672,8 +1674,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Associate tag with the provided resources.
 
-        :param resource: Resources to associate a tag with.
-        :type resource: ``list`` of :class:`libcloud.compute.base.Node` or
+        :param resources: Resources to associate a tag with.
+        :type resources: ``list`` of :class:`libcloud.compute.base.Node` or
                         :class:`.CloudSigmaDrive`
 
         :param tag: Tag to associate with the resources.

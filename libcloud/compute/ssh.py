@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-Wraps multiple ways to communicate over SSH
+Wraps multiple ways to communicate over SSH.
 """
+
 have_paramiko = False
 
 try:
@@ -32,16 +33,44 @@ import os
 import time
 import subprocess
 import logging
+import warnings
 
 from os.path import split as psplit
 from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import b
+
+__all__ = [
+    'BaseSSHClient',
+    'ParamikoSSHClient',
+    'ShellOutSSHClient',
+
+    'SSHCommandTimeoutError'
+]
 
 
 # Maximum number of bytes to read at once from a socket
 CHUNK_SIZE = 1024
+
+
+class SSHCommandTimeoutError(Exception):
+    """
+    Exception which is raised when an SSH command times out.
+    """
+    def __init__(self, cmd, timeout):
+        self.cmd = cmd
+        self.timeout = timeout
+        message = 'Command didn\'t finish in %s seconds' % (timeout)
+        super(SSHCommandTimeoutError, self).__init__(message)
+
+    def __repr__(self):
+        return ('<SSHCommandTimeoutError: cmd="%s",timeout=%s)>' %
+                (self.cmd, self.timeout))
+
+    def __str__(self):
+        return self.message
 
 
 class BaseSSHClient(object):
@@ -50,7 +79,7 @@ class BaseSSHClient(object):
     """
 
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
+                 key=None, key_files=None, timeout=None):
         """
         :type hostname: ``str``
         :keyword hostname: Hostname or IP address to connect to.
@@ -66,22 +95,32 @@ class BaseSSHClient(object):
                            to unlock a private key if a password protected key
                            is used.
 
-        :type key: ``str`` or ``list``
-        :keyword key: A list of paths to the private key files to use.
+        :param key: Deprecated in favor of ``key_files`` argument.
+
+        :type key_files: ``str`` or ``list``
+        :keyword key_files: A list of paths to the private key files to use.
         """
+        if key is not None:
+            message = ('You are using deprecated "key" argument which has '
+                       'been replaced with "key_files" argument')
+            warnings.warn(message, DeprecationWarning)
+
+            # key_files has precedent
+            key_files = key if not key_files else key_files
+
         self.hostname = hostname
         self.port = port
         self.username = username
         self.password = password
-        self.key = key
+        self.key_files = key_files
         self.timeout = timeout
 
     def connect(self):
         """
         Connect to the remote node over SSH.
 
-        :return: True if the connection has been successfuly established, False
-                 otherwise.
+        :return: True if the connection has been successfully established,
+                 False otherwise.
         :rtype: ``bool``
         """
         raise NotImplementedError(
@@ -116,7 +155,7 @@ class BaseSSHClient(object):
         :type path: ``str``
         :keyword path: File path on the remote node.
 
-        :return: True if the file has been successfuly deleted, False
+        :return: True if the file has been successfully deleted, False
                  otherwise.
         :rtype: ``bool``
         """
@@ -139,7 +178,7 @@ class BaseSSHClient(object):
         """
         Shutdown connection to the remote node.
 
-        :return: True if the connection has been successfuly closed, False
+        :return: True if the connection has been successfully closed, False
                  otherwise.
         :rtype: ``bool``
         """
@@ -165,7 +204,7 @@ class ParamikoSSHClient(BaseSSHClient):
     A SSH Client powered by Paramiko.
     """
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
+                 key=None, key_files=None, key_material=None, timeout=None):
         """
         Authentication is always attempted in the following order:
 
@@ -177,8 +216,19 @@ class ParamikoSSHClient(BaseSSHClient):
         - Plain username/password auth, if a password was given (if password is
           provided)
         """
-        super(ParamikoSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+        if key_files and key_material:
+            raise ValueError(('key_files and key_material arguments are '
+                              'mutually exclusive'))
+
+        super(ParamikoSSHClient, self).__init__(hostname=hostname, port=port,
+                                                username=username,
+                                                password=password,
+                                                key=key,
+                                                key_files=key_files,
+                                                timeout=timeout)
+
+        self.key_material = key_material
+
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
@@ -193,10 +243,13 @@ class ParamikoSSHClient(BaseSSHClient):
         if self.password:
             conninfo['password'] = self.password
 
-        if self.key:
-            conninfo['key_filename'] = self.key
+        if self.key_files:
+            conninfo['key_filename'] = self.key_files
 
-        if not self.password and not self.key:
+        if self.key_material:
+            conninfo['pkey'] = self._get_pkey_object(key=self.key_material)
+
+        if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
             conninfo['look_for_keys'] = True
 
@@ -259,10 +312,14 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
         return True
 
-    def run(self, cmd):
+    def run(self, cmd, timeout=None):
         """
         Note: This function is based on paramiko's exec_command()
         method.
+
+        :param timeout: How long to wait (in seconds) for the command to
+                        finish (optional).
+        :type timeout: ``float``
         """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
@@ -273,6 +330,7 @@ class ParamikoSSHClient(BaseSSHClient):
         transport = self.client.get_transport()
         chan = transport.open_session()
 
+        start_time = time.time()
         chan.exec_command(cmd)
 
         stdout = StringIO()
@@ -294,11 +352,20 @@ class ParamikoSSHClient(BaseSSHClient):
         exit_status_ready = chan.exit_status_ready()
 
         while not exit_status_ready:
+            current_time = time.time()
+            elapsed_time = (current_time - start_time)
+
+            if timeout and (elapsed_time > timeout):
+                # TODO: Is this the right way to clean up?
+                chan.close()
+
+                raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
+
             if chan.recv_ready():
                 data = chan.recv(CHUNK_SIZE)
 
                 while data:
-                    stdout.write(data)
+                    stdout.write(b(data).decode('utf-8'))
                     ready = chan.recv_ready()
 
                     if not ready:
@@ -310,7 +377,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 data = chan.recv_stderr(CHUNK_SIZE)
 
                 while data:
-                    stderr.write(data)
+                    stderr.write(b(data).decode('utf-8'))
                     ready = chan.recv_stderr_ready()
 
                     if not ready:
@@ -345,6 +412,23 @@ class ParamikoSSHClient(BaseSSHClient):
         self.client.close()
         return True
 
+    def _get_pkey_object(self, key):
+        """
+        Try to detect private key type and return paramiko.PKey object.
+        """
+
+        for cls in [paramiko.RSAKey, paramiko.DSSKey, paramiko.ECDSAKey]:
+            try:
+                key = cls.from_private_key(StringIO(key))
+            except paramiko.ssh_exception.SSHException:
+                # Invalid key, try other key type
+                pass
+            else:
+                return key
+
+        msg = 'Invalid or unsupported key type'
+        raise paramiko.ssh_exception.SSHException(msg)
+
 
 class ShellOutSSHClient(BaseSSHClient):
     """
@@ -355,9 +439,13 @@ class ShellOutSSHClient(BaseSSHClient):
     """
 
     def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
-        super(ShellOutSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+                 key=None, key_files=None, timeout=None):
+        super(ShellOutSSHClient, self).__init__(hostname=hostname,
+                                                port=port, username=username,
+                                                password=password,
+                                                key=key,
+                                                key_files=key_files,
+                                                timeout=timeout)
         if self.password:
             raise ValueError('ShellOutSSHClient only supports key auth')
 
@@ -403,8 +491,8 @@ class ShellOutSSHClient(BaseSSHClient):
     def _get_base_ssh_command(self):
         cmd = ['ssh']
 
-        if self.key:
-            cmd += ['-i', self.key]
+        if self.key_files:
+            cmd += ['-i', self.key_files]
 
         if self.timeout:
             cmd += ['-oConnectTimeout=%s' % (self.timeout)]

@@ -35,9 +35,11 @@ Provider                              list key pairs get key pair create key pai
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
+`HP Public Cloud (Helion)`_           yes            yes          yes             yes                           no                          yes            
 `IBM SmartCloud Enterprise`_          no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Joyent`_                             no             no           no              no                            no                          no             
+`Kili Public Cloud`_                  yes            yes          yes             yes                           no                          yes            
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
 `Libvirt`_                            no             no           no              no                            no                          no             
 `Linode`_                             no             no           no              no                            no                          no             
@@ -47,17 +49,22 @@ Provider                              list key pairs get key pair create key pai
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Opsource`_                           no             no           no              no                            no                          no             
+`Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
+`Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
+`ProfitBricks`_                       no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
 `RimuHosting`_                        no             no           no              no                            no                          no             
 `ServerLove`_                         no             no           no              no                            no                          no             
 `skalicloud`_                         no             no           no              no                            no                          no             
-`SoftLayer`_                          no             no           no              no                            no                          no             
+`SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
 `vCloud`_                             no             no           no              no                            no                          no             
 `VCL`_                                no             no           no              no                            no                          no             
 `vCloud`_                             no             no           no              no                            no                          no             
 `Voxel VoxCLOUD`_                     no             no           no              no                            no                          no             
 `vps.net`_                            no             no           no              no                            no                          no             
+`VMware vSphere`_                     no             no           no              no                            no                          no             
+`Vultr`_                              no             no           no              no                            no                          no             
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -94,9 +101,11 @@ Provider                              list key pairs get key pair create key pai
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
+.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
@@ -106,6 +115,9 @@ Provider                              list key pairs get key pair create key pai
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
+.. _`Outscale INC`: http://www.outscale.com
+.. _`Outscale SAS`: http://www.outscale.com
+.. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
@@ -117,3 +129,5 @@ Provider                              list key pairs get key pair create key pai
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
+.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
+.. _`Vultr`: https://www.vultr.com

@@ -1,7 +1,7 @@
 HostVirtual DNS Driver Documentation
 ====================================
 
-`Host Virtual`_ is is a cloud hosting provider that operates dual-stack IPv4
+`Host Virtual`_ is a cloud hosting provider that operates dual-stack IPv4
 and IPv6 IaaS clouds in 15 locations worldwide.
 
 Instantiating a driver

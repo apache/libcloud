@@ -24,9 +24,8 @@ from libcloud.loadbalancer.providers import get_driver
 
 
 def main():
-    Rackspace = get_driver(Provider.RACKSPACE_US)
-
-    driver = Rackspace('username', 'api key')
+    cls = get_driver(Provider.RACKSPACE)
+    driver = cls('username', 'api key', region='ord')
 
     balancers = driver.list_balancers()
 
@@ -68,5 +67,5 @@ def main():
     # remove the balancer
     driver.destroy_balancer(new_balancer)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

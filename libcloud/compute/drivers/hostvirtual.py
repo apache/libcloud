@@ -211,7 +211,7 @@ class HostVirtualNodeDriver(NodeDriver):
     def destroy_node(self, node):
         params = {
             'mbpkgid': node.id,
-            #'reason': 'Submitted through Libcloud API'
+            # 'reason': 'Submitted through Libcloud API'
         }
 
         result = self.connection.request(

@@ -81,6 +81,10 @@ DRIVERS = {
     ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_FIRST_GEN:
     ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
+    Provider.HPCLOUD:
+    ('libcloud.compute.drivers.hpcloud', 'HPCloudNodeDriver'),
+    Provider.KILI:
+    ('libcloud.compute.drivers.kili', 'KiliCloudNodeDriver'),
     Provider.VPSNET:
     ('libcloud.compute.drivers.vpsnet', 'VPSNetNodeDriver'),
     Provider.LINODE:
@@ -141,8 +145,16 @@ DRIVERS = {
     ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
     Provider.IKOULA:
     ('libcloud.compute.drivers.ikoula', 'IkoulaNodeDriver'),
-    Provider.AZURE_COMPUTE:
-    ('libcloud.compute.drivers.azure_compute', 'AzureNodeDriver'),
+    Provider.OUTSCALE_SAS:
+    ('libcloud.compute.drivers.ec2', 'OutscaleSASNodeDriver'),
+    Provider.OUTSCALE_INC:
+    ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
+    Provider.VSPHERE:
+    ('libcloud.compute.drivers.vsphere', 'VSphereNodeDriver'),
+    Provider.PROFIT_BRICKS:
+    ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
+    Provider.VULTR:
+    ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

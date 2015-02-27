@@ -1,6 +1,7 @@
 {
   "checkIntervalSec": 10,
   "creationTimestamp": "2013-09-02T22:18:01.180-07:00",
+  "description": "test healthcheck",
   "healthyThreshold": 3,
   "host": "lchost",
   "id": "06860603312991823381",

@@ -4,6 +4,294 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+Compute
+~~~~~~~
+
+- Add missing ``ubuntu-os-cloud`` images to the GCE driver.
+  (LIBCLOUD-632, GITHUB-385)
+  [Borja Martin]
+
+- Add new `us-east-2` and `us-east-3` region to the Joyent driver.
+  (GITHUB-386)
+  [ZuluPro]
+
+- Add missing t2. instance types to the us-west-1 region in the EC2 driver.
+  (GITHUB-388)
+  [Matt Lehman]
+
+- Add option to expunge VM on destroy in CloudStack driver.
+  (GITHUB-382)
+  [Roeland Kuipers]
+
+- Add extra attribute in list_images for CloudStack driver.
+  (GITHUB-389)
+  [Loic Lambiel]
+
+- Add ``ex_security_group_ids`` argument to the create_node method in the
+  EC2 driver. This way users can launch VPC nodes with security groups.
+  (GITHUB-373)
+  [Itxaka Serrano]
+
+Changes with Apache Libcloud 0.16.0
+-----------------------------------
+
+General
+~~~~~~~
+
+- Add new ``OpenStackIdentity_3_0_Connection`` class for working with
+  OpenStack Identity (Keystone) service API v3.
+  [Tomaz Muraus]
+
+- Add support for prettifying JSON or XML response body which is printed to a
+  file like object when using ``LIBCLOUD_DEBUG`` environment variable.
+  This option can be enabled by setting
+  ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` environment variable.
+  [Tomaz Muraus]
+
+- Add support for using an HTTP proxy for outgoing HTTP and HTTPS requests.
+  [Tomaz Muraus, Philip Kershaw]
+
+Compute
+~~~~~~~
+
+- Fix an issue with ``LIBCLOUD_DEBUG`` not working correctly with the
+  Linode driver.
+  [Tomaz Muraus, Juan Carlos Moreno]
+  (LIBCLOUD-598, GITHUB-342)
+
+- Add new driver for VMware vSphere (http://www.vmware.com/products/vsphere/)
+  based clouds.
+  [Tomaz Muraus]
+
+- Add two new default node states - ``NodeState.SUSPENDED`` and
+  ``NodeState.ERROR``.
+  [Tomaz Muraus]
+
+- Fix to join networks properly in ``deploy_node`` in the CloudStack
+  driver.
+  (LIBCLOUD-593, GITUHB-336)
+  [Atsushi Sasaki]
+
+- Create ``CloudStackFirewallRule`` class and corresponding methods.
+  (LIBCLOUD-594, GITHUB-337)
+  [Atsushi Sasaki]
+
+- Add support for SSD disks to Google Compute driver.
+  (GITHUB-339)
+  [Eric Johnson]
+
+- Add utility ``get_regions`` and ``get_service_names`` methods to the
+  ``OpenStackServiceCatalog`` class.
+  [Andrew Mann, Tomaz Muraus]
+
+- Fix a bug in ``ex_get_console_output`` in the EC2 driver which would cause
+  an exception to be thrown if there was no console output for a particular
+  node.
+
+  Reported by Chris DeRamus.
+  [Tomaz Muraus]
+
+- Add ip_address parameter in CloudStack driver ``create_node`` method.
+  (GITHUB-346)
+  [Roeland Kuipers]
+
+- Fix ``ParamikoSSHClient.run`` and ``deploy_node`` method to work correctly
+  under Python 3.
+  (GITHUB-347)
+  [Eddy Reyes]
+
+- Update OpenStack driver to map more node states to states recognized by
+  Libcloud.
+  [Chris DeRamus]
+
+- Fix a bug with ``ex_metadata`` argument handling in the Google Compute Engine
+  driver ``create_node`` method.
+  (LIBCLOUD-544, GITHUB-349, GITHUB-353)
+  [Raphael Theberge]
+
+- Add SSH key pair management methods to the Softlayer driver.
+  (GITHUB-321, GITHUB-354)
+  [Itxaka Serrano]
+
+- Correctly categorize node IP addresses into public and private when dealing
+  with OpenStack floating IPs.
+  [Andrew Mann]
+
+- Add new t2 instance types to the EC2 driver.
+  [Tomaz Muraus]
+
+- Add support for Amazon GovCloud to the EC2 driver (us-gov-west-1 region).
+  [Chris DeRamus]
+
+- Allow user to pass "gp2" for "ex_volume_type" argument to the create_volume
+  method in the EC2 driver.
+
+  Reported by Xavier Barbosa.
+  [Tomaz Muraus, Xavier Barbosa]
+
+- Add new driver for ProfitBricks provider.
+  (LIBCLOUD-589, GITHUB-352)
+  [Matt Baldwin]
+
+- Various improvements and bugs fixes in the GCE driver. For a list, see
+  https://github.com/apache/libcloud/pull/360/commits
+  (GITHUB-360)
+  [Evgeny Egorochkin]
+
+- Allow user to specify virtualization type when registering an EC2 image by
+  passing ``virtualization_type`` argument to the ``ex_register_image`` method.
+  (GITHUB-361)
+  [Andy Grimm]
+
+- Add ``ex_create_image`` method to the GCE driver.
+  (GITHUB-358, LIBCLOUD-611)
+  [Katriel Traum]
+
+- Add some methods to CloudStack driver:
+  create_volume_snapshot, list_snapshots, destroy_volume_snapshot
+  create_snapshot_template, ex_list_os_types)
+  (GITHUB-363, LIBCLOUD-616)
+  [Oleg Suharev]
+
+- Added VPC support and Egress Firewall rule support fo CloudStack
+  (GITHUB-363)
+  [Jeroen de Korte]
+
+- Add additional attributes to the ``extra`` dictionary of OpenStack
+  StorageVolume object.
+  (GITHUB-366)
+  [Gertjan Oude Lohuis]
+
+- Fix ``create_volume`` method in the OpenStack driver to return a created
+  volume object (instance of StorageVolume) on success, instead of a boolean
+  indicating operation success.
+  (GITHUB-365)
+  [Gertjan Oude Lohuis]
+
+- Add optional project parameters for ex_list_networks() to CloudStack driver
+  (GITHUB-367, LIBCLOUD-615)
+  [Rene Moser]
+
+- CLOUDSTACK: option to start VM in a STOPPED state
+  (GITHUB-368)
+  [Roeland Kuipers]
+
+- Support "config_drive" in the OpenStack driver. Allow users to pass
+  ``ex_config_drive`` argument to the ``create_node`` and ``ex_rebuild_node``
+  method.
+  (GITHUB-370)
+  [Nirmal Ranganathan]
+
+- Add support for service scopes to the ``create_node`` method in the GCE
+  driver.
+  (LIBCLOUD-578, GITHUB-373)
+  [Eric Johnson]
+
+- Update GCE driver to allow for authentication with internal metadata service.
+  (LIBCLOUD-625, LIBCLOUD-276, GITHUB-276)
+  [Eric Johnson]
+
+- Fix a bug in Elasticstack node creation method where it would raise
+  exceptions because of missing data in a response, and also fix pulling the
+  IP from the proper data item.
+  (GITHUB-325)
+  [Michael Bennett]
+
+- Fix a bug which prevented user to connect and instantiate multiple EC2 driver
+  instances for different regions at the same time.
+  (GITHUB-325)
+  [Michael Bennett]
+
+- Add methods in CloudStack driver to manage mutiple nics per vm.
+  (GITHUB-369)
+  [Roeland Kuipers]
+
+- Implements VPC network ACLs for CloudStack driver.
+  (GITHUB-371)
+  [Jeroen de Korte]
+
+Storage
+~~~~~~~
+
+- Fix a bug with CDN requests in the CloudFiles driver.
+  [Tomaz Muraus]
+
+- Fix a bug with not being able to specify meta_data / tags when uploading an
+  object using Google Storage driver.
+  (LIBCLOUD-612, GITHUB-356)
+  [Stefan Friesel]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Allow user to specify session affinity algorithm in the GCE driver by passing
+  ``ex_session_affinity`` argument to the ``create_balancer`` method.
+  (LIBCLOUD-595, GITHUB-341)
+  [Lee Verberne, Eric Johnson]
+
+DNS
+~~~
+
+- Various fixes in the Google DNS driver.
+  (GITHUB-378)
+  [Franck Cuny]
+
+Changes with Apache Libcloud 0.15.1
+-----------------------------------
+
+Compute
+~~~~~~~
+
+- Allow user to limit a list of subnets which are returned by passing
+  ``subnet_ids`` and ``filters`` argument to the ``ex_list_subnets``
+  method in the EC2 driver.
+  (LIBCLOUD-571, GITHUB-306)
+  [Lior Goikhburg]
+
+- Allow user to limit a list of internet gateways which are returned by
+  passing ``gateway_ids`` and ``filters`` argument to the
+  ``ex_list_internet_gateways`` method in the EC2 driver.
+  (LIBCLOUD-572, GITHUB-307)
+  [Lior Goikhburg]
+
+- Allow user to filter which nodes are returned by passing ``ex_filters``
+  argument to the ``list_nodes`` method in the EC2 driver.
+  (LIBCLOUD-580, GITHUB-320)
+  [Lior Goikhburg]
+
+- Add network_association_id to ex_list_public_ips and CloudstackAddress object
+  (GITHUB-327)
+  [Roeland Kuipers]
+
+- Allow user to specify admin password by passing ``ex_admin_pass`` argument
+  to the ``create_node`` method in the Openstack driver.
+  (GITHUB-315)
+  [Marcus Devich]
+
+- Fix a possible race condition in deploy_node which would occur if node
+  is online and can be accessed via SSH, but the SSH key we want to use hasn't
+  been installed yet.
+
+  Previously, we would immediately throw if we can connect, but the SSH key
+  hasn't been installed yet.
+  (GITHUB-331)
+  [David Gay]
+
+- Propagate an exception in ``deploy_node`` method if user specified an invalid
+  path to the private key file. Previously this exception was silently swallowed
+  and ignored.
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- Include a better message in the exception which is thrown when a request
+  in the Rackspace driver ends up in an ``ERROR`` state.
+  [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.15.0
+-----------------------------------
+
 General
 ~~~~~~~
 
@@ -12,8 +300,38 @@ General
   all the available images in the EC2 driver).
   [Andrew Mann]
 
+- Use --head flag instead of -X HEAD when logging curl lines for HEAD requests
+  in debug mode.
+
+  Reported by Brian Metzler.
+  (LIBCLOUD-552)
+  [Tomaz Muraus]
+
+- Fix Python 3 compatibility bugs in the following functions:
+
+  * import_key_pair_from_string in the EC2 driver
+  * publickey._to_md5_fingerprint
+  * publickey.get_pubkey_ssh2_fingerprint
+
+  (GITHUB-301)
+  [Csaba Hoch]
+
+- Update CA_CERTS_PATH to also look for CA cert bundle which comes with
+  openssl Homebrew formula on OS x (/usr/local/etc/openssl/cert.pem).
+  (GITHUB-309)
+  [Pedro Romano]
+
+- Update Google drivers to allow simultaneous authornization for all the
+  supported Google Services.
+  (GITHUB-302)
+  [Eric Johnson]
+
 Compute
 ~~~~~~~
+
+- Fix create_key_pair method which was not returning private key.
+  (LIBCLOUD-566)
+  [Sebastien Goasguen]
 
 - Map "Stopped" node state in the CloudStack driver to NodeState.STOPPED
   instead of NodeState.TERMINATED, "Stopping" to NodeState.PENDING instead of
@@ -61,13 +379,180 @@ Compute
   (LIBCLOUD-503, GITHUB-235)
   [Markos Gogoulos]
 
-- Ad new ex_delete_image and ex_deprecate_image method to the GCE driver,
+- Ad new ex_delete_image and ex_deprecate_image method to the GCE driver.
   (GITHUB-260)
   [Franck Cuny]
 
-- Ad new ex_copy_image method to the GCE driver,
+- Ad new ex_copy_image method to the GCE driver.
   (GITHUB-258)
   [Franck Cuny]
+
+- Ad new ex_set_volume_auto_delete method to the GCE driver.
+  (GITHUB-264)
+  [Franck Cuny]
+
+- Add ex_revoke_security_group_ingress method to the CloudStack driver.
+  [Chris DeRamus, Tomaz Muraus]
+
+- Allow user to pass ex_ebs_optimized argument to the create_node method
+  in the EC2 driver.
+  (GITHUB-272)
+  [zerthimon]
+
+- Add "deprecated" attribute to the Node object in the Google Compute Engine
+  driver.
+  (GITHUB-276)
+  [Chris / bassdread]
+
+- Update Softlayer driver to use "fullyQualifiedDomainName" instead of
+  "hostname" attribute for the node name.
+  (GITHUB-280)
+  [RoelVanNyen]
+
+- Allow user to specify target tags using target_tags attribute when creating
+  a firewall rule in the GCE driver.
+  (GITHUB-278)
+  [zerthimon]
+
+- Add new standard API for image management and initial implementation for the
+  EC2 and Rackspace driver.
+  (GITHUB-277)
+  [Matt Lehman]
+
+- Allow user to specify "displayname" attribute when creating a CloudStack node
+  by passing "ex_displayname" argument to the method.
+
+  Also allow "name" argument to be empty (None). This way CloudStack
+  automatically uses Node's UUID for the name.
+  (GITHUB-289)
+  [Jeff Moody]
+
+- Deprecate "key" argument in the SSHClient class in favor of new "key_files"
+  argument.
+
+  Also add a new "key_material" argument. This argument can contain raw string
+  version of a private key.
+
+  Note 1: "key_files" and "key_material" arguments are mutually exclusive.
+  Note 2: "key_material" argument is not supported in the ShellOutSSHClient.
+
+- Use node id attribute instead of the name for the "lconfig" label in the
+  Linode driver. This way the label is never longer than 48 characters.
+  (GITHUB-287)
+  [earthgecko]
+
+- Add a new driver for Outscale SAS and Outscale INC cloud
+  (http://www.outscale.com).
+  (GITHUB-285, GITHUB-293, LIBCLOUD-536, LIBCLOUD-553)
+  [Benoit Canet]
+
+- Add new driver for HP Public Cloud (Helion) available via Provider.HPCLOUD
+  constant.
+  [Tomaz Muraus]
+
+- Allow user to specify availability zone when creating an OpenStack node by
+  passing "ex_availability_zone" argument to the create_node method.
+  Note: This will only work if the OpenStack installation is running
+  availability zones extension.
+  (GITHUB-295, LIBCLOUD-555)
+  [syndicut]
+
+- Allow user to pass filters to ex_list_networks method in the EC2 driver.
+  (GITHUB-294)
+  [zerthimon]
+
+- Allow user to retrieve container images using ex_get_image method in the
+  Google Compute Engine driver.
+  (GITHUB-299, LIBCLOUD-562)
+  [Magnus Andersson]
+
+- Add new driver for Kili public cloud (http://kili.io/)
+  [Tomaz Muraus]
+
+- Add "timeout" argument to the ParamikoSSHClient.run method. If this argument
+  is specified and the command passed to run method doesn't finish in the
+  defined timeout, `SSHCommandTimeoutError` is throw and the connection to the
+  remote server is closed.
+
+  Note #1: If timed out happens, this functionality doesn't guarantee that the
+  underlying command will be stopped / killed. The way it works it simply
+  closes a connect to the remote server.
+  [Tomaz Muraus]
+
+  Note #2: "timeout" argument is only available in the Paramiko SSH client.
+
+- Make "cidrs_ips" argument in the ex_authorize_security_group_egress method in
+  the EC2 driver mandatory.
+  (GITHUB-301)
+  [Csaba Hoch]
+
+- Add extension methods for managing floating IPs (ex_get_floating_ip,
+  ex_create_floating_ip, ex_delete_floating_ip) to the Openstack 1.1 driver.
+  (GITHUB-301)
+  [Csaba Hoch]
+
+- Fix bug in RimuHosting driver which caused driver not to work when the
+  provider returned compressed (gzip'ed) response.
+  (LIBCLOUD-569, GITHUB-303)
+  [amastracci]
+
+- Fix issue with overwriting the server memory values in the RimuHosting
+  driver.
+  (GUTHUB-308)
+  [Dustin Oberloh]
+
+- Add ex_all_tenants argument to the list_nodes method in the OpenStack driver.
+  (GITHUB-312)
+  [LIBCLOUD-575, Zak Estrada]
+
+- Add support for network management for advanced zones
+  (ex_list_network_offerings, ex_create_network, ex_delete_network) in the
+  CloudStack driver.
+  (GITHUB-316)
+  [Roeland Kuipers]
+
+- Add extension methods for routes and route table management to the EC2
+  driver (ex_list_route_tables, ex_create_route_table, ex_delete_route_table,
+  ex_associate_route_table, ex_dissociate_route_table,
+  ex_replace_route_table_association, ex_create_route, ex_delete_route,
+  ex_replace_route)
+  (LIBCLOUD-574, GITHUB-313)
+  [Lior Goikhburg]
+
+- Fix ex_list_snapshots for HP Helion OpenStack based driver.
+  [Tomaz Muraus]
+
+- Allow user to specify volume type and number of IOPS when creating a new
+  volume in the EC2 driver by passing ``ex_volume_type`` and ``ex_iops``
+  argument to the ``create_volume`` method.
+  [Tomaz Muraus]
+
+- Fix ex_unpause_node method in the OpenStack driver.
+  (GITHUB-317)
+  [Pablo Orduña]
+
+- Allow user to launch EC2 node in a specific VPC subnet by passing
+  ``ex_subnet`` argument to the create_node method.
+  (GITHUB-318)
+  [Lior Goikhburg]
+
+Storage
+~~~~~~~
+
+- Fix container name encoding in the iterate_container_objects and
+  get_container_cdn_url method in the CloudFiles driver. Previously, those
+  methods would throw an exception if user passed in a container name which
+  contained a whitespace.
+
+  Reported by Brian Metzler.
+  (LIBCLOUD-552)
+  [Tomaz MUraus]
+
+- Fix a bug in the OpenStack Swift driver which prevented the driver to work
+  with installations where region names in the service catalog weren't upper
+  case.
+  (LIBCLOUD-576, GITHUB-311)
+  [Zak Estrada]
 
 Load Balancer
 ~~~~~~~~~~~~~
@@ -75,6 +560,21 @@ Load Balancer
 - Add extension methods for policy managagement to the ELB driver.
   (LIBCLOUD-522, GITHUB-253)
   [Rahul Ranjan]
+
+DNS
+~~~
+
+- Fix update_record method in the Route56 driver so it works correctly for
+  records with multiple values.
+  [Tomaz Muraus]
+
+- Add ex_create_multi_value_record method to the Route53 driver which allows
+  user to create a record with multiple values with a single call.
+  [Tomaz Muraus]
+
+- Add new driver for Google DNS.
+  (GITHUB-269)
+  [Franck Cuny]
 
 Changes with Apache Libcloud 0.14.1
 -----------------------------------
@@ -188,7 +688,7 @@ Compute
   authentication to not allow insecure connections (secure constructor
   kwarg being set to False) by default.
 
-  This way credentials can't accidentaly be sent in plain text over the
+  This way credentials can't accidentally be sent in plain text over the
   write.
 
   Affected drivers: Bluebox, Joyent, NephoScale, OpSource, VPSNet
@@ -1571,7 +2071,7 @@ Storage
   CloudFiles driver.
   [Tomaz Muraus]
 
-- Fix a bug with content_type and and encoding of object and path names in
+- Fix a bug with content_type and encoding of object and path names in
   the Atmos driver.
   [Russell Keith-Magee]
 
@@ -1749,7 +2249,7 @@ Compute
   Node extra dictionary. (LIBCLOUD-163)
   [Chris Gilmer]
 
-- Alow users to use a list of tuples for the query string parameters inside
+- Allow users to use a list of tuples for the query string parameters inside
   the OpenStack connection classes. This way same key can be specified
   multiple times (LIBCLOUD-153)
   [Dave King]
@@ -2235,7 +2735,7 @@ Compute
   available
   [Tomaz Muraus]
 
-- Fix chmod argument value which is pased to the sftpclient.put
+- Fix chmod argument value which is passed to the sftpclient.put
   method; GITHUB-17
   [John Carr]
 
@@ -2399,7 +2899,7 @@ Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
   [Peter Herndon]
 
 - EC2 Driver availability zones, via ex_list_availability_zones;
-  list_locations rewrite to include availablity zones
+  list_locations rewrite to include availability zones
   [Tomaz Muraus]
 
 - EC2 Driver Idempotency capability in create_node; LIBCLOUD-69

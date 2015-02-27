@@ -284,7 +284,7 @@ class StorageDriver(BaseDriver):
 
     def get_object_cdn_url(self, obj):
         """
-        Return a object CDN URL.
+        Return an object CDN URL.
 
         :param obj: Object instance
         :type  obj: :class:`Object`
@@ -667,7 +667,7 @@ class StorageDriver(BaseDriver):
         :param data: Data to upload.
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :rtype: ``tuple``
@@ -713,7 +713,7 @@ class StorageDriver(BaseDriver):
                         (defauls to False).
 
         :type calculate_hash: ``bool``
-        :param calculate_hash: True to calculate hash of the transfered data.
+        :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
 
         :type chunk_size: ``int``
@@ -742,7 +742,7 @@ class StorageDriver(BaseDriver):
             chunk = ''
             if chunked:
                 response.connection.connection.send(b('%X\r\n' %
-                                                   (len(chunk))))
+                                                      (len(chunk))))
                 response.connection.connection.send(chunk)
                 response.connection.connection.send(b('\r\n'))
                 response.connection.connection.send(b('0\r\n\r\n'))
@@ -754,7 +754,7 @@ class StorageDriver(BaseDriver):
             try:
                 if chunked:
                     response.connection.connection.send(b('%X\r\n' %
-                                                       (len(chunk))))
+                                                          (len(chunk))))
                     response.connection.connection.send(b(chunk))
                     response.connection.connection.send(b('\r\n'))
                 else:

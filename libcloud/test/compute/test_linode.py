@@ -43,7 +43,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.id, "8098")
         self.assertEqual(node.name, 'api-node3')
-        self.assertEqual(node.extra['PLANID'], '3')
+        self.assertEqual(node.extra['PLANID'], '2')
         self.assertTrue('75.127.96.245' in node.public_ips)
         self.assertEqual(node.private_ips, [])
 
@@ -77,7 +77,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 8)
+        self.assertEqual(len(sizes), 9)
         for size in sizes:
             self.assertEqual(size.ram, int(size.name.split(" ")[1]))
 

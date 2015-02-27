@@ -21,13 +21,19 @@ __all__ = [
 ]
 
 
-def get_response_object(url):
+def get_response_object(url, method='GET', headers=None):
     """
     Utility function which uses libcloud's connection class to issue an HTTP
     request.
 
     :param url: URL to send the request to.
     :type url: ``str``
+
+    :param method: HTTP method.
+    :type method: ``str``
+
+    :param headers: Optional request headers.
+    :type headers: ``dict``
 
     :return: Response object.
     :rtype: :class:`Response`.
@@ -36,7 +42,10 @@ def get_response_object(url):
     parsed_qs = parse_qs(parsed_url.query)
     secure = parsed_url.scheme == 'https'
 
+    headers = headers or {}
+    method = method.upper()
+
     con = Connection(secure=secure, host=parsed_url.netloc)
-    response = con.request(method='GET', action=parsed_url.path,
-                           params=parsed_qs)
+    response = con.request(action=parsed_url.path, params=parsed_qs,
+                           headers=headers, method=method)
     return response

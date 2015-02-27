@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:getAllImagesResponse xmlns:ns2="http://ws.api.profitbricks.com/">
+         <return>
+            <cpuHotpluggable>false</cpuHotpluggable>
+            <imageId>03b6c3e7-f2ad-11e3-a036-52540066fee9</imageId>
+            <imageName>windows-2012-r2-server-2014-06</imageName>
+            <imageSize>11264</imageSize>
+            <imageType>HDD</imageType>
+            <memoryHotpluggable>false</memoryHotpluggable>
+            <osType>WINDOWS</osType>
+            <public>true</public>
+            <region>NORTH_AMERICA</region>
+            <writeable>true</writeable>
+         </return>
+         <return>
+            <cpuHotpluggable>true</cpuHotpluggable>
+            <imageId>cd59b162-0289-11e4-9f63-52540066fee9</imageId>
+            <imageName>Debian-7-server-2014-07-01</imageName>
+            <imageSize>2048</imageSize>
+            <imageType>HDD</imageType>
+            <memoryHotpluggable>true</memoryHotpluggable>
+            <osType>LINUX</osType>
+            <public>true</public>
+            <region>NORTH_AMERICA</region>
+            <writeable>true</writeable>
+         </return>
+         <return>
+            <cpuHotpluggable>true</cpuHotpluggable>
+            <imageId>d2f627c4-0289-11e4-9f63-52540066fee9</imageId>
+            <imageName>CentOS-6-server-2014-07-01</imageName>
+            <imageSize>2048</imageSize>
+            <imageType>HDD</imageType>
+            <memoryHotpluggable>true</memoryHotpluggable>
+            <osType>LINUX</osType>
+            <public>true</public>
+            <region>NORTH_AMERICA</region>
+            <writeable>true</writeable>
+         </return>
+      </ns2:getAllImagesResponse>
+   </S:Body>
+</S:Envelope>

@@ -212,8 +212,8 @@ Bad (please avoid):
         description = kwargs.get('description', None)
         public_ips = kwargs.get('public_ips', None)
 
-5. When returning a dictionary, document it's structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. When returning a dictionary, document its structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dynamic nature of Python can be very nice and useful, but if (ab)use it in a
 wrong way it can also make it hard for the API consumer to understand what is
@@ -443,7 +443,7 @@ Contributing Bigger Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are contributing a bigger change (e.g. large new feature or a new
-provider driver) you need to have have signed Apache Individual Contributor
+provider driver) you need to have signed Apache Individual Contributor
 License Agreement (ICLA) in order to have your patch accepted.
 
 You can find more information on how to sign and file an ICLA on the

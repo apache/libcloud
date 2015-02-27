@@ -43,16 +43,9 @@ class RimuHostingException(Exception):
 
 
 class RimuHostingResponse(JsonResponse):
-    def __init__(self, response, connection):
-        self.body = response.read()
-        self.status = response.status
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.connection = connection
-
-        if self.success():
-            self.object = self.parse_body()
-
+    """
+    Response Class for RimuHosting driver
+    """
     def success(self):
         if self.status == 403:
             raise InvalidCredsError()
@@ -159,8 +152,7 @@ class RimuHostingNodeDriver(NodeDriver):
                  state=NodeState.RUNNING,
                  public_ips=(
                      [order['allocated_ips']['primary_ip']]
-                     + order['allocated_ips']['secondary_ips']
-                 ),
+                     + order['allocated_ips']['secondary_ips']),
                  private_ips=[],
                  driver=self.connection.driver,
                  extra={
@@ -275,9 +267,11 @@ class RimuHostingNodeDriver(NodeDriver):
 
         data = {
             'instantiation_options': {
-                'domain_name': name, 'distro': image.id
+                'domain_name': name,
+                'distro': image.id
             },
             'pricing_plan_code': size.id,
+            'vps_parameters': {}
         }
 
         if 'ex_control_panel' in kwargs:
@@ -288,7 +282,7 @@ class RimuHostingNodeDriver(NodeDriver):
         data['instantiation_options']['password'] = auth.password
 
         if 'ex_billing_oid' in kwargs:
-            #TODO check for valid oid.
+            # TODO check for valid oid.
             data['billing_oid'] = kwargs['ex_billing_oid']
 
         if 'ex_host_server_oid' in kwargs:
@@ -299,32 +293,30 @@ class RimuHostingNodeDriver(NodeDriver):
                 kwargs['ex_vps_order_oid_to_clone']
 
         if 'ex_num_ips' in kwargs and int(kwargs['ex_num_ips']) > 1:
-            if not 'ex_extra_ip_reason' in kwargs:
+            if 'ex_extra_ip_reason' not in kwargs:
                 raise RimuHostingException(
                     'Need an reason for having an extra IP')
             else:
-                if not 'ip_request' in data:
+                if 'ip_request' not in data:
                     data['ip_request'] = {}
                 data['ip_request']['num_ips'] = int(kwargs['ex_num_ips'])
                 data['ip_request']['extra_ip_reason'] = \
                     kwargs['ex_extra_ip_reason']
 
         if 'ex_memory_mb' in kwargs:
-            if not 'vps_parameters' in data:
-                data['vps_parameters'] = {}
             data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
 
         if 'ex_disk_space_mb' in kwargs:
-            if not 'ex_vps_parameters' in data:
-                data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_mb'] = \
                 kwargs['ex_disk_space_mb']
 
         if 'ex_disk_space_2_mb' in kwargs:
-            if not 'vps_parameters' in data:
-                data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_2_mb'] =\
                 kwargs['ex_disk_space_2_mb']
+
+        # Don't send empty 'vps_parameters' attribute
+        if not data['vps_parameters']:
+            del data['vps_parameters']
 
         res = self.connection.request(
             '/orders/new-vps',

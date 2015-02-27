@@ -13,7 +13,7 @@
       "STATUS": 1,
       "ALERT_DISKIO_ENABLED": 1,
       "CREATE_DT": "2012-05-04 19:31:30.0",
-      "TOTALHD": 98304,
+      "TOTALHD": 49152,
       "ALERT_BWQUOTA_THRESHOLD": 80,
       "TOTALRAM": 2048,
       "ALERT_BWIN_THRESHOLD": 5,
@@ -22,11 +22,11 @@
       "ALERT_BWOUT_ENABLED": 1,
       "BACKUPSENABLED": 1,
       "ALERT_CPU_THRESHOLD": 90,
-      "PLANID": "3",
+      "PLANID": "2",
       "BACKUPWEEKLYDAY": 0,
       "LABEL": "api-node3",
       "LPM_DISPLAYGROUP": "test",
-      "TOTALXFER": 4000
+      "TOTALXFER": 3000
     }
   ],
   "ACTION": "linode.list"

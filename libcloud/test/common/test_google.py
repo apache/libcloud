@@ -31,6 +31,7 @@ from libcloud.common.google import (GoogleAuthError,
                                     GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
+                                    GoogleGCEServiceAcctAuthConnection,
                                     GoogleBaseConnection)
 from libcloud.test.secrets import GCE_PARAMS
 
@@ -56,10 +57,13 @@ class GoogleBaseAuthConnectionTest(LibcloudTestCase):
     def setUp(self):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
-        self.mock_scope = ['https://www.googleapis.com/auth/foo']
-        kwargs = {'scope': self.mock_scope}
+        self.mock_scopes = ['foo', 'bar']
+        kwargs = {'scopes': self.mock_scopes}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
                                                      **kwargs)
+
+    def test_scopes(self):
+        self.assertEqual(self.conn.scopes, 'foo bar')
 
     def test_add_default_headers(self):
         old_headers = {}
@@ -88,8 +92,8 @@ class GoogleInstalledAppAuthConnectionTest(LibcloudTestCase):
     def setUp(self):
         GoogleInstalledAppAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                          GoogleAuthMockHttp)
-        self.mock_scope = ['https://www.googleapis.com/auth/foo']
-        kwargs = {'scope': self.mock_scope}
+        self.mock_scopes = ['https://www.googleapis.com/auth/foo']
+        kwargs = {'scopes': self.mock_scopes}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
                                                      **kwargs)
 
@@ -122,21 +126,23 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
     GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
     GoogleServiceAcctAuthConnection.get_new_token = \
         lambda x: x._token_request({})
+    GoogleGCEServiceAcctAuthConnection.get_new_token = \
+        lambda x: x._token_request({})
     GoogleBaseConnection._now = lambda x: datetime.datetime(2013, 6, 26,
                                                             19, 0, 0)
 
     def setUp(self):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
-        self.mock_scope = ['https://www.googleapis.com/auth/foo']
-        kwargs = {'scope': self.mock_scope, 'auth_type': 'IA'}
+        self.mock_scopes = ['https://www.googleapis.com/auth/foo']
+        kwargs = {'scopes': self.mock_scopes, 'auth_type': 'IA'}
         self.conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
 
     def test_auth_type(self):
         self.assertRaises(GoogleAuthError, GoogleBaseConnection, *GCE_PARAMS,
                           **{'auth_type': 'XX'})
 
-        kwargs = {'scope': self.mock_scope}
+        kwargs = {'scopes': self.mock_scopes}
 
         if SHA256:
             kwargs['auth_type'] = 'SA'
@@ -148,6 +154,11 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         conn2 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
         self.assertTrue(isinstance(conn2.auth_conn,
                                    GoogleInstalledAppAuthConnection))
+
+        kwargs['auth_type'] = 'GCE'
+        conn3 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+        self.assertTrue(isinstance(conn3.auth_conn,
+                                   GoogleGCEServiceAcctAuthConnection))
 
     def test_add_default_headers(self):
         old_headers = {}

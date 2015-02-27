@@ -178,7 +178,7 @@ class DigitalOceanNodeDriver(NodeDriver):
         return res.status == httplib.OK
 
     def _to_node(self, data):
-        extra_keys = ['backups_active', 'region_id']
+        extra_keys = ['backups_active', 'region_id', 'image_id', 'size_id']
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
         else:

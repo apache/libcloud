@@ -40,7 +40,7 @@ class NewZoneVersion(object):
     In effect, this is a transaction.
 
     Any calls made inside this context manager will be applied to a new version
-    id. If your changes are succesful (and only if they are successful) they
+    id. If your changes are successful (and only if they are successful) they
     are activated.
     """
 
@@ -88,16 +88,16 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
     connectionCls = GandiDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.NS: 'NS',
-        RecordType.MX: 'MX',
         RecordType.A: 'A',
         RecordType.AAAA: 'AAAA',
         RecordType.CNAME: 'CNAME',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
-        RecordType.SPF: 'SPF',
-        RecordType.WKS: 'WKS',
         RecordType.LOC: 'LOC',
+        RecordType.MX: 'MX',
+        RecordType.NS: 'NS',
+        RecordType.SPF: 'SPF',
+        RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
+        RecordType.WKS: 'WKS',
     }
 
     def _to_zone(self, zone):

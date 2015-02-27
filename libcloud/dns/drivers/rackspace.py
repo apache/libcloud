@@ -93,7 +93,15 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     def has_completed(self, response):
         status = response.object['status']
         if status == 'ERROR':
-            raise LibcloudError(response.object['error']['message'],
+            data = response.object['error']
+
+            if 'code' and 'message' in data:
+                message = '%s - %s (%s)' % (data['code'], data['message'],
+                                            data['details'])
+            else:
+                message = data['message']
+
+            raise LibcloudError(message,
                                 driver=self.driver)
 
         return status == 'COMPLETED'
@@ -107,7 +115,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
             raise LibcloudError("Auth version %s not supported" %
                                 (self._auth_version))
 
-        public_url = ep.get('publicURL', None)
+        public_url = ep.url
 
         # This is a nasty hack, but because of how global auth and old accounts
         # work, there is no way around it.
@@ -145,9 +153,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.CNAME: 'CNAME',
         RecordType.MX: 'MX',
         RecordType.NS: 'NS',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
         RecordType.PTR: 'PTR',
+        RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT',
     }
 
     def iterate_zones(self):
@@ -210,7 +218,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         extra = extra if extra else {}
 
         # Email address is required
-        if not 'email' in extra:
+        if 'email' not in extra:
             raise ValueError('"email" key must be present in extra dictionary')
 
         payload = {'name': domain, 'emailAddress': extra['email'],
@@ -318,6 +326,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         updated_record = get_new_obj(obj=record, klass=Record,
                                      attributes={'type': type,
                                                  'data': data,
+                                                 'driver': self,
                                                  'extra': merged})
         return updated_record
 

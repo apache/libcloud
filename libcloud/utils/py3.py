@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Libcloud Python 2.x and 3.x compatibility layer
-# Some methods bellow are taken from Django PYK3 port which is licensed under 3
+# Some methods below are taken from Django PYK3 port which is licensed under 3
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
@@ -30,6 +30,7 @@ except ImportError:
 
 PY2 = False
 PY25 = False
+PY26 = False
 PY27 = False
 PY3 = False
 PY32 = False
@@ -37,10 +38,13 @@ PY32 = False
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
     PY2 = True
 
-if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+if sys.version_info >= (2, 5) and sys.version_info < (2, 6):
     PY25 = True
 
-if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+    PY26 = True
+
+if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
     PY27 = True
 
 if sys.version_info >= (3, 0):
@@ -54,6 +58,7 @@ if PY3:
     from io import StringIO
     import urllib
     import urllib as urllib2
+    # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
 
@@ -83,16 +88,33 @@ if PY3:
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
 
+    def ensure_string(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode('utf-8')
+        else:
+            raise TypeError("Invalid argument %r for ensure_string()" % (s,))
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
     u = str
+
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return bytes([s])
 
     def dictvalues(d):
         return list(d.values())
 
     def tostring(node):
         return ET.tostring(node, encoding='unicode')
+
+    def hexadigits(s):
+        # s needs to be a byte string.
+        return [format(x, "x") for x in s]
+
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA
@@ -125,12 +147,16 @@ else:
 
     method_type = types.MethodType
 
-    b = bytes = str
+    b = bytes = ensure_string = str
 
     def byte(n):
         return n
 
     u = unicode
+
+    def bchr(s):
+        """Take an integer and make a 1-character byte string."""
+        return chr(s)
 
     def next(i):
         return i.next()
@@ -146,11 +172,16 @@ else:
             s = s.encode('utf8')
         return _urlquote(s, safe)
 
+    def hexadigits(s):
+        # s needs to be a string.
+        return [x.encode("hex") for x in s]
+
 if PY25:
     import posixpath
 
     # Taken from http://jimmyg.org/work/code/barenecessities/index.html
     # (MIT license)
+    # pylint: disable=function-redefined
     def relpath(path, start=posixpath.curdir):   # NOQA
         """Return a relative version of a path"""
         if not path:

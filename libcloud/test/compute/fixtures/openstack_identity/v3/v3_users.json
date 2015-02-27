@@ -1,0 +1,131 @@
+{
+    "users": [
+        {
+            "name": "cloud",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/a"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "openstack-test@localhost",
+            "id": "a"
+        },
+        {
+            "name": "trove",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/1ec8cface8614a2786c99c87c7116f09"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "trove@localhost",
+            "id": "1ec8cface8614a2786c99c87c7116f09"
+        },
+        {
+            "domain_id": "default",
+            "name": "tomaz",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/458f20357227462e8a17355628984515"
+            },
+            "id": "458f20357227462e8a17355628984515",
+            "enabled": true,
+            "email": "tomaz@tomaz.me",
+            "default_project_id": "3130562cafe147f289bbb3b557f2e7ed"
+        },
+        {
+            "name": "admin",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/55fba80f022b4855acfc700ae13b2b24"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "openstack-test@localhost",
+            "id": "55fba80f022b4855acfc700ae13b2b24"
+        },
+        {
+            "name": "nova",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/679c69c6cfd049ebb3ad85734dfea61a"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "nova@localhost",
+            "id": "679c69c6cfd049ebb3ad85734dfea61a"
+        },
+        {
+            "name": "glance",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/6f10443170ad4daf81bff251944da9d7"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "glance@localhost",
+            "id": "6f10443170ad4daf81bff251944da9d7"
+        },
+        {
+            "name": "ceilometer",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/747cf6a2bf75453f847f307823e8eac9"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "ceilometer@localhost",
+            "id": "747cf6a2bf75453f847f307823e8eac9"
+        },
+        {
+            "name": "swift",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/a0081ee2f9674458bcd7731b6dcbf5f9"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "swift@localhost",
+            "id": "a0081ee2f9674458bcd7731b6dcbf5f9"
+        },
+        {
+            "domain_id": "default",
+            "name": "amann",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/aafb942e4c3d4fe1ba33088f3e7c5996"
+            },
+            "id": "aafb942e4c3d4fe1ba33088f3e7c5996",
+            "enabled": true,
+            "email": "andrew@divvycloud.com",
+            "default_project_id": "3130562cafe147f289bbb3b557f2e7ed"
+        },
+        {
+            "name": "heat",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/d16cad10e4f648e0bd9ab5a0359f6736"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "heat@localhost",
+            "id": "d16cad10e4f648e0bd9ab5a0359f6736"
+        },
+        {
+            "name": "cinder",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/f3a4590b0d66497894ee9a3d73c09a95"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "cinder@localhost",
+            "id": "f3a4590b0d66497894ee9a3d73c09a95"
+        },
+        {
+            "name": "neutron",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/users/fa9a7fedeb2844ff89e37d70a2519441"
+            },
+            "domain_id": "default",
+            "enabled": true,
+            "email": "neutron@localhost",
+            "id": "fa9a7fedeb2844ff89e37d70a2519441"
+        }
+    ],
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/users",
+        "previous": null,
+        "next": null
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/users/a/projects",
+        "previous": null,
+        "next": null
+    },
+    "projects": []
+}

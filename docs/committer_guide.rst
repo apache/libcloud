@@ -83,12 +83,24 @@ preparing a release.
 * Make sure tests pass on all the supported Python versions (``tox``)
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
+* Remove the ``tox`` directory with ``rm -rf .tox``
+* Remove the _secrets_ file with ``rm test/secrets.py``
 
-2. Creating release artifacts
+2. Update JIRA
+~~~~~~~~~~~~~~
+
+* Create a new JIRA version for the release in question (if one doesn't exist
+  yet)
+* Close all the corresponding JIRA tickets and set ``Fix Version/s`` field
+  to the current version
+* Release the JIRA version
+
+3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have a script that runs the required setup.py commands and then hashes
-and signs the files. To run it:
+and signs the files. You will need the latest version of ``pip`` and the ``wheel``
+package. To run it:
 
 .. sourcecode:: bash
 
@@ -102,7 +114,33 @@ This should result in a set of
 ``apache-libcloud-${VERSION}.{tar.bz2,tar.gz,zip}{,asc,md5,sha1}`` files that
 are suitable to be uploaded for a release.
 
-3. Uploading release artifacts to Apache servers
+Copy the artifacts in another directory, unpack one of them and test it with ``tox``.
+
+4. Tagging a release
+~~~~~~~~~~~~~~~~~~~~
+
+Tag the tentative release with a ``-tentative`` postfix.
+
+.. sourcecode:: bash
+
+    git tag <version> <commit hash>
+
+For example:
+
+.. sourcecode:: bash
+
+    git tag v0.15.0-tentative 105b9610835f99704996d861d613c5a9a8b3f8b1
+
+5. Upload the release artifacts and start a [VOTE] thread
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Upload all release artifacts including the ``whl`` files to your people.apache.org
+space. Then start a [VOTE] thread on the dev@libcloud.apache.org mailing list.
+
+Once the vote has passed tag the release with a new tag, removing the ``-tentative`` postfix.
+Upload the release artifacts to Apache servers and Pypi.
+
+6. Uploading release artifacts to Apache servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Add release artifacts to the dist SVN repository at
@@ -117,20 +155,7 @@ are suitable to be uploaded for a release.
   are automatically archived and available at
   https://dist.apache.org/repos/dist/release/libcloud/.
 
-4. Tagging a release
-~~~~~~~~~~~~~~~~~~~~
-
-.. sourcecode:: bash
-
-    git tag <version> <commit hash>
-
-For example:
-
-.. sourcecode:: bash
-
-    git tag v0.13.0 105b9610835f99704996d861d613c5a9a8b3f8b1
-
-5. Publishing package to PyPi
+7. Publishing package to PyPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **For consistency and security reasons packages are always uploaded to PyPi
@@ -143,19 +168,20 @@ command.**
 * Go to the `PyPi release management page`_, find a new release and click on
   "files" link.
 
-* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz and
-  .zip). For ``File Type`` select ``Source`` and for ``Python Version`` select
-  ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
+* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz,
+  .zip, and .whl). For ``File Type`` select ``Source`` (except for ``.whl``
+  file where you should select ``Python Wheel``) and for ``Python Version``
+  select ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
   signature for each file (``PGP signature (.asc)`` field).
 
 Once all the files have been uploaded, the page should look similar to the
-screenshot bellow.
+screenshot below.
 
 .. image:: _static/images/pypi_files_page.png
    :width: 700px
    :align: center
 
-6. Verifying the release artifact check sums
+8. Verifying the release artifact check sums
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To verify that nothing went wrong doing the release process, run the
@@ -176,21 +202,25 @@ For example
 
     ./dist/verify_checksums.sh apache-libcloud-0.13.2
 
-7. Updating doap_libcloud.rdf file
+9. Updating doap_libcloud.rdf file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add information about the new release to the ``doap_libcloud.rdf`` file in the
 root of the main code repository.
 
-8. Updating website
-~~~~~~~~~~~~~~~~~~~
+10. Updating website
+~~~~~~~~~~~~~~~~~~~~
 
-* Update "News" page (``content/news.mdtext`` file)
-* Update "Downloads" page (``content/downloads.mdtext`` file)
-* Update "Get it" section in the sidebar (``templates/blocks/other.html`` file)
+Check out the website using SVN: ``svn co https://svn.apache.org/repos/asf/libcloud/site/trunk``
 
-9. Sending announcements
-~~~~~~~~~~~~~~~~~~~~~~~~
+* Upate the front page (``source/index.html`` file)
+* Update "Downloads" page (``source/downloads.md`` file)
+* Add a blog entry in the ``_posts`` directory.
+
+Build the site locally and make sure everything is correct. Check the ``README.md`` file.
+
+11. Sending announcements
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Send a release announcement to {dev,users}@libcloud.apache.org. If it's a
   major release also send it to announce@apache.org.
@@ -233,6 +263,8 @@ Body::
 
     Release artifacts can be found at <link to your Apache space where a release
     artifacts can be found>.
+
+    KEYS file can found at https://dist.apache.org/repos/dist/release/libcloud/KEYS
 
     Please test the release and post your votes.
 

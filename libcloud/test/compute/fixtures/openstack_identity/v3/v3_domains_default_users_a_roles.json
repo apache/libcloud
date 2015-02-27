@@ -1,0 +1,16 @@
+{
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/domains/default/users/a/roles",
+        "previous": null,
+        "next": null
+    },
+    "roles": [
+        {
+            "id": "d",
+            "links": {
+                "self": "http://192.168.18.100:5000/v3/roles/d"
+            },
+            "name": "admin"
+        }
+    ]
+}

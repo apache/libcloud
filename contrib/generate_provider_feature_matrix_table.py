@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import with_statement
 
 import os
 import sys
@@ -47,6 +48,8 @@ BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
                      'destroy_node', 'list_images', 'list_sizes',
                      'deploy_node'],
+    'compute_image_management': ['list_images', 'get_image',
+                                 'create_image', 'delete_image', 'copy_image'],
     'compute_block_storage': ['list_volumes', 'create_volume',
                               'destroy_volume',
                               'attach_volume', 'detach_volume',
@@ -81,6 +84,13 @@ FRIENDLY_METHODS_NAMES = {
         'list_images': 'list images',
         'list_sizes': 'list sizes',
         'deploy_node': 'deploy node'
+    },
+    'compute_image_management': {
+        'list_images': 'list images',
+        'get_image': 'get image',
+        'create_image': 'create image',
+        'copy_image': 'copy image',
+        'delete_image': 'delete image'
     },
     'compute_block_storage': {
         'list_volumes': 'list volumes',
@@ -156,8 +166,8 @@ def get_provider_api_names(Provider):
 def generate_providers_table(api):
     result = {}
 
-    if api in ['compute_main', 'compute_block_storage',
-               'compute_key_pair_management']:
+    if api in ['compute_main', 'compute_image_management',
+               'compute_block_storage', 'compute_key_pair_management']:
         driver = NodeDriver
         drivers = COMPUTE_DRIVERS
         provider = ComputeProvider
@@ -354,6 +364,8 @@ def generate_tables():
 
         if api == 'compute_main':
             file_name_2 = '_supported_methods_main.rst'
+        elif api == 'compute_image_management':
+            file_name_2 = '_supported_methods_image_management.rst'
         elif api == 'compute_block_storage':
             file_name_2 = '_supported_methods_block_storage.rst'
         elif api == 'compute_key_pair_management':

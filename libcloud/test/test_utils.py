@@ -33,6 +33,8 @@ from libcloud.utils.misc import get_driver, set_driver
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import bchr
+from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
@@ -40,6 +42,8 @@ from libcloud.utils.misc import get_secure_random_string
 from libcloud.utils.networking import is_public_subnet
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
+from libcloud.utils.networking import join_ipv4_segments
+from libcloud.utils.networking import increment_ipv4_segments
 from libcloud.storage.drivers.dummy import DummyIterator
 
 
@@ -262,6 +266,20 @@ class TestUtils(unittest.TestCase):
             value = get_secure_random_string(size=i)
             self.assertEqual(len(value), i)
 
+    def test_hexadigits(self):
+        self.assertEqual(hexadigits(b('')), [])
+        self.assertEqual(hexadigits(b('a')), ['61'])
+        self.assertEqual(hexadigits(b('AZaz09-')),
+                         ['41', '5a', '61', '7a', '30', '39', '2d'])
+
+    def test_bchr(self):
+        if PY3:
+            self.assertEqual(bchr(0), b'\x00')
+            self.assertEqual(bchr(97), b'a')
+        else:
+            self.assertEqual(bchr(0), '\x00')
+            self.assertEqual(bchr(97), 'a')
+
 
 class NetworkingUtilsTestCase(unittest.TestCase):
     def test_is_public_and_is_private_subnet(self):
@@ -338,6 +356,29 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             status = is_valid_ip_address(address=address,
                                          family=socket.AF_INET6)
             self.assertFalse(status)
+
+    def test_join_ipv4_segments(self):
+        values = [
+            (('127', '0', '0', '1'), '127.0.0.1'),
+            (('255', '255', '255', '0'), '255.255.255.0'),
+        ]
+
+        for segments, joined_ip in values:
+            result = join_ipv4_segments(segments=segments)
+            self.assertEqual(result, joined_ip)
+
+    def test_increment_ipv4_segments(self):
+        values = [
+            (('127', '0', '0', '1'), '127.0.0.2'),
+            (('255', '255', '255', '0'), '255.255.255.1'),
+            (('254', '255', '255', '255'), '255.0.0.0'),
+            (('100', '1', '0', '255'), '100.1.1.0'),
+        ]
+
+        for segments, incremented_ip in values:
+            result = increment_ipv4_segments(segments=segments)
+            result = join_ipv4_segments(segments=result)
+            self.assertEqual(result, incremented_ip)
 
 
 if __name__ == '__main__':

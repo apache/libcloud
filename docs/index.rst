@@ -31,11 +31,13 @@ Main
 
     getting_started
     supported_providers
+    third_party_drivers
     compute/index
     storage/index
     loadbalancer/index
     dns/index
     troubleshooting
+    api_docs
     faq
     other/*
 

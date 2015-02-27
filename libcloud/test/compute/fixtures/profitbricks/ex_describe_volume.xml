@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:getStorageResponse xmlns:ns2="http://ws.api.profitbricks.com/">
+         <return>
+            <requestId>3767716</requestId>
+            <dataCenterId>905f1346-d199-425d-a035-7dc28f6819cd</dataCenterId>
+            <dataCenterVersion>2</dataCenterVersion>
+            <storageId>00d0b9e7-e016-456f-85a0-517aa9a34bf5</storageId>
+            <size>50</size>
+            <storageName>StackPointCloud-Volume</storageName>
+            <mountImage>
+               <imageId>cd59b162-0289-11e4-9f63-52540066fee9</imageId>
+               <imageName>Debian-7-server-2014-07-01</imageName>
+            </mountImage>
+            <provisioningState>AVAILABLE</provisioningState>
+            <creationTime>2014-07-21T17:37:45.958Z</creationTime>
+            <lastModificationTime>2014-07-21T17:37:45.958Z</lastModificationTime>
+         </return>
+      </ns2:getStorageResponse>
+   </S:Body>
+</S:Envelope>

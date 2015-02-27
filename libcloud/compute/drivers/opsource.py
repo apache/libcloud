@@ -36,7 +36,7 @@ from libcloud.compute.types import NodeState, Provider
 # Roadmap / TODO:
 #
 # 0.1 - Basic functionality:  create, delete, start, stop, reboot - servers
-#                      (base OS images only, no customer images suported yet)
+#                      (base OS images only, no customer images supported yet)
 #   x implement list_nodes()
 #   x implement create_node()  (only support Base OS images,
 #                                no customer images yet)
@@ -46,7 +46,7 @@ from libcloud.compute.types import NodeState, Provider
 #   x implement list_images()   (only support Base OS images,
 #                                 no customer images yet)
 #   x implement list_locations()
-#	x implement ex_* extension functions for opsource-specific featurebody =s
+#       x implement ex_* extension functions for opsource-specific featurebody
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
@@ -67,7 +67,8 @@ from libcloud.compute.types import NodeState, Provider
 #       - delete customer images
 #       - modify customer images
 #   - add "pending-servers" in list_nodes()
-#	- implement various ex_* extension functions for opsource-specific features
+#       - implement various ex_* extension functions for opsource-specific
+#         features
 #       - ex_modify_server()
 #       - ex_add_storage_to_server()
 #       - ex_snapshot_server()  (create's customer image)
@@ -358,8 +359,8 @@ class OpsourceNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_images`
         """
-        return self._to_base_images(self.connection.request('base/image')
-                   .object)
+        return self._to_base_images(
+            self.connection.request('base/image').object)
 
     def list_sizes(self, location=None):
         return [

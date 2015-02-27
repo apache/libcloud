@@ -107,14 +107,9 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         # Command is specified as part of GET call
         context['command'] = command
-        result = super(CloudStackConnection, self).async_request(action=action,
-                                                                 params=params,
-                                                                 data=data,
-                                                                 headers=
-                                                                 headers,
-                                                                 method=method,
-                                                                 context=
-                                                                 context)
+        result = super(CloudStackConnection, self).async_request(
+            action=action, params=params, data=data, headers=headers,
+            method=method, context=context)
         return result['jobresult']
 
     def get_request_kwargs(self, action, params=None, data='', headers=None,
@@ -156,7 +151,15 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         result = self.request(action=self.driver.path, params=params,
                               data=data, headers=headers, method=method)
 
-        command = command.lower() + 'response'
+        command = command.lower()
+
+        # Work around for older verions which don't return "response" suffix
+        # in delete ingress rule response command name
+        if (command == 'revokesecuritygroupingress' and
+                'revokesecuritygroupingressresponse' not in result.object):
+            command = command
+        else:
+            command = command + 'response'
 
         if command not in result.object:
             raise MalformedResponseError(

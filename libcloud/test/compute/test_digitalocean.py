@@ -79,6 +79,8 @@ class DigitalOceanTests(LibcloudTestCase):
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].name, 'test-2')
         self.assertEqual(nodes[0].public_ips, [])
+        self.assertEqual(nodes[0].extra['image_id'], 1601)
+        self.assertEqual(nodes[0].extra['size_id'], 66)
 
     def test_create_node_invalid_size(self):
         image = NodeImage(id='invalid', name=None, driver=self.driver)

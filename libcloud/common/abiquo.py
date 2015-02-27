@@ -134,7 +134,7 @@ class AbiquoResponse(XmlResponse):
         """
         Determine if the request was successful.
 
-        Any of the 2XX HTTP response codes are accepted as successfull requests
+        Any of the 2XX HTTP response codes are accepted as successful requests
 
         :rtype:  ``bool``
         :return: successful request or not.
@@ -192,7 +192,8 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
 
         :type  headers: ``dict``
         :param headers: Default input headers
-        :rtype          ``dict``
+
+        :rtype:         ``dict``
         :return:        Default input headers with the 'Authorization'
                         header
         """

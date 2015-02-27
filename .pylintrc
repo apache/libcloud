@@ -1,0 +1,35 @@
+[MASTER]
+# Add <file or directory> to the black list. It should be a base name, not a
+# path. You may set this option multiple times.
+ignore=test
+
+
+# Pickle collected data for later comparisons.
+persistent=yes
+
+# List of plugins (as comma separated values of python modules names) to load,
+# usually to register additional checkers.
+load-plugins=
+
+
+[MESSAGES CONTROL]
+disable=redefined-builtin,too-many-arguments,too-few-public-methods,missing-docstring,invalid-name,abstract-method,no-self-use
+
+
+[TYPECHECK]
+# List of members which are set dynamically and missed by pylint inference
+# system, and so shouldn't trigger E0201 when accessed. Python regular
+# expressions are accepted.
+generated-members=async_request,objects
+
+[VARIABLES]
+
+# Tells wether we should check for unused import in __init__ files.
+init-import=no
+
+# A regular expression matching names used for dummy variables (i.e. not used).
+dummy-variables-rgx=_|dummy
+
+# List of additional names supposed to be defined in builtins. Remember that
+# you should avoid to define new builtins when possible.
+additional-builtins=

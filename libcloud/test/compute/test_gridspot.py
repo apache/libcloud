@@ -48,7 +48,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         GridspotMockHttp.type = 'BAD_AUTH'
         try:
             self.driver.list_nodes()
-             # Above command should have thrown an InvalidCredsException
+            # Above command should have thrown an InvalidCredsException
             self.assertTrue(False)
         except InvalidCredsError:
             self.assertTrue(True)

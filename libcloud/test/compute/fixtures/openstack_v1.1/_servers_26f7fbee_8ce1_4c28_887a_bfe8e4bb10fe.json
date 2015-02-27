@@ -40,12 +40,13 @@
                 }
             ]
         },
-        "config_drive": "",
+        "config_drive": "True",
         "id": "26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe",
         "metadata": {
             "My Server Name" : "Apache1"
         },
-        "OS-DCF:diskConfig": "AUTO"
+        "OS-DCF:diskConfig": "AUTO",
+        "OS-EXT-AZ:availability_zone": "testaz"
 
     }
 }
