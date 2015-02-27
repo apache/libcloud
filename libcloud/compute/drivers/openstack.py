@@ -177,7 +177,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             'volume_type': None,
             'metadata': {
                 'contents': name,
-            }
+            },
+            'availability_zone': location
         }
 
         if snapshot:
