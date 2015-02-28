@@ -4,6 +4,14 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Use native ``ssl.match_hostname`` functionality when running on Python >=
+  3.2 and only require ``backports.ssl_match_hostname`` dependency on Python
+  versions < 3.2.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
