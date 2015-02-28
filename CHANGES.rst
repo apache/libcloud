@@ -54,6 +54,15 @@ DNS
   (GITHUB-460)
   [Vanč Levstik]
 
+- Correctly handle MX records priority in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Allow user to create an A record which points directly to the domain zone
+  name in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
