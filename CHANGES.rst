@@ -15,6 +15,16 @@ General
 Compute
 ~~~~~~~
 
+- StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
+  in their extra dicts containing the snapshot ID the volume was based on.
+  (GITHUB-479)
+  [Allard Hoeve]
+
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+
 - VolumeSnapshots now have a `created` attribute that is a `datetime`
   field showing the creation datetime of the snapshot. The field in
   VolumeSnapshot.extra containing the original string is maintained, so
@@ -60,6 +70,18 @@ Compute
 - Add affinity group support to CloudStack driver
   (LIBCLOUD-671, GITHUB-468)
   [Mateusz Korszun]
+
+- Allow Filtering in EC2 list_images() driver
+  (GITHUB-456, LIBCLOUD-667)
+  [Katriel Traum]
+
+- Add ex_list_ip_forwarding_rules() to CloudStack driver
+  (GITHUB-483)
+  [Atsushi Sasaki]
+
+- Add AURORA compute driver
+  (LIBCLOUD-641, GITHUB-477)
+  [Wido den Hollander]
 
 DNS
 ~~~
