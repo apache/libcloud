@@ -23,13 +23,13 @@ import ssl
 import base64
 import warnings
 
-from backports.ssl_match_hostname import match_hostname, CertificateError
-
 import libcloud.security
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlunquote
+from libcloud.utils.py3 import match_hostname
+from libcloud.utils.py3 import CertificateError
 
 
 __all__ = [
