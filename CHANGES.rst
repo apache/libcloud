@@ -7,6 +7,12 @@ Changes with Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
+
 - Improve GCE create_node, make sure ex_get_disktype function
   (GITHUB-448)
   [Markos Gogoulos]

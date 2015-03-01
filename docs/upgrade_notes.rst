@@ -5,6 +5,16 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Development
+-----------
+
+* The base signature of NodeDriver.create_volume has changed. The snapshot
+  argument is now expected to be a VolumeSnapshot instead of a string.
+  The older signature was never correct for built-in drivers, but custom
+  drivers may break. (GCE accepted strings, names or None and still does.
+  Other drivers did not implement creating volumes from snapshots at all 
+  until now.)
+
 Libcloud 0.16.0
 ---------------
 
