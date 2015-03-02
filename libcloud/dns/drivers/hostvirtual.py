@@ -61,7 +61,7 @@ class HostVirtualDNSConnection(HostVirtualConnection):
 class HostVirtualDNSDriver(DNSDriver):
     type = Provider.HOSTVIRTUAL
     name = 'Host Virtual DNS'
-    website = 'http://www.vr.org/'
+    website = 'https://www.hostvirtual.com/'
     connectionCls = HostVirtualDNSConnection
 
     RECORD_TYPE_MAP = {

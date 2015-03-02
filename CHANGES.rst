@@ -124,6 +124,11 @@ Compute
   (LIBCLOUD-676, GITHUB-482)
   [John Kinsella]
 
+- Various improvements in the HostVirual driver (code refactoring, support for
+  managing "packages").
+  (LIBCLOUD-670, GITHUB-472)
+  [Dinesh Bhoopathy]
+
 DNS
 ~~~
 
