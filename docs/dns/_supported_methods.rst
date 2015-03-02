@@ -15,7 +15,7 @@ Provider              list zones list records create zone update zone create rec
 
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
-.. _`Host Virtual DNS`: http://www.vr.org/
+.. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/

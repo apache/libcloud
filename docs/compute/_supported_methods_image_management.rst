@@ -100,7 +100,7 @@ Provider                              list images get image create image delete 
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
-.. _`HostVirtual`: http://www.vr.org
+.. _`HostVirtual`: https://www.hostvirtual.com/
 .. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
