@@ -235,6 +235,10 @@ Compute
   returned by the OpenStack driver.
   (LIBCLOUD-730, GITHUB-557)
 
+- Add new driver for Onapp IaaS platform.
+  (LIBCLOUD-691, GITHUB-502)
+  [Matthias Wiesner]
+
 Storage
 ~~~~~~~
 
