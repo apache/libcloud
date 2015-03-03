@@ -148,7 +148,7 @@ class HostVirtualNodeDriver(NodeDriver):
 
         if not self._is_valid_fqdn(name):
             raise HostVirtualException(
-                500, "Name should be a valid FQDN (e.g, hostname.example.com )")
+                500, "Name should be a valid FQDN (e.g, hostname.example.com)")
 
         # simply order a package first
         pkg = self.ex_order_package(size)
