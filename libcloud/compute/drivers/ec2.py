@@ -4690,6 +4690,8 @@ class BaseEC2NodeDriver(NodeDriver):
                           namespace=NAMESPACE)
         size = findtext(element=element, xpath='volumeSize',
                         namespace=NAMESPACE)
+        created = parse_date(findtext(element=element, xpath='startTime',
+                             namespace=NAMESPACE))
 
         # Get our tags
         tags = self._get_resource_tags(element)
@@ -4707,7 +4709,7 @@ class BaseEC2NodeDriver(NodeDriver):
         extra['name'] = name
 
         return VolumeSnapshot(snapId, size=int(size),
-                              driver=self, extra=extra)
+                              driver=self, extra=extra, created=created)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]

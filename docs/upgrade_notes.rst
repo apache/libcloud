@@ -5,6 +5,15 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Development
+-----------
+
+* VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+
+
 Libcloud 0.16.0
 ---------------
 
