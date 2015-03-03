@@ -155,6 +155,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
     Provider.AURORACOMPUTE:
     ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
+    Provider.ONAPP:
+    ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

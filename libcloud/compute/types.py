@@ -132,6 +132,7 @@ class Provider(object):
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
     KILI = 'kili'
+    ONAPP = 'onapp'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
