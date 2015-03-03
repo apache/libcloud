@@ -15,6 +15,13 @@ General
 Compute
 ~~~~~~~
 
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
+  [Allard Hoeve]
+
 - Improve GCE create_node, make sure ex_get_disktype function
   (GITHUB-448)
   [Markos Gogoulos]
