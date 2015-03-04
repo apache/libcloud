@@ -204,7 +204,7 @@ class V4SignedAWSConnection(AWSTokenConnection):
         signed_headers = ';'.join([k.lower() for k in sorted(headers.keys())])
 
         # For self.method == GET
-        request_params = '&'.join(["%s=%s" % (urlquote(k, safe=''), urlquote(v, safe='-_~'))
+        request_params = '&'.join(["%s=%s" % (urlquote(str(k), safe=''), urlquote(str(v), safe='-_~'))
                                    for k, v in sorted(params.items())])
         payload_hash = hashlib.sha256('').hexdigest()
 
