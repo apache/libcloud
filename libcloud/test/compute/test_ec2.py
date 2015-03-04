@@ -39,7 +39,7 @@ from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
-from libcloud.compute.types import KeyPairDoesNotExistError
+from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -772,18 +772,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol-10ae5e2b', volumes[0].id)
         self.assertEqual(1, volumes[0].size)
         self.assertEqual('available', volumes[0].extra['state'])
+        self.assertEqual(StorageVolumeState.AVAILABLE, volumes[0].state)
 
         self.assertEqual('vol-v24bfh75', volumes[1].id)
         self.assertEqual(11, volumes[1].size)
-        self.assertEqual('available', volumes[1].extra['state'])
         self.assertIsNone(volumes[1].extra['snapshot_id'])
+        self.assertEqual('in-use', volumes[1].extra['state'])
+        self.assertEqual(StorageVolumeState.INUSE, volumes[1].state)
 
         self.assertEqual('vol-b6c851ec', volumes[2].id)
         self.assertEqual(8, volumes[2].size)
-        self.assertEqual('in-use', volumes[2].extra['state'])
+        self.assertEqual('some-unknown-status', volumes[2].extra['state'])
         self.assertEqual('i-d334b4b3', volumes[2].extra['instance_id'])
         self.assertEqual('/dev/sda1', volumes[2].extra['device'])
         self.assertEqual('snap-30d37269', volumes[2].extra['snapshot_id'])
+        self.assertEqual(StorageVolumeState.UNKNOWN, volumes[2].state)
 
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
@@ -796,6 +799,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
                             size=10, driver=self.driver)
 
         retValue = self.driver.destroy_volume(vol)
@@ -803,7 +807,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_attach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
-                            size=10, driver=self.driver)
+                            size=10, state=StorageVolumeState.AVAILABLE,
+                            driver=self.driver)
 
         node = Node('i-4382922a', None, None, None, None, self.driver)
         retValue = self.driver.attach_volume(node, vol, '/dev/sdh')
@@ -812,6 +817,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_detach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.INUSE,
                             size=10, driver=self.driver)
 
         retValue = self.driver.detach_volume(vol)
@@ -819,6 +825,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_create_volume_snapshot(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
                             size=10, driver=self.driver)
         snap = self.driver.create_volume_snapshot(
             vol, 'Test snapshot')

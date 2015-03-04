@@ -223,6 +223,21 @@ class NodeState(object):
         return getattr(cls, value.upper(), None)
 
 
+class StorageVolumeState(object):
+    """
+    Standard states of a StorageVolume
+    """
+    AVAILABLE = 0
+    ERROR = 1
+    INUSE = 2
+    CREATING = 3
+    DELETING = 4
+    DELETED = 5
+    BACKUP = 6
+    ATTACHING = 7
+    UNKNOWN = 8
+
+
 class Architecture(object):
     """
     Image and size architectures.

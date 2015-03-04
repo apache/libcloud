@@ -20,6 +20,18 @@ Compute
   (GITHUB-488, LIBCLOUD-682)
   [Greg Hill]
 
+- StorageVolume objects now have an attribute `state` that holds a
+  state variable that is standardized state across drivers. Drivers that
+  currently support the `state` attribute are OpenStack and EC2.
+  StorageVolume objects returned by drivers that do not support the
+  attribute will have a `state` of `None`. When a provider returns a state
+  that is unknown to the driver, the state will be `UNKNOWN`. Please report
+  such states. A couple of drivers already put state fields in the `extra`
+  fields of StorageVolumes. These fields were kept for
+  backwards-compatibility and for reference.
+  (GITHUB-476)
+  [Allard Hoeve]
+
 - StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
   in their extra dicts containing the snapshot ID the volume was based on.
   (GITHUB-479)

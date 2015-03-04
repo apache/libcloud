@@ -34,7 +34,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
     LibcloudError
-from libcloud.compute.types import Provider, KeyPairDoesNotExistError
+from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVolumeState
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
@@ -794,6 +794,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual('cd76a3a1-c4ce-40f6-9b9f-07a61508938d', volume.id)
         self.assertEqual('test_volume_2', volume.name)
+        self.assertEqual(StorageVolumeState.AVAILABLE, volume.state)
         self.assertEqual(2, volume.size)
         self.assertEqual(volume.extra, {
             'description': '',
@@ -811,15 +812,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             'created_at': '2013-06-24T11:20:13.000000',
         })
 
+        # also test that unknown state resolves to StorageVolumeState.UNKNOWN
         volume = volumes[1]
         self.assertEqual('cfcec3bc-b736-4db5-9535-4c24112691b5', volume.id)
         self.assertEqual('test_volume', volume.name)
         self.assertEqual(50, volume.size)
+        self.assertEqual(StorageVolumeState.UNKNOWN, volume.state)
         self.assertEqual(volume.extra, {
             'description': 'some description',
             'attachments': [],
             'snapshot_id': '01f48111-7866-4cd2-986a-e92683c4a363',
-            'state': 'available',
+            'state': 'some-unknown-state',
             'location': 'nova',
             'volume_type': 'None',
             'metadata': {},

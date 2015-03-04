@@ -30,7 +30,8 @@ from libcloud.utils.py3 import b
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
-from libcloud.compute.types import NodeState, DeploymentError
+from libcloud.compute.types import NodeState, StorageVolumeState,\
+    DeploymentError
 from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
@@ -68,6 +69,7 @@ __all__ = [
     'NodeDriver',
 
     'StorageVolume',
+    'StorageVolumeState',
     'VolumeSnapshot',
 
     # Deprecated, moved to libcloud.utils.networking
@@ -460,7 +462,8 @@ class StorageVolume(UuidMixin):
     A base StorageVolume class to derive from.
     """
 
-    def __init__(self, id, name, size, driver, extra=None):
+    def __init__(self, id, name, size, driver,
+                 state=None, extra=None):
         """
         :param id: Storage volume ID.
         :type id: ``str``
@@ -474,6 +477,10 @@ class StorageVolume(UuidMixin):
         :param driver: Driver this image belongs to.
         :type driver: :class:`.NodeDriver`
 
+        :param state: Optional state of the StorageVolume. If not
+                      provided, will default to UNKNOWN.
+        :type state: :class:`.StorageVolumeState`
+
         :param extra: Optional provider specific attributes.
         :type extra: ``dict``
         """
@@ -482,6 +489,7 @@ class StorageVolume(UuidMixin):
         self.size = size
         self.driver = driver
         self.extra = extra
+        self.state = state
         UuidMixin.__init__(self)
 
     def list_snapshots(self):

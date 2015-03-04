@@ -18,8 +18,9 @@ import unittest
 from libcloud.common.base import Response
 from libcloud.common.base import Connection, ConnectionKey, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError
-from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, StorageVolume
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
+from libcloud.compute.types import StorageVolumeState
 
 from libcloud.test import MockResponse           # pylint: disable-msg=E0611
 
@@ -40,6 +41,9 @@ class BaseTests(unittest.TestCase):
 
     def test_base_node_image(self):
         NodeImage(id=0, name=0, driver=FakeDriver())
+
+    def test_base_storage_volume(self):
+        StorageVolume(id="0", name="0", size=10, driver=FakeDriver(), state=StorageVolumeState.AVAILABLE)
 
     def test_base_response(self):
         Response(MockResponse(status=200, body='foo'), ConnectionKey('foo'))

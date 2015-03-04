@@ -45,7 +45,7 @@ from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, Provider
+from libcloud.compute.types import NodeState, StorageVolumeState, Provider
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
 
@@ -102,6 +102,21 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'DELETE_IP': NodeState.PENDING,
         'ERROR': NodeState.ERROR,
         'UNKNOWN': NodeState.UNKNOWN
+    }
+
+    # http://developer.openstack.org/api-ref-blockstorage-v2.html#volumes-v2
+    VOLUME_STATE_MAP = {
+        'creating': StorageVolumeState.CREATING,
+        'available': StorageVolumeState.AVAILABLE,
+        'attaching': StorageVolumeState.ATTACHING,
+        'in-use': StorageVolumeState.INUSE,
+        'deleting': StorageVolumeState.DELETING,
+        'error': StorageVolumeState.ERROR,
+        'error_deleting': StorageVolumeState.ERROR,
+        'backing-up': StorageVolumeState.BACKUP,
+        'restoring-backup': StorageVolumeState.BACKUP,
+        'error_restoring': StorageVolumeState.ERROR,
+        'error_extending': StorageVolumeState.ERROR,
     }
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
@@ -2090,14 +2105,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _to_volume(self, api_node):
         if 'volume' in api_node:
             api_node = api_node['volume']
+
+        state = self.VOLUME_STATE_MAP.get(api_node['status'],
+                                          StorageVolumeState.UNKNOWN)
+
         return StorageVolume(
             id=api_node['id'],
             name=api_node['displayName'],
             size=api_node['size'],
+            state=state,
             driver=self,
             extra={
                 'description': api_node['displayDescription'],
                 'attachments': [att for att in api_node['attachments'] if att],
+                # TODO: remove in 1.18.0
                 'state': api_node.get('status', None),
                 'snapshot_id': api_node.get('snapshotId', None),
                 'location': api_node.get('availabilityZone', None),
