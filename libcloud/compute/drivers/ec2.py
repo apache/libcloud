@@ -5509,7 +5509,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     Amazon EC2 node driver.
     """
 
-    connectionCls = EC2V4Connection
+    connectionCls = EC2Connection
     type = Provider.EC2
     name = 'Amazon EC2'
     website = 'http://aws.amazon.com/ec2/'
@@ -5557,8 +5557,6 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
-
-    connectionCls = EC2Connection
     name = 'Amazon EC2 (eu-west-1)'
     _region = 'eu-west-1'
 
@@ -5567,7 +5565,6 @@ class EC2EUCentralNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Central Europe Region.
     """
-
     connectionCls = EC2V4Connection
     name = 'Amazon EC2 (eu-central-1)'
     _region = 'eu-central-1'
