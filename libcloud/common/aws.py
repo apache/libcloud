@@ -189,19 +189,22 @@ class V4SignedAWSConnection(AWSTokenConnection):
     def pre_connect_hook(self, params, headers):
         now = datetime.utcnow()
         headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
-        headers['Authorization'] = self._get_authorization_v4_header(params, headers, now)
+        headers['Authorization'] = \
+            self._get_authorization_v4_header(params, headers, now)
 
         return params, headers
 
     def _get_authorization_v4_header(self, params, headers, dt):
-        assert self.method == 'GET', 'AWS Signature V4 not implemented for other methods than GET'
+        assert self.method == 'GET', 'AWS Signature V4 not implemented for ' \
+                                     'other methods than GET'
 
-        return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, SignedHeaders=%(sh)s, Signature=%(s)s' % {
-            'u': self.user_id,
-            'c': self._get_credential_scope(dt),
-            'sh': self._get_signed_headers(headers),
-            's': self._get_signature(params, headers, dt)
-        }
+        return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
+               'SignedHeaders=%(sh)s, Signature=%(s)s' % {
+                   'u': self.user_id,
+                   'c': self._get_credential_scope(dt),
+                   'sh': self._get_signed_headers(headers),
+                   's': self._get_signature(params, headers, dt)
+               }
 
     def _get_signature(self, params, headers, dt):
         return _sign(
@@ -242,7 +245,8 @@ class V4SignedAWSConnection(AWSTokenConnection):
 
     def _get_request_params(self, params):
         # For self.method == GET
-        return '&'.join(["%s=%s" % (urlquote(k, safe=''), urlquote(str(v), safe='~'))
+        return '&'.join(["%s=%s" %
+                         (urlquote(k, safe=''), urlquote(str(v), safe='~'))
                          for k, v in sorted(params.items())])
 
     def _get_canonical_request(self, params, headers):
