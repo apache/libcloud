@@ -219,13 +219,10 @@ class V4SignedAWSConnection(AWSTokenConnection):
             'aws4_request')
 
     def _get_string_to_sign(self, params, headers, dt):
-        credential_scope = self._get_credential_scope(dt)
-        canonical_request = self._get_canonical_request(params, headers)
-
         return '\n'.join(['AWS4-HMAC-SHA256',
                           dt.strftime('%Y%m%dT%H%M%SZ'),
-                          credential_scope,
-                          hashlib.sha256(canonical_request).hexdigest()])
+                          self._get_credential_scope(dt),
+                          _hash(self._get_canonical_request(params, headers))])
 
     def _get_credential_scope(self, dt):
         return '/'.join([dt.strftime('%Y%m%d'),
@@ -237,13 +234,11 @@ class V4SignedAWSConnection(AWSTokenConnection):
         return ';'.join([k.lower() for k in sorted(headers.keys())])
 
     def _get_canonical_headers(self, headers):
-        canonical_headers = '\n'.join([':'.join([k.lower(), v.strip()])
-                                       for k, v in sorted(headers.items())])
-        canonical_headers += '\n'
-        return canonical_headers
+        return '\n'.join([':'.join([k.lower(), v.strip()])
+                          for k, v in sorted(headers.items())]) + '\n'
 
     def _get_payload_hash(self):
-        return hashlib.sha256('').hexdigest()
+        return _hash('')
 
     def _get_request_params(self, params):
         # For self.method == GET
@@ -263,9 +258,13 @@ class V4SignedAWSConnection(AWSTokenConnection):
 
 def _sign(key, msg, hex=False):
     if hex:
-        return hmac.new(key, b(msg), hashlib.sha256).hexdigest()
+        return hmac.new(b(key), b(msg), hashlib.sha256).hexdigest()
     else:
-        return hmac.new(key, b(msg), hashlib.sha256).digest()
+        return hmac.new(b(key), b(msg), hashlib.sha256).digest()
+
+
+def _hash(msg):
+    return hashlib.sha256(b(msg)).hexdigest()
 
 
 class AWSDriver(BaseDriver):
