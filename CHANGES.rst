@@ -15,6 +15,13 @@ General
 Compute
 ~~~~~~~
 
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
+  [Allard Hoeve]
+
 - Add support for creating volumes based on snapshots to EC2 and OS drivers.
   Also modify signature of base NodeDriver.create_volume to reflect the fact
   that all drivers expect a StorageSnapshot object as the snapshot argument.

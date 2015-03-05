@@ -545,23 +545,32 @@ class VolumeSnapshot(object):
     """
     A base VolumeSnapshot class to derive from.
     """
-    def __init__(self, id, driver, size=None, extra=None):
+    def __init__(self, id, driver, size=None, extra=None, created=None):
         """
         VolumeSnapshot constructor.
 
         :param      id: Snapshot ID.
         :type       id: ``str``
 
+        :param      driver: The driver that represents a connection to the
+                            provider
+        :type       driver: `NodeDriver`
+
         :param      size: A snapshot size in GB.
         :type       size: ``int``
 
         :param      extra: Provider depends parameters for snapshot.
         :type       extra: ``dict``
+
+        :param      created: A datetime object that represents when the
+                             snapshot was created
+        :type       created: ``datetime.datetime``
         """
         self.id = id
         self.driver = driver
         self.size = size
         self.extra = extra or {}
+        self.created = created
 
     def destroy(self):
         """
