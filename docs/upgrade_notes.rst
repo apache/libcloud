@@ -13,6 +13,12 @@ Development
   VolumeSnapshot.extra containing the original string is maintained, so
   this is a backwards-compatible change.
 
+* The base signature of NodeDriver.create_volume has changed. The snapshot
+  argument is now expected to be a VolumeSnapshot instead of a string.
+  The older signature was never correct for built-in drivers, but custom
+  drivers may break. (GCE accepted strings, names or None and still does.
+  Other drivers did not implement creating volumes from snapshots at all
+  until now.)
 
 Libcloud 0.16.0
 ---------------
