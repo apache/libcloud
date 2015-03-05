@@ -1,0 +1,23 @@
+{
+    "queryasyncjobresultresponse" : {
+        "cmd" : "org.apache.cloudstack.api.command.user.vpn.CreateVpnGatewayCmd",
+        "jobid" : "b26272a4-f5e4-4ebe-a7d3-eaaf3ec8280c",
+        "userid" : "2f517f5b-cac9-48b5-aafc-e9d7ca879784",
+        "accountid" : "4009e75e-5311-43f2-bc92-b92676455eed",
+        "jobprocstatus" : 0,
+        "created" : "2015-02-20T15:53:54+0100",
+        "jobstatus" : 1,
+        "jobresult" : {
+            "vpngateway" : {
+                "domain" : "some_domain",
+                "vpcid" : "4d25e181-8850-4d52-8ecb-a6f35bbbabde",
+                "account" : "some_account",
+                "domainid" : "9b397dea-25ef-4c5d-b47d-627eaebe8ed8",
+                "id" : "5ef6794e-cec8-4018-9fef-c4dacbadee14",
+                "publicip" : "2.3.4.5"
+            }
+        },
+        "jobresultcode" : 0,
+        "jobresulttype" : "object"
+    }
+}

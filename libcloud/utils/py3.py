@@ -53,6 +53,13 @@ if sys.version_info >= (3, 0):
 if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
     PY32 = True
 
+if sys.version_info >= (3, 2):
+    # ssl module in Python >= 3.2 includes match hostname function
+    from ssl import match_hostname, CertificateError  # NOQA
+else:
+    from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
+
+
 if PY3:
     import http.client as httplib
     from io import StringIO

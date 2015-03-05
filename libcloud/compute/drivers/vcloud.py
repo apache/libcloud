@@ -581,9 +581,9 @@ class VCloudNodeDriver(NodeDriver):
             )
             vapps = [
                 (i.get('name'), i.get('href'))
-                for i in elms
-                if i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml'
-                and i.get('name')
+                for i in elms if
+                i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml' and
+                i.get('name')
             ]
 
             for vapp_name, vapp_href in vapps:

@@ -200,7 +200,7 @@ class SoftLayerDNSDriver(DNSDriver):
             'mxPriority': item['mxPriority'],
             'refresh': item['refresh'],
             'retry': item['retry'],
-            }
+        }
         record = Record(
             id=item['id'],
             name=item['host'],

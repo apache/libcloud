@@ -16,6 +16,13 @@ __all__ = [
     'HostVirtualDNSDriver'
 ]
 
+import sys
+
+try:
+    import simplejson as json
+except:
+    import json
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.hostvirtual import HostVirtualResponse
@@ -24,11 +31,6 @@ from libcloud.compute.drivers.hostvirtual import API_ROOT
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
-
-try:
-    import simplejson as json
-except:
-    import json
 
 VALID_RECORD_EXTRA_PARAMS = ['prio', 'ttl']
 
@@ -40,11 +42,13 @@ class HostVirtualDNSResponse(HostVirtualResponse):
 
         if status == httplib.NOT_FOUND:
             if context['resource'] == 'zone':
-                raise ZoneDoesNotExistError(value='', driver=self,
-                                            zone_id=context['id'])
+                raise ZoneDoesNotExistError(
+                    value=self.parse_body()['error']['message'],
+                    driver=self, zone_id=context['id'])
             elif context['resource'] == 'record':
-                raise RecordDoesNotExistError(value='', driver=self,
-                                              record_id=context['id'])
+                raise RecordDoesNotExistError(
+                    value=self.parse_body()['error']['message'],
+                    driver=self, record_id=context['id'])
 
         super(HostVirtualDNSResponse, self).parse_error()
         return self.body
@@ -115,8 +119,14 @@ class HostVirtualDNSDriver(DNSDriver):
     def list_records(self, zone):
         params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        result = self.connection.request(
-            API_ROOT + '/dns/records/', params=params).object
+        try:
+            result = self.connection.request(
+                API_ROOT + '/dns/records/', params=params).object
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
+            if 'Not Found: No Records Found' in e.value:
+                return []
+            raise e
         records = self._to_records(items=result, zone=zone)
         return records
 

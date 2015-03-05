@@ -23,13 +23,13 @@ import ssl
 import base64
 import warnings
 
-from backports.ssl_match_hostname import match_hostname, CertificateError
-
 import libcloud.security
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlunquote
+from libcloud.utils.py3 import match_hostname
+from libcloud.utils.py3 import CertificateError
 
 
 __all__ = [
@@ -164,9 +164,9 @@ class LibcloudBaseConnection(object):
             j = host.rfind(']')         # ipv6 addresses have [...]
             if i > j:
                 try:
-                    port = int(host[i+1:])
+                    port = int(host[i + 1:])
                 except ValueError:
-                    msg = "nonnumeric port: '%s'" % host[i+1:]
+                    msg = "nonnumeric port: '%s'" % (host[i + 1:])
                     raise httplib.InvalidURL(msg)
                 host = host[:i]
             else:

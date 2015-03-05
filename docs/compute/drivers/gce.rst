@@ -1,7 +1,7 @@
 Google Compute Engine Driver Documentation
 ==========================================
 
-`Google Cloud Platform Compute Engine`_ gives users the ability to run
+`Google Compute Engine`_ gives users the ability to run
 large-scale workloads on virtual machines hosted on Google's infrastructure.
 It is a part of Google Cloud Platform.
 
@@ -138,5 +138,5 @@ API Docs
     :members:
     :inherited-members:
 
-.. _`Google Cloud Platform Compute Engine`: https://cloud.google.com/products/compute-engine/
+.. _`Google Compute Engine`: https://cloud.google.com/products/compute-engine/
 .. _`Google Developers Console`: https://cloud.google.com/console

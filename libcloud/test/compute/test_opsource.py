@@ -42,7 +42,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
-            self.assertTrue(True)
+            pass
 
     def test_list_sizes_response(self):
         OpsourceMockHttp.type = None
@@ -66,7 +66,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
-            self.assertTrue(True)
+            pass
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
@@ -83,7 +83,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
-            self.assertTrue(True)
+            pass
 
     def test_create_node_response(self):
         rootPw = NodeAuthPassword('pass123')
@@ -110,7 +110,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
-            self.assertTrue(True)
+            pass
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
@@ -127,7 +127,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
-            self.assertTrue(True)
+            pass
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
@@ -144,7 +144,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
-            self.assertTrue(True)
+            pass
 
     def test_ex_list_networks(self):
         nets = self.driver.ex_list_networks()

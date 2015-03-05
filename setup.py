@@ -23,14 +23,13 @@ from glob import glob
 from os.path import splitext, basename, join as pjoin
 
 try:
-    import epydoc
+    import epydoc  # NOQA
     has_epydoc = True
 except ImportError:
     has_epydoc = False
 
 import libcloud.utils.misc
 from libcloud.utils.dist import get_packages, get_data_files
-from libcloud.utils.py3 import unittest2_required
 
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
@@ -47,9 +46,18 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
 TEST_REQUIREMENTS = [
-    'backports.ssl_match_hostname',
     'mock'
 ]
+
+if sys.version_info < (3, 2):
+    TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
+
+# Note: we can't use libcloud.utils.py3 here because it relies on backports
+# dependency being installed / available
+if sys.version_info >= (2, 7):
+    unittest2_required = False
+else:
+    unittest2_required = True
 
 if sys.version_info <= (2, 4):
     version = '.'.join([str(x) for x in sys.version_info[:3]])
@@ -222,9 +230,12 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
-install_requires = ['backports.ssl_match_hostname']
+install_requires = []
 if pre_python26:
     install_requires.extend(['ssl', 'simplejson'])
+
+if sys.version_info < (3, 2):
+    install_requires.append('backports.ssl_match_hostname')
 
 setup(
     name='apache-libcloud',

@@ -87,6 +87,9 @@ class GCELicense(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
+    def destroy(self):
+        raise ProviderError("Can not destroy a License resource.")
+
     def __repr__(self):
         return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
             self.id, self.name, self.charges_use_fee)
@@ -790,13 +793,23 @@ class GCENodeDriver(NodeDriver):
     type = Provider.GCE
     website = 'https://cloud.google.com/'
 
+    # Google Compute Engine node states are mapped to Libcloud node states
+    # per the following dict. GCE does not have an actual 'stopped' state
+    # but instead uses a 'terminated' state to indicate the node exists
+    # but is not running. In order to better match libcloud, GCE maps this
+    # 'terminated' state to 'STOPPED'.
+    # Also, when a node is deleted from GCE, it no longer exists and instead
+    # will result in a ResourceNotFound error versus returning a placeholder
+    # node in a 'terminated' state.
+    # For more details, please see GCE's docs,
+    # https://cloud.google.com/compute/docs/instances#checkmachinestatus
     NODE_STATE_MAP = {
         "PROVISIONING": NodeState.PENDING,
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
-        "STOPPED": NodeState.TERMINATED,
-        "STOPPING": NodeState.TERMINATED,
-        "TERMINATED": NodeState.TERMINATED
+        "STOPPING": NodeState.PENDING,
+        "TERMINATED": NodeState.STOPPED,
+        "UNKNOWN": NodeState.UNKNOWN
     }
 
     AUTH_URL = "https://www.googleapis.com/auth/"
@@ -1275,9 +1288,13 @@ class GCENodeDriver(NodeDriver):
         image_list = self.ex_list_project_images(ex_project=None,
                                                  ex_include_deprecated=dep)
         for img_proj in list(self.IMAGE_PROJECTS.keys()):
-            image_list.extend(
-                self.ex_list_project_images(ex_project=img_proj,
-                                            ex_include_deprecated=dep))
+            try:
+                image_list.extend(
+                    self.ex_list_project_images(ex_project=img_proj,
+                                                ex_include_deprecated=dep))
+            except:
+                # do not break if an OS type is invalid
+                pass
         return image_list
 
     def ex_list_project_images(self, ex_project=None,
@@ -1317,16 +1334,20 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project,
                                                              proj)
                 self.connection.request_path = new_request_path
-                response = self.connection.request(request,
-                                                   method='GET').object
+                try:
+                    response = self.connection.request(request,
+                                                       method='GET').object
+                except:
+                    raise
+                finally:
+                    # Restore the connection request_path
+                    self.connection.request_path = save_request_path
                 for img in response.get('items', []):
                     if 'deprecated' not in img:
                         list_images.append(self._to_node_image(img))
                     else:
                         if ex_include_deprecated:
                             list_images.append(self._to_node_image(img))
-            # Restore the connection request_path
-            self.connection.request_path = save_request_path
         return list_images
 
     def list_locations(self):
@@ -2160,7 +2181,7 @@ n
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
-            ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -2346,7 +2367,7 @@ n
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
-            ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
 
         node_attrs = {'size': size,
                       'image': image,
@@ -3445,6 +3466,36 @@ n
         """
         request = '/global/networks/%s' % (network.name)
         self.connection.async_request(request, method='DELETE')
+        return True
+
+    def ex_start_node(self, node):
+        """
+        Start a node that is stopped and in TERMINATED state.
+
+        :param  node: Node object to start
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/instances/%s/start' % (node.extra['zone'].name,
+                                                    node.name)
+        self.connection.async_request(request, method='POST')
+        return True
+
+    def ex_stop_node(self, node):
+        """
+        Stop a running node.
+
+        :param  node: Node object to stop
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/instances/%s/stop' % (node.extra['zone'].name,
+                                                   node.name)
+        self.connection.async_request(request, method='POST')
         return True
 
     def destroy_node(self, node, destroy_boot_disk=False):
@@ -4720,7 +4771,7 @@ n
 
     def _to_disktype(self, disktype):
         """
-        Return a DiskType object from the json-response dictionary.
+        Return a DiskType object from the JSON-response dictionary.
 
         :param  disktype: The dictionary describing the disktype.
         :type   disktype: ``dict``
@@ -4744,7 +4795,7 @@ n
 
     def _to_address(self, address):
         """
-        Return an Address object from the json-response dictionary.
+        Return an Address object from the JSON-response dictionary.
 
         :param  address: The dictionary describing the address.
         :type   address: ``dict``
@@ -4772,7 +4823,7 @@ n
 
     def _to_backendservice(self, backendservice):
         """
-        Return a Backend Service object from the json-response dictionary.
+        Return a Backend Service object from the JSON-response dictionary.
 
         :param  backendservice: The dictionary describing the backend service.
         :type   backendservice: ``dict``
@@ -4802,7 +4853,7 @@ n
 
     def _to_healthcheck(self, healthcheck):
         """
-        Return a HealthCheck object from the json-response dictionary.
+        Return a HealthCheck object from the JSON-response dictionary.
 
         :param  healthcheck: The dictionary describing the healthcheck.
         :type   healthcheck: ``dict``
@@ -4827,7 +4878,7 @@ n
 
     def _to_firewall(self, firewall):
         """
-        Return a Firewall object from the json-response dictionary.
+        Return a Firewall object from the JSON-response dictionary.
 
         :param  firewall: The dictionary describing the firewall.
         :type   firewall: ``dict``
@@ -4856,7 +4907,7 @@ n
 
     def _to_forwarding_rule(self, forwarding_rule):
         """
-        Return a Forwarding Rule object from the json-response dictionary.
+        Return a Forwarding Rule object from the JSON-response dictionary.
 
         :param  forwarding_rule: The dictionary describing the rule.
         :type   forwarding_rule: ``dict``
@@ -4883,7 +4934,7 @@ n
 
     def _to_network(self, network):
         """
-        Return a Network object from the json-response dictionary.
+        Return a Network object from the JSON-response dictionary.
 
         :param  network: The dictionary describing the network.
         :type   network: ``dict``
@@ -4904,7 +4955,7 @@ n
 
     def _to_route(self, route):
         """
-        Return a Route object from the json-response dictionary.
+        Return a Route object from the JSON-response dictionary.
 
         :param  route: The dictionary describing the route.
         :type   route: ``dict``
@@ -4938,7 +4989,7 @@ n
 
     def _to_node_image(self, image):
         """
-        Return an Image object from the json-response dictionary.
+        Return an Image object from the JSON-response dictionary.
 
         :param  image: The dictionary describing the image.
         :type   image: ``dict``
@@ -4972,7 +5023,7 @@ n
 
     def _to_node_location(self, location):
         """
-        Return a Location object from the json-response dictionary.
+        Return a Location object from the JSON-response dictionary.
 
         :param  location: The dictionary describing the location.
         :type   location: ``dict``
@@ -4986,7 +5037,7 @@ n
 
     def _to_node(self, node):
         """
-        Return a Node object from the json-response dictionary.
+        Return a Node object from the JSON-response dictionary.
 
         :param  node: The dictionary describing the node.
         :type   node: ``dict``
@@ -4998,7 +5049,7 @@ n
         private_ips = []
         extra = {}
 
-        extra['status'] = node.get('status')
+        extra['status'] = node.get('status', "UNKNOWN")
         extra['statusMessage'] = node.get('statusMessage')
         extra['description'] = node.get('description')
         extra['zone'] = self.ex_get_zone(node['zone'])
@@ -5050,7 +5101,7 @@ n
 
     def _to_node_size(self, machine_type):
         """
-        Return a Size object from the json-response dictionary.
+        Return a Size object from the JSON-response dictionary.
 
         :param  machine_type: The dictionary describing the machine.
         :type   machine_type: ``dict``
@@ -5076,7 +5127,7 @@ n
 
     def _to_project(self, project):
         """
-        Return a Project object from the json-response dictionary.
+        Return a Project object from the JSON-response dictionary.
 
         :param  project: The dictionary describing the project.
         :type   project: ``dict``
@@ -5101,7 +5152,7 @@ n
 
     def _to_region(self, region):
         """
-        Return a Region object from the json-response dictionary.
+        Return a Region object from the JSON-response dictionary.
 
         :param  region: The dictionary describing the region.
         :type   region: ``dict``
@@ -5128,7 +5179,7 @@ n
 
     def _to_snapshot(self, snapshot):
         """
-        Return a Snapshot object from the json-response dictionary.
+        Return a Snapshot object from the JSON-response dictionary.
 
         :param  snapshot: The dictionary describing the snapshot
         :type   snapshot: ``dict``
@@ -5159,7 +5210,7 @@ n
 
     def _to_storage_volume(self, volume):
         """
-        Return a Volume object from the json-response dictionary.
+        Return a Volume object from the JSON-response dictionary.
 
         :param  volume: The dictionary describing the volume.
         :type   volume: ``dict``
@@ -5180,7 +5231,7 @@ n
 
     def _to_targethttpproxy(self, targethttpproxy):
         """
-        Return a Target HTTP Proxy object from the json-response dictionary.
+        Return a Target HTTP Proxy object from the JSON-response dictionary.
 
         :param  targethttpproxy: The dictionary describing the proxy.
         :type   targethttpproxy: ``dict``
@@ -5199,7 +5250,7 @@ n
 
     def _to_targetinstance(self, targetinstance):
         """
-        Return a Target Instance object from the json-response dictionary.
+        Return a Target Instance object from the JSON-response dictionary.
 
         :param  targetinstance: The dictionary describing the target instance.
         :type   targetinstance: ``dict``
@@ -5226,7 +5277,7 @@ n
 
     def _to_targetpool(self, targetpool):
         """
-        Return a Target Pool object from the json-response dictionary.
+        Return a Target Pool object from the JSON-response dictionary.
 
         :param  targetpool: The dictionary describing the volume.
         :type   targetpool: ``dict``
@@ -5350,7 +5401,7 @@ n
 
     def _to_urlmap(self, urlmap):
         """
-        Return a UrlMap object from the json-response dictionary.
+        Return a UrlMap object from the JSON-response dictionary.
 
         :param  zone: The dictionary describing the url-map.
         :type   zone: ``dict``
@@ -5375,7 +5426,7 @@ n
 
     def _to_zone(self, zone):
         """
-        Return a Zone object from the json-response dictionary.
+        Return a Zone object from the JSON-response dictionary.
 
         :param  zone: The dictionary describing the zone.
         :type   zone: ``dict``
@@ -5397,7 +5448,7 @@ n
 
     def _to_license(self, license):
         """
-        Return a License object from the json-response dictionary.
+        Return a License object from the JSON-response dictionary.
 
         :param  license: The dictionary describing the license.
         :type   license: ``dict``

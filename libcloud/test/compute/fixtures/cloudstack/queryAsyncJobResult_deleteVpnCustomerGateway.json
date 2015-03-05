@@ -1,0 +1,16 @@
+{
+   "queryasyncjobresultresponse" : {
+      "cmd" : "org.apache.cloudstack.api.command.user.vpn.DeleteVpnCustomerGatewayCmd",
+      "jobid" : "deleteVpnCustomerGateway",
+      "userid" : "user_id",
+      "accountid" : "account_id",
+      "jobprocstatus" : 0,
+      "created" : "2015-02-23T08:20:47+0100",
+      "jobstatus" : 1,
+      "jobresult" : {
+         "success" : true
+      },
+      "jobresultcode" : 0,
+      "jobresulttype" : "object"
+   }
+}

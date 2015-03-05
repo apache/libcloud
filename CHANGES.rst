@@ -7,6 +7,82 @@ Changes with Apache Libcloud in development
 General
 ~~~~~~~
 
+- Use native ``ssl.match_hostname`` functionality when running on Python >=
+  3.2 and only require ``backports.ssl_match_hostname`` dependency on Python
+  versions < 3.2.
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
+
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
+- Allow user to pass ``ex_blockdevicemappings`` argument to the create_node
+  method in the OpenStack driver.
+  (GITHUB-398, LIBCLOUD-637)
+  [Allard Hoeve]
+
+- Fix ``list_volume_snapshots`` method in the EC2 driver so it comforms to the
+  base API.
+  (LIBCLOUD-664, GITHUB-451)
+  [Allard Hoeve]
+
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver.
+  (LIBCLOUD-668, GITHUB-462)
+  [Allard Hoeve]
+
+- Add the following new methods to the Linode driver: ``ex_list_volumes``,
+  ``ex_create_volume``, ``ex_destroy_volume``.
+  (LIBCLOUD-649, GITHUB-430)
+  [Wojciech Wirkijowski]
+
+- Add ``list_volume_snapshots`` method to the OpenStack driver.
+  (LIBCLOUD-663, GITHUB-450)
+  [Allard Hoeve]
+
+- Add Site to Site VPN functionality to CloudStack driver.
+  (GITHUB-465)
+  [Avi Nanhkoesingh]
+
+- Add affinity group support to CloudStack driver
+  (LIBCLOUD-671, GITHUB-468)
+  [Mateusz Korszun]
+
+DNS
+~~~
+
+- Fix a bug when a ZoneDoesntExist exception was thrown when listing records
+  for a zone which has no records in the HostVirtual driver.
+  (GITHUB-460)
+  [Vanč Levstik]
+
+- Correctly handle MX records priority in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Allow user to create an A record which points directly to the domain zone
+  name in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+Changes with Apache Libcloud 0.17.0
+-----------------------------------
+
+General
+~~~~~~~
+
 - Use ``match_hostname`` function from ``backports.ssl_match_hostname``
   package to verify the SSL certificate hostname instead of relying on
   our own logic.
@@ -15,6 +91,10 @@ General
 
 Compute
 ~~~~~~~
+
+- GCE driver updated to include ex_stop_node() and ex_start_node() methods.
+  (GITHUB-442)
+  [Eric Johnson]
 
 - GCE driver now raises ResourceNotFoundError when the specified image is
   not found in any image project. Previously, this would return None but now
@@ -28,23 +108,23 @@ Compute
   (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)
   [Eric Johnson]
 
-- GCE driver fixed for missing param on ex_add_access_config
+- GCE driver fixed for missing param on ex_add_access_config.
   (GITHUB-435)
   [Peter Mooshammer]
 
-- GCE driver support for HTTP load-balancer resources
+- GCE driver support for HTTP load-balancer resources.
   (LIBCLOUD-605, GITHUB-429)
   [Lee Verberne]
 
-- GCE driver updated to make better use of GCEDiskTypes
+- GCE driver updated to make better use of GCEDiskTypes.
   (GITHUB-428)
   [Eric Johnson]
 
-- GCE driver list_images() now returns all non-deprecated images by default
+- GCE driver list_images() now returns all non-deprecated images by default.
   (LIBCLOUD-602, GITHUB-423)
   [Eric Johnson]
 
-- Improve GCE API coverage for create_node()
+- Improve GCE API coverage for create_node().
   (GITHUB-419)
   [Eric Johnson]
 
@@ -52,7 +132,7 @@ Compute
   (GITHUB-420)
   [Eric Johnson]
 
-- GCE Projects support common instance metadata and usage export buckets
+- GCE Projects support common instance metadata and usage export buckets.
   (GITHUB-409)
   [Eric Johnson]
 
@@ -101,15 +181,15 @@ Compute
   (GITHUB-373)
   [Itxaka Serrano]
 
-- Add description argument to GCE Network
+- Add description argument to GCE Network.
   (GITHUB-397)
   [Eric Johnson]
 
-- GCE: Improve MachineType (size) coverage of GCE API
+- GCE: Improve MachineType (size) coverage of GCE API.
   (GITHUB-396)
   [Eric Johnson]
 
-- GCE: Improved Images coverage
+- GCE: Improved Images coverage.
   (GITHUB-395)
   [Eric Johnson]
 
@@ -121,7 +201,7 @@ Compute
   (GITHUB-401)
   [Eric Johnson]
 
-- AWS: Set proper disk size in c3.X instance types
+- AWS: Set proper disk size in c3.X instance types.
   (GITHUB-405)
   [Itxaka Serrano]
 
@@ -143,7 +223,7 @@ Compute
   (GITHUB-418)
   [Mikhail Ovsyannikov]
 
-- Add new tok02 region to the Softlayer drive.
+- Add new tok02 region to the Softlayer driver.
   (GITHUB-436, LIBCLOUD-656)
   [Dustin Oberloh]
 
@@ -189,7 +269,7 @@ Storage
 Loadbalancer
 ~~~~~~~~~~~~
 
-- Updates to CloudStack Load-Balancer
+- Updates to CloudStack driver.
   (GITHUB-434)
   [Jeroen de Korte]
 

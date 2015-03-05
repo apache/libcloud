@@ -84,7 +84,7 @@ preparing a release.
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Remove the ``tox`` directory with ``rm -rf .tox``
-* Remove the _secrets_ file with ``rm test/secrets.py``
+* Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
 
 2. Update JIRA
 ~~~~~~~~~~~~~~
@@ -111,7 +111,7 @@ package. To run it:
 your local GPG database.
 
 This should result in a set of
-``apache-libcloud-${VERSION}.{tar.bz2,tar.gz,zip}{,asc,md5,sha1}`` files that
+``apache-libcloud-${VERSION}.{tar.bz2,tar.gz,zip,whl}{,asc,md5,sha1}`` files that
 are suitable to be uploaded for a release.
 
 Copy the artifacts in another directory, unpack one of them and test it with ``tox``.
