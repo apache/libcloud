@@ -34,7 +34,8 @@ from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
-from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection, V4SignedAWSConnection
+from libcloud.common.aws import (AWSBaseResponse, SignedAWSConnection,
+                                 V4SignedAWSConnection)
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
@@ -1708,7 +1709,7 @@ class EC2Connection(SignedAWSConnection):
 
 class EC2V4Connection(V4SignedAWSConnection):
     """
-    Represents a single connection to an EC2 Endpoint using signature version 4.
+    Represents a single connection to an EC2 Endpoint using signature v4.
     """
     version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
