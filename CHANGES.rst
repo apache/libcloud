@@ -74,6 +74,10 @@ Compute
   (GITHUB-483)
   [Atsushi Sasaki]
 
+- Add AURORA compute driver
+  (LIBCLOUD-641, GITHUB-477)
+  [Wido den Hollander]
+
 DNS
 ~~~
 
