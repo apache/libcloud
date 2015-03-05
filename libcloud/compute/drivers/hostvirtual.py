@@ -47,7 +47,7 @@ NODE_STATE_MAP = {
     'STOPPED': NodeState.STOPPED
 }
 
-DEFAULT_NODE_LOCATION_ID = 4
+DEFAULT_NODE_LOCATION_ID = 21
 
 
 class HostVirtualComputeResponse(HostVirtualResponse):
@@ -153,9 +153,10 @@ class HostVirtualNodeDriver(NodeDriver):
         # simply order a package first
         pkg = self.ex_order_package(size)
 
-        dc = DEFAULT_NODE_LOCATION_ID
         if 'location' in kwargs:
             dc = kwargs['location'].id
+        else:
+            dc = DEFAULT_NODE_LOCATION_ID
 
         # create a stub node
         stub_node = self._to_node({
