@@ -194,52 +194,78 @@ class V4SignedAWSConnection(AWSTokenConnection):
         return params, headers
 
     def _get_authorization_v4_header(self, params, headers, dt):
-        # TODO: according to AWS spec (and RFC 2616 Section 4.2.) excess whitespace
-        # from inside non-quoted strings should be stripped. Now we only strip the
-        # start and end of the string. See http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+        assert self.method == 'GET', 'AWS Signature V4 not implemented for other methods than GET'
+
+        return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, SignedHeaders=%(sh)s, Signature=%(s)s' % {
+            'u': self.user_id,
+            'c': self._get_credential_scope(dt),
+            'sh': self._get_signed_headers(headers),
+            's': self._get_signature(params, headers, dt)
+        }
+
+    def _get_signature(self, params, headers, dt):
+        return _sign(
+            self._get_key_to_sign_with(dt),
+            self._get_string_to_sign(params, headers, dt),
+            hex=True)
+
+    def _get_key_to_sign_with(self, dt):
+        return _sign(
+            _sign(
+                _sign(
+                    _sign(('AWS4' + self.key), dt.strftime('%Y%m%d')),
+                    self.driver.region_name),
+                self.service_name),
+            'aws4_request')
+
+    def _get_string_to_sign(self, params, headers, dt):
+        credential_scope = self._get_credential_scope(dt)
+        canonical_request = self._get_canonical_request(params, headers)
+
+        return '\n'.join(['AWS4-HMAC-SHA256',
+                          dt.strftime('%Y%m%dT%H%M%SZ'),
+                          credential_scope,
+                          hashlib.sha256(canonical_request).hexdigest()])
+
+    def _get_credential_scope(self, dt):
+        return '/'.join([dt.strftime('%Y%m%d'),
+                         self.driver.region_name,
+                         self.service_name,
+                         'aws4_request'])
+
+    def _get_signed_headers(self, headers):
+        return ';'.join([k.lower() for k in sorted(headers.keys())])
+
+    def _get_canonical_headers(self, headers):
         canonical_headers = '\n'.join([':'.join([k.lower(), v.strip()])
                                        for k, v in sorted(headers.items())])
         canonical_headers += '\n'
+        return canonical_headers
 
-        signed_headers = ';'.join([k.lower() for k in sorted(headers.keys())])
+    def _get_payload_hash(self):
+        return hashlib.sha256('').hexdigest()
 
+    def _get_request_params(self, params):
         # For self.method == GET
-        request_params = '&'.join(["%s=%s" % (urlquote(str(k), safe=''), urlquote(str(v), safe='-_~'))
-                                   for k, v in sorted(params.items())])
-        payload_hash = hashlib.sha256('').hexdigest()
+        return '&'.join(["%s=%s" % (urlquote(k, safe=''), urlquote(str(v), safe='~'))
+                         for k, v in sorted(params.items())])
 
-        canonical_request = '\n'.join([self.method,
-                                       self.action,
-                                       request_params,
-                                       canonical_headers,
-                                       signed_headers,
-                                       payload_hash])
+    def _get_canonical_request(self, params, headers):
+        return '\n'.join([
+            self.method,
+            self.action,
+            self._get_request_params(params),
+            self._get_canonical_headers(headers),
+            self._get_signed_headers(headers),
+            self._get_payload_hash()
+        ])
 
-        credential_scope = '/'.join([dt.strftime('%Y%m%d'),
-                                     self.driver.region_name,
-                                     self.service_name,
-                                     'aws4_request'])
-        string_to_sign = '\n'.join(['AWS4-HMAC-SHA256',
-                                    dt.strftime('%Y%m%dT%H%M%SZ'),
-                                    credential_scope,
-                                    hashlib.sha256(canonical_request).hexdigest()])
 
-        # Key derivation functions. See:
-        # http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-python
-        def getSignatureKey(key, date_stamp, regionName, serviceName):
-            def sign(key, msg):
-                return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
-
-            signed_date = sign(('AWS4' + key).encode('utf-8'), date_stamp)
-            signed_region = sign(signed_date, regionName)
-            signed_service = sign(signed_region, serviceName)
-            return sign(signed_service, 'aws4_request')
-
-        signing_key = getSignatureKey(self.key, dt.strftime('%Y%m%d'), self.driver.region_name, self.service_name)
-        signature = hmac.new(signing_key, string_to_sign.encode('utf-8'), hashlib.sha256).hexdigest()
-
-        return 'AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s' % \
-               (self.user_id, credential_scope, signed_headers, signature)
+def _sign(key, msg, hex=False):
+    if hex:
+        return hmac.new(key, b(msg), hashlib.sha256).hexdigest()
+    else:
+        return hmac.new(key, b(msg), hashlib.sha256).digest()
 
 
 class AWSDriver(BaseDriver):
