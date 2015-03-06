@@ -12,6 +12,12 @@ General
   versions < 3.2.
   [Tomaz Muraus]
 
+- Add support for AWS Signature version 4.
+
+  Note: Currently only GET HTTP method is supported.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis]
+
 Compute
 ~~~~~~~
 
@@ -59,6 +65,11 @@ Compute
 - Add affinity group support to CloudStack driver
   (LIBCLOUD-671, GITHUB-468)
   [Mateusz Korszun]
+
+- Add a support for a new AWS Frankfurt, Germany region (``eu-central-1``) to
+  the EC2 driver using AWS Signature v4.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis]
 
 DNS
 ~~~
