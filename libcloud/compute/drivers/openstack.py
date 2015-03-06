@@ -1615,6 +1615,41 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return [snapshot for snapshot in self.ex_list_snapshots()
                 if snapshot.extra['volume_id'] == volume.id]
 
+    def create_volume_snapshot(self, volume, name=None, ex_description=None,
+                               ex_force=True):
+        """
+        Create snapshot from volume
+
+        :param volume: Instance of `StorageVolume`
+        :type  volume: `StorageVolume`
+
+        :param name: Name of snapshot (optional)
+        :type  name: `str`
+
+        :param ex_description: Description of the snapshot (optional)
+        :type  ex_description: `str`
+
+        :param ex_force: Specifies if we create a snapshot that is not in
+                         state `available`. For example `in-use`. Defaults
+                         to True. (optional)
+        :type  ex_force: `bool`
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        data = {'snapshot': {'display_name': name,
+                             'display_description': ex_description,
+                             'volume_id': volume.id,
+                             'force': ex_force}}
+
+        return self._to_snapshot(self.connection.request('/os-snapshots',
+                                                         method='POST',
+                                                         data=data).object)
+
+    def destroy_volume_snapshot(self, snapshot):
+        resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
     def ex_create_snapshot(self, volume, name, description=None, force=False):
         """
         Create a snapshot based off of a volume.
@@ -1633,14 +1668,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype:     :class:`VolumeSnapshot`
         """
-        data = {'snapshot': {'display_name': name,
-                             'display_description': description,
-                             'volume_id': volume.id,
-                             'force': force}}
-
-        return self._to_snapshot(self.connection.request('/os-snapshots',
-                                                         method='POST',
-                                                         data=data).object)
+        warnings.warn('This method has been deprecated in favor of the '
+                      'create_volume_snapshot method')
+        return self.create_volume_snapshot(volume, name,
+                                           ex_description=description,
+                                           ex_force=force)
 
     def ex_delete_snapshot(self, snapshot):
         """
@@ -1651,9 +1683,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype:     ``bool``
         """
-        resp = self.connection.request('/os-snapshots/%s' % snapshot.id,
-                                       method='DELETE')
-        return resp.status == httplib.NO_CONTENT
+        warnings.warn('This method has been deprecated in favor of the '
+                      'destroy_volume_snapshot method')
+        return self.destroy_volume_snapshot(snapshot)
 
     def _to_security_group_rules(self, obj):
         return [self._to_security_group_rule(security_group_rule) for

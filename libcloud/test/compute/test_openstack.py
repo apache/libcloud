@@ -1433,6 +1433,18 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(snapshots), 1)
         self.assertEqual(snapshots[0].id, '4fbbdccf-e058-6502-8844-6feeffdf4cb5')
 
+    def test_create_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        ret = self.driver.create_volume_snapshot(volume,
+                                                 'Test Volume',
+                                                 ex_description='This is a test',
+                                                 ex_force=True)
+        self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+
     def test_ex_create_snapshot(self):
         volume = self.driver.list_volumes()[0]
         if self.driver_type.type == 'rackspace':
@@ -1441,8 +1453,18 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         ret = self.driver.ex_create_snapshot(volume,
                                              'Test Volume',
-                                             'This is a test')
+                                             description='This is a test',
+                                             force=True)
         self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+
+    def test_destroy_volume_snapshot(self):
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        snapshot = self.driver.ex_list_snapshots()[0]
+        ret = self.driver.destroy_volume_snapshot(snapshot)
+        self.assertTrue(ret)
 
     def test_ex_delete_snapshot(self):
         if self.driver_type.type == 'rackspace':

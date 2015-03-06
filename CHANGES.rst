@@ -25,10 +25,17 @@ Compute
   (GITHUB-479)
   [Allard Hoeve]
 
+- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in 
+  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base 
+  driver method create_storage_volume argument name to be optional.
+  (GITHUB-478)
+  [Allard Hoeve]
+
 - Add support for creating volumes based on snapshots to EC2 and OS drivers.
   Also modify signature of base NodeDriver.create_volume to reflect the fact
   that all drivers expect a StorageSnapshot object as the snapshot argument.
   (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
 
 - VolumeSnapshots now have a `created` attribute that is a `datetime`
   field showing the creation datetime of the snapshot. The field in

@@ -1016,9 +1016,15 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_volume not implemented for this driver')
 
-    def create_volume_snapshot(self, volume, name):
+    def create_volume_snapshot(self, volume, name=None):
         """
         Creates a snapshot of the storage volume.
+
+        :param volume: The StorageVolume to create a VolumeSnapshot from
+        :type volume: :class:`.VolumeSnapshot`
+
+        :param name: Name of created snapshot (optional)
+        :type name: `str`
 
         :rtype: :class:`VolumeSnapshot`
         """
@@ -1070,6 +1076,9 @@ class NodeDriver(BaseDriver):
     def destroy_volume_snapshot(self, snapshot):
         """
         Destroys a snapshot.
+
+        :param snapshot: The snapshot to delete
+        :type snapshot: :class:`VolumeSnapshot`
 
         :rtype: :class:`bool`
         """
