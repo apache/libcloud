@@ -1,0 +1,18 @@
+{
+   "network_interface":{
+      "created_at":"2015-03-06T17:17:12+07:00",
+      "default_firewall_rule":"ACCEPT",
+      "id":1155,
+      "identifier":"i9d7uhq0s9nsl7",
+      "label":"label",
+      "mac_address":"00:16:3e:39:0f:78",
+      "network_join_id":123,
+      "primary":false,
+      "rate_limit":100,
+      "updated_at":"2015-03-06T17:17:12+07:00",
+      "usage":null,
+      "usage_last_reset_at":null,
+      "usage_month_rolled_at":null,
+      "virtual_machine_id":755
+   }
+}

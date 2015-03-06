@@ -1,11 +1,13 @@
 import json
+
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.common.onapp import OnAppConnection
 
 __all__ = [
     "OnAppNodeDriver",
     "OnAppNode",
-    "OnAppIpAddress"
+    "OnAppIpAddress",
+    "OnAppNetworkInterface"
 ]
 
 """
@@ -241,7 +243,8 @@ class OnAppNode(Node):
         :param      label: the VS label
         :type       label: ``str``
 
-        :param      ip_addresses: an array of ip addresses with their details assigned to this VS
+        :param      ip_addresses: an array of ip addresses with their details
+                                  assigned to this VS
         :type       ip_addresses: ``list`` of :class:`OnAppIpAddress`
 
         :param      extra: a list of extra arguments
@@ -253,15 +256,29 @@ class OnAppNode(Node):
         :rtype:     :class:`OnAppNode`
         """
         self.identifier = identifier
-        self.label = label
+        self.label = self.name = label
         self.ip_addresses = ip_addresses
         self.extra = extra
 
-        super(OnAppNode, self).__init__(identifier, label, state=None,
-                                        public_ips=[],
-                                        private_ips=ip_addresses,
-                                        driver=driver, size=None, image=None,
-                                        extra=extra)
+        public_ips = []
+        private_ips = []
+        for ip in self.ip_addresses:
+            if any(map(lambda x: ip.address.startswith(x),
+                       ["192.168.", "10.", "172."])):
+                private_ips.append(ip.address)
+            else:
+                public_ips.append(ip.address)
+
+        super(OnAppNode, self).__init__(
+            id=identifier,
+            name=label,
+            state=extra['state'],
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=driver,
+            size=None,
+            image=extra['template_id'],
+            extra=extra)
 
     def __repr__(self):
         return "<OnAppNode: identifier=%s, label=%s, ip_address=<%s>" % \
@@ -285,13 +302,16 @@ class OnAppIpAddress(object):
         :param      broadcast: broadcast address
         :type       broadcast: ``str``
 
-        :param      created_at: the date in the [YYYY][MM][DD]T[hh][mm][ss]Z format
+        :param      created_at: the date in the [YYYY][MM][DD]T[hh][mm][ss]Z
+                                format
         :type       created_at: ``str``
 
-        :param      customer_network_id: the ID of the customer VLAN the IP address belongs to
+        :param      customer_network_id: the ID of the customer VLAN the IP
+                                         address belongs to
         :type       customer_network_id: ``int``
 
-        :param      disallowed_primary: true if not allowed to be used as primary (for VS build), otherwise false
+        :param      disallowed_primary: true if not allowed to be used as
+                                        primary (for VS build), otherwise false
         :type       disallowed_primary: ``bool``
 
         :param      free: true if free, otherwise false
@@ -300,13 +320,15 @@ class OnAppIpAddress(object):
         :param      gateway: gateway address
         :type       gateway: ``str``
 
-        :param      hypervisor_id: the ID of a hypervisor the IP address is associated with
+        :param      hypervisor_id: the ID of a hypervisor the IP address is
+                                   associated with
         :type       hypervisor_id: ``int``
 
         :param      id: IP address id
         :type       id: ``int``
 
-        :param      ip_address_pool_id: ID of the IP address pool the IP address is associated with
+        :param      ip_address_pool_id: ID of the IP address pool the IP
+                                        address is associated with
         :type       ip_address_pool_id: ``int``
 
         :param      netmask: netmask for the IP address
@@ -318,10 +340,12 @@ class OnAppIpAddress(object):
         :param      network_id: the ID of the network
         :type       network_id: ``int``
 
-        :param      pxe: true, if this hypervisor address can be used for cloudbooting a hypervisor
+        :param      pxe: true, if this hypervisor address can be used for
+                         cloudbooting a hypervisor
         :type       pxe: ``bool``
 
-        :param      updated_at: the date when the network was updated in the [YYYY][MM][DD]T[hh][mm][ss]Z format
+        :param      updated_at: the date when the network was updated in the
+                                    [YYYY][MM][DD]T[hh][mm][ss]Z format
         :type       updated_at: ``str``
 
         :param      user_id: the ID of the user this IP address is assigned to
@@ -350,12 +374,100 @@ class OnAppIpAddress(object):
         return "<OnAppIpAddress>: id=%s, address=%s" % (self.id, self.address)
 
 
+class OnAppNetworkInterface(object):
+    """
+    OnApp network interface
+    """
+
+    def __init__(self, label=None, usage=None, created_at=None, updated_at=None,
+                 primary=None, usage_month_rolled_at=None, id=None,
+                 mac_address=None, usage_last_reset_at=None,
+                 default_firewall_rule=None, rate_limit=None,
+                 virtual_machine_id=None, network_join_id=None,
+                 identifier=None):
+        """
+        :param label: network interface name
+        :type  label: ``str``
+
+        :param usage:
+        :type  usage: ``str``
+
+        :param created_at: the timestamp in the database when this network
+                           interface was created
+        :type  created_at: ``str``
+
+        :param updated_at: the timestamp in the database when this network
+                           interface was updated
+        :type  updated_at: ``str``
+
+        :param primary: true if this network interface is primary, otherwise
+                        false
+        :type  primary: ``bool``
+
+        :param usage_month_rolled_at:
+
+        :param id: the ID of this network interface
+        :type  id: ``int``
+
+        :param mac_address: network interface MAC address
+        :type  mac_address: ``str``
+
+        :param usage_last_reset_at:
+        :type  usage_last_reset_at:
+
+        :param default_firewall_rule:
+        :type  default_firewall_rule: ``str``
+
+        :param rate_limit: port speed in Mbps
+        :type  rate_limit: ``int``
+
+        :param virtual_machine_id: the ID of a virtual server to which this
+                                   network interface is attached
+        :type  virtual_machine_id: ``int``
+
+        :param network_join_id: the ID of the network join to which this
+                                network interface belongs
+        :type  network_join_id: ``int``
+
+        :param identifier: the identifier in the database of this network
+                           interface
+        :type  identifier: ``str``
+
+        :rtype: :class:`OnAppNetworkInterface`
+        """
+        self.label = label
+        self.usage = usage
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.primary = primary
+        self.usage_month_rolled_at = usage_month_rolled_at
+        self.id = id
+        self.mac_address = mac_address
+        self.usage_last_reset_at = usage_last_reset_at
+        self.default_firewall_rule = default_firewall_rule
+        self.rate_limit = rate_limit
+        self.virtual_machine_id = virtual_machine_id
+        self.network_join_id = network_join_id
+        self.identifier = identifier
+
+    def __repr__(self):
+        return "<OnAppNetworkInterface>: id=%s, label=%s, rate_limit=%s, primary=%s, network_join_id=%s" % \
+               (self.id, self.label, self.rate_limit, self.primary,
+                self.network_join_id)
+
+
 class OnAppNodeDriver(NodeDriver):
     """
     Base OnApp node driver.
     """
 
     connectionCls = OnAppConnection
+
+    def list_sizes(self, location=None):
+        return []
+
+    def list_locations(self):
+        return []
 
     def create_node(self, label, memory, cpus, cpu_shares, hostname,
                     template_id, primary_disk_size, swap_disk_size,
@@ -403,10 +515,12 @@ class OnAppNodeDriver(NodeDriver):
         :param identifier: VS identifier
         :type  identifier: ``str``
 
-        :param convert_last_backup: set 1 to convert the last VS's backup to template, otherwise set 0
+        :param convert_last_backup: set 1 to convert the last VS's backup to
+                                    template, otherwise set 0
         :type  convert_last_backup: ``int``
 
-        :param destroy_all_backups: set 1 to destroy all existing backups of this VS, otherwise set 0
+        :param destroy_all_backups: set 1 to destroy all existing backups of
+                                    this VS, otherwise set 0
         :type  destroy_all_backups: ``int``
         """
         server_params = {
@@ -429,6 +543,93 @@ class OnAppNodeDriver(NodeDriver):
         for vm in response.object:
             nodes.append(self._to_node(vm["virtual_machine"]))
         return nodes
+
+    def add_network_interface(self, identifier, label, network_join_id,
+                              rate_limit=None, primary=True):
+        """
+        Add a new network interface to the node
+
+        :param label: give the label of a network interface you wish to attach
+        :type  label: ``str``
+
+        :param network_join_id: set the ID of a physical network used to attach
+                                this network interface
+        :type  network_join_id: ``int``
+
+        :param rate_limit: set the port speed of a network interface you wish
+                           to attach
+        :type  rate_limit: ``int``
+
+        :param primary: set True if the interface is primary. Otherwise False.
+        :type  primary: ``bool``
+        """
+        data = {"network_interface": {
+            "label": label,
+            "network_join_id": network_join_id,
+            "primary": primary
+        }}
+        if rate_limit is not None:
+            data['network_interface']['rate_limit'] = rate_limit
+
+        response = self.connection.request(
+            "/virtual_machines/%s/network_interfaces.json" % identifier,
+            data=json.dumps(data),
+            headers={
+                "Content-type": "application/json"},
+            method="POST")
+
+        return OnAppNetworkInterface(**response.object["network_interface"])
+
+    def delete_network_interface(self, identifier, network_interface_id):
+        """
+        Delete a network interface from virtual machine
+
+        :param identifier: VS identifier
+        :type  identifier: ``str``
+
+        :param network_interface_id: Network interface id
+        :type  identifier: ``int``
+        """
+        action = "/virtual_machines/{identifier}/network_interfaces/{network_interface_id}.json".format(
+            identifier=identifier, network_interface_id=network_interface_id)
+
+        self.connection.request(action, method="DELETE")
+
+    def edit_network_interface(self, identifier, network_interface_id,
+                               label=None, primary=None, rate_limit=None):
+        """
+        :param identifier: VS identifier
+        :type  identifier: ``str``
+
+        :param network_interface_id: Network interface id
+        :type  identifier: ``int``
+
+        :param label: network interfaces label
+        :type  label: ``str``
+
+        :param primary: 1 if this network interface is primary, otherwise 0
+        :type  primary: ``bool``
+
+        :param rate_limit: port speed in Mbps
+        :type  rate_limit: ``int``
+        :return:
+        """
+        data = {"network_interface": {}}
+        if label is not None:
+            data["network_interface"]["label"] = label
+        if primary is not None:
+            data["network_interface"]["primary"] = primary
+        if rate_limit is not None:
+            data["network_interface"]["rate_limit"] = rate_limit
+
+        action = "/virtual_machines/{identifier}/network_interfaces/{network_interface_id}.json".format(
+            identifier=identifier, network_interface_id=network_interface_id)
+
+        self.connection.request(action,
+                                data=json.dumps(data),
+                                headers={
+                                    "Content-type": "application/json"},
+                                method="PUT")
 
     def _to_node(self, data):
         identifier = data["identifier"]
@@ -483,7 +684,9 @@ class OnAppNodeDriver(NodeDriver):
         hypervisor_group_id = kwargs.get("hypervisor_group_id")
         hypervisor_id = kwargs.get("hypervisor_id")
         initial_root_password = kwargs.get("initial_root_password")
+        note = kwargs.get("note")
         primary_disk_min_iops = kwargs.get("primary_disk_min_iops")
+        primary_network_id = kwargs.get("primary_network_id")
         primary_network_group_id = kwargs.get("primary_network_group_id")
         rate_limit = kwargs.get("rate_limit")
         recipe_ids = kwargs.get("recipe_ids")
@@ -512,7 +715,8 @@ class OnAppNodeDriver(NodeDriver):
                 "data_store_group_primary_id"] = data_store_group_primary_id
 
         if data_store_group_swap_id:
-            server_params["data_store_group_swap_id"] = data_store_group_swap_id
+            server_params[
+                "data_store_group_swap_id"] = data_store_group_swap_id
 
         if hypervisor_group_id:
             server_params["hypervisor_group_id"] = hypervisor_group_id
@@ -523,11 +727,18 @@ class OnAppNodeDriver(NodeDriver):
         if initial_root_password:
             server_params["initial_root_password"] = initial_root_password
 
+        if note:
+            server_params["note"] = note
+
         if primary_disk_min_iops:
             server_params["primary_disk_min_iops"] = primary_disk_min_iops
 
+        if primary_network_id:
+            server_params["primary_network_id"] = primary_network_id
+
         if primary_network_group_id:
-            server_params["primary_network_group_id"] = primary_network_group_id
+            server_params[
+                "primary_network_group_id"] = primary_network_group_id
 
         if rate_limit:
             server_params["rate_limit"] = rate_limit
