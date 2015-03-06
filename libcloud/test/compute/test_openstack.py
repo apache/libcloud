@@ -803,6 +803,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                 "serverId": "12065",
                 "volumeId": "cd76a3a1-c4ce-40f6-9b9f-07a61508938d",
             }],
+            'snapshot_id': None,
             'state': 'available',
             'location': 'nova',
             'volume_type': 'None',
@@ -817,6 +818,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(volume.extra, {
             'description': 'some description',
             'attachments': [],
+            'snapshot_id': '01f48111-7866-4cd2-986a-e92683c4a363',
             'state': 'available',
             'location': 'nova',
             'volume_type': 'None',

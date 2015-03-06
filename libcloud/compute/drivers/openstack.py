@@ -2064,6 +2064,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 'description': api_node['displayDescription'],
                 'attachments': [att for att in api_node['attachments'] if att],
                 'state': api_node.get('status', None),
+                'snapshot_id': api_node.get('snapshotId', None),
                 'location': api_node.get('availabilityZone', None),
                 'volume_type': api_node.get('volumeType', None),
                 'metadata': api_node.get('metadata', None),
