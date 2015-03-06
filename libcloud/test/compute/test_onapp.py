@@ -64,7 +64,7 @@ class OnAppNodeTestCase(LibcloudTestCase):
             '"hostname": "onapp-new-fred", "cpus": 4, "label": '
             '"onapp-new-fred", "primary_disk_size": 100, "memory": 512, '
             '"required_virtual_machine_build": 0, "template_id": '
-            '"template_id", "cpu_shares": 4}}'),
+            '"template_id", "cpu_shares": 4, "rate_limit": null}}'),
             json.loads(req_mock.call_args[1]['data']))
         self.assertEqual('POST', req_mock.call_args[1]['method'])
 

@@ -249,7 +249,7 @@ class OnAppNode(Node):
         :type       ip_addresses: ``list`` of :class:`OnAppIpAddress`
 
         :param      extra: a list of extra arguments
-        :type       extra: ``list``
+        :type       extra: ``dict``
 
         :param      driver: NodeDriver instance
         :type       driver: class:`OnAppNodeDriver`
@@ -261,10 +261,22 @@ class OnAppNode(Node):
         self.ip_addresses = ip_addresses
         self.extra = extra
 
+        def is_ip_private(ip_addr):
+            # https://en.wikipedia.org/wiki/Private_network
+            priv_lo = re.compile("^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+            priv_24 = re.compile("^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+            priv_20 = re.compile("^192\.168\.\d{1,3}.\d{1,3}$")
+            priv_16 = re.compile(
+                "^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
+
+            return any([priv_lo.match(ip_addr), priv_24.match(ip_addr),
+                        priv_20.match(ip_addr),
+                        priv_16.match(ip_addr)])
+
         public_ips = []
         private_ips = []
         for ip in self.ip_addresses:
-            if OnAppNode.is_ip_private(ip.address):
+            if is_ip_private(ip.address):
                 private_ips.append(ip.address)
             else:
                 public_ips.append(ip.address)
@@ -279,19 +291,6 @@ class OnAppNode(Node):
             size=None,
             image=extra['template_id'],
             extra=extra)
-
-    @staticmethod
-    def is_ip_private(ip):
-        # https://en.wikipedia.org/wiki/Private_network
-
-        priv_lo = re.compile("^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-        priv_24 = re.compile("^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-        priv_20 = re.compile("^192\.168\.\d{1,3}.\d{1,3}$")
-        priv_16 = re.compile(
-            "^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
-
-        return any([priv_lo.match(ip), priv_24.match(ip), priv_20.match(ip),
-                    priv_16.match(ip)])
 
     def __repr__(self):
         return "<OnAppNode: identifier=%s, label=%s, ip_address=<%s>" % \
@@ -476,12 +475,6 @@ class OnAppNodeDriver(NodeDriver):
 
     connectionCls = OnAppConnection
 
-    def list_sizes(self, location=None):
-        return []
-
-    def list_locations(self):
-        return []
-
     def create_node(self, label, memory, cpus, cpu_shares, hostname,
                     template_id, primary_disk_size, swap_disk_size,
                     required_virtual_machine_build=1,
@@ -507,8 +500,9 @@ class OnAppNodeDriver(NodeDriver):
             "required_virtual_machine_build"] = required_virtual_machine_build
         server_params[
             "required_ip_address_assignment"] = required_ip_address_assignment
+        server_params["rate_limit"] = kwargs.get("rate_limit")
 
-        server_params.update(self._create_args_to_params(**kwargs))
+        server_params.update(OnAppNodeDriver._create_args_to_params(**kwargs))
         data = json.dumps({"virtual_machine": server_params})
 
         response = self.connection.request(
@@ -579,10 +573,9 @@ class OnAppNodeDriver(NodeDriver):
         data = {"network_interface": {
             "label": label,
             "network_join_id": network_join_id,
-            "primary": primary
+            "primary": primary,
+            "rate_limit": rate_limit
         }}
-        if rate_limit is not None:
-            data['network_interface']['rate_limit'] = rate_limit
 
         response = self.connection.request(
             "/virtual_machines/%s/network_interfaces.json" % identifier,
@@ -627,13 +620,13 @@ class OnAppNodeDriver(NodeDriver):
         :type  rate_limit: ``int``
         :return:
         """
-        data = {"network_interface": {}}
+        data = {"network_interface": {
+            "rate_limit": rate_limit
+        }}
         if label is not None:
             data["network_interface"]["label"] = label
         if primary is not None:
             data["network_interface"]["primary"] = primary
-        if rate_limit is not None:
-            data["network_interface"]["rate_limit"] = rate_limit
 
         action = "/virtual_machines/{identifier}/network_interfaces/{network_interface_id}.json".format(
             identifier=identifier, network_interface_id=network_interface_id)
@@ -644,6 +637,79 @@ class OnAppNodeDriver(NodeDriver):
                                     "Content-type": "application/json"},
                                 method="PUT")
 
+    #
+    # Methods to be implemented
+    #
+    def list_sizes(self, location=None):
+        pass
+
+    def list_locations(self):
+        pass
+
+    def reboot_node(self, node):
+        pass
+
+    def destroy_node(self, node):
+        pass
+
+    def list_volumes(self):
+        pass
+
+    def list_volume_snapshots(self, volume):
+        pass
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        pass
+
+    def create_volume_snapshot(self, volume, name):
+        pass
+
+    def attach_volume(self, node, volume, device=None):
+        pass
+
+    def detach_volume(self, volume):
+        pass
+
+    def destroy_volume(self, volume):
+        pass
+
+    def destroy_volume_snapshot(self, snapshot):
+        pass
+
+    def list_images(self, location=None):
+        pass
+
+    def create_image(self, node, name, description=None):
+        pass
+
+    def delete_image(self, node_image):
+        pass
+
+    def get_image(self, image_id):
+        pass
+
+    def copy_image(self, source_region, node_image, name, description=None):
+        pass
+
+    def list_key_pairs(self):
+        pass
+
+    def get_key_pair(self, name):
+        pass
+
+    def create_key_pair(self, name):
+        pass
+
+    def import_key_pair_from_string(self, name, key_material):
+        pass
+
+    def delete_key_pair(self, key_pair):
+        pass
+
+    #
+    # Helper methods
+    #
+
     def _to_node(self, data):
         identifier = data["identifier"]
         label = data["label"]
@@ -651,12 +717,13 @@ class OnAppNodeDriver(NodeDriver):
         for ip in data["ip_addresses"]:
             ip_addresses.append(OnAppIpAddress(**ip["ip_address"]))
 
-        extra = self._get_extra_dict(
+        extra = OnAppNodeDriver._get_extra_dict(
             data, RESOURCE_EXTRA_ATTRIBUTES_MAP["node"]
         )
         return OnAppNode(identifier, label, ip_addresses, extra, self)
 
-    def _get_extra_dict(self, response, mapping):
+    @staticmethod
+    def _get_extra_dict(response, mapping):
         """
         Extract attributes from the element based on rules provided in the
         mapping dictionary.
@@ -680,7 +747,8 @@ class OnAppNodeDriver(NodeDriver):
                 extra[attribute] = None
         return extra
 
-    def _create_args_to_params(self, **kwargs):
+    @staticmethod
+    def _create_args_to_params(**kwargs):
         """
         Extract server params from keyword args to create a VS
 
@@ -701,7 +769,6 @@ class OnAppNodeDriver(NodeDriver):
         primary_disk_min_iops = kwargs.get("primary_disk_min_iops")
         primary_network_id = kwargs.get("primary_network_id")
         primary_network_group_id = kwargs.get("primary_network_group_id")
-        rate_limit = kwargs.get("rate_limit")
         recipe_ids = kwargs.get("recipe_ids")
         required_automatic_backup = kwargs.get("required_automatic_backup")
         required_virtual_machine_startup = kwargs.get(
@@ -752,9 +819,6 @@ class OnAppNodeDriver(NodeDriver):
         if primary_network_group_id:
             server_params[
                 "primary_network_group_id"] = primary_network_group_id
-
-        if rate_limit:
-            server_params["rate_limit"] = rate_limit
 
         if recipe_ids:
             server_params["recipe_ids"] = recipe_ids
