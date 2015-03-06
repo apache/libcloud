@@ -1,14 +1,15 @@
-from datetime import datetime
-import unittest
 import mock
+from datetime import datetime
+
 from libcloud.common.aws import V4SignedAWSConnection
+from libcloud.test import LibcloudTestCase
 
 
 class EC2MockDriver(object):
     region_name = 'my_region'
 
 
-class V4SignedAWSConnectionTest(unittest.TestCase):
+class V4SignedAWSConnectionTest(LibcloudTestCase):
 
     def setUp(self):
         V4SignedAWSConnection.service_name = 'my_service'
