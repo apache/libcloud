@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+from libcloud.utils.iso8601 import parse_date
 
 try:
     import simplejson as json
@@ -2087,8 +2088,14 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                  'description': description,
                  'status': status}
 
+        try:
+            created_dt = parse_date(created_at)
+        except ValueError:
+            created_dt = None
+
         snapshot = VolumeSnapshot(id=data['id'], driver=self,
-                                  size=data['size'], extra=extra)
+                                  size=data['size'], extra=extra,
+                                  created=created_dt)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):

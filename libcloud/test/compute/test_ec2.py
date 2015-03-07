@@ -18,6 +18,7 @@ from __future__ import with_statement
 import os
 import sys
 from datetime import datetime
+from libcloud.utils.iso8601 import UTC
 
 from libcloud.utils.py3 import httplib
 
@@ -824,6 +825,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('Test snapshot', snap.extra['name'])
         self.assertEqual(vol.id, snap.extra['volume_id'])
         self.assertEqual('pending', snap.extra['state'])
+        # 2013-08-15T16:22:30.000Z
+        self.assertEqual(datetime(2013, 8, 15, 16, 22, 30, tzinfo=UTC), snap.created)
 
     def test_list_snapshots(self):
         snaps = self.driver.list_snapshots()

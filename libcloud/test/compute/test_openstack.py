@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+from libcloud.utils.iso8601 import UTC
 
 try:
     import simplejson as json
@@ -1396,7 +1397,12 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         snapshots = self.driver.ex_list_snapshots()
         self.assertEqual(len(snapshots), 3)
+        self.assertEqual(snapshots[0].created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC))
+        self.assertEqual(snapshots[0].extra['created'], "2012-02-29T03:50:07Z")
         self.assertEqual(snapshots[0].extra['name'], 'snap-001')
+
+        # invalid date is parsed as None
+        assert snapshots[2].created is None
 
     def test_list_volume_snapshots(self):
         volume = self.driver.list_volumes()[0]

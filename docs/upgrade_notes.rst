@@ -15,6 +15,11 @@ Development
   Other drivers did not implement creating volumes from snapshots at all
   until now.)
 
+* VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+
 Libcloud 0.16.0
 ---------------
 

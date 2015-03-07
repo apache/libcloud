@@ -19,6 +19,12 @@ Compute
   Also modify signature of base NodeDriver.create_volume to reflect the fact
   that all drivers expect a StorageSnapshot object as the snapshot argument.
   (GITHUB-467, LIBCLOUD-672)
+
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
   [Allard Hoeve]
 
 - Improve GCE create_node, make sure ex_get_disktype function
