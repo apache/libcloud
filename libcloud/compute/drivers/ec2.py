@@ -36,6 +36,7 @@ from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
 from libcloud.common.aws import (AWSBaseResponse, SignedAWSConnection,
                                  V4SignedAWSConnection)
+from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
@@ -377,6 +378,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-east-1.amazonaws.com',
         'api_name': 'ec2_us_east',
         'country': 'USA',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -421,6 +423,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-west-1.amazonaws.com',
         'api_name': 'ec2_us_west',
         'country': 'USA',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -461,6 +464,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-west-2.amazonaws.com',
         'api_name': 'ec2_us_west_oregon',
         'country': 'US',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -503,6 +507,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.eu-west-1.amazonaws.com',
         'api_name': 'ec2_eu_west',
         'country': 'Ireland',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -545,6 +550,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.eu-central-1.amazonaws.com',
         'api_name': 'ec2_eu_central',
         'country': 'Frankfurt',
+        'signature_version': '4',
         'instance_types': [
             'm3.medium',
             'm3.large',
@@ -574,6 +580,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
         'api_name': 'ec2_ap_southeast',
         'country': 'Singapore',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -609,6 +616,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
         'api_name': 'ec2_ap_northeast',
         'country': 'Japan',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -650,6 +658,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.sa-east-1.amazonaws.com',
         'api_name': 'ec2_sa_east',
         'country': 'Brazil',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -675,6 +684,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
         'api_name': 'ec2_ap_southeast_2',
         'country': 'Australia',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -714,6 +724,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
         'country': 'US',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -755,6 +766,7 @@ REGION_DETAILS = {
         # Nimbus clouds have 3 EC2-style instance types but their particular
         # RAM allocations are configured by the admin
         'country': 'custom',
+        'signature_version': '2',
         'instance_types': [
             'm1.small',
             'm1.large',
@@ -4636,6 +4648,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
+        kwargs['signature_version'] = self.signature_version
+        return kwargs
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -5560,6 +5577,8 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.region_name = region
         self.api_name = details['api_name']
         self.country = details['country']
+        self.signature_version = details.pop('signature_version',
+                                             DEFAULT_SIGNATURE_VERSION)
 
         host = host or details['endpoint']
 
