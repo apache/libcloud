@@ -33,8 +33,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'EC2NodeDriver'),
     Provider.EC2_EU_WEST:
     ('libcloud.compute.drivers.ec2', 'EC2EUNodeDriver'),
-    Provider.EC2_EU_CENTRAL:
-    ('libcloud.compute.drivers.ec2', 'EC2EUCentralNodeDriver'),
     Provider.EC2_US_WEST:
     ('libcloud.compute.drivers.ec2', 'EC2USWestNodeDriver'),
     Provider.EC2_US_WEST_OREGON:
