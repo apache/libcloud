@@ -45,8 +45,8 @@ populate `PGP Key ID` field with your PGP key ID.
 Applying a patch
 ----------------
 
-When applying a third-party patch created using ``git format-patch`` command,
-use the following command:
+When applying a third-party patch created using ``git format-patch`` or
+``git diff`` command, use the following command:
 
 .. sourcecode:: bash
 
@@ -55,8 +55,18 @@ use the following command:
 ``--signoff`` argument signs the patch and lets others know that you have
 reviewed and merged a patch.
 
-If you are merging a patch from the Github pull request, don't forget to
-update the commit message during rebase (or use git commit --amend if the
+If you are working with a Github pull request, you can obtain a patch file
+by appending ``.patch`` to the end of the pull request URL. For example:
+
+.. sourcecode:: bash
+
+    wget https://github.com/apache/libcloud/pull/<pr number>.patch
+    git am --signoff < <pr number>.patch
+    # rebase to squash commits / ammend
+    ...
+
+When working with a Github pull request, also don't forget to
+update the commit message during rebase (or use ``git commit --amend`` if the
 rebase was not necessary) to include the "Closes #prnumber" message. This way,
 the corresponding Github pull request will get automatically closed once the
 Github mirror is updated.
@@ -69,7 +79,11 @@ For example::
 
     Closes #prnumber
 
-After the patch has been applied, make sure to update ``CHANGES`` file.
+If the original patch author didn't squash all of the commits into one and you
+think this is needed, you should squash all the commits yourself using
+``git rebase`` after you have merged / applied the patch.
+
+After the patch has been applied, make sure to update ``CHANGES.rst`` file.
 
 Making a release (for release managers)
 ---------------------------------------
