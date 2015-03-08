@@ -314,8 +314,13 @@ class Route53DNSDriver(DNSDriver):
         ET.SubElement(change, 'Action').text = 'DELETE'
 
         rrs = ET.SubElement(change, 'ResourceRecordSet')
-        ET.SubElement(rrs, 'Name').text = record.name + '.' + \
-            record.zone.domain
+
+        if record.name:
+            record_name = record.name + '.' + record.zone.domain
+        else:
+            record_name = record.zone.domain
+
+        ET.SubElement(rrs, 'Name').text = record_name
         ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[record.type]
         ET.SubElement(rrs, 'TTL').text = str(record.extra.get('ttl', '0'))
 
@@ -334,7 +339,13 @@ class Route53DNSDriver(DNSDriver):
         ET.SubElement(change, 'Action').text = 'CREATE'
 
         rrs = ET.SubElement(change, 'ResourceRecordSet')
-        ET.SubElement(rrs, 'Name').text = name + '.' + record.zone.domain
+
+        if name:
+            record_name = name + '.' + record.zone.domain
+        else:
+            record_name = record.zone.domain
+
+        ET.SubElement(rrs, 'Name').text = record_name
         ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type]
         ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
 
@@ -364,12 +375,20 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(change, 'Action').text = action
 
             rrs = ET.SubElement(change, 'ResourceRecordSet')
-            ET.SubElement(rrs, 'Name').text = name + '.' + zone.domain
+
+            if name:
+                record_name = name + '.' + zone.domain
+            else:
+                record_name = zone.domain
+
+            ET.SubElement(rrs, 'Name').text = record_name
             ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type_]
             ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
 
             rrecs = ET.SubElement(rrs, 'ResourceRecords')
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
+            if 'priority' in extra:
+                data = '%s %s' % (extra['priority'], data)
             ET.SubElement(rrec, 'Value').text = data
 
         uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'

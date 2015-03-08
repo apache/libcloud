@@ -1,6 +1,88 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+General
+~~~~~~~
+
+- Use native ``ssl.match_hostname`` functionality when running on Python >=
+  3.2 and only require ``backports.ssl_match_hostname`` dependency on Python
+  versions < 3.2.
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
+  [Allard Hoeve]
+
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
+- Allow user to pass ``ex_blockdevicemappings`` argument to the create_node
+  method in the OpenStack driver.
+  (GITHUB-398, LIBCLOUD-637)
+  [Allard Hoeve]
+
+- Fix ``list_volume_snapshots`` method in the EC2 driver so it comforms to the
+  base API.
+  (LIBCLOUD-664, GITHUB-451)
+  [Allard Hoeve]
+
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver.
+  (LIBCLOUD-668, GITHUB-462)
+  [Allard Hoeve]
+
+- Add the following new methods to the Linode driver: ``ex_list_volumes``,
+  ``ex_create_volume``, ``ex_destroy_volume``.
+  (LIBCLOUD-649, GITHUB-430)
+  [Wojciech Wirkijowski]
+
+- Add ``list_volume_snapshots`` method to the OpenStack driver.
+  (LIBCLOUD-663, GITHUB-450)
+  [Allard Hoeve]
+
+- Add Site to Site VPN functionality to CloudStack driver.
+  (GITHUB-465)
+  [Avi Nanhkoesingh]
+
+- Add affinity group support to CloudStack driver
+  (LIBCLOUD-671, GITHUB-468)
+  [Mateusz Korszun]
+
+DNS
+~~~
+
+- Fix a bug when a ZoneDoesntExist exception was thrown when listing records
+  for a zone which has no records in the HostVirtual driver.
+  (GITHUB-460)
+  [Vanč Levstik]
+
+- Correctly handle MX records priority in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Allow user to create an A record which points directly to the domain zone
+  name in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
@@ -15,14 +97,6 @@ General
 
 Compute
 ~~~~~~~
-
-- Improve GCE create_node, make sure ex_get_disktype function
-  (GITHUB-448)
-  [Markos Gogoulos]
-
-- GCE driver fix to handle unknown image projects
-  (GITHUB-447)
-  [Markos Gogoulos]
 
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)

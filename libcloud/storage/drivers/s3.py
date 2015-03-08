@@ -729,7 +729,7 @@ class BaseS3StorageDriver(StorageDriver):
 
             if response.status != httplib.OK:
                 raise LibcloudError('Error fetching multipart uploads. '
-                                    'Got code: %s' % (response.status),
+                                    'Got code: %s' % response.status,
                                     driver=self)
 
             body = response.parse_body()

@@ -1,0 +1,27 @@
+{
+    "listvpnconnectionsresponse": {
+        "count": 1,
+        "vpnconnection": [
+            {
+                "account": "some_admin",
+                "cidrlist": "10.2.2.0/24",
+                "created": "2015-02-20T13:32:58+0100",
+                "domain": "some_domain",
+                "domainid": "9b397dea-25ef-4c5d-b47d-627eaebe8ed8",
+                "dpd": false,
+                "esplifetime": 3600,
+                "esppolicy": "3des-md5",
+                "gateway": "10.2.2.1",
+                "id": "8f482d9a-6cee-453b-9e78-b0e1338ffce9",
+                "ikelifetime": 86400,
+                "ikepolicy": "3des-md5",
+                "ipsecpsk": "xxx",
+                "passive": false,
+                "publicip": "1.2.3.4",
+                "s2scustomergatewayid": "ea67eaae-1c2a-4e65-b910-441e77f69bea",
+                "s2svpngatewayid": "cffa0cab-d1da-42a7-92f6-41379267a29f",
+                "state": "Connected"
+            }
+        ]
+    }
+}

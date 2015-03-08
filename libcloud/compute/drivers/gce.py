@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
+from libcloud.utils.iso8601 import parse_date
 
 API_VERSION = 'v1'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
@@ -86,6 +87,9 @@ class GCELicense(UuidMixin):
         self.charges_use_fee = charges_use_fee
         self.extra = extra or {}
         UuidMixin.__init__(self)
+
+    def destroy(self):
+        raise ProviderError("Can not destroy a License resource.")
 
     def __repr__(self):
         return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
@@ -482,10 +486,11 @@ class GCERegion(UuidMixin):
 
 
 class GCESnapshot(VolumeSnapshot):
-    def __init__(self, id, name, size, status, driver, extra=None):
+    def __init__(self, id, name, size, status, driver, extra=None,
+                 created=None):
         self.name = name
         self.status = status
-        super(GCESnapshot, self).__init__(id, driver, size, extra)
+        super(GCESnapshot, self).__init__(id, driver, size, extra, created)
 
 
 class GCETargetHttpProxy(UuidMixin):
@@ -4768,7 +4773,7 @@ n
 
     def _to_disktype(self, disktype):
         """
-        Return a DiskType object from the json-response dictionary.
+        Return a DiskType object from the JSON-response dictionary.
 
         :param  disktype: The dictionary describing the disktype.
         :type   disktype: ``dict``
@@ -4792,7 +4797,7 @@ n
 
     def _to_address(self, address):
         """
-        Return an Address object from the json-response dictionary.
+        Return an Address object from the JSON-response dictionary.
 
         :param  address: The dictionary describing the address.
         :type   address: ``dict``
@@ -4820,7 +4825,7 @@ n
 
     def _to_backendservice(self, backendservice):
         """
-        Return a Backend Service object from the json-response dictionary.
+        Return a Backend Service object from the JSON-response dictionary.
 
         :param  backendservice: The dictionary describing the backend service.
         :type   backendservice: ``dict``
@@ -4850,7 +4855,7 @@ n
 
     def _to_healthcheck(self, healthcheck):
         """
-        Return a HealthCheck object from the json-response dictionary.
+        Return a HealthCheck object from the JSON-response dictionary.
 
         :param  healthcheck: The dictionary describing the healthcheck.
         :type   healthcheck: ``dict``
@@ -4875,7 +4880,7 @@ n
 
     def _to_firewall(self, firewall):
         """
-        Return a Firewall object from the json-response dictionary.
+        Return a Firewall object from the JSON-response dictionary.
 
         :param  firewall: The dictionary describing the firewall.
         :type   firewall: ``dict``
@@ -4904,7 +4909,7 @@ n
 
     def _to_forwarding_rule(self, forwarding_rule):
         """
-        Return a Forwarding Rule object from the json-response dictionary.
+        Return a Forwarding Rule object from the JSON-response dictionary.
 
         :param  forwarding_rule: The dictionary describing the rule.
         :type   forwarding_rule: ``dict``
@@ -4931,7 +4936,7 @@ n
 
     def _to_network(self, network):
         """
-        Return a Network object from the json-response dictionary.
+        Return a Network object from the JSON-response dictionary.
 
         :param  network: The dictionary describing the network.
         :type   network: ``dict``
@@ -4952,7 +4957,7 @@ n
 
     def _to_route(self, route):
         """
-        Return a Route object from the json-response dictionary.
+        Return a Route object from the JSON-response dictionary.
 
         :param  route: The dictionary describing the route.
         :type   route: ``dict``
@@ -4986,7 +4991,7 @@ n
 
     def _to_node_image(self, image):
         """
-        Return an Image object from the json-response dictionary.
+        Return an Image object from the JSON-response dictionary.
 
         :param  image: The dictionary describing the image.
         :type   image: ``dict``
@@ -5020,7 +5025,7 @@ n
 
     def _to_node_location(self, location):
         """
-        Return a Location object from the json-response dictionary.
+        Return a Location object from the JSON-response dictionary.
 
         :param  location: The dictionary describing the location.
         :type   location: ``dict``
@@ -5034,7 +5039,7 @@ n
 
     def _to_node(self, node):
         """
-        Return a Node object from the json-response dictionary.
+        Return a Node object from the JSON-response dictionary.
 
         :param  node: The dictionary describing the node.
         :type   node: ``dict``
@@ -5098,7 +5103,7 @@ n
 
     def _to_node_size(self, machine_type):
         """
-        Return a Size object from the json-response dictionary.
+        Return a Size object from the JSON-response dictionary.
 
         :param  machine_type: The dictionary describing the machine.
         :type   machine_type: ``dict``
@@ -5124,7 +5129,7 @@ n
 
     def _to_project(self, project):
         """
-        Return a Project object from the json-response dictionary.
+        Return a Project object from the JSON-response dictionary.
 
         :param  project: The dictionary describing the project.
         :type   project: ``dict``
@@ -5149,7 +5154,7 @@ n
 
     def _to_region(self, region):
         """
-        Return a Region object from the json-response dictionary.
+        Return a Region object from the JSON-response dictionary.
 
         :param  region: The dictionary describing the region.
         :type   region: ``dict``
@@ -5176,7 +5181,7 @@ n
 
     def _to_snapshot(self, snapshot):
         """
-        Return a Snapshot object from the json-response dictionary.
+        Return a Snapshot object from the JSON-response dictionary.
 
         :param  snapshot: The dictionary describing the snapshot
         :type   snapshot: ``dict``
@@ -5200,14 +5205,19 @@ n
             lic_objs = self._licenses_from_urls(licenses=snapshot['licenses'])
             extra['licenses'] = lic_objs
 
+        try:
+            created = parse_date(snapshot.get('creationTimestamp'))
+        except ValueError:
+            created = None
+
         return GCESnapshot(id=snapshot['id'], name=snapshot['name'],
                            size=snapshot['diskSizeGb'],
                            status=snapshot.get('status'), driver=self,
-                           extra=extra)
+                           extra=extra, created=created)
 
     def _to_storage_volume(self, volume):
         """
-        Return a Volume object from the json-response dictionary.
+        Return a Volume object from the JSON-response dictionary.
 
         :param  volume: The dictionary describing the volume.
         :type   volume: ``dict``
@@ -5228,7 +5238,7 @@ n
 
     def _to_targethttpproxy(self, targethttpproxy):
         """
-        Return a Target HTTP Proxy object from the json-response dictionary.
+        Return a Target HTTP Proxy object from the JSON-response dictionary.
 
         :param  targethttpproxy: The dictionary describing the proxy.
         :type   targethttpproxy: ``dict``
@@ -5247,7 +5257,7 @@ n
 
     def _to_targetinstance(self, targetinstance):
         """
-        Return a Target Instance object from the json-response dictionary.
+        Return a Target Instance object from the JSON-response dictionary.
 
         :param  targetinstance: The dictionary describing the target instance.
         :type   targetinstance: ``dict``
@@ -5274,7 +5284,7 @@ n
 
     def _to_targetpool(self, targetpool):
         """
-        Return a Target Pool object from the json-response dictionary.
+        Return a Target Pool object from the JSON-response dictionary.
 
         :param  targetpool: The dictionary describing the volume.
         :type   targetpool: ``dict``
@@ -5398,7 +5408,7 @@ n
 
     def _to_urlmap(self, urlmap):
         """
-        Return a UrlMap object from the json-response dictionary.
+        Return a UrlMap object from the JSON-response dictionary.
 
         :param  zone: The dictionary describing the url-map.
         :type   zone: ``dict``
@@ -5423,7 +5433,7 @@ n
 
     def _to_zone(self, zone):
         """
-        Return a Zone object from the json-response dictionary.
+        Return a Zone object from the JSON-response dictionary.
 
         :param  zone: The dictionary describing the zone.
         :type   zone: ``dict``
@@ -5445,7 +5455,7 @@ n
 
     def _to_license(self, license):
         """
-        Return a License object from the json-response dictionary.
+        Return a License object from the JSON-response dictionary.
 
         :param  license: The dictionary describing the license.
         :type   license: ``dict``

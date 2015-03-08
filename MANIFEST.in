@@ -4,6 +4,7 @@ include example_*.py
 include CHANGES.rst
 include README.rst
 include tox.ini
+include requirements-tests.txt
 include libcloud/data/pricing.json
 prune libcloud/test/secrets.py
 include demos/*

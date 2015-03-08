@@ -42,11 +42,12 @@ from copy import copy
 from libcloud.utils.py3 import PY3
 
 from libcloud.common.linode import (API_ROOT, LinodeException,
-                                    LinodeConnection, LINODE_PLAN_IDS)
+                                    LinodeConnection, LINODE_PLAN_IDS,
+                                    LINODE_DISK_FILESYSTEMS)
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.base import NodeImage
+from libcloud.compute.base import NodeImage, StorageVolume
 
 
 class LinodeNodeDriver(NodeDriver):
@@ -64,6 +65,8 @@ class LinodeNodeDriver(NodeDriver):
         list_sizes              avail.linodeplans
         list_images             avail.distributions
         list_locations          avail.datacenters
+        list_volumes            linode.disk.list
+        destroy_volume          linode.disk.delete
 
     For more information on the Linode API, be sure to read the reference:
 
@@ -74,6 +77,7 @@ class LinodeNodeDriver(NodeDriver):
     website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
+    _linode_disk_filesystems = LINODE_DISK_FILESYSTEMS
     features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
@@ -464,7 +468,7 @@ class LinodeNodeDriver(NodeDriver):
         used.
 
         :keyword dc: the datacenter to create Linodes in unless specified
-        :type dc: :class:`NodeLocation`
+        :type    dc: :class:`NodeLocation`
 
         :rtype: ``bool``
         """
@@ -479,6 +483,137 @@ class LinodeNodeDriver(NodeDriver):
         dcs = ", ".join([d["DATACENTERID"] for d in data])
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
+
+    def destroy_volume(self, volume):
+        """
+        Destroys disk volume for the Linode. Linode id is to be provided as
+        extra["LinodeId"] whithin :class:`StorageVolume`. It can be retrieved
+        by :meth:`libcloud.compute.drivers.linode.LinodeNodeDriver\
+                 .ex_list_volumes`.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        if not isinstance(volume, StorageVolume):
+            raise LinodeException(0xFD, "Invalid volume instance")
+
+        if volume.extra["LINODEID"] is None:
+            raise LinodeException(0xFD, "Missing LinodeID")
+
+        params = {
+            "api_action": "linode.disk.delete",
+            "LinodeID": volume.extra["LINODEID"],
+            "DiskID": volume.id,
+        }
+        self.connection.request(API_ROOT, params=params)
+
+        return True
+
+    def ex_create_volume(self, size, name, node, fs_type):
+        """
+        Create disk for the Linode.
+
+        :keyword    size: Size of volume in megabytes (required)
+        :type       size: ``int``
+
+        :keyword    name: Name of the volume to be created
+        :type       name: ``str``
+
+        :keyword    node: Node to attach volume to.
+        :type       node: :class:`Node`
+
+        :keyword    fs_type: The formatted type of this disk. Valid types are:
+                             ext3, ext4, swap, raw
+        :type       fs_type: ``str``
+
+
+        :return: StorageVolume representing the newly-created volume
+        :rtype: :class:`StorageVolume`
+        """
+        # check node
+        if not isinstance(node, Node):
+            raise LinodeException(0xFD, "Invalid node instance")
+
+        # check space available
+        total_space = node.extra['TOTALHD']
+        existing_volumes = self.ex_list_volumes(node)
+        used_space = 0
+        for volume in existing_volumes:
+            used_space = used_space + volume.size
+
+        available_space = total_space - used_space
+        if available_space < size:
+            raise LinodeException(0xFD, "Volume size too big. Available space\
+                    %d" % available_space)
+
+        # check filesystem type
+        if fs_type not in self._linode_disk_filesystems:
+            raise LinodeException(0xFD, "Not valid filesystem type")
+
+        params = {
+            "api_action": "linode.disk.create",
+            "LinodeID": node.id,
+            "Label": name,
+            "Type": fs_type,
+            "Size": size
+        }
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        volume = data["DiskID"]
+        # Make a volume out of it and hand it back
+        params = {
+            "api_action": "linode.disk.list",
+            "LinodeID": node.id,
+            "DiskID": volume
+        }
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)[0]
+
+    def ex_list_volumes(self, node, disk_id=None):
+        """
+        List existing disk volumes for for given Linode.
+
+        :keyword    node: Node to list disk volumes for. (required)
+        :type       node: :class:`Node`
+
+        :keyword    disk_id: Id for specific disk volume. (optional)
+        :type       disk_id: ``int``
+
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
+        if not isinstance(node, Node):
+            raise LinodeException(0xFD, "Invalid node instance")
+
+        params = {
+            "api_action": "linode.disk.list",
+            "LinodeID": node.id
+        }
+        # Add param if disk_id was specified
+        if disk_id is not None:
+            params["DiskID"] = disk_id
+
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        return self._to_volumes(data)
+
+    def _to_volumes(self, objs):
+        """
+        Covert returned JSON volumes into StorageVolume instances
+
+        :keyword    objs: ``list`` of JSON dictionaries representing the
+                         StorageVolumes
+        :type       objs: ``list``
+
+        :return: ``list`` of :class:`StorageVolume`s
+        """
+        volumes = {}
+        for o in objs:
+            vid = o["DISKID"]
+            volumes[vid] = vol = StorageVolume(id=vid, name=o["LABEL"],
+                                               size=int(o["SIZE"]),
+                                               driver=self.connection.driver)
+            vol.extra = copy(o)
+        return list(volumes.values())
 
     def _to_nodes(self, objs):
         """Convert returned JSON Linodes into Node instances

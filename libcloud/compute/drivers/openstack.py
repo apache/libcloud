@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+from libcloud.utils.iso8601 import parse_date
 
 try:
     import simplejson as json
@@ -149,23 +150,44 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             self.connection.request('/servers/detail', params=params).object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot:  :class:`.VolumeSnapshot`
+
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        volume = {
+            'display_name': name,
+            'display_description': name,
+            'size': size,
+            'volume_type': None,
+            'metadata': {
+                'contents': name,
+            },
+            'availability_zone': location
+        }
+
         if snapshot:
-            raise NotImplementedError(
-                "create_volume does not yet support create from snapshot")
+            volume['snapshot_id'] = snapshot.id
+
         resp = self.connection.request('/os-volumes',
                                        method='POST',
-                                       data={
-                                           'volume': {
-                                               'display_name': name,
-                                               'display_description': name,
-                                               'size': size,
-                                               'volume_type': None,
-                                               'metadata': {
-                                                   'contents': name,
-                                               },
-                                               'availability_zone': location,
-                                           }
-                                       })
+                                       data={'volume': volume})
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
@@ -1285,6 +1307,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 name = security_group.name
                 server_params['security_groups'].append({'name': name})
 
+        if 'ex_blockdevicemappings' in kwargs:
+            server_params['block_device_mapping_v2'] = \
+                kwargs['ex_blockdevicemappings']
+
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
         else:
@@ -1581,6 +1607,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def ex_list_snapshots(self):
         return self._to_snapshots(
             self.connection.request('/os-snapshots').object)
+
+    def list_volume_snapshots(self, volume):
+        return [snapshot for snapshot in self.ex_list_snapshots()
+                if snapshot.extra['volume_id'] == volume.id]
 
     def ex_create_snapshot(self, volume, name, description=None, force=False):
         """
@@ -1990,6 +2020,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         image = api_node.get('image', None)
         image_id = image.get('id', None) if image else None
         config_drive = api_node.get("config_drive", False)
+        volumes_attached = api_node.get('os-extended-volumes:volumes_attached')
 
         return Node(
             id=api_node['id'],
@@ -2016,8 +2047,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 key_name=api_node.get('key_name', None),
                 disk_config=api_node.get('OS-DCF:diskConfig', None),
                 config_drive=config_drive,
-                availability_zone=api_node.get('OS-EXT-AZ:availability_zone',
-                                               None),
+                availability_zone=api_node.get('OS-EXT-AZ:availability_zone'),
+                volumes_attached=volumes_attached,
             ),
         )
 
@@ -2057,8 +2088,14 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                  'description': description,
                  'status': status}
 
+        try:
+            created_dt = parse_date(created_at)
+        except ValueError:
+            created_dt = None
+
         snapshot = VolumeSnapshot(id=data['id'], driver=self,
-                                  size=data['size'], extra=extra)
+                                  size=data['size'], extra=extra,
+                                  created=created_dt)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):

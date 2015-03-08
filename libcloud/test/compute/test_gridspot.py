@@ -46,12 +46,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         Tests the error-handling for passing a bad API Key to the Gridspot API
         """
         GridspotMockHttp.type = 'BAD_AUTH'
-        try:
-            self.driver.list_nodes()
-            # Above command should have thrown an InvalidCredsException
-            self.assertTrue(False)
-        except InvalidCredsError:
-            self.assertTrue(True)
+        self.assertRaises(InvalidCredsError, self.driver.list_nodes)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -90,7 +85,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_destroy_node(self):
         """
@@ -104,85 +99,85 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         Gridspot does not fail a destroy node unless the parameters are bad, in
         which case it 404s
         """
-        self.assertTrue(True)
+        pass
 
     def test_reboot_node(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_reboot_node_failure(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_resize_node(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_reboot_node_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_images_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_create_node_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_destroy_node_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_sizes_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_resize_node_failure(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_images(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_sizes(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_locations(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
     def test_list_locations_response(self):
         """
         Gridspot does not implement this functionality
         """
-        self.assertTrue(True)
+        pass
 
 
 class GridspotMockHttp(MockHttp):
