@@ -83,6 +83,12 @@ Compute
   (LIBCLOUD-641, GITHUB-477)
   [Wido den Hollander]
 
+- Update ``ex_describe_tags`` method in the EC2 driver and allow user to list
+  tags for any supported resource. Previously you could only list tags for a
+  node or a storage volume.
+  (LIBCLOUD-676, GITHUB-482)
+  [John Kinsella]
+
 DNS
 ~~~
 
