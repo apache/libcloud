@@ -20,6 +20,7 @@ __all__ = [
     'AuroraComputeNodeDriver'
 ]
 
+
 class AuroraComputeNodeDriver(CloudStackNodeDriver):
     type = Provider.AURORACOMPUTE
     name = 'PCextreme AuroraCompute'
