@@ -1,0 +1,1 @@
+{ "listipforwardingrulesresponse" : { "count":1 ,"ipforwardingrule" : [  {"id":"772fd410-6649-43ed-befa-77be986b8906","protocol":"tcp","virtualmachineid":"2600","virtualmachinename":"test","virtualmachinedisplayname":"test","ipaddressid":34000,"ipaddress":"1.1.1.116","startport":33,"endport":34,"state":"Active"} ] } }
