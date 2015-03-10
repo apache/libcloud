@@ -15,9 +15,10 @@
 
 import sys
 
-from libcloud.compute.drivers.exoscale import AuroraComputeNodeDriver
+from libcloud.compute.drivers.auroracompute import AuroraComputeNodeDriver
 from libcloud.test.compute.test_cloudstack import CloudStackCommonTestCase
 from libcloud.test import unittest
+
 
 class AuroraComputeNodeDriverTestCase(CloudStackCommonTestCase, unittest.TestCase):
     driver_klass = AuroraComputeNodeDriver
