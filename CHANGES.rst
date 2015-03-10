@@ -157,6 +157,11 @@ Compute
   (LIBCLOUD-698, GITHUB-507)
   [Anthony Shaw]
 
+- Add "virtualmachine_id" attribute to the ``CloudStackAddress`` class in the
+  CloudStack driver.
+  (LIBCLOUD-679, GITHUB-485)
+  [Atsushi Sasaki]
+
 Storage
 ~~~~~~~
 
