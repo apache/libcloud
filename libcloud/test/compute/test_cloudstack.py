@@ -962,6 +962,16 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(rule.private_end_port, private_end_port)
         self.assertEqual(len(node.extra['port_forwarding_rules']), 2)
 
+    def test_ex_list_ip_forwarding_rules(self):
+        rules = self.driver.ex_list_ip_forwarding_rules()
+        self.assertEqual(len(rules), 1)
+        rule = rules[0]
+        self.assertTrue(rule.node)
+        self.assertEqual(rule.protocol, 'tcp')
+        self.assertEqual(rule.start_port, 33)
+        self.assertEqual(rule.end_port, 34)
+        self.assertEqual(rule.address.address, '1.1.1.116')
+
     def test_ex_limits(self):
         limits = self.driver.ex_limits()
         self.assertEqual(limits['max_images'], 20)
