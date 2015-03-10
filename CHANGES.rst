@@ -162,6 +162,11 @@ Compute
   (LIBCLOUD-679, GITHUB-485)
   [Atsushi Sasaki]
 
+- Allow user to pass filters via arguments to the
+  ``ex_list_port_forwarding_rules`` in the CloudStack driver.
+  (LIBCLOUD-678, GITHUB-484)
+  [Atsushi Sasaki]
+
 Storage
 ~~~~~~~
 
