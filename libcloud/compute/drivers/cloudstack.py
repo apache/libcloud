@@ -474,15 +474,20 @@ class CloudStackAddress(object):
 
     :param      vpc_id: VPC the ip belongs to
     :type       vpc_id: ``str``
+
+    :param      virtualmachine_id: The ID of virutal machine this address
+                                   is assigned to
+    :type       virtualmachine_id: ``str``
     """
 
     def __init__(self, id, address, driver, associated_network_id=None,
-                 vpc_id=None):
+                 vpc_id=None, virtualmachine_id=None):
         self.id = id
         self.address = address
         self.driver = driver
         self.associated_network_id = associated_network_id
         self.vpc_id = vpc_id
+        self.virtualmachine_id = virtualmachine_id
 
     def release(self):
         self.driver.ex_release_public_ip(address=self)
@@ -2200,7 +2205,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             ips.append(CloudStackAddress(ip['id'],
                                          ip['ipaddress'],
                                          self,
-                                         ip.get('associatednetworkid', [])))
+                                         ip.get('associatednetworkid', []),
+                                         ip.get('vpcid'),
+                                         ip.get('virtualmachineid')))
 
         return ips
 

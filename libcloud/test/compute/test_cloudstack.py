@@ -774,6 +774,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_ex_list_public_ips(self):
         ips = self.driver.ex_list_public_ips()
         self.assertEqual(ips[0].address, '1.1.1.116')
+        self.assertEqual(ips[0].virtualmachine_id, '2600')
 
     def test_ex_allocate_public_ip(self):
         addr = self.driver.ex_allocate_public_ip()
