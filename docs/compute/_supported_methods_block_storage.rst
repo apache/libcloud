@@ -2,6 +2,7 @@
 Provider                              list volumes create volume destroy volume attach volume detach volume list snapshots create snapshot
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 `Abiquo`_                             no           no            no             no            no            no             no             
+`PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `CloudFrames`_                        no           no            no             no            no            no             no             
@@ -68,6 +69,7 @@ Provider                              list volumes create volume destroy volume 
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
