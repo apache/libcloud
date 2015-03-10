@@ -70,6 +70,10 @@ Compute
   (GITHUB-456, LIBCLOUD-667)
   [Katriel Traum]
 
+- Add ex_list_ip_forwarding_rules() to CloudStack driver
+  (GITHUB-483)
+  [Atsushi Sasaki]
+
 DNS
 ~~~
 
