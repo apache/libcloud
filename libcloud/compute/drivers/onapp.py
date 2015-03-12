@@ -1,4 +1,5 @@
 import json
+import re
 
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.common.onapp import OnAppConnection
@@ -263,8 +264,7 @@ class OnAppNode(Node):
         public_ips = []
         private_ips = []
         for ip in self.ip_addresses:
-            if any(map(lambda x: ip.address.startswith(x),
-                       ["192.168.", "10.", "172."])):
+            if OnAppNode.is_ip_private(ip.address):
                 private_ips.append(ip.address)
             else:
                 public_ips.append(ip.address)
@@ -279,6 +279,19 @@ class OnAppNode(Node):
             size=None,
             image=extra['template_id'],
             extra=extra)
+
+    @staticmethod
+    def is_ip_private(ip):
+        # https://en.wikipedia.org/wiki/Private_network
+
+        priv_lo = re.compile("^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+        priv_24 = re.compile("^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+        priv_20 = re.compile("^192\.168\.\d{1,3}.\d{1,3}$")
+        priv_16 = re.compile(
+            "^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
+
+        return any([priv_lo.match(ip), priv_24.match(ip), priv_20.match(ip),
+                    priv_16.match(ip)])
 
     def __repr__(self):
         return "<OnAppNode: identifier=%s, label=%s, ip_address=<%s>" % \
