@@ -33,6 +33,16 @@ from libcloud.utils.dist import get_packages, get_data_files
 
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
+# Different versions of python have different requirements.  We can't use
+# libcloud.utils.py3 here because it relies on backports dependency being
+# installed / available
+PY2 = sys.version_info.major == 2
+PY3 = sys.version_info.major == 3
+pre_PY25 = PY2 and sys.version_info < (2, 5)
+pre_PY26 = PY2 and sys.version_info < (2, 6)
+pre_PY279 = PY2 and sys.version_info < (2, 7, 9)
+pre_PY32 = PY3 and sys.version_info < (3, 2)
+post_PY27 = PY2 and sys.version_info >= (2, 7)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -49,25 +59,19 @@ TEST_REQUIREMENTS = [
     'mock'
 ]
 
-if sys.version_info < (3, 2):
+if pre_PY279 or pre_PY32:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
 
-# Note: we can't use libcloud.utils.py3 here because it relies on backports
-# dependency being installed / available
-if sys.version_info >= (2, 7):
+if post_PY27 or PY3:
     unittest2_required = False
 else:
     unittest2_required = True
 
-if sys.version_info <= (2, 4):
+if pre_PY25:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
-
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
-
 
 def read_version_string():
     version = None
@@ -146,7 +150,7 @@ class TestCommand(Command):
             print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
-        if pre_python26:
+        if pre_PY26:
             missing = []
             # test for dependencies
             try:
@@ -231,10 +235,10 @@ class CoverageCommand(Command):
 forbid_publish()
 
 install_requires = []
-if pre_python26:
+if pre_PY26:
     install_requires.extend(['ssl', 'simplejson'])
 
-if sys.version_info < (3, 2):
+if pre_PY279 or pre_PY32:
     install_requires.append('backports.ssl_match_hostname')
 
 setup(
