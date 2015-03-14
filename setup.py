@@ -36,8 +36,8 @@ libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being
 # installed / available
-PY2 = sys.version_info.major == 2
-PY3 = sys.version_info.major == 3
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 PY2_pre_25 = PY2 and sys.version_info < (2, 5)
 PY2_pre_26 = PY2 and sys.version_info < (2, 6)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
@@ -72,6 +72,7 @@ if PY2_pre_25:
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
+
 
 def read_version_string():
     version = None
