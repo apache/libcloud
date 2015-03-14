@@ -187,9 +187,10 @@ class AWSRequestSignerAlgorithmV2(AWSRequestSigner):
         params['Version'] = self.version
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params=params,
-                                                       secret_key=self.access_secret,
-                                                       path=path)
+        params['Signature'] = self._get_aws_auth_param(
+            params=params,
+            secret_key=self.access_secret,
+            path=path)
         return params
 
     def _get_aws_auth_param(self, params, secret_key, path='/'):
