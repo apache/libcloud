@@ -2026,6 +2026,7 @@ class BaseEC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     features = {'create_node': ['ssh_key']}
     path = '/'
+    signature_version = DEFAULT_SIGNATURE_VERSION
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -5660,6 +5661,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     api_name = 'ec2_us_east'
     region_name = 'us-east-1'
     connectionCls = EucConnection
+    signature_version = '2'
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, api_version=DEFAULT_EUCA_API_VERSION):
@@ -5755,6 +5757,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
     region_name = 'nimbus'
     friendly_name = 'Nimbus Private Cloud'
     connectionCls = NimbusConnection
+    signature_version = '2'
 
     def ex_describe_addresses(self, nodes):
         """
@@ -5796,6 +5799,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
     name = 'Outscale'
     website = 'http://www.outscale.com'
     path = '/'
+    signature_version = '2'
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
