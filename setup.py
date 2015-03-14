@@ -38,11 +38,11 @@ libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 # installed / available
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
-pre_PY25 = PY2 and sys.version_info < (2, 5)
-pre_PY26 = PY2 and sys.version_info < (2, 6)
-pre_PY279 = PY2 and sys.version_info < (2, 7, 9)
-pre_PY32 = PY3 and sys.version_info < (3, 2)
-post_PY27 = PY2 and sys.version_info >= (2, 7)
+PY2_pre_25 = PY2 and sys.version_info < (2, 5)
+PY2_pre_26 = PY2 and sys.version_info < (2, 6)
+PY2_pre_27 = PY2 and sys.version_info < (2, 7)
+PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
+PY3_pre_32 = PY3 and sys.version_info < (3, 2)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -59,15 +59,15 @@ TEST_REQUIREMENTS = [
     'mock'
 ]
 
-if pre_PY279 or pre_PY32:
+if PY2_pre_279 or PY3_pre_32:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
 
-if post_PY27 or PY3:
-    unittest2_required = False
-else:
+if PY2_pre_27:
     unittest2_required = True
+else:
+    unittest2_required = False
 
-if pre_PY25:
+if PY2_pre_25:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
@@ -150,7 +150,7 @@ class TestCommand(Command):
             print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
-        if pre_PY26:
+        if PY2_pre_26:
             missing = []
             # test for dependencies
             try:
@@ -235,10 +235,10 @@ class CoverageCommand(Command):
 forbid_publish()
 
 install_requires = []
-if pre_PY26:
+if PY2_pre_26:
     install_requires.extend(['ssl', 'simplejson'])
 
-if pre_PY279 or pre_PY32:
+if PY2_pre_279 or PY3_pre_32:
     install_requires.append('backports.ssl_match_hostname')
 
 setup(
