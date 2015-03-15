@@ -3418,10 +3418,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for a resource (Node or StorageVolume).
+        Return a dictionary of tags for a resource (e.g. Node or StorageVolume).
 
         :param  resource: resource which should be used
-        :type   resource: :class:`Node` or :class:`StorageVolume`
+        :type   resource: any resource class, such as :class:`Node,`
+                :class:`StorageVolume,` or :class:NodeImage`
 
         :return: dict Node tags
         :rtype: ``dict``
@@ -3429,8 +3430,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeTags'}
 
         filters = {
-            'resource-id': resource.id,
-            'resource-type': 'instance'
+            'resource-id': resource.id
         }
 
         params.update(self._build_filters(filters))
