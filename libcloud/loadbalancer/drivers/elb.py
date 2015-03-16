@@ -44,6 +44,7 @@ class ELBConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
     responseCls = ELBResponse
+    service_name = 'elb'
 
 
 class ElasticLBDriver(Driver):

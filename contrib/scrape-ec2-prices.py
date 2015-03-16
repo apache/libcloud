@@ -28,9 +28,9 @@ import demjson
 
 LINUX_PRICING_URLS = [
     # Deprecated instances (JSON format)
-    'http://aws.amazon.com/ec2/pricing/json/linux-od.json',
+    'https://aws.amazon.com/ec2/pricing/json/linux-od.json',
     # Previous generation instances (JavaScript file)
-    'http://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js',
+    'https://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js',
     # New generation instances (JavaScript file)
     'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
 ]
@@ -40,6 +40,7 @@ EC2_REGIONS = [
     'us-west-1',
     'us-west-2',
     'eu-west-1',
+    'eu-central-1',
     'ap-southeast-1',
     'ap-southeast-2',
     'ap-northeast-1',
@@ -68,6 +69,10 @@ EC2_INSTANCE_TYPES = [
     'c3.2xlarge',
     'c3.4xlarge',
     'c3.8xlarge',
+    'd2.xlarge',
+    'd2.2xlarge',
+    'd2.4xlarge',
+    'd2.8xlarge',
     'cg1.4xlarge',
     'g2.2xlarge',
     'cr1.8xlarge',
@@ -90,13 +95,21 @@ EC2_INSTANCE_TYPES = [
 # Maps EC2 region name to region name used in the pricing file
 REGION_NAME_MAP = {
     'us-east': 'ec2_us_east',
+    'us-east-1': 'ec2_us_east',
     'us-west': 'ec2_us_west',
+    'us-west-1': 'ec2_us_west',
     'us-west-2': 'ec2_us_west_oregon',
+    'eu-west-1': 'ec2_eu_west',
     'eu-ireland': 'ec2_eu_west',
+    'eu-central-1': 'ec2_eu_central',
     'apac-sin': 'ec2_ap_southeast',
+    'ap-southeast-1': 'ec2_ap_southeast',
     'apac-syd': 'ec2_ap_southeast_2',
+    'ap-southeast-2': 'ec2_ap_southeast_2',
     'apac-tokyo': 'ec2_ap_northeast',
+    'ap-northeast-1': 'ec2_ap_northeast',
     'sa-east-1': 'ec2_sa_east',
+    'us-gov-west-1': 'ec2_us_govwest'
 }
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

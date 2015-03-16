@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<params>
+<param>
+ <value>
+  <struct>
+   <member>
+    <name>id</name>
+    <value>
+     <int>3</int>
+    </value>
+   </member>
+   <member>
+    <name>keyName</name>
+    <value>
+     <string>ACTIVE</string>
+    </value>
+   </member>
+   <member>
+    <name>name</name>
+    <value>
+     <string>Active</string>
+    </value>
+   </member>
+  </struct>
+ </value>
+</param>
+</params>

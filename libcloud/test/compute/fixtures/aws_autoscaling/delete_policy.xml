@@ -1,0 +1,5 @@
+<DeletePolicyResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+  <ResponseMetadata>
+    <RequestId>886f8da6-c70a-11e4-90d7-039afec0aea4</RequestId>
+  </ResponseMetadata>
+</DeletePolicyResponse>

@@ -1,0 +1,13 @@
+{
+  "action":
+    {
+      "id":918910,
+      "status":"in-progress",
+      "type":"rename",
+      "started_at":"2014-12-21T02:19:17Z",
+      "completed_at":null,
+      "resource_id":12345,
+      "resource_type":"droplet",
+      "region":"nyc3"
+    }
+}

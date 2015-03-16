@@ -35,13 +35,15 @@ from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
+from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
+    StorageVolumeState
 
 __all__ = [
     'API_VERSION',
@@ -301,6 +303,34 @@ INSTANCE_TYPES = {
         'disk': 6400,
         'bandwidth': None
     },
+    'd2.xlarge': {
+        'id': 'd2.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 30050,
+        'disk': 6000,  # 3 x 2 TB
+        'bandwidth': None
+    },
+    'd2.2xlarge': {
+        'id': 'd2.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 61952,
+        'disk': 12000,  # 6 x 2 TB
+        'bandwidth': None
+    },
+    'd2.4xlarge': {
+        'id': 'd2.4xlarge',
+        'name': 'High Storage Optimized Quadruple Extra Large Instance',
+        'ram': 122000,
+        'disk': 24000,  # 12 x 2 TB
+        'bandwidth': None
+    },
+    'd2.8xlarge': {
+        'id': 'd2.8xlarge',
+        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'ram': 244000,
+        'disk': 48000,  # 24 x 2 TB
+        'bandwidth': None
+    },
     # 1x SSD
     'r3.large': {
         'id': 'r3.large',
@@ -376,6 +406,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-east-1.amazonaws.com',
         'api_name': 'ec2_us_east',
         'country': 'USA',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -405,6 +436,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -420,6 +455,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-west-1.amazonaws.com',
         'api_name': 'ec2_us_west',
         'country': 'USA',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -460,6 +496,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-west-2.amazonaws.com',
         'api_name': 'ec2_us_west_oregon',
         'country': 'US',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -487,6 +524,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -502,6 +543,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.eu-west-1.amazonaws.com',
         'api_name': 'ec2_eu_west',
         'country': 'Ireland',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -529,6 +571,44 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium'
+        ]
+    },
+    # EU (Frankfurt) Region
+    'eu-central-1': {
+        'endpoint': 'ec2.eu-central-1.amazonaws.com',
+        'api_name': 'ec2_eu_central',
+        'country': 'Frankfurt',
+        'signature_version': '4',
+        'instance_types': [
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -544,6 +624,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
         'api_name': 'ec2_ap_southeast',
         'country': 'Singapore',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -569,6 +650,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             't2.micro',
             't2.small',
             't2.medium'
@@ -579,6 +664,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
         'api_name': 'ec2_ap_northeast',
         'country': 'Japan',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -605,6 +691,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -620,6 +710,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.sa-east-1.amazonaws.com',
         'api_name': 'ec2_sa_east',
         'country': 'Brazil',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -645,6 +736,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
         'api_name': 'ec2_ap_southeast_2',
         'country': 'Australia',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -670,6 +762,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -684,6 +780,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
         'country': 'US',
+        'signature_version': '2',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -725,6 +822,7 @@ REGION_DETAILS = {
         # Nimbus clouds have 3 EC2-style instance types but their particular
         # RAM allocations are configured by the admin
         'country': 'custom',
+        'signature_version': '2',
         'instance_types': [
             'm1.small',
             'm1.large',
@@ -1678,6 +1776,7 @@ class EC2Connection(SignedAWSConnection):
     version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
+    service_name = 'ec2'
 
 
 class ExEC2AvailabilityZone(object):
@@ -1988,12 +2087,24 @@ class BaseEC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     features = {'create_node': ['ssh_key']}
     path = '/'
+    signature_version = DEFAULT_SIGNATURE_VERSION
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
         'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
+    }
+
+    # http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Volume.html
+    VOLUME_STATE_MAP = {
+        'available': StorageVolumeState.AVAILABLE,
+        'in-use': StorageVolumeState.INUSE,
+        'error': StorageVolumeState.ERROR,
+        'creating': StorageVolumeState.CREATING,
+        'deleting': StorageVolumeState.DELETING,
+        'deleted': StorageVolumeState.DELETED,
+        'error_deleting': StorageVolumeState.ERROR
     }
 
     def list_nodes(self, ex_node_ids=None, ex_filters=None):
@@ -2422,7 +2533,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      volume: Instance of ``StorageVolume``
         :type       volume: ``StorageVolume``
 
-        :param      name: Name of snapshot
+        :param      name: Name of snapshot (optional)
         :type       name: ``str``
 
         :rtype: :class:`VolumeSnapshot`
@@ -3418,10 +3529,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for a resource (Node or StorageVolume).
+        Return a dictionary of tags for a resource (e.g. Node or
+        StorageVolume).
 
         :param  resource: resource which should be used
-        :type   resource: :class:`Node` or :class:`StorageVolume`
+        :type   resource: any resource class, such as :class:`Node,`
+                :class:`StorageVolume,` or :class:NodeImage`
 
         :return: dict Node tags
         :rtype: ``dict``
@@ -3429,8 +3542,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeTags'}
 
         filters = {
-            'resource-id': resource.id,
-            'resource-type': 'instance'
+            'resource-id': resource.id
         }
 
         params.update(self._build_filters(filters))
@@ -3444,7 +3556,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Create tags for a resource (Node or StorageVolume).
 
         :param resource: Resource to be tagged
-        :type resource: :class:`Node` or :class:`StorageVolume`
+        :type resource: :class:`Node` or :class:`StorageVolume` or
+                        :class:`VolumeSnapshot`
 
         :param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
@@ -4609,6 +4722,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
+        kwargs['signature_version'] = self.signature_version
+        return kwargs
+
     def _to_nodes(self, object, xpath):
         return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -4697,6 +4815,11 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+        raw_state = findtext(element=element, xpath='status',
+                             namespace=NAMESPACE)
+
+        state = self.VOLUME_STATE_MAP.get(raw_state,
+                                          StorageVolumeState.UNKNOWN)
 
         # Get our tags
         tags = self._get_resource_tags(element)
@@ -4715,6 +4838,7 @@ class BaseEC2NodeDriver(NodeDriver):
                              name=name,
                              size=int(size),
                              driver=self,
+                             state=state,
                              extra=extra)
 
     def _to_snapshots(self, response):
@@ -5535,6 +5659,8 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.region_name = region
         self.api_name = details['api_name']
         self.country = details['country']
+        self.signature_version = details.pop('signature_version',
+                                             DEFAULT_SIGNATURE_VERSION)
 
         host = host or details['endpoint']
 
@@ -5627,6 +5753,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     api_name = 'ec2_us_east'
     region_name = 'us-east-1'
     connectionCls = EucConnection
+    signature_version = '2'
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, api_version=DEFAULT_EUCA_API_VERSION):
@@ -5722,6 +5849,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
     region_name = 'nimbus'
     friendly_name = 'Nimbus Private Cloud'
     connectionCls = NimbusConnection
+    signature_version = '2'
 
     def ex_describe_addresses(self, nodes):
         """
@@ -5763,6 +5891,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
     name = 'Outscale'
     website = 'http://www.outscale.com'
     path = '/'
+    signature_version = '2'
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,

@@ -61,7 +61,7 @@ class HostVirtualDNSConnection(HostVirtualConnection):
 class HostVirtualDNSDriver(DNSDriver):
     type = Provider.HOSTVIRTUAL
     name = 'Host Virtual DNS'
-    website = 'http://www.vr.org/'
+    website = 'https://www.hostvirtual.com/'
     connectionCls = HostVirtualDNSConnection
 
     RECORD_TYPE_MAP = {
@@ -105,7 +105,8 @@ class HostVirtualDNSDriver(DNSDriver):
     def _to_record(self, item, zone=None):
         extra = {'ttl': item['ttl']}
         type = self._string_to_record_type(item['type'])
-        record = Record(id=item['id'], name=item['name'],
+        name = item['name'][:-len(zone.domain) - 1]
+        record = Record(id=item['id'], name=name,
                         type=type, data=item['content'],
                         zone=zone, driver=self, extra=extra)
         return record
@@ -153,7 +154,7 @@ class HostVirtualDNSDriver(DNSDriver):
         return record
 
     def delete_zone(self, zone):
-        params = {'zone_id': zone.id}
+        params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         result = self.connection.request(
             API_ROOT + '/dns/zone/', params=params, method='DELETE').object

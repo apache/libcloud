@@ -1,0 +1,5 @@
+<CreateAutoScalingGroupResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+  <ResponseMetadata>
+    <RequestId>fec85804-c6ff-11e4-9122-b7c316a828e1</RequestId>
+  </ResponseMetadata>
+</CreateAutoScalingGroupResponse>

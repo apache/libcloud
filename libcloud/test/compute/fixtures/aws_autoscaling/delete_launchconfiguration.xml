@@ -1,0 +1,5 @@
+<DeleteLaunchConfigurationResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+  <ResponseMetadata>
+    <RequestId>bbebdd18-c72d-11e4-8b3f-17250475fdbc</RequestId>
+  </ResponseMetadata>
+</DeleteLaunchConfigurationResponse>

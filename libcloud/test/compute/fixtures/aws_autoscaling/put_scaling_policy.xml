@@ -1,0 +1,8 @@
+<PutScalingPolicyResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+  <PutScalingPolicyResult>
+    <PolicyARN>arn:aws:autoscaling:eu-west-1:786301965414:scalingPolicy:e1c4a42b-4777-4fbb-bac4-41e2060bf775:autoScalingGroupName/libcloud-testing:policyName/libcloud-testing-policy</PolicyARN>
+  </PutScalingPolicyResult>
+  <ResponseMetadata>
+    <RequestId>b2a4b8ce-c709-11e4-99b7-d7f5701af880</RequestId>
+  </ResponseMetadata>
+</PutScalingPolicyResponse>

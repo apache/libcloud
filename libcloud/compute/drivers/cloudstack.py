@@ -3577,12 +3577,16 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             list_snapshots.append(self._to_snapshot(snap))
         return list_snapshots
 
-    def create_volume_snapshot(self, volume):
+    def create_volume_snapshot(self, volume, name=None):
         """
         Create snapshot from volume
 
         :param      volume: Instance of ``StorageVolume``
         :type       volume: ``StorageVolume``
+
+        :param      name: The name of the snapshot is disregarded
+                          by CloudStack drivers
+        :type       name: `str`
 
         :rtype: :class:`VolumeSnapshot`
         """
@@ -3592,14 +3596,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return self._to_snapshot(snapshot['snapshot'])
 
     def destroy_volume_snapshot(self, snapshot):
-        """
-        Destroy snapshot
-
-        :param      snapshot: Instance of ``VolumeSnapshot``
-        :type       volume: ``VolumeSnapshot``
-
-        :rtype: ``bool``
-        """
         self._async_request(command='deleteSnapshot',
                             params={'id': snapshot.id},
                             method='GET')
