@@ -137,6 +137,7 @@ class Provider(object):
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
+    EC2_EU_CENTRAL = 'ec2_eu_central'
     EC2_US_WEST = 'ec2_us_west'
     EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
     EC2_AP_NORTHEAST = 'ec2_ap_northeast'
