@@ -2049,6 +2049,7 @@ class GCENodeDriver(NodeDriver):
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
+                    ex_boot_disk_size_gb=10,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
                     ex_disk_auto_delete=True, ex_service_accounts=None,
                     description=None, ex_can_ip_forward=None,
@@ -2087,6 +2088,10 @@ class GCENodeDriver(NodeDriver):
                                      same name/location is found, use that
                                      disk instead of creating a new one.
         :type     use_existing_disk: ``bool``
+
+        :keyword  ex_boot_disk_size_gb: The size of the boot disk when creating
+                                        a new one.
+        :type     ex_boot_disk_size_gb: ``int`` or ``None``
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
                                (default), a new non-static address will be
@@ -2196,7 +2201,8 @@ n
                 'initializeParams': {
                     'diskName': name,
                     'diskType': ex_disk_type.extra['selfLink'],
-                    'sourceImage': image.extra['selfLink']
+                    'sourceImage': image.extra['selfLink'],
+                    'diskSizeGb': ex_boot_disk_size_gb
                 }
             }]
 
