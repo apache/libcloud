@@ -2049,7 +2049,7 @@ class GCENodeDriver(NodeDriver):
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
-                    ex_boot_disk_size_gb=None, ex_with_local_ssd=False,
+                    ex_boot_disk_size_gb=None, ex_with_local_ssd=None,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
                     ex_disk_auto_delete=True, ex_service_accounts=None,
                     description=None, ex_can_ip_forward=None,
@@ -2178,6 +2178,9 @@ n
                              "'image', existing 'ex_boot_disk', or use the "
                              "'ex_disks_gce_struct'.")
 
+        if ex_with_local_ssd not in {None, 'SCSI', 'NVME'}:
+            raise ValueError("ex_with_local_ssd must be one of SCSI or NVME")
+
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -2217,7 +2220,8 @@ n
                             "diskType": disk_type_local_ssd.extra['selfLink']
                         },
                         "autoDelete": True,
-                        "interface": "NVME"
+                        "interface": ex_with_local_ssd
+
                     }
 
                 )
