@@ -833,6 +833,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
+            self.assertTrue(isinstance(size.ram, int))
+            self.assertTrue(isinstance(size.vcpus, int))
+            self.assertTrue(isinstance(size.disk, int))
+            self.assertTrue(isinstance(size.swap, int))
+            self.assertTrue(isinstance(size.ephemeral_disk, int) or
+                            size.ephemeral_disk is None)
+            self.assertTrue(isinstance(size.extra, dict))
+            if size.id == '1':
+                self.assertEqual(size.ephemeral_disk, 40)
+                self.assertEqual(size.extra, {
+                    "policy_class": "standard_flavor",
+                    "class": "standard1",
+                    "disk_io_index": "2",
+                    "number_of_data_disks": "0"
+                })
 
         self.assertEqual(sizes[0].vcpus, 8)
 
