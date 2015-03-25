@@ -326,12 +326,15 @@ class OpenStackNodeSize(NodeSize):
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver,
-                 vcpus=None):
+                 vcpus=None, ephemeral_disk=None, swap=None, extra=None):
         super(OpenStackNodeSize, self).__init__(id=id, name=name, ram=ram,
                                                 disk=disk,
                                                 bandwidth=bandwidth,
                                                 price=price, driver=driver)
         self.vcpus = vcpus
+        self.ephemeral_disk = ephemeral_disk
+        self.swap = swap
+        self.extra = extra
 
     def __repr__(self):
         return (('<OpenStackNodeSize: id=%s, name=%s, ram=%s, disk=%s, '
@@ -2105,12 +2108,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if not price:
             price = self._get_size_price(str(api_flavor['id']))
 
+        extra = api_flavor.get('OS-FLV-WITH-EXT-SPECS:extra_specs', {})
         return OpenStackNodeSize(
             id=api_flavor['id'],
             name=api_flavor['name'],
             ram=api_flavor['ram'],
             disk=api_flavor['disk'],
             vcpus=api_flavor['vcpus'],
+            ephemeral_disk=api_flavor.get('OS-FLV-EXT-DATA:ephemeral', None),
+            swap=api_flavor['swap'],
+            extra=extra,
             bandwidth=bandwidth,
             price=price,
             driver=self,
