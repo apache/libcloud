@@ -15,6 +15,11 @@ General
 Compute
 ~~~~~~~
 
+- OpenStackNodeSize objects now support optional, additional fields that are 
+  supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
+  (GITHUB-488, LIBCLOUD-682)
+  [Greg Hill]
+
 - StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
   in their extra dicts containing the snapshot ID the volume was based on.
   (GITHUB-479)
