@@ -36,11 +36,11 @@ Provider                              list volumes create volume destroy volume 
 `Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
-`HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           yes            no             
+`HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           yes            yes            
 `IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
 `Ikoula`_                             yes          yes           yes            yes           yes           no             yes            
 `Joyent`_                             no           no            no             no            no            no             no             
-`Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            no             
+`Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            yes            no            no            no             no             
@@ -53,7 +53,7 @@ Provider                              list volumes create volume destroy volume 
 `Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
 `ProfitBricks`_                       yes          yes           yes            yes           yes           no             no             
-`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            no             
+`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
