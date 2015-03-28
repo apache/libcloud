@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
+from libcloud.utils.iso8601 import parse_date
 
 API_VERSION = 'v1'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
@@ -485,10 +486,11 @@ class GCERegion(UuidMixin):
 
 
 class GCESnapshot(VolumeSnapshot):
-    def __init__(self, id, name, size, status, driver, extra=None):
+    def __init__(self, id, name, size, status, driver, extra=None,
+                 created=None):
         self.name = name
         self.status = status
-        super(GCESnapshot, self).__init__(id, driver, size, extra)
+        super(GCESnapshot, self).__init__(id, driver, size, extra, created)
 
 
 class GCETargetHttpProxy(UuidMixin):
@@ -5203,10 +5205,15 @@ n
             lic_objs = self._licenses_from_urls(licenses=snapshot['licenses'])
             extra['licenses'] = lic_objs
 
+        try:
+            created = parse_date(snapshot.get('creationTimestamp'))
+        except ValueError:
+            created = None
+
         return GCESnapshot(id=snapshot['id'], name=snapshot['name'],
                            size=snapshot['diskSizeGb'],
                            status=snapshot.get('status'), driver=self,
-                           extra=extra)
+                           extra=extra, created=created)
 
     def _to_storage_volume(self, volume):
         """

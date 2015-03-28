@@ -21,10 +21,45 @@ General
 Compute
 ~~~~~~~
 
+- OpenStackNodeSize objects now support optional, additional fields that are 
+  supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
+  (GITHUB-488, LIBCLOUD-682)
+  [Greg Hill]
+
+- StorageVolume objects now have an attribute `state` that holds a
+  state variable that is standardized state across drivers. Drivers that
+  currently support the `state` attribute are OpenStack and EC2.
+  StorageVolume objects returned by drivers that do not support the
+  attribute will have a `state` of `None`. When a provider returns a state
+  that is unknown to the driver, the state will be `UNKNOWN`. Please report
+  such states. A couple of drivers already put state fields in the `extra`
+  fields of StorageVolumes. These fields were kept for
+  backwards-compatibility and for reference.
+  (GITHUB-476)
+  [Allard Hoeve]
+
+- StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
+  in their extra dicts containing the snapshot ID the volume was based on.
+  (GITHUB-479)
+  [Allard Hoeve]
+
+- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in 
+  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base 
+  driver method create_storage_volume argument name to be optional.
+  (GITHUB-478)
+  [Allard Hoeve]
+
 - Add support for creating volumes based on snapshots to EC2 and OS drivers.
   Also modify signature of base NodeDriver.create_volume to reflect the fact
   that all drivers expect a StorageSnapshot object as the snapshot argument.
   (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
+
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
   [Allard Hoeve]
 
 - Improve GCE create_node, make sure ex_get_disktype function
@@ -69,7 +104,25 @@ Compute
 - Add a support for a new AWS Frankfurt, Germany region (``eu-central-1``) to
   the EC2 driver using AWS Signature v4.
   (GITHUB-444)
-  [Gertjan Oude Lohuis]
+  [Gertjan Oude Lohuis, Tomaz Muraus]
+
+- Allow Filtering in EC2 list_images() driver
+  (GITHUB-456, LIBCLOUD-667)
+  [Katriel Traum]
+
+- Add ex_list_ip_forwarding_rules() to CloudStack driver
+  (GITHUB-483)
+  [Atsushi Sasaki]
+
+- Add AURORA compute driver
+  (LIBCLOUD-641, GITHUB-477)
+  [Wido den Hollander]
+
+- Update ``ex_describe_tags`` method in the EC2 driver and allow user to list
+  tags for any supported resource. Previously you could only list tags for a
+  node or a storage volume.
+  (LIBCLOUD-676, GITHUB-482)
+  [John Kinsella]
 
 DNS
 ~~~

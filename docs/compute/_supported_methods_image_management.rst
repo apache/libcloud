@@ -2,6 +2,7 @@
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========
 `Abiquo`_                             yes         no        no           no           no        
+`PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Bluebox Blocks`_                     yes         no        no           no           no        
 `Brightbox`_                          yes         no        no           no           no        
 `CloudFrames`_                        yes         no        no           no           no        
@@ -68,6 +69,7 @@ Provider                              list images get image create image delete 
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/

@@ -22,6 +22,7 @@ from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
     OpenStack_1_1_NodeDriver
 
 from libcloud.common.rackspace import AUTH_URL
+from libcloud.utils.iso8601 import parse_date
 
 
 ENDPOINT_ARGS_MAP = {
@@ -215,9 +216,14 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
                  'description': api_node['displayDescription'],
                  'status': api_node['status']}
 
+        try:
+            created_td = parse_date(api_node['createdAt'])
+        except ValueError:
+            created_td = None
+
         snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
                                   size=api_node['size'],
-                                  extra=extra)
+                                  extra=extra, created=created_td)
         return snapshot
 
     def _ex_connection_class_kwargs(self):

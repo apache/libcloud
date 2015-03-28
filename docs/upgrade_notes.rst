@@ -15,6 +15,21 @@ Development
   Other drivers did not implement creating volumes from snapshots at all
   until now.)
 
+* VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+
+* The OpenStack compute driver methods ex_create_snapshot and
+  ex_delete_snapshot are now deprecated by the standard methods
+  create_volume_snapshot and destroy_volume_snapshot. You should update your
+  code.
+
+* The compute base driver now considers the name argument to
+  create_volume_snapshot to be optional. All official implementations of this
+  methods already considered it optional. You should update any custom
+  drivers if they rely on the name being mandatory.
+
 Libcloud 0.16.0
 ---------------
 

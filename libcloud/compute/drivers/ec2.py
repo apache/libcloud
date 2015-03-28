@@ -42,7 +42,8 @@ from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
+    StorageVolumeState
 
 __all__ = [
     'API_VERSION',
@@ -1604,6 +1605,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'attachmentSet/item/device',
             'transform_func': str
         },
+        'snapshot_id': {
+            'xpath': 'snapshotId',
+            'transform_func': lambda v: str(v) or None
+        },
         'iops': {
             'xpath': 'iops',
             'transform_func': int
@@ -2035,6 +2040,17 @@ class BaseEC2NodeDriver(NodeDriver):
         'terminated': NodeState.TERMINATED
     }
 
+    # http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Volume.html
+    VOLUME_STATE_MAP = {
+        'available': StorageVolumeState.AVAILABLE,
+        'in-use': StorageVolumeState.INUSE,
+        'error': StorageVolumeState.ERROR,
+        'creating': StorageVolumeState.CREATING,
+        'deleting': StorageVolumeState.DELETING,
+        'deleted': StorageVolumeState.DELETED,
+        'error_deleting': StorageVolumeState.ERROR
+    }
+
     def list_nodes(self, ex_node_ids=None, ex_filters=None):
         """
         List all nodes
@@ -2089,7 +2105,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return sizes
 
     def list_images(self, location=None, ex_image_ids=None, ex_owner=None,
-                    ex_executableby=None):
+                    ex_executableby=None, ex_filters=None):
         """
         List all images
         @inherits: :class:`NodeDriver.list_images`
@@ -2111,6 +2127,10 @@ class BaseEC2NodeDriver(NodeDriver):
         images with public launch permissions.
         Valid values: all|self|aws id
 
+        Ex_filters parameter is used to filter the list of
+        images that should be returned. Only images matchind
+        the filter will be returned.
+
         :param      ex_image_ids: List of ``NodeImage.id``
         :type       ex_image_ids: ``list`` of ``str``
 
@@ -2119,6 +2139,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      ex_executableby: Executable by
         :type       ex_executableby: ``str``
+
+        :param      ex_filters: Filter by
+        :type       ex_filters: ``dict``
 
         :rtype: ``list`` of :class:`NodeImage`
         """
@@ -2134,6 +2157,9 @@ class BaseEC2NodeDriver(NodeDriver):
             for index, image_id in enumerate(ex_image_ids):
                 index += 1
                 params.update({'ImageId.%s' % (index): image_id})
+
+        if ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         images = self._to_images(
             self.connection.request(self.path, params=params).object
@@ -2451,7 +2477,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      volume: Instance of ``StorageVolume``
         :type       volume: ``StorageVolume``
 
-        :param      name: Name of snapshot
+        :param      name: Name of snapshot (optional)
         :type       name: ``str``
 
         :rtype: :class:`VolumeSnapshot`
@@ -3447,10 +3473,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for a resource (Node or StorageVolume).
+        Return a dictionary of tags for a resource (e.g. Node or
+        StorageVolume).
 
         :param  resource: resource which should be used
-        :type   resource: :class:`Node` or :class:`StorageVolume`
+        :type   resource: any resource class, such as :class:`Node,`
+                :class:`StorageVolume,` or :class:NodeImage`
 
         :return: dict Node tags
         :rtype: ``dict``
@@ -3458,8 +3486,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeTags'}
 
         filters = {
-            'resource-id': resource.id,
-            'resource-type': 'instance'
+            'resource-id': resource.id
         }
 
         params.update(self._build_filters(filters))
@@ -3473,7 +3500,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Create tags for a resource (Node or StorageVolume).
 
         :param resource: Resource to be tagged
-        :type resource: :class:`Node` or :class:`StorageVolume`
+        :type resource: :class:`Node` or :class:`StorageVolume` or
+                        :class:`VolumeSnapshot`
 
         :param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
@@ -4731,6 +4759,11 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+        raw_state = findtext(element=element, xpath='status',
+                             namespace=NAMESPACE)
+
+        state = self.VOLUME_STATE_MAP.get(raw_state,
+                                          StorageVolumeState.UNKNOWN)
 
         # Get our tags
         tags = self._get_resource_tags(element)
@@ -4749,6 +4782,7 @@ class BaseEC2NodeDriver(NodeDriver):
                              name=name,
                              size=int(size),
                              driver=self,
+                             state=state,
                              extra=extra)
 
     def _to_snapshots(self, response):
@@ -4761,6 +4795,8 @@ class BaseEC2NodeDriver(NodeDriver):
                           namespace=NAMESPACE)
         size = findtext(element=element, xpath='volumeSize',
                         namespace=NAMESPACE)
+        created = parse_date(findtext(element=element, xpath='startTime',
+                             namespace=NAMESPACE))
 
         # Get our tags
         tags = self._get_resource_tags(element)
@@ -4778,7 +4814,7 @@ class BaseEC2NodeDriver(NodeDriver):
         extra['name'] = name
 
         return VolumeSnapshot(snapId, size=int(size),
-                              driver=self, extra=extra)
+                              driver=self, extra=extra, created=created)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]

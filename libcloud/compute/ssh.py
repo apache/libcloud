@@ -51,10 +51,6 @@ __all__ = [
 ]
 
 
-# Maximum number of bytes to read at once from a socket
-CHUNK_SIZE = 1024
-
-
 class SSHCommandTimeoutError(Exception):
     """
     Exception which is raised when an SSH command times out.
@@ -199,10 +195,15 @@ class BaseSSHClient(object):
 
 
 class ParamikoSSHClient(BaseSSHClient):
-
     """
     A SSH Client powered by Paramiko.
     """
+
+    # Maximum number of bytes to read at once from a socket
+    CHUNK_SIZE = 1024
+    # How long to sleep while waiting for command to finish
+    SLEEP_DELAY = 1.5
+
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, key_files=None, key_material=None, timeout=None):
         """
@@ -362,7 +363,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
 
             if chan.recv_ready():
-                data = chan.recv(CHUNK_SIZE)
+                data = chan.recv(self.CHUNK_SIZE)
 
                 while data:
                     stdout.write(b(data).decode('utf-8'))
@@ -371,10 +372,10 @@ class ParamikoSSHClient(BaseSSHClient):
                     if not ready:
                         break
 
-                    data = chan.recv(CHUNK_SIZE)
+                    data = chan.recv(self.CHUNK_SIZE)
 
             if chan.recv_stderr_ready():
-                data = chan.recv_stderr(CHUNK_SIZE)
+                data = chan.recv_stderr(self.CHUNK_SIZE)
 
                 while data:
                     stderr.write(b(data).decode('utf-8'))
@@ -383,7 +384,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     if not ready:
                         break
 
-                    data = chan.recv_stderr(CHUNK_SIZE)
+                    data = chan.recv_stderr(self.CHUNK_SIZE)
 
             # We need to check the exist status here, because the command could
             # print some output and exit during this sleep bellow.
@@ -393,7 +394,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 break
 
             # Short sleep to prevent busy waiting
-            time.sleep(1.5)
+            time.sleep(self.SLEEP_DELAY)
 
         # Receive the exit status code of the command we ran.
         status = chan.recv_exit_status()
