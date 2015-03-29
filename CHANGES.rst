@@ -154,6 +154,14 @@ DNS
   (GITHUB-469)
   [Vanč Levstik]
 
+- Fix delete_zone method in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
+- Fix parsing of the record name in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
