@@ -171,8 +171,7 @@ class DigitalOcean_v1_NodeDriver(DigitalOceanNodeDriver):
         data = self.connection.request('/v1/sizes').object['sizes']
         return list(map(self._to_size, data))
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
-                    **kwargs):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
         """
         Create a node.
 
@@ -319,8 +318,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOceanNodeDriver):
         data = self.connection.request('/v2/sizes').object['sizes']
         return list(map(self._to_size, data))
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
-                    **kwargs):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
         """
         Create a node.
 
