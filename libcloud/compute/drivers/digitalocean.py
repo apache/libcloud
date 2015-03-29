@@ -189,6 +189,14 @@ class DigitalOcean_v1_NodeDriver(DigitalOceanNodeDriver):
             params['ssh_key_ids'] = ','.join(ex_ssh_key_ids)
 
         data = self.connection.request('/v1/droplets/new', params=params)
+
+        # TODO: Handle this in the response class
+        status = data.object.get('status', 'OK')
+        if status == 'ERROR':
+            message = data.object.get('message', None)
+            error_message = data.object.get('error_message', message)
+            raise ValueError('Failed to create node: %s' % (error_message))
+
         return self._to_node(data=data.object['droplet'])
 
     def reboot_node(self, node):
@@ -337,6 +345,14 @@ class DigitalOcean_v2_NodeDriver(DigitalOceanNodeDriver):
 
         data = self.connection.request('/v2/droplets',
                                        params=params, method='POST').object
+
+        # TODO: Handle this in the response class
+        status = data.object.get('status', 'OK')
+        if status == 'ERROR':
+            message = data.object.get('message', None)
+            error_message = data.object.get('error_message', message)
+            raise ValueError('Failed to create node: %s' % (error_message))
+
         return self._to_node(data=data['droplet'])
 
     def reboot_node(self, node):
