@@ -8,7 +8,7 @@ Provider                              list nodes create node reboot node destroy
 `CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
 `CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
-`Digital Ocean`_                      yes        yes         yes         yes          yes         yes        no         
+`DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
 `Dreamhost`_                          yes        yes         yes         yes          yes         yes        no         
 `Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
@@ -75,7 +75,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
-.. _`Digital Ocean`: https://www.digitalocean.com
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
