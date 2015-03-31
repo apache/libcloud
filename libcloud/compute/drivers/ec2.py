@@ -303,6 +303,34 @@ INSTANCE_TYPES = {
         'disk': 6400,
         'bandwidth': None
     },
+    'd2.xlarge': {
+        'id': 'd2.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 30050,
+        'disk': 6000,  # 3 x 2 TB
+        'bandwidth': None
+    },
+    'd2.2xlarge': {
+        'id': 'd2.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 61952,
+        'disk': 12000,  # 6 x 2 TB
+        'bandwidth': None
+    },
+    'd2.4xlarge': {
+        'id': 'd2.4xlarge',
+        'name': 'High Storage Optimized Quadruple Extra Large Instance',
+        'ram': 122000,
+        'disk': 24000,  # 12 x 2 TB
+        'bandwidth': None
+    },
+    'd2.8xlarge': {
+        'id': 'd2.8xlarge',
+        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'ram': 244000,
+        'disk': 48000,  # 24 x 2 TB
+        'bandwidth': None
+    },
     # 1x SSD
     'r3.large': {
         'id': 'r3.large',
@@ -408,6 +436,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -492,6 +524,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -535,6 +571,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -565,6 +605,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -606,6 +650,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             't2.micro',
             't2.small',
             't2.medium'
@@ -643,6 +691,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -710,6 +762,10 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
