@@ -137,6 +137,10 @@ Compute
   (GITHUB-442)
   [Andrew Starr-Bochicchio]
 
+- Add new ``d4.`` instance types to the EC2 driver. Also update EC2 pricing data.
+  (GITHUB-490)
+  [Tomaz Muraus]
+
 DNS
 ~~~
 
