@@ -2083,9 +2083,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             extra=dict(
                 hostId=api_node['hostId'],
                 access_ip=api_node.get('accessIPv4'),
+                access_ipv6=api_node.get('accessIPv6', None),
                 # Docs says "tenantId", but actual is "tenant_id". *sigh*
                 # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
+                userId=api_node.get('user_id', None),
                 imageId=image_id,
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
@@ -2099,6 +2101,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 config_drive=config_drive,
                 availability_zone=api_node.get('OS-EXT-AZ:availability_zone'),
                 volumes_attached=volumes_attached,
+                task_state=api_node.get("OS-EXT-STS:task_state", None),
+                vm_state=api_node.get("OS-EXT-STS:vm_state", None),
+                power_state=api_node.get("OS-EXT-STS:power_state", None),
+                progress=api_node.get("progress", None),
             ),
         )
 
