@@ -237,6 +237,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
+
         OpenStackMockHttp.type = 'METADATA'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
@@ -778,6 +779,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('metadata'), {})
         self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
         self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
+        self.assertEqual(node.extra.get('userId'), 'rs-reach')
+        self.assertEqual(node.extra.get('hostId'), '912566d83a13fbb357ea'
+                                                   '3f13c629363d9f7e1ba3f'
+                                                   '925b49f3d2ab725')
+        self.assertEqual(node.extra.get('disk_config'), 'AUTO')
+        self.assertEqual(node.extra.get('task_state'), 'spawning')
+        self.assertEqual(node.extra.get('vm_state'), 'active')
+        self.assertEqual(node.extra.get('power_state'), 1)
+        self.assertEqual(node.extra.get('progress'), 25)
 
     def test_list_nodes_no_image_id_attribute(self):
         # Regression test for LIBCLOD-455
