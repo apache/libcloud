@@ -19,7 +19,7 @@ information.
 API Docs
 --------
 
-.. autoclass:: libcloud.compute.drivers.exoscale.AuroraComputeNodeDriver
+.. autoclass:: libcloud.compute.drivers.auroracompute.AuroraComputeNodeDriver
     :members:
     :inherited-members:
 
