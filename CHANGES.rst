@@ -141,6 +141,13 @@ Compute
   (GITHUB-490)
   [Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- Fix a bug with authentication in the OpenStack Swift driver.
+  (GITHUB-492, LIBCLOUD-635)
+  [Tom Fifield]
+
 DNS
 ~~~
 
