@@ -2,7 +2,7 @@
 Provider                              Documentation                                 Provider constant   Module                                         Class Name                          
 ===================================== ============================================= =================== ============================================== ====================================
 `Abiquo`_                                                                           ABIQUO              :mod:`libcloud.compute.drivers.abiquo`         :class:`AbiquoNodeDriver`           
-`PCextreme AuroraCompute`_                                                          AURORACOMPUTE       :mod:`libcloud.compute.drivers.auroracompute`  :class:`AuroraComputeNodeDriver`    
+`PCextreme AuroraCompute`_            :doc:`Click </compute/drivers/auroracompute>` AURORACOMPUTE       :mod:`libcloud.compute.drivers.auroracompute`  :class:`AuroraComputeNodeDriver`    
 `Bluebox Blocks`_                                                                   BLUEBOX             :mod:`libcloud.compute.drivers.bluebox`        :class:`BlueboxNodeDriver`          
 `Brightbox`_                                                                        BRIGHTBOX           :mod:`libcloud.compute.drivers.brightbox`      :class:`BrightboxNodeDriver`        
 `CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>`   CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`    :class:`CloudFramesNodeDriver`      
