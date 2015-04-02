@@ -2216,11 +2216,12 @@ n
                 ex_disks_gce_struct[0]['initializeParams']['diskSizeGb'] = \
                     ex_boot_disk_size_gb
             if ex_with_local_ssd:
-                disk_type_local_ssd = self.ex_get_disktype('local-ssd', zone=location)
+                disk_type_local_ssd = self.ex_get_disktype('local-ssd',
+                                                           zone=location)
                 ex_disks_gce_struct.append(
                     {
                         "type": "SCRATCH",
-                        "initializeParams":{
+                        "initializeParams": {
                             "diskType": disk_type_local_ssd.extra['selfLink']
                         },
                         "autoDelete": True,
