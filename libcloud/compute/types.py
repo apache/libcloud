@@ -24,6 +24,9 @@ __all__ = [
     "NodeState",
     "DeploymentError",
     "DeploymentException",
+    "AutoScaleAdjustmentType",
+    "AutoScaleOperator",
+    "AutoScaleMetric",
 
     # @@TR: should the unused imports below be exported?
     "LibcloudError",
@@ -81,6 +84,8 @@ class Provider(object):
     :cvar AURORACOMPUTE: Aurora Compute driver.
     """
     DUMMY = 'dummy'
+    AWS_AUTOSCALE = 'aws_autoscale_us_east'
+    AWS_CLOUDWATCH = 'aws_cloudwatch_us_east'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'
     GCE = 'gce'
@@ -133,6 +138,22 @@ class Provider(object):
     HPCLOUD = 'hpcloud'
     KILI = 'kili'
 
+    AWS_AUTOSCALE_US_EAST = 'aws_autoscale_us_east'
+    AWS_AUTOSCALE_EU_WEST = 'aws_autoscale_eu_west'
+    AWS_AUTOSCALE_US_WEST = 'aws_autoscale_us_west'
+    AWS_AUTOSCALE_US_WEST_OREGON = 'aws_autoscale_us_west_oregon'
+    AWS_AUTOSCALE_AP_SOUTHEAST = 'aws_autoscale_ap_southeast'
+    AWS_AUTOSCALE_AP_SOUTHEAST2 = 'aws_autoscale_ap_southeast_2'
+    AWS_AUTOSCALE_AP_NORTHEAST = 'aws_autoscale_ap_northeast'
+    AWS_AUTOSCALE_SA_EAST = 'aws_autoscale_sa_east'
+
+    AWS_CLOUDWATCH_US_EAST = 'aws_cloudwatch_us_east'
+    AWS_CLOUDWATCH_US_WEST = 'aws_cloudwatch_us_west'
+    AWS_CLOUDWATCH_US_WEST_OREGON = 'aws_cloudwatch_us_west_oregon'
+    AWS_CLOUDWATCH_EU_WEST = 'aws_cloudwatch_eu_west'
+    AWS_CLOUDWATCH_AP_SOUTHEAST = 'aws_cloudwatch_ap_southeast'
+    AWS_CLOUDWATCH_AP_SOUTHEAST2 = 'aws_cloudwatch_ap_southeast_2'
+
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name
@@ -180,6 +201,64 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE
 }
+
+
+class AutoScaleAdjustmentType(object):
+    """
+    The logic to be used to scale the group when its policy is executed.
+
+    :cvar CHANGE_IN_CAPACITY: Increases or decreases the existing capacity.
+    :cvar EXACT_CAPACITY: Changes the current capacity to the specified value.
+    :cvar PERCENT_CHANGE_IN_CAPACITY: Increases or decreases the capacity by a
+                                      percentage.
+    """
+
+    CHANGE_IN_CAPACITY = 'CHANGE_IN_CAPACITY'
+    EXACT_CAPACITY = 'EXACT_CAPACITY'
+    PERCENT_CHANGE_IN_CAPACITY = 'PERCENT_CHANGE_IN_CAPACITY'
+
+
+class AutoScaleTerminationPolicy(object):
+    """
+    The policy to be used for automatic removal of members from an auto scale
+    group. Policy determines which members are chosen first for removal.
+
+    :cvar OLDEST_INSTANCE: Terminates the oldest instance in the group.
+    :cvar NEWEST_INSTANCE: Terminates the newest instance in the group.
+    :cvar CLOSEST_TO_NEXT_CHARGE: Terminates instances that are closest to the
+    next billing charge.
+    :cvar DEFAULT: Default termination policy.
+
+    """
+    OLDEST_INSTANCE = 0
+    NEWEST_INSTANCE = 1
+    CLOSEST_TO_NEXT_CHARGE = 2
+    DEFAULT = 3
+
+
+class AutoScaleOperator(object):
+    """
+    The arithmetic operation to use when comparing the statistic
+    and threshold.
+
+    :cvar LT: Less than.
+    :cvar LE: Less equals.
+    :cvar GT: Greater than.
+    :cvar GE: Greater equals.
+
+    """
+
+    LT = 'LT'
+    LE = 'LE'
+    GT = 'GT'
+    GE = 'GE'
+
+
+class AutoScaleMetric(object):
+    """
+    :cvar CPU_UTIL: The percent CPU a guest is using.
+    """
+    CPU_UTIL = 'CPU_UTIL'
 
 
 class NodeState(object):

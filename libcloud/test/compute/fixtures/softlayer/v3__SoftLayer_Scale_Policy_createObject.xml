@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<params>
+<param>
+ <value>
+  <struct>
+   <member>
+    <name>cooldown</name>
+    <value>
+     <string/>
+    </value>
+   </member>
+   <member>
+    <name>createDate</name>
+    <value>
+     <string>2015-03-09T14:33:18+02:00</string>
+    </value>
+   </member>
+   <member>
+    <name>deleteFlag</name>
+    <value>
+     <string/>
+    </value>
+   </member>
+   <member>
+    <name>id</name>
+    <value>
+     <int>48257</int>
+    </value>
+   </member>
+   <member>
+    <name>modifyDate</name>
+    <value>
+     <string/>
+    </value>
+   </member>
+   <member>
+    <name>name</name>
+    <value>
+     <string>libcloud-testing-policy</string>
+    </value>
+   </member>
+   <member>
+    <name>scaleGroupId</name>
+    <value>
+     <int>163255</int>
+    </value>
+   </member>
+   <member>
+    <name>triggers</name>
+    <value>
+     <array>
+      <data/>
+     </array>
+    </value>
+   </member>
+  </struct>
+ </value>
+</param>
+</params>

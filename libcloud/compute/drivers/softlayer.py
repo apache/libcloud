@@ -23,11 +23,16 @@ try:
 except ImportError:
     crypto = False
 
-from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException
-from libcloud.compute.types import Provider, NodeState
+from libcloud.common.types import LibcloudError
+from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException,\
+    SoftLayerObjectDoesntExist
+from libcloud.compute.types import Provider, NodeState, AutoScaleOperator,\
+    AutoScaleAdjustmentType, AutoScaleMetric, AutoScaleTerminationPolicy
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
-    NodeImage, KeyPair
+    NodeImage, KeyPair, AutoScaleGroup, AutoScalePolicy, AutoScaleAlarm
 from libcloud.compute.types import KeyPairDoesNotExistError
+
+from libcloud.utils.misc import find, reverse_dict
 
 DEFAULT_DOMAIN = 'example.com'
 DEFAULT_CPU_SIZE = 1
@@ -144,6 +149,41 @@ class SoftLayerNodeDriver(NodeDriver):
         - recurringMonths   : The number of months in which the recurringFee
          will be incurred.
     """
+
+    _VALUE_TO_SCALE_OPERATOR_TYPE_MAP = {
+        '>': AutoScaleOperator.GT,
+        '<': AutoScaleOperator.LT
+    }
+
+    _SCALE_OPERATOR_TYPE_TO_VALUE_MAP = reverse_dict(
+        _VALUE_TO_SCALE_OPERATOR_TYPE_MAP)
+
+    _VALUE_TO_SCALE_ADJUSTMENT_TYPE_MAP = {
+        'RELATIVE': AutoScaleAdjustmentType.CHANGE_IN_CAPACITY,
+        'ABSOLUTE': AutoScaleAdjustmentType.EXACT_CAPACITY,
+        'PERCENT': AutoScaleAdjustmentType.PERCENT_CHANGE_IN_CAPACITY
+    }
+
+    _SCALE_ADJUSTMENT_TYPE_TO_VALUE_MAP = reverse_dict(
+        _VALUE_TO_SCALE_ADJUSTMENT_TYPE_MAP)
+
+    _VALUE_TO_TERMINATION_POLICY_MAP = {
+        'OLDEST': AutoScaleTerminationPolicy.OLDEST_INSTANCE,
+        'NEWEST': AutoScaleTerminationPolicy.NEWEST_INSTANCE,
+        'CLOSEST_TO_NEXT_CHARGE': AutoScaleTerminationPolicy.
+        CLOSEST_TO_NEXT_CHARGE
+    }
+
+    _TERMINATION_POLICY_TO_VALUE_MAP = reverse_dict(
+        _VALUE_TO_TERMINATION_POLICY_MAP)
+
+    _VALUE_TO_METRIC_MAP = {
+        'host.cpu.percent': AutoScaleMetric.CPU_UTIL
+    }
+
+    _METRIC_TO_VALUE_MAP = reverse_dict(
+        _VALUE_TO_METRIC_MAP)
+
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
     website = 'http://www.softlayer.com/'
@@ -502,3 +542,739 @@ class SoftLayerNodeDriver(NodeDriver):
             raise KeyPairDoesNotExistError(name, self)
         else:
             return int(key_id[0]['id'])
+
+    def list_auto_scale_groups(self):
+
+        mask = {
+            'scaleGroups': {
+                'terminationPolicy': ''
+            }
+        }
+
+        res = self.connection.request('SoftLayer_Account',
+                                      'getScaleGroups', object_mask=mask).\
+            object
+        return self._to_autoscale_groups(res)
+
+    def create_auto_scale_group(
+            self, name, min_size, max_size, cooldown, image=None,
+            termination_policies=AutoScaleTerminationPolicy.OLDEST_INSTANCE,
+            balancer=None, **kwargs):
+        """
+        Create a new auto scale group.
+
+        @inherits: :class:`NodeDriver.create_auto_scale_group`
+
+        :param name: Group name.
+        :type name: ``str``
+
+        :param min_size: Minimum membership size of group.
+        :type min_size: ``int``
+
+        :param max_size: Maximum membership size of group.
+        :type max_size: ``int``
+
+        :param cooldown: Group cooldown (in seconds).
+        :type cooldown: ``int``
+
+        :param termination_policies: Termination policy for this group.
+        Note: Softlayer support single policy so type is a single value
+        :type termination_policies: value within
+                                  :class:`AutoScaleTerminationPolicy`
+
+        :param image: The image to create the member with.
+        :type image: :class:`.NodeImage`
+
+        :param balancer: The load balancer to attach this group.
+        :type balancer: :class:`.LoadBalancer`
+
+        :keyword    size: Size definition for group members instances.
+        :type       size: :class:`.NodeSize`
+
+        :keyword location: Which data center to create the members in.
+        Datacenter must be within the given region.
+        :type location: :class:`.NodeLocation`
+
+        :keyword    ex_region: The region the group will be created in.
+        :type       ex_region: ``str``
+
+        :keyword    ex_datacenter: The datacenter that the group members will
+                                   be created in.
+        :type       ex_datacenter:   ``str``
+
+        :keyword    ex_region: The region the group will be created in.
+        :type       ex_region: ``str``
+
+        :keyword    ex_service_port: Service port to be used by the group
+                                     members.
+        :type       ex_service_port: ``int``
+
+        :keyword    ex_instance_name: The name of the group members instances.
+        :type       ex_instance_name: ``str``
+
+        :keyword    ex_domain: Group members domain name e.g. libcloud.org
+        :type       ex_domain: ``str``
+
+        :keyword    ex_os: Operating system the group members will be created
+                           with e.g. UBUNTU_LATEST.
+        :type       ex_os:   ``str``
+
+        :keyword    ex_cpus: CPU count for the group members.
+                           e.g. 1.
+        :type       ex_cpus:   ``int``
+
+        :keyword    ex_ram: RAM for the group members.
+                           e.g. 2048.
+        :type       ex_ram:   ``int``
+
+        :keyword    ex_disk: Disk size for the group members.
+                           e.g. 100.
+        :type       ex_disk:   ``int``
+
+        :keyword    ex_userdata: User data to be injected to group members.
+        :type       ex_userdata: ``str``
+
+        :return: The newly created scale group.
+        :rtype: :class:`.AutoScaleGroup`
+        """
+        DEFAULT_REGION = 'eu-deu-west-1'
+        DEFAULT_TIMEOUT = 12000
+        os = 'DEBIAN_LATEST'
+        if 'ex_os' in kwargs:
+            os = kwargs['ex_os']
+        elif image:
+            os = image.id
+
+        size = kwargs.get('size', NodeSize(id=123, name='Custom', ram=None,
+                                           disk=None, bandwidth=None,
+                                           price=None,
+                                           driver=self.connection.driver))
+        ex_size_data = SL_TEMPLATES.get(int(size.id)) or {}
+
+        cpu_count = kwargs.get('ex_cpus') or ex_size_data.get('cpus') or \
+            DEFAULT_CPU_SIZE
+        ram = kwargs.get('ex_ram') or ex_size_data.get('ram') or \
+            DEFAULT_RAM_SIZE
+        bandwidth = kwargs.get('ex_bandwidth') or size.bandwidth or 10
+        local_disk = 'true'
+        if ex_size_data.get('local_disk') is False:
+            local_disk = 'false'
+
+        if kwargs.get('ex_local_disk') is False:
+            local_disk = 'false'
+
+        disk_size = DEFAULT_DISK_SIZE
+        if size.disk:
+            disk_size = size.disk
+        if kwargs.get('ex_disk'):
+            disk_size = kwargs.get('ex_disk')
+
+        # handle region and datacenter within it
+        if 'ex_region' not in kwargs:
+            kwargs['ex_region'] = DEFAULT_REGION
+        datacenter = ''
+        if 'ex_datacenter' in kwargs:
+            datacenter = kwargs['ex_datacenter']
+        elif 'location' in kwargs:
+            datacenter = kwargs['location'].id
+
+        # retrieve all available regions to extract the
+        # matched id
+        res = self.connection.request(
+            'SoftLayer_Location_Group_Regional',
+            'getAllObjects').object
+
+        r = find(res, lambda r: r['name'] == kwargs['ex_region'])
+        if not r:
+            raise SoftLayerException('Unable to find region id for region: %s'
+                                     % kwargs['ex_region'])
+        ex_region_id = r['id']
+
+        import base64
+        template = {
+            'startCpus': cpu_count,
+            'maxMemory': ram,
+            'networkComponents': [{'maxSpeed': bandwidth}],
+            'hourlyBillingFlag': 'true',
+            'operatingSystemReferenceCode': os,
+            'localDiskFlag': local_disk,
+            'blockDevices': [{
+                'device': '0',
+                'diskImage': {
+                    'capacity': disk_size
+                }
+            }]
+        }
+
+        if 'ex_userdata' in kwargs:
+            template['UserData'] = \
+                [{'value': base64.b64encode(kwargs['ex_userdata'])}]
+
+        if 'ex_instance_name' not in kwargs:
+            kwargs['ex_instance_name'] = name
+
+        ex_instance_name = kwargs['ex_instance_name']
+        template['hostname'] = ex_instance_name
+
+        domain = kwargs.get('ex_domain')
+        if domain is None:
+            if ex_instance_name.find('.') != -1:
+                domain = ex_instance_name[ex_instance_name.find('.') + 1:]
+        if domain is None:
+            domain = DEFAULT_DOMAIN
+
+        template['domain'] = domain
+        if datacenter:
+            template['datacenter'] = {'name': datacenter}
+
+        def _wait_for_creation(group_id):
+            # 5 seconds
+            POLL_INTERVAL = 5
+
+            end = time.time() + DEFAULT_TIMEOUT
+            completed = False
+            while time.time() < end and not completed:
+                status_name = self._get_group_status(group_id)
+                if status_name != 'ACTIVE':
+                    time.sleep(POLL_INTERVAL)
+                else:
+                    completed = True
+
+            if not completed:
+                raise LibcloudError('Group creation did not complete in %s'
+                                    ' seconds' % (DEFAULT_TIMEOUT))
+
+        data = {}
+        data['name'] = name
+        data['minimumMemberCount'] = min_size
+        data['maximumMemberCount'] = max_size
+        data['cooldown'] = cooldown
+
+        data['regionalGroupId'] = ex_region_id
+        data['suspendedFlag'] = False
+
+        if termination_policies:
+            termination_policy = termination_policies[0] if \
+                isinstance(termination_policies, list) else \
+                termination_policies
+            data['terminationPolicy'] = {
+                'keyName':
+                    self._termination_policy_to_value(termination_policy)
+            }
+
+        data['virtualGuestMemberTemplate'] = template
+
+        if balancer:
+            if not datacenter:
+                raise ValueError('location or ex_datacenter must be supplied'
+                                 ' when supplying loadbalancer')
+
+            ex_service_port = kwargs.get('ex_service_port', 80)
+            data['loadBalancers'] = [
+                self._generate_balancer_template(balancer, ex_service_port)]
+
+        res = self.connection.request('SoftLayer_Scale_Group',
+                                      'createObject', data).object
+
+        _wait_for_creation(res['id'])
+        mask = {
+            'terminationPolicy': ''
+        }
+
+        res = self.connection.request('SoftLayer_Scale_Group', 'getObject',
+                                      object_mask=mask, id=res['id']).object
+        group = self._to_autoscale_group(res)
+
+        return group
+
+    def list_auto_scale_group_members(self, group):
+        mask = {
+            'virtualGuest': {
+                'billingItem': '',
+                'powerState': '',
+                'operatingSystem': {'passwords': ''},
+                'provisionDate': ''
+            }
+        }
+
+        res = self.connection.request('SoftLayer_Scale_Group',
+                                      'getVirtualGuestMembers',
+                                      id=group.id).object
+
+        nodes = []
+        for r in res:
+            # NOTE: r[id]  is ID of virtual guest member
+            # (not instance itself)
+            res_node = self.connection.request('SoftLayer_Scale_Member_'
+                                               'Virtual_Guest',
+                                               'getVirtualGuest', id=r['id'],
+                                               object_mask=mask).object
+
+            nodes.append(self._to_node(res_node))
+
+        return nodes
+
+    def create_auto_scale_policy(self, group, name, adjustment_type,
+                                 scaling_adjustment):
+        """
+        Create an auto scale policy for the given group.
+
+        @inherits: :class:`NodeDriver.create_auto_scale_policy`
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :param name: Policy name.
+        :type name: ``str``
+
+        :param adjustment_type: The adjustment type.
+        :type adjustment_type: value within :class:`AutoScaleAdjustmentType`
+
+        :param scaling_adjustment: The number of instances by which to scale.
+        :type scaling_adjustment: ``int``
+
+        :return: The newly created policy.
+        :rtype: :class:`.AutoScalePolicy`
+        """
+        data = {}
+        data['name'] = name
+        data['scaleGroupId'] = int(group.id)
+
+        policy_action = {}
+        # 'SCALE'
+        policy_action['typeId'] = 1
+        policy_action['scaleType'] = \
+            self._scale_adjustment_to_value(adjustment_type)
+        policy_action['amount'] = scaling_adjustment
+
+        data['scaleActions'] = [policy_action]
+
+        res = self.connection.request('SoftLayer_Scale_Policy',
+                                      'createObject', data).object
+        mask = {
+            'scaleActions': ''
+        }
+
+        res = self.connection.request('SoftLayer_Scale_Policy',
+                                      'getObject', id=res['id'],
+                                      object_mask=mask).object
+        policy = self._to_autoscale_policy(res)
+
+        return policy
+
+    def list_auto_scale_policies(self, group):
+        mask = {
+            'policies': {
+                'scaleActions': ''
+            }
+        }
+
+        res = self.connection.request('SoftLayer_Scale_Group', 'getPolicies',
+                                      id=group.id, object_mask=mask).object
+        return [self._to_autoscale_policy(r) for r in res]
+
+    def delete_auto_scale_policy(self, policy):
+        self.connection.request('SoftLayer_Scale_Policy',
+                                'deleteObject', id=policy.id).object
+        return True
+
+    def create_auto_scale_alarm(self, name, policy, metric_name, operator,
+                                threshold, period, **kwargs):
+        """
+        Create an auto scale alarm for the given policy.
+
+        @inherits: :class:`NodeDriver.create_auto_scale_alarm`
+
+        :param name: Descriptive name of the alarm.
+        :type name: ``str``
+
+        :param policy: Policy object.
+        :type policy: :class:`.AutoScalePolicy`
+
+        :param metric_name: The metric to watch.
+        :type metric_name: value within :class:`AutoScaleMetric`
+
+        :param operator: The operator to use for comparison.
+        :type operator: value within :class:`AutoScaleOperator`
+
+        :param threshold: The value against which the specified statistic is
+                          compared.
+        :type threshold: ``int``
+
+        :param name: The descriptive name for the alarm.
+        :type name: ``str``
+
+        :param period: The number of seconds the values are aggregated for when
+                       compared to threshold.
+        :type period: ``int``
+
+        :return: The newly created alarm.
+        :rtype: :class:`.AutoScaleAlarm`
+        """
+
+        data = {}
+        # 'RESOURCE_USE'
+        data['typeId'] = 3
+        data['scalePolicyId'] = policy.id
+
+        trigger_watch = {}
+        trigger_watch['algorithm'] = 'EWMA'
+        trigger_watch['metric'] = self._metric_to_value(metric_name)
+
+        trigger_watch['operator'] = \
+            self._operator_type_to_value(operator)
+
+        trigger_watch['value'] = threshold
+        trigger_watch['period'] = period
+
+        data['watches'] = [trigger_watch]
+
+        res = self.connection.\
+            request('SoftLayer_Scale_Policy_Trigger_ResourceUse',
+                    'createObject', data).object
+
+        mask = {
+            'watches': ''
+        }
+
+        res = self.connection.\
+            request('SoftLayer_Scale_Policy_Trigger_ResourceUse',
+                    'getObject', id=res['id'], object_mask=mask).object
+        alarm = self._to_autoscale_alarm(res)
+
+        return alarm
+
+    def list_auto_scale_alarms(self, policy):
+        mask = {
+            'resourceUseTriggers': {
+                'watches': ''
+            }
+        }
+
+        res = self.connection.request('SoftLayer_Scale_Policy',
+                                      'getResourceUseTriggers',
+                                      object_mask=mask, id=policy.id).object
+        return [self._to_autoscale_alarm(r) for r in res]
+
+    def delete_auto_scale_alarm(self, alarm):
+        self.connection.request('SoftLayer_Scale_Policy_Trigger_ResourceUse',
+                                'deleteObject', id=alarm.id).object
+        return True
+
+    def delete_auto_scale_group(self, group):
+        DEFAULT_TIMEOUT = 12000
+
+        def _wait_for_deletion(group_name):
+            # 5 seconds
+            POLL_INTERVAL = 5
+
+            end = time.time() + DEFAULT_TIMEOUT
+            completed = False
+            while time.time() < end and not completed:
+                try:
+                    self._get_auto_scale_group(group_name)
+                    time.sleep(POLL_INTERVAL)
+                except SoftLayerObjectDoesntExist:
+                    # for now treat this as not found
+                    completed = True
+            if not completed:
+                raise LibcloudError('Operation did not complete in %s seconds'
+                                    % (DEFAULT_TIMEOUT))
+
+        self.connection.request(
+            'SoftLayer_Scale_Group', 'forceDeleteObject', id=group.id).object
+
+        _wait_for_deletion(group.name)
+
+        return True
+
+    def ex_attach_balancer_to_auto_scale_group(self, group, balancer,
+                                               ex_service_port=80):
+        """
+        Attach loadbalancer to auto scale group.
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :param balancer: The loadbalancer object.
+        :type balancer: :class:`.LoadBalancer`
+
+        :param ex_service_port: Service port to be used by the group members.
+        :type  ex_service_port: ``int``
+
+        :return: ``True`` if attach_balancer_to_auto_scale_group was
+        successful.
+        :rtype: ``bool``
+        """
+        def _get_group_model(group_id):
+
+            mask = {
+                'loadBalancers': ''
+            }
+
+            return self.connection.request('SoftLayer_Scale_Group',
+                                           'getObject', object_mask=mask,
+                                           id=group_id).object
+
+        res = _get_group_model(group.id)
+        res['loadBalancers'].append(
+            self._generate_balancer_template(balancer, ex_service_port))
+
+        self.connection.request('SoftLayer_Scale_Group', 'editObject', res,
+                                id=group.id)
+        return True
+
+    def ex_detach_balancer_from_auto_scale_group(self, group, balancer):
+        """
+        Detach loadbalancer from auto scale group.
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :param balancer: The loadbalancer object.
+        :type balancer: :class:`.LoadBalancer`
+
+        :return: ``True`` if detach_balancer_from_auto_scale_group was
+        successful.
+        :rtype: ``bool``
+        """
+
+        def _get_group_model(group_id):
+
+            mask = {
+                'loadBalancers': ''
+            }
+
+            return self.connection.request('SoftLayer_Scale_Group',
+                                           'getObject', object_mask=mask,
+                                           id=group_id).object
+
+        def _get_balancer_model(balancer_id):
+
+            lb_service = 'SoftLayer_Network_Application_Delivery_Controller_'\
+                'LoadBalancer_VirtualIpAddress'
+
+            lb_mask = {
+                'virtualServers': {
+                    'serviceGroups': {
+                        'services': ''
+                    },
+                    'scaleLoadBalancers': {
+                    }
+                }
+            }
+
+            lb_res = self.connection.request(lb_service, 'getObject',
+                                             object_mask=lb_mask,
+                                             id=balancer_id).object
+            return lb_res
+
+        def _locate_vs(lb, port):
+
+            vs = None
+            if port < 0:
+                vs = lb['virtualServers'][0] if lb['virtualServers']\
+                    else None
+            else:
+                for v in lb['virtualServers']:
+                    if v['port'] == port:
+                        vs = v
+
+            return vs
+
+        res = _get_group_model(group.id)
+        lb_res = _get_balancer_model(balancer.id)
+        vs = _locate_vs(lb_res, balancer.port)
+        if not vs:
+            raise LibcloudError(value='No service_group found for port: %s' %
+                                balancer.port, driver=self)
+        lbs_to_remove = [lb['id'] for lb in res['loadBalancers'] if
+                         lb['virtualServerId'] == vs['id']]
+        for lb in lbs_to_remove:
+            self.connection.request('SoftLayer_Scale_LoadBalancer',
+                                    'deleteObject', id=lb)
+        return True
+
+    def _generate_balancer_template(self, balancer, ex_service_port):
+
+        lb_service = 'SoftLayer_Network_Application_Delivery_Controller_'\
+            'LoadBalancer_VirtualIpAddress'
+
+        lb_mask = {
+            'virtualServers': {
+                'serviceGroups': {
+                },
+                'scaleLoadBalancers': {
+                }
+            }
+        }
+
+        # get the loadbalancer
+        lb_res = self.connection.request(
+            lb_service, 'getObject', object_mask=lb_mask,
+            id=balancer.id).object
+
+        # find the vs with matching balancer port
+        # we need vs id for the scale template to 'connect' it
+        vss = lb_res.get('virtualServers', [])
+        vs = find(vss, lambda vs: vs['port'] == balancer.port)
+        if not vs:
+            raise LibcloudError(value='No virtualServers found for'
+                                ' Softlayer loadbalancer with port: %s' %
+                                balancer.port, driver=self)
+
+        scale_lb_template = {
+            # connect it to the matched vs
+            'virtualServerId': vs['id'],
+            'port': ex_service_port,
+            # DEFAULT health check
+            'healthCheck': {
+                'healthCheckTypeId': 21
+            }
+        }
+        return scale_lb_template
+
+    def _get_auto_scale_group(self, group_name):
+
+        groups = self.list_auto_scale_groups()
+        group = find(groups, lambda g: g.name == group_name)
+        if not group:
+            raise SoftLayerObjectDoesntExist('Group name: %s does not exist'
+                                             % group_name)
+        return group
+
+    def _get_group_status(self, group_id):
+        res = self.connection.request('SoftLayer_Scale_Group',
+                                      'getStatus', id=group_id).object
+        return res['keyName']
+
+    def _to_autoscale_policy(self, plc):
+
+        plc_id = plc['id']
+        name = plc['name']
+
+        adj_type = None
+        adjustment_type = None
+        scaling_adjustment = None
+
+        if plc.get('scaleActions', []):
+
+            adj_type = plc['scaleActions'][0]['scaleType']
+            adjustment_type = self._value_to_scale_adjustment(adj_type)
+            scaling_adjustment = plc['scaleActions'][0]['amount']
+
+        return AutoScalePolicy(id=plc_id, name=name,
+                               adjustment_type=adjustment_type,
+                               scaling_adjustment=scaling_adjustment,
+                               driver=self.connection.driver)
+
+    def _to_autoscale_groups(self, res):
+        groups = [self._to_autoscale_group(grp) for grp in res]
+        return groups
+
+    def _to_autoscale_group(self, grp):
+
+        grp_id = grp['id']
+        name = grp['name']
+        cooldown = grp['cooldown']
+        min_size = grp['minimumMemberCount']
+        max_size = grp['maximumMemberCount']
+
+        sl_tp = self._value_to_termination_policy(
+            grp['terminationPolicy']['keyName'])
+        termination_policies = [sl_tp]
+
+        extra = {}
+        extra['id'] = grp_id
+        extra['state'] = grp['status']['keyName']
+        # TODO: set with region name
+        extra['region'] = 'softlayer'
+        extra['regionalGroupId'] = grp['regionalGroupId']
+        extra['suspendedFlag'] = grp['suspendedFlag']
+        extra['terminationPolicyId'] = grp['terminationPolicyId']
+
+        return AutoScaleGroup(id=grp_id, name=name, cooldown=cooldown,
+                              min_size=min_size, max_size=max_size,
+                              termination_policies=termination_policies,
+                              driver=self.connection.driver,
+                              extra=extra)
+
+    def _to_autoscale_alarm(self, alrm):
+
+        alrm_id = alrm['id']
+
+        metric = None
+        operator = None
+        period = None
+        threshold = None
+
+        if alrm.get('watches', []):
+
+            metric = self._value_to_metric(alrm['watches'][0]['metric'])
+            op = alrm['watches'][0]['operator']
+            operator = self._value_to_operator_type(op)
+            period = alrm['watches'][0]['period']
+            threshold = alrm['watches'][0]['value']
+
+        return AutoScaleAlarm(id=alrm_id, name='N/A', metric_name=metric,
+                              operator=operator, period=period,
+                              threshold=int(threshold),
+                              driver=self.connection.driver)
+
+    def _value_to_operator_type(self, value):
+
+        try:
+            return self._VALUE_TO_SCALE_OPERATOR_TYPE_MAP[value]
+        except KeyError:
+            raise LibcloudError(value='Invalid value: %s' % (value),
+                                driver=self)
+
+    def _operator_type_to_value(self, operator_type):
+        try:
+            return self._SCALE_OPERATOR_TYPE_TO_VALUE_MAP[operator_type]
+        except KeyError:
+            raise LibcloudError(value='Invalid operator type: %s'
+                                % (operator_type), driver=self)
+
+    def _value_to_scale_adjustment(self, value):
+        try:
+            return self._VALUE_TO_SCALE_ADJUSTMENT_TYPE_MAP[value]
+        except KeyError:
+            raise LibcloudError(value='Invalid value: %s' % (value),
+                                driver=self)
+
+    def _scale_adjustment_to_value(self, scale_adjustment):
+        try:
+            return self._SCALE_ADJUSTMENT_TYPE_TO_VALUE_MAP[scale_adjustment]
+        except KeyError:
+            raise LibcloudError(value='Invalid scale adjustment: %s'
+                                % (scale_adjustment), driver=self)
+
+    def _value_to_termination_policy(self, value):
+        try:
+            return self._VALUE_TO_TERMINATION_POLICY_MAP[value]
+        except KeyError:
+            raise LibcloudError(value='Invalid value: %s' % (value),
+                                driver=self)
+
+    def _termination_policy_to_value(self, termination_policy):
+        try:
+            return self._TERMINATION_POLICY_TO_VALUE_MAP[termination_policy]
+        except KeyError:
+            raise LibcloudError(value='Invalid termination policy: %s'
+                                % (termination_policy), driver=self)
+
+    def _value_to_metric(self, value):
+
+        try:
+            return self._VALUE_TO_METRIC_MAP[value]
+        except KeyError:
+            raise LibcloudError(value='Invalid value: %s' % (value),
+                                driver=self)
+
+    def _metric_to_value(self, metric):
+        try:
+            return self._METRIC_TO_VALUE_MAP[metric]
+        except KeyError:
+            raise LibcloudError(value='Invalid metric: %s' % (metric),
+                                driver=self)

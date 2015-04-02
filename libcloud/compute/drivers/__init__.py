@@ -22,6 +22,7 @@ __all__ = [
     'brightbox',
     'bluebox',
     'dummy',
+    'aws_autoscaling',
     'ec2',
     'ecp',
     'elasticstack',

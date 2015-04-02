@@ -1,0 +1,17 @@
+<DescribePoliciesResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+  <DescribePoliciesResult>
+    <ScalingPolicies>
+      <member>
+        <PolicyARN>arn:aws:autoscaling:eu-west-1:786301965414:scalingPolicy:e1c4a42b-4777-4fbb-bac4-41e2060bf775:autoScalingGroupName/libcloud-testing:policyName/libcloud-testing-policy</PolicyARN>
+        <AdjustmentType>ChangeInCapacity</AdjustmentType>
+        <ScalingAdjustment>1</ScalingAdjustment>
+        <PolicyName>libcloud-testing-policy</PolicyName>
+        <AutoScalingGroupName>libcloud-testing</AutoScalingGroupName>
+        <Alarms/>
+      </member>
+    </ScalingPolicies>
+  </DescribePoliciesResult>
+  <ResponseMetadata>
+    <RequestId>b323d3bc-c709-11e4-b85a-0dd2eaa4a490</RequestId>
+  </ResponseMetadata>
+</DescribePoliciesResponse>
