@@ -2093,6 +2093,11 @@ class GCENodeDriver(NodeDriver):
                                         a new one.
         :type     ex_boot_disk_size_gb: ``int`` or ``None``
 
+        :keyword  ex_with_local_ssd: If set, specify to attach a local SSD to
+                                     the instance and which interface ot use:
+                                     'SCSI' or 'NVME'.
+        :type     ex_with_local_ssd: ``str`` or ``None``
+
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
                                (default), a new non-static address will be
                                used.  If 'None', then no external address will
