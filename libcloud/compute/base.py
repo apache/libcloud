@@ -26,8 +26,9 @@ import os
 import socket
 import random
 import binascii
+import platform
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, PY2
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
@@ -1363,10 +1364,19 @@ class NodeDriver(BaseDriver):
             """
             Return True for supported address.
             """
-            if force_ipv4 and not is_valid_ip_address(address=address,
-                                                      family=socket.AF_INET):
-                return False
-            return True
+            if PY2 and os.name == 'nt' and platform.python_implementation() == 'CPython':
+                # Addressing non-backported fix, reported/patched: https://bugs.python.org/issue7171
+                if force_ipv4:
+                    try:
+                        socket.inet_aton(address)
+                    except socket.error:
+                        return False
+                    return True
+                else:
+                    raise NotImplementedError('IPv6 address validation unsupported on Windows CPython 2')
+
+            return is_valid_ip_address(address=address,
+                                       family=socket.AF_INET if force_ipv4 else socket.AF_INET6)
 
         def filter_addresses(addresses):
             """
