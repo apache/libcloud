@@ -9,15 +9,17 @@ Provider              Documentation                           Provider constant 
 `Rackspace DNS (UK)`_                                         RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceUKDNSDriver`
 `Rackspace DNS (US)`_                                         RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceUSDNSDriver`
 `Route53 DNS`_                                                ROUTE53           :mod:`libcloud.dns.drivers.route53`     :class:`Route53DNSDriver`    
+`Softlayer DNS`_                                              SOFTLAYER         :mod:`libcloud.dns.drivers.softlayer`   :class:`SoftLayerDNSDriver`  
 `Zerigo DNS`_                                                 ZERIGO            :mod:`libcloud.dns.drivers.zerigo`      :class:`ZerigoDNSDriver`     
 ===================== ======================================= ================= ======================================= =============================
 
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
-.. _`Host Virtual DNS`: http://www.vr.org/
+.. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/
 .. _`Rackspace DNS (US)`: http://www.rackspace.com/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
+.. _`Softlayer DNS`: https://www.softlayer.com
 .. _`Zerigo DNS`: http://www.zerigo.com/

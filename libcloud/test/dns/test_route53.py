@@ -155,6 +155,40 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '127.0.0.1')
 
+    def test_create_record_zone_name(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.A, data='127.0.0.1',
+            extra={'ttl': 0}
+        )
+
+        self.assertEqual(record.id, 'A:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.data, '127.0.0.1')
+
+    def test_create_multi_value_record(self):
+        zone = self.driver.list_zones()[0]
+        records = self.driver.ex_create_multi_value_record(
+            name='balancer', zone=zone,
+            type=RecordType.A, data='127.0.0.1\n127.0.0.2',
+            extra={'ttl': 0}
+
+        )
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0].id, 'A:balancer')
+        self.assertEqual(records[1].id, 'A:balancer')
+        self.assertEqual(records[0].name, 'balancer')
+        self.assertEqual(records[1].name, 'balancer')
+        self.assertEqual(records[0].zone, zone)
+        self.assertEqual(records[1].zone, zone)
+        self.assertEqual(records[0].type, RecordType.A)
+        self.assertEqual(records[1].type, RecordType.A)
+        self.assertEqual(records[0].data, '127.0.0.1')
+        self.assertEqual(records[1].data, '127.0.0.2')
+
     def test_update_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[1]

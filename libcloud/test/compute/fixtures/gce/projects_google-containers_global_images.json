@@ -1,0 +1,179 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images",
+ "id": "projects/google-containers/global/images",
+ "items": [
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140522",
+   "id": "12928746743513706688",
+   "creationTimestamp": "2014-05-21T15:30:01.045-07:00",
+   "name": "container-vm-v20140522",
+   "description": "Google container VM image, GlueCon 2014 release",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140522"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "396961200",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140624",
+   "id": "17637324906060386740",
+   "creationTimestamp": "2014-06-24T17:59:38.240-07:00",
+   "name": "container-vm-v20140624",
+   "description": "Google container VM image, Google I/O 2014 release",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140624"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "391233093",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140710",
+   "id": "17658123443453052547",
+   "creationTimestamp": "2014-07-15T17:29:02.737-07:00",
+   "name": "container-vm-v20140710",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140710"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "428253862",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140731",
+   "id": "7675862044791361451",
+   "creationTimestamp": "2014-08-01T09:41:06.107-07:00",
+   "name": "container-vm-v20140731",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140731"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "403951165",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140826",
+   "id": "5337588031210316441",
+   "creationTimestamp": "2014-08-26T16:19:17.533-07:00",
+   "name": "container-vm-v20140826",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140826"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "420545090",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140925",
+   "id": "7326458020538492469",
+   "creationTimestamp": "2014-09-25T14:23:38.865-07:00",
+   "name": "container-vm-v20140925",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140925"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "432272421",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140929",
+   "id": "17245742661521590081",
+   "creationTimestamp": "2014-09-29T13:49:23.330-07:00",
+   "name": "container-vm-v20140929",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "deprecated": {
+    "state": "DEPRECATED",
+    "replacement": "https://content.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20140929"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "422162733",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20141016",
+   "id": "857872787891330870",
+   "creationTimestamp": "2014-10-22T13:40:01.068-07:00",
+   "name": "container-vm-v20141016",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "432768815",
+   "diskSizeGb": "10"
+  },
+  {
+   "kind": "compute#image",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/google-containers/global/images/container-vm-v20141208",
+   "id": "8037634834499556312",
+   "creationTimestamp": "2014-12-09T15:57:34.413-08:00",
+   "name": "container-vm-v20141208",
+   "description": "Google container VM image",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "413371239",
+   "diskSizeGb": "10"
+  }
+ ]
+}

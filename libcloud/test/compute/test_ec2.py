@@ -18,6 +18,7 @@ from __future__ import with_statement
 import os
 import sys
 from datetime import datetime
+from libcloud.utils.iso8601 import UTC
 
 from libcloud.utils.py3 import httplib
 
@@ -29,6 +30,7 @@ from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
 from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
+from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
@@ -37,7 +39,7 @@ from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
-from libcloud.compute.types import KeyPairDoesNotExistError
+from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -380,7 +382,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 36)
+                self.assertEqual(len(sizes), 40)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
@@ -389,11 +391,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             if region_name == 'us-west-2':
                 self.assertEqual(len(sizes), 29)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 27)
+                self.assertEqual(len(sizes), 31)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 32)
+                self.assertEqual(len(sizes), 36)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 34)
+                self.assertEqual(len(sizes), 38)
 
         self.driver.region_name = region_old
 
@@ -770,16 +772,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol-10ae5e2b', volumes[0].id)
         self.assertEqual(1, volumes[0].size)
         self.assertEqual('available', volumes[0].extra['state'])
+        self.assertEqual(StorageVolumeState.AVAILABLE, volumes[0].state)
 
         self.assertEqual('vol-v24bfh75', volumes[1].id)
         self.assertEqual(11, volumes[1].size)
-        self.assertEqual('available', volumes[1].extra['state'])
+        self.assertIsNone(volumes[1].extra['snapshot_id'])
+        self.assertEqual('in-use', volumes[1].extra['state'])
+        self.assertEqual(StorageVolumeState.INUSE, volumes[1].state)
 
         self.assertEqual('vol-b6c851ec', volumes[2].id)
         self.assertEqual(8, volumes[2].size)
-        self.assertEqual('in-use', volumes[2].extra['state'])
+        self.assertEqual('some-unknown-status', volumes[2].extra['state'])
         self.assertEqual('i-d334b4b3', volumes[2].extra['instance_id'])
         self.assertEqual('/dev/sda1', volumes[2].extra['device'])
+        self.assertEqual('snap-30d37269', volumes[2].extra['snapshot_id'])
+        self.assertEqual(StorageVolumeState.UNKNOWN, volumes[2].state)
 
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
@@ -792,6 +799,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
                             size=10, driver=self.driver)
 
         retValue = self.driver.destroy_volume(vol)
@@ -799,7 +807,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_attach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
-                            size=10, driver=self.driver)
+                            size=10, state=StorageVolumeState.AVAILABLE,
+                            driver=self.driver)
 
         node = Node('i-4382922a', None, None, None, None, self.driver)
         retValue = self.driver.attach_volume(node, vol, '/dev/sdh')
@@ -808,6 +817,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_detach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.INUSE,
                             size=10, driver=self.driver)
 
         retValue = self.driver.detach_volume(vol)
@@ -815,6 +825,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_create_volume_snapshot(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
                             size=10, driver=self.driver)
         snap = self.driver.create_volume_snapshot(
             vol, 'Test snapshot')
@@ -823,11 +834,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('Test snapshot', snap.extra['name'])
         self.assertEqual(vol.id, snap.extra['volume_id'])
         self.assertEqual('pending', snap.extra['state'])
+        # 2013-08-15T16:22:30.000Z
+        self.assertEqual(datetime(2013, 8, 15, 16, 22, 30, tzinfo=UTC), snap.created)
 
     def test_list_snapshots(self):
         snaps = self.driver.list_snapshots()
 
-        self.assertEqual(len(snaps), 2)
+        self.assertEqual(len(snaps), 3)
 
         self.assertEqual('snap-428abd35', snaps[0].id)
         self.assertEqual('vol-e020df80', snaps[0].extra['volume_id'])
@@ -839,6 +852,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(15, snaps[1].size)
         self.assertEqual('Weekly backup', snaps[1].extra['description'])
         self.assertEqual('DB Backup 1', snaps[1].extra['name'])
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+        assert volume.id == 'vol-10ae5e2b'
+
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 1)
+        self.assertEqual(snapshots[0].id, 'snap-18349160')
 
     def test_destroy_snapshot(self):
         snap = VolumeSnapshot(id='snap-428abd35', size=10, driver=self.driver)
@@ -927,6 +948,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                                      "vpc-143cab4")
 
         self.assertEqual(group["group_id"], "sg-52e2f530")
+
+    def test_ex_create_placement_groups(self):
+        resp = self.driver.ex_create_placement_group("NewPG")
+        self.assertTrue(resp)
+
+    def test_ex_delete_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        pg = pgs[0]
+
+        resp = self.driver.ex_delete_placement_group(pg.name)
+        self.assertTrue(resp)
+
+    def test_ex_list_placement_groups(self):
+        pgs = self.driver.ex_list_placement_groups()
+        self.assertEqual(len(pgs), 2)
+        self.assertIsInstance(pgs[0], EC2PlacementGroup)
 
     def test_ex_list_networks(self):
         vpcs = self.driver.ex_list_networks()
@@ -1492,6 +1529,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DetachInternetGateway(self, method, url, body, headers):
         body = self.fixtures.load('detach_internet_gateway.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreatePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('create_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeletePlacementGroup(self, method, url, body, headers):
+        body = self.fixtures.load('delete_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribePlacementGroups(self, method, url, body, headers):
+        body = self.fixtures.load('describe_placement_groups.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

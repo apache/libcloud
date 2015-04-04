@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import with_statement
 
 import os
@@ -43,6 +44,17 @@ from libcloud.dns.base import DNSDriver
 from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
+
+REQUIRED_DEPENDENCIES = [
+    'pysphere'
+]
+
+for dependency in REQUIRED_DEPENDENCIES:
+    try:
+        __import__(dependency)
+    except ImportError:
+        msg = 'Missing required dependency: %s' % (dependency)
+        raise ImportError(msg)
 
 BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
@@ -205,11 +217,14 @@ def generate_providers_table(api):
         # Hack for providers which expose multiple classes and support multiple
         # API versions
         # TODO: Make entry per version
-
         if name.lower() == 'cloudsigma':
             from libcloud.compute.drivers.cloudsigma import \
                 CloudSigma_2_0_NodeDriver
             cls = CloudSigma_2_0_NodeDriver
+        elif name.lower() == 'digital_ocean':
+            from libcloud.compute.drivers.digitalocean import \
+                DigitalOcean_v2_NodeDriver
+            cls = DigitalOcean_v2_NodeDriver
         elif name.lower() == 'opennebula':
             from libcloud.compute.drivers.opennebula import \
                 OpenNebula_3_8_NodeDriver

@@ -711,7 +711,7 @@ class IBMNodeDriver(NodeDriver):
                              object.findtext('Name'),
                              object.findtext('Size'),
                              self.connection.driver,
-                             extra)
+                             extra=extra)
 
     def _to_volume_offerings(self, object):
         return [self._to_volume_offering(iType) for iType in

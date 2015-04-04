@@ -155,6 +155,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
+    Provider.AURORACOMPUTE:
+    ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

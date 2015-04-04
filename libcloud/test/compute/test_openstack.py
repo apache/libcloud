@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+from libcloud.utils.iso8601 import UTC
 
 try:
     import simplejson as json
@@ -33,7 +34,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
     LibcloudError
-from libcloud.compute.types import Provider, KeyPairDoesNotExistError
+from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVolumeState
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
@@ -236,6 +237,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
+
         OpenStackMockHttp.type = 'METADATA'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
@@ -616,7 +618,7 @@ class OpenStackMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
-        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'},
+        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>", {'content-type': 'text/html'},
                 httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
 
@@ -777,6 +779,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('metadata'), {})
         self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
         self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
+        self.assertEqual(node.extra.get('userId'), 'rs-reach')
+        self.assertEqual(node.extra.get('hostId'), '912566d83a13fbb357ea'
+                                                   '3f13c629363d9f7e1ba3f'
+                                                   '925b49f3d2ab725')
+        self.assertEqual(node.extra.get('disk_config'), 'AUTO')
+        self.assertEqual(node.extra.get('task_state'), 'spawning')
+        self.assertEqual(node.extra.get('vm_state'), 'active')
+        self.assertEqual(node.extra.get('power_state'), 1)
+        self.assertEqual(node.extra.get('progress'), 25)
 
     def test_list_nodes_no_image_id_attribute(self):
         # Regression test for LIBCLOD-455
@@ -793,6 +804,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual('cd76a3a1-c4ce-40f6-9b9f-07a61508938d', volume.id)
         self.assertEqual('test_volume_2', volume.name)
+        self.assertEqual(StorageVolumeState.AVAILABLE, volume.state)
         self.assertEqual(2, volume.size)
         self.assertEqual(volume.extra, {
             'description': '',
@@ -802,6 +814,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                 "serverId": "12065",
                 "volumeId": "cd76a3a1-c4ce-40f6-9b9f-07a61508938d",
             }],
+            'snapshot_id': None,
             'state': 'available',
             'location': 'nova',
             'volume_type': 'None',
@@ -809,14 +822,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             'created_at': '2013-06-24T11:20:13.000000',
         })
 
+        # also test that unknown state resolves to StorageVolumeState.UNKNOWN
         volume = volumes[1]
         self.assertEqual('cfcec3bc-b736-4db5-9535-4c24112691b5', volume.id)
         self.assertEqual('test_volume', volume.name)
         self.assertEqual(50, volume.size)
+        self.assertEqual(StorageVolumeState.UNKNOWN, volume.state)
         self.assertEqual(volume.extra, {
             'description': 'some description',
             'attachments': [],
-            'state': 'available',
+            'snapshot_id': '01f48111-7866-4cd2-986a-e92683c4a363',
+            'state': 'some-unknown-state',
             'location': 'nova',
             'volume_type': 'None',
             'metadata': {},
@@ -830,6 +846,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
+            self.assertTrue(isinstance(size.ram, int))
+            self.assertTrue(isinstance(size.vcpus, int))
+            self.assertTrue(isinstance(size.disk, int))
+            self.assertTrue(isinstance(size.swap, int))
+            self.assertTrue(isinstance(size.ephemeral_disk, int) or
+                            size.ephemeral_disk is None)
+            self.assertTrue(isinstance(size.extra, dict))
+            if size.id == '1':
+                self.assertEqual(size.ephemeral_disk, 40)
+                self.assertEqual(size.extra, {
+                    "policy_class": "standard_flavor",
+                    "class": "standard1",
+                    "disk_io_index": "2",
+                    "number_of_data_disks": "0"
+                })
 
         self.assertEqual(sizes[0].vcpus, 8)
 
@@ -926,7 +957,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                                        ex_config_drive=True)
         self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
         self.assertEqual(node.name, 'racktest')
-        self.assertEqual(node.extra['config_drive'], True)
+        self.assertTrue(node.extra['config_drive'])
 
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
@@ -1395,8 +1426,37 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.conn_classes[1].type = 'RACKSPACE'
 
         snapshots = self.driver.ex_list_snapshots()
-        self.assertEqual(len(snapshots), 2)
+        self.assertEqual(len(snapshots), 3)
+        self.assertEqual(snapshots[0].created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC))
+        self.assertEqual(snapshots[0].extra['created'], "2012-02-29T03:50:07Z")
         self.assertEqual(snapshots[0].extra['name'], 'snap-001')
+
+        # invalid date is parsed as None
+        assert snapshots[2].created is None
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+
+        # rackspace needs a different mocked response for snapshots, but not for volumes
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 1)
+        self.assertEqual(snapshots[0].id, '4fbbdccf-e058-6502-8844-6feeffdf4cb5')
+
+    def test_create_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        ret = self.driver.create_volume_snapshot(volume,
+                                                 'Test Volume',
+                                                 ex_description='This is a test',
+                                                 ex_force=True)
+        self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
 
     def test_ex_create_snapshot(self):
         volume = self.driver.list_volumes()[0]
@@ -1406,8 +1466,18 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         ret = self.driver.ex_create_snapshot(volume,
                                              'Test Volume',
-                                             'This is a test')
+                                             description='This is a test',
+                                             force=True)
         self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+
+    def test_destroy_volume_snapshot(self):
+        if self.driver_type.type == 'rackspace':
+            self.conn_classes[0].type = 'RACKSPACE'
+            self.conn_classes[1].type = 'RACKSPACE'
+
+        snapshot = self.driver.ex_list_snapshots()[0]
+        ret = self.driver.destroy_volume_snapshot(snapshot)
+        self.assertTrue(ret)
 
     def test_ex_delete_snapshot(self):
         if self.driver_type.type == 'rackspace':

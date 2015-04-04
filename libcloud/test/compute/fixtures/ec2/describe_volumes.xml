@@ -15,7 +15,7 @@
             <size>11</size>
             <snapshotId/>
             <availabilityZone>us-east-1c</availabilityZone>
-            <status>available</status>
+            <status>in-use</status>
             <createTime>2013-10-08T19:36:49.000Z</createTime>
             <attachmentSet/>
         </item>
@@ -24,7 +24,7 @@
             <size>8</size>
             <snapshotId>snap-30d37269</snapshotId>
             <availabilityZone>us-east-1d</availabilityZone>
-            <status>in-use</status>
+            <status>some-unknown-status</status>
             <createTime>2013-06-25T02:04:12.000Z</createTime>
             <attachmentSet>
                 <item>

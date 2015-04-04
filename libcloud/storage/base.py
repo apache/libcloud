@@ -361,7 +361,7 @@ class StorageDriver(BaseDriver):
             'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object currently located on a disk.
 
@@ -380,6 +380,11 @@ class StorageDriver(BaseDriver):
         :param extra: Extra attributes (driver specific). (optional)
         :type extra: ``dict``
 
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
+        :type headers: ``dict``
+
         :rtype: :class:`Object`
         """
         raise NotImplementedError(
@@ -387,7 +392,8 @@ class StorageDriver(BaseDriver):
 
     def upload_object_via_stream(self, iterator, container,
                                  object_name,
-                                 extra=None):
+                                 extra=None,
+                                 headers=None):
         """
         Upload an object using an iterator.
 
@@ -405,19 +411,24 @@ class StorageDriver(BaseDriver):
         function which uses fs.stat function to determine the file size and it
         doesn't need to buffer whole object in the memory.
 
-        :type iterator: :class:`object`
         :param iterator: An object which implements the iterator interface.
+        :type iterator: :class:`object`
 
-        :type container: :class:`Container`
         :param container: Destination container.
+        :type container: :class:`Container`
 
-        :type object_name: ``str``
         :param object_name: Object name.
+        :type object_name: ``str``
 
-        :type extra: ``dict``
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
+        :type extra: ``dict``
+
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
@@ -428,8 +439,8 @@ class StorageDriver(BaseDriver):
         """
         Delete an object.
 
-        :type obj: :class:`Object`
         :param obj: Object instance.
+        :type obj: :class:`Object`
 
         :return: ``bool`` True on success.
         :rtype: ``bool``
@@ -441,8 +452,8 @@ class StorageDriver(BaseDriver):
         """
         Create a new container.
 
-        :type container_name: ``str``
         :param container_name: Container name.
+        :type container_name: ``str``
 
         :return: Container instance on success.
         :rtype: :class:`Container`
@@ -454,8 +465,8 @@ class StorageDriver(BaseDriver):
         """
         Delete a container.
 
-        :type container: :class:`Container`
         :param container: Container instance
+        :type container: :class:`Container`
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -468,23 +479,23 @@ class StorageDriver(BaseDriver):
         """
         Call passed callback and start transfer of the object'
 
-        :type obj: :class:`Object`
         :param obj: Object instance.
+        :type obj: :class:`Object`
 
-        :type callback: :class:`function`
         :param callback: Function which is called with the passed
             callback_kwargs
+        :type callback: :class:`function`
 
-        :type callback_kwargs: ``dict``
         :param callback_kwargs: Keyword arguments which are passed to the
              callback.
+        :type callback_kwargs: ``dict``
 
-        :typed response: :class:`Response`
         :param response: Response instance.
+        :type response: :class:`Response`
 
-        :type success_status_code: ``int``
         :param success_status_code: Status code which represents a successful
                                     transfer (defaults to httplib.OK)
+        :type success_status_code: ``int``
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -507,26 +518,26 @@ class StorageDriver(BaseDriver):
         """
         Save object to the provided path.
 
-        :type response: :class:`RawResponse`
         :param response: RawResponse instance.
+        :type response: :class:`RawResponse`
 
-        :type obj: :class:`Object`
         :param obj: Object instance.
+        :type obj: :class:`Object`
 
-        :type destination_path: ``str``
         :param destination_path: Destination directory.
+        :type destination_path: ``str``
 
-        :type delete_on_failure: ``bool``
         :param delete_on_failure: True to delete partially downloaded object if
                                   the download fails.
+        :type delete_on_failure: ``bool``
 
-        :type overwrite_existing: ``bool``
         :param overwrite_existing: True to overwrite a local path if it already
                                    exists.
+        :type overwrite_existing: ``bool``
 
-        :type chunk_size: ``int``
         :param chunk_size: Optional chunk size
             (defaults to ``libcloud.storage.base.CHUNK_SIZE``, 8kb)
+        :type chunk_size: ``int``
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -660,20 +671,20 @@ class StorageDriver(BaseDriver):
         """
         Upload data stored in a string.
 
-        :type response: :class:`RawResponse`
         :param response: RawResponse object.
+        :type response: :class:`RawResponse`
 
-        :type data: ``str``
         :param data: Data to upload.
+        :type data: ``str``
 
-        :type calculate_hash: ``bool``
         :param calculate_hash: True to calculate hash of the transferred data.
-                               (defauls to True).
+                               (defaults to True).
+        :type calculate_hash: ``bool``
 
-        :rtype: ``tuple``
         :return: First item is a boolean indicator of success, second
                  one is the uploaded data MD5 hash and the third one
                  is the number of transferred bytes.
+        :rtype: ``tuple``
         """
         bytes_transferred = 0
         data_hash = None
@@ -701,23 +712,23 @@ class StorageDriver(BaseDriver):
         """
         Stream a data over an http connection.
 
-        :type response: :class:`RawResponse`
         :param response: RawResponse object.
+        :type response: :class:`RawResponse`
 
-        :type iterator: :class:`object`
         :param response: An object which implements an iterator interface
                          or a File like object with read method.
+        :type iterator: :class:`object`
 
-        :type chunked: ``bool``
         :param chunked: True if the chunked transfer encoding should be used
                         (defauls to False).
+        :type chunked: ``bool``
 
-        :type calculate_hash: ``bool``
         :param calculate_hash: True to calculate hash of the transferred data.
                                (defauls to True).
+        :type calculate_hash: ``bool``
 
-        :type chunk_size: ``int``
         :param chunk_size: Optional chunk size (defaults to ``CHUNK_SIZE``)
+        :type chunk_size: ``int``
 
         :rtype: ``tuple``
         :return: First item is a boolean indicator of success, second
@@ -731,7 +742,8 @@ class StorageDriver(BaseDriver):
         if calculate_hash:
             data_hash = self._get_hash_function()
 
-        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size)
+        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size,
+                                                        fill_size=True)
 
         bytes_transferred = 0
         try:

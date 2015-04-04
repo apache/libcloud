@@ -654,7 +654,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             else:
                 headers['x-ms-page-write'] = 'update'
                 headers['x-ms-range'] = 'bytes=%d-%d' % \
-                    (offset, bytes_transferred-1)
+                    (offset, (bytes_transferred - 1))
 
             # Renew lease before updating
             lease.renew()

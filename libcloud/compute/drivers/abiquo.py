@@ -18,8 +18,7 @@ Abiquo Compute Driver
 The driver implements the compute Abiquo functionality for the Abiquo API.
 This version is compatible with the following versions of Abiquo:
 
-    * Abiquo 2.0 (http://wiki.abiquo.com/display/ABI20/The+Abiquo+API)
-    * Abiquo 2.2 (http://wiki.abiquo.com/display/ABI22/The+Abiquo+API)
+    * Abiquo 3.1 (http://wiki.abiquo.com/display/ABI31/The+Abiquo+API)
 """
 import xml.etree.ElementTree as ET
 
@@ -43,10 +42,22 @@ class AbiquoNodeDriver(NodeDriver):
     timeout = 2000  # some images take a lot of time!
 
     # Media Types
-    NODES_MIME_TYPE = 'application/vnd.abiquo.virtualmachineswithnode+xml'
-    NODE_MIME_TYPE = 'application/vnd.abiquo.virtualmachinewithnode+xml'
+    NODES_MIME_TYPE = 'application/vnd.abiquo.virtualmachines+xml'
+    NODE_MIME_TYPE = 'application/vnd.abiquo.virtualmachine+xml'
+    VAPPS_MIME_TYPE = 'application/vnd.abiquo.virtualappliances+xml'
     VAPP_MIME_TYPE = 'application/vnd.abiquo.virtualappliance+xml'
     VM_TASK_MIME_TYPE = 'application/vnd.abiquo.virtualmachinetask+xml'
+    USER_MIME_TYPE = 'application/vnd.abiquo.user+xml'
+    ENT_MIME_TYPE = 'application/vnd.abiquo.enterprise+xml'
+    VDCS_MIME_TYPE = 'application/vnd.abiquo.virtualdatacenters+xml'
+    VDC_MIME_TYPE = 'application/vnd.abiquo.virtualdatacenter+xml'
+    DCS_MIME_TYPE = 'application/vnd.abiquo.datacenters+xml'
+    VMTPLS_MIME_TYPE = 'application/vnd.abiquo.virtualmachinetemplates+xml'
+    VMTPL_MIME_TYPE = 'application/vnd.abiquo.virtualmachinetemplate+xml'
+    NICS_MIME_TYPE = 'application/vnd.abiquo.nics+xml'
+    DCRS_MIME_TYPE = 'application/vnd.abiquo.datacenterrepositories+xml'
+    DCR_MIME_TYPE = 'application/vnd.abiquo.datacenterrepository+xml'
+    AR_MIME_TYPE = 'application/vnd.abiquo.acceptedrequest+xml'
 
     # Others constants
     GIGABYTE = 1073741824
@@ -149,7 +160,10 @@ class AbiquoNodeDriver(NodeDriver):
         """
 
         # Refresh node state
-        e_vm = self.connection.request(node.extra['uri_id']).object
+        headers = {'Accept': self.NODE_MIME_TYPE}
+        e_vm = self.connection.request(node.extra['uri_id'],
+                                       headers=headers).object
+
         state = e_vm.findtext('state')
 
         if state in ['ALLOCATED', 'CONFIGURED', 'LOCKED', 'UNKNOWN']:
@@ -163,7 +177,8 @@ class AbiquoNodeDriver(NodeDriver):
             # Set the URI
             destroy_uri = node.extra['uri_id'] + '/action/undeploy'
             # Prepare the headers
-            headers = {'Content-type': self.VM_TASK_MIME_TYPE}
+            headers = {'Accept': self.AR_MIME_TYPE,
+                       'Content-type': self.VM_TASK_MIME_TYPE}
             res = self.connection.async_request(action=destroy_uri,
                                                 method='POST',
                                                 data=tostring(vm_task),
@@ -236,37 +251,38 @@ class AbiquoNodeDriver(NodeDriver):
         connection. However, this method is public and you are able to
         refresh the list of locations any time.
         """
-        user = self.connection.request('/login').object
+
+        user_headers = {'Accept': self.USER_MIME_TYPE}
+        user = self.connection.request('/login', headers=user_headers).object
         self.connection.cache['user'] = user
         e_ent = get_href(self.connection.cache['user'],
                          'enterprise')
-        ent = self.connection.request(e_ent).object
+        ent_headers = {'Accept': self.ENT_MIME_TYPE}
+        ent = self.connection.request(e_ent, headers=ent_headers).object
         self.connection.cache['enterprise'] = ent
 
+        vdcs_headers = {'Accept': self.VDCS_MIME_TYPE}
         uri_vdcs = '/cloud/virtualdatacenters'
-        e_vdcs = self.connection.request(uri_vdcs).object
+        e_vdcs = self.connection.request(uri_vdcs, headers=vdcs_headers).object
 
-        # Set a dict for the datacenter and its href for a further search
         params = {"idEnterprise": self._get_enterprise_id()}
+
+        dcs_headers = {'Accept': self.DCS_MIME_TYPE}
         e_dcs = self.connection.request('/admin/datacenters',
+                                        headers=dcs_headers,
                                         params=params).object
         dc_dict = {}
         for dc in e_dcs.findall('datacenter'):
-            key = get_href(dc, 'edit')
+            key = get_href(dc, 'self')
             dc_dict[key] = dc
 
-        # Populate locations cache
+        # Populate locations name cache
         self.connection.cache['locations'] = {}
         for e_vdc in e_vdcs.findall('virtualDatacenter'):
-            dc_link = get_href(e_vdc, 'datacenter')
-            loc = self._to_location(e_vdc, dc_dict[dc_link], self)
-
-            # Save into cache the link to the itself because we will need
-            # it in the future, but we save here to don't extend the class
-            # :class:`NodeLocation`.
-            # So here we have the dict: :class:`NodeLocation` ->
-            # link_datacenter
-            self.connection.cache['locations'][loc] = get_href(e_vdc, 'edit')
+            loc = get_href(e_vdc, 'location')
+            if loc is not None:
+                self.connection.cache['locations'][loc] = get_href(e_vdc,
+                                                                   'edit')
 
     def ex_create_group(self, name, location=None):
         """
@@ -294,10 +310,12 @@ class AbiquoNodeDriver(NodeDriver):
             raise LibcloudError('Location does not exist')
 
         link_vdc = self.connection.cache['locations'][location]
-        e_vdc = self.connection.request(link_vdc).object
+        hdr_vdc = {'Accept': self.VDC_MIME_TYPE}
+        e_vdc = self.connection.request(link_vdc, headers=hdr_vdc).object
 
         creation_link = get_href(e_vdc, 'virtualappliances')
-        headers = {'Content-type': self.VAPP_MIME_TYPE}
+        headers = {'Accept': self.VAPP_MIME_TYPE,
+                   'Content-type': self.VAPP_MIME_TYPE}
         vapp = self.connection.request(creation_link, data=tostring(vapp),
                                        headers=headers, method='POST').object
 
@@ -340,7 +358,8 @@ class AbiquoNodeDriver(NodeDriver):
             undeploy_uri = group.uri + '/action/undeploy'
 
             # Prepare the headers
-            headers = {'Content-type': self.VM_TASK_MIME_TYPE}
+            headers = {'Accept': self.AR_MIME_TYPE,
+                       'Content-type': self.VM_TASK_MIME_TYPE}
             res = self.connection.async_request(action=undeploy_uri,
                                                 method='POST',
                                                 data=tostring(vm_task),
@@ -366,17 +385,19 @@ class AbiquoNodeDriver(NodeDriver):
         groups = []
         for vdc in self._get_locations(location):
             link_vdc = self.connection.cache['locations'][vdc]
-            e_vdc = self.connection.request(link_vdc).object
+            hdr_vdc = {'Accept': self.VDC_MIME_TYPE}
+            e_vdc = self.connection.request(link_vdc, headers=hdr_vdc).object
             apps_link = get_href(e_vdc, 'virtualappliances')
-            vapps = self.connection.request(apps_link).object
+            hdr_vapps = {'Accept': self.VAPPS_MIME_TYPE}
+            vapps = self.connection.request(apps_link,
+                                            headers=hdr_vapps).object
             for vapp in vapps.findall('virtualAppliance'):
                 nodes = []
                 vms_link = get_href(vapp, 'virtualmachines')
                 headers = {'Accept': self.NODES_MIME_TYPE}
                 vms = self.connection.request(vms_link, headers=headers).object
-                for vm in vms.findall('virtualmachinewithnode'):
+                for vm in vms.findall('virtualMachine'):
                     nodes.append(self._to_node(vm, self))
-
                 group = NodeGroup(self, vapp.findtext('name'),
                                   nodes, get_href(vapp, 'edit'))
                 groups.append(group)
@@ -395,7 +416,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         enterprise_id = self._get_enterprise_id()
         uri = '/admin/enterprises/%s/datacenterrepositories/' % (enterprise_id)
-        repos = self.connection.request(uri).object
+        repos_hdr = {'Accept': self.DCRS_MIME_TYPE}
+        repos = self.connection.request(uri, headers=repos_hdr).object
 
         images = []
         for repo in repos.findall('datacenterRepository'):
@@ -404,17 +426,20 @@ class AbiquoNodeDriver(NodeDriver):
             for vdc in self._get_locations(location):
                 # Check if the virtual datacenter belongs to this repo
                 link_vdc = self.connection.cache['locations'][vdc]
-                e_vdc = self.connection.request(link_vdc).object
-                dc_link_vdc = get_href(e_vdc, 'datacenter')
+                hdr_vdc = {'Accept': self.VDC_MIME_TYPE}
+                e_vdc = self.connection.request(link_vdc,
+                                                headers=hdr_vdc).object
+                dc_link_vdc = get_href(e_vdc, 'location')
                 dc_link_repo = get_href(repo, 'datacenter')
 
-                if dc_link_vdc == dc_link_repo:
+                if dc_link_vdc.split("/")[-1] == dc_link_repo.split("/")[-1]:
                     # Filter the template in case we don't have it yet
                     url_templates = get_href(repo, 'virtualmachinetemplates')
                     hypervisor_type = e_vdc.findtext('hypervisorType')
                     params = {'hypervisorTypeName': hypervisor_type}
-                    templates = self.connection.request(url_templates,
-                                                        params).object
+                    headers = {'Accept': self.VMTPLS_MIME_TYPE}
+                    templates = self.connection.request(url_templates, params,
+                                                        headers=headers).object
                     for templ in templates.findall('virtualMachineTemplate'):
                         # Avoid duplicated templates
                         id_template = templ.findtext('id')
@@ -511,7 +536,9 @@ class AbiquoNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         reboot_uri = node.extra['uri_id'] + '/action/reset'
-        res = self.connection.async_request(action=reboot_uri, method='POST')
+        reboot_hdr = {'Accept': self.AR_MIME_TYPE}
+        res = self.connection.async_request(action=reboot_uri,
+                                            method='POST', headers=reboot_hdr)
         return res.async_success()
 
     # -------------------------
@@ -543,7 +570,8 @@ class AbiquoNodeDriver(NodeDriver):
         force_deploy.text = 'True'
 
         # Prepare the headers
-        headers = {'Content-type': self.VM_TASK_MIME_TYPE}
+        headers = {'Accept': self.AR_MIME_TYPE,
+                   'Content-type': self.VM_TASK_MIME_TYPE}
         link_deploy = get_href(e_vm, 'deploy')
         res = self.connection.async_request(action=link_deploy, method='POST',
                                             data=tostring(vm_task),
@@ -565,18 +593,22 @@ class AbiquoNodeDriver(NodeDriver):
         Generates the :class:`Node` class.
         """
         identifier = vm.findtext('id')
-        name = vm.findtext('nodeName')
+        name = vm.findtext('label')
         state = AbiquoResponse.NODE_STATE_MAP[vm.findtext('state')]
 
         link_image = get_href(vm, 'virtualmachinetemplate')
-        image_element = self.connection.request(link_image).object
+        link_hdr = {'Accept': self.VMTPL_MIME_TYPE}
+        image_element = self.connection.request(link_image,
+                                                headers=link_hdr).object
         repo_link = get_href(image_element, 'datacenterrepository')
         image = self._to_nodeimage(image_element, self, repo_link)
 
         # Fill the 'ips' data
         private_ips = []
         public_ips = []
-        nics_element = self.connection.request(get_href(vm, 'nics')).object
+        nics_hdr = {'Accept': self.NICS_MIME_TYPE}
+        nics_element = self.connection.request(get_href(vm, 'nics'),
+                                               headers=nics_hdr).object
         for nic in nics_element.findall('nic'):
             ip = nic.findtext('ip')
             for link in nic.findall('link'):
@@ -603,7 +635,8 @@ class AbiquoNodeDriver(NodeDriver):
         identifier = template.findtext('id')
         name = template.findtext('name')
         url = get_href(template, 'edit')
-        extra = {'repo': repo, 'url': url}
+        hdreqd = template.findtext('hdRequired')
+        extra = {'repo': repo, 'url': url, 'hdrequired': hdreqd}
         return NodeImage(identifier, name, driver, extra)
 
     def _get_locations(self, location=None):
@@ -649,8 +682,8 @@ class AbiquoNodeDriver(NodeDriver):
         target_loc = None
         for candidate_loc in self._get_locations(location):
             link_vdc = self.connection.cache['locations'][candidate_loc]
-            e_vdc = self.connection.request(link_vdc).object
-            # url_location = get_href(e_vdc, 'datacenter')
+            hdr_vdc = {'Accept': self.VDC_MIME_TYPE}
+            e_vdc = self.connection.request(link_vdc, headers=hdr_vdc).object
             for img in self.list_images(candidate_loc):
                 if img.id == image.id:
                     loc = e_vdc
@@ -676,7 +709,9 @@ class AbiquoNodeDriver(NodeDriver):
 
         # We search if the group is already defined into the location
         groups_link = get_href(xml_loc, 'virtualappliances')
-        vapps_element = self.connection.request(groups_link).object
+        groups_hdr = {'Accept': self.VAPPS_MIME_TYPE}
+        vapps_element = self.connection.request(groups_link,
+                                                headers=groups_hdr).object
         target_group = None
         for vapp in vapps_element.findall('virtualAppliance'):
             if vapp.findtext('name') == group_name:
@@ -696,15 +731,16 @@ class AbiquoNodeDriver(NodeDriver):
         In Abiquo, you first need to 'register' or 'define' the node in
         the API before to create it into the target hypervisor.
         """
-        vm = ET.Element('virtualmachinewithnode')
+        vm = ET.Element('virtualMachine')
         if 'name' in kwargs:
-            vmname = ET.SubElement(vm, 'nodeName')
+            vmname = ET.SubElement(vm, 'label')
             vmname.text = kwargs['name']
-        attrib = {'type': 'application/vnd.abiquo/virtualmachinetemplate+xml',
+        attrib = {'type': self.VMTPL_MIME_TYPE,
                   'rel': 'virtualmachinetemplate',
                   'href': kwargs['image'].extra['url']}
         ET.SubElement(vm, 'link', attrib=attrib)
-        headers = {'Content-type': self.NODE_MIME_TYPE}
+        headers = {'Accept': self.NODE_MIME_TYPE,
+                   'Content-type': self.NODE_MIME_TYPE}
 
         if 'size' in kwargs:
             # Override the 'NodeSize' data

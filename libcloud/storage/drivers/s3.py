@@ -720,15 +720,16 @@ class BaseS3StorageDriver(StorageDriver):
         if delimiter:
             params['delimiter'] = delimiter
 
-        finder = lambda node, text: node.findtext(fixxpath(xpath=text,
-                                                  namespace=self.namespace))
+        def finder(node, text):
+            return node.findtext(fixxpath(xpath=text,
+                                          namespace=self.namespace))
 
         while True:
             response = self.connection.request(request_path, params=params)
 
             if response.status != httplib.OK:
                 raise LibcloudError('Error fetching multipart uploads. '
-                                    'Got code: %s' % (response.status),
+                                    'Got code: %s' % response.status,
                                     driver=self)
 
             body = response.parse_body()

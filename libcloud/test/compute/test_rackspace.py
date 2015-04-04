@@ -117,6 +117,7 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
                 httplib.responses[httplib.OK])
 
 
+# Does not derive from TestCase because it should not be used by setup.py test
 class BaseRackspaceNovaTestCase(object):
     conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
     auth_url = 'https://auth.api.example.com'

@@ -1,0 +1,1 @@
+{ "queryasyncjobresultresponse" : {"jobid":1300004,"jobstatus":1,"jobprocstatus":0,"jobresultcode":0,"jobresulttype":"object","jobresult":{"affinitygroup" : {"id":"11113", "name": "MyAG2", "type": "MyAGType"} }} }

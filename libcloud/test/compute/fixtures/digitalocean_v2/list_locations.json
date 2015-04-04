@@ -1,0 +1,48 @@
+{
+  "regions": [
+    {
+      "slug": "nyc1",
+      "name": "New York 1",
+      "sizes": [
+        "1gb",
+        "512mb"
+      ],
+      "available": false,
+      "features": [
+        "virtio",
+        "private_networking",
+        "backups",
+        "ipv6"
+      ]
+    },
+    {
+      "slug": "sfo1",
+      "name": "San Francisco 1",
+      "sizes": [
+        "1gb",
+        "512mb"
+      ],
+      "available": true,
+      "features": [
+        "virtio",
+        "backups"
+      ]
+    },
+    {
+      "slug": "ams1",
+      "name": "Amsterdam 1",
+      "sizes": [
+        "1gb",
+        "512mb"
+      ],
+      "available": true,
+      "features": [
+        "virtio",
+        "backups"
+      ]
+    }
+  ],
+  "meta": {
+    "total": 3
+  }
+}

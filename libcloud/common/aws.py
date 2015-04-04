@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import base64
+from datetime import datetime
+import hashlib
 import hmac
 import time
 from hashlib import sha256
@@ -27,6 +29,21 @@ from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
+
+__all__ = [
+    'AWSBaseResponse',
+    'AWSGenericResponse',
+
+    'AWSTokenConnection',
+    'SignedAWSConnection',
+
+    'AWSRequestSignerAlgorithmV2',
+    'AWSRequestSignerAlgorithmV4',
+
+    'AWSDriver'
+]
+
+DEFAULT_SIGNATURE_VERSION = '2'
 
 
 class AWSBaseResponse(XmlResponse):
@@ -130,17 +147,50 @@ class AWSTokenConnection(ConnectionUserAndKey):
         return super(AWSTokenConnection, self).add_default_headers(headers)
 
 
-class SignedAWSConnection(AWSTokenConnection):
+class AWSRequestSigner(object):
+    """
+    Class which handles signing the outgoing AWS requests.
+    """
 
-    def add_default_params(self, params):
+    def __init__(self, access_key, access_secret, version, connection):
+        """
+        :param access_key: Access key.
+        :type access_key: ``str``
+
+        :param access_secret: Access secret.
+        :type access_secret: ``str``
+
+        :param version: API version.
+        :type version: ``str``
+
+        :param connection: Connection instance.
+        :type connection: :class:`Connection`
+        """
+        self.access_key = access_key
+        self.access_secret = access_secret
+        self.version = version
+        # TODO: Remove cycling dependency between connection and signer
+        self.connection = connection
+
+    def get_request_params(self, params, method='GET', path='/'):
+        return params
+
+    def get_request_headers(self, params, headers, method='GET', path='/'):
+        return params, headers
+
+
+class AWSRequestSignerAlgorithmV2(AWSRequestSigner):
+    def get_request_params(self, params, method='GET', path='/'):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
+        params['AWSAccessKeyId'] = self.access_key
         params['Version'] = self.version
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
+        params['Signature'] = self._get_aws_auth_param(
+            params=params,
+            secret_key=self.access_secret,
+            path=path)
         return params
 
     def _get_aws_auth_param(self, params, secret_key, path='/'):
@@ -153,6 +203,8 @@ class SignedAWSConnection(AWSTokenConnection):
                        HTTPRequestURI + "\n" +
                        CanonicalizedQueryString <from the preceding step>
         """
+        connection = self.connection
+
         keys = list(params.keys())
         keys.sort()
         pairs = []
@@ -163,10 +215,10 @@ class SignedAWSConnection(AWSTokenConnection):
 
         qs = '&'.join(pairs)
 
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
+        hostname = connection.host
+        if (connection.secure and connection.port != 443) or \
+           (not connection.secure and connection.port != 80):
+            hostname += ':' + str(connection.port)
 
         string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
@@ -176,6 +228,147 @@ class SignedAWSConnection(AWSTokenConnection):
         )
 
         return b64_hmac.decode('utf-8')
+
+
+class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
+    def get_request_params(self, params, method='GET', path='/'):
+        params['Version'] = self.version
+        return params
+
+    def get_request_headers(self, params, headers, method='GET', path='/'):
+        now = datetime.utcnow()
+        headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+        headers['Authorization'] = \
+            self._get_authorization_v4_header(params=params, headers=headers,
+                                              dt=now, method=method, path=path)
+
+        return params, headers
+
+    def _get_authorization_v4_header(self, params, headers, dt, method='GET',
+                                     path='/'):
+        assert method == 'GET', 'AWS Signature V4 not implemented for ' \
+                                'other methods than GET'
+
+        credentials_scope = self._get_credential_scope(dt=dt)
+        signed_headers = self._get_signed_headers(headers=headers)
+        signature = self._get_signature(params=params, headers=headers,
+                                        dt=dt, method=method, path=path)
+
+        return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
+               'SignedHeaders=%(sh)s, Signature=%(s)s' % {
+                   'u': self.access_key,
+                   'c': credentials_scope,
+                   'sh': signed_headers,
+                   's': signature
+               }
+
+    def _get_signature(self, params, headers, dt, method, path):
+        key = self._get_key_to_sign_with(dt)
+        string_to_sign = self._get_string_to_sign(params=params,
+                                                  headers=headers, dt=dt,
+                                                  method=method, path=path)
+        return _sign(key=key, msg=string_to_sign, hex=True)
+
+    def _get_key_to_sign_with(self, dt):
+        return _sign(
+            _sign(
+                _sign(
+                    _sign(('AWS4' + self.access_secret),
+                          dt.strftime('%Y%m%d')),
+                    self.connection.driver.region_name),
+                self.connection.service_name),
+            'aws4_request')
+
+    def _get_string_to_sign(self, params, headers, dt, method, path):
+        canonical_request = self._get_canonical_request(params=params,
+                                                        headers=headers,
+                                                        method=method,
+                                                        path=path)
+
+        return '\n'.join(['AWS4-HMAC-SHA256',
+                          dt.strftime('%Y%m%dT%H%M%SZ'),
+                          self._get_credential_scope(dt),
+                          _hash(canonical_request)])
+
+    def _get_credential_scope(self, dt):
+        return '/'.join([dt.strftime('%Y%m%d'),
+                         self.connection.driver.region_name,
+                         self.connection.service_name,
+                         'aws4_request'])
+
+    def _get_signed_headers(self, headers):
+        return ';'.join([k.lower() for k in sorted(headers.keys())])
+
+    def _get_canonical_headers(self, headers):
+        return '\n'.join([':'.join([k.lower(), v.strip()])
+                          for k, v in sorted(headers.items())]) + '\n'
+
+    def _get_payload_hash(self):
+        return _hash('')
+
+    def _get_request_params(self, params):
+        # For self.method == GET
+        return '&'.join(["%s=%s" %
+                         (urlquote(k, safe=''), urlquote(str(v), safe='~'))
+                         for k, v in sorted(params.items())])
+
+    def _get_canonical_request(self, params, headers, method, path):
+        return '\n'.join([
+            method,
+            path,
+            self._get_request_params(params),
+            self._get_canonical_headers(headers),
+            self._get_signed_headers(headers),
+            self._get_payload_hash()
+        ])
+
+
+class SignedAWSConnection(AWSTokenConnection):
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, token=None,
+                 signature_version=DEFAULT_SIGNATURE_VERSION):
+        super(SignedAWSConnection, self).__init__(user_id=user_id, key=key,
+                                                  secure=secure, host=host,
+                                                  port=port, url=url,
+                                                  timeout=timeout, token=token)
+        self.signature_version = str(signature_version)
+
+        if self.signature_version == '2':
+            signer_cls = AWSRequestSignerAlgorithmV2
+        elif signature_version == '4':
+            signer_cls = AWSRequestSignerAlgorithmV4
+        else:
+            raise ValueError('Unsupported signature_version: %s' %
+                             (signature_version))
+
+        self.signer = signer_cls(access_key=self.user_id,
+                                 access_secret=self.key,
+                                 version=self.version,
+                                 connection=self)
+
+    def add_default_params(self, params):
+        params = self.signer.get_request_params(params=params,
+                                                method=self.method,
+                                                path=self.action)
+        return params
+
+    def pre_connect_hook(self, params, headers):
+        params, headers = self.signer.get_request_headers(params=params,
+                                                          headers=headers,
+                                                          method=self.method,
+                                                          path=self.action)
+        return params, headers
+
+
+def _sign(key, msg, hex=False):
+    if hex:
+        return hmac.new(b(key), b(msg), hashlib.sha256).hexdigest()
+    else:
+        return hmac.new(b(key), b(msg), hashlib.sha256).digest()
+
+
+def _hash(msg):
+    return hashlib.sha256(b(msg)).hexdigest()
 
 
 class AWSDriver(BaseDriver):

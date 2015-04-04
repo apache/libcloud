@@ -1,0 +1,17 @@
+{
+  "id": "projects/project_name/global/addresses",
+  "items": [
+    {
+      "address": "173.99.99.99",
+      "creationTimestamp": "2013-06-26T09:48:31.184-07:00",
+      "description": "",
+      "id": "17634862894218443422",
+      "kind": "compute#address",
+      "name": "lcaddressglobal",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/addresses/lcaddressglobal",
+      "status": "RESERVED"
+    }
+  ],
+  "kind": "compute#addressList",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/addresses"
+}

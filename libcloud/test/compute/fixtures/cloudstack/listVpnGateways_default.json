@@ -1,0 +1,15 @@
+{
+    "listvpngatewaysresponse": {
+        "count": 1,
+        "vpngateway": [
+            {
+                "account": "some_account",
+                "domain": "some_domain",
+                "domainid": "9b397dea-25ef-4c5d-b47d-627eaebe8ed8",
+                "id": "cffa0cab-d1da-42a7-92f6-41379267a29f",
+                "publicip": "1.2.3.4",
+                "vpcid": "4d25e181-8850-4d52-8ecb-a6f35bbbabde"
+            }
+        ]
+    }
+}

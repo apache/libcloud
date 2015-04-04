@@ -1,0 +1,16 @@
+{
+    "queryasyncjobresultresponse": {
+        "accountid": "4009e75e-5311-43f2-bc92-b92676455eed",
+        "cmd": "org.apache.cloudstack.api.command.user.vpn.DeleteVpnGatewayCmd",
+        "created": "2015-02-20T16:32:40+0100",
+        "jobid": "0648122e-fb16-495b-96d0-86e16b742557",
+        "jobprocstatus": 0,
+        "jobresult": {
+            "success": true
+        },
+        "jobresultcode": 0,
+        "jobresulttype": "object",
+        "jobstatus": 1,
+        "userid": "2f517f5b-cac9-48b5-aafc-e9d7ca879784"
+    }
+}

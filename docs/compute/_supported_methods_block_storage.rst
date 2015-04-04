@@ -2,12 +2,13 @@
 Provider                              list volumes create volume destroy volume attach volume detach volume list snapshots create snapshot
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 `Abiquo`_                             no           no            no             no            no            no             no             
+`PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
-`Digital Ocean`_                      no           no            no             no            no            no             no             
+`DigitalOcean`_                       no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
@@ -35,14 +36,14 @@ Provider                              list volumes create volume destroy volume 
 `Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
-`HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           no             no             
+`HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           yes            yes            
 `IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
 `Ikoula`_                             yes          yes           yes            yes           yes           no             yes            
 `Joyent`_                             no           no            no             no            no            no             no             
-`Kili Public Cloud`_                  yes          yes           yes            yes           yes           no             no             
+`Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
 `Libvirt`_                            no           no            no             no            no            no             no             
-`Linode`_                             no           no            no             no            no            no             no             
+`Linode`_                             no           no            yes            no            no            no             no             
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
 `Ninefold`_                           yes          yes           yes            yes           yes           no             yes            
@@ -52,7 +53,7 @@ Provider                              list volumes create volume destroy volume 
 `Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
 `ProfitBricks`_                       yes          yes           yes            yes           yes           no             no             
-`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           no             no             
+`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
@@ -68,12 +69,13 @@ Provider                              list volumes create volume destroy volume 
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
-.. _`Digital Ocean`: https://www.digitalocean.com
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
@@ -100,7 +102,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
-.. _`HostVirtual`: http://www.vr.org
+.. _`HostVirtual`: http://www.hostvirtual.com
 .. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack

@@ -88,7 +88,10 @@
             "config_drive": "",
             "id": 12065,
             "metadata": {},
-            "OS-DCF:diskConfig": "AUTO"
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-STS:task_state": "spawning",
+            "OS-EXT-STS:vm_state": "active",
+            "OS-EXT-STS:power_state": 1
         },
         {
             "status": "ACTIVE",
@@ -156,7 +159,10 @@
             "config_drive": "",
             "id": 12064,
             "metadata": {},
-            "OS-DCF:diskConfig": "AUTO"
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-STS:task_state": "spawning",
+            "OS-EXT-STS:vm_state": "active",
+            "OS-EXT-STS:power_state": 1
         }
     ]
 }

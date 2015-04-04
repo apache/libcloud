@@ -4,8 +4,253 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Use native ``ssl.match_hostname`` functionality when running on Python >=
+  3.2 and only require ``backports.ssl_match_hostname`` dependency on Python
+  versions < 3.2.
+  [Tomaz Muraus]
+
+- Add support for AWS Signature version 4.
+
+  Note: Currently only GET HTTP method is supported.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis]
+
 Compute
 ~~~~~~~
+
+- OpenStackNodeSize objects now support optional, additional fields that are 
+  supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
+  (GITHUB-488, LIBCLOUD-682)
+  [Greg Hill]
+
+- StorageVolume objects now have an attribute `state` that holds a
+  state variable that is standardized state across drivers. Drivers that
+  currently support the `state` attribute are OpenStack and EC2.
+  StorageVolume objects returned by drivers that do not support the
+  attribute will have a `state` of `None`. When a provider returns a state
+  that is unknown to the driver, the state will be `UNKNOWN`. Please report
+  such states. A couple of drivers already put state fields in the `extra`
+  fields of StorageVolumes. These fields were kept for
+  backwards-compatibility and for reference.
+  (GITHUB-476)
+  [Allard Hoeve]
+
+- StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
+  in their extra dicts containing the snapshot ID the volume was based on.
+  (GITHUB-479)
+  [Allard Hoeve]
+
+- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in 
+  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base 
+  driver method create_storage_volume argument name to be optional.
+  (GITHUB-478)
+  [Allard Hoeve]
+
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
+
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
+  [Allard Hoeve]
+
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
+- Allow user to pass ``ex_blockdevicemappings`` argument to the create_node
+  method in the OpenStack driver.
+  (GITHUB-398, LIBCLOUD-637)
+  [Allard Hoeve]
+
+- Fix ``list_volume_snapshots`` method in the EC2 driver so it comforms to the
+  base API.
+  (LIBCLOUD-664, GITHUB-451)
+  [Allard Hoeve]
+
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver.
+  (LIBCLOUD-668, GITHUB-462)
+  [Allard Hoeve]
+
+- Add the following new methods to the Linode driver: ``ex_list_volumes``,
+  ``ex_create_volume``, ``ex_destroy_volume``.
+  (LIBCLOUD-649, GITHUB-430)
+  [Wojciech Wirkijowski]
+
+- Add ``list_volume_snapshots`` method to the OpenStack driver.
+  (LIBCLOUD-663, GITHUB-450)
+  [Allard Hoeve]
+
+- Add Site to Site VPN functionality to CloudStack driver.
+  (GITHUB-465)
+  [Avi Nanhkoesingh]
+
+- Add affinity group support to CloudStack driver
+  (LIBCLOUD-671, GITHUB-468)
+  [Mateusz Korszun]
+
+- Add a support for a new AWS Frankfurt, Germany region (``eu-central-1``) to
+  the EC2 driver using AWS Signature v4.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis, Tomaz Muraus]
+
+- Allow Filtering in EC2 list_images() driver
+  (GITHUB-456, LIBCLOUD-667)
+  [Katriel Traum]
+
+- Add ex_list_ip_forwarding_rules() to CloudStack driver
+  (GITHUB-483)
+  [Atsushi Sasaki]
+
+- Add AURORA compute driver
+  (LIBCLOUD-641, GITHUB-477)
+  [Wido den Hollander]
+
+- Update ``ex_describe_tags`` method in the EC2 driver and allow user to list
+  tags for any supported resource. Previously you could only list tags for a
+  node or a storage volume.
+  (LIBCLOUD-676, GITHUB-482)
+  [John Kinsella]
+
+- Various improvements in the HostVirual driver (code refactoring, support for
+  managing "packages").
+  (LIBCLOUD-670, GITHUB-472)
+  [Dinesh Bhoopathy]
+
+- Add support for DigitalOcean API v2.0 while maintaining support for the old
+  API v2.0.
+
+  Note: API v2.0 is now used by default. To use the old API v1.0, pass
+  ``api_version='1.0'`` argument to the driver constructor.
+  (GITHUB-442)
+  [Andrew Starr-Bochicchio]
+
+- Add new ``d4.`` instance types to the EC2 driver. Also update EC2 pricing data.
+  (GITHUB-490)
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- Fix a bug with authentication in the OpenStack Swift driver.
+  (GITHUB-492, LIBCLOUD-635)
+  [Tom Fifield]
+
+DNS
+~~~
+
+- Fix a bug when a ZoneDoesntExist exception was thrown when listing records
+  for a zone which has no records in the HostVirtual driver.
+  (GITHUB-460)
+  [Vanč Levstik]
+
+- Correctly handle MX records priority in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Allow user to create an A record which points directly to the domain zone
+  name in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Fix delete_zone method in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
+- Fix parsing of the record name in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
+Changes with Apache Libcloud 0.17.0
+-----------------------------------
+
+General
+~~~~~~~
+
+- Use ``match_hostname`` function from ``backports.ssl_match_hostname``
+  package to verify the SSL certificate hostname instead of relying on
+  our own logic.
+  (GITHUB-374)
+  [Alex Gaynor]
+
+Compute
+~~~~~~~
+
+- GCE driver updated to include ex_stop_node() and ex_start_node() methods.
+  (GITHUB-442)
+  [Eric Johnson]
+
+- GCE driver now raises ResourceNotFoundError when the specified image is
+  not found in any image project. Previously, this would return None but now
+  raises the not-found exception instead. This fixes a bug where returning
+  None caused ex_delete_image to raise an AttributeError.
+  (GITHUB-441)
+  [Eric Johnson]
+
+- GCE driver update to support JSON format Service Account files and a PY3
+  fix from Siim Põder for LIBCLOUD-627.
+  (LIBCLOUD-627, LIBCLOUD-657, GITHUB-438)
+  [Eric Johnson]
+
+- GCE driver fixed for missing param on ex_add_access_config.
+  (GITHUB-435)
+  [Peter Mooshammer]
+
+- GCE driver support for HTTP load-balancer resources.
+  (LIBCLOUD-605, GITHUB-429)
+  [Lee Verberne]
+
+- GCE driver updated to make better use of GCEDiskTypes.
+  (GITHUB-428)
+  [Eric Johnson]
+
+- GCE driver list_images() now returns all non-deprecated images by default.
+  (LIBCLOUD-602, GITHUB-423)
+  [Eric Johnson]
+
+- Improve GCE API coverage for create_node().
+  (GITHUB-419)
+  [Eric Johnson]
+
+- GCE Licenses added to the GCE driver.
+  (GITHUB-420)
+  [Eric Johnson]
+
+- GCE Projects support common instance metadata and usage export buckets.
+  (GITHUB-409)
+  [Eric Johnson]
+
+- Improvements to TargetPool resource in GCE driver.
+  (GITHUB-414)
+  [Eric Johnson]
+
+- Adding TargetInstances resource to GCE driver.
+  (GITHUB-393)
+  [Eric Johnson]
+
+- Adding DiskTypes resource to GCE driver.
+  (GITHUB-391)
+  [Eric Johnson]
+
+- Fix boot disk auto_delete in GCE driver.
+  (GITHUB-412)
+  [Igor Bogomazov]
+
+- Add Routes to GCE driver.
+  (GITHUB-410)
+  [Eric Johnson]
 
 - Add missing ``ubuntu-os-cloud`` images to the GCE driver.
   (LIBCLOUD-632, GITHUB-385)
@@ -30,6 +275,110 @@ Compute
 - Add ``ex_security_group_ids`` argument to the create_node method in the
   EC2 driver. This way users can launch VPC nodes with security groups.
   (GITHUB-373)
+  [Itxaka Serrano]
+
+- Add description argument to GCE Network.
+  (GITHUB-397)
+  [Eric Johnson]
+
+- GCE: Improve MachineType (size) coverage of GCE API.
+  (GITHUB-396)
+  [Eric Johnson]
+
+- GCE: Improved Images coverage.
+  (GITHUB-395)
+  [Eric Johnson]
+
+- GCE: Support for global IP addresses.
+  (GITHUB-390, GITHUB-394)
+  [Eric Johnson]
+
+- GCE: Add missing snapshot attributes.
+  (GITHUB-401)
+  [Eric Johnson]
+
+- AWS: Set proper disk size in c3.X instance types.
+  (GITHUB-405)
+  [Itxaka Serrano]
+
+- Fix a bug with handling of the ``ex_keyname`` argument in the Softlayer
+  driver.
+  (GITHUB-416, LIBCLOUD-647)
+  [Dustin Oberloh]
+
+- Update CloudSigma region list (remove Las Vegas, NV region and add new San
+  Jose, CA and Miami, FL region).
+  (GITHUB-417)
+  [Viktor Petersson]
+
+- Add ``ex_get_node`` method to the Joyent driver.
+  (GITHUB-421)
+  [ZuluPro]
+
+- Add support for placement group management to the EC2 driver.
+  (GITHUB-418)
+  [Mikhail Ovsyannikov]
+
+- Add new tok02 region to the Softlayer driver.
+  (GITHUB-436, LIBCLOUD-656)
+  [Dustin Oberloh]
+
+- Add new Honolulu, HI endpoint to the CloudSigma driver.
+  (GITHUB-439)
+  [Stephen D. Spencer]
+
+- Fix a bug with config_drive attribute in the OpenStack driver. New versions
+  of OpenStack now return a boolean and not a string.
+  (GITHUB-433)
+  [quilombo]
+
+- Add support for Abiquo API v3.x, remove support for now obsolete API v2.x.
+  (GITHUB-433, LIBCLOUD-652)
+  [David Freedman]
+
+- Allow rootdisksize parameter in create_node CloudStack driver
+  (GITHUB-440, LIBCLOUD-658)
+  [Loic Lambiel]
+
+Storage
+~~~~~~~
+
+- Allow user to pass ``headers`` argument to the ``upload_object`` and
+  ``upload_object_via_stream`` method.
+
+  This way user can specify CORS headers with the drivers which support that.
+  (GITHUB-403, GITHUB-404)
+  [Peter Schmidt]
+
+- Fix upload_object_via_stream so it works correctly under Python 3.x if user
+  manually passes an iterator to the method.
+
+  Also improve how reading a file in chunks works with drivers which support
+  chunked encoding - always try to fill a chunk with CHUNK_SIZE bytes instead
+  of directly streaming the chunk which iterator returns.
+
+  Previously, if iterator returned 1 byte in one iteration, we would directly
+  send this as a single chunk to the API.
+  (GITHUB-408, LIBCLOUD-639)
+  [Peter Schmidt]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Updates to CloudStack driver.
+  (GITHUB-434)
+  [Jeroen de Korte]
+
+DNS
+~~~
+
+- New driver for Softlayer DNS service.
+  (GITHUB-413, LIBCLOUD-640)
+  [Vanč Levstik]
+
+- Fix a bug with ``ex_create_multi_value_record`` method in the Route53 driver
+  only returning a single record.
+  (GITHUB-431, LIBCLOUD-650)
   [Itxaka Serrano]
 
 Changes with Apache Libcloud 0.16.0

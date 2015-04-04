@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "4444444444444444444",
+ "name": "operation_global_forwardingRules_http_rule_delete",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/forwardingRules/http-rule-test",
+ "targetId": "16224243838919174114",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-28T10:53:13.433-07:00",
+ "startTime": "2014-10-28T10:53:13.723-07:00",
+ "endTime": "2014-10-28T10:53:16.304-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_forwardingRules_http_rule_delete"
+}

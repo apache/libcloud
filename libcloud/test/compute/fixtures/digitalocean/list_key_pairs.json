@@ -1,0 +1,13 @@
+{
+  "ssh_keys": [
+    {
+      "id": 7717,
+      "fingerprint": "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d",
+      "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5 example",
+      "name": "test1"
+    }
+  ],
+  "meta": {
+    "total": 1
+  }
+}

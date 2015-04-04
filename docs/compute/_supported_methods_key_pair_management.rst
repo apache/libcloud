@@ -2,12 +2,13 @@
 Provider                              list key pairs get key pair create key pair import public key from string import public key from file delete key pair
 ===================================== ============== ============ =============== ============================= =========================== ===============
 `Abiquo`_                             no             no           no              no                            no                          no             
+`PCextreme AuroraCompute`_            yes            yes          yes             yes                           no                          yes            
 `Bluebox Blocks`_                     no             no           no              no                            no                          no             
 `Brightbox`_                          no             no           no              no                            no                          no             
 `CloudFrames`_                        no             no           no              no                            no                          no             
 `CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
-`Digital Ocean`_                      no             no           no              no                            no                          no             
+`DigitalOcean`_                       yes            no           yes             no                            no                          yes            
 `Dreamhost`_                          no             no           no              no                            no                          no             
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-northeast-1)`_        yes            yes          yes             yes                           no                          yes            
@@ -68,12 +69,13 @@ Provider                              list key pairs get key pair create key pai
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
-.. _`Digital Ocean`: https://www.digitalocean.com
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
@@ -100,7 +102,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
-.. _`HostVirtual`: http://www.vr.org
+.. _`HostVirtual`: http://www.hostvirtual.com
 .. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack

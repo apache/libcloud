@@ -79,7 +79,7 @@ import socket
 import sys
 
 from libcloud.utils.connection import get_response_object
-from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
+from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
 from libcloud.common.types import (ProviderError,
@@ -345,7 +345,12 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         """
         data = urlencode(request_body)
         now = self._now()
-        response = self.request('/o/oauth2/token', method='POST', data=data)
+        try:
+            response = self.request('/o/oauth2/token', method='POST',
+                                    data=data)
+        except AttributeError:
+            raise GoogleAuthError('Invalid authorization response, please '
+                                  'check your credentials.')
         token_info = response.object
         if 'expires_in' in token_info:
             expire_time = now + datetime.timedelta(
@@ -390,12 +395,12 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         data = urlencode(auth_params)
 
         url = 'https://%s%s?%s' % (self.host, self.auth_path, data)
-        print('Please Go to the following URL and sign in:')
+        print('\nPlease Go to the following URL and sign in:')
         print(url)
         if PY3:
-            code = input('Enter Code:')
+            code = input('Enter Code: ')
         else:
-            code = raw_input('Enter Code:')
+            code = raw_input('Enter Code: ')
         return code
 
     def get_new_token(self):
@@ -458,11 +463,21 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
             raise GoogleAuthError('PyCrypto library required for '
                                   'Service Account Authentication.')
         # Check to see if 'key' is a file and read the file if it is.
-        keypath = os.path.expanduser(key)
-        is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-        if is_file_path:
+        if key.find("PRIVATE KEY---") == -1:
+            # key is a file
+            keypath = os.path.expanduser(key)
+            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+            if not is_file_path:
+                raise ValueError("Missing (or not readable) key "
+                                 "file: '%s'" % key)
             with open(keypath, 'r') as f:
-                key = f.read()
+                contents = f.read()
+            try:
+                key = json.loads(contents)
+                key = key['private_key']
+            except ValueError:
+                key = contents
+
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)
 
@@ -475,7 +490,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         """
         # The header is always the same
         header = {'alg': 'RS256', 'typ': 'JWT'}
-        header_enc = base64.urlsafe_b64encode(json.dumps(header))
+        header_enc = base64.urlsafe_b64encode(b(json.dumps(header)))
 
         # Construct a claim set
         claim_set = {'iss': self.user_id,
@@ -483,10 +498,10 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                      'aud': 'https://accounts.google.com/o/oauth2/token',
                      'exp': int(time.time()) + 3600,
                      'iat': int(time.time())}
-        claim_set_enc = base64.urlsafe_b64encode(json.dumps(claim_set))
+        claim_set_enc = base64.urlsafe_b64encode(b(json.dumps(claim_set)))
 
         # The message contains both the header and claim set
-        message = '%s.%s' % (header_enc, claim_set_enc)
+        message = b'.'.join((header_enc, claim_set_enc))
         # Then the message is signed using the key supplied
         key = RSA.importKey(self.key)
         hash_func = SHA256.new(message)
@@ -494,7 +509,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         signature = base64.urlsafe_b64encode(signer.sign(hash_func))
 
         # Finally the message and signature are sent to get a token
-        jwt = '%s.%s' % (message, signature)
+        jwt = b'.'.join((message, signature))
         request = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                    'assertion': jwt}
 
@@ -730,7 +745,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         In many places, the Google API returns a full URL to a resource.
         This will strip the scheme and host off of the path and just return
-        the request.  Otherwise, it will append the base request_path to
+        the request.  Otherwise, it will prepend the base request_path to
         the action.
 
         :param  action: The action to be called in the http request

@@ -51,7 +51,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
             self.assertTrue(
                 False)  # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
-            self.assertTrue(True)
+            pass
 
     def test_list_nodes(self):
         """
@@ -236,7 +236,7 @@ class DreamhostMockHttp(MockHttp):
                 'ps': 'ps22175',
                 'start_date': '2010-02-25',
                 'type': 'mysql'
-            }]
+        }]
         result = 'success'
         body = json.dumps({'data': data, 'result': result})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -249,7 +249,7 @@ class DreamhostMockHttp(MockHttp):
             {
                 'description': 'Private MySQL server',
                 'image': 'mysql'
-            }]
+        }]
         result = 'success'
         body = json.dumps({'data': data, 'result': result})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

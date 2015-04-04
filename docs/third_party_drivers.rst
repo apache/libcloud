@@ -8,8 +8,8 @@ PyPi package.
 This page lists those third party drivers. For documentation and usage examples,
 please refer to the third party driver documentation (if available).
 
-Keep in mind that those drivers are not party of the core and such we can't
-guarantee for the quality of those drivers.
+Keep in mind that those drivers are not part of the core and such we can't
+guarantee the quality of those drivers.
 
 Compute
 -------

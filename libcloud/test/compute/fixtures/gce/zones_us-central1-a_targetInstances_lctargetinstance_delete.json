@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "16305469717066123402",
+ "name": "operation-zones_us-central1-a_targetInstances_lctargetinstance_delete",
+ "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/targetInstances/lctargetinstance",
+ "targetId": "8092539649535704539",
+ "status": "PENDING",
+ "user": "erjohnso@google.com",
+ "progress": 0,
+ "insertTime": "2014-11-14T13:05:18.564-08:00",
+ "startTime": "2014-11-14T13:05:18.868-08:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_targetInstances_lctargetinstance_delete"
+}

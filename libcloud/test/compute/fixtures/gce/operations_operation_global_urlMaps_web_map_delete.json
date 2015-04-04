@@ -1,0 +1,15 @@
+{
+ "kind": "compute#operation",
+ "id": "3333333333333333333",
+ "name": "operation_global_urlMaps_web_map_delete",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/urlMaps/web-map",
+ "targetId": "1955555555986139870",
+ "status": "DONE",
+ "user": "user@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2014-10-28T12:36:28.927-07:00",
+ "startTime": "2014-10-28T12:36:29.146-07:00",
+ "endTime": "2014-10-28T12:36:29.693-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_urlMaps_web_map_delete"
+}

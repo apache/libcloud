@@ -20,21 +20,29 @@ from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
-from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
 try:
-    import epydoc
+    import epydoc  # NOQA
     has_epydoc = True
 except ImportError:
     has_epydoc = False
 
 import libcloud.utils.misc
 from libcloud.utils.dist import get_packages, get_data_files
-from libcloud.utils.py3 import unittest2_required
 
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
+# Different versions of python have different requirements.  We can't use
+# libcloud.utils.py3 here because it relies on backports dependency being
+# installed / available
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+PY2_pre_25 = PY2 and sys.version_info < (2, 5)
+PY2_pre_26 = PY2 and sys.version_info < (2, 6)
+PY2_pre_27 = PY2 and sys.version_info < (2, 7)
+PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
+PY3_pre_32 = PY3 and sys.version_info < (3, 2)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -47,14 +55,23 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
-if sys.version_info <= (2, 4):
+TEST_REQUIREMENTS = [
+    'mock'
+]
+
+if PY2_pre_279 or PY3_pre_32:
+    TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
+
+if PY2_pre_27:
+    unittest2_required = True
+else:
+    unittest2_required = False
+
+if PY2_pre_25:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
-
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 
 def read_version_string():
@@ -92,14 +109,15 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        try:
-            import mock
-            mock
-        except ImportError:
-            print('Missing "mock" library. mock is library is needed '
-                  'to run the tests. You can install it using pip: '
-                  'pip install mock')
-            sys.exit(1)
+        for module_name in TEST_REQUIREMENTS:
+            try:
+                __import__(module_name)
+            except ImportError:
+                print('Missing "%s" library. %s is library is needed '
+                      'to run the tests. You can install it using pip: '
+                      'pip install %s' % (module_name, module_name,
+                                          module_name))
+                sys.exit(1)
 
         if unittest2_required:
             try:
@@ -133,7 +151,7 @@ class TestCommand(Command):
             print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
-        if pre_python26:
+        if PY2_pre_26:
             missing = []
             # test for dependencies
             try:
@@ -217,6 +235,13 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
+install_requires = []
+if PY2_pre_26:
+    install_requires.extend(['ssl', 'simplejson'])
+
+if PY2_pre_279 or PY3_pre_32:
+    install_requires.append('backports.ssl_match_hostname')
+
 setup(
     name='apache-libcloud',
     version=read_version_string(),
@@ -225,7 +250,7 @@ setup(
                 ' and documentation, please see http://libcloud.apache.org',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    install_requires=install_requires,
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',

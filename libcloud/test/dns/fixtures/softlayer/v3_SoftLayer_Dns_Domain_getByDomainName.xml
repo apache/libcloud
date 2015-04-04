@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<params>
+<param>
+ <value>
+  <array>
+   <data>
+    <value>
+     <struct>
+      <member>
+       <name>id</name>
+       <value>
+        <int>123</int>
+       </value>
+      </member>
+      <member>
+       <name>name</name>
+       <value>
+        <string>bar.com</string>
+       </value>
+      </member>
+      <member>
+       <name>serial</name>
+       <value>
+        <int>2014120802</int>
+       </value>
+      </member>
+      <member>
+       <name>updateDate</name>
+       <value>
+        <string>2014-12-08T14:00:50-06:00</string>
+       </value>
+      </member>
+     </struct>
+    </value>
+   </data>
+  </array>
+ </value>
+</param>
+</params>
