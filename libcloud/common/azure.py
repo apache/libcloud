@@ -31,7 +31,8 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, CertificateConnection
+from libcloud.common.base import ConnectionUserAndKey, RawResponse
+from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
 # Azure API version
@@ -91,7 +92,9 @@ class AzureResponse(XmlResponse):
         )
 
     def parse_body(self):
-        if int(self.status) == httplib.TEMPORARY_REDIRECT and self.connection.driver.follow_redirects:
+        is_redirect = int(self.status) == httplib.TEMPORARY_REDIRECT
+
+        if is_redirect and self.connection.driver.follow_redirects:
             raise AzureRedirectException(self)
         else:
             return super(AzureResponse, self).parse_body()
@@ -287,5 +290,5 @@ class AzureServiceManagementConnection(CertificateConnection):
         """
         headers['x-ms-version'] = "2014-05-01"
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
-        #headers['host'] = self.host
+        #  headers['host'] = self.host
         return headers

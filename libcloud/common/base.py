@@ -571,13 +571,13 @@ class Connection(object):
         if not hasattr(kwargs, 'port'):
             kwargs.update({'port': port})
 
-        if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file' ):
+        if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file'):
             kwargs.update({'key_file': self.key_file})
 
-        if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file' ):
+        if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': self.cert_file})
 
-        #kwargs = {'host': host, 'port': int(port)}
+        #  kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
@@ -948,6 +948,7 @@ class ConnectionKey(Connection):
                                             proxy_url=proxy_url)
         self.key = key
 
+
 class CertificateConnection(Connection):
     """
     Base connection class which accepts a single ``cert_file`` argument.
@@ -959,9 +960,11 @@ class CertificateConnection(Connection):
         passed value.
         """
         super(CertificateConnection, self).__init__(secure=secure, host=host,
-                                            port=port, url=url, timeout=timeout)
+                                                    port=port, url=url,
+                                                    timeout=timeout)
 
         self.cert_file = cert_file
+
 
 class ConnectionUserAndKey(ConnectionKey):
     """

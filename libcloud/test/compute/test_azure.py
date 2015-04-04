@@ -2,7 +2,6 @@ import libcloud
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
 from libcloud.compute.drivers.azure import azure_service_management_host
-from libcloud.common.azure import AzureServiceManagementConnection
 
 __author__ = 'david'
 
@@ -21,8 +20,7 @@ from libcloud.compute.providers import get_driver
 
 
 class AzureNodeDriverTests(unittest.TestCase):
-
-    #required otherwise we get client side SSL verification
+    #  required otherwise we get client side SSL verification
     libcloud.security.VERIFY_SSL_CERT = False
 
     SUBSCRIPTION_ID = '3761b98b-673d-526c-8d55-fee918758e6e'
@@ -138,7 +136,7 @@ class AzureNodeDriverTests(unittest.TestCase):
 
         self.assertTrue(result)
 
-    #simulating attempting to reboot a node that ifas already rebooting
+    #  simulating attempting to reboot a node that is already rebooting
     def test_restart_node_fail_no_deployment(self):
 
         node = Node(
@@ -438,7 +436,7 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(self, method, url, body, headers):
-        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
+        headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(self, method, url, body, headers):
@@ -545,7 +543,7 @@ class AzureMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
-        headers["x-ms-request-id"]="acc33f6756cda6fd96826394fce4c9f3"
+        headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3(self, method, url, body, headers):

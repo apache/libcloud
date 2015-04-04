@@ -16,7 +16,6 @@
 
 """
 import httplib
-import itertools
 import re
 import time
 import collections
@@ -26,13 +25,11 @@ import copy
 import base64
 
 from libcloud.utils.py3 import urlquote as url_quote
-from libcloud.utils.py3 import urlunquote as url_unquote
 from libcloud.common.azure import (AzureServiceManagementConnection,
                                    AzureRedirectException)
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
 from datetime import datetime
@@ -148,7 +145,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'price': '1.60',
         'max_data_disks': 16,
         'cores': 8
-    }    
+    }
 }
 
 _KNOWN_SERIALIZATION_XFORMS = {
@@ -241,7 +238,7 @@ class AzureNodeDriver(NodeDriver):
         Lists all images
 
         :rtype: ``list`` of :class:`NodeImage`
-        """        
+        """
         data = self._perform_get(self._get_image_path(), Images)
 
         custom_image_data = self._perform_get(
@@ -278,10 +275,10 @@ class AzureNodeDriver(NodeDriver):
         """
         List all nodes
 
-        ex_cloud_service_name parameter is used to scope the request 
+        ex_cloud_service_name parameter is used to scope the request
         to a specific Cloud Service. This is a required parameter as
         nodes cannot exist outside of a Cloud Service nor be shared
-        between a Cloud Service within Azure. 
+        between a Cloud Service within Azure.
 
         :param      ex_cloud_service_name: Cloud Service name
         :type       ex_cloud_service_name: ``str``
@@ -322,10 +319,10 @@ class AzureNodeDriver(NodeDriver):
         """
         Reboots a node.
 
-        ex_cloud_service_name parameter is used to scope the request 
+        ex_cloud_service_name parameter is used to scope the request
         to a specific Cloud Service. This is a required parameter as
         nodes cannot exist outside of a Cloud Service nor be shared
-        between a Cloud Service within Azure. 
+        between a Cloud Service within Azure.
 
         :param      ex_cloud_service_name: Cloud Service name
         :type       ex_cloud_service_name: ``str``
@@ -371,7 +368,7 @@ class AzureNodeDriver(NodeDriver):
                 return True
             else:
                 return False
-        except Exception, e:
+        except Exception:
             return False
 
     def list_volumes(self, node=None):
@@ -405,16 +402,16 @@ class AzureNodeDriver(NodeDriver):
            Reference: http://bit.ly/1fIsCb7
            [www.windowsazure.com/en-us/documentation/]
 
-           We default to: 
+           We default to:
 
            + 3389/TCP - RDP - 1st Microsoft instance.
-           + RANDOM/TCP - RDP - All succeeding Microsoft instances. 
+           + RANDOM/TCP - RDP - All succeeding Microsoft instances.
 
-           + 22/TCP - SSH - 1st Linux instance 
+           + 22/TCP - SSH - 1st Linux instance
            + RANDOM/TCP - SSH - All succeeding Linux instances.
 
-          The above replicates the standard behavior of the Azure UI. 
-          You can retrieve the assigned ports to each instance by 
+          The above replicates the standard behavior of the Azure UI.
+          You can retrieve the assigned ports to each instance by
           using the following private function:
 
           _get_endpoint_ports(service_name)
@@ -430,14 +427,15 @@ class AzureNodeDriver(NodeDriver):
                         Name of the Azure Storage Service.
            :type        ex_storage_service_name:  ``str``
 
-           :keyword     ex_deployment_name: Optional. The name of the deployment
+           :keyword     ex_deployment_name: Optional. The name of the
+                                            deployment.
                                             If this is not passed in we default
                                             to using the Cloud Service name.
             :type       ex_deployment_name: ``str``
 
-           :keyword     ex_new_deployment: Optional. Tells azure to create a new
-                                           deployment rather than add to an existing
-                                           one.
+           :keyword     ex_new_deployment: Optional. Tells azure to create a
+                                           new deployment rather than add to an
+                                           existing one.
             :type       ex_deployment_name: ``boolean``
 
            :keyword     ex_deployment_slot: Optional: Valid values: production|
@@ -500,10 +498,8 @@ class AzureNodeDriver(NodeDriver):
                 )
 
                 for instances in endpoints.role_instance_list:
-                    ports = [
-                        ep.public_port
-                        for ep in instances.instance_endpoints
-                    ]
+                    ports = [ep.public_port for ep in
+                             instances.instance_endpoints]
 
                     while port in ports:
                         port = random.randint(41952, 65535)
@@ -593,7 +589,7 @@ class AzureNodeDriver(NodeDriver):
 
             if image.extra.get('vm_image', False):
                 vm_image_id = image.id
-                #network_config = None
+                #  network_config = None
             else:
                 blob_url = "http://{0}.blob.core.windows.net".format(
                     ex_storage_service_name
@@ -641,7 +637,7 @@ class AzureNodeDriver(NodeDriver):
 
             if image.extra['vm_image']:
                 vm_image_id = image.id
-                #network_config = None
+                #  network_config = None
             else:
                 blob_url = "http://{0}.blob.core.windows.net".format(
                     ex_storage_service_name
@@ -694,18 +690,18 @@ class AzureNodeDriver(NodeDriver):
                      ex_deployment_slot="Production"):
         """Remove Azure Virtual Machine
 
-        This removes the instance, but does not 
+        This removes the instance, but does not
         remove the disk. You will need to use destroy_volume.
         Azure sometimes has an issue where it will hold onto
-        a blob lease for an extended amount of time. 
+        a blob lease for an extended amount of time.
 
         :keyword     ex_cloud_service_name: Required.
                      Name of the Azure Cloud Service.
         :type        ex_cloud_service_name:  ``str``
 
         :keyword     ex_deployment_slot: Optional: The name of the deployment
-                                         slot. If this is not passed in we 
-                                         default to production. 
+                                         slot. If this is not passed in we
+                                         default to production.
         :type        ex_deployment_slot:  ``str``
         """
 
@@ -795,7 +791,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        #add check to ensure all nodes have been deleted
+        #  add check to ensure all nodes have been deleted
         response = self._perform_cloud_service_delete(
             self._get_hosted_service_path(ex_cloud_service_name)
         )
@@ -828,8 +824,9 @@ class AzureNodeDriver(NodeDriver):
         ]
 
         all_endpoints.extend(endpoints)
-
-        return self.ex_set_instance_endpoints(node, all_endpoints, ex_deployment_slot)
+        result = self.ex_set_instance_endpoints(node, all_endpoints,
+                                                ex_deployment_slot)
+        return result
 
     def ex_set_instance_endpoints(self,
                                   node,
@@ -1024,7 +1021,7 @@ class AzureNodeDriver(NodeDriver):
         """
         Convert the AZURE_COMPUTE_INSTANCE_TYPES into NodeSize
         """
-        
+
         return NodeSize(
             id=data["id"],
             name=data["name"],
@@ -1174,7 +1171,7 @@ class AzureNodeDriver(NodeDriver):
         )
 
         self.raise_for_response(_check_availability, 200)
-                
+
         return _check_availability.result
 
     def _create_storage_account(self, **kwargs):
@@ -1210,7 +1207,7 @@ class AzureNodeDriver(NodeDriver):
 
             self.raise_for_response(response, 202)
 
-        # We need to wait for this to be created before we can 
+        # We need to wait for this to be created before we can
         # create the storage container and the instance.
         self._ex_complete_async_azure_operation(
             response,
@@ -1231,7 +1228,7 @@ class AzureNodeDriver(NodeDriver):
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
-#TODO
+
         if response_type is not None:
             return self._parse_response(response, response_type)
 
@@ -1334,10 +1331,10 @@ class AzureNodeDriver(NodeDriver):
             request.headers['Content-Length'] = str(len(request.body))
 
         # append additional headers base on the service
-        #request.headers.append(('x-ms-version', X_MS_VERSION))
+        #  request.headers.append(('x-ms-version', X_MS_VERSION))
 
         # if it is not GET or HEAD request, must set content-type.
-        if not request.method in ['GET', 'HEAD']:
+        if request.method not in ['GET', 'HEAD']:
             for key in request.headers:
                 if 'content-type' == key.lower():
                     break
@@ -1673,12 +1670,14 @@ class AzureNodeDriver(NodeDriver):
     def _get_deployment_path_using_name(self,
                                         service_name,
                                         deployment_name=None):
-        return self._get_path(
-            'services/hostedservices/'
-            + _str(service_name)
-            + '/deployments',
+        components = [
+            'services/hostedservices/',
+            _str(service_name),
+            '/deployments',
             deployment_name
-        )
+        ]
+        path = ''.join(components)
+        return self._get_path(path)
 
     def _get_path(self, resource, name):
         path = '/' + self.subscription_id + '/' + resource
@@ -1756,19 +1755,23 @@ class AzureNodeDriver(NodeDriver):
                 driver=self
             )
 
-    #def get_connection(self):
-    #    certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-    #    port = HTTPS_PORT
-    #    connection = HTTPSConnection(
-    #        azure_service_management_host,
-    #        int(port),
-    #        cert_file=certificate_path)
-    #    return connection
+    """
+    def get_connection(self):
+        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
+        port = HTTPS_PORT
+        connection = HTTPSConnection(
+            azure_service_management_host,
+            int(port),
+            cert_file=certificate_path)
+        return connection
+    """
 
 """
 XML Serializer
 
-Borrowed from the Azure SDK for Python. 
+Borrowed from the Azure SDK for Python which is licensed under Apache 2.0.
+
+https://github.com/Azure/azure-sdk-for-python
 """
 
 
@@ -2606,7 +2609,7 @@ class AzureXmlSerializer(object):
         xml = ET.Element(document_element_name)
         xml.attrib["xmlns:i"] = "http://www.w3.org/2001/XMLSchema-instance"
         xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
-        
+
         if inner_xml is not None:
             xml.append(inner_xml)
 
@@ -2646,7 +2649,7 @@ class AzureXmlSerializer(object):
 """
 Data Classes
 
-Borrowed from the Azure SDK for Python. 
+Borrowed from the Azure SDK for Python.
 """
 
 
@@ -2700,7 +2703,8 @@ class LinuxConfigurationSet(WindowsAzureData):
         self.host_name = host_name
         self.user_name = user_name
         self.user_password = user_password
-        self.disable_ssh_password_authentication = disable_ssh_password_authentication
+        self.disable_ssh_password_authentication = \
+            disable_ssh_password_authentication
         self.ssh = SSH()
 
 
