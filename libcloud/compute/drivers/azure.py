@@ -294,7 +294,6 @@ class AzureNodeDriver(NodeDriver):
             '?embed-detail=True',
             None
         )
-
         self.raise_for_response(response, 200)
 
         data = self._parse_response(response, HostedService)
@@ -1286,11 +1285,8 @@ class AzureNodeDriver(NodeDriver):
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
-        except Exception:
-            pass
-            #  print "Exception performing request:\n{0}".format(
-            #      sys.exc_info()[1]
-            #  )
+        except Exception as e:
+            raise e
 
     def _update_request_uri_query(self, request):
         """
@@ -2038,7 +2034,7 @@ class AzureXmlSerializer(object):
             'RestartRoleOperation',
             xml
         )
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def shutdown_role_operation_to_xml():
@@ -2048,7 +2044,7 @@ class AzureXmlSerializer(object):
             'ShutdownRoleOperation',
             xml
         )
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def start_role_operation_to_xml():
@@ -2058,7 +2054,7 @@ class AzureXmlSerializer(object):
             'StartRoleOperation',
             xml
         )
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def windows_configuration_to_xml(configuration, xml):
@@ -2447,7 +2443,7 @@ class AzureXmlSerializer(object):
             system_configuration_set,
             doc
         )
-        return ET.tostring(xml, "UTF-8").replace("\n", "")
+        return ET.tostring(xml, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def update_role_to_xml(role_name,
@@ -2473,7 +2469,7 @@ class AzureXmlSerializer(object):
             doc
         )
 
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def capture_role_to_xml(post_capture_action,
@@ -2512,7 +2508,7 @@ class AzureXmlSerializer(object):
             xml
         )
         doc = AzureXmlSerializer.doc_from_xml('CaptureRoleOperation', xml)
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def virtual_machine_deployment_to_xml(deployment_name,
@@ -2562,7 +2558,7 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding='utf8').replace("\n", "")
 
     @staticmethod
     def data_to_xml(data, xml=None):
@@ -2601,9 +2597,13 @@ class AzureXmlSerializer(object):
         Wraps the specified xml in an xml root element with default azure
         namespaces
         """
-        xml = ET.Element(document_element_name)
-        xml.attrib["xmlns:i"] = "http://www.w3.org/2001/XMLSchema-instance"
-        xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
+        nsmap = {
+            None: "http://www.w3.org/2001/XMLSchema-instance",
+            "i": "http://www.w3.org/2001/XMLSchema-instance"
+        }
+        xml = ET.Element(document_element_name, nsmap=nsmap)
+        #  xml.attrib["xmlns:i"] = "http://www.w3.org/2001/XMLSchema-instance"
+        #  xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
 
         if inner_xml is not None:
             xml.append(inner_xml)
@@ -2621,7 +2621,7 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        return ET.tostring(doc, "UTF-8").replace("\n", "")
+        return ET.tostring(doc, encoding="utf8").replace("\n", "")
 
     @staticmethod
     def extended_properties_dict_to_xml_fragment(extended_properties):
