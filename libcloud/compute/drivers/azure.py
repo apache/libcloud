@@ -15,7 +15,6 @@
 """Azure Compute driver
 
 """
-import httplib
 import re
 import time
 import collections
@@ -32,10 +31,12 @@ from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
+from libcloud.utils.py3 import httplib
 from datetime import datetime
 from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
-from httplib import (HTTPSConnection)
+
+HTTPSConnection = httplib.HTTPSConnection
 
 try:
     from lxml import etree as ET
@@ -555,7 +556,7 @@ class AzureNodeDriver(NodeDriver):
         if ex_storage_service_name is None:
             ex_storage_service_name = ex_cloud_service_name
             ex_storage_service_name = re.sub(
-                ur'[\W_-]+',
+                r'[\W_-]+',
                 u'',
                 ex_storage_service_name.lower(),
                 flags=re.UNICODE
@@ -591,18 +592,17 @@ class AzureNodeDriver(NodeDriver):
                 vm_image_id = image.id
                 #  network_config = None
             else:
-                blob_url = "http://{0}.blob.core.windows.net".format(
-                    ex_storage_service_name
-                )
+                blob_url = "http://%s.blob.core.windows.net" % (
+                    ex_storage_service_name)
 
                 # Azure's pattern in the UI.
-                disk_name = "{0}-{1}-{2}.vhd".format(
+                disk_name = "%s-%s-%s.vhd" % (
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d")
                 )
 
-                media_link = "{0}/vhds/{1}".format(blob_url, disk_name)
+                media_link = "%s/vhds/%s" % (blob_url, disk_name)
 
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
@@ -639,15 +639,15 @@ class AzureNodeDriver(NodeDriver):
                 vm_image_id = image.id
                 #  network_config = None
             else:
-                blob_url = "http://{0}.blob.core.windows.net".format(
+                blob_url = "http://%s.blob.core.windows.net" % (
                     ex_storage_service_name
                 )
-                disk_name = "{0}-{1}-{2}.vhd".format(
+                disk_name = "%s-%s-%s.vhd" % (
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d")
                 )
-                media_link = "{0}/vhds/{1}".format(blob_url, disk_name)
+                media_link = "%s/vhds/%s" % (blob_url, disk_name)
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
             response = self._perform_post(
@@ -1141,7 +1141,7 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError("service_name is required.")
 
         res = self._perform_get(
-            '{0}?embed-detail=False'.format(
+            '%s?embed-detail=False' % (
                 self._get_hosted_service_path(service_name)
             ),
             HostedService
@@ -1162,7 +1162,7 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError("service_name is required.")
 
         _check_availability = self._perform_get(
-            '{0}/operations/isavailable/{1}{2}'.format(
+            '%s/operations/isavailable/%s%s' % (
                 self._get_storage_service_path(),
                 _str(service_name),
                 ''
@@ -1273,7 +1273,6 @@ class AzureNodeDriver(NodeDriver):
             return self._parse_response_for_async_op(response)
 
     def _perform_request(self, request):
-
         try:
             return self.connection.request(
                 action="https://%s%s" % (request.host, request.path),
@@ -1281,15 +1280,17 @@ class AzureNodeDriver(NodeDriver):
                 headers=request.headers,
                 method=request.method
             )
-        except AzureRedirectException as e:
+        except AzureRedirectException:
+            e = sys.exc_info()[1]
             from libcloud.utils.py3 import urlparse
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
         except Exception:
-            print "Exception performing request:\n{0}".format(
-                sys.exc_info()[1]
-            )
+            pass
+            #  print "Exception performing request:\n{0}".format(
+            #      sys.exc_info()[1]
+            #  )
 
     def _update_request_uri_query(self, request):
         """
@@ -1315,7 +1316,7 @@ class AzureNodeDriver(NodeDriver):
             request.path += '?'
             for name, value in request.query:
                 if value is not None:
-                    request.path += '{0}={1}{2}'.format(
+                    request.path += '%s=%s%s' % (
                         name,
                         url_quote(value, '/()$=\','),
                         '&'
@@ -1673,11 +1674,10 @@ class AzureNodeDriver(NodeDriver):
         components = [
             'services/hostedservices/',
             _str(service_name),
-            '/deployments',
-            deployment_name
+            '/deployments'
         ]
-        path = ''.join(components)
-        return self._get_path(path)
+        resource = ''.join(components)
+        return self._get_path(resource, deployment_name)
 
     def _get_path(self, resource, name):
         path = '/' + self.subscription_id + '/' + resource
@@ -1696,7 +1696,7 @@ class AzureNodeDriver(NodeDriver):
 
     def _get_deployment_path_using_slot(self, service_name, slot=None):
         return self._get_path(
-            'services/hostedservices/{0}/deploymentslots'.format(
+            'services/hostedservices/%s/deploymentslots' % (
                 _str(service_name)
             ),
             slot
@@ -1746,14 +1746,9 @@ class AzureNodeDriver(NodeDriver):
 
     def raise_for_response(self, response, valid_response):
         if response.status != valid_response:
-            raise LibcloudError(
-                'Message: {0}, Body: {1}, Status code: {2}'.format(
-                    response.error,
-                    response.body,
-                    response.status
-                ),
-                driver=self
-            )
+            values = (response.error, response.body, response.status)
+            message = 'Message: %s, Body: %s, Status code: %s' % (values)
+            raise LibcloudError(message, driver=self)
 
     """
     def get_connection(self):

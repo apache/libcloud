@@ -20,12 +20,13 @@ from libcloud.compute.drivers.azure import azure_service_management_host
 import os
 import sys
 
-import httplib
+
 import unittest
 import libcloud.security
 
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib
 from libcloud.compute.base import Node, NodeState
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
