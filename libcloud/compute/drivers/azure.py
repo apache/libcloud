@@ -310,7 +310,7 @@ class AzureNodeDriver(NodeDriver):
                 for n in data.deployments[0].role_instance_list
             ]
         except IndexError:
-            return None
+            return []
 
     def reboot_node(self,
                     node=None,
