@@ -189,6 +189,7 @@ class AzureNodeDriver(NodeDriver):
         'RoleStateUnknown': NodeState.UNKNOWN,
         'CreatingVM': NodeState.PENDING,
         'StartingVM': NodeState.PENDING,
+        'Provisioning': NodeState.PENDING,
         'CreatingRole': NodeState.PENDING,
         'StartingRole': NodeState.PENDING,
         'ReadyRole': NodeState.RUNNING,
