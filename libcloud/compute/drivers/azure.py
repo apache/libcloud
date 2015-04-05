@@ -23,6 +23,15 @@ import sys
 import copy
 import base64
 
+from datetime import datetime
+from xml.dom import minidom
+from xml.sax.saxutils import escape as xml_escape
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 from libcloud.utils.py3 import urlquote as url_quote
 from libcloud.common.azure import (AzureServiceManagementConnection,
                                    AzureRedirectException)
@@ -32,17 +41,10 @@ from libcloud.compute.base import NodeImage, StorageVolume
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import ensure_string
-from datetime import datetime
-from xml.dom import minidom
-from xml.sax.saxutils import escape as xml_escape
 
 HTTPSConnection = httplib.HTTPSConnection
-
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
 
 if sys.version_info < (3,):
     _unicode_type = unicode
@@ -1283,7 +1285,6 @@ class AzureNodeDriver(NodeDriver):
             )
         except AzureRedirectException:
             e = sys.exc_info()[1]
-            from libcloud.utils.py3 import urlparse
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
