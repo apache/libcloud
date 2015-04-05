@@ -32,6 +32,7 @@ from libcloud.compute.base import NodeImage, StorageVolume
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import ensure_string
 from datetime import datetime
 from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
@@ -1239,7 +1240,7 @@ class AzureNodeDriver(NodeDriver):
         request.method = 'POST'
         request.host = azure_service_management_host
         request.path = path
-        request.body = self._get_request_body(body)
+        request.body = ensure_string(self._get_request_body(body))
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
@@ -1251,7 +1252,7 @@ class AzureNodeDriver(NodeDriver):
         request.method = 'PUT'
         request.host = azure_service_management_host
         request.path = path
-        request.body = self._get_request_body(body)
+        request.body = ensure_string(self._get_request_body(body))
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
         response = self._perform_request(request)
@@ -1620,11 +1621,11 @@ class AzureNodeDriver(NodeDriver):
         return request_body
 
     def _convert_class_to_xml(self, source, xml_prefix=True):
-
         root = ET.Element()
         doc = self._construct_element_tree(source, root)
 
-        return ET.tostring(doc, encoding='utf8', method='xml')
+        result = ensure_string(ET.tostring(doc, encoding='utf8', method='xml'))
+        return result
 
     def _construct_element_tree(self, source, etree):
         if source is None:
@@ -2035,7 +2036,8 @@ class AzureXmlSerializer(object):
             'RestartRoleOperation',
             xml
         )
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def shutdown_role_operation_to_xml():
@@ -2045,7 +2047,8 @@ class AzureXmlSerializer(object):
             'ShutdownRoleOperation',
             xml
         )
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def start_role_operation_to_xml():
@@ -2055,7 +2058,8 @@ class AzureXmlSerializer(object):
             'StartRoleOperation',
             xml
         )
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def windows_configuration_to_xml(configuration, xml):
@@ -2444,7 +2448,8 @@ class AzureXmlSerializer(object):
             system_configuration_set,
             doc
         )
-        return ET.tostring(xml, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(xml, encoding='utf8'))
+        return result
 
     @staticmethod
     def update_role_to_xml(role_name,
@@ -2470,7 +2475,8 @@ class AzureXmlSerializer(object):
             doc
         )
 
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def capture_role_to_xml(post_capture_action,
@@ -2509,7 +2515,8 @@ class AzureXmlSerializer(object):
             xml
         )
         doc = AzureXmlSerializer.doc_from_xml('CaptureRoleOperation', xml)
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def virtual_machine_deployment_to_xml(deployment_name,
@@ -2559,7 +2566,8 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        return ET.tostring(doc, encoding='utf8').replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def data_to_xml(data, xml=None):
@@ -2622,7 +2630,8 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        return ET.tostring(doc, encoding="utf8").replace("\n", "")
+        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        return result
 
     @staticmethod
     def extended_properties_dict_to_xml_fragment(extended_properties):
