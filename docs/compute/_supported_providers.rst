@@ -3,6 +3,7 @@ Provider                              Documentation                             
 ===================================== ============================================= =================== ============================================== ====================================
 `Abiquo`_                                                                           ABIQUO              :mod:`libcloud.compute.drivers.abiquo`         :class:`AbiquoNodeDriver`           
 `PCextreme AuroraCompute`_            :doc:`Click </compute/drivers/auroracompute>` AURORACOMPUTE       :mod:`libcloud.compute.drivers.auroracompute`  :class:`AuroraComputeNodeDriver`    
+`Azure Virtual machines`_             :doc:`Click </compute/drivers/azure>`         AZURE               :mod:`libcloud.compute.drivers.azure`          :class:`AzureNodeDriver`            
 `Bluebox Blocks`_                                                                   BLUEBOX             :mod:`libcloud.compute.drivers.bluebox`        :class:`BlueboxNodeDriver`          
 `Brightbox`_                                                                        BRIGHTBOX           :mod:`libcloud.compute.drivers.brightbox`      :class:`BrightboxNodeDriver`        
 `CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>`   CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`    :class:`CloudFramesNodeDriver`      
@@ -70,6 +71,7 @@ Provider                              Documentation                             
 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/

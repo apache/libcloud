@@ -3,6 +3,7 @@ Provider                              list nodes create node reboot node destroy
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 `Abiquo`_                             yes        yes         yes         yes          yes         yes        no         
 `PCextreme AuroraCompute`_            yes        yes         yes         yes          yes         yes        yes        
+`Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          yes         yes        no         
 `CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
@@ -70,6 +71,7 @@ Provider                              list nodes create node reboot node destroy
 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/

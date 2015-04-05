@@ -3,6 +3,7 @@ Provider                              list key pairs get key pair create key pai
 ===================================== ============== ============ =============== ============================= =========================== ===============
 `Abiquo`_                             no             no           no              no                            no                          no             
 `PCextreme AuroraCompute`_            yes            yes          yes             yes                           no                          yes            
+`Azure Virtual machines`_             no             no           no              no                            no                          no             
 `Bluebox Blocks`_                     no             no           no              no                            no                          no             
 `Brightbox`_                          no             no           no              no                            no                          no             
 `CloudFrames`_                        no             no           no              no                            no                          no             
@@ -70,6 +71,7 @@ Provider                              list key pairs get key pair create key pai
 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/

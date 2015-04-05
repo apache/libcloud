@@ -181,8 +181,8 @@ _KNOWN_SERIALIZATION_XFORMS = {
 
 class AzureNodeDriver(NodeDriver):
     connectionCls = AzureServiceManagementConnection
-    name = "Azure Node Provider"
-    website = 'http://windowsazure.com'
+    name = 'Azure Virtual machines'
+    website = 'http://azure.microsoft.com/en-us/services/virtual-machines/'
     type = Provider.AZURE
 
     _instance_types = AZURE_COMPUTE_INSTANCE_TYPES
