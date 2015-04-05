@@ -2616,13 +2616,17 @@ class AzureXmlSerializer(object):
         Wraps the specified xml in an xml root element with default azure
         namespaces
         """
+        # Note: Namespaces don't work consistency in Python 2 and 3.
+        """
         nsmap = {
             None: "http://www.w3.org/2001/XMLSchema-instance",
             "i": "http://www.w3.org/2001/XMLSchema-instance"
         }
-        xml = ET.Element(document_element_name, nsmap=nsmap)
-        #  xml.attrib["xmlns:i"] = "http://www.w3.org/2001/XMLSchema-instance"
-        #  xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
+
+        xml.attrib["xmlns:i"] = "http://www.w3.org/2001/XMLSchema-instance"
+        xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
+        """
+        xml = ET.Element(document_element_name)
 
         if inner_xml is not None:
             xml.append(inner_xml)
@@ -3285,7 +3289,7 @@ class _DictOf(dict):
         self.pair_xml_element_name = pair_xml_element_name
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
-        super(_dict_of, self).__init__()
+        super(_DictOf, self).__init__()
 
 
 class AzureNodeLocation(NodeLocation):
