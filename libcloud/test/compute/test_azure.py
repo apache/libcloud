@@ -122,10 +122,10 @@ class AzureNodeDriverTests(unittest.TestCase):
         self.assertEquals(extra["ssh_port"], u'22')
 
     def test_list_nodes_returned_no_deployments(self):
-        vmimages = self.driver.list_nodes(
+        nodes = self.driver.list_nodes(
             ex_cloud_service_name="dcoddkinztest03"
         )
-        self.assertIsNone(vmimages)
+        self.assertEqual(nodes, [])
 
     def test_list_nodes_returned_no_cloud_service(self):
         with self.assertRaises(LibcloudError):
@@ -555,6 +555,10 @@ class AzureMockHttp(MockHttp):
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+        headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
@@ -562,6 +566,12 @@ class AzureMockHttp(MockHttp):
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
+
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deploymentslots_Production(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
