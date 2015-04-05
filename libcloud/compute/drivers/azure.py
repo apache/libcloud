@@ -1365,19 +1365,24 @@ class AzureNodeDriver(NodeDriver):
         """
 
         return self._parse_response_body_from_xml_text(
-            response.body,
-            return_type
+            response=response,
+            return_type=return_type
         )
 
-    def _parse_response_body_from_xml_text(self, respbody, return_type):
+    def _parse_response_body_from_xml_text(self, response, return_type):
         """
         parse the xml and fill all the data into a class of return_type
         """
+        respbody = response.body
 
         doc = minidom.parseString(respbody)
         return_obj = return_type()
         for node in self._get_child_nodes(doc, return_type.__name__):
             self._fill_data_to_return_object(node, return_obj)
+
+        # Note: We always explicitly assign status code to the custom return
+        # type object
+        return_obj.status = response.status
 
         return return_obj
 
