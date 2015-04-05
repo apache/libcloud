@@ -96,11 +96,11 @@ class AzureNodeDriverTests(unittest.TestCase):
     def test_images_returned_successfully(self):
         images = self.driver.list_images()
         # There should be 215 standard OSImages and one VMImage returned
-        self.assertEquals(len(images), 216)
+        self.assertEqual(len(images), 216)
 
     def test_images_returned_successfully_filter_by_location(self):
         images = self.driver.list_images(location="West US")
-        self.assertEquals(len(images), 207)
+        self.assertEqual(len(images), 207)
 
     def test_list_nodes_returned_successfully(self):
         vmimages = self.driver.list_nodes(
@@ -109,17 +109,17 @@ class AzureNodeDriverTests(unittest.TestCase):
         self.assertEqual(len(vmimages), 2)
 
         img0 = vmimages[0]
-        self.assertEquals(img0.id, "dc03")
-        self.assertEquals(img0.name, u"dc03")
+        self.assertEqual(img0.id, "dc03")
+        self.assertEqual(img0.name, u"dc03")
         self.assertListEqual(img0.public_ips, ["191.235.135.62"])
         self.assertListEqual(img0.private_ips, ["100.92.66.69"])
-        self.assertEquals(img0.size, None)
-        self.assertEquals(img0.state, 0)
+        self.assertEqual(img0.size, None)
+        self.assertEqual(img0.state, 0)
         self.assertTrue(isinstance(img0.extra, dict))
         extra = img0.extra
-        self.assertEquals(extra["instance_size"], u'Small')
-        self.assertEquals(extra["power_state"], u'Started')
-        self.assertEquals(extra["ssh_port"], u'22')
+        self.assertEqual(extra["instance_size"], u'Small')
+        self.assertEqual(extra["power_state"], u'Started')
+        self.assertEqual(extra["ssh_port"], u'22')
 
     def test_list_nodes_returned_no_deployments(self):
         nodes = self.driver.list_nodes(
