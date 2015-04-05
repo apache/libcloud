@@ -1717,14 +1717,15 @@ class AzureNodeDriver(NodeDriver):
         return self._get_path('services/disks', disk_name)
 
     def _get_role_path(self, service_name, deployment_name, role_name=None):
-        return self._get_path(
-            'services/hostedservices/'
-            + _str(service_name)
-            + '/deployments/'
-            + deployment_name
-            + '/roles',
-            role_name
-        )
+        components = [
+            'services/hostedservices/',
+            _str(service_name),
+            '/deployments/',
+            deployment_name,
+            '/roles'
+        ]
+        resource = ''.join(components)
+        return self._get_path(resource, role_name)
 
     def _get_storage_service_path(self, service_name=None):
         return self._get_path('services/storageservices', service_name)
