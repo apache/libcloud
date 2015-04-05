@@ -376,6 +376,11 @@ class LoggingConnection():
         for h in headers:
             cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
 
+        cert_file = getattr(self, 'cert_file', None)
+
+        if cert_file:
+            cmd.extend(["--cert", pquote(cert_file)])
+
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
