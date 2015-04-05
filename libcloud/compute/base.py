@@ -24,6 +24,7 @@ import time
 import hashlib
 import os
 import socket
+import random
 import binascii
 
 from libcloud.utils.py3 import b
@@ -1369,7 +1370,18 @@ class NodeDriver(BaseDriver):
         if 'password' in self.features['create_node']:
             value = os.urandom(16)
             value = binascii.hexlify(value).decode('ascii')
-            return NodeAuthPassword(value, generated=True)
+
+            # Some providers require password to also include uppercase
+            # characters so convert some characters to uppercase
+            password = ''
+            for char in value:
+                if not char.isdigit() and char.islower():
+                    if random.randint(0, 1) == 1:
+                        char = char.upper()
+
+                password += char
+
+            return NodeAuthPassword(password, generated=True)
 
         if auth:
             raise LibcloudError(
