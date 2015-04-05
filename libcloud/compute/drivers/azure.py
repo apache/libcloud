@@ -12,9 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Azure Compute driver
 
 """
+Driver for Microsoft Azure Virtual Machines service.
+
+http://azure.microsoft.com/en-us/services/virtual-machines/
+"""
+
 import re
 import time
 import collections
@@ -1394,7 +1398,7 @@ class AzureNodeDriver(NodeDriver):
     def _fill_data_to_return_object(self, node, return_obj):
         members = dict(vars(return_obj))
         for name, value in members.items():
-            if isinstance(value, _list_of):
+            if isinstance(value, _ListOf):
                 setattr(
                     return_obj,
                     name,
@@ -1404,7 +1408,7 @@ class AzureNodeDriver(NodeDriver):
                         value.xml_element_name
                     )
                 )
-            elif isinstance(value, _scalar_list_of):
+            elif isinstance(value, ScalarListOf):
                 setattr(
                     return_obj,
                     name,
@@ -1415,7 +1419,7 @@ class AzureNodeDriver(NodeDriver):
                         value.xml_element_name
                     )
                 )
-            elif isinstance(value, _dict_of):
+            elif isinstance(value, _DictOf):
                 setattr(
                     return_obj,
                     name,
@@ -2679,7 +2683,7 @@ class WindowsAzureDataTypedList(WindowsAzureData):
     xml_element_name = None
 
     def __init__(self):
-        self.items = _list_of(self.list_type, self.xml_element_name)
+        self.items = _ListOf(self.list_type, self.xml_element_name)
 
     def __iter__(self):
         return iter(self.items)
@@ -2827,7 +2831,7 @@ class ConfigurationSet(WindowsAzureData):
         self.configuration_set_type = u''
         self.role_type = u''
         self.input_endpoints = ConfigurationSetInputEndpoints()
-        self.subnet_names = _scalar_list_of(str, 'SubnetName')
+        self.subnet_names = ScalarListOf(str, 'SubnetName')
 
 
 class ConfigurationSets(WindowsAzureDataTypedList):
@@ -2864,7 +2868,7 @@ class Location(WindowsAzureData):
     def __init__(self):
         self.name = u''
         self.display_name = u''
-        self.available_services = _scalar_list_of(str, 'AvailableService')
+        self.available_services = ScalarListOf(str, 'AvailableService')
         self.compute_capabilities = ComputeCapability()
 
 
@@ -2876,13 +2880,13 @@ class Locations(WindowsAzureDataTypedList):
 class ComputeCapability(WindowsAzureData):
 
     def __init__(self):
-        self.virtual_machines_role_sizes = _scalar_list_of(str, 'RoleSize')
+        self.virtual_machines_role_sizes = ScalarListOf(str, 'RoleSize')
 
 
 class VirtualMachinesRoleSizes(WindowsAzureData):
 
     def __init__(self):
-        self.role_size = _scalar_list_of(str, 'RoleSize')
+        self.role_size = ScalarListOf(str, 'RoleSize')
 
 
 class OSImage(WindowsAzureData):
@@ -2961,7 +2965,7 @@ class HostedServiceProperties(WindowsAzureData):
         self.status = u''
         self.date_created = u''
         self.date_last_modified = u''
-        self.extended_properties = _dict_of(
+        self.extended_properties = _DictOf(
             'ExtendedProperty',
             'Name',
             'Value'
@@ -2989,7 +2993,7 @@ class Deployment(WindowsAzureData):
         self.persistent_vm_downtime_info = PersistentVMDowntimeInfo()
         self.created_time = u''
         self.last_modified_time = u''
-        self.extended_properties = _dict_of(
+        self.extended_properties = _DictOf(
             'ExtendedProperty',
             'Name',
             'Value'
@@ -3230,15 +3234,14 @@ class AzureHTTPResponse(object):
         self.body = body
 
 """
-Helper Functions
+Helper classes and functions.
 """
-
 
 class _Base64String(str):
     pass
 
 
-class _list_of(list):
+class _ListOf(list):
 
     """
     A list which carries with it the type that's expected to go in it.
@@ -3251,10 +3254,10 @@ class _list_of(list):
             self.xml_element_name = list_type.__name__
         else:
             self.xml_element_name = xml_element_name
-        super(_list_of, self).__init__()
+        super(_ListOf, self).__init__()
 
 
-class _scalar_list_of(list):
+class ScalarListOf(list):
 
     """
     A list of scalar types which carries with it the type that's
@@ -3265,10 +3268,10 @@ class _scalar_list_of(list):
     def __init__(self, list_type, xml_element_name):
         self.list_type = list_type
         self.xml_element_name = xml_element_name
-        super(_scalar_list_of, self).__init__()
+        super(ScalarListOf, self).__init__()
 
 
-class _dict_of(dict):
+class _DictOf(dict):
 
     """
     A dict which carries with it the xml element names for key,val.
