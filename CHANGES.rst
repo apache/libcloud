@@ -141,6 +141,10 @@ Compute
   (GITHUB-490)
   [Tomaz Muraus]
 
+- Add new driver for Microsft Azure Virtual Machines service.
+  (LIBCLOUD-556, GITHUB-305, GITHUB-499)
+  [Michael Bennett, davidcrossland, Richard Conway, Matt Baldwin, Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
