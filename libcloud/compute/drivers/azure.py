@@ -36,9 +36,8 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import urlquote as url_quote
-from libcloud.common.azure import (AzureServiceManagementConnection,
-                                   AzureRedirectException)
+from libcloud.common.azure import AzureServiceManagementConnection
+from libcloud.common.azure import AzureRedirectException
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
@@ -47,6 +46,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import ensure_string
+from libcloud.utils.py3 import urlquote as url_quote
 
 HTTPSConnection = httplib.HTTPSConnection
 
