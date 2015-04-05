@@ -110,16 +110,16 @@ class AzureNodeDriverTests(unittest.TestCase):
 
         img0 = vmimages[0]
         self.assertEqual(img0.id, "dc03")
-        self.assertEqual(img0.name, u"dc03")
+        self.assertEqual(img0.name, "dc03")
         self.assertListEqual(img0.public_ips, ["191.235.135.62"])
         self.assertListEqual(img0.private_ips, ["100.92.66.69"])
         self.assertEqual(img0.size, None)
         self.assertEqual(img0.state, 0)
         self.assertTrue(isinstance(img0.extra, dict))
         extra = img0.extra
-        self.assertEqual(extra["instance_size"], u'Small')
-        self.assertEqual(extra["power_state"], u'Started')
-        self.assertEqual(extra["ssh_port"], u'22')
+        self.assertEqual(extra["instance_size"], 'Small')
+        self.assertEqual(extra["power_state"], 'Started')
+        self.assertEqual(extra["ssh_port"], '22')
 
     def test_list_nodes_returned_no_deployments(self):
         nodes = self.driver.list_nodes(

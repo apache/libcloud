@@ -115,6 +115,8 @@ if PY3:
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
+
+    _real_unicode = str
     u = str
 
     def bchr(s):
