@@ -2631,6 +2631,7 @@ class AzureXmlSerializer(object):
         xml.attrib["xmlns"] = "http://schemas.microsoft.com/windowsazure"
         """
         xml = ET.Element(document_element_name)
+        xml.set("xmlns", "http://schemas.microsoft.com/windowsazure")
 
         if inner_xml is not None:
             xml.append(inner_xml)
