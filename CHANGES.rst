@@ -156,6 +156,14 @@ Storage
   (GITHUB-492, LIBCLOUD-635)
   [Tom Fifield]
 
+Loadbalancer
+~~~~~~~~~~~~
+
+- Add a new driver for Softlayer load-balancing service
+  (https://www.softlayer.com/load-balancing).
+  (GITHUB-500, LIBCLOUD-688)
+  [Avi Weit]
+
 DNS
 ~~~
 
