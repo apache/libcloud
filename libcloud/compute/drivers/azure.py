@@ -48,6 +48,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import ensure_string
 from libcloud.utils.py3 import urlquote as url_quote
+from libcloud.utils.misc import ReprMixin
 
 HTTPSConnection = httplib.HTTPSConnection
 
@@ -2728,8 +2729,11 @@ class CertificateSetting(WindowsAzureData):
 
 
 class StoredCertificateSettings(WindowsAzureDataTypedList):
-
     list_type = CertificateSetting
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class SSH(WindowsAzureData):
@@ -2747,8 +2751,11 @@ class PublicKey(WindowsAzureData):
 
 
 class PublicKeys(WindowsAzureDataTypedList):
-
     list_type = PublicKey
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class AzureKeyPair(WindowsAzureData):
@@ -2759,8 +2766,11 @@ class AzureKeyPair(WindowsAzureData):
 
 
 class KeyPairs(WindowsAzureDataTypedList):
-
     list_type = AzureKeyPair
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class LoadBalancerProbe(WindowsAzureData):
@@ -2781,8 +2791,11 @@ class ConfigurationSet(WindowsAzureData):
 
 
 class ConfigurationSets(WindowsAzureDataTypedList):
-
     list_type = ConfigurationSet
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class ConfigurationSetInputEndpoint(WindowsAzureData):
@@ -2804,9 +2817,12 @@ class ConfigurationSetInputEndpoint(WindowsAzureData):
 
 
 class ConfigurationSetInputEndpoints(WindowsAzureDataTypedList):
-
     list_type = ConfigurationSetInputEndpoint
     xml_element_name = 'InputEndpoint'
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class Location(WindowsAzureData):
@@ -2819,8 +2835,11 @@ class Location(WindowsAzureData):
 
 
 class Locations(WindowsAzureDataTypedList):
-
     list_type = Location
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class ComputeCapability(WindowsAzureData):
@@ -2851,8 +2870,11 @@ class OSImage(WindowsAzureData):
 
 
 class Images(WindowsAzureDataTypedList):
-
     list_type = OSImage
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class VMImage(WindowsAzureData):
@@ -2870,8 +2892,11 @@ class VMImage(WindowsAzureData):
 
 
 class VMImages(WindowsAzureDataTypedList):
-
     list_type = VMImage
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class VirtualIP(WindowsAzureData):
@@ -2883,11 +2908,18 @@ class VirtualIP(WindowsAzureData):
 
 
 class VirtualIPs(WindowsAzureDataTypedList):
-
     list_type = VirtualIP
 
+    _repr_attributes = [
+        'items'
+    ]
 
-class HostedService(WindowsAzureData):
+
+class HostedService(WindowsAzureData, ReprMixin):
+    _repr_attributes = [
+        'service_name',
+        'url'
+    ]
 
     def __init__(self):
         self.url = ''
@@ -2896,9 +2928,12 @@ class HostedService(WindowsAzureData):
         self.deployments = Deployments()
 
 
-class HostedServices(WindowsAzureDataTypedList):
-
+class HostedServices(WindowsAzureDataTypedList, ReprMixin):
     list_type = HostedService
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class HostedServiceProperties(WindowsAzureData):
@@ -2948,8 +2983,11 @@ class Deployment(WindowsAzureData):
 
 
 class Deployments(WindowsAzureDataTypedList):
-
     list_type = Deployment
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class UpgradeStatus(WindowsAzureData):
@@ -2979,8 +3017,11 @@ class RoleInstance(WindowsAzureData):
 
 
 class RoleInstanceList(WindowsAzureDataTypedList):
-
     list_type = RoleInstance
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class InstanceEndpoint(WindowsAzureData):
@@ -2994,8 +3035,11 @@ class InstanceEndpoint(WindowsAzureData):
 
 
 class InstanceEndpoints(WindowsAzureDataTypedList):
-
     list_type = InstanceEndpoint
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class InputEndpoint(WindowsAzureData):
@@ -3007,8 +3051,11 @@ class InputEndpoint(WindowsAzureData):
 
 
 class InputEndpoints(WindowsAzureDataTypedList):
-
     list_type = InputEndpoint
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class Role(WindowsAzureData):
@@ -3019,8 +3066,11 @@ class Role(WindowsAzureData):
 
 
 class RoleList(WindowsAzureDataTypedList):
-
     list_type = Role
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class PersistentVMDowntimeInfo(WindowsAzureData):
@@ -3054,8 +3104,11 @@ class Disk(WindowsAzureData):
 
 
 class Disks(WindowsAzureDataTypedList):
-
     list_type = Disk
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class AttachedTo(WindowsAzureData):
@@ -3105,8 +3158,11 @@ class OSDiskConfiguration(WindowsAzureData):
 
 
 class OperatingSystems(WindowsAzureDataTypedList):
-
     list_type = OperatingSystem
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class OperatingSystemFamily(WindowsAzureData):
@@ -3118,8 +3174,11 @@ class OperatingSystemFamily(WindowsAzureData):
 
 
 class OperatingSystemFamilies(WindowsAzureDataTypedList):
-
     list_type = OperatingSystemFamily
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class Subscription(WindowsAzureData):
@@ -3157,8 +3216,11 @@ class SubscriptionCertificate(WindowsAzureData):
 
 
 class SubscriptionCertificates(WindowsAzureDataTypedList):
-
     list_type = SubscriptionCertificate
+
+    _repr_attributes = [
+        'items'
+    ]
 
 
 class AzureHTTPRequest(object):
