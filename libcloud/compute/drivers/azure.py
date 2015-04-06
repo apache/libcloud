@@ -281,7 +281,7 @@ class AzureNodeDriver(NodeDriver):
 
         return [self._to_location(l) for l in data]
 
-    def list_nodes(self, ex_cloud_service_name=None):
+    def list_nodes(self, ex_cloud_service_name):
         """
         List all nodes
 
@@ -295,9 +295,6 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`Node`
         """
-        if not ex_cloud_service_name:
-            raise ValueError("ex_cloud_service_name is required.")
-
         response = self._perform_get(
             self._get_hosted_service_path(ex_cloud_service_name) +
             '?embed-detail=True',
@@ -321,9 +318,7 @@ class AzureNodeDriver(NodeDriver):
         except IndexError:
             return []
 
-    def reboot_node(self,
-                    node=None,
-                    ex_cloud_service_name=None,
+    def reboot_node(self, node, ex_cloud_service_name=None,
                     ex_deployment_slot=None):
         """
         Reboots a node.
@@ -342,9 +337,6 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        if node is None:
-            raise ValueError("node is required.")
-
         if ex_cloud_service_name is None:
             if node.extra is not None:
                 ex_cloud_service_name = node.extra.get(
@@ -395,18 +387,12 @@ class AzureNodeDriver(NodeDriver):
         volumes = [self._to_volume(volume=v, node=node) for v in data]
         return volumes
 
-    def create_node(self,
-                    name,
-                    image,
-                    size,
-                    ex_cloud_service_name,
-                    ex_storage_service_name=None,
-                    ex_new_deployment=False,
-                    ex_deployment_slot="Production",
-                    ex_admin_user_id="azureuser",
-                    auth=None,
-                    **kwargs):
-        """Create Azure Virtual Machine
+    def create_node(self, name, image, size, ex_cloud_service_name,
+                    ex_storage_service_name=None, ex_new_deployment=False,
+                    ex_deployment_slot="Production", ex_deployment_name=None,
+                    ex_admin_user_id="azureuser", auth=None, **kwargs):
+        """
+        Create Azure Virtual Machine
 
            Reference: http://bit.ly/1fIsCb7
            [www.windowsazure.com/en-us/documentation/]
@@ -428,6 +414,12 @@ class AzureNodeDriver(NodeDriver):
 
            @inherits: :class:`NodeDriver.create_node`
 
+           :keyword     image: The image to use when creating this node
+           :type        image:  `NodeImage`
+
+           :keyword     size: The size of the instance to create
+           :type        size: `NodeSize`
+
            :keyword     ex_cloud_service_name: Required.
                         Name of the Azure Cloud Service.
            :type        ex_cloud_service_name:  ``str``
@@ -436,31 +428,25 @@ class AzureNodeDriver(NodeDriver):
                         Name of the Azure Storage Service.
            :type        ex_storage_service_name:  ``str``
 
-           :keyword     ex_deployment_name: Optional. The name of the
-                                            deployment.
-                                            If this is not passed in we default
-                                            to using the Cloud Service name.
-            :type       ex_deployment_name: ``str``
-
            :keyword     ex_new_deployment: Optional. Tells azure to create a
                                            new deployment rather than add to an
                                            existing one.
-            :type       ex_deployment_name: ``boolean``
+           :type        ex_new_deployment: ``boolean``
 
            :keyword     ex_deployment_slot: Optional: Valid values: production|
                                             staging.
                                             Defaults to production.
            :type        ex_deployment_slot:  ``str``
 
+           :keyword     ex_deployment_name: Optional. The name of the
+                                            deployment.
+                                            If this is not passed in we default
+                                            to using the Cloud Service name.
+           :type        ex_deployment_name: ``str``
+
+
            :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
            :type        ex_admin_user_id:  ``str``
-
-           :keyword     image: The image to use when creating this node
-           :type        image:  `NodeImage`
-
-           :keyword     size: The size of the instance to create
-           :type        size: `NodeSize`
-
         """
 
         auth = self._get_and_check_auth(auth)
@@ -588,9 +574,7 @@ class AzureNodeDriver(NodeDriver):
         if node_list is None or ex_new_deployment:
             # This is the first node in this cloud service.
 
-            if "ex_deployment_name" in kwargs:
-                ex_deployment_name = kwargs['ex_deployment_name']
-            else:
+            if not ex_deployment_name:
                 ex_deployment_name = ex_cloud_service_name
 
             vm_image_id = None
@@ -692,9 +676,7 @@ class AzureNodeDriver(NodeDriver):
             }
         )
 
-    def destroy_node(self,
-                     node,
-                     ex_cloud_service_name=None,
+    def destroy_node(self, node, ex_cloud_service_name=None,
                      ex_deployment_slot="Production"):
         """Remove Azure Virtual Machine
 
@@ -749,11 +731,10 @@ class AzureNodeDriver(NodeDriver):
 
         return True
 
-    def create_cloud_service(self,
-                             ex_cloud_service_name,
-                             location,
-                             description=None,
-                             extended_properties=None):
+    # TODO: Those non standard methods should be prefixed with ex_
+
+    def create_cloud_service(self, ex_cloud_service_name, location,
+                             description=None, extended_properties=None):
         """
         creates an azure cloud service.
 
@@ -789,7 +770,6 @@ class AzureNodeDriver(NodeDriver):
         return True
 
     def destroy_cloud_service(self, ex_cloud_service_name):
-
         """
         deletes an azure cloud service.
 
@@ -809,17 +789,13 @@ class AzureNodeDriver(NodeDriver):
         return True
 
     def list_cloud_services(self):
-
         return self._perform_get(
             self._get_hosted_service_path(),
             HostedServices
         )
 
-    def ex_add_instance_endpoints(self,
-                                  node,
-                                  endpoints,
+    def ex_add_instance_endpoints(self, node, endpoints,
                                   ex_deployment_slot="Production"):
-
         all_endpoints = [
             {
                 "name": endpoint.name,
@@ -836,9 +812,7 @@ class AzureNodeDriver(NodeDriver):
                                                 ex_deployment_slot)
         return result
 
-    def ex_set_instance_endpoints(self,
-                                  node,
-                                  endpoints,
+    def ex_set_instance_endpoints(self, node, endpoints,
                                   ex_deployment_slot="Production"):
         """
         endpoint = ConfigurationSetInputEndpoint(
@@ -896,6 +870,7 @@ class AzureNodeDriver(NodeDriver):
     """
     Functions not implemented
     """
+
     def create_volume_snapshot(self):
         raise NotImplementedError(
             'You cannot create snapshots of '
@@ -1029,7 +1004,6 @@ class AzureNodeDriver(NodeDriver):
         """
         Convert the AZURE_COMPUTE_INSTANCE_TYPES into NodeSize
         """
-
         return NodeSize(
             id=data["id"],
             name=data["name"],
@@ -1045,7 +1019,6 @@ class AzureNodeDriver(NodeDriver):
         )
 
     def _to_image(self, data):
-
         return NodeImage(
             id=data.name,
             name=data.label,
@@ -1062,7 +1035,6 @@ class AzureNodeDriver(NodeDriver):
         )
 
     def _vm_to_image(self, data):
-
         return NodeImage(
             id=data.name,
             name=data.label,
@@ -1144,7 +1116,6 @@ class AzureNodeDriver(NodeDriver):
         return self._parse_response(response, Deployment)
 
     def _get_cloud_service_location(self, service_name=None):
-
         if not service_name:
             raise ValueError("service_name is required.")
 
@@ -1303,7 +1274,6 @@ class AzureNodeDriver(NodeDriver):
         query parameters on the request the parameters in the URI will
         appear after the existing parameters
         """
-
         if '?' in request.path:
             request.path, _, query_string = request.path.partition('?')
             if query_string:
@@ -1330,7 +1300,9 @@ class AzureNodeDriver(NodeDriver):
         return request.path, request.query
 
     def _update_management_header(self, request):
-        """ Add additional headers for management. """
+        """
+        Add additional headers for management.
+        """
 
         if request.method in ['PUT', 'POST', 'MERGE', 'DELETE']:
             request.headers['Content-Length'] = str(len(request.body))
@@ -1349,6 +1321,7 @@ class AzureNodeDriver(NodeDriver):
         return request.headers
 
     def send_request_headers(self, connection, request_headers):
+        # TODO - unused, remove
         for name, value in request_headers:
             if value:
                 connection.putheader(name, value)
@@ -1357,6 +1330,7 @@ class AzureNodeDriver(NodeDriver):
         connection.endheaders()
 
     def send_request_body(self, connection, request_body):
+        # TODO - unused, remove
         if request_body:
             assert isinstance(request_body, bytes)
             connection.send(request_body)
@@ -1503,7 +1477,9 @@ class AzureNodeDriver(NodeDriver):
             return data_type(value)
 
     def _get_serialization_name(self, element_name):
-        """converts a Python name into a serializable name"""
+        """
+        Converts a Python name into a serializable name.
+        """
 
         known = _KNOWN_SERIALIZATION_XFORMS.get(element_name)
         if known is not None:
@@ -1521,13 +1497,9 @@ class AzureNodeDriver(NodeDriver):
 
         return ''.join(name.capitalize() for name in element_name.split('_'))
 
-    def _fill_dict_of(self,
-                      xmldoc,
-                      parent_xml_element_name,
-                      pair_xml_element_name,
-                      key_xml_element_name,
+    def _fill_dict_of(self, xmldoc, parent_xml_element_name,
+                      pair_xml_element_name, key_xml_element_name,
                       value_xml_element_name):
-
         return_obj = {}
 
         xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
@@ -1679,8 +1651,7 @@ class AzureNodeDriver(NodeDriver):
 
         return result
 
-    def _get_deployment_path_using_name(self,
-                                        service_name,
+    def _get_deployment_path_using_name(self, service_name,
                                         deployment_name=None):
         components = [
             'services/hostedservices/',
@@ -1730,10 +1701,8 @@ class AzureNodeDriver(NodeDriver):
     def _get_storage_service_path(self, service_name=None):
         return self._get_path('services/storageservices', service_name)
 
-    def _ex_complete_async_azure_operation(self,
-                                           response=None,
+    def _ex_complete_async_azure_operation(self, response=None,
                                            operation_type='create_node'):
-
         request_id = self._parse_response_for_async_op(response)
         operation_status = self._get_operation_status(request_id.request_id)
 
@@ -1761,17 +1730,6 @@ class AzureNodeDriver(NodeDriver):
             values = (response.error, response.body, response.status)
             message = 'Message: %s, Body: %s, Status code: %s' % (values)
             raise LibcloudError(message, driver=self)
-
-    """
-    def get_connection(self):
-        certificate_path = "/Users/baldwin/.azure/managementCertificate.pem"
-        port = HTTPS_PORT
-        connection = HTTPSConnection(
-            azure_service_management_host,
-            int(port),
-            cert_file=certificate_path)
-        return connection
-    """
 
 """
 XML Serializer
@@ -3299,15 +3257,10 @@ class _DictOf(dict):
 
 
 class AzureNodeLocation(NodeLocation):
-
     # we can also have something in here for available services which is an
     # extra to the API with Azure
-    def __init__(self,
-                 id,
-                 name,
-                 country,
-                 driver,
-                 available_services,
+
+    def __init__(self, id, name, country, driver, available_services,
                  virtual_machine_role_sizes):
         super(AzureNodeLocation, self).__init__(id, name, country, driver)
         self.available_services = available_services
