@@ -1320,24 +1320,6 @@ class AzureNodeDriver(NodeDriver):
 
         return request.headers
 
-    def send_request_headers(self, connection, request_headers):
-        # TODO - unused, remove
-        for name, value in request_headers:
-            if value:
-                connection.putheader(name, value)
-
-        connection.putheader('User-Agent', _USER_AGENT_STRING)
-        connection.endheaders()
-
-    def send_request_body(self, connection, request_body):
-        # TODO - unused, remove
-        if request_body:
-            assert isinstance(request_body, bytes)
-            connection.send(request_body)
-        elif (not isinstance(connection, HTTPSConnection) and
-              not isinstance(connection, httplib.HTTPConnection)):
-            connection.send(None)
-
     def _parse_response(self, response, return_type):
         """
         Parse the HTTPResponse's body and fill all the data into a class of
