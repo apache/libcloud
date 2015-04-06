@@ -387,7 +387,7 @@ class AzureNodeDriver(NodeDriver):
         volumes = [self._to_volume(volume=v, node=node) for v in data]
         return volumes
 
-    def create_node(self, name, image, size, ex_cloud_service_name,
+    def create_node(self, name, size, image, ex_cloud_service_name,
                     ex_storage_service_name=None, ex_new_deployment=False,
                     ex_deployment_slot="Production", ex_deployment_name=None,
                     ex_admin_user_id="azureuser", auth=None, **kwargs):
@@ -731,23 +731,27 @@ class AzureNodeDriver(NodeDriver):
 
         return True
 
-    # TODO: Those non standard methods should be prefixed with ex_
+    def ex_list_cloud_services(self):
+        return self._perform_get(
+            self._get_hosted_service_path(),
+            HostedServices
+        )
 
-    def create_cloud_service(self, ex_cloud_service_name, location,
-                             description=None, extended_properties=None):
+    def ex_create_cloud_service(self, name, location, description=None,
+                                extended_properties=None):
         """
-        creates an azure cloud service.
+        Create an azure cloud service.
 
-        :param      ex_cloud_service_name: Cloud Service name
-        :type       ex_cloud_service_name: ``str``
+        :param      name: Name of the service to create
+        :type       name: ``str``
 
-        :param      location: standard azure location string
+        :param      location: Standard azure location string
         :type       location: ``str``
 
-        :param      description: optional description
+        :param      description: Optional description
         :type       description: ``str``
 
-        :param      extended_properties: optional extended_properties
+        :param      extended_properties: Optional extended_properties
         :type       extended_properties: ``dict``
 
         :rtype: ``bool``
@@ -756,8 +760,8 @@ class AzureNodeDriver(NodeDriver):
         response = self._perform_cloud_service_create(
             self._get_hosted_service_path(),
             AzureXmlSerializer.create_hosted_service_to_xml(
-                ex_cloud_service_name,
-                self._encode_base64(ex_cloud_service_name),
+                name,
+                self._encode_base64(name),
                 description,
                 location,
                 None,
@@ -769,30 +773,23 @@ class AzureNodeDriver(NodeDriver):
 
         return True
 
-    def destroy_cloud_service(self, ex_cloud_service_name):
+    def ex_destroy_cloud_service(self, name):
         """
-        deletes an azure cloud service.
+        Delete an azure cloud service.
 
-        :param      ex_cloud_service_name: Cloud Service name
-        :type       ex_cloud_service_name: ``str``
+        :param      name: Name of the cloud service to destroy.
+        :type       name: ``str``
 
         :rtype: ``bool``
         """
-
         #  add check to ensure all nodes have been deleted
         response = self._perform_cloud_service_delete(
-            self._get_hosted_service_path(ex_cloud_service_name)
+            self._get_hosted_service_path(name)
         )
 
         self.raise_for_response(response, 200)
 
         return True
-
-    def list_cloud_services(self):
-        return self._perform_get(
-            self._get_hosted_service_path(),
-            HostedServices
-        )
 
     def ex_add_instance_endpoints(self, node, endpoints,
                                   ex_deployment_slot="Production"):

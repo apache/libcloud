@@ -276,31 +276,24 @@ class AzureNodeDriverTests(LibcloudTestCase):
                 ex_deployment_slot="Production"
             )
 
-    def test_create_cloud_service(self):
-        result = self.driver.create_cloud_service("testdc123", "North Europe")
+    def test_ex_create_cloud_service(self):
+        result = self.driver.ex_create_cloud_service(name="testdc123", location="North Europe")
         self.assertTrue(result)
 
-    def test_create_cloud_service_service_exists(self):
-
+    def test_ex_create_cloud_service_service_exists(self):
         with self.assertRaises(LibcloudError):
-            self.driver.create_cloud_service(
-                ex_cloud_service_name="testdc1234",
+            self.driver.ex_create_cloud_service(
+                name="testdc1234",
                 location="North Europe"
             )
 
-    def test_destroy_cloud_service(self):
-
-        result = self.driver.destroy_cloud_service(
-            ex_cloud_service_name="testdc123"
-        )
+    def test_ex_destroy_cloud_service(self):
+        result = self.driver.ex_destroy_cloud_service(name="testdc123")
         self.assertTrue(result)
 
-    def test_destroy_cloud_service_service_does_not_exist(self):
-
+    def test_ex_destroy_cloud_service_service_does_not_exist(self):
         with self.assertRaises(LibcloudError):
-            self.driver.destroy_cloud_service(
-                ex_cloud_service_name="testdc1234"
-            )
+            self.driver.ex_destroy_cloud_service(name="testdc1234")
 
     def test_create_node_and_deployment_one_node(self):
         kwargs = {
