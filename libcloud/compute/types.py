@@ -129,7 +129,7 @@ class Provider(object):
     VSPHERE = 'vsphere'
     PROFIT_BRICKS = 'profitbricks'
     VULTR = 'vultr'
-    AURORACOMPUTE = 'Aurora Compute'
+    AURORACOMPUTE = 'aurora_compute'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
