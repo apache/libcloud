@@ -484,7 +484,7 @@ class AzureNodeDriver(NodeDriver):
 
             machine_config.domain_join = None
 
-            if node_list is None or ex_new_deployment:
+            if not node_list or ex_new_deployment:
                 port = "3389"
             else:
                 port = random.randint(41952, 65535)
@@ -509,7 +509,7 @@ class AzureNodeDriver(NodeDriver):
                 enable_direct_server_return=False
             )
         else:
-            if node_list is None or ex_new_deployment:
+            if not node_list or ex_new_deployment:
                 port = "22"
             else:
                 port = random.randint(41952, 65535)
@@ -572,7 +572,7 @@ class AzureNodeDriver(NodeDriver):
         # must be created using the add_role function.
         #
         # So, yeah, annoying.
-        if node_list is None or ex_new_deployment:
+        if not node_list or ex_new_deployment:
             # This is the first node in this cloud service.
 
             if not ex_deployment_name:
