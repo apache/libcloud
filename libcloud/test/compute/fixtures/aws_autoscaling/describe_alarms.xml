@@ -1,0 +1,32 @@
+<DescribeAlarmsResponse xmlns="http://monitoring.amazonaws.com/doc/2010-08-01/">
+  <DescribeAlarmsResult>
+    <MetricAlarms>
+      <member>
+        <StateUpdatedTimestamp>2015-03-10T11:11:23.364Z</StateUpdatedTimestamp>
+        <StateReasonData>{&quot;version&quot;:&quot;1.0&quot;,&quot;queryDate&quot;:&quot;2015-03-10T11:11:23.350+0000&quot;,&quot;startDate&quot;:&quot;2015-03-10T11:09:00.000+0000&quot;,&quot;statistic&quot;:&quot;Average&quot;,&quot;period&quot;:120,&quot;recentDatapoints&quot;:[0.0],&quot;threshold&quot;:80.0}</StateReasonData>
+        <InsufficientDataActions/>
+        <AlarmArn>arn:aws:cloudwatch:eu-west-1:786301965414:alarm:libcloud-testing-alarm</AlarmArn>
+        <AlarmConfigurationUpdatedTimestamp>2015-03-10T11:11:22.721Z</AlarmConfigurationUpdatedTimestamp>
+        <AlarmName>libcloud-testing-alarm</AlarmName>
+        <StateValue>OK</StateValue>
+        <Period>120</Period>
+        <OKActions/>
+        <ActionsEnabled>true</ActionsEnabled>
+        <EvaluationPeriods>1</EvaluationPeriods>
+        <Namespace>AWS/EC2</Namespace>
+        <Threshold>80.0</Threshold>
+        <Statistic>Average</Statistic>
+        <AlarmActions>
+          <member>arn:aws:autoscaling:eu-west-1:786301965414:scalingPolicy:e1c4a42b-4777-4fbb-bac4-41e2060bf775:autoScalingGroupName/libcloud-testing:policyName/libcloud-testing-policy</member>
+        </AlarmActions>
+        <StateReason>Threshold Crossed: 1 datapoint (0.0) was not greater than the threshold (80.0).</StateReason>
+        <Dimensions/>
+        <ComparisonOperator>GreaterThanThreshold</ComparisonOperator>
+        <MetricName>CPUUtilization</MetricName>
+      </member>
+    </MetricAlarms>
+  </DescribeAlarmsResult>
+  <ResponseMetadata>
+    <RequestId>2ff17a6c-c716-11e4-9be2-815766788773</RequestId>
+  </ResponseMetadata>
+</DescribeAlarmsResponse>

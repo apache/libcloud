@@ -32,7 +32,7 @@ from libcloud.utils.py3 import b
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
-    DeploymentError
+    DeploymentError, AutoScaleTerminationPolicy
 from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
@@ -72,6 +72,10 @@ __all__ = [
     'StorageVolume',
     'StorageVolumeState',
     'VolumeSnapshot',
+
+    'AutoScaleGroup',
+    'AutoScalePolicy',
+    'AutoScaleAlarm',
 
     # Deprecated, moved to libcloud.utils.networking
     'is_private_subnet',
@@ -119,6 +123,125 @@ class UuidMixin(object):
     @property
     def uuid(self):
         return self.get_uuid()
+
+
+class AutoScaleGroup(UuidMixin):
+    """Base class for auto scale group
+    """
+    def __init__(self, id, name, min_size, max_size, cooldown,
+                 termination_policies, driver, extra=None):
+        """
+        :param name: name.
+        :type name: ``str``
+
+        :param min_size: Minimum membership size of group.
+        :type min_size: ``int``
+
+        :param max_size: Maximum membership size of group.
+        :type max_size: ``int``
+
+        :param cooldown: Group cooldown (in seconds).
+        :type cooldown: ``int``
+
+        :param termination_policies: Termination policies for this group.
+        :type termination_policies: array of values within
+                                  :class:`AutoScaleTerminationPolicy`
+        """
+        self.id = str(id) if id else None
+        self.name = name
+        self.min_size = min_size
+        self.max_size = max_size
+        self.cooldown = cooldown
+        self.termination_policies = termination_policies
+        self.driver = driver
+
+        self.extra = extra or {}
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return (('<AutoScaleGroup: id=%s, name=%s, min_size=%s, max_size=%s, '
+                 'cooldown=%s, termination_policies=%s, provider=%s>')
+                % (self.id, self.name, self.min_size, self.max_size,
+                   self.cooldown, self.termination_policies, self.driver.name))
+
+
+class AutoScalePolicy(UuidMixin):
+    """Base class for scaling policy
+    """
+    def __init__(self, id, name, scaling_adjustment, adjustment_type,
+                 driver, extra=None):
+        """
+        :param name: Policy name
+        :type name: str
+
+        :param scaling_adjustment: Adjustment amount.
+        :type scaling_adjustment: int
+
+        :param adjustment_type: The adjustment type.
+        :type adjustment_type: value within :class:`AutoScaleAdjustmentType`
+        """
+        self.id = str(id) if id else None
+        self.name = name
+        self.adjustment_type = adjustment_type
+        self.scaling_adjustment = scaling_adjustment
+
+        self.driver = driver
+        self.extra = extra or {}
+
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return (
+            ('<AutoScalePolicy: id=%s, name=%s, adjustment_type=%s, '
+             'scaling_adjustment=%s, provider=%s>') % (
+                 self.id, self.name, self.adjustment_type,
+                 self.scaling_adjustment, self.driver.name))
+
+
+class AutoScaleAlarm(UuidMixin):
+    """Base class for alarm triggering
+    """
+
+    def __init__(self, id, name, metric_name, period, operator, threshold,
+                 driver, extra=None):
+        """
+        :param name: Descriptive name of the alarm.
+        :type name: ``str``
+
+        :param metric_name: The metric to watch.
+        :type metric_name: ``str``
+
+        :param period: The number of seconds the values are aggregated for when
+                       compared to value.
+        :type period: ``int``
+
+        :param operator: The operator to use for comparison.
+        :type operator: value within :class:`AutoScaleOperator`
+
+        :param threshold: The value against which the specified statistic is
+                          compared
+        :type threshold: ``int``
+        """
+        self.id = str(id) if id else None
+        self.name = name
+        self.metric_name = metric_name
+        self.period = period
+        self.operator = operator
+        self.threshold = threshold
+        self.statistic = 'AVG'
+
+        self.driver = driver
+        self.extra = extra or {}
+
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return (
+            ('<AutoScaleAlarm: id=%s, metric_name=%s, period=%s, '
+             'operator=%s, threshold=%s, statistic=%s, '
+             'provider=%s>') % (self.id, self.metric_name, self.period,
+                                self.operator, self.threshold,
+                                self.statistic, self.driver.name))
 
 
 class Node(UuidMixin):
@@ -1259,6 +1382,200 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
+
+    def create_auto_scale_group(
+            self, name, min_size, max_size, cooldown, image=None,
+            termination_policies=AutoScaleTerminationPolicy.OLDEST_INSTANCE,
+            balancer=None, **kwargs):
+        """
+        Create a new auto scale group. Group's instances will be started
+        automatically. Some of the keyward arguments are driver specific
+        implementation.
+
+        :param name: Group name.
+        :type name: ``str``
+
+        :param min_size: Minimum membership size of group.
+        :type min_size: ``int``
+
+        :param max_size: Maximum membership size of group.
+        :type max_size: ``int``
+
+        :param cooldown: Group cooldown (in seconds).
+        :type cooldown: ``int``
+
+        :param termination_policies: Termination policies for this group.
+        :type termination_policy: value or list of values within
+                                  :class:`AutoScaleTerminationPolicy`
+
+        :param image: The image to create the member with.
+        :type image: :class:`.NodeImage`
+
+        :param balancer: The load balancer to attach.
+        :type balancer: :class:`.LoadBalancer`
+
+        :keyword    size: Size definition for group members instances.
+        :type       size: :class:`.NodeSize`
+
+        :keyword location: Which location to create the members in.
+        :type location: :class:`.NodeLocation`
+
+        :return: The newly created group.
+        :rtype: :class:`.AutoScaleGroup`
+        """
+
+        raise NotImplementedError(
+            'create_auto_scale_group not implemented for this driver')
+
+    def list_auto_scale_groups(self):
+        """
+        :rtype: ``list`` of ``AutoScaleGroup``
+        """
+        raise NotImplementedError(
+            'list_auto_scale_groups not implemented for this driver')
+
+    def list_auto_scale_group_members(self, group):
+        """
+        List members for given auto scale group.
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :return: Group members.
+        :rtype: ``list`` of ``Node``
+        """
+        raise NotImplementedError(
+            'list_auto_scale_group_members not implemented for this driver')
+
+    def create_auto_scale_policy(self, group, name, adjustment_type,
+                                 scaling_adjustment):
+        """
+        Create an auto scale policy for the given group.
+
+        @inherits: :class:`NodeDriver.create_auto_scale_policy`
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :param name: Policy name.
+        :type name: ``str``
+
+        :param adjustment_type: The adjustment type.
+        :type adjustment_type: value within :class:`AutoScaleAdjustmentType`
+
+        :param scaling_adjustment: The number of instances by which to scale.
+        :type scaling_adjustment: ``int``
+
+        :return: The created policy.
+        :rtype: :class:`.AutoScalePolicy`
+        """
+
+        raise NotImplementedError(
+            'create_auto_scale_policy not implemented for this driver')
+
+    def list_auto_scale_policies(self, group):
+        """
+        List policies assiciated with the given auto scale group
+
+        :param policy: Group object.
+        :type policy: :class:`.AutoScaleGroup`
+
+        :rtype: ``list`` of ``AutoScalePolicy``
+        """
+        raise NotImplementedError(
+            'list_auto_scale_policies not implemented for this driver')
+
+    def delete_auto_scale_policy(self, policy):
+        """
+        Delete auto scale policy.
+
+        :param policy: Policy object.
+        :type policy: :class:`.AutoScalePolicy`
+
+        :return: ``True`` if delete_auto_scale_policy was successful,
+        ``False`` otherwise.
+        :rtype: ``bool``
+
+        """
+        raise NotImplementedError(
+            'delete_auto_scale_policy not implemented for this driver')
+
+    def create_auto_scale_alarm(self, name, policy, metric_name, operator,
+                                threshold, period, **kwargs):
+        """
+        Create an auto scale alarm for the given policy.
+
+        :param name: Descriptive name of the alarm.
+        :type name: ``str``
+
+        :param policy: Policy object.
+        :type policy: :class:`.AutoScalePolicy`
+
+        :param metric_name: The metric to watch.
+        :type metric_name: value within :class:`AutoScaleMetric`
+
+        :param operator: The operator to use for comparison.
+        :type operator: value within :class:`AutoScaleOperator`
+
+        :param threshold: The value against which the specified statistic is
+                          compared
+        :type threshold: ``int``
+
+        :param name: The descriptive name for the alarm.
+        :type name: ``str``
+
+        :param period: The number of seconds the values are aggregated for when
+                       compared to threshold.
+        :type period: ``int``
+
+        :return: The created alarm.
+        :rtype: :class:`.AutoScaleAlarm`
+        """
+
+        raise NotImplementedError(
+            'create_auto_scale_alarm not implemented for this driver')
+
+    def list_auto_scale_alarms(self, policy):
+        """
+        List alarms assiciated with the given auto scale policy
+
+        :param policy: Policy object.
+        :type policy: :class:`.AutoScalePolicy`
+
+        :rtype: ``list`` of ``AutoScaleAlarm``
+        """
+        raise NotImplementedError(
+            'list_auto_scale_alarms not implemented for this driver')
+
+    def delete_auto_scale_alarm(self, alarm):
+        """
+        Delete auto scale alarm.
+
+        :param alarm: Alarm object.
+        :type alarm: :class:`.AutoScaleAlarm`
+
+        :return: ``True`` if delete_auto_scale_alarm was successful,
+        ``False`` otherwise.
+        :rtype: ``bool``
+
+        """
+        raise NotImplementedError(
+            'delete_auto_scale_alarm not implemented for this driver')
+
+    def delete_auto_scale_group(self, group):
+        """
+        Delete auto scale group.
+
+        :param group: Group object.
+        :type group: :class:`.AutoScaleGroup`
+
+        :return: ``True`` if delete_auto_scale_group was successful,
+        ``False`` otherwise.
+        :rtype: ``bool``
+
+        """
+        raise NotImplementedError(
+            'delete_auto_scale_group not implemented for this driver')
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):

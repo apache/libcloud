@@ -31,6 +31,10 @@ DRIVERS = {
     ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
+    Provider.AWS_AUTOSCALE:
+    ('libcloud.compute.drivers.aws_autoscaling', 'AutoScaleDriver'),
+    Provider.AWS_CLOUDWATCH:
+    ('libcloud.compute.drivers.aws_autoscaling', 'CloudWatchDriver'),
     Provider.EC2_US_EAST:
     ('libcloud.compute.drivers.ec2', 'EC2NodeDriver'),
     Provider.EC2_EU_WEST:
@@ -47,6 +51,24 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'EC2SAEastNodeDriver'),
     Provider.EC2_AP_SOUTHEAST2:
     ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
+    Provider.AWS_AUTOSCALE_US_EAST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'AutoScaleDriver'),
+    Provider.AWS_AUTOSCALE_US_WEST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'AutoScaleUSWestDriver'),
+    Provider.AWS_AUTOSCALE_US_WEST_OREGON:
+    ('libcloud.compute.drivers.aws_autoscaling',
+     'AutoScaleUSWestOregonDriver'),
+    Provider.AWS_AUTOSCALE_EU_WEST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'AutoScaleEuropeDriver'),
+    Provider.AWS_CLOUDWATCH_US_EAST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'CloudWatchDriver'),
+    Provider.AWS_CLOUDWATCH_US_WEST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'CloudWatchUSWestDriver'),
+    Provider.AWS_CLOUDWATCH_US_WEST_OREGON:
+    ('libcloud.compute.drivers.aws_autoscaling',
+     'CloudWatchUSWestOregonDriver'),
+    Provider.AWS_CLOUDWATCH_EU_WEST:
+    ('libcloud.compute.drivers.aws_autoscaling', 'CloudWatchEuropeDriver'),
     Provider.ECP:
     ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS:
