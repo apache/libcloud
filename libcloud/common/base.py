@@ -298,7 +298,7 @@ class LoggingConnection():
                 else:
                     cls = StringIO
 
-                return cls(b(self.s))
+                return cls(self.s)
         rr = r
         headers = lowercase_keys(dict(r.getheaders()))
 

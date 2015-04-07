@@ -18,10 +18,14 @@ General
   (GITHUB-444)
   [Gertjan Oude Lohuis]
 
+- Fix a bug in the debug mode logging (LIBCLOUD_DEBUG). Logging to the debug
+  file would throw an exception if the text contained non-ascii characters.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
-- OpenStackNodeSize objects now support optional, additional fields that are 
+- OpenStackNodeSize objects now support optional, additional fields that are
   supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
   (GITHUB-488, LIBCLOUD-682)
   [Greg Hill]
@@ -43,8 +47,8 @@ Compute
   (GITHUB-479)
   [Allard Hoeve]
 
-- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in 
-  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base 
+- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in
+  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base
   driver method create_storage_volume argument name to be optional.
   (GITHUB-478)
   [Allard Hoeve]

@@ -23,6 +23,7 @@ __all__ = ['__version__', 'enable_debug']
 __version__ = '0.17.1-dev'
 
 import os
+import codecs
 
 try:
     import paramiko
@@ -56,7 +57,7 @@ def _init_once():
     """
     path = os.getenv('LIBCLOUD_DEBUG')
     if path:
-        fo = open(path, 'a')
+        fo = codecs.open(path, 'a', encoding='utf8')
         enable_debug(fo)
 
         if have_paramiko:
