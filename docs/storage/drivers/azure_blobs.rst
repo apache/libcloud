@@ -4,9 +4,9 @@ Azure Blobs Storage Driver Documentation
 Connecting to Azure Blobs
 -------------------------
 
-To connect to Azure Blobs you need your storage account name and access key.A
+To connect to Azure Blobs you need your storage account name and access key.
 
-You can retrieve this information in the Azure Management portal by going to
+You can retrieve this information in the Azure Management Portal by going to
 Storage -> Manage Access Keys as shown on the screenshots below.
 
 .. figure:: /_static/images/misc/azure_blobs_manage_access_keys_1.png
