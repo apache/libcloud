@@ -1,7 +1,7 @@
 ============================= =============================================== ================= ============================================== ====================================
 Provider                      Documentation                                   Provider constant Module                                         Class Name                          
 ============================= =============================================== ================= ============================================== ====================================
-`Microsoft Azure (blobs)`_                                                    AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
+`Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `CloudFiles`_                                                                 CLOUDFILES        :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
 `CloudFiles (UK)`_                                                            CLOUDFILES_UK     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUKStorageDriver`  
 `CloudFiles (US)`_                                                            CLOUDFILES_US     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUSStorageDriver`  
