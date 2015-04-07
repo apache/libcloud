@@ -64,12 +64,13 @@ else:
     _str = str
     _unicode_type = str
 
-__version__ = '1.0.0'
 
-
-azure_service_management_host = 'management.core.windows.net'
-_USER_AGENT_STRING = 'libcloudazurecompute/' + __version__
+AZURE_SERVICE_MANAGEMENT_HOST = 'management.core.windows.net'
 X_MS_VERSION = '2013-08-01'
+
+WINDOWS_SERVER_REGEX = re.compile(
+    r'Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk'
+)
 
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them
@@ -395,61 +396,62 @@ class AzureNodeDriver(NodeDriver):
         """
         Create Azure Virtual Machine
 
-           Reference: http://bit.ly/1fIsCb7
-           [www.windowsazure.com/en-us/documentation/]
+        Reference: http://bit.ly/1fIsCb7
+        [www.windowsazure.com/en-us/documentation/]
 
-           We default to:
+        We default to:
 
-           + 3389/TCP - RDP - 1st Microsoft instance.
-           + RANDOM/TCP - RDP - All succeeding Microsoft instances.
+        + 3389/TCP - RDP - 1st Microsoft instance.
+        + RANDOM/TCP - RDP - All succeeding Microsoft instances.
 
-           + 22/TCP - SSH - 1st Linux instance
-           + RANDOM/TCP - SSH - All succeeding Linux instances.
+        + 22/TCP - SSH - 1st Linux instance
+        + RANDOM/TCP - SSH - All succeeding Linux instances.
 
-          The above replicates the standard behavior of the Azure UI.
-          You can retrieve the assigned ports to each instance by
-          using the following private function:
+        The above replicates the standard behavior of the Azure UI.
+        You can retrieve the assigned ports to each instance by
+        using the following private function:
 
-          _get_endpoint_ports(service_name)
-            Returns public,private port key pair.
+        _get_endpoint_ports(service_name)
+        Returns public,private port key pair.
 
-           @inherits: :class:`NodeDriver.create_node`
+        @inherits: :class:`NodeDriver.create_node`
 
-           :keyword     image: The image to use when creating this node
-           :type        image:  `NodeImage`
+        :keyword     image: The image to use when creating this node
+        :type        image:  `NodeImage`
 
-           :keyword     size: The size of the instance to create
-           :type        size: `NodeSize`
+        :keyword     size: The size of the instance to create
+        :type        size: `NodeSize`
 
-           :keyword     ex_cloud_service_name: Required.
-                        Name of the Azure Cloud Service.
-           :type        ex_cloud_service_name:  ``str``
+        :keyword     ex_cloud_service_name: Required.
+                     Name of the Azure Cloud Service.
+        :type        ex_cloud_service_name:  ``str``
 
-           :keyword     ex_storage_service_name: Optional:
-                        Name of the Azure Storage Service.
-           :type        ex_storage_service_name:  ``str``
+        :keyword     ex_storage_service_name: Optional:
+                     Name of the Azure Storage Service.
+        :type        ex_storage_service_name:  ``str``
 
-           :keyword     ex_new_deployment: Optional. Tells azure to create a
-                                           new deployment rather than add to an
-                                           existing one.
-           :type        ex_new_deployment: ``boolean``
+        :keyword     ex_new_deployment: Optional. Tells azure to create a
+                                        new deployment rather than add to an
+                                        existing one.
+        :type        ex_new_deployment: ``boolean``
 
-           :keyword     ex_deployment_slot: Optional: Valid values: production|
-                                            staging.
-                                            Defaults to production.
-           :type        ex_deployment_slot:  ``str``
+        :keyword     ex_deployment_slot: Optional: Valid values: production|
+                                         staging.
+                                         Defaults to production.
+        :type        ex_deployment_slot:  ``str``
 
-           :keyword     ex_deployment_name: Optional. The name of the
-                                            deployment.
-                                            If this is not passed in we default
-                                            to using the Cloud Service name.
-           :type        ex_deployment_name: ``str``
+        :keyword     ex_deployment_name: Optional. The name of the
+                                         deployment.
+                                         If this is not passed in we default
+                                         to using the Cloud Service name.
+        :type        ex_deployment_name: ``str``
 
 
-           :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
-           :type        ex_admin_user_id:  ``str``
+        :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
+        :type        ex_admin_user_id:  ``str``
         """
-
+        # TODO: Refactor this method to make it more readable, split it into
+        # multiple smaller methods
         auth = self._get_and_check_auth(auth)
         password = auth.password
 
@@ -462,6 +464,8 @@ class AzureNodeDriver(NodeDriver):
                 "produced by list_images()"
             )
 
+        # Retrieve a list of currently available nodes for the provided cloud
+        # service
         node_list = self.list_nodes(
             ex_cloud_service_name=ex_cloud_service_name
         )
@@ -471,11 +475,7 @@ class AzureNodeDriver(NodeDriver):
 
         # We do this because we need to pass a Configuration to the
         # method. This will be either Linux or Windows.
-        windows_server_regex = re.compile(
-            r'Win|SQL|SharePoint|Visual|Dynamics|DynGP|BizTalk'
-        )
-
-        if windows_server_regex.search(image.id, re.I):
+        if WINDOWS_SERVER_REGEX.search(image.id, re.I):
             machine_config = WindowsConfigurationSet(
                 computer_name=name,
                 admin_password=password,
@@ -643,26 +643,21 @@ class AzureNodeDriver(NodeDriver):
                 media_link = "%s/vhds/%s" % (blob_url, disk_name)
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
-            response = self._perform_post(
-                self._get_role_path(
-                    ex_cloud_service_name,
-                    _deployment_name
-                ),
-                AzureXmlSerializer.add_role_to_xml(
-                    name,  # role_name
-                    machine_config,  # system_config
-                    disk_config,  # os_virtual_hard_disk
-                    'PersistentVMRole',  # role_type
-                    network_config,  # network_config
-                    None,  # availability_set_name
-                    None,  # data_virtual_hard_disks
-                    vm_image_id,  # vm_image
-                    size.id  # role_size
-                )
+            path = self._get_role_path(ex_cloud_service_name, _deployment_name)
+            body = AzureXmlSerializer.add_role_to_xml(
+                name,  # role_name
+                machine_config,  # system_config
+                disk_config,  # os_virtual_hard_disk
+                'PersistentVMRole',  # role_type
+                network_config,  # network_config
+                None,  # availability_set_name
+                None,  # data_virtual_hard_disks
+                vm_image_id,  # vm_image
+                size.id  # role_size
             )
 
+            response = self._perform_post(path, body)
             self.raise_for_response(response, 202)
-
             self._ex_complete_async_azure_operation(response)
 
         return Node(
@@ -679,7 +674,8 @@ class AzureNodeDriver(NodeDriver):
 
     def destroy_node(self, node, ex_cloud_service_name=None,
                      ex_deployment_slot="Production"):
-        """Remove Azure Virtual Machine
+        """
+        Remove Azure Virtual Machine
 
         This removes the instance, but does not
         remove the disk. You will need to use destroy_volume.
@@ -783,7 +779,7 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        #  add check to ensure all nodes have been deleted
+        # TODO: add check to ensure all nodes have been deleted
         response = self._perform_cloud_service_delete(
             self._get_hosted_service_path(name)
         )
@@ -906,7 +902,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_cloud_service_create(self, path, data):
         request = AzureHTTPRequest()
         request.method = 'POST'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.body = data
         request.path, request.query = self._update_request_uri_query(request)
@@ -918,7 +914,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_cloud_service_delete(self, path):
         request = AzureHTTPRequest()
         request.method = 'DELETE'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
@@ -1200,7 +1196,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_get(self, path, response_type):
         request = AzureHTTPRequest()
         request.method = 'GET'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)
@@ -1214,7 +1210,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_post(self, path, body, response_type=None, async=False):
         request = AzureHTTPRequest()
         request.method = 'POST'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.body = ensure_string(self._get_request_body(body))
         request.path, request.query = self._update_request_uri_query(request)
@@ -1226,7 +1222,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_put(self, path, body, response_type=None, async=False):
         request = AzureHTTPRequest()
         request.method = 'PUT'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.body = ensure_string(self._get_request_body(body))
         request.path, request.query = self._update_request_uri_query(request)
@@ -1238,7 +1234,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_delete(self, path, async=False):
         request = AzureHTTPRequest()
         request.method = 'DELETE'
-        request.host = azure_service_management_host
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
         request.path = path
         request.path, request.query = self._update_request_uri_query(request)
         request.headers = self._update_management_header(request)

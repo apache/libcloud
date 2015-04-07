@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.import libcloud
 
-from libcloud.common.types import LibcloudError
-from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
-from libcloud.compute.drivers.azure import azure_service_management_host
-
 import os
 import sys
 
 import libcloud.security
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
+from libcloud.compute.drivers.azure import AZURE_SERVICE_MANAGEMENT_HOST
 
 from libcloud.test import unittest
 from libcloud.test import LibcloudTestCase
@@ -585,12 +584,12 @@ class AzureMockHttp(MockHttp):
 
         if not getattr(AzureMockHttp, "in_redirect", False):
             setattr(AzureMockHttp, "in_redirect", True)
-            headers["Location"] = url.replace(azure_service_management_host, redirect_host)
+            headers["Location"] = url.replace(AZURE_SERVICE_MANAGEMENT_HOST, redirect_host)
             return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
         else:
             delattr(AzureMockHttp, "in_redirect")
             if redirect_host not in url:
-                if azure_service_management_host in url:
+                if AZURE_SERVICE_MANAGEMENT_HOST in url:
                     return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
                 else:
                     return (httplib.REQUEST_TIMEOUT, None, None, httplib.responses[httplib.REQUEST_TIMEOUT])
