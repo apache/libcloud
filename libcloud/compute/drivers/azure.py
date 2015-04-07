@@ -628,7 +628,7 @@ class AzureNodeDriver(NodeDriver):
             vm_image_id = None
             disk_config = None
 
-            if image.extra['vm_image']:
+            if image.extra.get('vm_image', False):
                 vm_image_id = image.id
                 #  network_config = None
             else:
