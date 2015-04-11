@@ -183,8 +183,63 @@ class DigitalOceanDNSDriver(DNSDriver):
                                       method='POST')
 
         return Record(id=res.object['domain_record']['id'],
-                    name=res.object['domain_record']['id'],
+                    name=res.object['domain_record']['name'],
                     type=type, data=data, zone=zone, driver=self, extra=extra)
+
+    def update_record(self, record, name=None, type=None, data=None, extra=None):
+        """
+        Update an existing record.
+
+        :param record: Record to update.
+        :type  record: :class:`Record`
+
+        :param name: Record name without the domain name (e.g. www). (Ignored)
+                     Note: The value is pulled from the record being updated
+        :type  name: ``str``
+
+        :param type: DNS record type (A, AAAA, ...). (Ignored)
+                     Note: Updating records does not support changing type
+                     so this value is ignored
+        :type  type: :class:`RecordType`
+
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type  extra: ``dict``
+
+        :rtype: :class:`Record`
+        """
+        params = {
+            "type" : record.type,
+            "name" : record.name,
+            "data" : data
+        }
+        if data == None:
+            params['data'] = record.data
+        if extra:
+            try:
+                params['priority'] = extra['priority']
+            except KeyError:
+                params['priority'] = 'null'
+            try:
+                params['port'] = extra['port']
+            except KeyError:
+                params['port'] = 'null'
+            try:
+                params['weight'] = extra['weight']
+            except KeyError:
+                params['weight'] = 'null'
+
+        res = self.connection.request('/v2/domains/%s/records/%s' %
+                                      (record.zone.id, record.id),
+                                      params=params,
+                                      method='PUT')
+
+        return Record(id=res.object['domain_record']['id'],
+                      name=res.object['domain_record']['name'],
+                      type=record.type, data=data, zone=record.zone,
+                      driver=self, extra=extra)
 
     def delete_zone(self, zone):
         """
