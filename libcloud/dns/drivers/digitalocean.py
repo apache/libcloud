@@ -22,14 +22,15 @@ __all__ = [
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.common.digitalocean import DigitalOceanConnection, DigitalOceanResponse
+from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
+from libcloud.common.digitalocean import DigitalOceanConnection
+from libcloud.common.digitalocean import DigitalOceanResponse
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 
-class DigitalOceanDNSDriver(DNSDriver):
-    connectionCls = DigitalOceanConnection
+class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
     type = Provider.DIGITAL_OCEAN
     name = "DigitalOcean"
     website = 'https://www.digitalocean.com'
@@ -274,40 +275,6 @@ class DigitalOceanDNSDriver(DNSDriver):
                                       record.zone.id, record.id), params=params,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
-
-# TODO: If there is a way to push this into libcloud.common.digitalocean
-#       instead of having it in libcloud.dns.digitalocean and
-#       libcloud.compute.digitalocean
-    def _paginated_request(self, url, obj):
-        """
-        Perform multiple calls in order to have a full list of elements when
-        the API responses are paginated.
-
-        :param url: API endpoint
-        :type url: ``str``
-
-        :param obj: Result object key
-        :type obj: ``str``
-
-        :return: ``list`` of API response objects
-        """
-        params = {}
-        data = self.connection.request(url)
-        try:
-            pages = data.object['links']['pages']['last'].split('=')[-1]
-            values = data.object[obj]
-            for page in range(2, int(pages) + 1):
-                params.update({'page': page})
-                new_data = self.connection.request(url, params=params)
-
-                more_values = new_data.object[obj]
-                for value in more_values:
-                    values.append(value)
-            data = values
-        except KeyError:  # No pages.
-            data = data.object[obj]
-
-        return data
 
     def _to_record(self, data, zone=None):
         extra = {'port' : data['port'], 'priority' : data['priority'],
