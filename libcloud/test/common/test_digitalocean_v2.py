@@ -12,13 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 
-import os
 import sys
 import unittest
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.digitalocean import DigitalOceanBaseDriver
-from libcloud.dns.types import RecordType
 from libcloud.test import LibcloudTestCase, MockHttpTestCase
 from libcloud.test.file_fixtures import FileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS

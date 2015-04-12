@@ -15,7 +15,6 @@
 import sys
 import unittest
 
-from libcloud.common.types import InvalidCredsError
 from libcloud.dns.drivers.digitalocean import DigitalOceanDNSDriver
 from libcloud.dns.types import RecordType
 from libcloud.test import LibcloudTestCase, MockHttpTestCase
@@ -31,10 +30,6 @@ class DigitalOceanDNSTests(LibcloudTestCase):
             (None, DigitalOceanDNSMockHttp)
         DigitalOceanDNSMockHttp.type = None
         self.driver = DigitalOceanDNSDriver(*DIGITALOCEAN_v2_PARAMS)
-
-    def test_authentication(self):
-        DigitalOceanDNSMockHttp.type = 'UNAUTHORIZED'
-        self.assertRaises(InvalidCredsError, self.driver.list_zones)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
