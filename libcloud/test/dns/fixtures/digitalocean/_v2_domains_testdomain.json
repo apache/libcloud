@@ -1,0 +1,1 @@
+{"domain":{"name":"testdomain","ttl":1800,"zone_file":"$ORIGIN testdomain.\n$TTL 1800\ntestdomain. IN SOA ns1.digitalocean.com. hostmaster.testdomain. 1428768671 10800 3600 604800 1800\ntestdomain. 1800 IN NS ns1.digitalocean.com.\ntestdomain. 1800 IN NS ns2.digitalocean.com.\ntestdomain. 1800 IN NS ns3.digitalocean.com.\ntestdomain. 1800 IN A 123.45.67.89\n"}}
