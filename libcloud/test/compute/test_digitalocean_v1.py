@@ -89,7 +89,8 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         location = self.driver.list_locations()[0]
 
         DigitalOceanMockHttp.type = 'INVALID_IMAGE'
-        expected_msg = r'You specified an invalid image for Droplet creation. \(code: 404\)'
+        expected_msg = \
+            r'You specified an invalid image for Droplet creation. \(code: 404\)'
         self.assertRaisesRegexp(Exception, expected_msg,
                                 self.driver.create_node,
                                 name='test', size=size, image=image,
@@ -146,7 +147,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
     def _v1_droplets_new_INVALID_IMAGE(self, method, url, body, headers):
         # reboot_node
         body = self.fixtures.load('error_invalid_image.json')
-        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
 
     def _v1_droplets_119461_reboot(self, method, url, body, headers):
         # reboot_node

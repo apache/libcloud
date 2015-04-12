@@ -109,6 +109,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         headers['Content-Type'] = 'application/json'
         return headers
 
+
 class DigitalOceanConnection(DigitalOcean_v2_Connection):
     """
     Connection class for the DigitalOcean driver.
@@ -129,7 +130,7 @@ class DigitalOceanBaseDriver(BaseDriver):
 
     def __new__(cls, key, secret=None, api_version='v2', **kwargs):
         if cls is DigitalOceanBaseDriver:
-            if api_version == 'v1' or secret != None:
+            if api_version == 'v1' or secret is not None:
                 cls = DigitalOcean_v1_BaseDriver
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_BaseDriver
@@ -150,7 +151,7 @@ class DigitalOceanBaseDriver(BaseDriver):
         raise NotImplementedError(
             'ex_get_event not implemented for this driver')
 
-    def _paginated_request(self, event_id):
+    def _paginated_request(self, url, obj):
         raise NotImplementedError(
             '_paginated_requests not implemented for this driver')
 

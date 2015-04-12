@@ -33,7 +33,8 @@ class DigitalOceanTests(LibcloudTestCase):
 
     def test_authentication(self):
         DigitalOceanMockHttp.type = 'UNAUTHORIZED'
-        self.assertRaises(InvalidCredsError, self.driver.ex_get_event, '12345670')
+        self.assertRaises(InvalidCredsError, self.driver.ex_get_event,
+                          '12345670')
 
     def test_ex_account_info(self):
         self.assertRaises(NotImplementedError, self.driver.ex_account_info)
@@ -48,7 +49,8 @@ class DigitalOceanTests(LibcloudTestCase):
         self.assertEqual(action["event"]["event_type_id"], 1)
 
     def test__paginated_request(self):
-        self.assertRaises(NotImplementedError, self.driver._paginated_request, '/v1/anything')
+        self.assertRaises(NotImplementedError, self.driver._paginated_request,
+                          '/v1/anything', 'anything')
 
 
 class DigitalOceanMockHttp(MockHttpTestCase):
@@ -58,7 +60,7 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         None: httplib.OK,
         'CREATE': httplib.CREATED,
         'DELETE': httplib.NO_CONTENT,
-	'EMPTY': httplib.OK,
+        'EMPTY': httplib.OK,
         'NOT_FOUND': httplib.NOT_FOUND,
         'UNAUTHORIZED': httplib.UNAUTHORIZED,
         'UPDATE': httplib.OK
@@ -66,14 +68,14 @@ class DigitalOceanMockHttp(MockHttpTestCase):
 
     def _v1_events_12345670_UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load(
-                   '_v1_events_12345670_UNAUTHORIZED.json')
+            '_v1_events_12345670_UNAUTHORIZED.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
     def _v1_events_12345670(self, method, url, body, headers):
         body = self.fixtures.load('_v1_events_12345670.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
 
 if __name__ == '__main__':

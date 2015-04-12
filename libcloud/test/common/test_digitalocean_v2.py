@@ -37,7 +37,8 @@ class DigitalOceanTests(LibcloudTestCase):
 
     def test_ex_account_info(self):
         account_info = self.driver.ex_account_info()
-        self.assertEqual(account_info['uuid'], 'a1234567890b1234567890c1234567890d12345')
+        self.assertEqual(account_info['uuid'],
+                         'a1234567890b1234567890c1234567890d12345')
         self.assertTrue(account_info['email_verified'])
         self.assertEqual(account_info['email'], 'user@domain.tld')
         self.assertEqual(account_info['droplet_limit'], 10)
@@ -66,7 +67,7 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         None: httplib.OK,
         'CREATE': httplib.CREATED,
         'DELETE': httplib.NO_CONTENT,
-	'EMPTY': httplib.OK,
+        'EMPTY': httplib.OK,
         'NOT_FOUND': httplib.NOT_FOUND,
         'UNAUTHORIZED': httplib.UNAUTHORIZED,
         'UPDATE': httplib.OK
@@ -75,28 +76,28 @@ class DigitalOceanMockHttp(MockHttpTestCase):
     def _v2_account(self, method, url, body, headers):
         body = self.fixtures.load('_v2_account.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
     def _v2_account_UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load(
-                   '_v2_account_UNAUTHORIZED.json')
+            '_v2_account_UNAUTHORIZED.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
     def _v2_actions(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
     def _v2_actions_12345670(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions_12345670.json')
         return (self.response[self.type], body, {},
-                    httplib.responses[self.response[self.type]])
+                httplib.responses[self.response[self.type]])
 
     def _v2_actions_page_1(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions_page_1.json')
         return (self.response[None], body, {},
-                    httplib.responses[self.response[None]])
+                httplib.responses[self.response[None]])
 
 
 if __name__ == '__main__':
