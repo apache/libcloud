@@ -23,26 +23,25 @@ __all__ = [
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
-from libcloud.common.digitalocean import DigitalOceanConnection
-from libcloud.common.digitalocean import DigitalOceanResponse
+from libcloud.common.digitalocean import DigitalOcean_v2_Connection
 from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
+    connectionCls = DigitalOcean_v2_Connection
     type = Provider.DIGITAL_OCEAN
     name = "DigitalOcean"
     website = 'https://www.digitalocean.com'
 
     RECORD_TYPE_MAP = {
-        RecordType.NS : 'NS',
-        RecordType.A : 'A',
-        RecordType.AAAA : 'AAAA',
-        RecordType.CNAME : 'CNAME',
-        RecordType.MX : 'MX',
-        RecordType.TXT : 'TXT',
-        RecordType.SRV : 'SRV',
+        RecordType.NS: 'NS',
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.TXT: 'TXT',
+        RecordType.SRV: 'SRV',
     }
 
     def list_zones(self):
@@ -79,7 +78,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         :rtype: :class:`Zone`
         """
         data = self.connection.request('/v2/domains/%s' %
-               (zone_id)).object['domain']
+                                       (zone_id)).object['domain']
 
         return self._to_zone(data)
 
@@ -122,7 +121,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        params = {'name' : domain}
+        params = {'name': domain}
         try:
             params['ip_address'] = extra['ip']
         except:
@@ -161,9 +160,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         :rtype: :class:`Record`
         """
         params = {
-            "type" : self.RECORD_TYPE_MAP[type],
-            "name" : name,
-            "data" : data
+            "type": self.RECORD_TYPE_MAP[type],
+            "name": name,
+            "data": data
         }
         if extra:
             try:
@@ -184,10 +183,12 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                                       method='POST')
 
         return Record(id=res.object['domain_record']['id'],
-                    name=res.object['domain_record']['name'],
-                    type=type, data=data, zone=zone, driver=self, extra=extra)
+                      name=res.object['domain_record']['name'],
+                      type=type, data=data, zone=zone,
+                      driver=self, extra=extra)
 
-    def update_record(self, record, name=None, type=None, data=None, extra=None):
+    def update_record(self, record, name=None, type=None,
+                      data=None, extra=None):
         """
         Update an existing record.
 
@@ -212,11 +213,11 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         :rtype: :class:`Record`
         """
         params = {
-            "type" : record.type,
-            "name" : record.name,
-            "data" : data
+            "type": record.type,
+            "name": record.name,
+            "data": data
         }
-        if data == None:
+        if data is None:
             params['data'] = record.data
         if extra:
             try:
@@ -272,18 +273,19 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         params = {}
 
         res = self.connection.request('/v2/domains/%s/records/%s' % (
-                                      record.zone.id, record.id), params=params,
+                                      record.zone.id, record.id),
+                                      params=params,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
     def _to_record(self, data, zone=None):
-        extra = {'port' : data['port'], 'priority' : data['priority'],
-                 'weight' : data['weight']}
+        extra = {'port': data['port'], 'priority': data['priority'],
+                 'weight': data['weight']}
         return Record(id=data['id'], name=data['name'],
                       type=self._string_to_record_type(data['type']),
                       data=data['data'], zone=zone, driver=self, extra=extra)
 
     def _to_zone(self, data):
-        extra = {'zone_file' : data['zone_file'],}
+        extra = {'zone_file': data['zone_file']}
         return Zone(id=data['name'], domain=data['name'], type='master',
                     ttl=data['ttl'], driver=self, extra=extra)

@@ -109,6 +109,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         headers['Content-Type'] = 'application/json'
         return headers
 
+
 class DigitalOceanConnection(DigitalOcean_v2_Connection):
     """
     Connection class for the DigitalOcean driver.
@@ -129,7 +130,7 @@ class DigitalOceanBaseDriver(BaseDriver):
 
     def __new__(cls, key, secret=None, api_version='v2', **kwargs):
         if cls is DigitalOceanBaseDriver:
-            if api_version == 'v1' or secret != None:
+            if api_version == 'v1' or secret is not None:
                 cls = DigitalOcean_v1_BaseDriver
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_BaseDriver
@@ -150,7 +151,7 @@ class DigitalOceanBaseDriver(BaseDriver):
         raise NotImplementedError(
             'ex_get_event not implemented for this driver')
 
-    def _paginated_request(self, event_id):
+    def _paginated_request(self, url, obj):
         raise NotImplementedError(
             '_paginated_requests not implemented for this driver')
 
@@ -198,13 +199,13 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         """
         Perform multiple calls in order to have a full list of elements when
         the API responses are paginated.
-    
+
         :param url: API endpoint
         :type url: ``str``
-    
+
         :param obj: Result object key
         :type obj: ``str``
-    
+
         :return: ``list`` of API response objects
         """
         params = {}
@@ -215,14 +216,12 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
             for page in range(2, int(pages) + 1):
                 params.update({'page': page})
                 new_data = self.connection.request(url, params=params)
-    
+
                 more_values = new_data.object[obj]
                 for value in more_values:
                     values.append(value)
             data = values
         except KeyError:  # No pages.
             data = data.object[obj]
-    
+
         return data
-
-

@@ -18,11 +18,9 @@ Digital Ocean Driver
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.common.base import ConnectionUserAndKey, ConnectionKey
-from libcloud.common.base import JsonResponse
 from libcloud.common.digitalocean import DigitalOcean_v1_BaseDriver
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
-from libcloud.compute.types import Provider, NodeState, InvalidCredsError
+from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
 
@@ -57,7 +55,7 @@ class DigitalOceanNodeDriver(NodeDriver):
 
     def __new__(cls, key, secret=None, api_version='v2', **kwargs):
         if cls is DigitalOceanNodeDriver:
-            if api_version == 'v1' or secret != None:
+            if api_version == 'v1' or secret is not None:
                 cls = DigitalOcean_v1_NodeDriver
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_NodeDriver
@@ -65,6 +63,7 @@ class DigitalOceanNodeDriver(NodeDriver):
                 raise NotImplementedError('Unsupported API version: %s' %
                                           (api_version))
         return super(DigitalOceanNodeDriver, cls).__new__(cls, **kwargs)
+
 
 # TODO Implement v1 driver using KeyPair
 class SSHKey(object):
@@ -78,7 +77,8 @@ class SSHKey(object):
                 (self.id, self.name, self.pub_key))
 
 
-class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver, DigitalOceanNodeDriver):
+class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver,
+                                 DigitalOceanNodeDriver):
     """
     DigitalOcean NodeDriver using v1 of the API.
     """
@@ -171,7 +171,7 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver, DigitalOceanNodeDri
                                        qkey.extra['id']).object['ssh_key']
         return self._to_key_pair(data=data)
 
-    #TODO: This adds the ssh_key_pub parameter. This puts the burden of making
+    # TODO: This adds the ssh_key_pub parameter. This puts the burden of making
     #      it within the function or on the API. The KeyPair API needs work.
     def create_key_pair(self, name, ssh_key_pub):
         """
@@ -187,7 +187,7 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver, DigitalOceanNodeDri
         data = self.connection.request('/v1/ssh_keys/new/', method='GET',
                                        params=params).object
         assert 'ssh_key' in data
-        #TODO: libcloud.compute.base.KeyPair.create_key_pair doesn't specify
+        # TODO: libcloud.compute.base.KeyPair.create_key_pair doesn't specify
         #      a return value. This looks like it should return a KeyPair
         return self._to_key_pair(data=data['ssh_key'])
 
@@ -200,7 +200,7 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver, DigitalOceanNodeDri
         """
         res = self.connection.request('/v1/ssh_keys/%s/destroy/' %
                                       key_pair.extra['id'])
-        #TODO: This looks like it should return bool like the other delete_*
+        # TODO: This looks like it should return bool like the other delete_*
         return res.status == httplib.OK
 
     def _to_node(self, data):
@@ -251,14 +251,15 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver, DigitalOceanNodeDri
         except KeyError:
             pubkey = None
         return KeyPair(data['name'], public_key=pubkey, fingerprint=None,
-                       driver=self, private_key=None, extra={'id':data['id']})
+                       driver=self, private_key=None, extra={'id': data['id']})
 
     def _to_ssh_key(self, data):
         return SSHKey(id=data['id'], name=data['name'],
                       pub_key=data.get('ssh_pub_key', None))
 
 
-class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDriver):
+class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
+                                 DigitalOceanNodeDriver):
     """
     DigitalOcean NodeDriver using v2 of the API.
     """

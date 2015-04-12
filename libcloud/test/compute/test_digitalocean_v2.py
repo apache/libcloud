@@ -88,7 +88,8 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         location = self.driver.list_locations()[0]
 
         DigitalOceanMockHttp.type = 'INVALID_IMAGE'
-        expected_msg = r'You specified an invalid image for Droplet creation. \(code: 404\)'
+        expected_msg = \
+            r'You specified an invalid image for Droplet creation. \(code: 404\)'
         self.assertRaisesRegexp(Exception, expected_msg,
                                 self.driver.create_node,
                                 name='test', size=size, image=image,
@@ -216,7 +217,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         body = self.fixtures.load('ex_rename_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _v2_droplets_3164444_actions_SNAPSHOT(self, method, url, body, headers):
+    def _v2_droplets_3164444_actions_SNAPSHOT(self, method, url,
+                                              body, headers):
         # create_image
         body = self.fixtures.load('create_image.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
@@ -236,7 +238,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         body = self.fixtures.load('ex_power_on_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _v2_droplets_3164444_actions_SHUTDOWN(self, method, url, body, headers):
+    def _v2_droplets_3164444_actions_SHUTDOWN(self, method, url,
+                                              body, headers):
         # ex_shutdown_node
         body = self.fixtures.load('ex_shutdown_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
