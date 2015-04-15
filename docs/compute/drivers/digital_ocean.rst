@@ -14,8 +14,9 @@ Instantiating a driver
 ----------------------
 
 DigitalOcean driver supports two API versions - old API v1.0 and the new API
-v2.0 which is currently in beta. Since trunk (to be libcloud v0.18.0), the
-driver uses new API v2.0 by default.
+v2.0. Since trunk (to be libcloud v0.18.0), the driver uses the correct API
+based on the initialization with the Client ID (key) and Access Token (secret)
+for v1.0 or the Personal Access Token (key) in v2.0.
 
 Instantiating a driver using API v2.0
 -------------------------------------
