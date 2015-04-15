@@ -164,7 +164,8 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver,
         :return: Available SSH keys.
         :rtype: ``list`` of :class:`SSHKey`
         """
-        warnings.warn("This method has been deprecated in favor of the list_key_pairs method")
+        warnings.warn("This method has been deprecated in "
+                      "favor of the list_key_pairs method")
 
         data = self.connection.request('/v1/ssh_keys').object['ssh_keys']
         return list(map(self._to_ssh_key, data))
@@ -211,7 +212,8 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver,
         :param      name: Valid public key string (required)
         :type       name: ``str``
         """
-        warnings.warn("This method has been deprecated in favor of the create_key_pair method")
+        warnings.warn("This method has been deprecated in "
+                      "favor of the create_key_pair method")
 
         params = {'name': name, 'ssh_pub_key': ssh_key_pub}
         data = self.connection.request('/v1/ssh_keys/new/', method='GET',
@@ -237,7 +239,9 @@ class DigitalOcean_v1_NodeDriver(DigitalOcean_v1_BaseDriver,
         :param      key_id: SSH key id (required)
         :type       key_id: ``str``
         """
-        warnings.warn("This method has been deprecated in favor of the delete_key_pair method")
+        warnings.warn(
+            "This method has been deprecated in "
+            "favor of the delete_key_pair method")
 
         res = self.connection.request('/v1/ssh_keys/%s/destroy/' % (key_id))
         return res.status == httplib.OK
