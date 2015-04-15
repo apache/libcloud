@@ -119,9 +119,22 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         self.assertEqual(keys[0].name, 'test1')
         self.assertEqual(keys[0].public_key, None)
 
+    def test_ex_list_ssh_keys(self):
+        keys = self.driver.ex_list_ssh_keys()
+        self.assertEqual(len(keys), 1)
+
+        self.assertEqual(keys[0].id, 7717)
+        self.assertEqual(keys[0].name, 'test1')
+        self.assertEqual(keys[0].pub_key, None)
+
     def test_delete_key_pair(self):
         key = self.driver.list_key_pairs()[0]
         result = self.driver.delete_key_pair(key)
+        self.assertTrue(result)
+
+    def test_ex_destroy_ssh_key(self):
+        key = self.driver.ex_list_ssh_keys()[0]
+        result = self.driver.ex_destroy_ssh_key(key.id)
         self.assertTrue(result)
 
 
