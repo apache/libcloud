@@ -19,6 +19,7 @@ import binascii
 
 
 __all__ = [
+    'find',
     'get_driver',
     'set_driver',
     'merge_valid_keys',
@@ -31,6 +32,11 @@ __all__ = [
 
     'ReprMixin'
 ]
+
+
+def find(l, predicate):
+    results = [x for x in l if predicate(x)]
+    return results[0] if len(results) > 0 else None
 
 
 def get_driver(drivers, provider):

@@ -113,8 +113,9 @@ class LoadBalancer(object):
         return self.driver.destroy_balancer(balancer=self)
 
     def __repr__(self):
-        return ('<LoadBalancer: id=%s, name=%s, state=%s>' % (self.id,
-                self.name, self.state))
+        return ('<LoadBalancer: id=%s, name=%s, state=%s, ip=%s, '
+                'port=%s>' % (self.id, self.name, self.state, self.ip,
+                              self.port))
 
 
 class Algorithm(object):
@@ -127,6 +128,8 @@ class Algorithm(object):
     LEAST_CONNECTIONS = 2
     WEIGHTED_ROUND_ROBIN = 3
     WEIGHTED_LEAST_CONNECTIONS = 4
+    SHORTEST_RESPONSE = 5
+    PERSISTENT_IP = 6
 
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
