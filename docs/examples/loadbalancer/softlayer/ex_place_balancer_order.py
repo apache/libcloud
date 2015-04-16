@@ -21,5 +21,4 @@ lb_package = [p for p in packages if p.capacity == CAPACITY][0]
 driver.ex_place_balancer_order(lb_package,
                                NodeLocation(DATACENTER, None, None, None))
 
-print 'Successfully submitted oder request, from package' % \
-    lb_package
+print('Successfully submitted oder request, from package' % (lb_package))

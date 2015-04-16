@@ -12,17 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.common.types import LibcloudError
 
 __all__ = [
     'SoftlayerLBDriver'
 ]
 
+from libcloud.common.types import LibcloudError
+from libcloud.common.softlayer import SoftLayerConnection
 from libcloud.utils.misc import find, reverse_dict
 from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer,\
-    DEFAULT_ALGORITHM, Member
-from libcloud.common.softlayer import SoftLayerConnection
+from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Member
 
 lb_service = 'SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_'\
     'VirtualIpAddress'
@@ -81,7 +81,6 @@ class SoftlayerLBDriver(Driver):
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
     def list_balancers(self):
-
         mask = {
             'adcLoadBalancers': {
                 'ipAddress': '',
@@ -99,6 +98,7 @@ class SoftlayerLBDriver(Driver):
                 }
             }
         }
+
         res = self.connection.request(
             'SoftLayer_Account', 'getAdcLoadBalancers',
             object_mask=mask).object
@@ -106,7 +106,6 @@ class SoftlayerLBDriver(Driver):
         return [self._to_balancer(lb) for lb in res]
 
     def get_balancer(self, balancer_id):
-
         balancers = self.list_balancers()
         balancer = find(balancers, lambda b: b.id == balancer_id)
         if not balancer:
@@ -123,7 +122,6 @@ class SoftlayerLBDriver(Driver):
         return ['dns', 'ftp', 'http', 'https', 'tcp', 'udp']
 
     def balancer_list_members(self, balancer):
-
         lb = self._get_balancer_model(balancer.id)
         members = []
         vs = self._locate_service_group(lb, balancer.port)
@@ -136,7 +134,6 @@ class SoftlayerLBDriver(Driver):
         return members
 
     def balancer_attach_member(self, balancer, member):
-
         lb = self._get_balancer_model(balancer.id)
         vs = self._locate_service_group(lb, balancer.port)
         if not vs:
@@ -153,7 +150,6 @@ class SoftlayerLBDriver(Driver):
         return [m for m in balancer.list_members() if m.ip == member.ip][0]
 
     def balancer_detach_member(self, balancer, member):
-
         svc_lbsrv = 'SoftLayer_Network_Application_Delivery_Controller_'\
             'LoadBalancer_Service'
 
@@ -161,7 +157,6 @@ class SoftlayerLBDriver(Driver):
         return True
 
     def destroy_balancer(self, balancer):
-
         res_billing = self.connection.request(lb_service, 'getBillingItem',
                                               id=balancer.id).object
 
@@ -330,21 +325,18 @@ class SoftlayerLBDriver(Driver):
         return vs
 
     def _get_routing_types(self):
-
         svc_rtype = 'SoftLayer_Network_Application_Delivery_Controller_'\
             'LoadBalancer_Routing_Type'
 
         return self.connection.request(svc_rtype, 'getAllObjects').object
 
     def _get_routing_methods(self):
-
         svc_rmeth = 'SoftLayer_Network_Application_Delivery_Controller_'\
             'LoadBalancer_Routing_Method'
 
         return self.connection.request(svc_rmeth, 'getAllObjects').object
 
     def _get_location(self, location_id):
-
         res = self.connection.request('SoftLayer_Location_Datacenter',
                                       'getDatacenters').object
 
@@ -361,7 +353,6 @@ class SoftlayerLBDriver(Driver):
                                        ip).object
 
     def _to_lb_package(self, pkg):
-
         try:
             price_id = pkg['prices'][0]['id']
         except:
@@ -433,7 +424,6 @@ class SoftlayerLBDriver(Driver):
         return balancer
 
     def _to_member(self, srv, balancer=None):
-
         svc_id = srv['id']
         ip = srv['ipAddress']['ipAddress']
         port = srv['port']
