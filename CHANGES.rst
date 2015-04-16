@@ -149,6 +149,10 @@ Compute
   (LIBCLOUD-556, GITHUB-305, GITHUB-499)
   [Michael Bennett, davidcrossland, Richard Conway, Matt Baldwin, Tomaz Muraus]
 
+- Fix VPC lookup method in CloudStack driver
+  (GITHUB-506)
+  [Avi Nanhkoesingh]
+
 Storage
 ~~~~~~~
 
