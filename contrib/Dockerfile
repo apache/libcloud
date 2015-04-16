@@ -35,4 +35,4 @@ RUN set -e && \
 
 COPY . /libcloud
 WORKDIR /libcloud
-CMD tox
+CMD tox -e py26,py27,pypy,py32,py33,py34,lint
