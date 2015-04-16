@@ -964,11 +964,11 @@ class CloudStackVpnGateway(object):
 
     @property
     def vpc(self):
-        for vpc in self.ex_list_vpcs():
+        for vpc in self.driver.ex_list_vpcs():
             if self.vpc_id == vpc.id:
-                break
-        else:
-            raise LibcloudError('VPC with id=%s not found' % self.vpc_id)
+                return vpc
+
+        raise LibcloudError('VPC with id=%s not found' % self.vpc_id)
 
     def delete(self):
         return self.driver.ex_delete_vpn_gateway(vpn_gateway=self)
