@@ -10,6 +10,7 @@ Provider                              Documentation                             
 `CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`    CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`    CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
 `DigitalOcean`_                       :doc:`Click </compute/drivers/digital_ocean>` DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
+`Dimension Data`_                     :doc:`Click </compute/drivers/dimensiondata>` DIMENSIONDATA       :mod:`libcloud.compute.drivers.dimensiondata`  :class:`DimensionDataNodeDriver`
 `Dreamhost`_                                                                        DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
 `Amazon EC2`_                         :doc:`Click </compute/drivers/ec2>`           EC2                 :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
 `Amazon EC2 (ap-northeast-1)`_                                                      EC2_AP_NORTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APNENodeDriver`          
@@ -20,7 +21,7 @@ Provider                              Documentation                             
 `Amazon EC2 (sa-east-1)`_                                                           EC2_SA_EAST         :mod:`libcloud.compute.drivers.ec2`            :class:`EC2SAEastNodeDriver`        
 `Amazon EC2`_                                                                       EC2_US_EAST         :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
 `Amazon EC2 (us-west-1)`_                                                           EC2_US_WEST         :mod:`libcloud.compute.drivers.ec2`            :class:`EC2USWestNodeDriver`        
-`Amazon EC2 (us-west-2)`_                                                           EC2_US_WEST_OREGON  :mod:`libcloud.compute.drivers.ec2`            :class:`EC2USWestOregonNodeDriver`  
+`Amazon EC2 (us-west-2)`_                                                           EC2_US_WEST_OREGON  :mod:`libcloud.compute.drivers.ec2`            :class:`EC2USWestOregonNodeDriver`
 `Enomaly Elastic Computing Platform`_                                               ECP                 :mod:`libcloud.compute.drivers.ecp`            :class:`ECPNodeDriver`              
 `ElasticHosts`_                                                                     ELASTICHOSTS        :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsNodeDriver`     
 `ElasticHosts (syd-y)`_                                                             ELASTICHOSTS_AU1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsAU1NodeDriver`  

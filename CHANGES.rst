@@ -153,6 +153,10 @@ Compute
   (GITHUB-506)
   [Avi Nanhkoesingh]
 
+- Add new driver for the Dimension Data provider based on the OpSource driver.
+  (LIBCLOUD-698, GITHUB-507)
+  [Anthony Shaw]
+
 Storage
 ~~~~~~~
 

@@ -9,7 +9,8 @@ Provider                              list volumes create volume destroy volume 
 `CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
-`DigitalOcean`_                       no           no            no             no            no            no             no             
+`DigitalOcean`_                       no           no            no             no            no            no             no
+`DimensionData`_                      no           no            no             no            no            no             no
 `Dreamhost`_                          no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            

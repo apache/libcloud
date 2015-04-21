@@ -9,7 +9,8 @@ Provider                              list nodes create node reboot node destroy
 `CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
 `CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
-`DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
+`DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no
+`DimensionData`_                      yes        yes         yes         yes          yes         yes        yes
 `Dreamhost`_                          yes        yes         yes         yes          yes         yes        no         
 `Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
