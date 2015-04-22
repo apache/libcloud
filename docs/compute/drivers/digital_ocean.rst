@@ -1,9 +1,9 @@
 DigitalOcean Compute Driver Documentation
 =========================================
 
-`DigitalOcean`_ is an American virtual private server provider based in New York
-City with data centers in New York, Amsterdam, San Francisco, London and
-Singapore.
+`DigitalOcean`_ is an American virtual private server provider based in New
+York City with data centers in New York, Amsterdam, San Francisco, London,
+Singapore and Frankfurt.
 
 .. figure:: /_static/images/provider_logos/digitalocean.png
     :align: center

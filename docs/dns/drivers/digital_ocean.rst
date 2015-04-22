@@ -1,9 +1,9 @@
-DigitalOcean Compute Driver Documentation
-=========================================
+DigitalOcean DNS Driver Documentation
+=====================================
 
-`DigitalOcean`_ is an American virtual private server provider based in New York
-City with data centers in New York, Amsterdam, San Francisco, London and
-Singapore.
+`DigitalOcean`_ is an American virtual private server provider based in New
+York City with data centers in New York, Amsterdam, San Francisco, London,
+Singapore and Frankfurt.
 
 .. figure:: /_static/images/provider_logos/digitalocean.png
     :align: center
@@ -13,7 +13,7 @@ Singapore.
 Instantiating a driver
 ----------------------
 
-DigitalOcean dns driver supports only the v2.0 API requiring a Personal Access
+DigitalOcean dns driver only supports the v2.0 API requiring a Personal Access
 Token to initialize as the key.
 
 Instantiating the driver
