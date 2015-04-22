@@ -10,6 +10,7 @@ Provider                               create balancer list balancers list membe
 `Rackspace LB`_                        yes             yes            yes          yes           yes           no                 
 `Rackspace LB`_                        yes             yes            yes          yes           yes           no                 
 `Rackspace LB`_                        yes             yes            yes          yes           yes           no                 
+`Softlayer Load Balancing`_            no              yes            yes          yes           yes           no                 
 ====================================== =============== ============== ============ ============= ============= ===================
 
 .. _`Brightbox`: http://www.brightbox.co.uk/
@@ -21,3 +22,4 @@ Provider                               create balancer list balancers list membe
 .. _`Rackspace LB`: http://www.rackspace.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
+.. _`Softlayer Load Balancing`: http://www.softlayer.com/
