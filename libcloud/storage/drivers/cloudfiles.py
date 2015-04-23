@@ -747,6 +747,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 for obj in objects:
                     yield obj
                 params['marker'] = obj.name
+                break
 
             else:
                 raise LibcloudError('Unexpected status code: %s' %
