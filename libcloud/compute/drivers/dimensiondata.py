@@ -67,8 +67,8 @@ class DimensionDataResponse(XmlResponse):
             code = findtext(body, 'resultCode', SERVER_NS)
             message = findtext(body, 'resultDetail', SERVER_NS)
             raise DimensionDataAPIException(code,
-                                       message,
-                                       driver=DimensionDataNodeDriver)
+                                            message,
+                                            driver=DimensionDataNodeDriver)
 
         return self.body
 
@@ -166,10 +166,10 @@ class DimensionDataStatus(object):
         self.failureReason = failureReason
 
     def __repr__(self):
-        return (('<DimensionDataStatus: action=%s, requestTime=%s, userName=%s, '
-                 'numberOfSteps=%s, updateTime=%s, step_name=%s, '
-                 'step_number=%s, step_percentComplete=%s, '
-                 'failureReason=%s')
+        return (('<DimensionDataStatus: action=%s, requestTime=%s, '
+                 'userName=%s, numberOfSteps=%s, updateTime=%s, '
+                 'step_name=%s, step_number=%s, '
+                 'step_percentComplete=%s, failureReason=%s')
                 % (self.action, self.requestTime, self.userName,
                    self.numberOfSteps, self.updateTime, self.step_name,
                    self.step_number, self.step_percentComplete,
@@ -281,7 +281,8 @@ class DimensionDataNodeDriver(NodeDriver):
 
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
-        #      because DimensionData allows multiple nodes to have the same name
+        #      because DimensionData allows multiple
+        #      nodes to have the same name
         node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
 
         if getattr(auth, "generated", False):
@@ -483,15 +484,16 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = findtext(element, 'location', NETWORK_NS)
         location = self.ex_get_location_by_id(location_id)
 
-        return DimensionDataNetwork(id=findtext(element, 'id', NETWORK_NS),
-                               name=findtext(element, 'name', NETWORK_NS),
-                               description=findtext(element, 'description',
-                                                    NETWORK_NS),
-                               location=location,
-                               privateNet=findtext(element, 'privateNet',
-                                                   NETWORK_NS),
-                               multicast=multicast,
-                               status=status)
+        return DimensionDataNetwork(
+            id=findtext(element, 'id', NETWORK_NS),
+            name=findtext(element, 'name', NETWORK_NS),
+            description=findtext(element, 'description',
+                                 NETWORK_NS),
+            location=location,
+            privateNet=findtext(element, 'privateNet',
+                                NETWORK_NS),
+            multicast=multicast,
+            status=status)
 
     def _to_locations(self, object):
         locations = []
@@ -561,18 +563,32 @@ class DimensionDataNodeDriver(NodeDriver):
         if element is None:
             return DimensionDataStatus()
         s = DimensionDataStatus(action=findtext(element, 'action', SERVER_NS),
-                           requestTime=findtext(element, 'requestTime',
-                                                SERVER_NS),
-                           userName=findtext(element, 'userName',
-                                             SERVER_NS),
-                           numberOfSteps=findtext(element, 'numberOfSteps',
-                                                  SERVER_NS),
-                           step_name=findtext(element, 'step/name',
-                                              SERVER_NS),
-                           step_number=findtext(element, 'step_number',
-                                                SERVER_NS),
-                           step_percentComplete=findtext(
-                               element, 'step/percentComplete', SERVER_NS),
-                           failureReason=findtext(element, 'failureReason',
-                                                  SERVER_NS))
+                                requestTime=findtext(
+                                    element,
+                                    'requestTime',
+                                    SERVER_NS),
+                                userName=findtext(
+                                    element,
+                                    'userName',
+                                    SERVER_NS),
+                                numberOfSteps=findtext(
+                                    element,
+                                    'numberOfSteps',
+                                    SERVER_NS),
+                                step_name=findtext(
+                                    element,
+                                    'step/name',
+                                    SERVER_NS),
+                                step_number=findtext(
+                                    element,
+                                    'step_number',
+                                    SERVER_NS),
+                                step_percentComplete=findtext(
+                                    element,
+                                    'step/percentComplete',
+                                    SERVER_NS),
+                                failureReason=findtext(
+                                    element,
+                                    'failureReason',
+                                    SERVER_NS))
         return s
