@@ -190,6 +190,10 @@ Compute
   (GITHUB-338)
   [ZuluPro]
 
+- Add new driver for Packet (https://www.packet.net/) provider.
+  (LIBCLOUD-703, GITHUB-527)
+  [Aaron Welch]
+
 Storage
 ~~~~~~~
 

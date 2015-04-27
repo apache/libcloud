@@ -1,0 +1,10 @@
+{
+  "id": "2c1a7f23-1dc6-4a37-948e-d9857d9f607c",
+  "label": "ubuntu1404-201505221415a4c7757e-5198-4f49-82d4-35eb2d06eb27",
+  "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI4pIqzpb5g3992h+yr527VRcaB68KE4vPjWPPoiQws49KIs2NMcOzS9QE4641uW1u5ML2HgQdfYKMF/YFGnI1Y6xV637DjhDyZYV9LasUH49npSSJjsBcsk9JGfUpNAOdcgpFzK8V90eiOrOC5YncxdwwG8pwjFI9nNVPCl4hYEu1iXdyysHvkFfS2fklsNjLWrzfafPlaen+qcBxygCA0sFdW/7er50aJeghdBHnE2WhIKLUkJxnKadznfAge7oEe+3LLAPfP+3yHyvp2+H0IzmVfYvAjnzliYetqQ8pg5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud.local.lan\n",
+  "fingerprint": "aa:49:46:57:2a:07:64:56:33:07:ef:76:1d:54:a3:41",
+  "created_at": "2015-05-22T18:15:04Z",
+  "updated_at":"2015-05-22T18:15:04Z",
+  "user": { "href":"/users/userid" },
+  "href": "/ssh-keys/2c1a7f23-1dc6-4a37-948e-d9857d9f607c"
+}

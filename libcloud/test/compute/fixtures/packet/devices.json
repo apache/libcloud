@@ -1,0 +1,57 @@
+{
+  "devices": [
+    {
+      "id": "1e52437e-bbbb-cccc-dddd-74a9dfd3d3bb",
+      "hostname": "test-node",
+      "state": "active",
+      "tags": [],
+      "billing_cycle": "hourly",
+      "user": "root",
+      "userdata": "",
+      "locked": false,
+      "created_at": "2015-05-03T15:50:49Z",
+      "updated_at": "2015-05-03T16:00:08Z",
+      "operating_system":
+        {
+          "slug": "ubuntu_14_04",
+          "name": "Ubuntu 14.04 LTS",
+          "distro": "ubuntu",
+          "version": "14.04"
+        },
+      "project": { "href": "/projects/project-id" },
+      "facility": { "id": "e1e9c52e-a0bc-4117-b996-0fc94843ea09" },
+      "plan":
+        {
+          "id": "6d1f1ffa-7912-4b78-b50d-88cc7c8ab40f",
+          "slug": "baremetal_1",
+          "name": "Type 1",
+          "description": "Our Type 1 configuration is a zippy general use server",
+          "line": "baremetal",
+          "specs":
+            {
+              "cpus": [{"count":1,"type":"Intel E3-1240 v3"}],
+              "memory": {"total":"16GB" },
+              "drives": [{"count":2,"size":"120GB","type":"SSD"}],
+              "nics": [{"count":2,"type":"gigabit"}],
+              "features": {"raid":true, "txt":true}
+            },
+          "pricing": { "hourly":0.4 }
+        },
+      "ip_addresses": [
+        { "address_family": 4,"netmask":"255.255.255.255","cidr":32,"address":"147.75.255.255","gateway":"147.75.255.255","public":true },
+        { "address_family": 6,"netmask":"ffff:ffff:ffff:ffff:ffff:ffff:ffff:fffe","cidr":32,"address":"2604:EEEE::EE","gateway":"2604:1380::EE","public":true },
+        { "address_family": 4,"netmask":"255.255.255.255","cidr":32,"address":"10.0.0.255","gateway":"10.0.0.255","public":false }
+      ],
+      "href": "/devices/1e52437e-bbbb-cccc-dddd-74a9dfd3d3bb"
+    }
+  ],
+  "meta":
+    {
+      "first": { "href":"/projects/project-id/devices?page=1" },
+      "previous":null,
+      "self": { "href":"/projects/project-id/devices?page=1" },
+      "next": null,
+      "last": { "href":"/projects/project-id/devices?page=1" },
+      "total": 1
+    }
+}

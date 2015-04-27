@@ -55,6 +55,7 @@ Provider                              list images get image create image delete 
 `Opsource`_                           yes         no        no           no           no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       
 `Outscale SAS`_                       yes         yes       yes          yes          yes       
+`Packet`_                             yes         no        no           no           no
 `ProfitBricks`_                       yes         no        no           no           no        
 `Rackspace Cloud (Next Gen)`_         yes         yes       yes          yes          no        
 `Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
@@ -125,6 +126,7 @@ Provider                              list images get image create image delete 
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
