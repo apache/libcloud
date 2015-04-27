@@ -1,0 +1,12 @@
+{
+  "facilities": [
+    {
+      "id": "e1e9c52e-a0bc-4117-b996-0fc94843ea09",
+      "name": "Parsippany, NJ",
+      "code": "ewr1",
+      "features": ["baremetal"],
+      "address": null,
+      "href": "/facilities/e1e9c52e-a0bc-4117-b996-0fc94843ea09"
+    }
+  ]
+}

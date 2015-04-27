@@ -133,6 +133,7 @@ class Provider(object):
     VULTR = 'vultr'
     AURORACOMPUTE = 'aurora_compute'
     CLOUDWATT = 'cloudwatt'
+    PACKET = 'packet'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'

@@ -55,6 +55,7 @@ Provider                              Documentation                             
 `Opsource`_                                                                         OPSOURCE            :mod:`libcloud.compute.drivers.opsource`       :class:`OpsourceNodeDriver`         
 `Outscale INC`_                       :doc:`Click </compute/drivers/outscale_inc>`  OUTSCALE_INC        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleINCNodeDriver`      
 `Outscale SAS`_                       :doc:`Click </compute/drivers/outscale_sas>`  OUTSCALE_SAS        :mod:`libcloud.compute.drivers.ec2`            :class:`OutscaleSASNodeDriver`      
+`Packet`_                             :doc:`Click </compute/drivers/packet>`        PACKET              :mod:`libcloud.compute.drivers.packet`         :class:`PacketNodeDriver`           
 `ProfitBricks`_                                                                     PROFIT_BRICKS       :mod:`libcloud.compute.drivers.profitbricks`   :class:`ProfitBricksNodeDriver`     
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`     RACKSPACE           :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceNodeDriver`        
 `Rackspace Cloud (First Gen)`_                                                      RACKSPACE_FIRST_GEN :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceFirstGenNodeDriver`
@@ -125,6 +126,7 @@ Provider                              Documentation                             
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
