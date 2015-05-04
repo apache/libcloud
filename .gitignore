@@ -19,3 +19,8 @@ apache_libcloud.egg-info/
 .project
 .pydevproject
 .settings
+libcloud.pyperf
+libcloud.pyproj
+libcloud.pyproj.user
+libcloud.sln
+libcloud.v12.suo
