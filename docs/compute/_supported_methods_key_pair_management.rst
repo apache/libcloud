@@ -10,6 +10,7 @@ Provider                              list key pairs get key pair create key pai
 `CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `DigitalOcean`_                       yes            no           yes             no                            no                          yes            
+`DimensionData`_                      no             no           no              no                            no                          no             
 `Dreamhost`_                          no             no           no              no                            no                          no             
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-northeast-1)`_        yes            yes          yes             yes                           no                          yes            

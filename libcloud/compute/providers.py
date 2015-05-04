@@ -113,6 +113,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
     Provider.OPSOURCE:
     ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
+    Provider.DIMENSIONDATA:
+    ('libcloud.compute.drivers.dimensiondata', 'DimensionDataNodeDriver'),
     Provider.OPENSTACK:
     ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
     Provider.NINEFOLD:

@@ -60,6 +60,7 @@ class Provider(object):
     :cvar NIMBUS: Nimbus
     :cvar BLUEBOX: Bluebox
     :cvar OPSOURCE: Opsource Cloud
+    :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar NINEFOLD: Ninefold
     :cvar TERREMARK: Terremark
     :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
@@ -105,6 +106,7 @@ class Provider(object):
     BLUEBOX = 'bluebox'
     GANDI = 'gandi'
     OPSOURCE = 'opsource'
+    DIMENSIONDATA = 'dimensiondata'
     OPENSTACK = 'openstack'
     SKALICLOUD = 'skalicloud'
     SERVERLOVE = 'serverlove'
