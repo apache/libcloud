@@ -148,32 +148,32 @@ class DimensionDataConnection(ConnectionUserAndKey):
 class DimensionDataStatus(object):
     """
     DimensionData API pending operation status class
-        action, requestTime, username, numberOfSteps, updateTime,
-        step.name, step.number, step.percentComplete, failureReason,
+        action, request_time, user_name, number_of_steps, update_time,
+        step.name, step.number, step.percent_complete, failure_reason,
     """
-    def __init__(self, action=None, requestTime=None, userName=None,
-                 numberOfSteps=None, updateTime=None, step_name=None,
-                 step_number=None, step_percentComplete=None,
-                 failureReason=None):
+    def __init__(self, action=None, request_time=None, user_name=None,
+                 number_of_steps=None, update_time=None, step_name=None,
+                 step_number=None, step_percent_complete=None,
+                 failure_reason=None):
         self.action = action
-        self.requestTime = requestTime
-        self.userName = userName
-        self.numberOfSteps = numberOfSteps
-        self.updateTime = updateTime
+        self.request_time = request_time
+        self.user_name = user_name
+        self.number_of_steps = number_of_steps
+        self.update_time = update_time
         self.step_name = step_name
         self.step_number = step_number
-        self.step_percentComplete = step_percentComplete
-        self.failureReason = failureReason
+        self.step_percent_complete = step_percent_complete
+        self.failure_reason = failure_reason
 
     def __repr__(self):
-        return (('<DimensionDataStatus: action=%s, requestTime=%s, '
-                 'userName=%s, numberOfSteps=%s, updateTime=%s, '
+        return (('<DimensionDataStatus: action=%s, request_time=%s, '
+                 'user_name=%s, number_of_steps=%s, update_time=%s, '
                  'step_name=%s, step_number=%s, '
-                 'step_percentComplete=%s, failureReason=%s')
-                % (self.action, self.requestTime, self.userName,
-                   self.numberOfSteps, self.updateTime, self.step_name,
-                   self.step_number, self.step_percentComplete,
-                   self.failureReason))
+                 'step_percent_complete=%s, failure_reason=%s')
+                % (self.action, self.request_time, self.user_name,
+                   self.number_of_steps, self.update_time, self.step_name,
+                   self.step_number, self.step_percent_complete,
+                   self.failure_reason))
 
 
 class DimensionDataNetwork(object):
@@ -181,21 +181,21 @@ class DimensionDataNetwork(object):
     DimensionData network with location.
     """
 
-    def __init__(self, id, name, description, location, privateNet,
+    def __init__(self, id, name, description, location, private_net,
                  multicast, status):
         self.id = str(id)
         self.name = name
         self.description = description
         self.location = location
-        self.privateNet = privateNet
+        self.private_net = private_net
         self.multicast = multicast
         self.status = status
 
     def __repr__(self):
         return (('<DimensionDataNetwork: id=%s, name=%s, description=%s, '
-                 'location=%s, privateNet=%s, multicast=%s>')
+                 'location=%s, private_net=%s, multicast=%s>')
                 % (self.id, self.name, self.description, self.location,
-                   self.privateNet, self.multicast))
+                   self.private_net, self.multicast))
 
 
 class DimensionDataNodeDriver(NodeDriver):
@@ -209,7 +209,8 @@ class DimensionDataNodeDriver(NodeDriver):
     type = Provider.DIMENSIONDATA
     features = {'create_node': ['password']}
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, image, auth, ex_description,
+                    ex_network, ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
 
@@ -229,9 +230,9 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_network:  Network to create the node within (required)
         :type       ex_network: :class:`DimensionDataNetwork`
 
-        :keyword    ex_isStarted:  Start server after creation? default
+        :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
-        :type       ex_isStarted:  ``bool``
+        :type       ex_is_started:  ``bool``
 
         :return: The newly created :class:`Node`. NOTE: DimensionData does not
                  provide a
@@ -241,20 +242,14 @@ class DimensionDataNodeDriver(NodeDriver):
                  nodes with the same name exist.
         :rtype: :class:`Node`
         """
-        name = kwargs['name']
-        image = kwargs['image']
 
         # XXX:  Node sizes can be adjusted after a node is created, but
         #       cannot be set at create time because size is part of the
         #       image definition.
         password = None
-        auth = self._get_and_check_auth(kwargs.get('auth'))
-        password = auth.password
+        auth_obj = self._get_and_check_auth(auth)
+        password = auth_obj.password
 
-        ex_description = kwargs.get('ex_description', '')
-        ex_isStarted = kwargs.get('ex_isStarted', True)
-
-        ex_network = kwargs.get('ex_network')
         if not isinstance(ex_network, DimensionDataNetwork):
             raise ValueError('ex_network must be of DimensionDataNetwork type')
         vlanResourcePath = "%s/%s" % (self.connection.get_resource_path(),
@@ -273,7 +268,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "vlanResourcePath").text = vlanResourcePath
         ET.SubElement(server_elm, "imageResourcePath").text = imageResourcePath
         ET.SubElement(server_elm, "administratorPassword").text = password
-        ET.SubElement(server_elm, "isStarted").text = str(ex_isStarted)
+        ET.SubElement(server_elm, "isStarted").text = str(ex_is_started)
 
         self.connection.request_with_orgId('server',
                                            method='POST',
@@ -285,8 +280,8 @@ class DimensionDataNodeDriver(NodeDriver):
         #      nodes to have the same name
         node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
 
-        if getattr(auth, "generated", False):
-            node.extra['password'] = auth.password
+        if getattr(auth_obj, "generated", False):
+            node.extra['password'] = auth_obj.password
 
         return node
 
@@ -490,8 +485,8 @@ class DimensionDataNodeDriver(NodeDriver):
             description=findtext(element, 'description',
                                  NETWORK_NS),
             location=location,
-            privateNet=findtext(element, 'privateNet',
-                                NETWORK_NS),
+            private_net=findtext(element, 'privateNet',
+                                 NETWORK_NS),
             multicast=multicast,
             status=status)
 
@@ -563,15 +558,15 @@ class DimensionDataNodeDriver(NodeDriver):
         if element is None:
             return DimensionDataStatus()
         s = DimensionDataStatus(action=findtext(element, 'action', SERVER_NS),
-                                requestTime=findtext(
+                                request_time=findtext(
                                     element,
                                     'requestTime',
                                     SERVER_NS),
-                                userName=findtext(
+                                user_name=findtext(
                                     element,
                                     'userName',
                                     SERVER_NS),
-                                numberOfSteps=findtext(
+                                number_of_steps=findtext(
                                     element,
                                     'numberOfSteps',
                                     SERVER_NS),
@@ -583,11 +578,11 @@ class DimensionDataNodeDriver(NodeDriver):
                                     element,
                                     'step_number',
                                     SERVER_NS),
-                                step_percentComplete=findtext(
+                                step_percent_complete=findtext(
                                     element,
                                     'step/percentComplete',
                                     SERVER_NS),
-                                failureReason=findtext(
+                                failure_reason=findtext(
                                     element,
                                     'failureReason',
                                     SERVER_NS))
