@@ -130,9 +130,11 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,
-                 ex_force_service_region=None):
+                 ex_force_service_region=None,
+                 retry_delay=None, backoff=None):
         super(OpenStackBaseConnection, self).__init__(
-            user_id, key, secure=secure, timeout=timeout)
+            user_id, key, secure=secure, timeout=timeout,
+            retry_delay=retry_delay, backoff=backoff)
 
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version

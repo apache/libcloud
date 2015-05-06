@@ -31,6 +31,12 @@ General
   (GITHUB-343, GITHUB-498, LIBCLOUD-601, LIBCLOUD-686)
   [Nicolas Fraison, Samuel Marks]
 
+- Add support for retrying failed HTTP requests.
+
+  Retrying is off by default and can be enabled by setting
+  ``LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS`` environment variable.
+  (GITHUB-515, LIBCLOUD-360, LIBCLOUD-709)
+
 Compute
 ~~~~~~~
 
