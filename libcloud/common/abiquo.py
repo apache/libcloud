@@ -180,11 +180,14 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = AbiquoResponse
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None):
+                 url=None, timeout=None,
+                 retry_delay=None, backoff=None):
         super(AbiquoConnection, self).__init__(user_id=user_id, key=key,
                                                secure=secure,
                                                host=host, port=port,
-                                               url=url, timeout=timeout)
+                                               url=url, timeout=timeout,
+                                               retry_delay=retry_delay,
+                                               backoff=backoff)
 
         # This attribute stores data cached across multiple request
         self.cache = {}

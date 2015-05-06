@@ -128,11 +128,14 @@ class AWSGenericResponse(AWSBaseResponse):
 
 class AWSTokenConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, url=None, timeout=None, token=None):
+                 host=None, port=None, url=None, timeout=None, token=None,
+                 retry_delay=None, backoff=None):
         self.token = token
         super(AWSTokenConnection, self).__init__(user_id, key, secure=secure,
                                                  host=host, port=port, url=url,
-                                                 timeout=timeout)
+                                                 timeout=timeout,
+                                                 retry_delay=retry_delay,
+                                                 backoff=backoff)
 
     def add_default_params(self, params):
         # Even though we are adding it to the headers, we need it here too
@@ -325,12 +328,14 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
 class SignedAWSConnection(AWSTokenConnection):
     def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, token=None,
-                 signature_version=DEFAULT_SIGNATURE_VERSION):
+                 url=None, timeout=None, token=None, retry_delay=None,
+                 backoff=None, signature_version=DEFAULT_SIGNATURE_VERSION):
         super(SignedAWSConnection, self).__init__(user_id=user_id, key=key,
                                                   secure=secure, host=host,
                                                   port=port, url=url,
-                                                  timeout=timeout, token=token)
+                                                  timeout=timeout, token=token,
+                                                  retry_delay=retry_delay,
+                                                  backoff=backoff)
         self.signature_version = str(signature_version)
 
         if self.signature_version == '2':
