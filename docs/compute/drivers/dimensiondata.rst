@@ -14,7 +14,7 @@ one of the public cloud instances or as a private instance on premises.
 CaaS has its own non-standard `API`_ , `libcloud` provides a Python
 wrapper on top of this `API`_ with common methods with other IaaS solutions and
 Public cloud providers. Therefore, you can use use the Dimension Data libcloud
-driver to communicate with both the public and private M
+driver to communicate with both the public and private clouds.
 
 Instantiating a driver
 ----------------------
