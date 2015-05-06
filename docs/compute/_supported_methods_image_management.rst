@@ -9,8 +9,8 @@ Provider                              list images get image create image delete 
 `CloudFrames`_                        yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
-`DigitalOcean`_                       yes         yes       yes          yes          no
-`DimensionData`_                      yes         no        no           no           no
+`DigitalOcean`_                       yes         yes       yes          yes          no        
+`DimensionData`_                      yes         no        no           no           no        
 `Dreamhost`_                          yes         no        no           no           no        
 `Amazon EC2`_                         yes         yes       yes          yes          yes       
 `Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
@@ -79,6 +79,7 @@ Provider                              list images get image create image delete 
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`DigitalOcean`: https://www.digitalocean.com
+.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
