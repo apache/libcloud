@@ -34,6 +34,16 @@ from libcloud.utils.networking import is_private_subnet
 """
 Define the extra dictionary for specific resources
 """
+
+def transform_int_or_unlimited(value):
+    try:
+        return int(value)
+    except ValueError as e:
+        if value == 'Unlimited':
+            return -1
+        raise e
+
+
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     'network': {
         'broadcast_domain_type': {
@@ -388,14 +398,6 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         }
     }
 }
-
-def transform_int_or_unlimited(value):
-    try:
-        return int(value)
-    except ValueError as e:
-        if value == 'Unlimited':
-            return -1
-        raise e
 
 
 class CloudStackNode(Node):
