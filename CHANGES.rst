@@ -158,7 +158,7 @@ Compute
   [Avi Nanhkoesingh]
 
 - Add new driver for the Dimension Data provider based on the OpSource driver.
-  (LIBCLOUD-698, GITHUB-507)
+  (LIBCLOUD-698, GITHUB-507, LIBCLOUD-700, GITHUB-513)
   [Anthony Shaw]
 
 - Add "virtualmachine_id" attribute to the ``CloudStackAddress`` class in the
