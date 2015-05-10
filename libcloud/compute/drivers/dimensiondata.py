@@ -140,6 +140,18 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
     allow_insecure = False
 
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, **conn_kwargs):
+        super(DimensionDataConnection, self).__init__(
+            user_id=user_id,
+            key=key,
+            secure=secure,
+            host=host, port=port,
+            url=url, timeout=timeout,
+            proxy_url=proxy_url)
+        if conn_kwargs['region'] is not None:
+            self.host = conn_kwargs['region'].get('host')
+
     def add_default_headers(self, headers):
         headers['Authorization'] = \
             ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
@@ -249,9 +261,10 @@ class DimensionDataNodeDriver(NodeDriver):
     website = 'http://www.dimensiondata.com/'
     type = Provider.DIMENSIONDATA
     features = {'create_node': ['password']}
+    api_version = 1.0
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region=DEFAULT_REGION, **kwargs):
+                 api_version=None, region=DEFAULT_REGION, **kwargs):
 
         if region not in API_ENDPOINTS:
             raise ValueError('Invalid region: %s' % (region))
@@ -261,8 +274,19 @@ class DimensionDataNodeDriver(NodeDriver):
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
                                                       port=port,
-                                                      region=region, **kwargs)
-        self.connection.host = self.selected_region.get('host')
+                                                      api_version=api_version,
+                                                      region=region,
+                                                      **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        """
+            Add the region to the kwargs before the connection is instantiated
+        """
+
+        kwargs = super(DimensionDataNodeDriver,
+                       self)._ex_connection_class_kwargs()
+        kwargs['region'] = self.selected_region
+        return kwargs
 
     def create_node(self, name, image, auth, ex_description,
                     ex_network, ex_is_started=True, **kwargs):
