@@ -42,6 +42,7 @@ class Provider(object):
     WORLDWIDEDNS = 'worldwidedns'
     DNSIMPLE = 'dnsimple'
     POINTDNS = 'pointdns'
+    VULTR = 'vultr'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
