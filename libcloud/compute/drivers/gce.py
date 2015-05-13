@@ -2253,7 +2253,7 @@ class GCENodeDriver(NodeDriver):
         :type     ex_metadata: ``dict`` or ``None``
 
         :keyword  ex_boot_disk: The boot disk to attach to the instance.
-        :type     ex_boot_disk: :class:`StorageVolume` or ``str``
+        :type     ex_boot_disk: :class:`StorageVolume` or ``str`` or ``None``
 
         :keyword  use_existing_disk: If True and if an existing disk with the
                                      same name/location is found, use that
@@ -2265,7 +2265,7 @@ class GCENodeDriver(NodeDriver):
                                used.  If 'None', then no external address will
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
-        :type     external_ip: :class:`GCEAddress` or ``str`` or None
+        :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -2356,6 +2356,8 @@ n
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
+        if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
+            ex_boot_disk = self.ex_get_disk(ex_boot_disk, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -4601,7 +4603,7 @@ n
                                        is made to ensure proper formatting of
                                        the disks[] structure. Using this
                                        structure obviates the need of using
-                                       other disk params like 'ex_boot_disk',
+                                       other disk params like 'boot_disk',
                                        etc. See the GCE docs for specific
                                        details.
         :type     ex_disks_gce_struct: ``list`` or ``None``
@@ -4840,7 +4842,7 @@ n
         request, node_data = self._create_node_req(
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
-            node_attrs['metadata'], boot_disk=status['disk'],
+            node_attrs['metadata'],
             external_ip=node_attrs['external_ip'],
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
