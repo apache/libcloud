@@ -1860,8 +1860,11 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         ipv4_conf = nic['ip_v4_conf']
         ipv6_conf = nic['ip_v6_conf']
 
-        ipv4 = ipv4_conf['ip'] if ipv4_conf else None
-        ipv6 = ipv6_conf['ip'] if ipv6_conf else None
+        ip_v4 = ipv4_conf['ip'] if ipv4_conf else None
+        ip_v6 = ipv6_conf['ip'] if ipv6_conf else None
+
+        ipv4 = ip_v4['uuid'] if ip_v4 else None
+        ipv6 = ip_v4['uuid'] if ip_v6 else None
 
         ips = []
 

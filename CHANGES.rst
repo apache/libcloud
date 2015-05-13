@@ -171,6 +171,11 @@ Compute
   (LIBCLOUD-678, GITHUB-484)
   [Atsushi Sasaki]
 
+- Fix an issue with ``list_nodes`` in the CloudSigma driver throwing an
+  exception if a node in the list had a static IP.
+  (LIBCLOUD-707, GITHUB-514)
+  [Chris O'Brien]
+
 Storage
 ~~~~~~~
 
