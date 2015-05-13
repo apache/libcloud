@@ -1913,14 +1913,23 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return vpcofferings
 
-    def ex_list_vpcs(self):
+    def ex_list_vpcs(self, project=None):
         """
         List the available VPCs
+
+        :keyword    project: Optional project under which VPCs are present.
+        :type       project: :class:`.CloudStackProject`
 
         :rtype ``list`` of :class:`CloudStackVPC`
         """
 
+        args = {}
+
+        if project is not None:
+            args['projectid'] = project.id
+
         res = self._sync_request(command='listVPCs',
+                                 params=args,
                                  method='GET')
         vpcs = res.get('vpc', [])
 

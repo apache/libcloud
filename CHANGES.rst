@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+Compute
+~~~~~~~
+
+- Allow user to filter VPC by project in the CloudStack driver by passing
+  ``project`` argument to the ``ex_list_vps`` method.
+  (GITHUB-516)
+  [Syed Mushtaq Ahmed]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
@@ -38,7 +49,6 @@ General
   (GITHUB-515, LIBCLOUD-360, LIBCLOUD-709)
 
 - Fix a bug in consuming stdout and stderr strams in Paramiko SSH client.
-
   In some cases (like connecting to localhost via SSH), exit_status_ready
   gets set immediately even before the while loop to consume the streams
   kicks in. In those cases, we will not have consumed the streams at all.
