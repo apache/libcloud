@@ -15,9 +15,6 @@
 
 import zlib
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import StringIO
-
 
 __all__ = [
     'decompress_data'
@@ -28,14 +25,7 @@ def decompress_data(compression_type, data):
     if compression_type == 'zlib':
         return zlib.decompress(data)
     elif compression_type == 'gzip':
-        # TODO: Should export BytesIO as StringIO in libcloud.utils.py3
-        if PY3:
-            from io import BytesIO
-            cls = BytesIO
-        else:
-            cls = StringIO
-
-        decomp = zlib.decompressobj(16+zlib.MAX_WBITS)
+        decomp = zlib.decompressobj(16 + zlib.MAX_WBITS)
         return decomp.decompress(data)
 
     else:
