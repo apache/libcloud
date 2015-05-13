@@ -4561,7 +4561,9 @@ n
                                (default), a new non-static address will be
                                used.  If 'None', then no external address will
                                be used.  To use an existing static IP address,
-                               a GCEAddress object should be passed in.
+                               a GCEAddress object should be passed in. This
+                               param will be ignored if also using the
+                               ex_nic_gce_struct param.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
@@ -4698,9 +4700,21 @@ n
         if ex_disks_gce_struct:
             node_data['disks'] = ex_disks_gce_struct
 
-        if network and ex_nic_gce_struct:
-            raise ValueError("Cannot specify both 'network' and "
-                             "'ex_nic_gce_struct'. Use one or the other.")
+        if ex_nic_gce_struct is not None:
+            if hasattr(external_ip, 'address'):
+                raise ValueError("Cannot specify both a static IP address "
+                                 "and 'ex_nic_gce_struct'. Use one or the "
+                                 "other.")
+            if hasattr(network, 'name'):
+                if network.name == 'default':
+                    # assume this is just the default value from create_node()
+                    # and since the user specified ex_nic_gce_struct, the
+                    # struct should take precedence
+                    network = None
+                else:
+                    raise ValueError("Cannot specify both 'network' and "
+                                     "'ex_nic_gce_struct'. Use one or the "
+                                     "other.")
 
         if network:
             ni = [{'kind': 'compute#instanceNetworkInterface',
