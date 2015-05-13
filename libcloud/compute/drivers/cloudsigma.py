@@ -984,10 +984,10 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
     NODE_STATE_MAP = {
         'starting': NodeState.PENDING,
         'stopping': NodeState.PENDING,
-        'unavailable': NodeState.PENDING,
+        'unavailable': NodeState.ERROR,
         'running': NodeState.RUNNING,
         'stopped': NodeState.STOPPED,
-        'paused': NodeState.STOPPED
+        'paused': NodeState.PAUSED
     }
 
     def __init__(self, key, secret, secure=True, host=None, port=None,
