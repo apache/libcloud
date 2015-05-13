@@ -1300,10 +1300,13 @@ class GCENodeDriver(NodeDriver):
         project = self.ex_get_project()
         current_metadata = project.extra['commonInstanceMetadata']
         fingerprint = current_metadata['fingerprint']
+        md_items = []
+        if 'items' in current_metadata:
+            md_items = current_metadata['items']
 
         # grab copy of current 'sshKeys' in case we want to retain them
         current_keys = ""
-        for md in current_metadata['items']:
+        for md in md_items:
             if md['key'] == 'sshKeys':
                 current_keys = md['value']
 
