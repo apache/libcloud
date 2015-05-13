@@ -5262,6 +5262,7 @@ n
         extra['canIpForward'] = node.get('canIpForward')
         extra['serviceAccounts'] = node.get('serviceAccounts', [])
         extra['scheduling'] = node.get('scheduling', {})
+        extra['boot_disk'] = None
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
@@ -5281,10 +5282,17 @@ n
 
         # For the node attributes, use just machine and image names, not full
         # paths.  Full paths are available in the "extra" dict.
+        image = None
         if extra['image']:
             image = self._get_components_from_path(extra['image'])['name']
         else:
-            image = None
+            if extra['boot_disk'] and \
+                    hasattr(extra['boot_disk'], 'extra') and \
+                    'sourceImage' in extra['boot_disk'].extra and \
+                    extra['boot_disk'].extra['sourceImage'] is not None:
+                src_image = extra['boot_disk'].extra['sourceImage']
+                image = self._get_components_from_path(src_image)['name']
+            extra['image'] = image
         size = self._get_components_from_path(node['machineType'])['name']
 
         return Node(id=node['id'], name=node['name'],
@@ -5422,6 +5430,15 @@ n
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
+        extra['sourceImage'] = volume.get('sourceImage')
+        extra['sourceImageId'] = volume.get('sourceImageId')
+        extra['sourceSnapshot'] = volume.get('sourceSnapshot')
+        extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
+        extra['options'] = volume.get('options')
+        if 'licenses' in volume:
+            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
+            extra['licenses'] = lic_objs
+
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 
         return StorageVolume(id=volume['id'], name=volume['name'],
