@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import zlib
-import gzip
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
@@ -36,7 +35,9 @@ def decompress_data(compression_type, data):
         else:
             cls = StringIO
 
-        return gzip.GzipFile(fileobj=cls(data)).read()
+        decomp = zlib.decompressobj(16+zlib.MAX_WBITS)
+        return decomp.decompress(data)
+
     else:
         raise Exception('Invalid or onsupported compression type: %s' %
                         (compression_type))
