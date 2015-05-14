@@ -116,6 +116,16 @@ class GoogleTests(LibcloudTestCase):
         res = self.driver.delete_zone(zone)
         self.assertTrue(res)
 
+    def test_ex_bulk_record_changes(self):
+        zone = self.driver.get_zone('example-com')
+        records = self.driver.ex_bulk_record_changes(zone, {})
+
+        self.assertEqual(records['additions'][0].name, 'foo.example.com.')
+        self.assertEqual(records['additions'][0].type, 'A')
+
+        self.assertEqual(records['deletions'][0].name, 'bar.example.com.')
+        self.assertEqual(records['deletions'][0].type, 'A')
+
 
 class GoogleDNSMockHttp(MockHttpTestCase):
     fixtures = DNSFileFixtures('google')
@@ -149,6 +159,11 @@ class GoogleDNSMockHttp(MockHttpTestCase):
             body = self.fixtures.load('managed_zones_1.json')
         elif method == 'DELETE':
             body = None
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _dns_v1beta1_projects_project_name_managedZones_example_com_changes(
+            self, method, url, body, headers):
+        body = self.fixtures.load('record_changes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1beta1_projects_project_name_managedZones_example_com_ZONE_DOES_NOT_EXIST(

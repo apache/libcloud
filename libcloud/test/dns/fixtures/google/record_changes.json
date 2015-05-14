@@ -1,0 +1,28 @@
+{
+ "kind": "dns#change",
+ "additions": [
+  {
+   "kind": "dns#resourceRecordSet",
+   "name": "foo.example.com.",
+   "type": "A",
+   "ttl": 300,
+   "rrdatas": [
+    "127.0.0.1"
+   ]
+  }
+ ],
+ "deletions": [
+  {
+   "kind": "dns#resourceRecordSet",
+   "name": "bar.example.com.",
+   "type": "A",
+   "ttl": 300,
+   "rrdatas": [
+    "127.0.0.1"
+   ]
+  }
+ ],
+ "startTime": "2015-05-20T19:49:16.974Z",
+ "id": "37",
+ "status": "pending"
+}
