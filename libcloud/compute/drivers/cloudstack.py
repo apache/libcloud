@@ -1810,8 +1810,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if project is not None:
             args['projectid'] = project.id
 
-
-
         res = self._sync_request(command='listVPCs',
                                  params=args,
                                  method='GET')
