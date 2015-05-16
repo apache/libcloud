@@ -52,9 +52,50 @@ GENERAL_NS = NAMESPACE_BASE + "/general"
 IPPLAN_NS = NAMESPACE_BASE + "/ipplan"
 WHITELABEL_NS = NAMESPACE_BASE + "/whitelabel"
 
+# API end-points
+API_ENDPOINTS = {
+    'dd-na': {
+        'name': 'North America (NA)',
+        'host': 'api-na.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-eu': {
+        'name': 'Europe (EU)',
+        'host': 'api-eu.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-au': {
+        'name': 'Australia (AU)',
+        'host': 'api-au.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-af': {
+        'name': 'Africa (AF)',
+        'host': 'api-af.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'api-na.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'api-latam.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
+    'dd-canada': {
+        'name': 'Canada (CA)',
+        'host': 'api-canada.dimensiondata.com',
+        'vendor': 'DimensionData'
+    }
+}
+
+# Default API end-point for the base connection class.
+DEFAULT_REGION = 'dd-na'
+
 
 class DimensionDataResponse(XmlResponse):
-
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError(self.body)
@@ -92,13 +133,24 @@ class DimensionDataConnection(ConnectionUserAndKey):
     Connection class for the DimensionData driver
     """
 
-    host = 'api-na.dimensiondata.com'
     api_path = '/oec'
     api_version = '0.9'
     _orgId = None
     responseCls = DimensionDataResponse
 
     allow_insecure = False
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, **conn_kwargs):
+        super(DimensionDataConnection, self).__init__(
+            user_id=user_id,
+            key=key,
+            secure=secure,
+            host=host, port=port,
+            url=url, timeout=timeout,
+            proxy_url=proxy_url)
+        if conn_kwargs['region'] is not None:
+            self.host = conn_kwargs['region'].get('host')
 
     def add_default_headers(self, headers):
         headers['Authorization'] = \
@@ -203,11 +255,38 @@ class DimensionDataNodeDriver(NodeDriver):
     DimensionData node driver.
     """
 
+    selected_region = None
     connectionCls = DimensionDataConnection
     name = 'DimensionData'
     website = 'http://www.dimensiondata.com/'
     type = Provider.DIMENSIONDATA
     features = {'create_node': ['password']}
+    api_version = 1.0
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None, region=DEFAULT_REGION, **kwargs):
+
+        if region not in API_ENDPOINTS:
+            raise ValueError('Invalid region: %s' % (region))
+
+        self.selected_region = API_ENDPOINTS[region]
+
+        super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
+                                                      secure=secure, host=host,
+                                                      port=port,
+                                                      api_version=api_version,
+                                                      region=region,
+                                                      **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        """
+            Add the region to the kwargs before the connection is instantiated
+        """
+
+        kwargs = super(DimensionDataNodeDriver,
+                       self)._ex_connection_class_kwargs()
+        kwargs['region'] = self.selected_region
+        return kwargs
 
     def create_node(self, name, image, auth, ex_description,
                     ex_network, ex_is_started=True, **kwargs):
