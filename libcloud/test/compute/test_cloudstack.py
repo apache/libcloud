@@ -509,6 +509,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(
                 project.extra['cpulimit'],
                 fixture_projects[i]['cpulimit'])
+            # Note -1 represents unlimited
+            self.assertEqual(project.extra['networklimit'], -1)
 
     def test_create_volume(self):
         volumeName = 'vol-0'

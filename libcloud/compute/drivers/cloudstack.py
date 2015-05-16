@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import sys
 import base64
 import warnings
 
@@ -35,9 +36,12 @@ from libcloud.utils.networking import is_private_subnet
 def transform_int_or_unlimited(value):
     try:
         return int(value)
-    except ValueError as e:
-        if value == 'Unlimited':
+    except ValueError:
+        e = sys.exc_info()[1]
+
+        if str(value).lower() == 'unlimited':
             return -1
+
         raise e
 
 
