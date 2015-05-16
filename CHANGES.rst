@@ -176,6 +176,11 @@ Compute
   (LIBCLOUD-707, GITHUB-514)
   [Chris O'Brien]
 
+- Don't throw an exception if a limit for a particular CloudStack resource is
+  "Unlimited" and not a number.
+  (GITHUB-512)
+  [Syed Mushtaq Ahmed]
+
 Storage
 ~~~~~~~
 
