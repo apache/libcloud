@@ -31,10 +31,7 @@ from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.utils.networking import is_private_subnet
 
 
-"""
-Define the extra dictionary for specific resources
-"""
-
+# Utility functions
 def transform_int_or_unlimited(value):
     try:
         return int(value)
@@ -44,6 +41,9 @@ def transform_int_or_unlimited(value):
         raise e
 
 
+"""
+Define the extra dictionary for specific resources
+"""
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     'network': {
         'broadcast_domain_type': {
@@ -267,55 +267,82 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     },
     'project': {
         'account': {'key_name': 'account', 'transform_func': str},
-        'cpuavailable': {'key_name': 'cpuavailable', 'transform_func': transform_int_or_unlimited},
-        'cpulimit': {'key_name': 'cpulimit', 'transform_func': transform_int_or_unlimited},
-        'cputotal': {'key_name': 'cputotal', 'transform_func': transform_int_or_unlimited},
+        'cpuavailable': {'key_name': 'cpuavailable',
+                         'transform_func': transform_int_or_unlimited},
+        'cpulimit': {'key_name': 'cpulimit',
+                     'transform_func': transform_int_or_unlimited},
+        'cputotal': {'key_name': 'cputotal',
+                     'transform_func': transform_int_or_unlimited},
         'domain': {'key_name': 'domain', 'transform_func': str},
         'domainid': {'key_name': 'domainid', 'transform_func': str},
-        'ipavailable': {'key_name': 'ipavailable', 'transform_func': transform_int_or_unlimited},
-        'iplimit': {'key_name': 'iplimit', 'transform_func': transform_int_or_unlimited},
-        'iptotal': {'key_name': 'iptotal', 'transform_func': transform_int_or_unlimited},
+        'ipavailable': {'key_name': 'ipavailable',
+                        'transform_func': transform_int_or_unlimited},
+        'iplimit': {'key_name': 'iplimit',
+                    'transform_func': transform_int_or_unlimited},
+        'iptotal': {'key_name': 'iptotal',
+                    'transform_func': transform_int_or_unlimited},
         'memoryavailable': {'key_name': 'memoryavailable',
                             'transform_func': transform_int_or_unlimited},
-        'memorylimit': {'key_name': 'memorylimit', 'transform_func': transform_int_or_unlimited},
-        'memorytotal': {'key_name': 'memorytotal', 'transform_func': transform_int_or_unlimited},
+        'memorylimit': {'key_name': 'memorylimit',
+                        'transform_func': transform_int_or_unlimited},
+        'memorytotal': {'key_name': 'memorytotal',
+                        'transform_func': transform_int_or_unlimited},
         'networkavailable': {'key_name': 'networkavailable',
                              'transform_func': transform_int_or_unlimited},
-        'networklimit': {'key_name': 'networklimit', 'transform_func': transform_int_or_unlimited},
-        'networktotal': {'key_name': 'networktotal', 'transform_func': transform_int_or_unlimited},
-        'primarystorageavailable': {'key_name': 'primarystorageavailable',
-                                    'transform_func': transform_int_or_unlimited},
+        'networklimit': {'key_name': 'networklimit',
+                         'transform_func': transform_int_or_unlimited},
+        'networktotal': {'key_name': 'networktotal',
+                         'transform_func': transform_int_or_unlimited},
+        'primarystorageavailable': {
+            'key_name': 'primarystorageavailable',
+            'transform_func': transform_int_or_unlimited},
         'primarystoragelimit': {'key_name': 'primarystoragelimit',
                                 'transform_func': transform_int_or_unlimited},
         'primarystoragetotal': {'key_name': 'primarystoragetotal',
                                 'transform_func': transform_int_or_unlimited},
-        'secondarystorageavailable': {'key_name': 'secondarystorageavailable',
-                                      'transform_func': transform_int_or_unlimited},
-        'secondarystoragelimit': {'key_name': 'secondarystoragelimit',
-                                  'transform_func': transform_int_or_unlimited},
-        'secondarystoragetotal': {'key_name': 'secondarystoragetotal',
-                                  'transform_func': transform_int_or_unlimited},
+        'secondarystorageavailable': {
+            'key_name': 'secondarystorageavailable',
+            'transform_func': transform_int_or_unlimited},
+        'secondarystoragelimit': {
+            'key_name': 'secondarystoragelimit',
+            'transform_func': transform_int_or_unlimited},
+        'secondarystoragetotal': {
+            'key_name': 'secondarystoragetotal',
+            'transform_func': transform_int_or_unlimited},
         'snapshotavailable': {'key_name': 'snapshotavailable',
                               'transform_func': transform_int_or_unlimited},
-        'snapshotlimit': {'key_name': 'snapshotlimit', 'transform_func': transform_int_or_unlimited},
-        'snapshottotal': {'key_name': 'snapshottotal', 'transform_func': transform_int_or_unlimited},
+        'snapshotlimit': {'key_name': 'snapshotlimit',
+                          'transform_func': transform_int_or_unlimited},
+        'snapshottotal': {'key_name': 'snapshottotal',
+                          'transform_func': transform_int_or_unlimited},
         'state': {'key_name': 'state', 'transform_func': str},
         'tags': {'key_name': 'tags', 'transform_func': str},
         'templateavailable': {'key_name': 'templateavailable',
                               'transform_func': transform_int_or_unlimited},
-        'templatelimit': {'key_name': 'templatelimit', 'transform_func': transform_int_or_unlimited},
-        'templatetotal': {'key_name': 'templatetotal', 'transform_func': transform_int_or_unlimited},
-        'vmavailable': {'key_name': 'vmavailable', 'transform_func': transform_int_or_unlimited},
-        'vmlimit': {'key_name': 'vmlimit', 'transform_func': transform_int_or_unlimited},
-        'vmrunning': {'key_name': 'vmrunning', 'transform_func': transform_int_or_unlimited},
-        'vmtotal': {'key_name': 'vmtotal', 'transform_func': transform_int_or_unlimited},
+        'templatelimit': {'key_name': 'templatelimit',
+                          'transform_func': transform_int_or_unlimited},
+        'templatetotal': {'key_name': 'templatetotal',
+                          'transform_func': transform_int_or_unlimited},
+        'vmavailable': {'key_name': 'vmavailable',
+                        'transform_func': transform_int_or_unlimited},
+        'vmlimit': {'key_name': 'vmlimit',
+                    'transform_func': transform_int_or_unlimited},
+        'vmrunning': {'key_name': 'vmrunning',
+                      'transform_func': transform_int_or_unlimited},
+        'vmtotal': {'key_name': 'vmtotal',
+                    'transform_func': transform_int_or_unlimited},
         'volumeavailable': {'key_name': 'volumeavailable',
                             'transform_func': transform_int_or_unlimited},
-        'volumelimit': {'key_name': 'volumelimit', 'transform_func': transform_int_or_unlimited},
-        'volumetotal': {'key_name': 'volumetotal', 'transform_func': transform_int_or_unlimited},
-        'vpcavailable': {'key_name': 'vpcavailable', 'transform_func': transform_int_or_unlimited},
-        'vpclimit': {'key_name': 'vpclimit', 'transform_func': transform_int_or_unlimited},
-        'vpctotal': {'key_name': 'vpctotal', 'transform_func': transform_int_or_unlimited}
+        'volumelimit': {'key_name': 'volumelimit',
+                        'transform_func': transform_int_or_unlimited},
+        'volumetotal': {'key_name': 'volumetotal',
+                        'transform_func': transform_int_or_unlimited},
+        'vpcavailable': {'key_name': 'vpcavailable',
+                         'transform_func': transform_int_or_unlimited},
+        'vpclimit': {'key_name': 'vpclimit',
+                     'transform_func': transform_int_or_unlimited},
+        'vpctotal': {'key_name': 'vpctotal',
+                     'transform_func': transform_int_or_unlimited}
     },
     'nic': {
         'secondary_ip': {
