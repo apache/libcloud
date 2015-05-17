@@ -5659,7 +5659,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.region_name = region
         self.api_name = details['api_name']
         self.country = details['country']
-        self.signature_version = details.pop('signature_version',
+        self.signature_version = details.get('signature_version',
                                              DEFAULT_SIGNATURE_VERSION)
 
         host = host or details['endpoint']
