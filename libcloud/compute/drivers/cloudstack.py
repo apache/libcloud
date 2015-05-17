@@ -1843,6 +1843,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List the available VPCs
 
+        :keyword    project: Optional project under which VPCs are present.
+        :type       project: :class:`.CloudStackProject`
+
         :rtype ``list`` of :class:`CloudStackVPC`
         """
 
