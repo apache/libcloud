@@ -25,7 +25,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.compute.types import Provider
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_NodeDriver
-from libcloud.common.openstack import OpenStackAuthConnection
+from libcloud.common.openstack_identity import OpenStackIdentityConnection
 from libcloud.utils.iso8601 import parse_date
 
 from libcloud.compute.types import InvalidCredsError, MalformedResponseError
@@ -39,7 +39,7 @@ BASE_URL = 'https://identity.fr1.cloudwatt.com/v2.0'
 AUTH_URL = BASE_URL + '/tokens'
 
 
-class CloudwattAuthConnection(OpenStackAuthConnection):
+class CloudwattAuthConnection(OpenStackIdentityConnection):
     """
     AuthConnection class for the Cloudwatt driver.
     """
@@ -101,14 +101,13 @@ class CloudwattConnection(OpenStack_1_1_Connection):
         self.ex_tenant_id = kwargs.pop('ex_tenant_id')
         super(CloudwattConnection, self).__init__(*args, **kwargs)
         osa = CloudwattAuthConnection(
-            self,
-            AUTH_URL,
-            self._auth_version,
-            self.user_id,
-            self.key,
+            auth_url=AUTH_URL,
+            user_id=self.user_id,
+            key=self.key,
             tenant_name=self._ex_tenant_name,
             timeout=self.timeout,
-            ex_tenant_id=self.ex_tenant_id
+            ex_tenant_id=self.ex_tenant_id,
+            parent_conn=self
         )
         self._osa = osa
         self._auth_version = '2.0'
