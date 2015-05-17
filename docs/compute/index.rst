@@ -32,8 +32,8 @@ Compute
 * :class:`~libcloud.compute.base.NodeLocation` - represents a physical location
   where a server can be.
 * :class:`~libcloud.compute.types.NodeState` - represents a node state.
-  Standard states are: ``running``, ``stopped``, ``rebooting``, ``terminated``,
-  ``pending``, and ``unknown``.
+  Standard states are: ``running``, ``rebooting``, ``terminated``, ``pending``,
+  ``stopped``, ``suspended``, ``paused``, ``erro``, ``unknown``.
 
 Key Pair Management
 ~~~~~~~~~~~~~~~~~~~
