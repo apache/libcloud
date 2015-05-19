@@ -141,6 +141,10 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
             **kwargs
         )
 
+    def attach_volume(self, node, volume, device=None):
+        return super(CloudwattNodeDriver, self)\
+            .attach_volume(node, volume, device)
+
     def _ex_connection_class_kwargs(self):
         """
         Includes ``tenant_id`` in Connection.
