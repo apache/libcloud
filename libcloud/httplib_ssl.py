@@ -208,6 +208,9 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
+        if not self.verify and hasattr(ssl, '_create_unverified_context'):
+            kwargs['context'] = ssl._create_unverified_context()
+
         super(LibcloudHTTPSConnection, self).__init__(*args, **kwargs)
 
         if proxy_url:
