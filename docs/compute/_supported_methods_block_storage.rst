@@ -9,6 +9,7 @@ Provider                              list volumes create volume destroy volume 
 `CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
+`Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
 `DigitalOcean`_                       no           no            no             no            no            no             no             
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
@@ -78,6 +79,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
+.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/

@@ -9,6 +9,7 @@ Provider                              list images get image create image delete 
 `CloudFrames`_                        yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
+`Cloudwatt`_                          yes         yes       yes          yes          no        
 `DigitalOcean`_                       yes         yes       yes          yes          no        
 `DimensionData`_                      yes         no        no           no           no        
 `Dreamhost`_                          yes         no        no           no           no        
@@ -78,6 +79,7 @@ Provider                              list images get image create image delete 
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
+.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/

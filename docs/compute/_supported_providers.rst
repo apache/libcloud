@@ -9,6 +9,7 @@ Provider                              Documentation                             
 `CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>`   CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`    :class:`CloudFramesNodeDriver`      
 `CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`    CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`    CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
+`Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`     CLOUDWATT           :mod:`libcloud.compute.drivers.cloudwatt`      :class:`CloudwattNodeDriver`        
 `DigitalOcean`_                       :doc:`Click </compute/drivers/digital_ocean>` DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
 `DimensionData`_                      :doc:`Click </compute/drivers/dimensiondata>` DIMENSIONDATA       :mod:`libcloud.compute.drivers.dimensiondata`  :class:`DimensionDataNodeDriver`    
 `Dreamhost`_                                                                        DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
@@ -78,6 +79,7 @@ Provider                              Documentation                             
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
+.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/
