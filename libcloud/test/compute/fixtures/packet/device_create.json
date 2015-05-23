@@ -1,0 +1,74 @@
+{
+  "userdata": null,
+  "operating_system":
+    {
+      "distro": "coreos",
+      "slug": "coreos_stable",
+      "version": "stable",
+      "name": "CoreOS (stable)"
+    },
+  "locked": false,
+  "tags": [],
+  "href": "/devices/9f7eafab-CCCC-DDDD-EEEE-c2a686367791",
+  "created_at": "2015-05-22T17:59:43Z",
+  "hostname": "9f7eafab.packethost.net",
+  "updated_at": "2015-05-22T17:59:43.972Z",
+  "project": { "href": "/projects/746ea6dd-CCCC-DDDD-EEEE-728784671fbf" },
+  "provisioning_percentage": 0.0,
+  "state": "queued",
+  "billing_cycle": "hourly",
+  "user": "core",
+  "ip_addresses": [],
+  "facility": { "id": "e1e9c52e-a0bc-4117-b996-0fc94843ea09" },
+  "id": "9f7eafab-6f6b-4ae4-988d-c2a686367791",
+  "provisioning_events": [
+    {
+      "body": "Provisioning started",
+      "relationships": [],
+      "interpolated": "Provisioning started",
+      "created_at": null,
+      "type": "provisioning.101",
+      "id": null
+    },
+    {
+      "body": "Network configured",
+      "relationships": [],
+      "interpolated": "Network configured",
+      "created_at": null,
+      "type": "provisioning.102",
+      "id": null
+    },
+    {
+      "body": "Configuration written, restarting device",
+      "relationships": [],
+      "interpolated": "Configuration written, restarting device",
+      "created_at": null,
+      "type": "provisioning.103",
+      "id": null
+    },
+    {
+      "body": "Device phoned home and is ready to go",
+      "relationships": [],
+      "interpolated": "Device phoned home and is ready to go",
+      "created_at": null,
+      "type": "provisioning.110",
+      "id": null
+    }],
+  "plan":
+    {
+      "slug": "baremetal_1",
+      "description": "Our Type 1 configuration is a zippy general use server",
+      "id": "6d1f1ffa-7912-4b78-b50d-88cc7c8ab40f",
+      "pricing": { "hourly": 0.4 },
+      "line": "baremetal",
+      "specs":
+        {
+          "nics": [{"count": 2, "type": "gigabit"}],
+          "drives": [{"count": 2, "type": "SSD", "size": "120GB"}],
+          "features": {"txt": true, "raid": true},
+          "cpus": [{"count": 1, "type": "Intel E3-1240 v3"}],
+          "memory": {"total": "16GB"}
+        },
+      "name": "Type 1"
+    }
+}

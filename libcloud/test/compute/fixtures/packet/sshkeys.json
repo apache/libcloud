@@ -1,0 +1,34 @@
+{
+  "ssh_keys":[
+    {
+      "id": "2c1a7f23-1dc6-4a37-948e-d9857d9f607c",
+      "label": "ubuntu1404-201505221415a4c7757e-5198-4f49-82d4-35eb2d06eb27",
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI4pIqzpb5g3992h+yr527VRcaB68KE4vPjWPPoiQws49KIs2NMcOzS9QE4641uW1u5ML2HgQdfYKMF/YFGnI1Y6xV637DjhDyZYV9LasUH49npSSJjsBcsk9JGfUpNAOdcgpFzK8V90eiOrOC5YncxdwwG8pwjFI9nNVPCl4hYEu1iXdyysHvkFfS2fklsNjLWrzfafPlaen+qcBxygCA0sFdW/7er50aJeghdBHnE2WhIKLUkJxnKadznfAge7oEe+3LLAPfP+3yHyvp2+H0IzmVfYvAjnzliYetqQ8pg5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud.local.lan\n",
+      "fingerprint": "aa:49:46:57:2a:07:64:56:33:07:ef:76:1d:54:a3:41",
+      "created_at": "2015-05-22T18:15:04Z",
+      "updated_at":"2015-05-22T18:15:04Z",
+      "user": { "href":"/users/userid" },
+      "href": "/ssh-keys/2c1a7f23-1dc6-4a37-948e-d9857d9f607c"
+    },
+    {
+      "id": "e5ee91f4-ecf7-4a68-9a4e-6443cf2d7eb0",
+      "label": "ubuntu1404-201505212115f8161afd-7034-498f-aa04-a8d5562d3455",
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDc7qwbxJetidi4PnM0hxBLXfW+u/h2boNJZdEd5Bky2CRwIlMwPFqw3zEHrZyh05Ypw3wchvhxLVAC++5XbB7dbKPs7WAtQaZWiqJXVfacaIywyiuNgmdGv7V7gJLOZwLF1sFVisTjAtSLkroidzwX3Btxba+NcGlCVt2Zg2fPbHSUV4tnvzWpQsUBejoJ4pWxP84ty7GPymrRwnjm+qAztCy3RVGtrAAYp04Q/UeIZfi2TBrjZ8y39T8hx8RaQjA1H/+47IEDe+U7rJpxNR9tcZdEryhpH7YP5XFoHo8Y8IiLOKJo6gN0tK1zajoXw7/2oXdGE0Qqx2/VIvivdu6J root@libcloud.local.lan\n",
+      "fingerprint": "83:b8:0a:30:08:5e:27:50:db:25:d7:a7:ff:ab:aa:0a",
+      "created_at": "2015-05-22T01:15:04Z",
+      "updated_at": "2015-05-22T01:15:04Z",
+      "user": { "href":"/users/userid" },
+      "href": "/ssh-keys/e5ee91f4-ecf7-4a68-9a4e-6443cf2d7eb0"
+    },
+    {
+      "id": "561b54e7-4a2b-4832-a165-567ebb8c8bfb",
+      "label": "ubuntu1404-201505211245623a7e97-0826-4f62-b337-e7fc592b748a",
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCd+HRs6t4/n3LRnvzObeph2ggNNu7P+U8xMJNVE2qfjbrdJP26D4ELDVFbaSCBetYoU6G0IOlUnggZ4g7MPB6eicB5RZEOvAh58pIEgUqnWdZgDbLLY+ZGRwuaFAk6aof3bWDDqd3PUn+HtzNz3EK6Ow09vuYe1RFXLyUcDdb/LJG1bSUw/W+bEjBi/gMIcvomkSz5px40zJL4Bulqy3XPvJyxPweZbsT6LsQkBSstqTNkPH+IYWpUrOVoWy4+etVQ0OOWUXbgMyPtM5qh8JovhkQe5wn1bEV+Fw1LAJ5MF8UKr45k7hZrWfjuyCK1EA3o2Ptn+LpZW4CbCfKuFDg3 root@libcloud.local.lan\n",
+      "fingerprint": "ed:17:56:d0:03:66:39:f6:3c:03:c5:e6:ec:ac:c4:32",
+      "created_at": "2015-05-21T16:45:03Z",
+      "updated_at": "2015-05-21T16:45:03Z",
+      "user": { "href":"/users/userid" },
+      "href": "/ssh-keys/561b54e7-4a2b-4832-a165-567ebb8c8bfb"
+    }
+  ]
+}
