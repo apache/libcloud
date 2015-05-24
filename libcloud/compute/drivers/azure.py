@@ -75,6 +75,10 @@ WINDOWS_SERVER_REGEX = re.compile(
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
+
+Prices are for Linux instances in East US data center. To see what pricing will
+actually be, visit:
+http://azure.microsoft.com/en-gb/pricing/details/virtual-machines/
 """
 AZURE_COMPUTE_INSTANCE_TYPES = {
     'A0': {
@@ -83,7 +87,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 768,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.02',
+        'price': '0.0211',
         'max_data_disks': 1,
         'cores': 'Shared'
     },
@@ -93,7 +97,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 1792,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.09',
+        'price': '0.0633',
         'max_data_disks': 2,
         'cores': 1
     },
@@ -103,7 +107,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 3584,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.18',
+        'price': '0.1266',
         'max_data_disks': 4,
         'cores': 2
     },
@@ -113,7 +117,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 7168,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.36',
+        'price': '0.2531',
         'max_data_disks': 8,
         'cores': 4
     },
@@ -123,7 +127,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 14336,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.72',
+        'price': '0.5062',
         'max_data_disks': 16,
         'cores': 8
     },
@@ -133,7 +137,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 14336,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.40',
+        'price': '0.2637',
         'max_data_disks': 4,
         'cores': 2
     },
@@ -143,7 +147,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 28672,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.80',
+        'price': '0.5273',
         'max_data_disks': 8,
         'cores': 4
     },
@@ -153,9 +157,129 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 57344,
         'disk': 127,
         'bandwidth': None,
-        'price': '1.60',
+        'price': '1.0545',
         'max_data_disks': 16,
         'cores': 8
+    },
+    'A8': {
+        'id': 'A8',
+        'name': 'A8 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.0774',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A9': {
+        'id': 'A9',
+        'name': 'A9 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '4.7137',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'A10': {
+        'id': 'A10',
+        'name': 'A10 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.2233',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A11': {
+        'id': 'A11',
+        'name': 'A11 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.1934',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'D1': {
+        'id': 'Standard_D1',
+        'name': 'D1 Faster Compute Instance',
+        'ram': 3584,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.0992',
+        'max_data_disks': 2,
+        'cores': 1
+    },
+    'D2': {
+        'id': 'Standard_D2',
+        'name': 'D2 Faster Compute Instance',
+        'ram': 7168,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.1983',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D3': {
+        'id': 'Standard_D3',
+        'name': 'D3 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.3965',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D4': {
+        'id': 'Standard_D4',
+        'name': 'D4 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.793',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D11': {
+        'id': 'Standard_D11',
+        'name': 'D11 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.251',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D12': {
+        'id': 'Standard_D12',
+        'name': 'D12 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.502',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D13': {
+        'id': 'Standard_D13',
+        'name': 'D13 Faster Compute Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.9038',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D14': {
+        'id': 'Standard_D14',
+        'name': 'D14 Faster Compute Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.6261',
+        'max_data_disks': 32,
+        'cores': 16
     }
 }
 

@@ -194,6 +194,11 @@ Compute
   (LIBCLOUD-703, GITHUB-527)
   [Aaron Welch]
 
+- Update Azure VM pricing information and add information for new D instance
+  types.
+  (GITHUB-528)
+  [Michael Bennett]
+
 Storage
 ~~~~~~~
 
