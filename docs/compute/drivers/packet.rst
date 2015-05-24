@@ -18,7 +18,7 @@ Instantiating a driver and listing devices in a project
 API Docs
 --------
 
-.. autoclass:: libcloud.compute.drivers.packet.Packet_v1_NodeDriver
+.. autoclass:: libcloud.compute.drivers.packet.PacketNodeDriver
     :members:
     :inherited-members:
 
