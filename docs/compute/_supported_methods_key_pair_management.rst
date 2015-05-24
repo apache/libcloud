@@ -55,7 +55,7 @@ Provider                              list key pairs get key pair create key pai
 `Opsource`_                           no             no           no              no                            no                          no             
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
 `Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
-`Packet`_                             yes            no           yes             no                            no                          yes
+`Packet`_                             yes            no           yes             no                            no                          yes            
 `ProfitBricks`_                       no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             

@@ -55,7 +55,7 @@ Provider                              list nodes create node reboot node destroy
 `Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
-`Packet`_                             yes        yes         yes         yes          yes         yes        no
+`Packet`_                             yes        yes         yes         yes          yes         yes        no         
 `ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
