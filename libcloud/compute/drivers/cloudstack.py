@@ -2260,6 +2260,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return key_pairs
 
     def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
         params = {'name': name}
         res = self._sync_request(command='listSSHKeyPairs',
                                  params=params,
