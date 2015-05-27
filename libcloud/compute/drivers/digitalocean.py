@@ -199,6 +199,12 @@ class DigitalOcean_v1_NodeDriver(DigitalOceanNodeDriver):
 
         return self._to_node(data=data.object['droplet'])
 
+    def create_image(self, node, name, description=None):
+        params = {'name': name}
+        res = self.connection.request('/droplets/%s/snapshot/' % (node.id),
+                                      params=params)
+        return res.status == httplib.OK
+
     def reboot_node(self, node):
         res = self.connection.request('/v1/droplets/%s/reboot/' % (node.id))
         return res.status == httplib.OK
