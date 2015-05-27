@@ -1440,7 +1440,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 continue
             public_ips[addr['ipaddress']] = addr['id']
 
-        node = self._to_node(data=vm, public_ips=public_ips.keys())
+        node = self._to_node(data=vm, public_ips=list(public_ips.keys()))
 
         addresses = public_ips.items()
         addresses = [CloudStackAddress(node, v, k) for k, v in addresses]
@@ -2172,6 +2172,37 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                               driver=self,
                                               extra=extra))
         return list_volumes
+
+    def ex_get_volume(self, volume_id, project=None):
+        """
+        Return a StorageVolume object based on its ID.
+
+        :param  volume_id: The id of the volume
+        :type   volume_id: ``str``
+
+        :keyword    project: Limit volume returned to those configured under
+                             the defined project.
+        :type       project: :class:`.CloudStackProject`
+
+        :rtype: :class:`CloudStackNode`
+        """
+        args = {'id': volume_id}
+        if project:
+            args['projectid'] = project.id
+        volumes = self._sync_request(command='listVolumes', params=args)
+        if not volumes:
+            raise Exception("Volume '%s' not found" % volume_id)
+        vol = volumes['volume'][0]
+
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['volume']
+        extra = self._get_extra_dict(vol, extra_map)
+
+        if 'tags' in vol:
+            extra['tags'] = self._get_resource_tags(vol['tags'])
+
+        volume = StorageVolume(id=vol['id'], name=vol['name'],
+                               size=vol['size'], driver=self, extra=extra)
+        return volume
 
     def list_key_pairs(self, **kwargs):
         """
