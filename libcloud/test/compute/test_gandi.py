@@ -154,6 +154,23 @@ class GandiTests(unittest.TestCase):
         disks = self.driver.list_volumes()
         self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
 
+    def test_list_key_pairs(self):
+        keys = self.driver.list_key_pairs()
+        self.assertGreater(len(keys), 0)
+
+    def test_get_key_pair(self):
+        key = self.driver.get_key_pair(10)
+        self.assertEqual(key.name, 'testkey')
+
+    def test_import_key_pair_from_string(self):
+        key = self.driver.import_key_pair_from_string('testkey', '12345')
+        self.assertEqual(key.name, 'testkey')
+        self.assertEqual(key.extra['id'], 10)
+
+    def test_delete_key_pair(self):
+        response = self.driver.delete_key_pair(10)
+        self.assertTrue(response)
+
 
 class GandiRatingTests(unittest.TestCase):
 
@@ -283,6 +300,22 @@ class GandiMockHttp(BaseGandiMockHttp):
 
     def _xmlrpc__hosting_disk_delete(self, method, url, body, headers):
         body = self.fixtures.load('disk_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_ssh_info(self, method, url, body, headers):
+        body = self.fixtures.load('ssh_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_ssh_list(self, method, url, body, headers):
+        body = self.fixtures.load('ssh_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_ssh_create(self, method, url, body, headers):
+        body = self.fixtures.load('ssh_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_ssh_delete(self, method, url, body, headers):
+        body = self.fixtures.load('ssh_delete.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
