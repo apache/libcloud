@@ -199,6 +199,10 @@ Compute
   (GITHUB-528)
   [Michael Bennett]
 
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver
+  (GITHUB-532)
+  [ZuluPro]
+
 Storage
 ~~~~~~~
 

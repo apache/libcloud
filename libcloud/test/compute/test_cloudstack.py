@@ -572,6 +572,10 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(volumes))
         self.assertEqual('ROOT-69942', volumes[0].name)
 
+    def test_ex_get_volume(self):
+        volume = self.driver.ex_get_volume(2600)
+        self.assertEqual('ROOT-69942', volume.name)
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(2, len(nodes))
