@@ -353,7 +353,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             params['ssh_key_ids'] = ','.join(ex_ssh_key_ids)
 
         res = self.connection.request('/v2/droplets',
-                                       params=params, method='POST')
+                                      params=params, method='POST')
 
         data = res.object
         # TODO: Handle this in the response class
