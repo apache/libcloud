@@ -39,6 +39,17 @@ class VultrResponse(JsonResponse):
             raise LibcloudError(self.body)
 
 
+class SSHKey(object):
+    def __init__(self, id, name, pub_key):
+        self.id = id
+        self.name = name
+        self.pub_key = pub_key
+
+    def __repr__(self):
+        return (('<SSHKey: id=%s, name=%s, pub_key=%s>') %
+                (self.id, self.name, self.pub_key))
+
+
 class VultrConnection(ConnectionKey):
     """
     Connection class for the Vultr driver.
@@ -85,6 +96,14 @@ class VultrNodeDriver(NodeDriver):
     def list_nodes(self):
         return self._list_resources('/v1/server/list', self._to_node)
 
+    def list_key_pairs(self):
+        """
+        List all the available SSH keys.
+        :return: Available SSH keys.
+        :rtype: ``list`` of :class:`SSHKey`
+        """
+        return self._list_resources('/v1/sshkey/list', self._to_ssh_key)
+
     def list_locations(self):
         return self._list_resources('/v1/regions/list', self._to_location)
 
@@ -94,9 +113,12 @@ class VultrNodeDriver(NodeDriver):
     def list_images(self):
         return self._list_resources('/v1/os/list', self._to_image)
 
-    def create_node(self, name, size, image, location):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
         params = {'DCID': location.id, 'VPSPLANID': size.id,
                   'OSID': image.id, 'label': name}
+
+        if ex_ssh_key_ids is not None:
+            params['SSHKEYID'] = ','.join(ex_ssh_key_ids)
 
         result = self.connection.post('/v1/server/create', params)
         if result.status != httplib.OK:
@@ -182,3 +204,7 @@ class VultrNodeDriver(NodeDriver):
         extra = {'arch': data['arch'], 'family': data['family']}
         return NodeImage(id=data['OSID'], name=data['name'], extra=extra,
                          driver=self)
+
+    def _to_ssh_key(self, data):
+        return SSHKey(id=data['SSHKEYID'], name=data['name'],
+                      pub_key=data['ssh_key'])

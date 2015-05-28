@@ -29,6 +29,7 @@ from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 from libcloud.test import LibcloudTestCase, MockHttpTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v1_PARAMS
+from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 
 
 # class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
@@ -40,6 +41,10 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v1_PARAMS,
                                              api_version='v1')
+
+    def test_v1_uses_v2_key(self):
+        self.assertRaises(InvalidCredsError, DigitalOceanNodeDriver,
+                          *DIGITALOCEAN_v2_PARAMS, api_version='v1')
 
     def test_authentication(self):
         DigitalOceanMockHttp.type = 'UNAUTHORIZED_CLIENT'
@@ -89,7 +94,8 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         location = self.driver.list_locations()[0]
 
         DigitalOceanMockHttp.type = 'INVALID_IMAGE'
-        expected_msg = r'You specified an invalid image for Droplet creation. \(code: 404\)'
+        expected_msg = \
+            r'You specified an invalid image for Droplet creation. \(code: 404\)'
         self.assertRaisesRegexp(Exception, expected_msg,
                                 self.driver.create_node,
                                 name='test', size=size, image=image,
@@ -110,6 +116,14 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         result = self.driver.ex_rename_node(node, 'fedora helios')
         self.assertTrue(result)
 
+    def test_list_key_pairs(self):
+        keys = self.driver.list_key_pairs()
+        self.assertEqual(len(keys), 1)
+
+        self.assertEqual(keys[0].extra['id'], 7717)
+        self.assertEqual(keys[0].name, 'test1')
+        self.assertEqual(keys[0].public_key, None)
+
     def test_ex_list_ssh_keys(self):
         keys = self.driver.ex_list_ssh_keys()
         self.assertEqual(len(keys), 1)
@@ -117,6 +131,11 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         self.assertEqual(keys[0].id, 7717)
         self.assertEqual(keys[0].name, 'test1')
         self.assertEqual(keys[0].pub_key, None)
+
+    def test_delete_key_pair(self):
+        key = self.driver.list_key_pairs()[0]
+        result = self.driver.delete_key_pair(key)
+        self.assertTrue(result)
 
     def test_ex_destroy_ssh_key(self):
         key = self.driver.ex_list_ssh_keys()[0]
@@ -146,7 +165,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
     def _v1_droplets_new_INVALID_IMAGE(self, method, url, body, headers):
         # reboot_node
         body = self.fixtures.load('error_invalid_image.json')
-        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
 
     def _v1_droplets_119461_reboot(self, method, url, body, headers):
         # reboot_node
