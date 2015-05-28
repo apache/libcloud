@@ -29,6 +29,7 @@ from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 from libcloud.test import LibcloudTestCase, MockHttpTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v1_PARAMS
+from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 
 
 # class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
@@ -40,6 +41,10 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v1_PARAMS,
                                              api_version='v1')
+
+    def test_v1_uses_v2_key(self):
+        self.assertRaises(InvalidCredsError, DigitalOceanNodeDriver,
+            *DIGITALOCEAN_v2_PARAMS, api_version='v1')
 
     def test_authentication(self):
         DigitalOceanMockHttp.type = 'UNAUTHORIZED_CLIENT'

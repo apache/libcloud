@@ -65,7 +65,8 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         data = self._paginated_request('/v2/domains/%s/records' % (zone.id),
                                        'domain_records')
 # TODO: Not use list comprehension to add zone to record for proper data map
-#       functionality?
+#       functionality? This passes a reference to zone for each data currently
+#       to _to_record which returns a Record. map() does not take keywords
         return list(map(self._to_record, data, [zone for z in data]))
 
     def get_zone(self, zone_id):

@@ -21,6 +21,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.digitalocean import DigitalOcean_v1_BaseDriver
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
+from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
@@ -57,6 +58,12 @@ class DigitalOceanNodeDriver(NodeDriver):
     def __new__(cls, key, secret=None, api_version='v2', **kwargs):
         if cls is DigitalOceanNodeDriver:
             if api_version == 'v1' or secret is not None:
+                if secret is None:
+                    raise InvalidCredsError(
+                        'secret missing for v1 authentication')
+                if secret is not None and api_version == 'v2': 
+                    raise InvalidCredsError(
+                        'secret not accepted for v2 authentication')
                 cls = DigitalOcean_v1_NodeDriver
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_NodeDriver
