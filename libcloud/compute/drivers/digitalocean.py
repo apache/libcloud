@@ -61,7 +61,7 @@ class DigitalOceanNodeDriver(NodeDriver):
                 if secret is None:
                     raise InvalidCredsError(
                         'secret missing for v1 authentication')
-                if secret is not None and api_version == 'v2': 
+                if secret is not None and api_version == 'v2':
                     raise InvalidCredsError(
                         'secret not accepted for v2 authentication')
                 cls = DigitalOcean_v1_NodeDriver
