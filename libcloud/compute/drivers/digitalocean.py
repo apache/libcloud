@@ -15,6 +15,7 @@
 """
 Digital Ocean Driver
 """
+import json
 import warnings
 
 from libcloud.utils.py3 import httplib
@@ -350,10 +351,10 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                   'region': location.id}
 
         if ex_ssh_key_ids:
-            params['ssh_key_ids'] = ','.join(ex_ssh_key_ids)
+            params['ssh_keys'] = ex_ssh_key_ids
 
         res = self.connection.request('/v2/droplets',
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
 
         data = res.object
         # TODO: Handle this in the response class
@@ -368,7 +369,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     def reboot_node(self, node):
         params = {'type': 'reboot'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
         return res.status == httplib.CREATED
 
     def destroy_node(self, node):
@@ -408,7 +409,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         """
         params = {'type': 'snapshot', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
         return res.status == httplib.CREATED
 
     def delete_image(self, image):
@@ -428,19 +429,19 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     def ex_rename_node(self, node, name):
         params = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
         return res.status == httplib.CREATED
 
     def ex_shutdown_node(self, node):
         params = {'type': 'shutdown'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
         return res.status == httplib.CREATED
 
     def ex_power_on_node(self, node):
         params = {'type': 'power_on'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      params=params, method='POST')
+                                      data=json.dumps(params), method='POST')
         return res.status == httplib.CREATED
 
     def list_key_pairs(self):
@@ -478,8 +479,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :type       public_key: ``str``
         """
         params = {'name': name, 'public_key': public_key}
-        data = self.connection.request('/v2/account/keys', method='POST',
-                                       params=params).object['ssh_key']
+        res = self.connection.request('/v2/account/keys', method='POST',
+                                      data=json.dumps(params))
+
+        data = res.object['ssh_key']
+
         return self._to_key_pair(data=data)
 
     def delete_key_pair(self, key):
