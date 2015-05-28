@@ -280,7 +280,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         response = self.connection.request('/%s' % (container_name_encoded),
                                            method='HEAD')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status in [httplib.OK, httplib.NO_CONTENT]:
             container = self._headers_to_container(
                 container_name, response.headers)
             return container
