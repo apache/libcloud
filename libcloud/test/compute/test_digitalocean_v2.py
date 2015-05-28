@@ -43,7 +43,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def test_v2_uses_v1_key(self):
         self.assertRaises(InvalidCredsError, DigitalOceanNodeDriver,
-            *DIGITALOCEAN_v1_PARAMS, api_version='v2')
+                          *DIGITALOCEAN_v1_PARAMS, api_version='v2')
 
     def test_authentication(self):
         DigitalOceanMockHttp.type = 'UNAUTHORIZED'
