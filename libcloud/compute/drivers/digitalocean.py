@@ -347,16 +347,16 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: The newly created node.
         :rtype: :class:`Node`
         """
-        params = {'name': name, 'size': size.name, 'image': image.id,
-                  'region': location.id}
+        attr = {'name': name, 'size': size.name, 'image': image.id,
+                'region': location.id}
 
         if ex_ssh_key_ids:
-            params['ssh_keys'] = ex_ssh_key_ids
+            attr['ssh_keys'] = ex_ssh_key_ids
 
         res = self.connection.request('/v2/droplets',
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
 
-        data = res.object
+        data = res.object['droplet']
         # TODO: Handle this in the response class
         status = res.object.get('status', 'OK')
         if status == 'ERROR':
@@ -364,12 +364,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             error_message = res.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
 
-        return self._to_node(data=data['droplet'])
+        return self._to_node(data=data)
 
     def reboot_node(self, node):
-        params = {'type': 'reboot'}
+        attr = {'type': 'reboot'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def destroy_node(self, node):
@@ -407,9 +407,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        params = {'type': 'snapshot', 'name': name}
+        attr = {'type': 'snapshot', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def delete_image(self, image):
@@ -427,21 +427,21 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return res.status == httplib.NO_CONTENT
 
     def ex_rename_node(self, node, name):
-        params = {'type': 'rename', 'name': name}
+        attr = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def ex_shutdown_node(self, node):
-        params = {'type': 'shutdown'}
+        attr = {'type': 'shutdown'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def ex_power_on_node(self, node):
-        params = {'type': 'power_on'}
+        attr = {'type': 'power_on'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(params), method='POST')
+                                      data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def list_key_pairs(self):
@@ -478,9 +478,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :param      public_key: Valid public key string (required)
         :type       public_key: ``str``
         """
-        params = {'name': name, 'public_key': public_key}
+        attr = {'name': name, 'public_key': public_key}
         res = self.connection.request('/v2/account/keys', method='POST',
-                                      data=json.dumps(params))
+                                      data=json.dumps(attr))
 
         data = res.object['ssh_key']
 
