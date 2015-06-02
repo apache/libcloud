@@ -145,6 +145,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return [self._to_volume(d) for d in disks]
 
     def list_nodes(self):
+        """
+        Return a list of nodes in the current zone or all zones.
+
+        :return:  List of Node objects
+        :rtype:   ``list`` of :class:`Node`
+        """
         vms = self.connection.request('hosting.vm.list').object
         ips = self.connection.request('hosting.ip.list').object
         for vm in vms:
@@ -158,7 +164,37 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         nodes = self._to_nodes(vms)
         return nodes
 
+    def ex_get_node(self, node_id):
+        """
+        Return a Node object based on a node id.
+
+        :param  name: The ID of the node
+        :type   name: ``int``
+
+        :return:  A Node object for the node
+        :rtype:   :class:`Node`
+        """
+        vm = self.connection.request('hosting.vm.info', int(node_id)).object
+        ips = self.connection.request('hosting.ip.list').object
+        vm['ips'] = []
+        for ip in ips:
+            if vm['ifaces_id'][0] == ip['iface_id']:
+                ip = ip.get('ip', None)
+                if ip:
+                    vm['ips'].append(ip)
+        node = self._to_node(vm)
+        return node
+
     def reboot_node(self, node):
+        """
+        Reboot a node.
+
+        :param  node: Node to be rebooted
+        :type   node: :class:`Node`
+
+        :return:  True if successful, False if not
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.vm.reboot', int(node.id))
         self._wait_operation(op.object['id'])
         vm = self._node_info(int(node.id))
@@ -167,6 +203,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return False
 
     def destroy_node(self, node):
+        """
+        Destroy a node.
+
+        :param  node: Node object to destroy
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         vm = self._node_info(node.id)
         if vm['state'] == 'running':
             # Send vm_stop and wait for accomplish
@@ -216,7 +261,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :type       inet_family: ``int``
 
         :keyword    keypairs: IDs of keypairs or Keypairs object
-        :type       keypairs: ``int`` or :class:`.KeyPair`
+        :type       keypairs: list of ``int`` or :class:`.KeyPair`
 
         :rtype: :class:`Node`
         """
@@ -300,6 +345,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_images(self, location=None):
+        """
+        Return a list of image objects.
+
+        :keyword    location: Which data center to filter a images in.
+        :type       location: :class:`NodeLocation`
+
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
+        """
         try:
             if location:
                 filtering = {'datacenter_id': int(location.id)}
@@ -338,6 +392,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 for name, instance in INSTANCE_TYPES.items()]
 
     def list_sizes(self, location=None):
+        """
+        Return a list of sizes (machineTypes) in a zone.
+
+        :keyword  location: Which data center to filter a sizes in.
+        :type     location: :class:`NodeLocation` or ``None``
+
+        :return:  List of NodeSize objects
+        :rtype:   ``list`` of :class:`NodeSize`
+        """
         account = self.connection.request('hosting.account.info').object
         if account.get('rating_enabled'):
             # This account use new rating model
@@ -379,18 +442,44 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_locations(self):
+        """
+        Return a list of locations (datacenters).
+
+        :return: List of NodeLocation objects
+        :rtype: ``list`` of :class:`NodeLocation`
+        """
         res = self.connection.request('hosting.datacenter.list')
         return [self._to_loc(l) for l in res.object]
 
     def list_volumes(self):
         """
+        Return a list of volumes.
 
+        :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
         res = self.connection.request('hosting.disk.list', {})
         return self._to_volumes(res.object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a volume (disk).
+
+        :param  size: Size of volume to create (in GB).
+        :type   size: ``int``
+
+        :param  name: Name of volume to create
+        :type   name: ``str``
+
+        :keyword  location: Location (zone) to create the volume in
+        :type     location: :class:`NodeLocation` or ``None``
+
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: :class:`Snapshot`
+
+        :return:  Storage Volume object
+        :rtype:   :class:`StorageVolume`
+        """
         disk_param = {
             'name': name,
             'size': int(size),
@@ -407,6 +496,21 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return None
 
     def attach_volume(self, node, volume, device=None):
+        """
+        Attach a volume to a node.
+
+        :param  node: The node to attach the volume to
+        :type   node: :class:`Node`
+
+        :param  volume: The volume to attach.
+        :type   volume: :class:`StorageVolume`
+
+        :keyword  device: Not used in this cloud.
+        :type     device: ``None``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.vm.disk_attach',
                                      int(node.id), int(volume.id))
         if self._wait_operation(op.object['id']):
@@ -432,6 +536,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return False
 
     def destroy_volume(self, volume):
+        """
+        Destroy a volume.
+
+        :param  volume: Volume object to destroy
+        :type   volume: :class:`StorageVolume`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.disk.delete', int(volume.id))
         if self._wait_operation(op.object['id']):
             return True

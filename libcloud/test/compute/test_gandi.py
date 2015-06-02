@@ -171,6 +171,10 @@ class GandiTests(unittest.TestCase):
         response = self.driver.delete_key_pair(10)
         self.assertTrue(response)
 
+    def test_ex_get_node(self):
+        node = self.driver.ex_get_node(34951)
+        self.assertEqual(node.name, "test2")
+
 
 class GandiRatingTests(unittest.TestCase):
 
