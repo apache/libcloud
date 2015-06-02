@@ -175,6 +175,10 @@ class GandiTests(unittest.TestCase):
         node = self.driver.ex_get_node(34951)
         self.assertEqual(node.name, "test2")
 
+    def test_ex_get_volume(self):
+        volume = self.driver.ex_get_volume(1263)
+        self.assertEqual(volume.name, "libcloud")
+
 
 class GandiRatingTests(unittest.TestCase):
 

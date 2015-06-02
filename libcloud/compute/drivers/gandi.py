@@ -461,6 +461,19 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         res = self.connection.request('hosting.disk.list', {})
         return self._to_volumes(res.object)
 
+    def ex_get_volume(self, volume_id):
+        """
+        Return a Volume object based on a volume ID.
+
+        :param  volume_id: The ID of the volume
+        :type   volume_id: ``int``
+
+        :return:  A StorageVolume object for the volume
+        :rtype:   :class:`StorageVolume`
+        """
+        res = self.connection.request('hosting.disk.info', volume_id)
+        return self._to_volume(res.object)
+
     def create_volume(self, size, name, location=None, snapshot=None):
         """
         Create a volume (disk).
