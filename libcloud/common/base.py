@@ -532,7 +532,7 @@ class Connection(object):
 
         if ":" in netloc:
             netloc, port = netloc.rsplit(":")
-            port = port
+            port = int(port)
 
         if not port:
             if scheme == "http":
@@ -541,6 +541,7 @@ class Connection(object):
                 port = 443
 
         host = netloc
+        port = int(port)
 
         return (host, port, secure, request_path)
 
@@ -569,6 +570,9 @@ class Connection(object):
         else:
             host = host or self.host
             port = port or self.port
+
+        # Make sure port is an int
+        port = int(port)
 
         if not hasattr(kwargs, 'host'):
             kwargs.update({'host': host})

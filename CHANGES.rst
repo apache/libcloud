@@ -22,6 +22,11 @@ General
   file would throw an exception if the text contained non-ascii characters.
   [Tomaz Muraus]
 
+- Fix a bug with connection code throwing an exception if a port was a unicode
+  type and not a str or int.
+  (GITHUB-533, LIBCLOUD-716)
+  [Avi Weit]
+
 Compute
 ~~~~~~~
 
