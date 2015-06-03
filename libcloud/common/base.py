@@ -532,7 +532,7 @@ class Connection(object):
 
         if ":" in netloc:
             netloc, port = netloc.rsplit(":")
-            port = port
+            port = int(port)
 
         if not port:
             if scheme == "http":
