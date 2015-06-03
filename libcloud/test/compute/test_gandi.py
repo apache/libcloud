@@ -156,7 +156,7 @@ class GandiTests(unittest.TestCase):
 
     def test_list_key_pairs(self):
         keys = self.driver.list_key_pairs()
-        self.assertGreater(len(keys), 0)
+        self.assertTrue(len(keys) > 0)
 
     def test_get_key_pair(self):
         key = self.driver.get_key_pair(10)
