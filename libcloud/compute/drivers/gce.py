@@ -546,7 +546,8 @@ class GCERoute(UuidMixin):
     def __repr__(self):
         return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
             self.id, self.name, self.dest_range,
-            hasattr(self.network, 'name') and self.network.name or self.network)
+            hasattr(self.network, 'name') and self.network.name or
+            self.network)
 
 
 class GCENodeSize(NodeSize):
