@@ -18,6 +18,7 @@ from __future__ import with_statement
 import sys
 import base64
 import warnings
+import functools
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlparse
@@ -1572,14 +1573,24 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type       ex_affinity_groups: ``list`` of
                                         :class:`.CloudStackAffinityGroup`
 
+        :keyword    ex_http_method: HTTP method to use for the request
+                                    (GET or POST). Defaults to "GET"
+        :type       ex_http_method: ``str``
+
         :rtype:     :class:`.CloudStackNode`
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
 
-        data = self._async_request(command='deployVirtualMachine',
-                                   params=server_params,
-                                   method='GET')['virtualmachine']
+        method = kwargs.get('ex_http_method', 'GET')
+        if method == 'GET':
+            req = functools.partial(self._async_request, params=server_params)
+        else:
+            req = functools.partial(
+                self._async_request, data=server_params,
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        data = req(command='deployVirtualMachine',
+                   method=method)['virtualmachine']
         node = self._to_node(data=data)
         return node
 

@@ -73,8 +73,11 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         return data
 
-    def _make_signature(self, params):
+    def _make_signature(self, params, data):
         signature = [(k.lower(), v) for k, v in list(params.items())]
+        if data:
+            for k, v in data.items():
+                signature.append((k, v))
         signature.sort(key=lambda x: x[0])
 
         pairs = []
@@ -90,17 +93,6 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         signature = hmac.new(b(self.key), msg=b(signature),
                              digestmod=hashlib.sha1)
         return base64.b64encode(b(signature.digest()))
-
-    def add_default_params(self, params):
-        params['apiKey'] = self.user_id
-        params['response'] = 'json'
-
-        return params
-
-    def pre_connect_hook(self, params, headers):
-        params['signature'] = self._make_signature(params)
-
-        return params, headers
 
     def _async_request(self, command, action=None, params=None, data=None,
                        headers=None, method='GET', context=None):
@@ -152,12 +144,15 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
             params = {}
 
         params['command'] = command
+        params['apiKey'] = self.user_id
+        params['response'] = 'json'
+        params['signature'] = self._make_signature(params, data)
         result = self.request(action=self.driver.path, params=params,
                               data=data, headers=headers, method=method)
 
         command = command.lower()
 
-        # Work around for older verions which don't return "response" suffix
+        # Work around for older versions which don't return "response" suffix
         # in delete ingress rule response command name
         if (command == 'revokesecuritygroupingress' and
                 'revokesecuritygroupingressresponse' not in result.object):
