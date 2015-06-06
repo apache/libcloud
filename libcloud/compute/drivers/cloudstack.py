@@ -1409,6 +1409,80 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return nodes
 
+    def ex_get_node(self, node_id, project=None):
+        """
+        Return a Node object based on its ID.
+
+        :param  node_id: The id of the node
+        :type   node_id: ``str``
+
+        :keyword    project: Limit node returned to those configured under
+                             the defined project.
+        :type       project: :class:`.CloudStackProject`
+
+        :rtype: :class:`CloudStackNode`
+        """
+        list_nodes_args = {'id': node_id}
+        list_ips_args = {}
+        if project:
+            list_nodes_args['projectid'] = project.id
+            list_ips_args['projectid'] = project.id
+        vms = self._sync_request('listVirtualMachines', params=list_nodes_args)
+        if not vms:
+            raise Exception("Node '%s' not found" % node_id)
+        vm = vms['virtualmachine'][0]
+        addrs = self._sync_request('listPublicIpAddresses',
+                                   params=list_ips_args)
+
+        public_ips = {}
+        for addr in addrs.get('publicipaddress', []):
+            if 'virtualmachineid' not in addr:
+                continue
+            public_ips[addr['ipaddress']] = addr['id']
+
+        node = self._to_node(data=vm, public_ips=list(public_ips.keys()))
+
+        addresses = public_ips.items()
+        addresses = [CloudStackAddress(node, v, k) for k, v in addresses]
+        node.extra['ip_addresses'] = addresses
+
+        rules = []
+        list_fw_rules = {'virtualmachineid': node_id}
+        for addr in addresses:
+            result = self._sync_request('listIpForwardingRules',
+                                        params=list_fw_rules)
+            for r in result.get('ipforwardingrule', []):
+                if str(r['virtualmachineid']) == node.id:
+                    rule = CloudStackIPForwardingRule(node, r['id'],
+                                                      addr,
+                                                      r['protocol']
+                                                      .upper(),
+                                                      r['startport'],
+                                                      r['endport'])
+                    rules.append(rule)
+        node.extra['ip_forwarding_rules'] = rules
+
+        rules = []
+        public_ips = self.ex_list_public_ips()
+        result = self._sync_request('listPortForwardingRules',
+                                    params=list_fw_rules)
+        for r in result.get('portforwardingrule', []):
+            if str(r['virtualmachineid']) == node.id:
+                addr = [a for a in public_ips if
+                        a.address == r['ipaddress']]
+                rule = CloudStackPortForwardingRule(node, r['id'],
+                                                    addr[0],
+                                                    r['protocol'].upper(),
+                                                    r['publicport'],
+                                                    r['privateport'],
+                                                    r['publicendport'],
+                                                    r['privateendport'])
+                if not addr[0].address in node.public_ips:
+                    node.public_ips.append(addr[0].address)
+                rules.append(rule)
+        node.extra['port_forwarding_rules'] = rules
+        return node
+
     def list_sizes(self, location=None):
         """
         :rtype ``list`` of :class:`NodeSize`
@@ -2098,6 +2172,37 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                               driver=self,
                                               extra=extra))
         return list_volumes
+
+    def ex_get_volume(self, volume_id, project=None):
+        """
+        Return a StorageVolume object based on its ID.
+
+        :param  volume_id: The id of the volume
+        :type   volume_id: ``str``
+
+        :keyword    project: Limit volume returned to those configured under
+                             the defined project.
+        :type       project: :class:`.CloudStackProject`
+
+        :rtype: :class:`CloudStackNode`
+        """
+        args = {'id': volume_id}
+        if project:
+            args['projectid'] = project.id
+        volumes = self._sync_request(command='listVolumes', params=args)
+        if not volumes:
+            raise Exception("Volume '%s' not found" % volume_id)
+        vol = volumes['volume'][0]
+
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['volume']
+        extra = self._get_extra_dict(vol, extra_map)
+
+        if 'tags' in vol:
+            extra['tags'] = self._get_resource_tags(vol['tags'])
+
+        volume = StorageVolume(id=vol['id'], name=vol['name'],
+                               size=vol['size'], driver=self, extra=extra)
+        return volume
 
     def list_key_pairs(self, **kwargs):
         """

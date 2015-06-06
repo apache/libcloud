@@ -572,6 +572,10 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(volumes))
         self.assertEqual('ROOT-69942', volumes[0].name)
 
+    def test_ex_get_volume(self):
+        volume = self.driver.ex_get_volume(2600)
+        self.assertEqual('ROOT-69942', volume.name)
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(2, len(nodes))
@@ -579,6 +583,16 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', nodes[0].id)
         self.assertEqual([], nodes[0].extra['security_group'])
         self.assertEqual(None, nodes[0].extra['key_name'])
+
+    def test_ex_get_node(self):
+        node = self.driver.ex_get_node(2600)
+        self.assertEqual('test', node.name)
+        self.assertEqual('2600', node.id)
+        self.assertEqual([], node.extra['security_group'])
+        self.assertEqual(None, node.extra['key_name'])
+
+    def test_ex_get_node_doesnt_exist(self):
+        self.assertRaises(Exception, self.driver.ex_get_node(26), node_id=26)
 
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
