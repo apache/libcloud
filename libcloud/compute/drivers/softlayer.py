@@ -16,6 +16,7 @@
 Softlayer driver
 """
 
+import base64
 import time
 try:
     from Crypto.PublicKey import RSA
@@ -278,84 +279,7 @@ class SoftLayerNodeDriver(NodeDriver):
         :keyword    ex_keyname: The name of the key pair
         :type       ex_keyname: ``str``
         """
-        name = kwargs['name']
-        os = 'DEBIAN_LATEST'
-        if 'ex_os' in kwargs:
-            os = kwargs['ex_os']
-        elif 'image' in kwargs:
-            os = kwargs['image'].id
-
-        size = kwargs.get('size', NodeSize(id=123, name='Custom', ram=None,
-                                           disk=None, bandwidth=None,
-                                           price=None,
-                                           driver=self.connection.driver))
-        ex_size_data = SL_TEMPLATES.get(int(size.id)) or {}
-        # plan keys are ints
-        cpu_count = kwargs.get('ex_cpus') or ex_size_data.get('cpus') or \
-            DEFAULT_CPU_SIZE
-        ram = kwargs.get('ex_ram') or ex_size_data.get('ram') or \
-            DEFAULT_RAM_SIZE
-        bandwidth = kwargs.get('ex_bandwidth') or size.bandwidth or 10
-        hourly = 'true' if kwargs.get('ex_hourly', True) else 'false'
-
-        local_disk = 'true'
-        if ex_size_data.get('local_disk') is False:
-            local_disk = 'false'
-
-        if kwargs.get('ex_local_disk') is False:
-            local_disk = 'false'
-
-        disk_size = DEFAULT_DISK_SIZE
-        if size.disk:
-            disk_size = size.disk
-        if kwargs.get('ex_disk'):
-            disk_size = kwargs.get('ex_disk')
-
-        datacenter = ''
-        if 'ex_datacenter' in kwargs:
-            datacenter = kwargs['ex_datacenter']
-        elif 'location' in kwargs:
-            datacenter = kwargs['location'].id
-
-        domain = kwargs.get('ex_domain')
-        if domain is None:
-            if name.find('.') != -1:
-                domain = name[name.find('.') + 1:]
-        if domain is None:
-            # TODO: domain is a required argument for the Sofylayer API, but it
-            # it shouldn't be.
-            domain = DEFAULT_DOMAIN
-
-        newCCI = {
-            'hostname': name,
-            'domain': domain,
-            'startCpus': cpu_count,
-            'maxMemory': ram,
-            'networkComponents': [{'maxSpeed': bandwidth}],
-            'hourlyBillingFlag': hourly,
-            'operatingSystemReferenceCode': os,
-            'localDiskFlag': local_disk,
-            'blockDevices': [
-                {
-                    'device': '0',
-                    'diskImage': {
-                        'capacity': disk_size,
-                    }
-                }
-            ]
-
-        }
-
-        if datacenter:
-            newCCI['datacenter'] = {'name': datacenter}
-
-        if 'ex_keyname' in kwargs:
-            newCCI['sshKeys'] = [
-                {
-                    'id': self._key_name_to_id(kwargs['ex_keyname'])
-                }
-            ]
-
+        newCCI = self._to_virtual_guest_template(**kwargs)
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'createObject', newCCI
         ).object
@@ -502,3 +426,88 @@ class SoftLayerNodeDriver(NodeDriver):
             raise KeyPairDoesNotExistError(name, self)
         else:
             return int(key_id[0]['id'])
+
+    def _to_virtual_guest_template(self, **attrs):
+        name = attrs['name']
+        os = 'DEBIAN_LATEST'
+        if 'ex_os' in attrs:
+            os = attrs['ex_os']
+        elif 'image' in attrs:
+            os = attrs['image'].id
+
+        size = attrs.get('size',
+                         NodeSize(id=123, name='Custom', ram=None,
+                                  disk=None, bandwidth=None,
+                                  price=None,
+                                  driver=None))
+        ex_size_data = SL_TEMPLATES.get(int(size.id)) or {}
+        # plan keys are ints
+        cpu_count = attrs.get('ex_cpus') or ex_size_data.get('cpus') or \
+            DEFAULT_CPU_SIZE
+        ram = attrs.get('ex_ram') or ex_size_data.get('ram') or \
+            DEFAULT_RAM_SIZE
+        bandwidth = attrs.get('ex_bandwidth') or size.bandwidth or 10
+        hourly = 'true' if attrs.get('ex_hourly', True) else 'false'
+
+        local_disk = 'true'
+        if ex_size_data.get('local_disk') is False:
+            local_disk = 'false'
+
+        if attrs.get('ex_local_disk') is False:
+            local_disk = 'false'
+
+        disk_size = DEFAULT_DISK_SIZE
+        if size.disk:
+            disk_size = size.disk
+        if attrs.get('ex_disk'):
+            disk_size = attrs.get('ex_disk')
+
+        datacenter = ''
+        if 'ex_datacenter' in attrs:
+            datacenter = attrs['ex_datacenter']
+        elif 'location' in attrs:
+            datacenter = attrs['location'].id
+
+        domain = attrs.get('ex_domain')
+        if domain is None:
+            if name.find('.') != -1:
+                domain = name[name.find('.') + 1:]
+        if domain is None:
+            # TODO: domain is a required argument for the Sofylayer API, but it
+            # it shouldn't be.
+            domain = DEFAULT_DOMAIN
+
+        newCCI = {
+            'hostname': name,
+            'domain': domain,
+            'startCpus': cpu_count,
+            'maxMemory': ram,
+            'networkComponents': [{'maxSpeed': bandwidth}],
+            'hourlyBillingFlag': hourly,
+            'operatingSystemReferenceCode': os,
+            'localDiskFlag': local_disk,
+            'blockDevices': [
+                {
+                    'device': '0',
+                    'diskImage': {
+                        'capacity': disk_size,
+                    }
+                }
+            ]
+        }
+
+        if datacenter:
+            newCCI['datacenter'] = {'name': datacenter}
+
+        if 'ex_keyname' in attrs:
+            newCCI['sshKeys'] = [
+                {
+                    'id': self._key_name_to_id(attrs['ex_keyname'])
+                }
+            ]
+
+        if 'ex_userdata' in attrs:
+            template['UserData'] = \
+                [{'value': base64.b64encode(attrs['ex_userdata'])}]
+
+        return newCCI
