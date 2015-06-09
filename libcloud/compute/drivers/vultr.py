@@ -94,9 +94,9 @@ class VultrNodeDriver(NodeDriver):
     def list_images(self):
         return self._list_resources('/v1/os/list', self._to_image)
 
-    def create_node(self, name, size, image, location):
+    def create_node(self, name, size, image, location, ssh_key=None):
         params = {'DCID': location.id, 'VPSPLANID': size.id,
-                  'OSID': image.id, 'label': name}
+                  'OSID': image.id, 'label': name, 'SSHKEYID': ssh_key}
 
         result = self.connection.post('/v1/server/create', params)
         if result.status != httplib.OK:
