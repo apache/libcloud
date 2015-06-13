@@ -204,7 +204,7 @@ Compute
   (GITHUB-528)
   [Michael Bennett]
 
-- Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver.
   (GITHUB-532)
   [ZuluPro]
 
@@ -212,6 +212,14 @@ Compute
   correctly mapped to "error" and "paused" respectively.
   (GITHUB-517)
   [Chris O'Brien]
+
+- Add SSH key pair management methods to the Gandi driver.
+  (GITHUB-534)
+  [ZuluPro]
+
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to Gandi driver.
+  (GITHUB-534)
+  [ZuluPro]
 
 Storage
 ~~~~~~~
