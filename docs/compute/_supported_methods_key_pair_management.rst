@@ -35,7 +35,7 @@ Provider                              list key pairs get key pair create key pai
 `ElasticHosts (sjc-c)`_               no             no           no              no                            no                          no             
 `Eucalyptus`_                         yes            yes          yes             yes                           no                          yes            
 `Exoscale`_                           yes            yes          yes             yes                           no                          yes            
-`Gandi`_                              no             no           no              no                            no                          no             
+`Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             

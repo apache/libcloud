@@ -35,7 +35,7 @@ Provider                              Documentation                             
 `ElasticHosts (sjc-c)`_                                                             ELASTICHOSTS_US3    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS3NodeDriver`  
 `Eucalyptus`_                                                                       EUCALYPTUS          :mod:`libcloud.compute.drivers.ec2`            :class:`EucNodeDriver`              
 `Exoscale`_                           :doc:`Click </compute/drivers/exoscale>`      EXOSCALE            :mod:`libcloud.compute.drivers.exoscale`       :class:`ExoscaleNodeDriver`         
-`Gandi`_                                                                            GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
+`Gandi`_                              :doc:`Click </compute/drivers/gandi>`         GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
 `Google Compute Engine`_              :doc:`Click </compute/drivers/gce>`           GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
 `GoGrid`_                                                                           GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                      HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`    :class:`HostVirtualNodeDriver`      
