@@ -208,6 +208,11 @@ Compute
   (GITHUB-532)
   [ZuluPro]
 
+- Update CloudSigma driver so the "unavailable" and "paused" node state is
+  correctly mapped to "error" and "paused" respectively.
+  (GITHUB-517)
+  [Chris O'Brien]
+
 Storage
 ~~~~~~~
 
