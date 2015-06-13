@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>fingerprint</name>
+<value><string>a6:1f:b8:b4:19:91:99:d8:af:ab:d6:17:72:8b:d1:6c</string></value>
+</member>
+<member>
+<name>name</name>
+<value><string>testkey</string></value>
+</member>
+<member>
+<name>value</name>
+<value><string>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCaCXFxl0cPZa+PkXSaux/9Sfn4J81eNJ4f/ZkjdIlmLJVYFUKbpC16eEwXYEfw/QBAZFPODCDQOFAZdgajO572y9scp09F7L7Rhwrw7DYu8STMIBz0XBIO8eOUyu5hVRpxaZGDih9B99e1hITTGFg+BveAmrdB8CPtygKo/fUmaamrocZBrD1betaLTC0i6/DVz7YAbR0CleZLlaBogqVhqmS0TB4J67aG2vvq1MjyOixQY5Ab4aXo4Dz1jd7oqCGCKCO9oKAG0ok94foxkfnCmfRrnfWzOA7SFWjUs65SOrGYZghspDcbJ9vA4ZkUuWJXPPvLVgsI8aHwkezJPD8Th root@testhost</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>10</int></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>

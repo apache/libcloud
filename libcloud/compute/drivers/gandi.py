@@ -20,6 +20,7 @@ from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException,\
     NetworkInterface, IPAddress, Disk
+from libcloud.compute.base import KeyPair
 from libcloud.compute.base import StorageVolume
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import Node, NodeDriver
@@ -144,6 +145,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return [self._to_volume(d) for d in disks]
 
     def list_nodes(self):
+        """
+        Return a list of nodes in the current zone or all zones.
+
+        :return:  List of Node objects
+        :rtype:   ``list`` of :class:`Node`
+        """
         vms = self.connection.request('hosting.vm.list').object
         ips = self.connection.request('hosting.ip.list').object
         for vm in vms:
@@ -157,7 +164,37 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         nodes = self._to_nodes(vms)
         return nodes
 
+    def ex_get_node(self, node_id):
+        """
+        Return a Node object based on a node id.
+
+        :param  name: The ID of the node
+        :type   name: ``int``
+
+        :return:  A Node object for the node
+        :rtype:   :class:`Node`
+        """
+        vm = self.connection.request('hosting.vm.info', int(node_id)).object
+        ips = self.connection.request('hosting.ip.list').object
+        vm['ips'] = []
+        for ip in ips:
+            if vm['ifaces_id'][0] == ip['iface_id']:
+                ip = ip.get('ip', None)
+                if ip:
+                    vm['ips'].append(ip)
+        node = self._to_node(vm)
+        return node
+
     def reboot_node(self, node):
+        """
+        Reboot a node.
+
+        :param  node: Node to be rebooted
+        :type   node: :class:`Node`
+
+        :return:  True if successful, False if not
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.vm.reboot', int(node.id))
         self._wait_operation(op.object['id'])
         vm = self._node_info(int(node.id))
@@ -166,6 +203,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return False
 
     def destroy_node(self, node):
+        """
+        Destroy a node.
+
+        :param  node: Node object to destroy
+        :type   node: :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         vm = self._node_info(node.id)
         if vm['state'] == 'running':
             # Send vm_stop and wait for accomplish
@@ -214,12 +260,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :keyword    inet_family: version of ip to use, default 4 (optional)
         :type       inet_family: ``int``
 
+        :keyword    keypairs: IDs of keypairs or Keypairs object
+        :type       keypairs: list of ``int`` or :class:`.KeyPair`
+
         :rtype: :class:`Node`
         """
 
-        if kwargs.get('login') is None or kwargs.get('password') is None:
-            raise GandiException(
-                1020, 'login and password must be defined for node creation')
+        if not kwargs.get('login') and not kwargs.get('keypairs'):
+            raise GandiException(1020, "Login and password or ssh keypair "
+                                 "must be defined for node creation")
 
         location = kwargs.get('location')
         if location and isinstance(location, NodeLocation):
@@ -232,6 +281,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if not size and not isinstance(size, NodeSize):
             raise GandiException(
                 1022, 'size must be a subclass of NodeSize')
+
+        keypairs = kwargs.get('keypairs', [])
+        keypair_ids = [
+            k if isinstance(k, int) else k.extra['id']
+            for k in keypairs
+        ]
 
         # If size name is in INSTANCE_TYPE we use new rating model
         instance = INSTANCE_TYPES.get(size.id)
@@ -247,13 +302,19 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         vm_spec = {
             'datacenter_id': dc_id,
             'hostname': kwargs['name'],
-            'login': kwargs['login'],
-            'password': kwargs['password'],  # TODO : use NodeAuthPassword
             'memory': int(size.ram),
             'cores': cores,
             'bandwidth': int(size.bandwidth),
             'ip_version': kwargs.get('inet_family', 4),
         }
+
+        if kwargs.get('login') and kwargs.get('password'):
+            vm_spec.update({
+                'login': kwargs['login'],
+                'password': kwargs['password'],  # TODO : use NodeAuthPassword
+            })
+        if keypair_ids:
+            vm_spec['keys'] = keypair_ids
 
         # Call create_from helper api. Return 3 operations : disk_create,
         # iface_create,vm_create
@@ -284,6 +345,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_images(self, location=None):
+        """
+        Return a list of image objects.
+
+        :keyword    location: Which data center to filter a images in.
+        :type       location: :class:`NodeLocation`
+
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
+        """
         try:
             if location:
                 filtering = {'datacenter_id': int(location.id)}
@@ -322,6 +392,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 for name, instance in INSTANCE_TYPES.items()]
 
     def list_sizes(self, location=None):
+        """
+        Return a list of sizes (machineTypes) in a zone.
+
+        :keyword  location: Which data center to filter a sizes in.
+        :type     location: :class:`NodeLocation` or ``None``
+
+        :return:  List of NodeSize objects
+        :rtype:   ``list`` of :class:`NodeSize`
+        """
         account = self.connection.request('hosting.account.info').object
         if account.get('rating_enabled'):
             # This account use new rating model
@@ -363,18 +442,57 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_locations(self):
+        """
+        Return a list of locations (datacenters).
+
+        :return: List of NodeLocation objects
+        :rtype: ``list`` of :class:`NodeLocation`
+        """
         res = self.connection.request('hosting.datacenter.list')
         return [self._to_loc(l) for l in res.object]
 
     def list_volumes(self):
         """
+        Return a list of volumes.
 
+        :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
         res = self.connection.request('hosting.disk.list', {})
         return self._to_volumes(res.object)
 
+    def ex_get_volume(self, volume_id):
+        """
+        Return a Volume object based on a volume ID.
+
+        :param  volume_id: The ID of the volume
+        :type   volume_id: ``int``
+
+        :return:  A StorageVolume object for the volume
+        :rtype:   :class:`StorageVolume`
+        """
+        res = self.connection.request('hosting.disk.info', volume_id)
+        return self._to_volume(res.object)
+
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a volume (disk).
+
+        :param  size: Size of volume to create (in GB).
+        :type   size: ``int``
+
+        :param  name: Name of volume to create
+        :type   name: ``str``
+
+        :keyword  location: Location (zone) to create the volume in
+        :type     location: :class:`NodeLocation` or ``None``
+
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: :class:`Snapshot`
+
+        :return:  Storage Volume object
+        :rtype:   :class:`StorageVolume`
+        """
         disk_param = {
             'name': name,
             'size': int(size),
@@ -391,6 +509,21 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return None
 
     def attach_volume(self, node, volume, device=None):
+        """
+        Attach a volume to a node.
+
+        :param  node: The node to attach the volume to
+        :type   node: :class:`Node`
+
+        :param  volume: The volume to attach.
+        :type   volume: :class:`StorageVolume`
+
+        :keyword  device: Not used in this cloud.
+        :type     device: ``None``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.vm.disk_attach',
                                      int(node.id), int(volume.id))
         if self._wait_operation(op.object['id']):
@@ -416,6 +549,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return False
 
     def destroy_volume(self, volume):
+        """
+        Destroy a volume.
+
+        :param  volume: Volume object to destroy
+        :type   volume: :class:`StorageVolume`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
         op = self.connection.request('hosting.disk.delete', int(volume.id))
         if self._wait_operation(op.object['id']):
             return True
@@ -534,7 +676,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :param      node: Node which should be used
         :type       node: :class:`Node`
 
-
         :param      iface: Network interface which should be used
         :type       iface: :class:`GandiNetworkInterface`
 
@@ -552,7 +693,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :param      node: Node which should be used
         :type       node: :class:`Node`
-
 
         :param      iface: Network interface which should be used
         :type       iface: :class:`GandiNetworkInterface`
@@ -617,3 +757,69 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if self._wait_operation(op.object['id']):
             return True
         return False
+
+    def _to_key_pair(self, data):
+        key_pair = KeyPair(name=data['name'],
+                           fingerprint=data['fingerprint'],
+                           public_key=data.get('value', None),
+                           private_key=data.get('privatekey', None),
+                           driver=self, extra={'id': data['id']})
+        return key_pair
+
+    def _to_key_pairs(self, data):
+        return [self._to_key_pair(k) for k in data]
+
+    def list_key_pairs(self):
+        """
+        List registered key pairs.
+
+        :return:   A list of key par objects.
+        :rtype:   ``list`` of :class:`libcloud.compute.base.KeyPair`
+        """
+        kps = self.connection.request('hosting.ssh.list').object
+        return self._to_key_pairs(kps)
+
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
+        filter_params = {'name': name}
+        kps = self.connection.request('hosting.ssh.list', filter_params).object
+        return self._to_key_pair(kps[0])
+
+    def import_key_pair_from_string(self, name, key_material):
+        """
+        Create a new key pair object.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_material: Public key material.
+        :type key_material: ``str``
+
+        :return: Imported key pair object.
+        :rtype: :class:`.KeyPair`
+        """
+        params = {'name': name, 'value': key_material}
+        kp = self.connection.request('hosting.ssh.create', params).object
+        return self._to_key_pair(kp)
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete an existing key pair.
+
+        :param key_pair: Key pair object or ID.
+        :type key_pair: :class.KeyPair` or ``int``
+
+        :return:   True of False based on success of Keypair deletion
+        :rtype:    ``bool``
+        """
+        key_id = key_pair if isinstance(key_pair, int) \
+            else key_pair.extra['id']
+        success = self.connection.request('hosting.ssh.delete', key_id).object
+        return success
