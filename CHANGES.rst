@@ -261,6 +261,10 @@ DNS
   (GITHUB-461)
   [Vanč Levstik]
 
+- Add new driver for DigitalOcean DNS service.
+  (GITHUB-505)
+  [Javier Castillo II]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
