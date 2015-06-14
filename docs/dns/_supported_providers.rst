@@ -1,18 +1,20 @@
-===================== ======================================= ================= ======================================= =============================
-Provider              Documentation                           Provider constant Module                                  Class Name                   
-===================== ======================================= ================= ======================================= =============================
-`Gandi DNS`_                                                  GANDI             :mod:`libcloud.dns.drivers.gandi`       :class:`GandiDNSDriver`      
-`Google DNS`_                                                 GOOGLE            :mod:`libcloud.dns.drivers.google`      :class:`GoogleDNSDriver`     
-`Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>` HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual` :class:`HostVirtualDNSDriver`
-`Linode DNS`_                                                 LINODE            :mod:`libcloud.dns.drivers.linode`      :class:`LinodeDNSDriver`     
-`Rackspace DNS`_                                              RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceDNSDriver`  
-`Rackspace DNS (UK)`_                                         RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceUKDNSDriver`
-`Rackspace DNS (US)`_                                         RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`   :class:`RackspaceUSDNSDriver`
-`Route53 DNS`_                                                ROUTE53           :mod:`libcloud.dns.drivers.route53`     :class:`Route53DNSDriver`    
-`Softlayer DNS`_                                              SOFTLAYER         :mod:`libcloud.dns.drivers.softlayer`   :class:`SoftLayerDNSDriver`  
-`Zerigo DNS`_                                                 ZERIGO            :mod:`libcloud.dns.drivers.zerigo`      :class:`ZerigoDNSDriver`     
-===================== ======================================= ================= ======================================= =============================
+===================== ========================================= ================= ======================================== ==============================
+Provider              Documentation                             Provider constant Module                                   Class Name                    
+===================== ========================================= ================= ======================================== ==============================
+`DigitalOcean`_       :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
+`Gandi DNS`_                                                    GANDI             :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
+`Google DNS`_                                                   GOOGLE            :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
+`Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
+`Linode DNS`_                                                   LINODE            :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
+`Rackspace DNS`_                                                RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
+`Rackspace DNS (UK)`_                                           RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUKDNSDriver` 
+`Rackspace DNS (US)`_                                           RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUSDNSDriver` 
+`Route53 DNS`_                                                  ROUTE53           :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
+`Softlayer DNS`_                                                SOFTLAYER         :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
+`Zerigo DNS`_                                                   ZERIGO            :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
+===================== ========================================= ================= ======================================== ==============================
 
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
