@@ -1969,9 +1969,10 @@ class GCENodeDriver(NodeDriver):
         firewall_data['name'] = name
         firewall_data['allowed'] = allowed
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is None:
+        if source_ranges is None and source_tags is None:
             source_ranges = ['0.0.0.0/0']
-        firewall_data['sourceRanges'] = source_ranges
+        if source_ranges is not None:
+            firewall_data['sourceRanges'] = source_ranges
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
         if target_tags is not None:
