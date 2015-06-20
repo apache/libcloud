@@ -78,7 +78,7 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     is_windows = platform.system() == 'Windows'
 
     if is_windows and family == socket.AF_INET6:
-        raise ValueError('Checking IPv6 addresses are not supported on Windows')
+        raise ValueError('Checking IPv6 addresses is not supported on Windows')
 
     try:
         if is_windows:
