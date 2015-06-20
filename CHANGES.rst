@@ -27,6 +27,10 @@ General
   (GITHUB-533, LIBCLOUD-716)
   [Avi Weit]
 
+- Update ``is_valid_ip_address`` function so it also works on Windows.
+  (GITHUB-343, GITHUB-498, LIBCLOUD-601, LIBCLOUD-686)
+  [Nicolas Fraison, Samuel Marks]
+
 Compute
 ~~~~~~~
 
