@@ -75,8 +75,13 @@ def is_valid_ip_address(address, family=socket.AF_INET):
 
     :return: ``bool`` True if the provided address is valid.
     """
+    is_windows = platform.system() == 'Windows'
+
+    if is_windows and family == socket.AF_INET6:
+        raise ValueError('Checking IPv6 addresses are not supported on Windows')
+
     try:
-        if (platform.system() == 'Windows'):
+        if is_windows:
             socket.inet_aton(address)
         else:
             socket.inet_pton(family, address)
