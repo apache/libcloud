@@ -5,7 +5,7 @@
 # (the "License"); you may not use this file except in compliance with
 # the License.  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 
 import socket
 import struct
+import platform
 
 __all__ = [
     'is_private_subnet',
@@ -75,7 +76,10 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     :return: ``bool`` True if the provided address is valid.
     """
     try:
-        socket.inet_pton(family, address)
+        if (platform.system() == 'Windows'):
+            socket.inet_aton(address)
+        else:
+            socket.inet_pton(family, address)
     except socket.error:
         return False
 
