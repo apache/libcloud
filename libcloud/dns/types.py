@@ -44,6 +44,7 @@ class Provider(object):
     POINTDNS = 'pointdns'
     VULTR = 'vultr'
     LIQUIDWEB = 'liquidweb'
+    ZONOMI = 'zonomi'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
