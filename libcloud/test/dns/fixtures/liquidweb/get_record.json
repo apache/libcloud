@@ -1,0 +1,9 @@
+{
+    "name": "nerd.domain.com",
+    "prio": "None",
+    "rdata": "127.0.0.1",
+    "ttl": 300,
+    "type": "A",
+    "id": 13,
+    "zone_id": 13
+}

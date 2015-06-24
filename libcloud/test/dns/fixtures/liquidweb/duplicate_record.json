@@ -1,0 +1,7 @@
+{
+    "error_class": "LW::Exception::DuplicateRecord",
+    "field": "domain",
+    "full_message": "Duplicate record for 'domain: mytest.com': ",
+    "input": "mytest.com",
+    "id": 11
+}
