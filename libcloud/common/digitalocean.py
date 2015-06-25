@@ -17,7 +17,7 @@
 Common settings and connection objects for DigitalOcean Cloud
 """
 
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, parse_qs, urlparse
 
 from libcloud.common.base import BaseDriver
 from libcloud.common.base import ConnectionUserAndKey, ConnectionKey
@@ -108,6 +108,16 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         headers['Authorization'] = 'Bearer %s' % (self.key)
         headers['Content-Type'] = 'application/json'
         return headers
+
+    def add_default_params(self, params):
+        """
+        Add parameters that are necessary for every request
+
+        This method adds ``per_page`` to the request to reduce the total
+        number of paginated requests to the API.
+        """
+        params['per_page'] = '200'
+        return params
 
 
 class DigitalOceanConnection(DigitalOcean_v2_Connection):
@@ -207,11 +217,14 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         :type obj: ``str``
 
         :return: ``list`` of API response objects
+        :rtype: ``list``
         """
         params = {}
         data = self.connection.request(url)
         try:
-            pages = data.object['links']['pages']['last'].split('=')[-1]
+            query = urlparse.urlparse(data.object['links']['pages']['last'])
+            # The query[4] references the query parameters from the url
+            pages = parse_qs(query[4])['page'][0]
             values = data.object[obj]
             for page in range(2, int(pages) + 1):
                 params.update({'page': page})
@@ -223,5 +236,4 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
             data = values
         except KeyError:  # No pages.
             data = data.object[obj]
-
         return data
