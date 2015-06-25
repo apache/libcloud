@@ -284,6 +284,15 @@ Compute
   (GITHUB-555)
   [Konstantin Skaburskas]
 
+- Various improvements in the DigitalOcean driver:
+  - Increase page size to API maximum.
+  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+  - Update all the ``list_*`` methods to use paginated requests
+  - Allow user to specify page size by passing ``ex_per_page`` argument to the
+    constructor.
+  (LIBCLOUD-717, GITHUB-537)
+  [Javier Castillo II]
+
 Storage
 ~~~~~~~
 

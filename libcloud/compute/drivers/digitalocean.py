@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Digital Ocean Driver
+DigitalOcean Driver
 """
 import json
 import warnings
@@ -24,8 +24,8 @@ from libcloud.common.digitalocean import DigitalOcean_v1_BaseDriver
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
+from libcloud.compute.base import Node, NodeDriver
 
 __all__ = [
     'DigitalOceanNodeDriver',
@@ -320,42 +320,61 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                       'active': NodeState.RUNNING,
                       'archive': NodeState.TERMINATED}
 
-    def list_nodes(self):
-        data = self._paginated_request('/v2/droplets', 'droplets')
-        return list(map(self._to_node, data))
-
-    def list_locations(self):
-        data = self.connection.request('/v2/regions').object['regions']
-        return list(map(self._to_location, data))
+    EX_CREATE_ATTRIBUTES = ['backups',
+                            'ipv6',
+                            'private_networking',
+                            'ssh_keys']
 
     def list_images(self):
         data = self._paginated_request('/v2/images', 'images')
         return list(map(self._to_image, data))
 
+    def list_key_pairs(self):
+        """
+        List all the available SSH keys.
+
+        :return: Available SSH keys.
+        :rtype: ``list`` of :class:`KeyPair`
+        """
+        data = self._paginated_request('/v2/account/keys', 'ssh_keys')
+        return list(map(self._to_key_pair, data))
+
+    def list_locations(self):
+        data = self._paginated_request('/v2/regions', 'regions')
+        return list(map(self._to_location, data))
+
+    def list_nodes(self):
+        data = self._paginated_request('/v2/droplets', 'droplets')
+        return list(map(self._to_node, data))
+
     def list_sizes(self):
-        data = self.connection.request('/v2/sizes').object['sizes']
+        data = self._paginated_request('/v2/sizes', 'sizes')
         return list(map(self._to_size, data))
 
-    def create_node(self, name, size, image, location,
+    def create_node(self, name, size, image, location, ex_create_attr=None,
                     ex_ssh_key_ids=None, ex_user_data=None):
         """
         Create a node.
 
-        :keyword    name: Name of the node to be created.
-        :type       name: ``str``
+        The `ex_create_attr` parameter can include the following dictionary
+        key and value pairs:
 
-        :keyword    size: Size of the node.
-        :type       size: ``NodeSize``
+        * `backups`: ``bool`` defaults to False
+        * `ipv6`: ``bool`` defaults to False
+        * `private_networking`: ``bool`` defaults to False
+        * `user_data`: ``str`` for cloud-config data
+        * `ssh_keys`: ``list`` of ``int`` key ids or ``str`` fingerprints
 
-        :keyword    image: Image to be used to create node.
-        :type       image: ``NodeImage``
+        `ex_create_attr['ssh_keys']` will override `ex_ssh_key_ids` assignment.
 
-        :keyword    location: Location where the node will be created.
-        :type       location: ``NodeLocation``
+        :keyword ex_create_attr: A dictionary of optional attributes for
+                                 droplet creation
+        :type ex_create_attr: ``dict``
 
-        :keyword    ex_ssh_key_ids: A list of ssh key ids which will be added
-                                   to the server. (optional)
-        :type       ex_ssh_key_ids: ``list`` of ``str``
+        :keyword ex_ssh_key_ids: A list of ssh key ids which will be added
+                                 to the server. (optional)
+        :type ex_ssh_key_ids: ``list`` of ``int`` key ids or ``str``
+                              key fingerprints
 
         :keyword    ex_user_data:  User data to be added to the node on create.
                                      (optional)
@@ -368,7 +387,14 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                 'region': location.id, 'user_data': ex_user_data}
 
         if ex_ssh_key_ids:
+            warnings.warn("The ex_ssh_key_ids parameter has been deprecated in"
+                          " favor of the ex_create_attr parameter.")
             attr['ssh_keys'] = ex_ssh_key_ids
+
+        ex_create_attr = ex_create_attr or {}
+        for key in ex_create_attr.keys():
+            if key in self.EX_CREATE_ATTRIBUTES:
+                attr[key] = ex_create_attr[key]
 
         res = self.connection.request('/v2/droplets',
                                       data=json.dumps(attr), method='POST')
@@ -383,36 +409,20 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         return self._to_node(data=data)
 
+    def destroy_node(self, node):
+        res = self.connection.request('/v2/droplets/%s' % (node.id),
+                                      method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
     def reboot_node(self, node):
         attr = {'type': 'reboot'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
-    def destroy_node(self, node):
-        res = self.connection.request('/v2/droplets/%s' % (node.id),
-                                      method='DELETE')
-        return res.status == httplib.NO_CONTENT
-
-    def get_image(self, image_id):
-        """
-        Get an image based on an image_id
-
-        @inherits: :class:`NodeDriver.get_image`
-
-        :param image_id: Image identifier
-        :type image_id: ``int``
-
-        :return: A NodeImage object
-        :rtype: :class:`NodeImage`
-        """
-        res = self.connection.request('/v2/images/%s' % (image_id))
-        data = res.object['image']
-        return self._to_image(data)
-
     def create_image(self, node, name):
         """
-        Create an image fron a Node.
+        Create an image from a Node.
 
         @inherits: :class:`NodeDriver.create_image`
 
@@ -443,6 +453,21 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
+    def get_image(self, image_id):
+        """
+        Get an image based on an image_id
+
+        @inherits: :class:`NodeDriver.get_image`
+
+        :param image_id: Image identifier
+        :type image_id: ``int``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+        """
+        data = self._paginated_request('/v2/images/%s' % (image_id), 'image')
+        return self._to_image(data)
+
     def ex_rename_node(self, node, name):
         attr = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
@@ -461,31 +486,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
-    def list_key_pairs(self):
-        """
-        List all the available SSH keys.
-
-        :return: Available SSH keys.
-        :rtype: ``list`` of :class:`KeyPair`
-        """
-        data = self._paginated_request('/v2/account/keys', 'ssh_keys')
-        return list(map(self._to_key_pair, data))
-
-    def get_key_pair(self, name):
-        """
-        Retrieve a single key pair.
-
-        :param name: Name of the key pair to retrieve.
-        :type name: ``str``
-
-        :rtype: :class:`.KeyPair`
-        """
-        qkey = [k for k in self.list_key_pairs() if k.name == name][0]
-        data = self.connection.request('/v2/account/keys/%s' %
-                                       qkey.extra['id']).object['ssh_key']
-        return self._to_key_pair(data=data)
-
-    def create_key_pair(self, name, public_key):
+    def create_key_pair(self, name, public_key=''):
         """
         Create a new SSH key.
 
@@ -515,28 +516,19 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
-    def _paginated_request(self, url, obj):
+    def get_key_pair(self, name):
         """
-            Perform multiple calls in order to have a full list of elements
-            when the API are paginated.
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
         """
-        params = {}
-        data = self.connection.request(url)
-        try:
-            pages = data.object['links']['pages']['last'].split('=')[-1]
-            values = data.object[obj]
-            for page in range(2, int(pages) + 1):
-                params.update({'page': page})
-                new_data = self.connection.request(url, params=params)
-
-                more_values = new_data.object[obj]
-                for value in more_values:
-                    values.append(value)
-            data = values
-        except KeyError:  # No pages.
-            data = data.object[obj]
-
-        return data
+        qkey = [k for k in self.list_key_pairs() if k.name == name][0]
+        data = self.connection.request('/v2/account/keys/%s' %
+                                       qkey.extra['id']).object['ssh_key']
+        return self._to_key_pair(data=data)
 
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
@@ -564,7 +556,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    extra=extra, driver=self)
+                    driver=self, extra=extra)
         return node
 
     def _to_image(self, data):
@@ -574,8 +566,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                  'regions': data['regions'],
                  'min_disk_size': data['min_disk_size'],
                  'created_at': data['created_at']}
-        return NodeImage(id=data['id'], name=data['name'], extra=extra,
-                         driver=self)
+        return NodeImage(id=data['id'], name=data['name'], driver=self,
+                         extra=extra)
 
     def _to_location(self, data):
         return NodeLocation(id=data['slug'], name=data['name'], country=None,
