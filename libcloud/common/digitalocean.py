@@ -16,6 +16,7 @@
 """
 Common settings and connection objects for DigitalOcean Cloud
 """
+import warnings
 
 from libcloud.utils.py3 import httplib, parse_qs, urlparse
 
@@ -116,7 +117,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         This method adds ``per_page`` to the request to reduce the total
         number of paginated requests to the API.
         """
-        params['per_page'] = '200'
+        params['per_page'] = self.driver.ex_per_page
         return params
 
 
@@ -142,6 +143,8 @@ class DigitalOceanBaseDriver(BaseDriver):
         if cls is DigitalOceanBaseDriver:
             if api_version == 'v1' or secret is not None:
                 cls = DigitalOcean_v1_BaseDriver
+                warnings.warn("The v1 API has become deprecated. Please "
+                              "consider utilizing the v2 API.")
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_BaseDriver
             else:
@@ -185,8 +188,16 @@ class DigitalOcean_v1_BaseDriver(DigitalOceanBaseDriver):
 class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
     """
     DigitalOcean BaseDriver using v2 of the API.
+
+    Supports `ex_per_page` ``int`` value keyword parameter to adjust per page
+    requests against the API.
     """
     connectionCls = DigitalOcean_v2_Connection
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None, region=None, ex_per_page=200, **kwargs):
+        self.ex_per_page = ex_per_page
+        super(DigitalOcean_v2_BaseDriver, self).__init__(key, **kwargs)
 
     def ex_account_info(self):
         return self.connection.request('/v2/account').object['account']
