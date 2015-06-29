@@ -232,6 +232,10 @@ Storage
   (GITHUB-492, LIBCLOUD-635)
   [Tom Fifield]
 
+- Add AuroraObjects Storage Driver.
+  (GITHUB-540, LIBCLOUD-719)
+  [Wido den Hollander]
+
 Loadbalancer
 ~~~~~~~~~~~~
 
