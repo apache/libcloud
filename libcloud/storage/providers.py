@@ -48,6 +48,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.azure_blobs', 'AzureBlobsStorageDriver'),
     Provider.KTUCLOUD:
     ('libcloud.storage.drivers.ktucloud', 'KTUCloudStorageDriver'),
+    Provider.AURORAOBJECTS:
+    ('libcloud.storage.drivers.auroraobjects', 'AuroraObjectsStorageDriver'),
 
     # Deprecated
     Provider.CLOUDFILES_US:
