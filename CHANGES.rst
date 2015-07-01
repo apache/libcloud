@@ -159,7 +159,7 @@ Compute
   [Tomaz Muraus]
 
 - Add new driver for Microsft Azure Virtual Machines service.
-  (LIBCLOUD-556, GITHUB-305, GITHUB-499)
+  (LIBCLOUD-556, GITHUB-305, GITHUB-499, GITHUB-538)
   [Michael Bennett, davidcrossland, Richard Conway, Matt Baldwin, Tomaz Muraus]
 
 - Fix VPC lookup method in CloudStack driver
