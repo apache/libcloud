@@ -38,6 +38,7 @@ class Provider(object):
     GOOGLE = 'google'
     SOFTLAYER = 'softlayer'
     DIGITAL_OCEAN = 'digitalocean'
+    AURORADNS = 'auroradns'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

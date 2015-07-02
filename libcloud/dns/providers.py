@@ -41,7 +41,9 @@ DRIVERS = {
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
     Provider.RACKSPACE_UK:
-    ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
+    ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver'),
+    Provider.AURORADNS:
+    ('libcloud.dns.drivers.auroradns', 'AuroraDNSDriver')
 }
 
 
