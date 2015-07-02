@@ -17,6 +17,13 @@ Compute
   (GITHUB-561)
   [ZuluPro]
 
+DNS
+~~~
+
+- Add new driver for AuroraDNS service.
+  (GITHUB-562, LIBCLOUD-735)
+  [Wido den Hollander]
+
 Storage
 ~~~~~~~
 
