@@ -16,6 +16,7 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (eu-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
+`PCextreme AuroraObjects`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
@@ -33,3 +34,4 @@ Provider                      list containers list objects create container dele
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects

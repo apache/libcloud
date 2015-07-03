@@ -13,7 +13,7 @@ Supported Methods (storage)
 
 .. include:: _supported_methods_main.rst
 
-Supported Methods (CND)
+Supported Methods (CDN)
 -----------------------
 
 .. include:: _supported_methods_cdn.rst
