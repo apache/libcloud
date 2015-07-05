@@ -1,7 +1,7 @@
 ============================= =============================================== ================= ============================================== ====================================
 Provider                      Documentation                                   Provider constant Module                                         Class Name                          
 ============================= =============================================== ================= ============================================== ====================================
-`PCextreme AuroraObjects`_    :doc:`Click </storage/drivers/auroraobjects>`   AURORAOBJECTS     :mod:`libcloud.storage.drivers.auroraobjects`  :class:`AuroraObjectsStorageDriver`
+`PCextreme AuroraObjects`_    :doc:`Click </storage/drivers/auroraobjects>`   AURORAOBJECTS     :mod:`libcloud.storage.drivers.auroraobjects`  :class:`AuroraObjectsStorageDriver` 
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `CloudFiles`_                                                                 CLOUDFILES        :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
 `CloudFiles (UK)`_                                                            CLOUDFILES_UK     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUKStorageDriver`  

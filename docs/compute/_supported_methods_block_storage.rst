@@ -73,7 +73,7 @@ Provider                              list volumes create volume destroy volume 
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
-.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/en/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/

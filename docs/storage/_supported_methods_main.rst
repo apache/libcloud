@@ -1,6 +1,7 @@
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 Provider                      list containers list objects create container delete container upload object streaming object upload download object streaming object download delete object
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
+`PCextreme AuroraObjects`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Microsoft Azure (blobs)`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles`_                 yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (UK)`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
@@ -16,9 +17,9 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (eu-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
-`PCextreme AuroraObjects`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/
@@ -34,4 +35,3 @@ Provider                      list containers list objects create container dele
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
-.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
