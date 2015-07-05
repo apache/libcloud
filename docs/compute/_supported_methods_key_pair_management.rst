@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== ============== ============ =============== ============================= =========================== ===============
 Provider                              list key pairs get key pair create key pair import public key from string import public key from file delete key pair
 ===================================== ============== ============ =============== ============================= =========================== ===============

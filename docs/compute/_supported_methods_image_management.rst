@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== =========== ========= ============ ============ ==========
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========

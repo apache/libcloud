@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 Provider                      list containers list objects create container delete container upload object streaming object upload download object streaming object download delete object
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============

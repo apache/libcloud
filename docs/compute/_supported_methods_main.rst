@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 Provider                              list nodes create node reboot node destroy node list images list sizes deploy node
 ===================================== ========== =========== =========== ============ =========== ========== ===========

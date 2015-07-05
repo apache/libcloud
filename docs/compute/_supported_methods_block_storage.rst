@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 Provider                              list volumes create volume destroy volume attach volume detach volume list snapshots create snapshot
 ===================================== ============ ============= ============== ============= ============= ============== ===============
