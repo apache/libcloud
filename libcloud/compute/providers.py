@@ -165,6 +165,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
     Provider.ONAPP:
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
+    Provider.RUNABOVE:
+    ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

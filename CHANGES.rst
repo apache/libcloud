@@ -275,6 +275,10 @@ Compute
   (GITHUB-553)
   [Rico Echwald-Tijsen]
 
+- Add new driver for RunAbove (https://www.runabove.com) provider.
+  (GITHUB-550)
+  [ZuluPro]
+
 Storage
 ~~~~~~~
 
