@@ -659,6 +659,10 @@ Compute
   (GITHUB-371)
   [Jeroen de Korte]
 
+- Allow setting job timeout in GENodeDriver.
+  (LIBCLOUD-720)
+  [Gabi Kazav]
+
 Storage
 ~~~~~~~
 

@@ -997,7 +997,8 @@ class GCENodeDriver(NodeDriver):
     }
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
-                 auth_type=None, scopes=None, credential_file=None, **kwargs):
+                 auth_type=None, scopes=None, credential_file=None,
+                 timeout=None, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -1031,7 +1032,13 @@ class GCENodeDriver(NodeDriver):
         :keyword  credential_file: Path to file for caching authentication
                                    information used by GCEConnection.
         :type     credential_file: ``str``
+
+        :keyword  timeout: Jobs timeout in seconds.
+        :type     timeout: ``int``
         """
+        if timeout is not None:
+            self.connectionCls.timeout=timeout
+
         if not project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
