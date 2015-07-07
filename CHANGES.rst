@@ -28,6 +28,12 @@ Compute
   (LIBCLOUD-736, GITHUB-564)
   [Anthony Shaw]
 
+- Add new ``ex_virtual_network_name`` and ``ex_network_config`` argument to the
+  `create_node`` method in the Azure driver. With those arguments user can now
+  specify which virtual network to use.
+  (GITHUB-569)
+  [Jesaja Everling]
+
 DNS
 ~~~
 
