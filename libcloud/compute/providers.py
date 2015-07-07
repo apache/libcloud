@@ -163,6 +163,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.cloudwatt', 'CloudwattNodeDriver'),
     Provider.PACKET:
     ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
+    Provider.RUNABOVE:
+    ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
