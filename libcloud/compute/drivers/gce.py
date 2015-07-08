@@ -1037,7 +1037,8 @@ class GCENodeDriver(NodeDriver):
         :type     timeout: ``int``
         """
         if timeout is not None:
-            self.connectionCls.timeout=timeout
+            if timeout > 0:
+                self.connectionCls.timeout = timeout
 
         if not project:
             raise ValueError('Project name must be specified using '
