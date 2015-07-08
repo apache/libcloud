@@ -659,7 +659,7 @@ Compute
   (GITHUB-371)
   [Jeroen de Korte]
 
-- Allow setting job timeout in GENodeDriver.
+- Allow setting job timeout in GCENodeDriver.
   (LIBCLOUD-720)
   [Gabi Kazav]
 
