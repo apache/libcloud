@@ -119,7 +119,7 @@ class RunAboveNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         action = API_ROOT + '/instance/' + node.id
-        response = self.connection.request(action, method='DELETE')
+        self.connection.request(action, method='DELETE')
         return True
 
     def list_sizes(self, location=None):
@@ -221,7 +221,7 @@ class RunAboveNodeDriver(NodeDriver):
         """
         action = API_ROOT + '/ssh/' + name
         data = {'name': name, 'region': location.id}
-        response = self.connection.request(action, data=data, method='DELETE')
+        self.connection.request(action, data=data, method='DELETE')
         return True
 
     def create_volume(self, size, name):

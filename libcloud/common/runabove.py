@@ -53,6 +53,9 @@ class RunAboveConnection(ConnectionUserAndKey):
     timestamp = None
     ua = []
     LOCATIONS = LOCATIONS
+    _timedelta = None
+
+    allow_insecure = True
 
     def __init__(self, user_id, *args, **kwargs):
         self.consumer_key = kwargs.pop('ex_consumer_key', None)
@@ -83,14 +86,12 @@ class RunAboveConnection(ConnectionUserAndKey):
         return json_response
 
     def get_timestamp(self):
-        action = API_ROOT + '/auth/time'
-        httpcon = LibcloudHTTPSConnection(self.host)
-        httpcon.request(method='GET', url=action, headers={})
-        self.connection.request('GET', action, headers={})
-        response = httpcon.getresponse().read()
-        timestamp = int(response)
-        httpcon.close()
-        return timestamp
+        if not self._timedelta:
+            action = API_ROOT + '/auth/time'
+            response = self.connection.request('GET', action, headers={})
+            timestamp = int(response)
+            self._time_delta = timestamp - int(time.time())
+        return int(time.time()) + self._timedelta
 
     def make_signature(self, method, action, data, timestamp):
         full_url = 'https://%s%s' % (API_HOST, action)
