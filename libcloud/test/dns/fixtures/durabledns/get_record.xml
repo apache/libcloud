@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <SOAP-ENV:Body>
+      <getRecordResponse>
+         <id xsi:type="xsd:int">353286987</id>
+         <name xsi:type="xsd:string">record1</name>
+         <type xsi:type="xsd:string">A</type>
+         <data xsi:type="xsd:string">192.168.0.1</data>
+         <aux xsi:type="xsd:int">1</aux>
+         <ttl xsi:type="xsd:int">3600</ttl>
+      </getRecordResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

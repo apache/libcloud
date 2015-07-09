@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="urn:listRecordswsdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <SOAP-ENV:Body>
+      <listRecordsResponse>
+         <return SOAP-ENC:arrayType="tns:Record[2]" xsi:type="SOAP-ENC:Array">
+            <item xsi:type="tns:Record">
+               <id xsi:type="xsd:int">353286987</id>
+               <name xsi:type="xsd:string">record1</name>
+               <type xsi:type="xsd:string">A</type>
+               <data xsi:type="xsd:string">192.168.0.1</data>
+            </item>
+            <item xsi:type="tns:Record">
+               <id xsi:type="xsd:int">353286997</id>
+               <name xsi:type="xsd:string">record2</name>
+               <type xsi:type="xsd:string">A</type>
+               <data xsi:type="xsd:string">127.0.0.1</data>
+            </item>
+         </return>
+      </listRecordsResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

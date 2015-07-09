@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="urn:listZoneswsdl">
+   <SOAP-ENV:Body>
+      <ns1:listZonesResponse xmlns:ns1="">
+         <return xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="tns:Zone[3]">
+            <item xsi:type="tns:Zone">
+               <origin xsi:type="xsd:string">myzone.com.</origin>
+            </item>
+            <item xsi:type="tns:Zone">
+               <origin xsi:type="xsd:string">myzone2.com.</origin>
+            </item>
+         </return>
+      </ns1:listZonesResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
