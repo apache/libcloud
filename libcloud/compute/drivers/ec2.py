@@ -5679,12 +5679,20 @@ class IdempotentParamError(LibcloudError):
         return repr(self.value)
 
 
-class EC2EUNodeDriver(EC2NodeDriver):
+class EC2EUWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
     name = 'Amazon EC2 (eu-west-1)'
     _region = 'eu-west-1'
+
+
+class EC2EUCentralNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Central Europe Region.
+    """
+    name = 'Amazon EC2 (eu-central-1)'
+    _region = 'eu-central-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
