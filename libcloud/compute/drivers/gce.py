@@ -2319,7 +2319,7 @@ class GCENodeDriver(NodeDriver):
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -2516,7 +2516,7 @@ n
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -2536,6 +2536,10 @@ n
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
+        if image and ex_disks_gce_struct:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_disks_gce_struct'.")
+
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -2566,24 +2570,15 @@ n
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart}
-
         # List for holding the status information for disk/node creation.
         status_list = []
 
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
-
             status = {'name': name,
                       'node_response': None,
-                      'node': None,
-                      'disk_response': None,
-                      'disk': None}
-
+                      'node': None}
             status_list.append(status)
-
-        # Create disks for nodes
-        for status in status_list:
-            self._multi_create_disk(status, node_attrs)
 
         start_time = time.time()
         complete = False
@@ -2594,13 +2589,8 @@ n
             complete = True
             time.sleep(poll_interval)
             for status in status_list:
-                # If disk does not yet exist, check on its status
-                if not status['disk']:
-                    self._multi_check_disk(status, node_attrs)
-
-                # If disk exists, but node does not, create the node or check
-                # on its status if already in progress.
-                if status['disk'] and not status['node']:
+                # Create the node or check status if already in progress.
+                if not status['node']:
                     if not status['node_response']:
                         self._multi_create_node(status, node_attrs)
                     else:
@@ -4620,7 +4610,7 @@ n
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -4704,6 +4694,26 @@ n
 
         if ex_disks_gce_struct:
             node_data['disks'] = ex_disks_gce_struct
+
+        if image and ('disks' not in node_data or not node_data['disks']):
+            if not hasattr(image, 'name'):
+                image = self.ex_get_image(image)
+            if not ex_disk_type:
+                ex_disk_type = 'pd-standard'
+            if not hasattr(ex_disk_type, 'name'):
+                ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            disks = [{'boot': True,
+                      'type': 'PERSISTENT',
+                      'mode': 'READ_WRITE',
+                      'deviceName': name,
+                      'autoDelete': ex_disk_auto_delete,
+                      'zone': location.name,
+                      'initializeParams': {
+                          'diskName': name,
+                          'diskType': ex_disk_type.extra['selfLink'],
+                          'sourceImage': image.extra['selfLink'],
+                      }}]
+            node_data['disks'] = disks
 
         if ex_nic_gce_struct is not None:
             if hasattr(external_ip, 'address'):
@@ -4827,7 +4837,7 @@ n
     def _multi_create_node(self, status, node_attrs):
         """Create node for ex_create_multiple_nodes.
 
-        :param  status: Dictionary for holding node/disk creation status.
+        :param  status: Dictionary for holding node creation status.
                         (This dictionary is modified by this method)
         :type   status: ``dict``
 
@@ -4835,10 +4845,6 @@ n
                             (size, image, location, etc.)
         :type   node_attrs: ``dict``
         """
-        # If disk has an error, set the node as failed and return
-        if hasattr(status['disk'], 'error'):
-            status['node'] = status['disk']
-            return
 
         # Create node and return response object in status dictionary.
         # Or, if there is an error, mark as failed.
@@ -4863,8 +4869,7 @@ n
             error = e.value
             code = e.code
             node_res = None
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
+            status['node'] = GCEFailedNode(status['name'], error, code)
         status['node_response'] = node_res
 
     def _multi_check_node(self, status, node_attrs):
@@ -4887,14 +4892,19 @@ n
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
+        except ResourceNotFoundError:
+            return
         if response['status'] == 'DONE':
             status['node_response'] = None
         if error:
             status['node'] = GCEFailedNode(status['name'],
                                            error, code)
         else:
-            status['node'] = self.ex_get_node(status['name'],
-                                              node_attrs['location'])
+            try:
+                status['node'] = self.ex_get_node(status['name'],
+                                                  node_attrs['location'])
+            except ResourceNotFoundError:
+                return
 
     def _create_vol_req(self, size, name, location=None, snapshot=None,
                         image=None, ex_disk_type='pd-standard'):
