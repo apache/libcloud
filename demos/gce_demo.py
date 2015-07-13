@@ -159,10 +159,10 @@ def display(title, resource_list=[]):
             else:
                 print('     name=%s, dnsname=%s' % (item.id, item.domain))
         elif hasattr(item, 'name'):
-            if item.domain.startswith(DEMO_BASE_NAME):
-                print('=>   %s' % item.domain)
+            if item.name.startswith(DEMO_BASE_NAME):
+                print('=>   %s' % item.name)
             else:
-                print('     %s' % item.domain)
+                print('     %s' % item.name)
         else:
             if item.startswith(DEMO_BASE_NAME):
                 print('=>   %s' % item)
@@ -202,17 +202,17 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
             display('   Failed to delete %s' % del_nodes[i].name)
 
     # Destroy everything else with just the destroy method
-    for resource in resource_list:
-        if resource.name.startswith(base_name):
+    for resrc in resource_list:
+        if resrc.name.startswith(base_name):
             try:
-                resource.destroy()
+                resrc.destroy()
             except ResourceNotFoundError:
-                display('   Not found: %s(%s)' % (resource.name,
-                                                  resource.__class__.__name__))
+                display('   Not found: %s (%s)' % (resrc.name,
+                                                   resrc.__class__.__name__))
             except:
-                class_name = resource.__class__.__name__
-                display('   Failed to Delete %s(%s)' % (resource.name,
-                                                        class_name))
+                class_name = resrc.__class__.__name__
+                display('   Failed to Delete %s (%s)' % (resrc.name,
+                                                         class_name))
                 raise
 
 
@@ -272,7 +272,7 @@ def main_compute():
         name = '%s-gstruct' % DEMO_BASE_NAME
         img_url = "projects/debian-cloud/global/images/"
         img_url += "backports-debian-7-wheezy-v20141205"
-        disk_type_url = "projects/graphite-demos/zones/us-central1-f/"
+        disk_type_url = "projects/%s/zones/us-central1-f/" % project.name
         disk_type_url += "diskTypes/local-ssd"
         gce_disk_struct = [
             {
@@ -474,11 +474,13 @@ def main_load_balancer():
     image = gce.ex_get_image('debian-7')
     size = gce.ex_get_size('n1-standard-1')
     number = 3
+    display('Creating %d nodes' % number)
     metadata = {'items': [{'key': 'startup-script',
                            'value': startup_script}]}
     lb_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
                                             number, ex_tags=[tag],
                                             ex_metadata=metadata,
+                                            ex_disk_auto_delete=True,
                                             ignore_errors=False)
     display('Created Nodes', lb_nodes)
 
