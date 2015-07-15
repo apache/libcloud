@@ -25,7 +25,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestOregonNodeDriver
-from libcloud.compute.drivers.ec2 import EC2EUNodeDriver
+from libcloud.compute.drivers.ec2 import EC2EUCentralNodeDriver
+from libcloud.compute.drivers.ec2 import EC2EUWestNodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
@@ -1170,8 +1171,12 @@ class EC2USWest2OldStyleModelTests(EC2OldStyleModelTests):
     driver_klass = EC2USWestOregonNodeDriver
 
 
+class EC2EUCentralOldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2EUCentralNodeDriver
+
+
 class EC2EUWestOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2EUNodeDriver
+    driver_klass = EC2EUWestNodeDriver
 
 
 class EC2APSE1OldStyleModelTests(EC2OldStyleModelTests):
