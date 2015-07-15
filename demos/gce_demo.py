@@ -170,6 +170,60 @@ def display(title, resource_list=[]):
                 print('     %s' % item)
 
 
+def cleanup_only():
+    start_time = datetime.datetime.now()
+    display('Clean-up start time: %s' % str(start_time))
+    gce = get_gce_driver()
+    # Get project info and print name
+    project = gce.ex_get_project()
+    display('Project: %s' % project.name)
+
+    # == Get Lists of Everything and Display the lists (up to 10) ==
+    # These can either just return values for the current datacenter (zone)
+    # or for everything.
+    all_nodes = gce.list_nodes(ex_zone='all')
+    display('Nodes:', all_nodes)
+
+    all_addresses = gce.ex_list_addresses(region='all')
+    display('Addresses:', all_addresses)
+
+    all_volumes = gce.list_volumes(ex_zone='all')
+    display('Volumes:', all_volumes)
+
+    # This can return everything, but there is a large amount of overlap,
+    # so we'll just get the sizes from the current zone.
+    sizes = gce.list_sizes()
+    display('Sizes:', sizes)
+
+    # These are global
+    firewalls = gce.ex_list_firewalls()
+    display('Firewalls:', firewalls)
+
+    networks = gce.ex_list_networks()
+    display('Networks:', networks)
+
+    images = gce.list_images()
+    display('Images:', images)
+
+    locations = gce.list_locations()
+    display('Locations:', locations)
+
+    zones = gce.ex_list_zones()
+    display('Zones:', zones)
+
+    snapshots = gce.ex_list_snapshots()
+    display('Snapshots:', snapshots)
+
+    # == Clean up any old demo resources ==
+    display('Cleaning up any "%s" resources' % DEMO_BASE_NAME)
+    clean_up(gce, DEMO_BASE_NAME, all_nodes,
+             all_addresses + all_volumes + firewalls + networks + snapshots)
+    volumes = gce.list_volumes()
+    clean_up(gce, DEMO_BASE_NAME, None, volumes)
+    end_time = datetime.datetime.now()
+    display('Total runtime: %s' % str(end_time - start_time))
+
+
 def clean_up(gce, base_name, node_list=None, resource_list=None):
     """
     Destroy all resources that have a name beginning with 'base_name'.
@@ -617,20 +671,26 @@ def main_dns():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Google Cloud Platform Demo / Live Test Script')
-    parser.add_argument("--skip-compute",
-                        help="skip compute demo / live tests",
-                        dest="compute", action="store_false")
-    parser.add_argument("--skip-load-balancer",
-                        help="skip load-balancer demo / live tests",
-                        dest="lb", action="store_false")
-    parser.add_argument("--skip-dns",
-                        help="skip DNS demo / live tests",
-                        dest="dns", action="store_false")
+    parser.add_argument("--compute",
+                        help="perform compute demo / live tests",
+                        dest="compute", action="store_true")
+    parser.add_argument("--load-balancer",
+                        help="perform load-balancer demo / live tests",
+                        dest="lb", action="store_true")
+    parser.add_argument("--dns",
+                        help="perform DNS demo / live tests",
+                        dest="dns", action="store_true")
+    parser.add_argument("--cleanup-only",
+                        help="perform clean-up (skips all tests)",
+                        dest="cleanup", action="store_true")
     cl_args = parser.parse_args()
 
-    if cl_args.compute:
-        main_compute()
-    if cl_args.lb:
-        main_load_balancer()
-    if cl_args.dns:
-        main_dns()
+    if cl_args.cleanup:
+        cleanup_only()
+    else:
+        if cl_args.compute:
+            main_compute()
+        if cl_args.lb:
+            main_load_balancer()
+        if cl_args.dns:
+            main_dns()
