@@ -263,6 +263,13 @@ Compute
   (LIBCLOUD-731, GITHUB-559)
   [David Wilson]
 
+- Allow user to specify which arguments are passed to ``list_nodes`` method
+  which is called inside ``wait_until_running`` by passing
+  ``ex_list_nodes_kwargs`` argument to the ``wait_until_running`` method.
+  (``ex_user_data`` argument).
+  (LIBCLOUD-723, GITHUB-548)
+  [David Wilson]
+
 Storage
 ~~~~~~~
 
