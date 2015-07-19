@@ -63,7 +63,7 @@ __all__ = [
     'ConnectionUserAndKey',
     'CertificateConnection',
     'LoggingHTTPConnection',
-    'LoggingHTTPSConnection'
+    'LoggingHTTPSConnection',
 
     'Response',
     'HTTPResponse',
