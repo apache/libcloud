@@ -52,6 +52,29 @@ from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.httplib_ssl import LibcloudHTTPConnection
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
+__all__ = [
+    'RETRY_FAILED_HTTP_REQUESTS',
+
+    'BaseDriver',
+
+    'Connection',
+    'PollingConnection',
+    'ConnectionKey',
+    'ConnectionUserAndKey',
+    'CertificateConnection',
+    'LoggingHTTPConnection',
+    'LoggingHTTPSConnection'
+
+    'Response',
+    'HTTPResponse',
+    'JsonResponse',
+    'XmlResponse',
+    'RawResponse'
+]
+
+# Module level variable indicates if the failed HTTP requests should be retried
+RETRY_FAILED_HTTP_REQUESTS = False
+
 
 class HTTPResponse(httplib.HTTPResponse):
     # On python 2.6 some calls can hang because HEAD isn't quite properly
@@ -683,7 +706,7 @@ class Connection(object):
             headers = copy.copy(headers)
 
         retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
-                                       False)
+                                       False) or RETRY_FAILED_HTTP_REQUESTS
 
         action = self.morph_action_hook(action)
         self.action = action
