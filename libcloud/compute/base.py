@@ -1260,9 +1260,9 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
 
-    def wait_until_running(self, nodes, ex_cloud_opts=None, wait_period=3,
+    def wait_until_running(self, nodes, wait_period=3,
                            timeout=600, ssh_interface='public_ips',
-                           force_ipv4=True):
+                           force_ipv4=True, **ex_list_nodes_kwargs):
         """
         Block until the provided nodes are considered running.
 
@@ -1271,9 +1271,6 @@ class NodeDriver(BaseDriver):
 
         :param nodes: List of nodes to wait for.
         :type nodes: ``list`` of :class:`.Node`
-
-        :param ex_cloud_opts: Cloud specific options for list_nodes method.
-        :type ex_cloud_opts: ``str``
 
         :param wait_period: How many seconds to wait between each loop
                             iteration. (default is 3)
@@ -1290,6 +1287,10 @@ class NodeDriver(BaseDriver):
 
         :param force_ipv4: Ignore IPv6 addresses (default is True).
         :type force_ipv4: ``bool``
+
+        :param ex_list_nodes_kwargs: Cloud specific options for
+                                     list_nodes method.
+        :type ex_list_nodes_kwargs: ``dict``
 
         :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
                  list of ip_address on success.
@@ -1320,7 +1321,7 @@ class NodeDriver(BaseDriver):
         uuids = set([node.uuid for node in nodes])
 
         while time.time() < end:
-            all_nodes = self.list_nodes(ex_cloud_opts)
+            all_nodes = self.list_nodes(**ex_list_nodes_kwargs)
             matching_nodes = list([node for node in all_nodes
                                    if node.uuid in uuids])
 
