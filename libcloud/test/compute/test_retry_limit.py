@@ -12,15 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import socket
 import tempfile
-from libcloud.utils.py3 import httplib
 
 from mock import Mock, patch, MagicMock
 
+from libcloud.utils.py3 import httplib
 from libcloud.common.base import Connection
 from libcloud.common.base import Response
-from libcloud.common.exceptions import RateLimit
+from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.test import unittest
 
 CONFLICT_RESPONSE_STATUS = [
@@ -30,7 +31,7 @@ CONFLICT_RESPONSE_STATUS = [
 SIMPLE_RESPONSE_STATUS = ('HTTP/1.1', 429, 'CONFLICT')
 
 
-class RateLimitTestCase(unittest.TestCase):
+class FailedRequestRetryTestCase(unittest.TestCase):
 
     def _raise_socket_error(self):
         raise socket.gaierror('')
@@ -66,7 +67,7 @@ class RateLimitTestCase(unittest.TestCase):
                         mock_obj = httplib.HTTPResponse(sock)
                         mock_obj.begin()
                         Response(mock_obj, con)
-        except RateLimit:
+        except RateLimitReachedError:
             pass
         except Exception:
             self.fail('Failed to raise Rate Limit exception')

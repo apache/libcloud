@@ -13,27 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = [
+    'BaseHTTPError',
+    'RateLimitReachedError',
 
-class BaseHTTPException(Exception):
+    'exception_from_message'
+]
+
+
+class BaseHTTPError(Exception):
 
     """
-    The base exception class for all exception raises.
+    The base exception class for all HTTP related eceptions.
     """
 
     def __init__(self, code, message, headers=None):
-
-        self.message = message
         self.code = code
+        self.message = message
         self.headers = headers
         # preserve old exception behavior for tests that
         # look for e.args[0]
-        super(BaseHTTPException, self).__init__(message)
+        super(BaseHTTPError, self).__init__(message)
 
     def __str__(self):
         return self.message
 
 
-class RateLimit(BaseHTTPException):
+class RateLimitReachedError(BaseHTTPError):
     """
     HTTP 429 - Rate limit: you've sent too many requests for this time period.
     """
@@ -47,7 +53,7 @@ class RateLimit(BaseHTTPException):
             self.retry_after = 0
 
 
-_error_classes = [RateLimit]
+_error_classes = [RateLimitReachedError]
 _code_map = dict((c.code, c) for c in _error_classes)
 
 
@@ -68,5 +74,5 @@ def exception_from_message(code, message, headers=None):
     if headers and 'retry_after' in headers:
         kwargs['retry_after'] = headers['retry_after']
 
-    cls = _code_map.get(code, BaseHTTPException)
+    cls = _code_map.get(code, BaseHTTPError)
     return cls(**kwargs)

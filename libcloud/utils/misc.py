@@ -23,12 +23,12 @@ import socket
 from datetime import datetime, timedelta
 import time
 
-from libcloud.common.exceptions import RateLimit
+from libcloud.common.exceptions import RateLimitReachedError
 
 DEFAULT_TIMEOUT = 30
 DEFAULT_SLEEP = 1
 DEFAULT_BACKCOFF = 1
-EXCEPTION_TYPES = (RateLimit, socket.error, socket.gaierror,
+EXCEPTION_TYPES = (RateLimitReachedError, socket.error, socket.gaierror,
                    httplib.NotConnected, httplib.ImproperConnectionState)
 
 __all__ = [
@@ -326,7 +326,7 @@ def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
                 except retry_exceptions:
                     e = sys.exc_info()[1]
 
-                    if isinstance(e, RateLimit):
+                    if isinstance(e, RateLimitReachedError):
                         time.sleep(e.retry_after)
                         end = datetime.now() + timedelta(
                             seconds=e.retry_after + timeout)
