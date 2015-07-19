@@ -42,6 +42,7 @@ __all__ = [
     'reverse_dict',
     'lowercase_keys',
     'get_secure_random_string',
+    'retry',
 
     'ReprMixin'
 ]
@@ -301,11 +302,11 @@ def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
           timeout=None, backoff=None):
     """
     Retry method that helps to handle common exception.
-    :param func: the function to execute.
-    :param timeout: maximum time to wait.
-    :param retry_delay: retry delay between the attempts.
-    :param backoff: multiplier added to delay between attempts.
+
     :param retry_exceptions: types of exceptions to retry on.
+    :param retry_delay: retry delay between the attempts.
+    :param timeout: maximum time to wait.
+    :param backoff: multiplier added to delay between attempts.
 
     :Example:
 
@@ -322,17 +323,19 @@ def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
                 try:
                     result = func(*args, **kwargs)
                     return result
-                except retry_exceptions as exc:
-                    if isinstance(exc, RateLimit):
-                        time.sleep(exc.retry_after)
+                except retry_exceptions:
+                    e = sys.exc_info()[1]
+
+                    if isinstance(e, RateLimit):
+                        time.sleep(e.retry_after)
                         end = datetime.now() + timedelta(
-                            seconds=exc.retry_after + timeout)
+                            seconds=e.retry_after + timeout)
                     else:
-                        exc_info = sys.exc_info()
+                        exc_info = e
                         time.sleep(delay)
                         delay *= backoff
             if exc_info:
-                raise exc_info[1]
+                raise exc_info
             return func(*args, **kwargs)
         return retry_loop
     return deco_retry
