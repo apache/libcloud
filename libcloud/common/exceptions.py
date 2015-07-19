@@ -47,10 +47,7 @@ class RateLimitReachedError(BaseHTTPError):
     message = "{code} Rate limit exceeded".format(code=code)
 
     def __init__(self, *args, **kwargs):
-        try:
-            self.retry_after = int(kwargs.pop('retry_after'))
-        except (KeyError, ValueError):
-            self.retry_after = 0
+        self.retry_after = int(kwargs.pop('retry_after', 0))
 
 
 _error_classes = [RateLimitReachedError]
