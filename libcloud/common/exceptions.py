@@ -44,7 +44,7 @@ class RateLimitReachedError(BaseHTTPError):
     HTTP 429 - Rate limit: you've sent too many requests for this time period.
     """
     code = 429
-    message = "{code} Rate limit exceeded".format(code=code)
+    message = '%s Rate limit exceeded' % (code)
 
     def __init__(self, *args, **kwargs):
         self.retry_after = int(kwargs.pop('retry_after', 0))
