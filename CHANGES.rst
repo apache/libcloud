@@ -253,6 +253,11 @@ Compute
   (LIBCLOUD-726, GITHUB-554)
   [David Wilson]
 
+- Add ``ex_create_cloud_service`` and ``ex_destroy_cloud_service`` method to the
+  Azure driver.
+  (LIBCLOUD-724, GITHUB-551)
+  [David Wilson]
+
 Storage
 ~~~~~~~
 
