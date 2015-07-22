@@ -2187,7 +2187,6 @@ class GCENodeDriver(NodeDriver):
         elif isinstance(next_hop, str):
             route_data['nextHopIp'] = next_hop
         else:
-            node = self.ex_get_node(next_hop)
             route_data['nextHopInstance'] = node.extra['selfLink']
 
         request = '/global/routes'
