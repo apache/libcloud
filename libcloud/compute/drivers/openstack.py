@@ -164,7 +164,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
 
-    def create_volume(self, size, name, location=None, snapshot=None, 
+    def create_volume(self, size, name, location=None, snapshot=None,
                       volume_type=None):
         """
         Create a new volume.
