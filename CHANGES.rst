@@ -270,6 +270,11 @@ Compute
   (LIBCLOUD-723, GITHUB-548)
   [David Wilson]
 
+- Allow user to pass ``ex_volume_type`` argument to the ``create_volume`` method
+  in the OpennStack driver.
+  (GITHUB-553)
+  [Rico Echwald-Tijsen]
+
 Storage
 ~~~~~~~
 

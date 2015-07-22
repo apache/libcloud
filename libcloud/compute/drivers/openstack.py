@@ -164,7 +164,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
 
-    def create_volume(self, size, name, location=None, snapshot=None):
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      ex_volume_type=None):
         """
         Create a new volume.
 
@@ -183,6 +184,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                           volume.  (optional)
         :type snapshot:  :class:`.VolumeSnapshot`
 
+        :param ex_volume_type: What kind of volume to create.
+                            (optional)
+        :type ex_volume_type: ``str``
+
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
@@ -190,7 +195,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             'display_name': name,
             'display_description': name,
             'size': size,
-            'volume_type': None,
+            'volume_type': ex_volume_type,
             'metadata': {
                 'contents': name,
             },
