@@ -80,6 +80,29 @@ class RunAboveMockHttp(BaseRunAboveMockHttp):
         body = self.fixtures.load('instance_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_1_0_volume_get(self, method, url, body, headers):
+        body = self.fixtures.load('volume_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_volume_post(self, method, url, body, headers):
+        body = self.fixtures.load('volume_get_detail.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_volume_foo_get(self, method, url, body, headers):
+        body = self.fixtures.load('volume_get_detail.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_volume_foo_delete(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_volume_foo_attach_post(self, method, url, body, headers):
+        body = self.fixtures.load('volume_get_detail.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_volume_foo_detach_post(self, method, url, body, headers):
+        body = self.fixtures.load('volume_get_detail.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 @patch('libcloud.common.runabove.RunAboveConnection._timedelta', 42)
 class RunAboveTests(unittest.TestCase):
@@ -143,6 +166,36 @@ class RunAboveTests(unittest.TestCase):
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
+
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertTrue(len(volumes) > 0)
+
+    def test_get_volume(self):
+        volume = self.driver.ex_get_volume('foo')
+        self.assertEqual(volume.name, 'testvol')
+
+    def test_create_volume(self):
+        location = self.driver.list_locations()[0]
+        volume = self.driver.create_volume(size=10, name='testvol',
+                                           location=location)
+        self.assertEqual(volume.name, 'testvol')
+
+    def test_destroy_volume(self):
+        volume = self.driver.list_volumes()[0]
+        self.driver.destroy_volume(volume)
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('foo')
+        response = self.driver.attach_volume(node=node, volume=volume)
+        self.assertTrue(response)
+
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('foo')
+        response = self.driver.detach_volume(ex_node=node, volume=volume)
+        self.assertTrue(response)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

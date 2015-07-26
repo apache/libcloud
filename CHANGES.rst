@@ -12,6 +12,11 @@ Compute
   (GITHUB-516)
   [Syed Mushtaq Ahmed]
 
+- Add volume management methods and other various improvements and fixes in the
+  RunAbove driver.
+  (GITHUB-561)
+  [ZuluPro]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
