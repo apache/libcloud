@@ -1,5 +1,5 @@
-Cloudwatt Compute Driver Documentation
-======================================
+RunAbove Compute Driver Documentation
+=====================================
 
 `RunAbove`_ is a public cloud offer created by OVH Group with datacenters
 in North America and Europe.
@@ -18,7 +18,7 @@ Instantiating a driver
 When you instantiate a driver you need to pass the following arguments to the
 driver constructor:
 
-* ``user_id`` - Application key
+* ``key`` - Application key
 * ``secret`` - Application secret
 * ``ex_consumer_key`` - Consumer key
 
@@ -55,10 +55,15 @@ Now you have and can use you credentials with Libcloud.
 Examples
 --------
 
-Create instance
-~~~~~~~~~~~~~~~
+Create node
+~~~~~~~~~~~
 
 .. literalinclude:: /examples/compute/runabove/create_node.py
+
+Create and attach a volume to a node
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/runabove/attach_volume.py
 
 API Docs
 --------
