@@ -44,10 +44,14 @@ class CloudStackResponse(JsonResponse):
         if value is None:
             value = self.body
 
+        if not value:
+            value = 'WARNING: error message text sent by provider was empty.'
+
         error = ProviderError(value=value, http_code=self.status,
                               driver=self.connection.driver)
         raise error
 
+    def _get_provider_error
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
