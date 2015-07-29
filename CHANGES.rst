@@ -279,6 +279,11 @@ Compute
   (GITHUB-550)
   [ZuluPro]
 
+- Fix a bug with exception being throw inside the CloudStack driver when the
+  provider returned no error message in the body.
+  (GITHUB-555)
+  [Konstantin Skaburskas]
+
 Storage
 ~~~~~~~
 
