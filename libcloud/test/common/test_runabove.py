@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
 
 FORMAT_URL = re.compile(r'[./-]')
@@ -27,3 +28,7 @@ class BaseRunAboveMockHttp(MockHttp):
     def _json(self, method, url, body, headers):
         meth_name = '_json%s_%s' % (FORMAT_URL.sub('_', url), method.lower())
         return getattr(self, meth_name)(method, url, body, headers)
+
+    def _json_1_0_token_get(self, method, url, body, headers):
+        body = self.fixtures.load('token.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])

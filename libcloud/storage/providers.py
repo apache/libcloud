@@ -52,6 +52,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.ktucloud', 'KTUCloudStorageDriver'),
     Provider.AURORAOBJECTS:
     ('libcloud.storage.drivers.auroraobjects', 'AuroraObjectsStorageDriver'),
+    Provider.RUNABOVE:
+    ('libcloud.storage.drivers.runabove', 'RunAboveStorageDriver'),
 
     # Deprecated
     Provider.CLOUDFILES_US:
