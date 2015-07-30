@@ -51,7 +51,6 @@ class CloudStackResponse(JsonResponse):
                               driver=self.connection.driver)
         raise error
 
-    def _get_provider_error
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
