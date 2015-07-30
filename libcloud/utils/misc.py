@@ -22,14 +22,25 @@ from libcloud.utils.py3 import httplib
 import socket
 from datetime import datetime, timedelta
 import time
+import ssl
 
 from libcloud.common.exceptions import RateLimitReachedError
 
+
+TRANSIENT_SSL_ERROR = 'The read operation timed out'
+
+
+class TransientSSLError(ssl.SSLError):
+    """Represent transient SSL errors, e.g. timeouts"""
+    pass
+
+
 DEFAULT_TIMEOUT = 30
-DEFAULT_SLEEP = 1
-DEFAULT_BACKCOFF = 1
-EXCEPTION_TYPES = (RateLimitReachedError, socket.error, socket.gaierror,
-                   httplib.NotConnected, httplib.ImproperConnectionState)
+DEFAULT_DELAY = 1
+DEFAULT_BACKOFF = 1
+RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
+                    httplib.NotConnected, httplib.ImproperConnectionState,
+                    TransientSSLError)
 
 __all__ = [
     'find',
@@ -298,10 +309,10 @@ class ReprMixin(object):
         return str(self.__repr__())
 
 
-def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
-          timeout=None, backoff=None):
+def retry(retry_exceptions=None, retry_delay=None, timeout=None,
+          backoff=None):
     """
-    Retry method that helps to handle common exception.
+    Retry decorator that helps to handle common transient exceptions.
 
     :param retry_exceptions: types of exceptions to retry on.
     :param retry_delay: retry delay between the attempts.
@@ -313,29 +324,53 @@ def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
     retry_request = retry(timeout=1, retry_delay=1, backoff=1)
     retry_request(self.connection.request)()
     """
-    def deco_retry(func):
+    if retry_exceptions is None:
+        retry_exceptions = RETRY_EXCEPTIONS
+    if retry_delay is None:
+        retry_delay = DEFAULT_DELAY
+    if timeout is None:
+        timeout = DEFAULT_TIMEOUT
+    if backoff is None:
+        backoff = DEFAULT_BACKOFF
+
+    timeout = max(timeout, 0)
+
+    def transform_ssl_error(func, *args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ssl.SSLError:
+            exc = sys.exc_info()[1]
+
+            if TRANSIENT_SSL_ERROR in str(exc):
+                raise TransientSSLError(*exc.args)
+
+            raise exc
+
+    def decorator(func):
         @wraps(func)
         def retry_loop(*args, **kwargs):
-            delay = retry_delay
+            current_delay = retry_delay
             end = datetime.now() + timedelta(seconds=timeout)
-            exc_info = None
-            while datetime.now() < end:
-                try:
-                    result = func(*args, **kwargs)
-                    return result
-                except retry_exceptions:
-                    e = sys.exc_info()[1]
 
-                    if isinstance(e, RateLimitReachedError):
-                        time.sleep(e.retry_after)
+            while True:
+                try:
+                    return transform_ssl_error(func, *args, **kwargs)
+                except retry_exceptions:
+                    exc = sys.exc_info()[1]
+
+                    if isinstance(exc, RateLimitReachedError):
+                        time.sleep(exc.retry_after)
+
+                        # Reset retries if we're told to wait due to rate
+                        # limiting
+                        current_delay = retry_delay
                         end = datetime.now() + timedelta(
-                            seconds=e.retry_after + timeout)
+                            seconds=exc.retry_after + timeout)
+                    elif datetime.now() >= end:
+                        raise
                     else:
-                        exc_info = e
-                        time.sleep(delay)
-                        delay *= backoff
-            if exc_info:
-                raise exc_info
-            return func(*args, **kwargs)
+                        time.sleep(current_delay)
+                        current_delay *= backoff
+
         return retry_loop
-    return deco_retry
+    return decorator
