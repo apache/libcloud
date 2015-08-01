@@ -234,6 +234,7 @@ Compute
 - Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
   returned by the OpenStack driver.
   (LIBCLOUD-730, GITHUB-557)
+  [Nick Fox]
 
 - Add new driver for Onapp IaaS platform.
   (LIBCLOUD-691, GITHUB-502)
