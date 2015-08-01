@@ -231,6 +231,10 @@ Compute
   (GITHUB-534)
   [ZuluPro]
 
+- Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
+  returned by the OpenStack driver.
+  (LIBCLOUD-730, GITHUB-557)
+
 Storage
 ~~~~~~~
 
