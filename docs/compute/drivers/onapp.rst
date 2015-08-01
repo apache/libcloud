@@ -1,5 +1,5 @@
 OnApp Compute Driver Documentation
-===========================================
+==================================
 
 `OnApp`_ software enables Infrastructure-as-a-Service for hosts, telcos and
 other service providers. It's a turnkey platform for selling cloud, VPS,
