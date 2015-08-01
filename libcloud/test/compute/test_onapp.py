@@ -18,12 +18,12 @@ class OnAppNodeTestCase(LibcloudTestCase):
             response = MagicMock()
             method = kwargs.get('method', "GET")
 
-            if method is 'GET' and args[0] == '/virtual_machines.json':
+            if method == 'GET' and args[0] == '/virtual_machines.json':
                 response.object = json.loads(fixtures.load(
                     'list_nodes.json'))
-            if method is 'POST' and args[0] == '/virtual_machines.json':
+            if method == 'POST' and args[0] == '/virtual_machines.json':
                 response.object = json.loads(fixtures.load('create_node.json'))
-            if method is 'DELETE' and args[0] == '/virtual_machines.json':
+            if method == 'DELETE' and args[0] == '/virtual_machines.json':
                 response.status = 204
 
             return response
