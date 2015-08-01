@@ -134,6 +134,7 @@ class Provider(object):
     AURORACOMPUTE = 'aurora_compute'
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
+    RUNABOVE = 'runabove'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
