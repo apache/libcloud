@@ -52,6 +52,7 @@ Provider                              list volumes create volume destroy volume 
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
 `Ninefold`_                           yes          yes           yes            yes           yes           no             yes            
+`OnApp`_                              no           no            no             no            no            no             no             
 `OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Opsource`_                           no           no            no             no            no            no             no             
@@ -123,6 +124,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/

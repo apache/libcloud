@@ -52,6 +52,7 @@ Provider                              Documentation                             
 `NephoScale`_                                                                       NEPHOSCALE          :mod:`libcloud.compute.drivers.nephoscale`     :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`        NIMBUS              :mod:`libcloud.compute.drivers.ec2`            :class:`NimbusNodeDriver`           
 `Ninefold`_                                                                         NINEFOLD            :mod:`libcloud.compute.drivers.ninefold`       :class:`NinefoldNodeDriver`         
+`OnApp`_                              :doc:`Click </compute/drivers/onapp>`         ONAPP               :mod:`libcloud.compute.drivers.onapp`          :class:`OnAppNodeDriver`            
 `OpenNebula (v3.8)`_                                                                OPENNEBULA          :mod:`libcloud.compute.drivers.opennebula`     :class:`OpenNebulaNodeDriver`       
 `OpenStack`_                          :doc:`Click </compute/drivers/openstack>`     OPENSTACK           :mod:`libcloud.compute.drivers.openstack`      :class:`OpenStackNodeDriver`        
 `Opsource`_                                                                         OPSOURCE            :mod:`libcloud.compute.drivers.opsource`       :class:`OpsourceNodeDriver`         
@@ -123,6 +124,7 @@ Provider                              Documentation                             
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/

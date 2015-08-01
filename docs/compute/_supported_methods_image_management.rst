@@ -52,6 +52,7 @@ Provider                              list images get image create image delete 
 `NephoScale`_                         yes         no        no           no           no        
 `Nimbus`_                             yes         yes       yes          yes          yes       
 `Ninefold`_                           yes         no        no           no           no        
+`OnApp`_                              no          no        no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
 `Opsource`_                           yes         no        no           no           no        
@@ -123,6 +124,7 @@ Provider                              list images get image create image delete 
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
