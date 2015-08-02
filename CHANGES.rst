@@ -240,6 +240,11 @@ Compute
   (LIBCLOUD-691, GITHUB-502)
   [Matthias Wiesner]
 
+- Allow user to inject custom data / script into the Azure node by passing
+  ``ex_custom_data`` argument to the ``create_node`` method.
+  (LIBCLOUD-726, GITHUB-554)
+  [David Wilson]
+
 Storage
 ~~~~~~~
 
