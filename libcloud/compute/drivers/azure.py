@@ -602,6 +602,10 @@ class AzureNodeDriver(NodeDriver):
         network_config = ConfigurationSet()
         network_config.configuration_set_type = 'NetworkConfiguration'
 
+        # Base64 encode custom data if provided
+        if ex_custom_data:
+            ex_custom_data = self._encode_base64(data=ex_custom_data)
+
         # We do this because we need to pass a Configuration to the
         # method. This will be either Linux or Windows.
         if WINDOWS_SERVER_REGEX.search(image.id, re.I):
