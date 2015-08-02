@@ -352,6 +352,10 @@ class ParamikoSSHClient(BaseSSHClient):
         # which is not ready will block for indefinitely.
         exit_status_ready = chan.exit_status_ready()
 
+        if exit_status_ready:
+            stdout.write(self._consume_stdout(chan).getvalue())
+            stderr.write(self._consume_stderr(chan).getvalue())
+
         while not exit_status_ready:
             current_time = time.time()
             elapsed_time = (current_time - start_time)
@@ -362,29 +366,8 @@ class ParamikoSSHClient(BaseSSHClient):
 
                 raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
 
-            if chan.recv_ready():
-                data = chan.recv(self.CHUNK_SIZE)
-
-                while data:
-                    stdout.write(b(data).decode('utf-8'))
-                    ready = chan.recv_ready()
-
-                    if not ready:
-                        break
-
-                    data = chan.recv(self.CHUNK_SIZE)
-
-            if chan.recv_stderr_ready():
-                data = chan.recv_stderr(self.CHUNK_SIZE)
-
-                while data:
-                    stderr.write(b(data).decode('utf-8'))
-                    ready = chan.recv_stderr_ready()
-
-                    if not ready:
-                        break
-
-                    data = chan.recv_stderr(self.CHUNK_SIZE)
+            stdout.write(self._consume_stdout(chan).getvalue())
+            stderr.write(self._consume_stderr(chan).getvalue())
 
             # We need to check the exist status here, because the command could
             # print some output and exit during this sleep bellow.
@@ -412,6 +395,46 @@ class ParamikoSSHClient(BaseSSHClient):
 
         self.client.close()
         return True
+
+    def _consume_stdout(self, chan):
+        """
+        Try to consume stdout data from chan if it's receive ready.
+        """
+
+        stdout = StringIO()
+        if chan.recv_ready():
+            data = chan.recv(self.CHUNK_SIZE)
+
+            while data:
+                stdout.write(b(data).decode('utf-8'))
+                ready = chan.recv_ready()
+
+                if not ready:
+                    break
+
+                data = chan.recv(self.CHUNK_SIZE)
+
+        return stdout
+
+    def _consume_stderr(self, chan):
+        """
+        Try to consume stderr data from chan if it's receive ready.
+        """
+
+        stderr = StringIO()
+        if chan.recv_stderr_ready():
+            data = chan.recv_stderr(self.CHUNK_SIZE)
+
+            while data:
+                stderr.write(b(data).decode('utf-8'))
+                ready = chan.recv_stderr_ready()
+
+                if not ready:
+                    break
+
+                data = chan.recv_stderr(self.CHUNK_SIZE)
+
+        return stderr
 
     def _get_pkey_object(self, key):
         """
