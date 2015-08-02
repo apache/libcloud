@@ -49,7 +49,7 @@ node = driver.create_node(
 # List nodes
 #
 for node in driver.list_nodes():
-    print node
+    print(node)
 
 #
 # Destroy node
