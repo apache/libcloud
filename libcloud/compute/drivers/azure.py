@@ -516,7 +516,8 @@ class AzureNodeDriver(NodeDriver):
     def create_node(self, name, size, image, ex_cloud_service_name,
                     ex_storage_service_name=None, ex_new_deployment=False,
                     ex_deployment_slot="Production", ex_deployment_name=None,
-                    ex_admin_user_id="azureuser", auth=None, **kwargs):
+                    ex_admin_user_id="azureuser", ex_custom_data=None,
+                    auth=None, **kwargs):
         """
         Create Azure Virtual Machine
 
@@ -570,6 +571,10 @@ class AzureNodeDriver(NodeDriver):
                                          to using the Cloud Service name.
         :type        ex_deployment_name: ``str``
 
+        :type        ex_custom_data: ``str``
+        :keyword     ex_custom_data: Optional script or other data which is
+                                     injected into the VM when it's begining
+                                     provisioned.
 
         :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
         :type        ex_admin_user_id:  ``str``
@@ -579,10 +584,6 @@ class AzureNodeDriver(NodeDriver):
         auth = self._get_and_check_auth(auth)
         password = auth.password
 
-        # Check for custom data
-        custom_data = None
-        if 'custom_data' in kwargs:
-            custom_data = kwargs['custom_data']
         if not isinstance(size, NodeSize):
             raise ValueError('Size must be an instance of NodeSize')
 
@@ -668,7 +669,7 @@ class AzureNodeDriver(NodeDriver):
                 ex_admin_user_id,
                 password,
                 False,
-                custom_data
+                ex_custom_data
             )
 
         network_config.input_endpoints.items.append(endpoint)
