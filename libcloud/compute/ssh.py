@@ -353,6 +353,8 @@ class ParamikoSSHClient(BaseSSHClient):
         exit_status_ready = chan.exit_status_ready()
 
         if exit_status_ready:
+            # It's possible that some data is already available when exit
+            # status is ready
             stdout.write(self._consume_stdout(chan).getvalue())
             stderr.write(self._consume_stderr(chan).getvalue())
 
