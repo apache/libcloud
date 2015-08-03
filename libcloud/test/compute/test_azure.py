@@ -294,6 +294,25 @@ class AzureNodeDriverTests(LibcloudTestCase):
         with self.assertRaises(LibcloudError):
             self.driver.ex_destroy_cloud_service(name="testdc1234")
 
+    def test_ex_create_storage_service(self):
+        result = self.driver.ex_create_storage_service(name="testdss123", location="East US")
+        self.assertTrue(result)
+
+    def test_ex_create_storage_service_service_exists(self):
+        with self.assertRaises(LibcloudError):
+            self.driver.ex_create_storage_service(
+                name="dss123",
+                location="East US"
+            )
+
+    def test_ex_destroy_storage_service(self):
+        result = self.driver.ex_destroy_storage_service(name="testdss123")
+        self.assertTrue(result)
+
+    def test_ex_destroy_storage_service_service_does_not_exist(self):
+        with self.assertRaises(LibcloudError):
+            self.driver.ex_destroy_storage_service(name="dss123")
+
     def test_create_node_and_deployment_one_node(self):
         kwargs = {
             "ex_storage_service_name": "mtlytics",
@@ -507,6 +526,22 @@ class AzureMockHttp(MockHttp):
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc123(self, method, url, body, headers):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices(self, method, url, body, headers):
+        # request url is the same irrespective of serviceName, only way to differentiate
+        if "<ServiceName>testdss123</ServiceName>" in body:
+            return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+        elif "<ServiceName>dss123</ServiceName>" in body:
+            return (httplib.CONFLICT, body, headers, httplib.responses[httplib.CONFLICT])
+
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_testdss123(self, method, url, body, headers):
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123.xml')
+
+        return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234(self, method, url, body, headers):
         if method == "GET":
