@@ -258,6 +258,11 @@ Compute
   (LIBCLOUD-724, GITHUB-551)
   [David Wilson]
 
+- Add support for passing user data when creating a DigitalOcean node
+  (``ex_user_data`` argument).
+  (LIBCLOUD-731, GITHUB-559)
+  [David Wilson]
+
 Storage
 ~~~~~~~
 
