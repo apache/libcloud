@@ -336,19 +336,36 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self.connection.request('/v2/sizes').object['sizes']
         return list(map(self._to_size, data))
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location,
+                    ex_ssh_key_ids=None, ex_user_data=None):
         """
         Create a node.
+
+        :keyword    name: Name of the node to be created.
+        :type       name: ``str``
+
+        :keyword    size: Size of the node.
+        :type       size: ``NodeSize``
+
+        :keyword    image: Image to be used to create node.
+        :type       image: ``NodeImage``
+
+        :keyword    location: Location where the node will be created.
+        :type       location: ``NodeLocation``
 
         :keyword    ex_ssh_key_ids: A list of ssh key ids which will be added
                                    to the server. (optional)
         :type       ex_ssh_key_ids: ``list`` of ``str``
 
+        :keyword    ex_user_data:  User data to be added to the node on create.
+                                     (optional)
+        :type       ex_user_data:  ``str``
+
         :return: The newly created node.
         :rtype: :class:`Node`
         """
         attr = {'name': name, 'size': size.name, 'image': image.id,
-                'region': location.id}
+                'region': location.id, 'user_data': ex_user_data}
 
         if ex_ssh_key_ids:
             attr['ssh_keys'] = ex_ssh_key_ids
