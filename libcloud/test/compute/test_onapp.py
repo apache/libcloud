@@ -1,36 +1,21 @@
 import unittest
 import sys
-import json
 
-from mock import call, MagicMock
-
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.drivers.onapp import OnAppNodeDriver
-from libcloud.test import LibcloudTestCase
-from libcloud.test.secrets import ONAPP_PARAMS
 from libcloud.compute.base import Node
+from libcloud.compute.drivers.onapp import OnAppNodeDriver
+from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test.secrets import ONAPP_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib
 
 
 class OnAppNodeTestCase(LibcloudTestCase):
+    driver_klass = OnAppNodeDriver
+
     def setUp(self):
-        def _request(*args, **kwargs):
-            fixtures = ComputeFileFixtures('onapp')
-            response = MagicMock()
-            method = kwargs.get('method', "GET")
+        self.driver_klass.connectionCls.conn_classes = \
+            (None, OnAppMockHttp)
 
-            if method == 'GET' and args[0] == '/virtual_machines.json':
-                response.object = json.loads(fixtures.load(
-                    'list_nodes.json'))
-            if method == 'POST' and args[0] == '/virtual_machines.json':
-                response.object = json.loads(fixtures.load('create_node.json'))
-            if method == 'DELETE' and args[0] == '/virtual_machines.json':
-                response.status = 204
-
-            return response
-
-        self.connection_mock = MagicMock()
-        self.connection_mock.return_value.request.side_effect = _request
-        OnAppNodeDriver.connectionCls = self.connection_mock
         self.driver = OnAppNodeDriver(*ONAPP_PARAMS)
 
     def test_create_node(self):
@@ -46,20 +31,6 @@ class OnAppNodeTestCase(LibcloudTestCase):
             ex_required_virtual_machine_build=0,
             ex_required_ip_address_assignment=0
         )
-
-        req_mock = self.connection_mock.return_value.request
-        self.assertEqual('/virtual_machines.json', req_mock.call_args[0][0])
-        self.assertEqual({'Content-type': 'application/json'},
-                         req_mock.call_args[1]['headers'])
-        self.assertEqual(json.loads(
-            '{"virtual_machine": {'
-            '"swap_disk_size": 1, "required_ip_address_assignment": 0, '
-            '"hostname": "onapp-new-fred", "cpus": 4, "label": '
-            '"onapp-new-fred", "primary_disk_size": 100, "memory": 512, '
-            '"required_virtual_machine_build": 0, "template_id": '
-            '"template_id", "cpu_shares": 4, "rate_limit": null}}'),
-            json.loads(req_mock.call_args[1]['data']))
-        self.assertEqual('POST', req_mock.call_args[1]['method'])
 
         extra = node.extra
 
@@ -80,12 +51,8 @@ class OnAppNodeTestCase(LibcloudTestCase):
         node = Node('identABC', 'testnode',
                     ['123.123.123.123'], [],
                     {'state': 'test', 'template_id': 88}, None)
-        self.driver.destroy_node(node=node)
-        self.assertEqual(call(
-            '/virtual_machines/identABC.json',
-            params={'destroy_all_backups': 0, 'convert_last_backup': 0},
-            method='DELETE'),
-            self.connection_mock.return_value.request.call_args)
+        res = self.driver.destroy_node(node=node)
+        self.assertTrue(res)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -103,8 +70,24 @@ class OnAppNodeTestCase(LibcloudTestCase):
         self.assertEqual(1, len(private_ips))
         self.assertEqual('192.168.15.72', private_ips[0])
 
-        self.assertEqual(call('/virtual_machines.json'),
-                         self.connection_mock.return_value.request.call_args)
+
+class OnAppMockHttp(MockHttpTestCase):
+    fixtures = ComputeFileFixtures('onapp')
+
+    def _virtual_machines_json(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('list_nodes.json')
+        else:
+            body = self.fixtures.load('create_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _virtual_machines_identABC_json(self, method, url, body, headers):
+        return (
+            httplib.NO_CONTENT,
+            '',
+            {},
+            httplib.responses[httplib.NO_CONTENT]
+        )
 
 
 if __name__ == '__main__':
