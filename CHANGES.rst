@@ -37,6 +37,14 @@ General
   ``LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS`` environment variable.
   (GITHUB-515, LIBCLOUD-360, LIBCLOUD-709)
 
+- Fix a bug in consuming stdout and stderr strams in Paramiko SSH client.
+
+  In some cases (like connecting to localhost via SSH), exit_status_ready
+  gets set immediately even before the while loop to consume the streams
+  kicks in. In those cases, we will not have consumed the streams at all.
+  (GITHUB-558)
+  [Lakshmi Kannan]
+
 Compute
 ~~~~~~~
 
@@ -243,6 +251,16 @@ Compute
 - Allow user to inject custom data / script into the Azure node by passing
   ``ex_custom_data`` argument to the ``create_node`` method.
   (LIBCLOUD-726, GITHUB-554)
+  [David Wilson]
+
+- Add ``ex_create_cloud_service`` and ``ex_destroy_cloud_service`` method to the
+  Azure driver.
+  (LIBCLOUD-724, GITHUB-551)
+  [David Wilson]
+
+- Add support for passing user data when creating a DigitalOcean node
+  (``ex_user_data`` argument).
+  (LIBCLOUD-731, GITHUB-559)
   [David Wilson]
 
 Storage

@@ -301,6 +301,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         self.connection.request(action, params=server_params, method="DELETE")
+        return True
 
     def list_nodes(self):
         """

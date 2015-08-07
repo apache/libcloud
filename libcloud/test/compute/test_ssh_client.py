@@ -30,7 +30,7 @@ from libcloud.compute.ssh import have_paramiko
 
 from libcloud.utils.py3 import StringIO
 
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
@@ -192,6 +192,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
 
+    @patch.object(ParamikoSSHClient, '_consume_stdout',
+                  MagicMock(return_value=StringIO('')))
+    @patch.object(ParamikoSSHClient, '_consume_stderr',
+                  MagicMock(return_value=StringIO('')))
     def test_basic_usage_absolute_path(self):
         """
         Basic execution.
