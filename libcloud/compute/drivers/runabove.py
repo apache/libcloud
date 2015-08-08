@@ -22,7 +22,8 @@ from libcloud.compute.drivers.openstack import OpenStackKeyPair
 
 
 class RunAboveNodeDriver(NodeDriver):
-    """libcloud driver for the RunAbove API
+    """
+    Libcloud driver for the RunAbove API
 
     Rough mapping of which is which:
 
@@ -53,7 +54,8 @@ class RunAboveNodeDriver(NodeDriver):
     NODE_STATE_MAP = OpenStackNodeDriver.NODE_STATE_MAP
 
     def __init__(self, key, secret, ex_consumer_key=None):
-        """Instantiate the driver with the given API key
+        """
+        Instantiate the driver with the given API key
 
         :param   key: the API key to use (required)
         :type    key: ``str``
@@ -64,24 +66,12 @@ class RunAboveNodeDriver(NodeDriver):
         self.consumer_key = ex_consumer_key
         NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key)
 
-    def _ex_connection_class_kwargs(self):
-        return {'ex_consumer_key': self.consumer_key}
-
-    def _add_required_headers(self, headers, method, action, data, timestamp):
-        timestamp = self.connection.get_timestamp()
-        signature = self.connection.make_signature(method, action, data,
-                                                   str(timestamp))
-        headers.update({
-            "X-Ra-Timestamp": timestamp,
-            "X-Ra-Signature": signature
-        })
-
     def list_nodes(self, location=None):
         """
         List all Linodes that the API key can access
 
         This call will return all Linodes that the API key in use has access
-         to.
+        to.
         If a node is in this list, rebooting will work; however, creation and
         destruction are a separate grant.
 
@@ -99,10 +89,6 @@ class RunAboveNodeDriver(NodeDriver):
         action = API_ROOT + '/instance/' + node_id
         response = self.connection.request(action, method='GET')
         return self._to_node(response.object)
-
-    def reboot_node(self, node):
-        raise NotImplementedError(
-            "reboot_node not implemented for this driver")
 
     def create_node(self, **kwargs):
         action = API_ROOT + '/instance'
@@ -224,21 +210,6 @@ class RunAboveNodeDriver(NodeDriver):
         self.connection.request(action, data=data, method='DELETE')
         return True
 
-    def create_volume(self, size, name):
-        raise NotImplementedError(
-            "create_volume not implemented for this driver")
-
-    def destroy_volume(self, volume):
-        raise NotImplementedError(
-            "destroy_volume not implemented for this driver")
-
-    def ex_list_volumes(self, node, disk_id=None):
-        raise NotImplementedError(
-            "list_volumes not implemented for this driver")
-
-    def _to_volume(self, obj):
-        pass
-
     def _to_volumes(self, objs):
         return [self._to_volume(obj) for obj in objs]
 
@@ -293,3 +264,15 @@ class RunAboveNodeDriver(NodeDriver):
 
     def _to_key_pairs(self, objs):
         return [self._to_key_pair(obj) for obj in objs]
+
+    def _ex_connection_class_kwargs(self):
+        return {'ex_consumer_key': self.consumer_key}
+
+    def _add_required_headers(self, headers, method, action, data, timestamp):
+        timestamp = self.connection.get_timestamp()
+        signature = self.connection.make_signature(method, action, data,
+                                                   str(timestamp))
+        headers.update({
+            'X-Ra-Timestamp': timestamp,
+            'X-Ra-Signature': signature
+        })

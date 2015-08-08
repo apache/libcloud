@@ -1,24 +1,27 @@
-# licensed to the apache software foundation (asf) under one or more
-# contributor license agreements.  see the notice file distributed with
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
-# the asf licenses this file to you under the apache license, version 2.0
-# (the "license"); you may not use this file except in compliance with
-# the license.  you may obtain a copy of the license at
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/license-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# unless required by applicable law or agreed to in writing, software
-# distributed under the license is distributed on an "as is" basis,
-# without warranties or conditions of any kind, either express or implied.
-# see the license for the specific language governing permissions and
-# limitations under the license.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import hashlib
 import time
+
 try:
     import simplejson as json
 except ImportError:
     import json
+
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
@@ -29,10 +32,10 @@ LOCATIONS = {
     'BHS-1': {'id': 'BHS-1', 'name': 'Montreal 1', 'country': 'CA'}
 }
 DEFAULT_ACCESS_RULES = [
-    {"method": "GET", "path": "/*"},
-    {"method": "POST", "path": "/*"},
-    {"method": "PUT", "path": "/*"},
-    {"method": "DELETE", "path": "/*"},
+    {'method': 'GET', 'path': '/*'},
+    {'method': 'POST', 'path': '/*'},
+    {'method': 'PUT', 'path': '/*'},
+    {'method': 'DELETE', 'path': '/*'},
 ]
 
 
@@ -61,18 +64,18 @@ class RunAboveConnection(ConnectionUserAndKey):
         self.consumer_key = kwargs.pop('ex_consumer_key', None)
         if self.consumer_key is None:
             consumer_key_json = self.request_consumer_key(user_id)
-            msg = "Your consumer key isn't validated, " \
-                "go to '{validationUrl}' for valid it. After instantiate " \
-                "your driver with \"ex_consumer_key='{consumerKey}'\"."\
-                .format(**consumer_key_json)
+            msg = ("Your consumer key isn't validated, "
+                   "go to '%(validationUrl)s' for valid it. After instantiate "
+                   "your driver with \"ex_consumer_key='%(consumerKey)s'\"." %
+                   consumer_key_json)
             raise RunAboveException(msg)
         super(RunAboveConnection, self).__init__(user_id, *args, **kwargs)
 
     def request_consumer_key(self, user_id):
         action = self.request_path + '/auth/credential'
         data = json.dumps({
-            "accessRules": DEFAULT_ACCESS_RULES,
-            "redirection": "http://runabove.com",
+            'accessRules': DEFAULT_ACCESS_RULES,
+            'redirection': 'http://runabove.com',
         })
         headers = {
             'Content-Type': 'application/json',
@@ -113,9 +116,9 @@ class RunAboveConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers.update({
-            "X-Ra-Application": self.user_id,
-            "X-Ra-Consumer": self.consumer_key,
-            "Content-type": "application/json",
+            'X-Ra-Application': self.user_id,
+            'X-Ra-Consumer': self.consumer_key,
+            'Content-type': 'application/json',
         })
         return headers
 
@@ -126,8 +129,8 @@ class RunAboveConnection(ConnectionUserAndKey):
         signature = self.make_signature(method, action, data, timestamp)
         headers = headers or {}
         headers.update({
-            "X-Ra-Timestamp": timestamp,
-            "X-Ra-Signature": signature
+            'X-Ra-Timestamp': timestamp,
+            'X-Ra-Signature': signature
         })
         return super(RunAboveConnection, self)\
             .request(action, params=params, data=data, headers=headers,
