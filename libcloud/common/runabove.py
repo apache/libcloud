@@ -22,8 +22,16 @@ try:
 except ImportError:
     import json
 
+from libcloud.utils.py3 import httplib
+from libcloud.utils.connection import get_response_object
+from libcloud.common.types import InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+
+__all__ = [
+    'RunAboveResponse',
+    'RunAboveConnection'
+]
 
 API_HOST = 'api.runabove.com'
 API_ROOT = '/1.0'
@@ -43,6 +51,17 @@ class RunAboveException(Exception):
     pass
 
 
+class RunAboveResponse(JsonResponse):
+    def parse_error(self):
+        response = super(RunAboveResponse, self).parse_body()
+
+        if response.get('errorCode', None) == 'INVALID_SIGNATURE':
+            raise InvalidCredsError('Signature validation failed, probably '
+                                    'using invalid credentials')
+
+        return self.body
+
+
 class RunAboveConnection(ConnectionUserAndKey):
     """
     A connection to the RunAbove API
@@ -52,7 +71,7 @@ class RunAboveConnection(ConnectionUserAndKey):
     """
     host = API_HOST
     request_path = API_ROOT
-    responseCls = JsonResponse
+    responseCls = RunAboveResponse
     timestamp = None
     ua = []
     LOCATIONS = LOCATIONS
@@ -83,17 +102,25 @@ class RunAboveConnection(ConnectionUserAndKey):
         }
         httpcon = LibcloudHTTPSConnection(self.host)
         httpcon.request(method='POST', url=action, body=data, headers=headers)
-        response = httpcon.getresponse().read()
-        json_response = json.loads(response)
+        response = httpcon.getresponse()
+
+        if response.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError()
+
+        body = response.read()
+        json_response = json.loads(body)
         httpcon.close()
         return json_response
 
     def get_timestamp(self):
         if not self._timedelta:
-            action = API_ROOT + '/auth/time'
-            response = self.connection.request('GET', action, headers={})
-            timestamp = int(response)
-            self._time_delta = timestamp - int(time.time())
+            url = 'https://%s/%s/auth/time' % (API_HOST, API_ROOT)
+            response = get_response_object(url=url, method='GET', headers={})
+            if not response or not response.body:
+                raise Exception('Failed to get current time from RunAbove API')
+
+            timestamp = int(response.body)
+            self._timedelta = timestamp - int(time.time())
         return int(time.time()) + self._timedelta
 
     def make_signature(self, method, action, data, timestamp):
