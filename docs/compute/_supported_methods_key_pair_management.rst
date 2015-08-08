@@ -63,6 +63,7 @@ Provider                              list key pairs get key pair create key pai
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
 `RimuHosting`_                        no             no           no              no                            no                          no             
+`RunAbove`_                           yes            yes          no              yes                           no                          yes            
 `ServerLove`_                         no             no           no              no                            no                          no             
 `skalicloud`_                         no             no           no              no                            no                          no             
 `SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
@@ -135,6 +136,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
+.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

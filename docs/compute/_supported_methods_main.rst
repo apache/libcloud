@@ -63,6 +63,7 @@ Provider                              list nodes create node reboot node destroy
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
+`RunAbove`_                           yes        yes         no          yes          yes         yes        yes        
 `ServerLove`_                         yes        yes         yes         yes          yes         yes        yes        
 `skalicloud`_                         yes        yes         yes         yes          yes         yes        yes        
 `SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
@@ -135,6 +136,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
+.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

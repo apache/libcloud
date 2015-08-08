@@ -63,6 +63,7 @@ Provider                              Documentation                             
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`     RACKSPACE           :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceNodeDriver`        
 `Rackspace Cloud (First Gen)`_                                                      RACKSPACE_FIRST_GEN :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceFirstGenNodeDriver`
 `RimuHosting`_                                                                      RIMUHOSTING         :mod:`libcloud.compute.drivers.rimuhosting`    :class:`RimuHostingNodeDriver`      
+`RunAbove`_                           :doc:`Click </compute/drivers/runabove>`      RUNABOVE            :mod:`libcloud.compute.drivers.runabove`       :class:`RunAboveNodeDriver`         
 `ServerLove`_                                                                       SERVERLOVE          :mod:`libcloud.compute.drivers.serverlove`     :class:`ServerLoveNodeDriver`       
 `skalicloud`_                                                                       SKALICLOUD          :mod:`libcloud.compute.drivers.skalicloud`     :class:`SkaliCloudNodeDriver`       
 `SoftLayer`_                                                                        SOFTLAYER           :mod:`libcloud.compute.drivers.softlayer`      :class:`SoftLayerNodeDriver`        
@@ -135,6 +136,7 @@ Provider                              Documentation                             
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
+.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/
