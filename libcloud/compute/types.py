@@ -78,10 +78,12 @@ class Provider(object):
     :cvar OUTSCALE_INC: Outscale INC driver.
     :cvar PROFIT_BRICKS: ProfitBricks driver.
     :cvar VULTR: vultr driver.
-    :cvar AZURE: Azure driver.
+    :cvar AZURE: Azure Service Manager (classic) driver.
+    :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
     """
     AZURE = 'azure'
+    AZURE_ARM = 'azure_arm'
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'

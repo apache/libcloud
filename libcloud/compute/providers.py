@@ -29,6 +29,8 @@ __all__ = [
 DRIVERS = {
     Provider.AZURE:
     ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
+    Provider.AZURE_ARM:
+    ('libcloud.compute.drivers.azure_arm', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2_US_EAST:
