@@ -293,7 +293,25 @@ class AzureNodeDriver(NodeDriver):
                                         }
                                     },
                                     method="PUT")
+
         return self._to_node(r.object)
+
+    def destroy_node(self, node):
+        target = "%s/deallocate" % node.id
+
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    method='POST')
+        return r.object
+
+    def reboot_node(self, node):
+        target = "%s/restart" % node.id
+
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    method='POST')
+        return r.object
+
 
     def _to_node(self, data):
         return Node(data["id"],
