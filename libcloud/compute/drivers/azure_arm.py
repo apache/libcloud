@@ -26,6 +26,63 @@ class AzureOffer(object):
         return (('<AzureOffer: id=%s, name=%s, location=%s>')
                 % (self.id, self.name, self.location))
 
+class AzureSku(object):
+    def __init__(self, id, name, location, offer):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.offer = offer
+
+    def __repr__(self):
+        return (('<AzureSku: id=%s, name=%s, location=%s>')
+                % (self.id, self.name, self.location))
+
+class AzureImage(NodeImage):
+    def __init__(self, id, name, driver, location, sku):
+        super(AzureImage, self).__init__(id, name, driver)
+        self.location = location
+        self.sku = sku
+
+    def urn(self):
+        return "%s:%s:%s:%s" % (self.sku.offer.publisher.name, self.sku.offer.name, self.sku.name, self.name)
+
+    def __repr__(self):
+        return (('<AzureImage: id=%s, name=%s, location=%s>')
+                % (self.id, self.name, self.location))
+
+class AzureNetwork(object):
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureNetwork: id=%s, name=%s, location=%s ...>')
+                % (self.id, self.name, self.location))
+
+class AzureSubnet(object):
+    def __init__(self, id, name, extra):
+        self.id = id
+        self.name = name
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureSubnet: id=%s, name=%s ...>')
+                % (self.id, self.name))
+
+class AzureNic(object):
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureNic: id=%s, name=%s ...>')
+                % (self.id, self.name))
+
+
 class AzureNodeDriver(NodeDriver):
     connectionCls = AzureResourceManagementConnection
     name = 'Azure Virtual machines'
@@ -88,7 +145,7 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [AzureOffer(p["id"], p["name"], p["location"], publisher) for p in r.object]
 
-    def list_images(self, ex_offer=None):
+    def ex_list_sku(self, ex_offer=None):
         if not ex_offer:
             raise ValueError("ex_offer is required.")
 
@@ -96,13 +153,87 @@ class AzureNodeDriver(NodeDriver):
 
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
-        return [NodeImage(img["id"], img["name"], self.connection.driver) for img in r.object]
+        return [AzureSku(sku["id"], sku["name"], sku["location"], ex_offer) for sku in r.object]
 
+    def ex_list_image_versions(self, ex_sku=None):
+        if not ex_sku:
+            raise ValueError("ex_sku is required.")
 
-    def create_node(self, name, size, image, location, auth, ex_resource_group, **kwargs):
-        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
+        action = "%s/versions" % (ex_sku.id)
+        print action
+
         r = self.connection.request(action,
-                                    params={"api-version": "2015-07-13"},
+                                    params={"api-version": "2015-06-15"})
+        return [AzureImage(img["id"], img["name"], self.connection.driver, img["location"], ex_sku) for img in r.object]
+
+    def list_images(self, ex_sku=None):
+        # TODO give this a nicer API
+        return self.ex_list_image_versions(ex_sku)
+
+    def ex_list_networks(self):
+        action = "/subscriptions/%s/providers/Microsoft.Network/virtualnetworks" % (self.subscription_id)
+
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+        return [AzureNetwork(net["id"], net["name"], net["location"], net["properties"]) for net in r.object["value"]]
+
+    def ex_list_subnets(self, network):
+        action = "%s/subnets" % (network.id)
+
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+
+        return [AzureSubnet(net["id"], net["name"], net["properties"]) for net in r.object["value"]]
+
+    def ex_create_public_ip(self, name, location, resource_group):
+        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s" % (self.subscription_id, resource_group, name)
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    data={
+                                        "location": location.id,
+                                        "tags": {},
+                                        "properties": {
+                                            "publicIPAllocationMethod": "Dynamic"
+                                        }
+                                    },
+                                    method='PUT'
+                                    )
+        return r.object
+
+    def ex_create_network_interface(self, name, subnet, location, resource_group, public_ip = None):
+        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s" % (self.subscription_id, resource_group, name)
+
+        data={
+            "location": location.id,
+            "tags": {},
+            "properties": {
+                "ipConfigurations": [{
+                    "name":"myip1",
+                    "properties":{
+                        "subnet":{
+                            "id": subnet.id
+                        },
+                        "privateIPAllocationMethod":"Dynamic"
+                    }
+                }]
+            }
+        }
+
+        if public_ip:
+            data["properties"]["ipConfigurations"][0]["publicIPAddress"] = {"id": public_ip.id}
+
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    data=data,
+                                    method='PUT'
+                                    )
+        return AzureNic(r.object["id"], r.object["name"], r.object["location"], r.object["properties"])
+
+
+    def create_node(self, name, size, image, location, auth, ex_resource_group, ex_nic, ex_storage_account, **kwargs):
+        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
                                     data={
                                         "id": target,
                                         "name": name,
@@ -115,39 +246,47 @@ class AzureNodeDriver(NodeDriver):
                                             },
                                             "storageProfile": {
                                                 "imageReference": {
-                                                    "publisher": "LinuxImagePublisher",
-                                                    "offer": "LinuxImageOffer",
-                                                    "sku": "LinuxImageSKU",
-                                                    "version": "LinuxImageVersion"
+                                                    "publisher": image.sku.offer.publisher.name,
+                                                    "offer": image.sku.offer.name,
+                                                    "sku": image.sku.name,
+                                                    "version": image.name
                                                 },
                                                 "osDisk": {
                                                     "name": "virtualmachine-osDisk",
                                                     "vhd": {
-                                                        "uri": "https://storageaccount.blob.core.windows.net/vhds/virtualmachine-os.vhd"
+                                                        "uri": "https://%s.blob.core.windows.net/vhds/%s-os.vhd" % (ex_storage_account, name)
                                                     },
-                                                    "caching": "ReadWrite"
-                                                },
+                                                    "caching": "ReadWrite",
+                                                    "createOption":"FromImage"
+                                                }
                                             },
                                             "osProfile": {
-                                                "computerName": "virtualMachineName",
-                                                "adminUsername": "username",
-                                                "adminPassword": "password",
-                                                "customData": "",
+                                                "computerName": name,
+                                                "adminUsername": "peter",
+                                                "adminPassword": "99aBCd99",
                                                 "linuxConfiguration": {
-                                                    "disablePasswordAuthentication": "true|false",
+                                                    "disablePasswordAuthentication": "true",
                                                     "ssh": {
                                                         "publicKeys": [
                                                             {
-                                                                "path": "Path-Where-To-Place-Public-Key-On-VM",
-                                                                "keyData": "ssh rsa public key as a string"
+                                                                "path": '/home/' + "peter" + '/.ssh/authorized_keys',
+                                                                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDLQS1ExT2+WjA0d/hntEAyAtgeN1W2ik2QX8c2zO6HjlPHWXL92r07W0WMuDib40Pcevpi1BXeBWXA9ZB5KKMJB+ukaAu22KklnQuUmNvk6ZXnPKSkGxuCYvPQb08WhHf3p1VxiKfP3iauedBDM4x9/bkJohlBBQiFXzNUcQ+a6rKiMzmJN2gbL8ncyUzc+XQ5q4JndTwTGtOlzDiGOc9O4z5Dd76wtAVJneOuuNpwfFRVHThpJM6VThpCZOnl8APaceWXKeuwOuCae3COZMz++xQfxOfZ9Z8aIwo+TlQhsRaNfZ4Vjrop6ej8dtfZtgUFKfbXEOYaHrGrWGotFDTD peter@peter"
                                                             }
                                                         ]
                                                     }
                                                 }
+                                            },
+                                            "networkProfile": {
+                                                "networkInterfaces": [
+                                                    {
+                                                        "id": ex_nic.id
+                                                    }
+                                                ]
                                             }
-                                    }
+                                        }
                                     },
                                     method="PUT")
+        return Node(r.object["id"], r.object["name"], NodeState.PENDING, None, None, self.connection.driver)
 
     def _to_node_size(self, data):
         return NodeSize(id=data["name"],
