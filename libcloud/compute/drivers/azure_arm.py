@@ -170,6 +170,13 @@ class AzureNodeDriver(NodeDriver):
         # TODO give this a nicer API
         return self.ex_list_image_versions(ex_sku)
 
+    def list_nodes(self):
+        action = "/subscriptions/%s/providers/Microsoft.Compute/virtualMachines" % (self.subscription_id)
+
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+        return [self._to_node(n) for n in r.object["value"]]
+
     def ex_list_networks(self):
         action = "/subscriptions/%s/providers/Microsoft.Network/virtualnetworks" % (self.subscription_id)
 
@@ -286,7 +293,16 @@ class AzureNodeDriver(NodeDriver):
                                         }
                                     },
                                     method="PUT")
-        return Node(r.object["id"], r.object["name"], NodeState.PENDING, None, None, self.connection.driver)
+        return self._to_node(r.object)
+
+    def _to_node(self, data):
+        return Node(data["id"],
+                    data["name"],
+                    None,
+                    None,
+                    None,
+                    driver=self.connection.driver)
+
 
     def _to_node_size(self, data):
         return NodeSize(id=data["name"],
