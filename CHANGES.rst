@@ -17,6 +17,13 @@ Compute
   (GITHUB-561)
   [ZuluPro]
 
+Storage
+~~~~~~~
+
+- Add support for ``sa-east-1`` region to the Amazon S3 driver.
+  (GITHUB-562)
+  [Iuri de Silvio]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
