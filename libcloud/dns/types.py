@@ -39,6 +39,7 @@ class Provider(object):
     SOFTLAYER = 'softlayer'
     DIGITAL_OCEAN = 'digitalocean'
     AURORADNS = 'auroradns'
+    WORLDWIDEDNS = 'worldwidedns'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

@@ -60,6 +60,10 @@ Loadbalancer
 DNS
 ~~~
 
+- Add new driver for WorldWideDNS service.
+  (GITHUB-566, LIBCLOUD-732)
+  [Alejandro Pereira]
+
 - Add new driver for AuroraDNS service.
   (GITHUB-562, LIBCLOUD-735)
   [Wido den Hollander]
