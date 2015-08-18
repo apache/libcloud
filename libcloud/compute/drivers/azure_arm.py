@@ -1,12 +1,14 @@
 import binascii
 import os
+import time
 
 from libcloud.common.azure_arm import AzureResourceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, NodeAuthSSHKey, NodeAuthPassword
 from libcloud.compute.types import NodeState
-from libcloud.common.types import LibcloudError
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
 class AzureImage(NodeImage):
     def __init__(self, version, sku, offer, publisher, location, driver):
@@ -204,13 +206,13 @@ class AzureNodeDriver(NodeDriver):
         return images
 
 
-    def list_nodes(self, ex_resource_group=None):
+    def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True):
         if ex_resource_group:
             action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines" % (self.subscription_id, ex_resource_group)
         else:
             action = "/subscriptions/%s/providers/Microsoft.Compute/virtualMachines" % (self.subscription_id)
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
-        return [self._to_node(n) for n in r.object["value"]]
+        return [self._to_node(n, fetch_nic=ex_fetch_nic) for n in r.object["value"]]
 
     def ex_list_networks(self):
         action = "/subscriptions/%s/providers/Microsoft.Network/virtualnetworks" % (self.subscription_id)
@@ -309,6 +311,7 @@ class AzureNodeDriver(NodeDriver):
                     auth,
                     ex_resource_group,
                     ex_storage_account,
+                    ex_blob_container="vhds",
                     location=None,
                     ex_user_name="azureuser",
                     ex_network=None,
@@ -353,7 +356,7 @@ class AzureNodeDriver(NodeDriver):
                     "osDisk": {
                         "name": "virtualmachine-osDisk",
                         "vhd": {
-                            "uri": "https://%s.blob.core.windows.net/vhds/%s-os.vhd" % (ex_storage_account, name)
+                            "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
                         },
                         "caching": "ReadWrite",
                         "createOption":"FromImage"
@@ -405,19 +408,53 @@ class AzureNodeDriver(NodeDriver):
         node.image = image
         return node
 
+    def ex_get_storage_account_keys(self, resourceGroup, storageAccount):
+        r = self.connection.request("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/listKeys" % (self.subscription_id, resourceGroup, storageAccount), params={"api-version": "2015-05-01-preview"}, method="POST")
+        return r.object
+
     def destroy_node(self, node, ex_destroy_nic=True, ex_destroy_vhd=True):
-        r = self.connection.request(node.id,
-                                    params={"api-version": "2015-06-15"},
-                                    method='DELETE')
-        if ex_destroy_nic:
-            for nic in data.extra["networkProfile"]["networkInterfaces"]:
-                r = self.connection.request(nic["id"],
-                                    params={"api-version": "2015-06-15"},
-                                    method='DELETE')
-        if ex_destroy_vhd:
-            r = self.connection.request(data.extra["storageProfile"]["osDisk"]["vhd"]["uri"],
+        try:
+            r = self.connection.request(node.id,
                                         params={"api-version": "2015-06-15"},
                                         method='DELETE')
+        except BaseHTTPError as h:
+            if h.code == 202:
+                pass
+            else:
+                raise
+
+        if ex_destroy_nic:
+            for nic in node.extra["properties"]["networkProfile"]["networkInterfaces"]:
+                while True:
+                    try:
+                        r = self.connection.request(nic["id"],
+                                            params={"api-version": "2015-06-15"},
+                                            method='DELETE')
+                        break
+                    except BaseHTTPError as h:
+                        if h.code == 202:
+                            break
+                        if h.code == 400 and h.message["error"]["code"] == "NicInUse":
+                            time.sleep(10)
+                        else:
+                            raise
+
+        if ex_destroy_vhd:
+            try:
+                resourceGroup = node.id.split("/")[4]
+                uri = node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"].split("/")
+                storageAccount = uri[2].split(".")[0]
+                blobContainer = uri[3]
+                blob = uri[4]
+                keys = self.ex_get_storage_account_keys(resourceGroup, storageAccount)
+                blobdriver = AzureBlobsStorageDriver(storageAccount, keys["key1"])
+                blobdriver.delete_object(blobdriver.get_object(blobContainer, blob))
+            except BaseHTTPError as h:
+                print h.code, h.message
+                if h.code == 202:
+                    pass
+                else:
+                    raise
 
     def reboot_node(self, node):
         target = "%s/restart" % node.id
@@ -443,20 +480,21 @@ class AzureNodeDriver(NodeDriver):
         return r.object
 
 
-    def _to_node(self, data):
+    def _to_node(self, data, fetch_nic=True):
         private_ips = []
         public_ips = []
-        for nic in data["properties"]["networkProfile"]["networkInterfaces"]:
-            n = self.ex_get_nic(nic["id"])
-            priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
-            if priv:
-                private_ips.append(priv)
-            pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
-            if pub:
-                pub_addr = self.ex_get_public_ip(pub["id"])
-                addr = pub_addr.extra.get("ipAddress")
-                if addr:
-                    public_ips.append(addr)
+        if fetch_nic:
+            for nic in data["properties"]["networkProfile"]["networkInterfaces"]:
+                n = self.ex_get_nic(nic["id"])
+                priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
+                if priv:
+                    private_ips.append(priv)
+                pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
+                if pub:
+                    pub_addr = self.ex_get_public_ip(pub["id"])
+                    addr = pub_addr.extra.get("ipAddress")
+                    if addr:
+                        public_ips.append(addr)
 
         action = "%s/InstanceView" % (data["id"])
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
