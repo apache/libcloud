@@ -77,13 +77,42 @@ class AzureNodeDriver(NodeDriver):
     type = Provider.AZURE_ARM
     features = {'create_node': ['ssh_key', 'password']}
 
+    _location_to_country = {
+        "centralus": "Iowa, USA",
+        "eastus": "Virginia, USA",
+        "eastus2": "Virginia, USA",
+        "usgoviowa": "Iowa, USA",
+        "usgovvirginia": "Virginia, USA",
+        "northcentralus": "Illinois, USA",
+        "southcentralus": "Texas, USA",
+        "westus": "California, USA",
+        "northeurope": "Ireland",
+        "westeurope": "Netherlands",
+        "eastasia": "Hong Kong",
+        "southeastasia": "Singapore",
+        "japaneast": "Tokyo, Japan",
+        "japanwest": "Osaka, Japan",
+        "brazilsouth": "Sao Paulo State, Brazil",
+        "australiaeast": "New South Wales, Australia",
+        "australiasoutheast": "Victoria, Australia"
+    }
+
     def __init__(self, tenant_id, subscription_id, key, secret, secure=True, host=None, port=None,
-                 api_version=None, **kwargs):
+                 api_version=None, region=None, **kwargs):
         self.tenant_id = tenant_id
         self.subscription_id  = subscription_id
         super(AzureNodeDriver, self).__init__(key=key, secret=secret, secure=secure,
                                          host=host, port=port,
-                                         api_version=api_version, **kwargs)
+                                              api_version=api_version,
+                                              region=region, **kwargs)
+        if self.region is not None:
+            loc_id = self.region.lower().replace(" ", "")
+            self.default_location = NodeLocation(loc_id,
+                                                 self.region,
+                                                 self._location_to_country.get(loc_id),
+                                                 self)
+        else:
+            self.default_location = None
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
@@ -97,21 +126,25 @@ class AzureNodeDriver(NodeDriver):
 
         for rt in r.object["resourceTypes"]:
             if rt["resourceType"] == "virtualMachines":
-                # XXX for some reason the API returns location names like
-                # "East US" instead of "eastus" which is what is actually needed
-                # for other API calls, so do a name->id fixup and hope it works.
-                return [NodeLocation(l.lower().replace(" ", ""), l, l, self.connection.driver) for l in rt["locations"]]
+                return [self._to_location(l) for l in rt["locations"]]
 
         return []
 
     def list_sizes(self, location=None):
-        if not location:
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
             raise ValueError("location is required.")
         action = "/subscriptions/%s/providers/Microsoft.Compute/locations/%s/vmSizes" % (self.subscription_id, location.id)
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
         return [self._to_node_size(d) for d in r.object["value"]]
 
-    def ex_list_publishers(self, location):
+    def ex_list_publishers(self, location=None):
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
         action = "/subscriptions/%s/providers/Microsoft.Compute/locations/%s/publishers" % (self.subscription_id, location.id)
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
         return [(p["id"], p["name"]) for p in r.object]
@@ -131,40 +164,43 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
 
-    def list_images(self, location=None, ex_publisher=None, ex_offer=None, ex_sku=None, ex_version=None):
+    def list_images(self, location=None, ex_publisher=None, ex_offer=None, ex_sku=None, ex_version=None, ex_urn=None):
         images = []
 
         if location is None:
-            locations = self.list_locations()
+            locations = [self.default_location]
         else:
             locations = [location]
 
+        if ex_urn:
+            (ex_publisher, ex_offer, ex_sku, ex_version) = ex_urn.split(":")
+
         for loc in locations:
-            if ex_publisher is None:
+            if not ex_publisher:
                 publishers = self.ex_list_publishers(loc)
             else:
                 publishers = [("/subscriptions/%s/providers/Microsoft.Compute/locations/%s/publishers/%s" % (self.subscription_id, loc.id, ex_publisher), ex_publisher)]
 
             for pub in publishers:
-                if ex_offer is None:
+                if not ex_offer:
                     offers = self.ex_list_offers(pub[0])
                 else:
                     offers = [("%s/artifacttypes/vmimage/offers/%s" % (pub[0], ex_offer), ex_offer)]
 
                 for off in offers:
-                    if ex_sku is None:
+                    if not ex_sku:
                         skus = self.ex_list_skus(off[0])
                     else:
                         skus = [("%s/skus/%s" % (off[0], ex_sku), ex_sku)]
 
                     for sku in skus:
-                        if ex_version is None:
+                        if not ex_version:
                             versions = self.ex_list_image_versions(sku[0])
                         else:
                             versions = [("%s/versions/%s" % (sku[0], ex_version), ex_version)]
 
                         for v in versions:
-                            images.append(AzureImage(v[1], sku[1], off[1], pub[1], location.id, self.connection.driver))
+                            images.append(AzureImage(v[1], sku[1], off[1], pub[1], loc.id, self.connection.driver))
         return images
 
 
@@ -204,7 +240,12 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
 
-    def ex_create_public_ip(self, name, location, resource_group):
+    def ex_create_public_ip(self, name, resource_group, location=None):
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s" % (self.subscription_id, resource_group, name)
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -219,7 +260,13 @@ class AzureNodeDriver(NodeDriver):
                                     )
         return self._to_ip_address(r.object)
 
-    def ex_create_network_interface(self, name, subnet, location, resource_group, public_ip = None):
+    def ex_create_network_interface(self, name, subnet, resource_group, location = None, public_ip = None):
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
+
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s" % (self.subscription_id, resource_group, name)
 
         data = {
@@ -248,8 +295,30 @@ class AzureNodeDriver(NodeDriver):
                                     )
         return AzureNic(r.object["id"], r.object["name"], r.object["location"], r.object["properties"])
 
+    def ex_create_tags(self, target, tags, replace=False):
+        r = self.connection.request(target, params={"api-version": "2015-06-15"})
+        if replace:
+            r.object["tags"] = tags
+        else:
+            r.object["tags"].update(tags)
+        r = self.connection.request(target, data=r.object, params={"api-version": "2015-06-15"}, method="PUT")
 
-    def create_node(self, name, size, image, location, auth, ex_resource_group, ex_storage_account, ex_user_name="azureuser", ex_network=None, ex_subnet=None, ex_nic=None, **kwargs):
+    def create_node(self, name,
+                    size,
+                    image,
+                    auth,
+                    ex_resource_group,
+                    ex_storage_account,
+                    location=None,
+                    ex_user_name="azureuser",
+                    ex_network=None,
+                    ex_subnet=None,
+                    ex_nic=None,
+                    ex_tags={},
+                    **kwargs):
+
+        if location is None:
+            location = self.default_location
         if ex_nic is None:
             if ex_network is None:
                 raise ValueError("Must provide either ex_nic or ex_network")
@@ -257,8 +326,10 @@ class AzureNodeDriver(NodeDriver):
                 ex_subnet = "default"
             ex_nic = self.ex_create_network_interface(name + "-nic",
                                                       AzureSubnet("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualnetworks/%s/subnets/%s" % (self.subscription_id, ex_resource_group, ex_network, ex_subnet), ex_subnet, {}),
-                                                      location,
-                                                      ex_resource_group)
+                                                      ex_resource_group,
+                                                      location)
+
+        auth = self._get_and_check_auth(auth)
 
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
 
@@ -267,7 +338,7 @@ class AzureNodeDriver(NodeDriver):
             "name": name,
             "type": "Microsoft.Compute/virtualMachines",
             "location": location.id,
-            "tags": {},
+            "tags": ex_tags,
             "properties": {
                 "hardwareProfile": {
                     "vmSize": size.id
@@ -324,28 +395,35 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
-        import pprint
-        pprint.pprint(data)
-
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
                                     method="PUT")
 
-        return self._to_node(r.object)
+        node = self._to_node(r.object)
+        node.size = size
+        node.image = image
+        return node
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, ex_destroy_nic=True, ex_destroy_vhd=True):
         r = self.connection.request(node.id,
                                     params={"api-version": "2015-06-15"},
                                     method='DELETE')
-        return r.object
+        if ex_destroy_nic:
+            for nic in data.extra["networkProfile"]["networkInterfaces"]:
+                r = self.connection.request(nic["id"],
+                                    params={"api-version": "2015-06-15"},
+                                    method='DELETE')
+        if ex_destroy_vhd:
+            r = self.connection.request(data.extra["storageProfile"]["osDisk"]["vhd"]["uri"],
+                                        params={"api-version": "2015-06-15"},
+                                        method='DELETE')
 
     def reboot_node(self, node):
         target = "%s/restart" % node.id
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
-        return r.object
 
     def ex_start_node(self, node):
         target = "%s/start" % node.id
@@ -383,7 +461,6 @@ class AzureNodeDriver(NodeDriver):
         action = "%s/InstanceView" % (data["id"])
         r = self.connection.request(action, params={"api-version": "2015-06-15"})
         state = NodeState.UNKNOWN
-        print r.object["statuses"]
         for status in r.object["statuses"]:
             if status["code"] == "ProvisioningState/creating":
                 state = NodeState.PENDING
@@ -405,7 +482,8 @@ class AzureNodeDriver(NodeDriver):
                     state,
                     public_ips,
                     private_ips,
-                    driver=self.connection.driver)
+                    driver=self.connection.driver,
+                    extra=data)
 
         return node
 
@@ -428,3 +506,10 @@ class AzureNodeDriver(NodeDriver):
 
     def _to_ip_address(self, data):
         return AzureIPAddress(data["id"], data["name"], data["properties"])
+
+    def _to_location(self, loc):
+        # XXX for some reason the API returns location names like
+        # "East US" instead of "eastus" which is what is actually needed
+        # for other API calls, so do a name->id fixup and hope it works.
+        loc_id = loc.lower().replace(" ", "")
+        return NodeLocation(loc_id, loc, self._location_to_country.get(loc_id), self.connection.driver)
