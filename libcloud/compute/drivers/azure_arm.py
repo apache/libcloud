@@ -297,8 +297,10 @@ class AzureNodeDriver(NodeDriver):
                                     )
         return AzureNic(r.object["id"], r.object["name"], r.object["location"], r.object["properties"])
 
-    def ex_create_tags(self, target, tags, replace=False):
-        r = self.connection.request(target, params={"api-version": "2015-06-15"})
+    def ex_create_tags(self, resource, tags, replace=False):
+        if not isinstance(resource, basestring):
+            resource = resource.id
+        r = self.connection.request(resource, params={"api-version": "2015-06-15"})
         if replace:
             r.object["tags"] = tags
         else:
