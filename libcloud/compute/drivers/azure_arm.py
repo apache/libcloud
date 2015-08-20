@@ -199,7 +199,7 @@ class AzureNodeDriver(NodeDriver):
         return [self._to_node_size(d) for d in r.object["value"]]
 
     def list_images(self, location=None, ex_publisher=None, ex_offer=None,
-                    ex_sku=None, ex_version=None, ex_urn=None):
+                    ex_sku=None, ex_version=None):
         """
         List available VM images to boot from.
 
@@ -220,10 +220,6 @@ class AzureNodeDriver(NodeDriver):
         :param ex_version: Filter by version, or None to list all versions.
         :type ex_version: ``str``
 
-        :param ex_urn: Alternate search by image urn in the form
-        `Publisher:Offer:Sku:Version`
-        :type ex_urn: ``str``
-
         :return: list of node image objects.
         :rtype: ``list`` of :class:`.AzureImage`
         """
@@ -234,9 +230,6 @@ class AzureNodeDriver(NodeDriver):
             locations = [self.default_location]
         else:
             locations = [location]
-
-        if ex_urn:
-            (ex_publisher, ex_offer, ex_sku, ex_version) = ex_urn.split(":")
 
         for loc in locations:
             if not ex_publisher:
@@ -271,6 +264,25 @@ class AzureNodeDriver(NodeDriver):
                                                      loc.id,
                                                      self.connection.driver))
         return images
+
+    def get_image(self, image_id, location=None):
+        """
+        Returns a single node image from a provider.
+
+        :param image_id: Image urn in the form `Publisher:Offer:Sku:Version`
+        :type image_id: ``str``
+
+        :param location: The location at which to search for the image
+        (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+
+        :rtype :class:`.AzureImage`:
+        :return: AzureImage instance on success.
+        """
+
+        (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
+        i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
+        return i[0] if i else None
 
     def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True):
         """
