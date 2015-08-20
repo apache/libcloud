@@ -26,11 +26,12 @@ import time
 from libcloud.common.azure_arm import AzureResourceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, NodeAuthSSHKey
+from libcloud.compute.base import NodeImage, NodeAuthSSHKey
 from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
+
 
 class AzureImage(NodeImage):
     """Represents a node image that an Azure VM can boot from."""
@@ -141,7 +142,7 @@ class AzureNodeDriver(NodeDriver):
                  secure=True, host=None, port=None,
                  api_version=None, region=None, **kwargs):
         self.tenant_id = tenant_id
-        self.subscription_id  = subscription_id
+        self.subscription_id = subscription_id
         super(AzureNodeDriver, self).__init__(key=key, secret=secret,
                                               secure=secure,
                                               host=host, port=port,
@@ -402,8 +403,11 @@ class AzureNodeDriver(NodeDriver):
                 raise ValueError("Must provide either ex_network or ex_nic")
             if ex_subnet is None:
                 ex_subnet = "default"
-            subnet = AzureSubnet("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualnetworks/%s/subnets/%s" % (self.subscription_id, ex_resource_group,
-                                                                                                                                    ex_network, ex_subnet), ex_subnet, {})
+
+            subnet_id = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualnetworks/%s/subnets/%s" % (
+                self.subscription_id, ex_resource_group,
+                ex_network, ex_subnet)
+            subnet = AzureSubnet(subnet_id, ex_subnet, {})
             ex_nic = self.ex_create_network_interface(name + "-nic",
                                                       subnet,
                                                       ex_resource_group,
@@ -413,7 +417,7 @@ class AzureNodeDriver(NodeDriver):
 
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
 
-        data={
+        data = {
             "id": target,
             "name": name,
             "type": "Microsoft.Compute/virtualMachines",
@@ -436,7 +440,7 @@ class AzureNodeDriver(NodeDriver):
                             "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
                         },
                         "caching": "ReadWrite",
-                        "createOption":"FromImage"
+                        "createOption": "FromImage"
                     }
                 },
                 "osProfile": {
@@ -499,9 +503,9 @@ class AzureNodeDriver(NodeDriver):
 
         target = "%s/restart" % node.id
         try:
-            r = self.connection.request(target,
-                                        params={"api-version": "2015-06-15"},
-                                        method='POST')
+            self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    method='POST')
             return True
         except BaseHTTPError as h:
             if h.code == 202:
@@ -528,9 +532,9 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         try:
-            r = self.connection.request(node.id,
-                                        params={"api-version": "2015-06-15"},
-                                        method='DELETE')
+            self.connection.request(node.id,
+                                    params={"api-version": "2015-06-15"},
+                                    method='DELETE')
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
@@ -541,9 +545,9 @@ class AzureNodeDriver(NodeDriver):
             for nic in node.extra["properties"]["networkProfile"]["networkInterfaces"]:
                 while True:
                     try:
-                        r = self.connection.request(nic["id"],
-                                            params={"api-version": "2015-06-15"},
-                                            method='DELETE')
+                        self.connection.request(nic["id"],
+                                                params={"api-version": "2015-06-15"},
+                                                method='DELETE')
                         break
                     except BaseHTTPError as h:
                         if h.code == 202:
@@ -601,8 +605,8 @@ class AzureNodeDriver(NodeDriver):
         """
         List node image offers from a publisher.
 
-        :param publisher: The complete resource path to a publisher (as returned by
-        `ex_list_publishers`)
+        :param publisher: The complete resource path to a publisher
+        (as returned by `ex_list_publishers`)
         :type publisher: ``str``
 
         :return: A list of tuples in the form
@@ -685,7 +689,8 @@ class AzureNodeDriver(NodeDriver):
         """
         List available virtual network interface controllers in a resource group.
 
-        :param resource_group: List NICS in a specific resource group containing the NICs.
+        :param resource_group: List NICS in a specific resource group
+        containing the NICs.
         :type resource_group: ``str``
 
         :return: A list of NICs.
@@ -780,7 +785,7 @@ class AzureNodeDriver(NodeDriver):
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
-                                    location = None, public_ip = None):
+                                    location=None, public_ip=None):
         """
         Create a virtual network interface (NIC).
 
@@ -797,7 +802,8 @@ class AzureNodeDriver(NodeDriver):
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
 
-        :param public_ip: Associate a public IP resource with this NIC (optional).
+        :param public_ip: Associate a public IP resource with this NIC
+        (optional).
         :type public_ip: :class:`.AzureIPAddress`
 
         :return: The newly created NIC
@@ -817,12 +823,12 @@ class AzureNodeDriver(NodeDriver):
             "tags": {},
             "properties": {
                 "ipConfigurations": [{
-                    "name":"myip1",
-                    "properties":{
-                        "subnet":{
+                    "name": "myip1",
+                    "properties": {
+                        "subnet": {
                             "id": subnet.id
                         },
-                        "privateIPAllocationMethod":"Dynamic"
+                        "privateIPAllocationMethod": "Dynamic"
                     }
                 }]
             }
@@ -864,7 +870,7 @@ class AzureNodeDriver(NodeDriver):
             r.object["tags"] = tags
         else:
             r.object["tags"].update(tags)
-        r = self.connection.request(target, data=r.object,
+        r = self.connection.request(resource, data=r.object,
                                     params={"api-version": "2015-06-15"},
                                     method="PUT")
 
@@ -889,10 +895,11 @@ class AzureNodeDriver(NodeDriver):
         :param node: The node to be stopped
         :type node: :class:`.Node`
 
-        :param deallocate: If True (default) stop and then deallocate the node (release the
-        hardware allocated to run the node).  If False, stop the node
-        but maintain the hardware allocation.  If the node is not deallocated,
-        the subscription will continue to be billed as if it were running.
+        :param deallocate: If True (default) stop and then deallocate the node
+        (release the hardware allocated to run the node).  If False, stop the
+        node but maintain the hardware allocation.  If the node is not
+        deallocated, the subscription will continue to be billed as if it
+        were running.
         :type deallocate: ``bool``
         """
 
@@ -920,8 +927,10 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``.dict``
         """
 
-        r = self.connection.request("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/listKeys" % (
-            self.subscription_id, resource_group, storage_account),
+        action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/listKeys" % (
+            self.subscription_id, resource_group, storage_account)
+
+        r = self.connection.request(action,
                                     params={"api-version": "2015-05-01-preview"},
                                     method="POST")
         return r.object
@@ -989,8 +998,7 @@ class AzureNodeDriver(NodeDriver):
                         driver=self.connection.driver,
                         extra={"numberOfCores": data["numberOfCores"],
                                "osDiskSizeInMB": data["osDiskSizeInMB"],
-                               "maxDataDiskCount": data["maxDataDiskCount"]
-                           })
+                               "maxDataDiskCount": data["maxDataDiskCount"]})
 
     def _to_nic(self, data):
         return AzureNic(data["id"], data["name"], data["location"],
