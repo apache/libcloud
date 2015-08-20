@@ -52,6 +52,8 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         return json.dumps(data)
 
     def get_token_from_credentials(self):
+        """Log in and get bearer token used to authorize API requests."""
+
         conn = LibcloudHTTPSConnection(self.login_host)
         conn.connect()
         params = urllib.urlencode({
