@@ -189,10 +189,11 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.NodeSize`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
         action = "/subscriptions/%s/providers/Microsoft.Compute/locations/%s/vmSizes" % (self.subscription_id, location.id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})

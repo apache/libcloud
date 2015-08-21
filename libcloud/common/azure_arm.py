@@ -29,6 +29,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     Represents a single connection to Azure
     """
 
+    conn_classes = (None, LibcloudHTTPSConnection)
     driver = AzureBaseDriver
     name = 'Azure AD Auth'
     responseCls = JsonResponse
@@ -54,7 +55,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     def get_token_from_credentials(self):
         """Log in and get bearer token used to authorize API requests."""
 
-        conn = LibcloudHTTPSConnection(self.login_host)
+        conn = self.conn_classes[1](self.login_host, 443)
         conn.connect()
         params = urllib.urlencode({
             "grant_type": "client_credentials",
