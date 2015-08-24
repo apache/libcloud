@@ -19,7 +19,7 @@ import urllib2
 
 
 key = sys.argv[1]
-url = 'http://readthedocs.org/build/%s' % (key)
+url = 'https://readthedocs.org/build/%s' % (key)
 req = urllib2.Request(url, '')
 f = urllib2.urlopen(req)
 print f.read()
