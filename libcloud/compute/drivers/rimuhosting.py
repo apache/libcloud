@@ -75,9 +75,11 @@ class RimuHostingConnection(ConnectionKey):
     port = 443
     responseCls = RimuHostingResponse
 
-    def __init__(self, key, secure=True):
+    def __init__(self, key, secure=True, retry_delay=None,
+                 backoff=None, timeout=None):
         # override __init__ so that we can set secure of False for testing
-        ConnectionKey.__init__(self, key, secure)
+        ConnectionKey.__init__(self, key, secure, timeout=timeout,
+                               retry_delay=retry_delay, backoff=backoff)
 
     def add_default_headers(self, headers):
         # We want JSON back from the server. Could be application/xml

@@ -64,7 +64,28 @@ class GCEResponse(GoogleResponse):
 
 
 class GCEConnection(GoogleBaseConnection):
-    """Connection class for the GCE driver."""
+    """
+    Connection class for the GCE driver.
+
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+      1. modify request_path for GCE URI.
+      2. Implement gce_params functionality described below.
+
+    If the parameter gce_params is set to a dict prior to calling request(),
+    the URL parameters will be updated to include those key/values FOR A
+    SINGLE REQUEST. If the response contains a nextPageToken,
+    gce_params['pageToken'] will be set to its value. This can be used to
+    implement paging in list:
+
+    >>> params, more_results = {'maxResults': 2}, True
+    >>> while more_results:
+    ...     driver.connection.gce_params=params
+    ...     driver.ex_list_urlmaps()
+    ...     more_results = 'pageToken' in params
+    ...
+    [<GCEUrlMap id="..." name="cli-map">, <GCEUrlMap id="..." name="lc-map">]
+    [<GCEUrlMap id="..." name="web-map">]
+    """
     host = 'www.googleapis.com'
     responseCls = GCEResponse
 
@@ -76,6 +97,138 @@ class GCEConnection(GoogleBaseConnection):
                                             **kwargs)
         self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                          project)
+        self.gce_params = None
+
+    def pre_connect_hook(self, params, headers):
+        """
+        Update URL parameters with values from self.gce_params.
+
+        @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
+        """
+        params, headers = super(GCEConnection, self).pre_connect_hook(params,
+                                                                      headers)
+        if self.gce_params:
+            params.update(self.gce_params)
+        return params, headers
+
+    def request(self, *args, **kwargs):
+        """
+        Perform request then do GCE-specific processing of URL params.
+
+        @inherits: :class:`GoogleBaseConnection.request`
+        """
+        response = super(GCEConnection, self).request(*args, **kwargs)
+
+        # If gce_params has been set, then update the pageToken with the
+        # nextPageToken so it can be used in the next request.
+        if self.gce_params:
+            if 'nextPageToken' in response.object:
+                self.gce_params['pageToken'] = response.object['nextPageToken']
+            elif 'pageToken' in self.gce_params:
+                del self.gce_params['pageToken']
+            self.gce_params = None
+
+        return response
+
+
+class GCEList(object):
+    """
+    An Iterator that wraps list functions to provide additional features.
+
+    GCE enforces a limit on the number of objects returned by a list operation,
+    so users with more than 500 objects of a particular type will need to use
+    filter(), page() or both.
+
+    >>> l=GCEList(driver, driver.ex_list_urlmaps)
+    >>> for sublist in l.filter('name eq ...-map').page(1):
+    ...   sublist
+    ...
+    [<GCEUrlMap id="..." name="cli-map">]
+    [<GCEUrlMap id="..." name="web-map">]
+
+    One can create a GCEList manually, but it's slightly easier to use the
+    ex_list() method of :class:`GCENodeDriver`.
+    """
+
+    def __init__(self, driver, list_fn, **kwargs):
+        """
+        :param  driver: An initialized :class:``GCENodeDriver``
+        :type   driver: :class:``GCENodeDriver``
+
+        :param  list_fn: A bound list method from :class:`GCENodeDriver`.
+        :type   list_fn: ``instancemethod``
+        """
+        self.driver = driver
+        self.list_fn = list_fn
+        self.kwargs = kwargs
+        self.params = {}
+
+    def __iter__(self):
+        list_fn = self.list_fn
+        more_results = True
+        while more_results:
+            self.driver.connection.gce_params = self.params
+            yield list_fn(**self.kwargs)
+            more_results = 'pageToken' in self.params
+
+    def __repr__(self):
+        return '<GCEList list="%s" params="%s">' % (
+            self.list_fn.__name__, repr(self.params))
+
+    def filter(self, expression):
+        """
+        Filter results of a list operation.
+
+        GCE supports server-side filtering of resources returned by a list
+        operation. Syntax of the filter expression is fully descripted in the
+        GCE API reference doc, but in brief it is::
+
+            FIELD_NAME COMPARISON_STRING LITERAL_STRING
+
+        where FIELD_NAME is the resource's property name, COMPARISON_STRING is
+        'eq' or 'ne', and LITERAL_STRING is a regular expression in RE2 syntax.
+
+        >>> for sublist in l.filter('name eq ...-map'):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">, \
+                <GCEUrlMap id="..." name="web-map">]
+
+        API reference: https://cloud.google.com/compute/docs/reference/latest/
+        RE2 syntax: https://github.com/google/re2/blob/master/doc/syntax.txt
+
+        :param  expression: Filter expression described above.
+        :type   expression: ``str``
+
+        :return: This :class:`GCEList` instance
+        :rtype:  :class:`GCEList`
+        """
+        self.params['filter'] = expression
+        return self
+
+    def page(self, max_results=500):
+        """
+        Limit the number of results by each iteration.
+
+        This implements the paging functionality of the GCE list methods and
+        returns this GCEList instance so that results can be chained:
+
+        >>> for sublist in GCEList(driver, driver.ex_list_urlmaps).page(2):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">, \
+                <GCEUrlMap id="..." name="lc-map">]
+        [<GCEUrlMap id="..." name="web-map">]
+
+        :keyword  max_results: Maximum number of results to return per
+                               iteration. Defaults to the GCE default of 500.
+        :type     max_results: ``int``
+
+        :return: This :class:`GCEList` instance
+        :rtype:  :class:`GCEList`
+        """
+        self.params['maxResults'] = max_results
+        return self
 
 
 class GCELicense(UuidMixin):
@@ -392,7 +545,9 @@ class GCERoute(UuidMixin):
 
     def __repr__(self):
         return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
-            self.id, self.name, self.dest_range, self.network.name)
+            self.id, self.name, self.dest_range,
+            hasattr(self.network, 'name') and self.network.name or
+            self.network)
 
 
 class GCENodeSize(NodeSize):
@@ -1032,6 +1187,25 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return response['contents']
 
+    def ex_list(self, list_fn, **kwargs):
+        """
+        Wrap a list method in a :class:`GCEList` iterator.
+
+        >>> for sublist in driver.ex_list(driver.ex_list_urlmaps).page(1):
+        ...   sublist
+        ...
+        [<GCEUrlMap id="..." name="cli-map">]
+        [<GCEUrlMap id="..." name="lc-map">]
+        [<GCEUrlMap id="..." name="web-map">]
+
+        :param  list_fn: A bound list method from :class:`GCENodeDriver`.
+        :type   list_fn: ``instancemethod``
+
+        :return: An iterator that returns sublists from list_fn.
+        :rtype: :class:`GCEList`
+        """
+        return GCEList(driver=self, list_fn=list_fn, **kwargs)
+
     def ex_list_disktypes(self, zone=None):
         """
         Return a list of DiskTypes for a zone or all.
@@ -1128,10 +1302,13 @@ class GCENodeDriver(NodeDriver):
         project = self.ex_get_project()
         current_metadata = project.extra['commonInstanceMetadata']
         fingerprint = current_metadata['fingerprint']
+        md_items = []
+        if 'items' in current_metadata:
+            md_items = current_metadata['items']
 
         # grab copy of current 'sshKeys' in case we want to retain them
         current_keys = ""
-        for md in current_metadata['items']:
+        for md in md_items:
             if md['key'] == 'sshKeys':
                 current_keys = md['value']
 
@@ -1794,9 +1971,10 @@ class GCENodeDriver(NodeDriver):
         firewall_data['name'] = name
         firewall_data['allowed'] = allowed
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is None:
+        if source_ranges is None and source_tags is None:
             source_ranges = ['0.0.0.0/0']
-        firewall_data['sourceRanges'] = source_ranges
+        if source_ranges is not None:
+            firewall_data['sourceRanges'] = source_ranges
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
         if target_tags is not None:
@@ -2081,7 +2259,7 @@ class GCENodeDriver(NodeDriver):
         :type     ex_metadata: ``dict`` or ``None``
 
         :keyword  ex_boot_disk: The boot disk to attach to the instance.
-        :type     ex_boot_disk: :class:`StorageVolume` or ``str``
+        :type     ex_boot_disk: :class:`StorageVolume` or ``str`` or ``None``
 
         :keyword  use_existing_disk: If True and if an existing disk with the
                                      same name/location is found, use that
@@ -2093,7 +2271,7 @@ class GCENodeDriver(NodeDriver):
                                used.  If 'None', then no external address will
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
-        :type     external_ip: :class:`GCEAddress` or ``str`` or None
+        :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -2144,7 +2322,7 @@ class GCENodeDriver(NodeDriver):
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -2184,6 +2362,8 @@ n
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
+        if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
+            ex_boot_disk = self.ex_get_disk(ex_boot_disk, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -2339,7 +2519,7 @@ n
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -2359,6 +2539,10 @@ n
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
+        if image and ex_disks_gce_struct:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_disks_gce_struct'.")
+
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -2389,24 +2573,15 @@ n
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart}
-
         # List for holding the status information for disk/node creation.
         status_list = []
 
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
-
             status = {'name': name,
                       'node_response': None,
-                      'node': None,
-                      'disk_response': None,
-                      'disk': None}
-
+                      'node': None}
             status_list.append(status)
-
-        # Create disks for nodes
-        for status in status_list:
-            self._multi_create_disk(status, node_attrs)
 
         start_time = time.time()
         complete = False
@@ -2417,13 +2592,8 @@ n
             complete = True
             time.sleep(poll_interval)
             for status in status_list:
-                # If disk does not yet exist, check on its status
-                if not status['disk']:
-                    self._multi_check_disk(status, node_attrs)
-
-                # If disk exists, but node does not, create the node or check
-                # on its status if already in progress.
-                if status['disk'] and not status['node']:
+                # Create the node or check status if already in progress.
+                if not status['node']:
                     if not status['node_response']:
                         self._multi_create_node(status, node_attrs)
                     else:
@@ -4389,7 +4559,9 @@ n
                                (default), a new non-static address will be
                                used.  If 'None', then no external address will
                                be used.  To use an existing static IP address,
-                               a GCEAddress object should be passed in.
+                               a GCEAddress object should be passed in. This
+                               param will be ignored if also using the
+                               ex_nic_gce_struct param.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
@@ -4427,7 +4599,7 @@ n
                                        is made to ensure proper formatting of
                                        the disks[] structure. Using this
                                        structure obviates the need of using
-                                       other disk params like 'ex_boot_disk',
+                                       other disk params like 'boot_disk',
                                        etc. See the GCE docs for specific
                                        details.
         :type     ex_disks_gce_struct: ``list`` or ``None``
@@ -4441,7 +4613,7 @@ n
                                      'ex_network'.  See the GCE docs for
                                      details.
         :type     ex_nic_gce_struct: ``list`` or ``None``
-n
+
         :keyword  ex_on_host_maintenance: Defines whether node should be
                                           terminated or migrated when host
                                           machine goes down. Acceptable values
@@ -4526,9 +4698,41 @@ n
         if ex_disks_gce_struct:
             node_data['disks'] = ex_disks_gce_struct
 
-        if network and ex_nic_gce_struct:
-            raise ValueError("Cannot specify both 'network' and "
-                             "'ex_nic_gce_struct'. Use one or the other.")
+        if image and ('disks' not in node_data or not node_data['disks']):
+            if not hasattr(image, 'name'):
+                image = self.ex_get_image(image)
+            if not ex_disk_type:
+                ex_disk_type = 'pd-standard'
+            if not hasattr(ex_disk_type, 'name'):
+                ex_disk_type = self.ex_get_disktype(ex_disk_type)
+            disks = [{'boot': True,
+                      'type': 'PERSISTENT',
+                      'mode': 'READ_WRITE',
+                      'deviceName': name,
+                      'autoDelete': ex_disk_auto_delete,
+                      'zone': location.name,
+                      'initializeParams': {
+                          'diskName': name,
+                          'diskType': ex_disk_type.extra['selfLink'],
+                          'sourceImage': image.extra['selfLink'],
+                      }}]
+            node_data['disks'] = disks
+
+        if ex_nic_gce_struct is not None:
+            if hasattr(external_ip, 'address'):
+                raise ValueError("Cannot specify both a static IP address "
+                                 "and 'ex_nic_gce_struct'. Use one or the "
+                                 "other.")
+            if hasattr(network, 'name'):
+                if network.name == 'default':
+                    # assume this is just the default value from create_node()
+                    # and since the user specified ex_nic_gce_struct, the
+                    # struct should take precedence
+                    network = None
+                else:
+                    raise ValueError("Cannot specify both 'network' and "
+                                     "'ex_nic_gce_struct'. Use one or the "
+                                     "other.")
 
         if network:
             ni = [{'kind': 'compute#instanceNetworkInterface',
@@ -4636,7 +4840,7 @@ n
     def _multi_create_node(self, status, node_attrs):
         """Create node for ex_create_multiple_nodes.
 
-        :param  status: Dictionary for holding node/disk creation status.
+        :param  status: Dictionary for holding node creation status.
                         (This dictionary is modified by this method)
         :type   status: ``dict``
 
@@ -4644,17 +4848,13 @@ n
                             (size, image, location, etc.)
         :type   node_attrs: ``dict``
         """
-        # If disk has an error, set the node as failed and return
-        if hasattr(status['disk'], 'error'):
-            status['node'] = status['disk']
-            return
 
         # Create node and return response object in status dictionary.
         # Or, if there is an error, mark as failed.
         request, node_data = self._create_node_req(
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
-            node_attrs['metadata'], boot_disk=status['disk'],
+            node_attrs['metadata'],
             external_ip=node_attrs['external_ip'],
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
@@ -4672,8 +4872,7 @@ n
             error = e.value
             code = e.code
             node_res = None
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
+            status['node'] = GCEFailedNode(status['name'], error, code)
         status['node_response'] = node_res
 
     def _multi_check_node(self, status, node_attrs):
@@ -4696,14 +4895,19 @@ n
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
+        except ResourceNotFoundError:
+            return
         if response['status'] == 'DONE':
             status['node_response'] = None
         if error:
             status['node'] = GCEFailedNode(status['name'],
                                            error, code)
         else:
-            status['node'] = self.ex_get_node(status['name'],
-                                              node_attrs['location'])
+            try:
+                status['node'] = self.ex_get_node(status['name'],
+                                                  node_attrs['location'])
+            except ResourceNotFoundError:
+                return
 
     def _create_vol_req(self, size, name, location=None, snapshot=None,
                         image=None, ex_disk_type='pd-standard'):
@@ -5071,6 +5275,7 @@ n
         extra['canIpForward'] = node.get('canIpForward')
         extra['serviceAccounts'] = node.get('serviceAccounts', [])
         extra['scheduling'] = node.get('scheduling', {})
+        extra['boot_disk'] = None
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
@@ -5090,10 +5295,17 @@ n
 
         # For the node attributes, use just machine and image names, not full
         # paths.  Full paths are available in the "extra" dict.
+        image = None
         if extra['image']:
             image = self._get_components_from_path(extra['image'])['name']
         else:
-            image = None
+            if extra['boot_disk'] and \
+                    hasattr(extra['boot_disk'], 'extra') and \
+                    'sourceImage' in extra['boot_disk'].extra and \
+                    extra['boot_disk'].extra['sourceImage'] is not None:
+                src_image = extra['boot_disk'].extra['sourceImage']
+                image = self._get_components_from_path(src_image)['name']
+            extra['image'] = image
         size = self._get_components_from_path(node['machineType'])['name']
 
         return Node(id=node['id'], name=node['name'],
@@ -5231,6 +5443,15 @@ n
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
+        extra['sourceImage'] = volume.get('sourceImage')
+        extra['sourceImageId'] = volume.get('sourceImageId')
+        extra['sourceSnapshot'] = volume.get('sourceSnapshot')
+        extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
+        extra['options'] = volume.get('options')
+        if 'licenses' in volume:
+            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
+            extra['licenses'] = lic_objs
+
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 
         return StorageVolume(id=volume['id'], name=volume['name'],

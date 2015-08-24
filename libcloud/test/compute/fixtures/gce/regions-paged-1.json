@@ -1,0 +1,97 @@
+{
+ "kind": "compute#regionList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions",
+ "id": "projects/project_name/regions",
+ "items": [
+  {
+   "kind": "compute#region",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/asia-east1",
+   "id": "1220",
+   "creationTimestamp": "2014-04-11T13:47:12.495-07:00",
+   "name": "asia-east1",
+   "description": "asia-east1",
+   "status": "UP",
+   "zones": [
+    "https://www.googleapis.com/compute/v1/projects/project_name/zones/asia-east1-a"
+   ],
+   "quotas": [
+    {
+     "metric": "CPUS",
+     "limit": 24.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "DISKS_TOTAL_GB",
+     "limit": 5120.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "STATIC_ADDRESSES",
+     "limit": 7.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "IN_USE_ADDRESSES",
+     "limit": 23.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "SSD_TOTAL_GB",
+     "limit": 1024.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "LOCAL_SSD_TOTAL_GB",
+     "limit": 1500.0,
+     "usage": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "compute#region",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1",
+   "id": "1100",
+   "creationTimestamp": "2014-04-11T13:47:12.495-07:00",
+   "name": "europe-west1",
+   "description": "europe-west1",
+   "status": "UP",
+   "zones": [
+    "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a",
+    "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b"
+   ],
+   "quotas": [
+    {
+     "metric": "CPUS",
+     "limit": 24.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "DISKS_TOTAL_GB",
+     "limit": 5120.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "STATIC_ADDRESSES",
+     "limit": 7.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "IN_USE_ADDRESSES",
+     "limit": 23.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "SSD_TOTAL_GB",
+     "limit": 1024.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "LOCAL_SSD_TOTAL_GB",
+     "limit": 1500.0,
+     "usage": 0.0
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "CjQIz5W-w6HRxAI6KQoCGAEKAiAACgIYAQoCIAAKAhgTCg4qDGV1cm9wZS13ZXN0MQoDIMwI"
+}

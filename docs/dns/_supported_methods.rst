@@ -1,6 +1,9 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 Provider              list zones list records create zone update zone create record update record delete zone delete record
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
+`DigitalOcean`_       yes        yes          yes         no          yes           yes           yes         yes          
 `Gandi DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Google DNS`_         yes        yes          yes         no          yes           no            yes         yes          
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
@@ -13,6 +16,7 @@ Provider              list zones list records create zone update zone create rec
 `Zerigo DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/

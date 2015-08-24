@@ -28,10 +28,10 @@ try:
 except ImportError:
     has_epydoc = False
 
-import libcloud.utils.misc
+import libcloud.utils
 from libcloud.utils.dist import get_packages, get_data_files
 
-libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
+libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being

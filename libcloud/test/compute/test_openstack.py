@@ -687,7 +687,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         # assert that we use the base url and not the auth url
         self.assertEqual(self.driver.connection.host, 'ex_force_base_url.com')
-        self.assertEqual(self.driver.connection.port, '666')
+        self.assertEqual(self.driver.connection.port, 666)
         self.assertEqual(self.driver.connection.request_path, '/forced_url')
 
     def test_get_endpoint_populates_host_port_and_request_path(self):
@@ -699,7 +699,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         # assert that we use the result of get endpoint
         self.assertEqual(self.driver.connection.host, 'endpoint_auth_url.com')
-        self.assertEqual(self.driver.connection.port, '1555')
+        self.assertEqual(self.driver.connection.port, 1555)
         self.assertEqual(self.driver.connection.request_path, '/service_url')
 
     def test_set_auth_token_populates_host_port_and_request_path(self):
@@ -712,7 +712,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         # assert that we use the base url and not the auth url
         self.assertEqual(
             self.driver.connection.host, 'some_other_ex_force_base_url.com')
-        self.assertEqual(self.driver.connection.port, '1222')
+        self.assertEqual(self.driver.connection.port, 1222)
         self.assertEqual(self.driver.connection.request_path, '/some-service')
 
     def test_auth_token_without_base_url_raises_exception(self):
@@ -788,6 +788,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('vm_state'), 'active')
         self.assertEqual(node.extra.get('power_state'), 1)
         self.assertEqual(node.extra.get('progress'), 25)
+        self.assertEqual(node.extra.get('fault')['id'], 1234)
 
     def test_list_nodes_no_image_id_attribute(self):
         # Regression test for LIBCLOD-455

@@ -37,6 +37,7 @@ class Provider(object):
     GANDI = 'gandi'
     GOOGLE = 'google'
     SOFTLAYER = 'softlayer'
+    DIGITAL_OCEAN = 'digitalocean'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

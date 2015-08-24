@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== =========== ========= ============ ============ ==========
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========
@@ -9,7 +11,9 @@ Provider                              list images get image create image delete 
 `CloudFrames`_                        yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
+`Cloudwatt`_                          yes         yes       yes          yes          no        
 `DigitalOcean`_                       yes         yes       yes          yes          no        
+`DimensionData`_                      yes         no        no           no           no        
 `Dreamhost`_                          yes         no        no           no           no        
 `Amazon EC2`_                         yes         yes       yes          yes          yes       
 `Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
@@ -48,15 +52,18 @@ Provider                              list images get image create image delete 
 `NephoScale`_                         yes         no        no           no           no        
 `Nimbus`_                             yes         yes       yes          yes          yes       
 `Ninefold`_                           yes         no        no           no           no        
+`OnApp`_                              no          no        no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
 `Opsource`_                           yes         no        no           no           no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       
 `Outscale SAS`_                       yes         yes       yes          yes          yes       
+`Packet`_                             yes         no        no           no           no        
 `ProfitBricks`_                       yes         no        no           no           no        
 `Rackspace Cloud (Next Gen)`_         yes         yes       yes          yes          no        
 `Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
 `RimuHosting`_                        yes         no        no           no           no        
+`RunAbove`_                           yes         yes       no           no           no        
 `ServerLove`_                         yes         no        no           no           no        
 `skalicloud`_                         yes         no        no           no           no        
 `SoftLayer`_                          yes         no        no           no           no        
@@ -70,14 +77,16 @@ Provider                              list images get image create image delete 
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
-.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/en/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
+.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
+.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
@@ -116,15 +125,18 @@ Provider                              list images get image create image delete 
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
+.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

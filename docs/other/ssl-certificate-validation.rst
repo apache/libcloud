@@ -82,6 +82,6 @@ For example:
 .. sourcecode:: python
 
     import libcloud.security
-    libcloud.security.VERIFY_SSL_CERT = True
+    libcloud.security.VERIFY_SSL_CERT = False
 
     # Instantiate and work with the driver here...

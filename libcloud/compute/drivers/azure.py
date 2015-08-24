@@ -75,6 +75,10 @@ WINDOWS_SERVER_REGEX = re.compile(
 """
 Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them
 From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
+
+Prices are for Linux instances in East US data center. To see what pricing will
+actually be, visit:
+http://azure.microsoft.com/en-gb/pricing/details/virtual-machines/
 """
 AZURE_COMPUTE_INSTANCE_TYPES = {
     'A0': {
@@ -83,7 +87,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 768,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.02',
+        'price': '0.0211',
         'max_data_disks': 1,
         'cores': 'Shared'
     },
@@ -93,7 +97,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 1792,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.09',
+        'price': '0.0633',
         'max_data_disks': 2,
         'cores': 1
     },
@@ -103,7 +107,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 3584,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.18',
+        'price': '0.1266',
         'max_data_disks': 4,
         'cores': 2
     },
@@ -113,7 +117,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 7168,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.36',
+        'price': '0.2531',
         'max_data_disks': 8,
         'cores': 4
     },
@@ -123,7 +127,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 14336,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.72',
+        'price': '0.5062',
         'max_data_disks': 16,
         'cores': 8
     },
@@ -133,7 +137,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 14336,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.40',
+        'price': '0.2637',
         'max_data_disks': 4,
         'cores': 2
     },
@@ -143,7 +147,7 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 28672,
         'disk': 127,
         'bandwidth': None,
-        'price': '0.80',
+        'price': '0.5273',
         'max_data_disks': 8,
         'cores': 4
     },
@@ -153,9 +157,129 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'ram': 57344,
         'disk': 127,
         'bandwidth': None,
-        'price': '1.60',
+        'price': '1.0545',
         'max_data_disks': 16,
         'cores': 8
+    },
+    'A8': {
+        'id': 'A8',
+        'name': 'A8 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.0774',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A9': {
+        'id': 'A9',
+        'name': 'A9 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '4.7137',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'A10': {
+        'id': 'A10',
+        'name': 'A10 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.2233',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A11': {
+        'id': 'A11',
+        'name': 'A11 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.1934',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'D1': {
+        'id': 'Standard_D1',
+        'name': 'D1 Faster Compute Instance',
+        'ram': 3584,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.0992',
+        'max_data_disks': 2,
+        'cores': 1
+    },
+    'D2': {
+        'id': 'Standard_D2',
+        'name': 'D2 Faster Compute Instance',
+        'ram': 7168,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.1983',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D3': {
+        'id': 'Standard_D3',
+        'name': 'D3 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.3965',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D4': {
+        'id': 'Standard_D4',
+        'name': 'D4 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.793',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D11': {
+        'id': 'Standard_D11',
+        'name': 'D11 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.251',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D12': {
+        'id': 'Standard_D12',
+        'name': 'D12 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.502',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D13': {
+        'id': 'Standard_D13',
+        'name': 'D13 Faster Compute Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.9038',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D14': {
+        'id': 'Standard_D14',
+        'name': 'D14 Faster Compute Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.6261',
+        'max_data_disks': 32,
+        'cores': 16
     }
 }
 
@@ -392,7 +516,8 @@ class AzureNodeDriver(NodeDriver):
     def create_node(self, name, size, image, ex_cloud_service_name,
                     ex_storage_service_name=None, ex_new_deployment=False,
                     ex_deployment_slot="Production", ex_deployment_name=None,
-                    ex_admin_user_id="azureuser", auth=None, **kwargs):
+                    ex_admin_user_id="azureuser", ex_custom_data=None,
+                    auth=None, **kwargs):
         """
         Create Azure Virtual Machine
 
@@ -446,6 +571,10 @@ class AzureNodeDriver(NodeDriver):
                                          to using the Cloud Service name.
         :type        ex_deployment_name: ``str``
 
+        :type        ex_custom_data: ``str``
+        :keyword     ex_custom_data: Optional script or other data which is
+                                     injected into the VM when it's begining
+                                     provisioned.
 
         :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
         :type        ex_admin_user_id:  ``str``
@@ -472,6 +601,10 @@ class AzureNodeDriver(NodeDriver):
 
         network_config = ConfigurationSet()
         network_config.configuration_set_type = 'NetworkConfiguration'
+
+        # Base64 encode custom data if provided
+        if ex_custom_data:
+            ex_custom_data = self._encode_base64(data=ex_custom_data)
 
         # We do this because we need to pass a Configuration to the
         # method. This will be either Linux or Windows.
@@ -539,7 +672,8 @@ class AzureNodeDriver(NodeDriver):
                 name,
                 ex_admin_user_id,
                 password,
-                False
+                False,
+                ex_custom_data
             )
 
         network_config.input_endpoints.items.append(endpoint)
@@ -779,7 +913,6 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        # TODO: add check to ensure all nodes have been deleted
         response = self._perform_cloud_service_delete(
             self._get_hosted_service_path(name)
         )
@@ -861,6 +994,67 @@ class AzureNodeDriver(NodeDriver):
 
         self.raise_for_response(response, 202)
 
+    def ex_create_storage_service(self, name, location,
+                                  description=None, affinity_group=None,
+                                  extended_properties=None):
+        """
+        Create an azure storage service.
+
+        :param      name: Name of the service to create
+        :type       name: ``str``
+
+        :param      location: Standard azure location string
+        :type       location: ``str``
+
+        :param      description: (Optional) Description of storage service.
+        :type       description: ``str``
+
+        :param      affinity_group: (Optional) Azure affinity group.
+        :type       affinity_group: ``str``
+
+        :param      extended_properties: (Optional) Additional configuration
+                                         options support by Azure.
+        :type       extended_properties: ``dict``
+
+        :rtype: ``bool``
+        """
+
+        response = self._perform_storage_service_create(
+            self._get_storage_service_path(),
+            AzureXmlSerializer.create_storage_service_to_xml(
+                service_name=name,
+                label=self._encode_base64(name),
+                description=description,
+                location=location,
+                affinity_group=affinity_group,
+                extended_properties=extended_properties
+            )
+        )
+
+        self.raise_for_response(response, 202)
+
+        return True
+
+    def ex_destroy_storage_service(self, name):
+        """
+        Destroy storage service. Storage service must not have any active
+        blobs. Sometimes Azure likes to hold onto volumes after they are
+        deleted for an inordinate amount of time, so sleep before calling
+        this method after volume deletion.
+
+        :param name: Name of storage service.
+        :type  name: ``str``
+
+        :rtype: ``bool``
+        """
+
+        response = self._perform_storage_service_delete(
+            self._get_storage_service_path(name)
+        )
+        self.raise_for_response(response, 200)
+
+        return True
+
     """
     Functions not implemented
     """
@@ -912,6 +1106,29 @@ class AzureNodeDriver(NodeDriver):
         return response
 
     def _perform_cloud_service_delete(self, path):
+        request = AzureHTTPRequest()
+        request.method = 'DELETE'
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
+        request.path = path
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def _perform_storage_service_create(self, path, data):
+        request = AzureHTTPRequest()
+        request.method = 'POST'
+        request.host = AZURE_SERVICE_MANAGEMENT_HOST
+        request.path = path
+        request.body = data
+        request.path, request.query = self._update_request_uri_query(request)
+        request.headers = self._update_management_header(request)
+        response = self._perform_request(request)
+
+        return response
+
+    def _perform_storage_service_delete(self, path):
         request = AzureHTTPRequest()
         request.method = 'DELETE'
         request.host = AZURE_SERVICE_MANAGEMENT_HOST
@@ -1585,7 +1802,8 @@ class AzureNodeDriver(NodeDriver):
         root = ET.Element()
         doc = self._construct_element_tree(source, root)
 
-        result = ensure_string(ET.tostring(doc, encoding='utf8', method='xml'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8',
+                                           method='xml'))
         return result
 
     def _construct_element_tree(self, source, etree):
@@ -1781,10 +1999,41 @@ class AzureXmlSerializer(object):
                                      label,
                                      description,
                                      location,
-                                     affinity_group,
-                                     extended_properties):
+                                     affinity_group=None,
+                                     extended_properties=None):
+        if affinity_group:
+            return AzureXmlSerializer.doc_from_data(
+                'CreateHostedService',
+                [
+                    ('ServiceName', service_name),
+                    ('Label', label),
+                    ('Description', description),
+                    ('AffinityGroup', affinity_group),
+                ],
+                extended_properties
+            )
+
         return AzureXmlSerializer.doc_from_data(
             'CreateHostedService',
+            [
+                ('ServiceName', service_name),
+                ('Label', label),
+                ('Description', description),
+                ('Location', location),
+            ],
+            extended_properties
+        )
+
+    @staticmethod
+    def create_storage_service_to_xml(service_name,
+                                      label,
+                                      description,
+                                      location,
+                                      affinity_group,
+                                      extended_properties=None):
+
+        return AzureXmlSerializer.doc_from_data(
+            'CreateStorageServiceInput',
             [
                 ('ServiceName', service_name),
                 ('Label', label),
@@ -1984,7 +2233,7 @@ class AzureXmlSerializer(object):
             'RestartRoleOperation',
             xml
         )
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -1995,7 +2244,7 @@ class AzureXmlSerializer(object):
             'ShutdownRoleOperation',
             xml
         )
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2006,7 +2255,7 @@ class AzureXmlSerializer(object):
             'StartRoleOperation',
             xml
         )
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2174,6 +2423,12 @@ class AzureXmlSerializer(object):
                     kpair
                 )
                 AzureXmlSerializer.data_to_xml([('Path', key.path)], kpair)
+
+        if configuration.custom_data is not None:
+            AzureXmlSerializer.data_to_xml(
+                [('CustomData', configuration.custom_data)],
+                xml
+            )
 
         return xml
 
@@ -2396,7 +2651,7 @@ class AzureXmlSerializer(object):
             system_configuration_set,
             doc
         )
-        result = ensure_string(ET.tostring(xml, encoding='utf8'))
+        result = ensure_string(ET.tostring(xml, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2423,7 +2678,7 @@ class AzureXmlSerializer(object):
             doc
         )
 
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2463,7 +2718,7 @@ class AzureXmlSerializer(object):
             xml
         )
         doc = AzureXmlSerializer.doc_from_xml('CaptureRoleOperation', xml)
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2514,7 +2769,7 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2583,7 +2838,7 @@ class AzureXmlSerializer(object):
                 )
             )
 
-        result = ensure_string(ET.tostring(doc, encoding='utf8'))
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
         return result
 
     @staticmethod
@@ -2656,7 +2911,8 @@ class LinuxConfigurationSet(WindowsAzureData):
                  host_name=None,
                  user_name=None,
                  user_password=None,
-                 disable_ssh_password_authentication=None):
+                 disable_ssh_password_authentication=None,
+                 custom_data=None):
         self.configuration_set_type = 'LinuxProvisioningConfiguration'
         self.host_name = host_name
         self.user_name = user_name
@@ -2664,6 +2920,7 @@ class LinuxConfigurationSet(WindowsAzureData):
         self.disable_ssh_password_authentication = \
             disable_ssh_password_authentication
         self.ssh = SSH()
+        self.custom_data = custom_data
 
 
 class WindowsConfigurationSet(WindowsAzureData):

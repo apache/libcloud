@@ -509,6 +509,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(
                 project.extra['cpulimit'],
                 fixture_projects[i]['cpulimit'])
+            # Note -1 represents unlimited
+            self.assertEqual(project.extra['networklimit'], -1)
 
     def test_create_volume(self):
         volumeName = 'vol-0'
@@ -570,6 +572,10 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(volumes))
         self.assertEqual('ROOT-69942', volumes[0].name)
 
+    def test_ex_get_volume(self):
+        volume = self.driver.ex_get_volume(2600)
+        self.assertEqual('ROOT-69942', volume.name)
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(2, len(nodes))
@@ -577,6 +583,16 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', nodes[0].id)
         self.assertEqual([], nodes[0].extra['security_group'])
         self.assertEqual(None, nodes[0].extra['key_name'])
+
+    def test_ex_get_node(self):
+        node = self.driver.ex_get_node(2600)
+        self.assertEqual('test', node.name)
+        self.assertEqual('2600', node.id)
+        self.assertEqual([], node.extra['security_group'])
+        self.assertEqual(None, node.extra['key_name'])
+
+    def test_ex_get_node_doesnt_exist(self):
+        self.assertRaises(Exception, self.driver.ex_get_node(26), node_id=26)
 
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
@@ -774,6 +790,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_ex_list_public_ips(self):
         ips = self.driver.ex_list_public_ips()
         self.assertEqual(ips[0].address, '1.1.1.116')
+        self.assertEqual(ips[0].virtualmachine_id, '2600')
 
     def test_ex_allocate_public_ip(self):
         addr = self.driver.ex_allocate_public_ip()

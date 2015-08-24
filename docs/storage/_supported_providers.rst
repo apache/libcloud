@@ -1,6 +1,9 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ============================= =============================================== ================= ============================================== ====================================
 Provider                      Documentation                                   Provider constant Module                                         Class Name                          
 ============================= =============================================== ================= ============================================== ====================================
+`PCextreme AuroraObjects`_    :doc:`Click </storage/drivers/auroraobjects>`   AURORAOBJECTS     :mod:`libcloud.storage.drivers.auroraobjects`  :class:`AuroraObjectsStorageDriver` 
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `CloudFiles`_                                                                 CLOUDFILES        :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
 `CloudFiles (UK)`_                                                            CLOUDFILES_UK     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUKStorageDriver`  
@@ -18,6 +21,7 @@ Provider                      Documentation                                   Pr
 `Amazon S3 (us-west-2)`_                                                      S3_US_WEST_OREGON :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestOregonStorageDriver`
 ============================= =============================================== ================= ============================================== ====================================
 
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/

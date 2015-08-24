@@ -22,6 +22,7 @@ from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import u
 
 FIXTURES_ROOT = {
+    'common': 'common/fixtures',
     'compute': 'compute/fixtures',
     'storage': 'storage/fixtures',
     'loadbalancer': 'loadbalancer/fixtures',

@@ -4,6 +4,22 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+Compute
+~~~~~~~
+
+- Allow user to filter VPC by project in the CloudStack driver by passing
+  ``project`` argument to the ``ex_list_vps`` method.
+  (GITHUB-516)
+  [Syed Mushtaq Ahmed]
+
+- Add volume management methods and other various improvements and fixes in the
+  RunAbove driver.
+  (GITHUB-561)
+  [ZuluPro]
+
+Changes with Apache Libcloud 0.18.0
+-----------------------------------
+
 General
 ~~~~~~~
 
@@ -22,8 +38,34 @@ General
   file would throw an exception if the text contained non-ascii characters.
   [Tomaz Muraus]
 
+- Fix a bug with connection code throwing an exception if a port was a unicode
+  type and not a str or int.
+  (GITHUB-533, LIBCLOUD-716)
+  [Avi Weit]
+
+- Update ``is_valid_ip_address`` function so it also works on Windows.
+  (GITHUB-343, GITHUB-498, LIBCLOUD-601, LIBCLOUD-686)
+  [Nicolas Fraison, Samuel Marks]
+
+- Add support for retrying failed HTTP requests.
+
+  Retrying is off by default and can be enabled by setting
+  ``LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS`` environment variable.
+  (GITHUB-515, LIBCLOUD-360, LIBCLOUD-709)
+
+- Fix a bug in consuming stdout and stderr strams in Paramiko SSH client.
+  In some cases (like connecting to localhost via SSH), exit_status_ready
+  gets set immediately even before the while loop to consume the streams
+  kicks in. In those cases, we will not have consumed the streams at all.
+  (GITHUB-558)
+  [Lakshmi Kannan]
+
 Compute
 ~~~~~~~
+
+- Google Compute now supports paginated lists including filtering.
+  (GITHUB-491)
+  [Lee Verberne]
 
 - OpenStackNodeSize objects now support optional, additional fields that are
   supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
@@ -146,8 +188,125 @@ Compute
   [Tomaz Muraus]
 
 - Add new driver for Microsft Azure Virtual Machines service.
-  (LIBCLOUD-556, GITHUB-305, GITHUB-499)
+  (LIBCLOUD-556, GITHUB-305, GITHUB-499, GITHUB-538)
   [Michael Bennett, davidcrossland, Richard Conway, Matt Baldwin, Tomaz Muraus]
+
+- Fix VPC lookup method in CloudStack driver
+  (GITHUB-506)
+  [Avi Nanhkoesingh]
+
+- Add new driver for the Dimension Data provider based on the OpSource driver.
+  (LIBCLOUD-698, GITHUB-507, LIBCLOUD-700, GITHUB-513)
+  [Anthony Shaw]
+
+- Add "virtualmachine_id" attribute to the ``CloudStackAddress`` class in the
+  CloudStack driver.
+  (LIBCLOUD-679, GITHUB-485)
+  [Atsushi Sasaki]
+
+- Allow user to pass filters via arguments to the
+  ``ex_list_port_forwarding_rules`` in the CloudStack driver.
+  (LIBCLOUD-678, GITHUB-484)
+  [Atsushi Sasaki]
+
+- Fix an issue with ``list_nodes`` in the CloudSigma driver throwing an
+  exception if a node in the list had a static IP.
+  (LIBCLOUD-707, GITHUB-514)
+  [Chris O'Brien]
+
+- Don't throw an exception if a limit for a particular CloudStack resource is
+  "Unlimited" and not a number.
+  (GITHUB-512)
+  [Syed Mushtaq Ahmed]
+
+- Allow user to pass ``ex_config_drive`` argument to the ``create_node`` method
+  in the OpenStack driver.
+  (LIBCLOUD-356, GITHUB-330)
+  [Ryan Parrish]
+
+- Add new driver for Cloudwatt (https://www.cloudwatt.com/en/) provider.
+  (GITHUB-338)
+  [ZuluPro]
+
+- Add new driver for Packet (https://www.packet.net/) provider.
+  (LIBCLOUD-703, GITHUB-527)
+  [Aaron Welch]
+
+- Update Azure VM pricing information and add information for new D instance
+  types.
+  (GITHUB-528)
+  [Michael Bennett]
+
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver.
+  (GITHUB-532)
+  [ZuluPro]
+
+- Update CloudSigma driver so the "unavailable" and "paused" node state is
+  correctly mapped to "error" and "paused" respectively.
+  (GITHUB-517)
+  [Chris O'Brien]
+
+- Add SSH key pair management methods to the Gandi driver.
+  (GITHUB-534)
+  [ZuluPro]
+
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to Gandi driver.
+  (GITHUB-534)
+  [ZuluPro]
+
+- Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
+  returned by the OpenStack driver.
+  (LIBCLOUD-730, GITHUB-557)
+  [Nick Fox]
+
+- Add new driver for Onapp IaaS platform.
+  (LIBCLOUD-691, GITHUB-502)
+  [Matthias Wiesner]
+
+- Allow user to inject custom data / script into the Azure node by passing
+  ``ex_custom_data`` argument to the ``create_node`` method.
+  (LIBCLOUD-726, GITHUB-554)
+  [David Wilson]
+
+- Add ``ex_create_cloud_service`` and ``ex_destroy_cloud_service`` method to the
+  Azure driver.
+  (LIBCLOUD-724, GITHUB-551)
+  [David Wilson]
+
+- Add support for passing user data when creating a DigitalOcean node
+  (``ex_user_data`` argument).
+  (LIBCLOUD-731, GITHUB-559)
+  [David Wilson]
+
+- Allow user to specify which arguments are passed to ``list_nodes`` method
+  which is called inside ``wait_until_running`` by passing
+  ``ex_list_nodes_kwargs`` argument to the ``wait_until_running`` method.
+  (``ex_user_data`` argument).
+  (LIBCLOUD-723, GITHUB-548)
+  [David Wilson]
+
+- Allow user to pass ``ex_volume_type`` argument to the ``create_volume`` method
+  in the OpennStack driver.
+  (GITHUB-553)
+  [Rico Echwald-Tijsen]
+
+- Add new driver for RunAbove (https://www.runabove.com) provider.
+  (GITHUB-550)
+  [ZuluPro]
+
+- Fix a bug with exception being throw inside the CloudStack driver when the
+  provider returned no error message in the body.
+  (GITHUB-555)
+  [Konstantin Skaburskas]
+
+- Various improvements in the DigitalOcean driver:
+  - Increase page size to API maximum.
+  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+  - Update all the ``list_*`` methods to use paginated requests
+  - Allow user to specify page size by passing ``ex_per_page`` argument to the
+    constructor.
+  (LIBCLOUD-717, GITHUB-537)
+  [Javier Castillo II]
 
 Storage
 ~~~~~~~
@@ -155,6 +314,10 @@ Storage
 - Fix a bug with authentication in the OpenStack Swift driver.
   (GITHUB-492, LIBCLOUD-635)
   [Tom Fifield]
+
+- Add AuroraObjects Storage Driver.
+  (GITHUB-540, LIBCLOUD-719)
+  [Wido den Hollander]
 
 Loadbalancer
 ~~~~~~~~~~~~
@@ -188,6 +351,10 @@ DNS
 - Fix parsing of the record name in the HostVirtual driver.
   (GITHUB-461)
   [Vanč Levstik]
+
+- Add new driver for DigitalOcean DNS service.
+  (GITHUB-505)
+  [Javier Castillo II]
 
 Changes with Apache Libcloud 0.17.0
 -----------------------------------

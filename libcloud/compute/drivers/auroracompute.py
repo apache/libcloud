@@ -24,6 +24,6 @@ __all__ = [
 class AuroraComputeNodeDriver(CloudStackNodeDriver):
     type = Provider.AURORACOMPUTE
     name = 'PCextreme AuroraCompute'
-    website = 'https://www.pcextreme.nl/aurora/'
+    website = 'https://www.pcextreme.nl/en/aurora/compute'
     host = 'cloud.pcextreme.nl'
     path = '/api'

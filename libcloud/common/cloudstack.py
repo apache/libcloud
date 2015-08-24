@@ -35,13 +35,17 @@ class CloudStackResponse(JsonResponse):
         if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError('Invalid provider credentials')
 
+        value = None
         body = self.parse_body()
-        values = list(body.values())[0]
-
-        if 'errortext' in values:
-            value = values['errortext']
-        else:
+        if hasattr(body, 'values'):
+            values = list(body.values())[0]
+            if 'errortext' in values:
+                value = values['errortext']
+        if value is None:
             value = self.body
+
+        if not value:
+            value = 'WARNING: error message text sent by provider was empty.'
 
         error = ProviderError(value=value, http_code=self.status,
                               driver=self.connection.driver)

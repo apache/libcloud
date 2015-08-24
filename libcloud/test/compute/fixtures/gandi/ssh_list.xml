@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<methodResponse>
+<params>
+<param>
+<value><array><data>
+<value><struct>
+<member>
+<name>fingerprint</name>
+<value><string>a6:1f:b8:b4:19:91:99:d8:af:ab:d6:17:72:8b:d1:6c</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>10</int></value>
+</member>
+<member>
+<name>name</name>
+<value><string>testkey</string></value>
+</member>
+</struct></value>
+</data></array></value>
+</param>
+</params>
+</methodResponse>

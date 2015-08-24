@@ -32,13 +32,16 @@ package installed to use this):
 - Click on "Credentials"
 - Click on "Create New Client ID..."
 - Select "Service account" and click on "Create Client ID"
-- Download the Private Key (should happen automatically).
-- The key that you download is a PKCS12 key.  It needs to be converted to
-  the PEM format.
-- Convert the key using OpenSSL (the default password is 'notasecret'):
-  ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-  -passin pass:notasecret | openssl rsa -out PRIV.pem``
-- Move the .pem file to a safe location.
+- Download the Private Key (should happen automatically).  The key you download
+  is in JSON format.
+- Move the .json file to a safe location.
+- Optionally, you may choose to Generate a PKCS12 key from the Console.
+  It needs to be converted to the PEM format.  Please note, the PKCS12 format
+  is deprecated and may be removed in a future release.
+  - Convert the key using OpenSSL (the default password is 'notasecret'):
+    ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
+    -passin pass:notasecret | openssl rsa -out PRIV.pem``
+  - Move the .pem file to a safe location.
 - To Authenticate, you will need to pass the Service Account's "Email
   address" in as the user_id and the path to the .pem file as the key.
 
@@ -74,6 +77,7 @@ import base64
 import errno
 import time
 import datetime
+import logging
 import os
 import socket
 import sys
@@ -477,6 +481,10 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                 key = key['private_key']
             except ValueError:
                 key = contents
+                logger = logging.getLogger(__name__)
+                logger.warn('%s not in JSON format.  This format is '
+                            'deprecated.  Please download a JSON key '
+                            'from the Cloud Console.' % keypath)
 
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)

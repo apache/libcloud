@@ -42,6 +42,7 @@ class Provider(object):
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     :cvar NIMBUS: Nimbus.io driver
     :cvar LOCAL: Local storage driver
+    :cvar AURORAOBJECTS: AuroraObjects storage driver
     """
     DUMMY = 'dummy'
     S3 = 's3'
@@ -58,6 +59,7 @@ class Provider(object):
     CLOUDFILES = 'cloudfiles'
     AZURE_BLOBS = 'azure_blobs'
     KTUCLOUD = 'ktucloud'
+    AURORAOBJECTS = 'auroraobjects'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'

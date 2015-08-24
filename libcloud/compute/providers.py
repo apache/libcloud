@@ -113,6 +113,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
     Provider.OPSOURCE:
     ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
+    Provider.DIMENSIONDATA:
+    ('libcloud.compute.drivers.dimensiondata', 'DimensionDataNodeDriver'),
     Provider.OPENSTACK:
     ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
     Provider.NINEFOLD:
@@ -157,6 +159,14 @@ DRIVERS = {
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
     Provider.AURORACOMPUTE:
     ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
+    Provider.CLOUDWATT:
+    ('libcloud.compute.drivers.cloudwatt', 'CloudwattNodeDriver'),
+    Provider.PACKET:
+    ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
+    Provider.ONAPP:
+    ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
+    Provider.RUNABOVE:
+    ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

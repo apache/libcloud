@@ -1,3 +1,5 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 Provider                              list nodes create node reboot node destroy node list images list sizes deploy node
 ===================================== ========== =========== =========== ============ =========== ========== ===========
@@ -9,7 +11,9 @@ Provider                              list nodes create node reboot node destroy
 `CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
 `CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
+`Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
 `DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
+`DimensionData`_                      yes        yes         yes         yes          yes         yes        yes        
 `Dreamhost`_                          yes        yes         yes         yes          yes         yes        no         
 `Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
@@ -48,15 +52,18 @@ Provider                              list nodes create node reboot node destroy
 `NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
 `Ninefold`_                           yes        yes         yes         yes          yes         yes        yes        
+`OnApp`_                              yes        yes         no          yes          no          no         no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
+`Packet`_                             yes        yes         yes         yes          yes         yes        no         
 `ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
+`RunAbove`_                           yes        yes         no          yes          yes         yes        yes        
 `ServerLove`_                         yes        yes         yes         yes          yes         yes        yes        
 `skalicloud`_                         yes        yes         yes         yes          yes         yes        yes        
 `SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
@@ -70,14 +77,16 @@ Provider                              list nodes create node reboot node destroy
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 
 .. _`Abiquo`: http://www.abiquo.com/
-.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/aurora/
+.. _`PCextreme AuroraCompute`: https://www.pcextreme.nl/en/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
+.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
+.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Dreamhost`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
@@ -116,15 +125,18 @@ Provider                              list nodes create node reboot node destroy
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
+.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

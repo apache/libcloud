@@ -164,7 +164,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
 
-    def create_volume(self, size, name, location=None, snapshot=None):
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      ex_volume_type=None):
         """
         Create a new volume.
 
@@ -183,6 +184,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                           volume.  (optional)
         :type snapshot:  :class:`.VolumeSnapshot`
 
+        :param ex_volume_type: What kind of volume to create.
+                            (optional)
+        :type ex_volume_type: ``str``
+
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
@@ -190,7 +195,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             'display_name': name,
             'display_description': name,
             'size': size,
-            'volume_type': None,
+            'volume_type': ex_volume_type,
             'metadata': {
                 'contents': name,
             },
@@ -1195,6 +1200,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  https://help.ubuntu.com/community/CloudInit
         :type       ex_userdata: ``str``
 
+        :keyword    ex_config_drive: Enable config drive
+                                     see
+                                     http://docs.openstack.org/grizzly/openstack-compute/admin/content/config-drive.html
+        :type       ex_config_drive: ``bool``
+
         :keyword    ex_security_groups: List of security groups to assign to
                                         the node
         :type       ex_security_groups: ``list`` of
@@ -1304,6 +1314,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'ex_userdata' in kwargs:
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')
+
+        if 'ex_config_drive' in kwargs:
+            server_params['config_drive'] = kwargs['ex_config_drive']
 
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
@@ -2105,6 +2118,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 vm_state=api_node.get("OS-EXT-STS:vm_state", None),
                 power_state=api_node.get("OS-EXT-STS:power_state", None),
                 progress=api_node.get("progress", None),
+                fault=api_node.get('fault')
             ),
         )
 
