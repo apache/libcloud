@@ -63,7 +63,7 @@ Provider                              list volumes create volume destroy volume 
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
-`RunAbove`_                           no           no            no             no            no            no             no             
+`RunAbove`_                           yes          yes           yes            yes           yes           no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
 `skalicloud`_                         no           no            no             no            no            no             no             
 `SoftLayer`_                          no           no            no             no            no            no             no             
