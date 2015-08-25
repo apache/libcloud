@@ -30,7 +30,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.utils.xml import fixxpath, findtext, findall, findattr
+from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
 # Roadmap / TODO:
@@ -660,8 +660,8 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
-        response = self.connection.request_with_orgId_api_2('network/networkDomain') \
-                                  .object
+        response = self.connection \
+            .request_with_orgId_api_2('network/networkDomain').object
         return self._to_network_domains(response)
 
     def ex_list_vlans(self):
