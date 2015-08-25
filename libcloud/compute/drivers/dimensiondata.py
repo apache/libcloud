@@ -107,7 +107,7 @@ class DimensionDataResponse(XmlResponse):
 
         body = self.parse_body()
 
-        # TODO: The path is not fixed as server. 
+        # TODO: The path is not fixed as server.
         if self.status == httplib.BAD_REQUEST:
             code = findtext(body, 'responseCode', SERVER_NS)
             message = findtext(body, 'message', SERVER_NS)
@@ -141,7 +141,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     api_path_version_2 = '/caas'
     api_version_1 = '0.9'
     api_version_2 = '2.0'
-    
+
     _orgId = None
     responseCls = DimensionDataResponse
 
@@ -167,17 +167,19 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return headers
 
     def request_api_1(self, action, params=None, data='',
-                headers=None, method='GET'):
-        action = "%s/%s/%s" % (self.api_path_version_1, self.api_version_1, action)
+                      headers=None, method='GET'):
+        action = "%s/%s/%s" % (self.api_path_version_1,
+                               self.api_version_1, action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers)
-    
+
     def request_api_2(self, path, action, params=None, data='',
-                headers=None, method='GET'):
-        action = "%s/%s/%s/%s" % (self.api_path_version_2, self.api_version_2, path, action)
+                      headers=None, method='GET'):
+        action = "%s/%s/%s/%s" % (self.api_path_version_2,
+                                  self.api_version_2, path, action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
@@ -185,16 +187,16 @@ class DimensionDataConnection(ConnectionUserAndKey):
             method=method, headers=headers)
 
     def request_with_orgId_api_1(self, action, params=None, data='',
-                           headers=None, method='GET'):
+                                 headers=None, method='GET'):
         action = "%s/%s" % (self.get_resource_path_api_1(), action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers)
-    
+
     def request_with_orgId_api_2(self, action, params=None, data='',
-                           headers=None, method='GET'):
+                                 headers=None, method='GET'):
         action = "%s/%s" % (self.get_resource_path_api_2(), action)
 
         return super(DimensionDataConnection, self).request(
@@ -284,6 +286,7 @@ class DimensionDataNetwork(object):
                 % (self.id, self.name, self.description, self.location,
                    self.private_net, self.multicast))
 
+
 class DimensionDataNetworkDomain(object):
     """
     DimensionData network domain with location.
@@ -297,9 +300,11 @@ class DimensionDataNetworkDomain(object):
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s, description=%s, '
-                 'location=%s, status=%s>')
-                % (self.id, self.name, self.description, self.location, self.status))
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
+                 'description=%s, location=%s, status=%s>')
+                % (self.id, self.name, self.description, self.location,
+                   self.status))
+
 
 class DimensionDataVlan(object):
     """
@@ -314,9 +319,11 @@ class DimensionDataVlan(object):
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s, description=%s, '
-                 'location=%s, status=%s>')
-                % (self.id, self.name, self.description, self.location, self.status))
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
+                 'description=%s, location=%s, status=%s>')
+                % (self.id, self.name, self.description,
+                   self.location, self.status))
+
 
 class DimensionDataNodeDriver(NodeDriver):
     """
@@ -399,15 +406,17 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if not isinstance(ex_network, DimensionDataNetwork):
             raise ValueError('ex_network must be of DimensionDataNetwork type')
-        vlanResourcePath = "%s/%s" % (self.connection.get_resource_path_api_1(),
-                                      ex_network.id)
+        vlanResourcePath = "%s/%s" % (
+            self.connection.get_resource_path_api_1(),
+            ex_network.id)
 
         imageResourcePath = None
         if 'resourcePath' in image.extra:
             imageResourcePath = image.extra['resourcePath']
         else:
-            imageResourcePath = "%s/%s" % (self.connection.get_resource_path_api_1(),
-                                           image.id)
+            imageResourcePath = "%s/%s" % (
+                self.connection.get_resource_path_api_1(),
+                image.id)
 
         server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
         ET.SubElement(server_elm, "name").text = name
@@ -417,9 +426,10 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "administratorPassword").text = password
         ET.SubElement(server_elm, "isStarted").text = str(ex_is_started)
 
-        self.connection.request_with_orgId_api_1('server',
-                                           method='POST',
-                                           data=ET.tostring(server_elm)).object
+        self.connection.request_with_orgId_api_1(
+            'server',
+            method='POST',
+            data=ET.tostring(server_elm)).object
 
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
@@ -433,23 +443,29 @@ class DimensionDataNodeDriver(NodeDriver):
         return node
 
     def destroy_node(self, node):
-        request_elm = ET.Element('deleteServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('deleteServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/deleteServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/deleteServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
     def reboot_node(self, node):
-        request_elm = ET.Element('rebootServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('rebootServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/rebootServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/rebootServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
     def list_nodes(self):
         nodes = self._to_nodes(
             self.connection.request_with_orgId_api_2('server/server').object)
-      
+
         return nodes
 
     def list_images(self, location=None):
@@ -489,7 +505,8 @@ class DimensionDataNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.list_locations`
         """
         return self._to_locations(
-            self.connection.request_with_orgId_api_2('infrastructure/datacenter').object)
+            self.connection
+            .request_with_orgId_api_2('infrastructure/datacenter').object)
 
     def list_networks(self, location=None):
         """
@@ -504,7 +521,8 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         return self._to_networks(
-            self.connection.request_with_orgId_api_1('networkWithLocation').object)
+            self.connection
+            .request_with_orgId_api_1('networkWithLocation').object)
 
     def _to_base_images(self, object):
         images = []
@@ -550,9 +568,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        request_elm = ET.Element('startServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('startServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/startServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/startServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
@@ -568,9 +589,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        request_elm = ET.Element('shutdownServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('shutdownServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/shutdownServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/shutdownServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
@@ -586,9 +610,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        request_elm = ET.Element('powerOffServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('powerOffServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/powerOffServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/powerOffServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
@@ -604,9 +631,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        request_elm = ET.Element('resetServer', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elm = ET.Element('resetServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
-            'server/resetServer', method='POST', data=ET.tostring(request_elm) ).object
+            'server/resetServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
@@ -618,8 +648,8 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
-        response = self.connection.request_with_orgId_api_1('networkWithLocation') \
-                                  .object
+        response = self.connection \
+            .request_with_orgId_api_1('networkWithLocation').object
         return self._to_networks(response)
 
     def ex_list_network_domains(self):
@@ -687,7 +717,7 @@ class DimensionDataNodeDriver(NodeDriver):
                                  NETWORK_NS),
             multicast=multicast,
             status=status)
-    
+
     def _to_network_domains(self, object):
         network_domains = []
         for element in findall(object, 'networkDomain', TYPES_URN):
@@ -718,10 +748,10 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_vlan(self, element):
         status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-        
+
         location_id = element.get('location')
         location = self.ex_get_location_by_id(location_id)
-        
+
         return DimensionDataVlan(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
@@ -765,16 +795,23 @@ class DimensionDataNodeDriver(NodeDriver):
                                       .get('networkDomainId'),
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
-            'cpuCount': int(findtext(element, 'cpuCount',
-                                 TYPES_URN)),
-            'memoryMb': int(findtext(element, 'memoryGb',
-                                 TYPES_URN)) * 1024,
-            'OS_id': element.find(fixxpath('operatingSystem', TYPES_URN))
-                                      .get('id'),
-            'OS_type': element.find(fixxpath('operatingSystem', TYPES_URN))
-                                      .get('family'),
-            'OS_displayName': element.find(fixxpath('operatingSystem', TYPES_URN))
-                                      .get('displayName'),
+            'cpuCount': int(findtext(
+                element,
+                'cpuCount',
+                TYPES_URN)),
+            'memoryMb': int(findtext(
+                element,
+                'memoryGb',
+                TYPES_URN)) * 1024,
+            'OS_id': element.find(fixxpath(
+                'operatingSystem',
+                TYPES_URN)).get('id'),
+            'OS_type': element.find(fixxpath(
+                'operatingSystem',
+                TYPES_URN)).get('family'),
+            'OS_displayName': element.find(fixxpath(
+                'operatingSystem',
+                TYPES_URN)).get('displayName'),
             'status': status
         }
 
