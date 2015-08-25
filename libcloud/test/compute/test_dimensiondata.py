@@ -20,7 +20,6 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.drivers.dimensiondata import DimensionDataAPIException
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -58,7 +57,6 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 2)
-        first_node = ret[0]
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
