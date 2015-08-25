@@ -4,7 +4,7 @@
         <ns4:id>53b4c05b-341e-4ac3-b688-bdd74e53ca9b</ns4:id>
         <ns4:name>test-net1</ns4:name>
         <ns4:description>test-net1 description</ns4:description>
-        <ns4:location>NA1</ns4:location>
+        <ns4:location>NA10</ns4:location>
         <ns4:privateNet>10.162.1.0</ns4:privateNet>
         <ns4:multicast>false</ns4:multicast>
     </ns4:network>

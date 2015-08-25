@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<datacenters pageNumber="1" pageCount="1" totalCount="2" pageSize="50"
+xmlns="urn:didata.com:api:cloud:types">
+<datacenter id="NA10" type="MCP 2.0">
+<displayName>US - West</displayName>
+<city>Santa Clara</city>
+<state>California</state>
+<country>US</country>
+<vpnUrl>https://na10.cloud-vpn.net</vpnUrl>
+<ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+<networking type="2" maintenanceStatus="NORMAL">
+<!-- 0-to-many optional property elements -->
+<property name="MAX_NODE_CONNECTION_LIMIT" value="100000"/>
+<property name="MAX_NODE_CONNECTION_RATE_LIMIT" value="4000"/>
+<property name="MAX_VIRTUAL_LISTENER_CONNECTION_LIMIT" value="100000"/>
+<property name="MAX_VIRTUAL_LISTENER_CONNECTION_RATE_LIMIT"
+value="4000"/>
+</networking>
+<hypervisor type="VMWARE" maintenanceStatus="PENDING_MAINTENANCE">
+<diskSpeed available="false" default="false" id="ARCHIVE">
+<displayName>Archive Speed</displayName>
+<abbreviation>ARCH</abbreviation>
+<description>Archive Disk Speed</description>
+<unavailableReason>Replaced with HPF and ECN</unavailableReason>
+</diskSpeed>
+<property name="MIN_DISK_SIZE_GB" value="10"/>
+<property name="MAX_DISK_SIZE_GB" value="1000"/>
+<property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="2500"/>
+<property name="MAX_CPU_COUNT" value="8"/>
+<property name="MIN_MEMORY_MB" value="1024"/>
+<property name="MAX_MEMORY_MB" value="65536"/>
+</hypervisor>
+<!-- Optional: if Cloud Backup is enabled at the Data Center it will be returned -->
+<backup type="COMMVAULT" maintenanceStatus="IN_MAINTENANCE">
+<!-- 0-to-many optional property elements -->
+</backup>
+<consoleAccess maintenanceStatus="IN_MAINTENANCE">
+<!-- 0-to-many optional property elements -->
+</consoleAccess>
+<monitoring maintenanceStatus="IN_MAINTENANCE">
+<!-- 0-to-many optional property elements -->
+</monitoring>
+</datacenter>
+</datacenters>

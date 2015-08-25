@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<vlans
+xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1"
+totalCount="1" pageSize="250">
+<vlan id="0e56433f-d808-4669-821d-812769517ff8" location="NA10">
+<networkDomain id="484174a2-ae74-4658-9e56-50fc90e086cf"
+name="Production Network Domain"/>
+<name>Production VLAN</name>
+<description>For hosting our Production Cloud Servers</description>
+<privateIpv4Range address="10.0.3.0" prefixSize="24"/>
+<ipv4GatewayAddress>10.0.3.1</ipv4GatewayAddress>
+<ipv6Range address="2607:f480:1111:1153:0:0:0:0" prefixSize="64"/>
+<ipv6GatewayAddress>2607:f480:1111:1153:0:0:0:1</ipv6GatewayAddress>
+<createTime>2015-02-13T10:56:44.000Z</createTime>
+<state>NORMAL</state>
+</vlan>
+</vlans>

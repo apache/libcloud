@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<servers
+xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1"
+totalCount="2" pageSize="250">
+<Server id="d577a691-e116-4913-a440-022d2729fc84" datacenterId="NA9">
+<name>Test Server</name>
+<description>Test Description</description>
+<operatingSystem id="REDHAT664" displayName="REDHAT6/64"
+family="UNIX"/>
+<cpuCount>1</cpuCount>
+<memoryGb>2</memoryGb>
+<disk id="338c1163-5348-4572-962d-185c97bd0d65" scsiId="0" sizeGb="10"
+speed="STANDARD" state="NORMAL"/>
+<networkInfo networkDomainId="484174a2-ae74-4658-9e56-50fc90e086cf">
+<primaryNic id="4c8d5f67-c6df-421d-b8ac-45dd1b141334"
+privateIpv4="10.0.3.11" ipv6="2607:f480:1111:1153:dee:4666:1130:7484"
+vlanId="0e56433f-d808-4669-821d-812769517ff8" vlanName="Production VLAN"
+state="NORMAL"/>
+</networkInfo>
+<sourceImageId>02250336-de2b-4e99-ab96-78511b7f8f4b</sourceImageId>
+<createTime>2015-02-17T10:59:18.000Z</createTime>
+<deployed>true</deployed>
+<started>true</started>
+<state>NORMAL</state>
+<machineStatus name="vmwareToolsVersionStatus" value="CURRENT"/>
+<machineStatus name="vmwareToolsRunningStatus" value="RUNNING"/>
+<machineStatus name="vmwareToolsApiVersion" value="9354"/>
+</Server>
+<Server id="abadbc7e-9e10-46ca-9d4a-194bcc6b6c16" datacenterId="NA9">
+<name>Production Web Server 2</name>
+<description>This server hosts our production web
+applications.</description>
+<operatingSystem id="REDHAT664" displayName="REDHAT6/64"
+family="UNIX"/>
+<cpuCount>1</cpuCount>
+<memoryGb>2</memoryGb>
+<disk id="338c1163-5348-4572-962d-185c97bd0d65" scsiId="0" sizeGb="10"
+speed="STANDARD" state="NORMAL"/>
+<networkInfo networkDomainId="484174a2-ae74-4658-9e56-50fc90e086cf">
+<primaryNic id="4c8d5f67-c6df-421d-b8ac-45dd1b141334"
+privateIpv4="10.0.3.11" ipv6="2607:f480:1111:1153:dee:4666:1130:7484"
+vlanId="0e56433f-d808-4669-821d-812769517ff8" vlanName="Production VLAN"
+state="NORMAL"/>
+</networkInfo>
+<sourceImageId>02250336-de2b-4e99-ab96-78511b7f8f4b</sourceImageId>
+<createTime>2015-02-17T10:59:18.000Z</createTime>
+<deployed>true</deployed>
+<started>true</started>
+<state>PENDING_CHANGE</state>
+<progress>
+<action>SHUTDOWN_SERVER</action>
+<requestTime>2015-03-06T18:05:33.000Z</requestTime>
+<userName>myuser</userName>
+</progress>
+<machineStatus name="vmwareToolsVersionStatus" value="CURRENT"/>
+<machineStatus name="vmwareToolsRunningStatus" value="RUNNING"/>
+<machineStatus name="vmwareToolsApiVersion" value="9354"/>
+</Server>
+</servers>
