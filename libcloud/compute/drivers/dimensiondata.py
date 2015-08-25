@@ -30,7 +30,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.utils.xml import fixxpath, findtext, findall, findattr
 from libcloud.compute.types import NodeState, Provider
 
 # Roadmap / TODO:
@@ -51,6 +51,9 @@ SUPPORT_NS = NAMESPACE_BASE + "/support"
 GENERAL_NS = NAMESPACE_BASE + "/general"
 IPPLAN_NS = NAMESPACE_BASE + "/ipplan"
 WHITELABEL_NS = NAMESPACE_BASE + "/whitelabel"
+
+# API 2.0 Namespaces and URNs
+TYPES_URN = "urn:didata.com:api:cloud:types"
 
 # API end-points
 API_ENDPOINTS = {
@@ -104,9 +107,10 @@ class DimensionDataResponse(XmlResponse):
 
         body = self.parse_body()
 
+        # TODO: The path is not fixed as server. 
         if self.status == httplib.BAD_REQUEST:
-            code = findtext(body, 'resultCode', SERVER_NS)
-            message = findtext(body, 'resultDetail', SERVER_NS)
+            code = findtext(body, 'responseCode', SERVER_NS)
+            message = findtext(body, 'message', SERVER_NS)
             raise DimensionDataAPIException(code,
                                             message,
                                             driver=DimensionDataNodeDriver)
@@ -133,8 +137,11 @@ class DimensionDataConnection(ConnectionUserAndKey):
     Connection class for the DimensionData driver
     """
 
-    api_path = '/oec'
-    api_version = '0.9'
+    api_path_version_1 = '/oec'
+    api_path_version_2 = '/caas'
+    api_version_1 = '0.9'
+    api_version_2 = '2.0'
+    
     _orgId = None
     responseCls = DimensionDataResponse
 
@@ -159,31 +166,58 @@ class DimensionDataConnection(ConnectionUserAndKey):
                                                  self.key))).decode('utf-8'))
         return headers
 
-    def request(self, action, params=None, data='',
+    def request_api_1(self, action, params=None, data='',
                 headers=None, method='GET'):
-        action = "%s/%s/%s" % (self.api_path, self.api_version, action)
+        action = "%s/%s/%s" % (self.api_path_version_1, self.api_version_1, action)
+
+        return super(DimensionDataConnection, self).request(
+            action=action,
+            params=params, data=data,
+            method=method, headers=headers)
+    
+    def request_api_2(self, path, action, params=None, data='',
+                headers=None, method='GET'):
+        action = "%s/%s/%s/%s" % (self.api_path_version_2, self.api_version_2, path, action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers)
 
-    def request_with_orgId(self, action, params=None, data='',
+    def request_with_orgId_api_1(self, action, params=None, data='',
                            headers=None, method='GET'):
-        action = "%s/%s" % (self.get_resource_path(), action)
+        action = "%s/%s" % (self.get_resource_path_api_1(), action)
+
+        return super(DimensionDataConnection, self).request(
+            action=action,
+            params=params, data=data,
+            method=method, headers=headers)
+    
+    def request_with_orgId_api_2(self, action, params=None, data='',
+                           headers=None, method='GET'):
+        action = "%s/%s" % (self.get_resource_path_api_2(), action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers)
 
-    def get_resource_path(self):
+    def get_resource_path_api_1(self):
         """
         This method returns a resource path which is necessary for referencing
         resources that require a full path instead of just an ID, such as
         networks, and customer snapshots.
         """
-        return ("%s/%s/%s" % (self.api_path, self.api_version,
+        return ("%s/%s/%s" % (self.api_path_version_1, self.api_version_1,
+                              self._get_orgId()))
+
+    def get_resource_path_api_2(self):
+        """
+        This method returns a resource path which is necessary for referencing
+        resources that require a full path instead of just an ID, such as
+        networks, and customer snapshots.
+        """
+        return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
     def _get_orgId(self):
@@ -193,7 +227,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
         of the other API functions
         """
         if self._orgId is None:
-            body = self.request('myaccount').object
+            body = self.request_api_1('myaccount').object
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
 
@@ -250,6 +284,39 @@ class DimensionDataNetwork(object):
                 % (self.id, self.name, self.description, self.location,
                    self.private_net, self.multicast))
 
+class DimensionDataNetworkDomain(object):
+    """
+    DimensionData network domain with location.
+    """
+
+    def __init__(self, id, name, description, location, status):
+        self.id = str(id)
+        self.name = name
+        self.description = description
+        self.location = location
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s, description=%s, '
+                 'location=%s, status=%s>')
+                % (self.id, self.name, self.description, self.location, self.status))
+
+class DimensionDataVlan(object):
+    """
+    DimensionData VLAN.
+    """
+
+    def __init__(self, id, name, description, location, status):
+        self.id = str(id)
+        self.name = name
+        self.location = location
+        self.description = description
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s, description=%s, '
+                 'location=%s, status=%s>')
+                % (self.id, self.name, self.description, self.location, self.status))
 
 class DimensionDataNodeDriver(NodeDriver):
     """
@@ -332,14 +399,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if not isinstance(ex_network, DimensionDataNetwork):
             raise ValueError('ex_network must be of DimensionDataNetwork type')
-        vlanResourcePath = "%s/%s" % (self.connection.get_resource_path(),
+        vlanResourcePath = "%s/%s" % (self.connection.get_resource_path_api_1(),
                                       ex_network.id)
 
         imageResourcePath = None
         if 'resourcePath' in image.extra:
             imageResourcePath = image.extra['resourcePath']
         else:
-            imageResourcePath = "%s/%s" % (self.connection.get_resource_path(),
+            imageResourcePath = "%s/%s" % (self.connection.get_resource_path_api_1(),
                                            image.id)
 
         server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
@@ -350,7 +417,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "administratorPassword").text = password
         ET.SubElement(server_elm, "isStarted").text = str(ex_is_started)
 
-        self.connection.request_with_orgId('server',
+        self.connection.request_with_orgId_api_1('server',
                                            method='POST',
                                            data=ET.tostring(server_elm)).object
 
@@ -366,23 +433,23 @@ class DimensionDataNodeDriver(NodeDriver):
         return node
 
     def destroy_node(self, node):
-        body = self.connection.request_with_orgId(
-            'server/%s?delete' % (node.id)).object
-
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        request_elm = ET.Element('deleteServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/deleteServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
 
     def reboot_node(self, node):
-        body = self.connection.request_with_orgId(
-            'server/%s?restart' % (node.id)).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        request_elm = ET.Element('rebootServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/rebootServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
 
     def list_nodes(self):
         nodes = self._to_nodes(
-            self.connection.request_with_orgId('server/deployed').object)
-        nodes.extend(self._to_nodes(
-            self.connection.request_with_orgId('server/pendingDeploy').object))
+            self.connection.request_with_orgId_api_2('server/server').object)
+      
         return nodes
 
     def list_images(self, location=None):
@@ -394,9 +461,16 @@ class DimensionDataNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.list_images`
         """
         return self._to_base_images(
-            self.connection.request('base/image').object)
+            self.connection.request_api_1('base/image').object)
 
     def list_sizes(self, location=None):
+        """
+        return a list of available sizes
+            Currently, the size of the node is dictated by the chosen OS base
+            image, they cannot be set explicitly.
+
+        @inherits: :class:`NodeDriver.list_sizes`
+        """
         return [
             NodeSize(id=1,
                      name="default",
@@ -415,7 +489,7 @@ class DimensionDataNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.list_locations`
         """
         return self._to_locations(
-            self.connection.request_with_orgId('datacenter').object)
+            self.connection.request_with_orgId_api_2('infrastructure/datacenter').object)
 
     def list_networks(self, location=None):
         """
@@ -430,7 +504,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         return self._to_networks(
-            self.connection.request_with_orgId('networkWithLocation').object)
+            self.connection.request_with_orgId_api_1('networkWithLocation').object)
 
     def _to_base_images(self, object):
         images = []
@@ -476,10 +550,11 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        body = self.connection.request_with_orgId(
-            'server/%s?start' % node.id).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        request_elm = ET.Element('startServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/startServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
 
     def ex_shutdown_graceful(self, node):
         """
@@ -493,10 +568,11 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        body = self.connection.request_with_orgId(
-            'server/%s?shutdown' % (node.id)).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        request_elm = ET.Element('shutdownServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/shutdownServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
 
     def ex_power_off(self, node):
         """
@@ -510,10 +586,29 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        body = self.connection.request_with_orgId(
-            'server/%s?poweroff' % node.id).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        request_elm = ET.Element('powerOffServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/powerOffServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
+
+    def ex_reset(self, node):
+        """
+        This function will abruptly reset a server.  Unlike
+        reboot_node, success ensures the node will restart but some OS
+        and application configurations may be adversely affected by the
+        equivalent of pulling the power plug out of the machine.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        request_elm = ET.Element('resetServer', {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/resetServer', method='POST', data=ET.tostring(request_elm) ).object
+        result = findtext(body, 'responseCode', TYPES_URN)
+        return result == 'IN_PROGRESS'
 
     def ex_list_networks(self):
         """
@@ -523,9 +618,32 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
-        response = self.connection.request_with_orgId('networkWithLocation') \
+        response = self.connection.request_with_orgId_api_1('networkWithLocation') \
                                   .object
         return self._to_networks(response)
+
+    def ex_list_network_domains(self):
+        """
+        List networks deployed across all data center locations for your
+        organization.  The response includes the location of each network.
+
+        :return: a list of DimensionDataNetwork objects
+        :rtype: ``list`` of :class:`DimensionDataNetwork`
+        """
+        response = self.connection.request_with_orgId_api_2('network/networkDomain') \
+                                  .object
+        return self._to_network_domains(response)
+
+    def ex_list_vlans(self):
+        """
+        List VLANs available in a given networkDomain
+
+        :return: a list of DimensionDataVlan objects
+        :rtype: ``list`` of :class:`DimensionDataVlan`
+        """
+        response = self.connection.request_with_orgId_api_2('network/vlan') \
+                                  .object
+        return self._to_vlans(response)
 
     def ex_get_location_by_id(self, id):
         """
@@ -569,67 +687,107 @@ class DimensionDataNodeDriver(NodeDriver):
                                  NETWORK_NS),
             multicast=multicast,
             status=status)
+    
+    def _to_network_domains(self, object):
+        network_domains = []
+        for element in findall(object, 'networkDomain', TYPES_URN):
+            network_domains.append(self._to_network_domain(element))
+
+        return network_domains
+
+    def _to_network_domain(self, element):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        location_id = element.get('datacenter')
+        location = self.ex_get_location_by_id(location_id)
+
+        return DimensionDataNetworkDomain(
+            id=element.get('id'),
+            name=findtext(element, 'name', TYPES_URN),
+            description=findtext(element, 'description',
+                                 TYPES_URN),
+            location=location,
+            status=status)
+
+    def _to_vlans(self, object):
+        vlans = []
+        for element in findall(object, 'vlan', TYPES_URN):
+            vlans.append(self._to_vlan(element))
+
+        return vlans
+
+    def _to_vlan(self, element):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        
+        location_id = element.get('location')
+        location = self.ex_get_location_by_id(location_id)
+        
+        return DimensionDataVlan(
+            id=element.get('id'),
+            name=findtext(element, 'name', TYPES_URN),
+            description=findtext(element, 'description',
+                                 TYPES_URN),
+            location=location,
+            status=status)
 
     def _to_locations(self, object):
         locations = []
-        for element in object.findall(fixxpath('datacenter', DATACENTER_NS)):
+        for element in object.findall(fixxpath('datacenter', TYPES_URN)):
             locations.append(self._to_location(element))
 
         return locations
 
     def _to_location(self, element):
-        l = NodeLocation(id=findtext(element, 'location', DATACENTER_NS),
-                         name=findtext(element, 'displayName', DATACENTER_NS),
-                         country=findtext(element, 'country', DATACENTER_NS),
+        l = NodeLocation(id=element.get('id'),
+                         name=findtext(element, 'displayName', TYPES_URN),
+                         country=findtext(element, 'country', TYPES_URN),
                          driver=self)
         return l
 
     def _to_nodes(self, object):
-        node_elements = object.findall(fixxpath('DeployedServer', SERVER_NS))
-        node_elements.extend(object.findall(
-            fixxpath('PendingDeployServer', SERVER_NS)))
+        node_elements = object.findall(fixxpath('Server', TYPES_URN))
+
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
-        if findtext(element, 'isStarted', SERVER_NS) == 'true':
+        if findtext(element, 'started', TYPES_URN) == 'true':
             state = NodeState.RUNNING
         else:
             state = NodeState.TERMINATED
 
-        status = self._to_status(element.find(fixxpath('status', SERVER_NS)))
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
 
         extra = {
-            'description': findtext(element, 'description', SERVER_NS),
-            'sourceImageId': findtext(element, 'sourceImageId', SERVER_NS),
-            'networkId': findtext(element, 'networkId', SERVER_NS),
-            'machineName': findtext(element, 'machineName', SERVER_NS),
-            'deployedTime': findtext(element, 'deployedTime', SERVER_NS),
-            'cpuCount': findtext(element, 'machineSpecification/cpuCount',
-                                 SERVER_NS),
-            'memoryMb': findtext(element, 'machineSpecification/memoryMb',
-                                 SERVER_NS),
-            'osStorageGb': findtext(element,
-                                    'machineSpecification/osStorageGb',
-                                    SERVER_NS),
-            'additionalLocalStorageGb': findtext(
-                element, 'machineSpecification/additionalLocalStorageGb',
-                SERVER_NS),
-            'OS_type': findtext(element,
-                                'machineSpecification/operatingSystem/type',
-                                SERVER_NS),
-            'OS_displayName': findtext(
-                element, 'machineSpecification/operatingSystem/displayName',
-                SERVER_NS),
+            'description': findtext(element, 'description', TYPES_URN),
+            'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
+            'networkId': findtext(element, 'networkId', TYPES_URN),
+            'networkDomainId': element.find(fixxpath('networkInfo', TYPES_URN))
+                                      .get('networkDomainId'),
+            'datacenterId': element.get('datacenterId'),
+            'deployedTime': findtext(element, 'createTime', TYPES_URN),
+            'cpuCount': int(findtext(element, 'cpuCount',
+                                 TYPES_URN)),
+            'memoryMb': int(findtext(element, 'memoryGb',
+                                 TYPES_URN)) * 1024,
+            'OS_id': element.find(fixxpath('operatingSystem', TYPES_URN))
+                                      .get('id'),
+            'OS_type': element.find(fixxpath('operatingSystem', TYPES_URN))
+                                      .get('family'),
+            'OS_displayName': element.find(fixxpath('operatingSystem', TYPES_URN))
+                                      .get('displayName'),
             'status': status,
         }
 
-        public_ip = findtext(element, 'publicIpAddress', SERVER_NS)
+        public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
 
-        n = Node(id=findtext(element, 'id', SERVER_NS),
-                 name=findtext(element, 'name', SERVER_NS),
+        private_ip = findtext(element, 'networkInfo/primaryNic/privateIpv4',
+                              TYPES_URN)
+
+        n = Node(id=element.get('id'),
+                 name=findtext(element, 'name', TYPES_URN),
                  state=state,
                  public_ips=[public_ip] if public_ip is not None else [],
-                 private_ips=findtext(element, 'privateIpAddress', SERVER_NS),
+                 private_ips=[private_ip] if private_ip is not None else [],
                  driver=self.connection.driver,
                  extra=extra)
         return n

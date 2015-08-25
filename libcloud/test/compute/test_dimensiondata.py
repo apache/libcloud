@@ -20,6 +20,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.drivers.dimensiondata import DimensionDataAPIException
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
+from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -44,6 +45,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         except InvalidCredsError:
             pass
 
+    def test_list_locations_response(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_locations()
+        self.assertEqual(len(ret), 1)
+        first_node = ret[0]
+        self.assertEqual(first_node.id, 'NA10')
+        self.assertEqual(first_node.name, 'US - West')
+        self.assertEqual(first_node.country, 'US')
+        
+    def test_list_nodes_response(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 2)
+        first_node = ret[0]
+        
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_sizes()
@@ -74,7 +90,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = node.destroy()
         self.assertTrue(ret is True)
 
-    def test_destroy_node_response_INPROGRESS(self):
+    def test_destroy_node_response_RESOURCE_BUSY(self):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
@@ -146,17 +162,26 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         except DimensionDataAPIException:
             pass
 
+    def test_ex_reset(self):
+        node = Node(id='11', name=None, state=None,
+                    public_ips=None, private_ips=None, driver=self.driver)
+        ret = self.driver.ex_reset(node)
+        self.assertTrue(ret is True)
+
     def test_ex_list_networks(self):
         nets = self.driver.ex_list_networks()
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
+        
+    def test_ex_list_network_domains(self):
+        nets = self.driver.ex_list_network_domains()
+        self.assertEqual(nets[0].name, 'Production Network Domain')
+        self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
-    def test_node_public_ip(self):
-        nodes = self.driver.list_nodes()
-        node = [n for n in nodes if n.id ==
-                'abadbc7e-9e10-46ca-9d4a-194bcc6b6c16'][0]
-        self.assertEqual(node.public_ips[0], '200.16.132.7')
-
+    def test_ex_list_vlans(self):
+        vlans = self.driver.ex_list_vlans()
+        self.assertEqual(vlans[0].name, "Production VLAN")
+            
 
 class DimensionDataMockHttp(MockHttp):
 
@@ -245,7 +270,86 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_RESOURCEBUSY.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_RESOURCEBUSY.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
 if __name__ == '__main__':
     sys.exit(unittest.main())

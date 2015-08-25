@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-08-
+12T08:27:00.176-04:00/14b0a61f-7e85-49c9-8e7e-146fa3e562b7">
+<operation>START_SERVER</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to start Server 'Production Server' has been accepted and
+is being processed.</message>
+</response>
