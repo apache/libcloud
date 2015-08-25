@@ -755,7 +755,7 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             state = NodeState.TERMINATED
 
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
 
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
@@ -775,7 +775,7 @@ class DimensionDataNodeDriver(NodeDriver):
                                       .get('family'),
             'OS_displayName': element.find(fixxpath('operatingSystem', TYPES_URN))
                                       .get('displayName'),
-            'status': status,
+            'status': status
         }
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
@@ -795,33 +795,33 @@ class DimensionDataNodeDriver(NodeDriver):
     def _to_status(self, element):
         if element is None:
             return DimensionDataStatus()
-        s = DimensionDataStatus(action=findtext(element, 'action', SERVER_NS),
+        s = DimensionDataStatus(action=findtext(element, 'action', TYPES_URN),
                                 request_time=findtext(
                                     element,
                                     'requestTime',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 user_name=findtext(
                                     element,
                                     'userName',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 number_of_steps=findtext(
                                     element,
                                     'numberOfSteps',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 step_name=findtext(
                                     element,
                                     'step/name',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 step_number=findtext(
                                     element,
                                     'step_number',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 step_percent_complete=findtext(
                                     element,
                                     'step/percentComplete',
-                                    SERVER_NS),
+                                    TYPES_URN),
                                 failure_reason=findtext(
                                     element,
                                     'failureReason',
-                                    SERVER_NS))
+                                    TYPES_URN))
         return s
