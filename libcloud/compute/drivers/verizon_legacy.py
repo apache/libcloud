@@ -28,15 +28,15 @@ from libcloud.compute.types import Provider, NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
 from libcloud.compute.ssh import have_paramiko
 
-API_HOST    = "services.enterprisecloud.terremark.com"
-API_ROOT    = "/cloudapi/ecloud"
+API_HOST = "services.enterprisecloud.terremark.com"
+API_ROOT = "/cloudapi/ecloud"
 API_VERSION = "2014-05-01"
 NODE_ONLINE_WAIT_TIMEOUT = 600
 SSH_CONNECT_TIMEOUT = 300
 
 DEBUG = True
 
-NODE_STATE_MAP = {                                                                      
+NODE_STATE_MAP = {
     'ON': NodeState.RUNNING,
     'OFF': NodeState.STOPPED,
     'IN_PROGRESS': NodeState.PENDING,
@@ -44,204 +44,205 @@ NODE_STATE_MAP = {
 }
 
 NETWORK_MAP = {
-    'dmz' : 0,
-    'int' : 1
+    'dmz': 0,
+    'int': 1
 }
 
 INSTANCE_TYPES = {
-    's1' : {
-        'id'   : 's1',
-        'name' : 's1',
-        'ram'  : 512,
-        'cpu'  : 1
+    's1': {
+        'id': 's1',
+        'name': 's1',
+        'ram': 512,
+        'cpu': 1
     },
-    's2' : {
-        'id'   : 's2',
-        'name' : 's2',
-        'ram'  : 1024,
-        'cpu'  : 1
+    's2': {
+        'id': 's2',
+        'name': 's2',
+        'ram': 1024,
+        'cpu': 1
     },
-    's3' : {
-        'id'   : 's3',
-        'name' : 's3',
-        'ram'  : 1536,
-        'cpu'  : 1
+    's3': {
+        'id': 's3',
+        'name': 's3',
+        'ram': 1536,
+        'cpu': 1
     },
-    's4' : {
-        'id'   : 's4',
-        'name' : 's4',
-        'ram'  : 2048,
-        'cpu'  : 1
+    's4': {
+        'id': 's4',
+        'name': 's4',
+        'ram': 2048,
+        'cpu': 1
     },
-    's5' : {
-        'id'   : 's5',
-        'name' : 's5',
-        'ram'  : 4096,
-        'cpu'  : 1
+    's5': {
+        'id': 's5',
+        'name': 's5',
+        'ram': 4096,
+        'cpu': 1
     },
-    's6' : {
-        'id'   : 's6',
-        'name' : 's6',
-        'ram'  : 8192,
-        'cpu'  : 1
+    's6': {
+        'id': 's6',
+        'name': 's6',
+        'ram': 8192,
+        'cpu': 1
     },
-    's7' : {
-        'id'   : 's7',
-        'name' : 's7',
-        'ram'  : 12288,
-        'cpu'  : 1
+    's7': {
+        'id': 's7',
+        'name': 's7',
+        'ram': 12288,
+        'cpu': 1
     },
-    's8' : {
-        'id'   : 's8',
-        'name' : 's8',
-        'ram'  : 16384,
-        'cpu'  : 1
+    's8': {
+        'id': 's8',
+        'name': 's8',
+        'ram': 16384,
+        'cpu': 1
     },
-    's9' : {
-        'id'   : 's9',
-        'name' : 's9',
-        'ram'  : 512,
-        'cpu'  : 2
+    's9': {
+        'id': 's9',
+        'name': 's9',
+        'ram': 512,
+        'cpu': 2
     },
-    's10' : {
-        'id'   : 's10',
-        'name' : 's10',
-        'ram'  : 1024,
-        'cpu'  : 2
+    's10': {
+        'id': 's10',
+        'name': 's10',
+        'ram': 1024,
+        'cpu': 2
     },
-    's11' : {
-        'id'   : 's11',
-        'name' : 's11',
-        'ram'  : 1536,
-        'cpu'  : 2
+    's11': {
+        'id': 's11',
+        'name': 's11',
+        'ram': 1536,
+        'cpu': 2
     },
-    's12' : {
-        'id'   : 's12',
-        'name' : 's12',
-        'ram'  : 2048,
-        'cpu'  : 2
+    's12': {
+        'id': 's12',
+        'name': 's12',
+        'ram': 2048,
+        'cpu': 2
     },
-    's13' : {
-        'id'   : 's13',
-        'name' : 's13',
-        'ram'  : 4096,
-        'cpu'  : 2
+    's13': {
+        'id': 's13',
+        'name': 's13',
+        'ram': 4096,
+        'cpu': 2
     },
-    's14' : {
-        'id'   : 's14',
-        'name' : 's14',
-        'ram'  : 8192,
-        'cpu'  : 2
+    's14': {
+        'id': 's14',
+        'name': 's14',
+        'ram': 8192,
+        'cpu': 2
     },
-    's15' : {
-        'id'   : 's15',
-        'name' : 's15',
-        'ram'  : 12288,
-        'cpu'  : 2
+    's15': {
+        'id': 's15',
+        'name': 's15',
+        'ram': 12288,
+        'cpu': 2
     },
-    's16' : {
-        'id'   : 's16',
-        'name' : 's16',
-        'ram'  : 16384,
-        'cpu'  : 2
+    's16': {
+        'id': 's16',
+        'name': 's16',
+        'ram': 16384,
+        'cpu': 2
     },
-    's17' : {
-        'id'   : 's17',
-        'name' : 's17',
-        'ram'  : 512,
-        'cpu'  : 3
+    's17': {
+        'id': 's17',
+        'name': 's17',
+        'ram': 512,
+        'cpu': 3
     },
-    's18' : {
-        'id'   : 's18',
-        'name' : 's18',
-        'ram'  : 1024,
-        'cpu'  : 3
+    's18': {
+        'id': 's18',
+        'name': 's18',
+        'ram': 1024,
+        'cpu': 3
     },
-    's19' : {
-        'id'   : 's19',
-        'name' : 's19',
-        'ram'  : 1536,
-        'cpu'  : 3
+    's19': {
+        'id': 's19',
+        'name': 's19',
+        'ram': 1536,
+        'cpu': 3
     },
-    's20' : {
-        'id'   : 's20',
-        'name' : 's20',
-        'ram'  : 2048,
-        'cpu'  : 3
+    's20': {
+        'id': 's20',
+        'name': 's20',
+        'ram': 2048,
+        'cpu': 3
     },
-    's21' : {
-        'id'   : 's21',
-        'name' : 's21',
-        'ram'  : 4096,
-        'cpu'  : 3
+    's21': {
+        'id': 's21',
+        'name': 's21',
+        'ram': 4096,
+        'cpu': 3
     },
-    's22' : {
-        'id'   : 's22',
-        'name' : 's22',
-        'ram'  : 8192,
-        'cpu'  : 3
+    's22': {
+        'id': 's22',
+        'name': 's22',
+        'ram': 8192,
+        'cpu': 3
     },
-    's23' : {
-        'id'   : 's23',
-        'name' : 's23',
-        'ram'  : 12288,
-        'cpu'  : 3
+    's23': {
+        'id': 's23',
+        'name': 's23',
+        'ram': 12288,
+        'cpu': 3
     },
-    's24' : {
-        'id'   : 's24',
-        'name' : 's24',
-        'ram'  : 16384,
-        'cpu'  : 3
+    's24': {
+        'id': 's24',
+        'name': 's24',
+        'ram': 16384,
+        'cpu': 3
     },
-    's25' : {
-        'id'   : 's25',
-        'name' : 's25',
-        'ram'  : 512,
-        'cpu'  : 4
+    's25': {
+        'id': 's25',
+        'name': 's25',
+        'ram': 512,
+        'cpu': 4
     },
-    's26' : {
-        'id'   : 's26',
-        'name' : 's26',
-        'ram'  : 1024,
-        'cpu'  : 4
+    's26': {
+        'id': 's26',
+        'name': 's26',
+        'ram': 1024,
+        'cpu': 4
     },
-    's27' : {
-        'id'   : 's27',
-        'name' : 's27',
-        'ram'  : 1536,
-        'cpu'  : 4
+    's27': {
+        'id': 's27',
+        'name': 's27',
+        'ram': 1536,
+        'cpu': 4
     },
-    's28' : {
-        'id'   : 's28',
-        'name' : 's28',
-        'ram'  : 2048,
-        'cpu'  : 4
+    's28': {
+        'id': 's28',
+        'name': 's28',
+        'ram': 2048,
+        'cpu': 4
     },
-    's29' : {
-        'id'   : 's29',
-        'name' : 's29',
-        'ram'  : 4096,
-        'cpu'  : 4
+    's29': {
+        'id': 's29',
+        'name': 's29',
+        'ram': 4096,
+        'cpu': 4
     },
-    's30' : {
-        'id'   : 's30',
-        'name' : 's30',
-        'ram'  : 8192,
-        'cpu'  : 4
+    's30': {
+        'id': 's30',
+        'name': 's30',
+        'ram': 8192,
+        'cpu': 4
     },
-    's31' : {
-        'id'   : 's31',
-        'name' : 's31',
-        'ram'  : 12288,
-        'cpu'  : 4
+    's31': {
+        'id': 's31',
+        'name': 's31',
+        'ram': 12288,
+        'cpu': 4
     },
-    's32' : {
-        'id'   : 's32',
-        'name' : 's32',
-        'ram'  : 16384,
-        'cpu'  : 4
+    's32': {
+        'id': 's32',
+        'name': 's32',
+        'ram': 16384,
+        'cpu': 4
     }
 }
+
 
 class VerizonException(Exception):
     def __str__(self):
@@ -249,6 +250,7 @@ class VerizonException(Exception):
 
     def __repr__(self):
         return "<VerizonException '%s'>" % (self.args[0])
+
 
 class VerizonResponse(JsonResponse):
     def success(self):
@@ -262,6 +264,7 @@ class VerizonResponse(JsonResponse):
                 raise VerizonException(self.body)
         return self.body
 
+
 class VerizonNodeSize(NodeSize):
     def __init__(self, id, name, cpu, ram, driver):
         self.id = id
@@ -274,14 +277,15 @@ class VerizonNodeSize(NodeSize):
         return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s driver=%s ...>')
                 % (self.id, self.name, self.cpu, self.ram, self.driver.name))
 
+
 class VerizonConnection(ConnectionUserAndKey):
     """
     Connection to the Verizon Cloud Compute API
     """
-    host     = API_HOST
+    host = API_HOST
 
     responseCls = VerizonResponse
-    
+
     def add_default_headers(self, headers):
         timestamp = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
         headers['Date'] = timestamp
@@ -295,18 +299,19 @@ class VerizonConnection(ConnectionUserAndKey):
         headers['x-tmrk-authorization'] = self._build_request(self.action, timestamp, content_type, content_length)
         headers['x-tmrk-version'] = API_VERSION
         headers['Accept'] = 'application/json'
-        if DEBUG == True:
+        if DEBUG:
             print headers
         return headers
 
     def _build_request(self, path, timestamp, content_type, content_length):
         api_version = 'x-tmrk-version:%s' % API_VERSION
         string = "%s\n%s\n%s\n%s\n%s\n%s\n" % (self.method, content_length, content_type, timestamp, api_version, path)
-        if DEBUG == True:
+        if DEBUG:
             print string
         signature = b64encode(hmac.new(key=self.key, msg=string, digestmod=hashlib.sha256).digest())
         completed_signature = "CloudApi AccessKey=%s SignatureType=HmacSHA256 Signature=%s" % (self.user_id, signature)
         return completed_signature
+
 
 class VerizonNodeDriver(NodeDriver):
     type = "verizon"
@@ -337,16 +342,16 @@ class VerizonNodeDriver(NodeDriver):
         sizes = []
         for key, value in INSTANCE_TYPES.items():
             size = VerizonNodeSize(
-                id=value['id'], name=value['name'], cpu=value['cpu'], 
+                id=value['id'], name=value['name'], cpu=value['cpu'],
                 ram=value['ram'], driver=self.connection.driver
-            )   
+            )
             sizes.append(size)
 
         return sizes
 
     def create_node(self, name=None, size=None, image=None, ssh_admin_key=None,
-            pool=None, network=None, ipaddr=None, row=None, group=None, **kwargs):
-       
+                    pool=None, network=None, ipaddr=None, row=None, group=None, **kwargs):
+
         if name is None:
             raise VerizonException('Parameter name is required')
         if image is None:
@@ -357,7 +362,7 @@ class VerizonNodeDriver(NodeDriver):
         layout_hrefs = {}
 
         if row is None and group is None:
-            layout_hrefs = self._libcloud_layout_check() 
+            layout_hrefs = self._libcloud_layout_check()
         else:
             layout_hrefs['row'] = row
             layout_hrefs['group'] = group
@@ -370,38 +375,38 @@ class VerizonNodeDriver(NodeDriver):
 
         if network is None:
             network = self.ex_get_network(type='int')
-            ipaddr  = self.ex_get_address(network_href = network)
+            ipaddr = self.ex_get_address(network_href=network)
             if ipaddr is None:
                 raise VerizonException('No ips are available')
 
         vm = {}
-        vm['name']             = name
-        vm['PoweredOn']        = False
-        vm['ProcessorCount']   = size.cpu 
-        vm['Template']         = { 'href'  : image.id }
+        vm['name'] = name
+        vm['PoweredOn'] = False
+        vm['ProcessorCount'] = size.cpu
+        vm['Template'] = {'href': image.id}
 
-        vm['Memory']           = { 'Unit'  : 'MB',
-                                   'Value' : size.ram }
+        vm['Memory'] = {'Unit': 'MB',
+                        'Value': size.ram}
 
-        vm['Layout'] = { 'Row'   : { 'href' : layout_hrefs['row'] },
-                         'Group' : { 'href' : layout_hrefs['group'] } }
+        vm['Layout'] = {'Row': {'href': layout_hrefs['row']},
+                        'Group': {'href': layout_hrefs['group']}}
 
-        vm['LinuxCustomization'] = { 'SshKey' : { 'href' : ssh_admin_key },
-                                     'NetworkSettings' : { 
-                                          'NetworkAdapterSettings': [ { 
-                                            'Network'   : { 'href' : network },
-                                            'IpAddress' : ipaddr } ]
-                                          }
-                                     }
-       
+        vm['LinuxCustomization'] = {'SshKey': {'href': ssh_admin_key},
+                                    'NetworkSettings': {
+                                        'NetworkAdapterSettings': [{
+                                            'Network': {'href': network},
+                                            'IpAddress': ipaddr}]
+                                        }
+                                    }
+
         url = '%s/virtualmachines/computepools/%s/action/createvirtualmachine' % (API_ROOT, pool)
 
-        headers = { 'Content-Length' : len(json.dumps(vm)) }
+        headers = {'Content-Length': len(json.dumps(vm))}
 
         result = self.connection.request(url, method='POST', headers=headers, data=json.dumps(vm)).object
         result['ip'] = ipaddr
         return self._to_node(result)
- 
+
     def deploy_node(self, deploy=None, **kwargs):
         if deploy is None:
             raise VerizonException('Parameter deploy is required')
@@ -478,12 +483,12 @@ class VerizonNodeDriver(NodeDriver):
                                   driver=self)
 
         return self.ex_get_node(node=node)
-        
+
     def ex_get_default_org(self):
         """
-        Returns default organization 
+        Returns default organization
 
-        :rtype: ``str`` 
+        :rtype: ``str``
         """
         url = API_ROOT + '/organizations'
         result = self.connection.request(url).object
@@ -495,11 +500,11 @@ class VerizonNodeDriver(NodeDriver):
     def ex_get_default_env(self, org=None):
         """
         Returns default environment
-        
+
         :param  org:    Organization ID
         :type   org:    ``str``
 
-        :rtype: ``str`` 
+        :rtype: ``str``
         """
         if org is None:
             org = self.ex_get_default_org()
@@ -510,11 +515,11 @@ class VerizonNodeDriver(NodeDriver):
     def ex_get_default_pool(self, org=None):
         """
         Returns default compute pool
-        
+
         :param  org:    Organization ID
         :type   org:    ``str``
 
-        :rtype: ``str`` 
+        :rtype: ``str``
         """
         if org is None:
             org = self.ex_get_default_org()
@@ -522,48 +527,47 @@ class VerizonNodeDriver(NodeDriver):
         href = self.connection.request(url).object['Items'][0]['ComputePools'][0]['href']
         return href.split('/')[4]
 
-
     def ex_create_row(self, name=None, env=None):
         """
         Creates a row
-        
+
         :param  name:   Name of the row
         :type   name:   ``str``
-        
+
         :param   env:   Environment to use
         :type    env:   ``str``
-    
+
         :return:        href to row
 
-        :rtype: ``str`` 
+        :rtype: ``str``
         """
         if name is None:
             raise VerizonException('Argument "name" required')
         if env is None:
-            env  = self.ex_get_default_env()
+            env = self.ex_get_default_env()
 
-        url  = '%s/layoutrows/environments/%s/action/createlayoutrow' % (API_ROOT, env)
-        body = {'name' : name}
-        headers = { 'Content-Length' : len(json.dumps(body)) }
+        url = '%s/layoutrows/environments/%s/action/createlayoutrow' % (API_ROOT, env)
+        body = {'name': name}
+        headers = {'Content-Length': len(json.dumps(body))}
         href = self.connection.request(url, method='POST', headers=headers, data=json.dumps(body)).object['href']
         return href
 
     def ex_create_group(self, name=None, env=None, row_href=None):
         """
         Creates a row
-        
+
         :param  name:   Name of the group
         :type   name:   ``str``
-        
+
         :param   env:   Environment ID
         :type    env:   ``str``
-        
+
         :param   row:   Row href
         :type    row:   ``str``
-    
+
         :return:        href to group
 
-        :rtype: ``str`` 
+        :rtype: ``str``
         """
         if name is None:
             raise VerizonException('Argument "name" required')
@@ -572,9 +576,9 @@ class VerizonNodeDriver(NodeDriver):
         if row_href is None:
             raise VerizonException('Argument "row_href" required')
 
-        url  = '%s/layoutgroups/environments/%s/action/createlayoutgroup' % (API_ROOT, env)
-        body = { "name": name, "Row": { "href": row_href } } 
-        headers = { 'Content-Length' : len(json.dumps(body)) }
+        url = '%s/layoutgroups/environments/%s/action/createlayoutgroup' % (API_ROOT, env)
+        body = {"name": name, "Row": {"href": row_href}}
+        headers = {'Content-Length': len(json.dumps(body))}
         href = self.connection.request(url, method='POST', headers=headers, data=json.dumps(body)).object['href']
         return href
 
@@ -584,7 +588,7 @@ class VerizonNodeDriver(NodeDriver):
         if type not in ('int', 'dmz'):
             raise VerizonException('Argument "type" should be either "dmz" or "int"')
         env = self.ex_get_default_env()
-        url  = '%s/networks/environments/%s' % (API_ROOT, env)
+        url = '%s/networks/environments/%s' % (API_ROOT, env)
         result = self.connection.request(url).object['Items']
         href = None
         for i in result:
@@ -604,14 +608,14 @@ class VerizonNodeDriver(NodeDriver):
         if ipaddr is None:
             raise VerizonException('No addressess are available')
         return ipaddr
-        
+
     def ex_get_ssh_key(self):
         org = self.ex_get_default_org()
         url = '%s/admin/sshkeys/organizations/%s' % (API_ROOT, org)
         result = self.connection.request(url).object['Items']
         ssh_href = None
         for i in result:
-            if i['Default'] == True:
+            if i['Default']:
                 ssh_href = i['href']
         if ssh_href is None:
             raise VerizonException('No default key found')
@@ -650,13 +654,13 @@ class VerizonNodeDriver(NodeDriver):
             raise VerizonException('Parameter node is required')
         result = self.connection.request(node.id).object
         return self._to_node(result)
-   
-    def _to_node(self, node):
-        public_ips  = []
-        private_ips = []
-        state       = 'UNKNOWN'
 
-        if node['IpAddresses']['AssignedIpAddresses']['Networks'] is not None: 
+    def _to_node(self, node):
+        public_ips = []
+        private_ips = []
+        state = 'UNKNOWN'
+
+        if node['IpAddresses']['AssignedIpAddresses']['Networks'] is not None:
             for i in node['IpAddresses']['AssignedIpAddresses']['Networks']:
                 for a in i['IpAddresses']:
                     public_ips.append(a)
@@ -707,4 +711,4 @@ class VerizonNodeDriver(NodeDriver):
         else:
             hrefs['group'] = grp
 
-        return hrefs 
+        return hrefs
