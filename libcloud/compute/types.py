@@ -135,6 +135,7 @@ class Provider(object):
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
     RUNABOVE = 'runabove'
+    VERIZON_LEGACY = 'verizon'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
