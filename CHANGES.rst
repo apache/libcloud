@@ -4,6 +4,13 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Update Rackspace AUTH_URL
+  [LIBCLOUD-738)
+  [Brian Curtin]
+
 Compute
 ~~~~~~~
 
