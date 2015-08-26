@@ -83,9 +83,13 @@ class DimensionDataLBDriver(Driver):
         kwargs['region'] = self.selected_region
         return kwargs
 
+    def create_balancer(self, name, port, protocol, algorithm, members):
+        
+        return True
+
     def list_balancers(self):
         """
-        List all loadbalancers inside a gepgraphy.
+        List all loadbalancers inside a geography.
         
         In Dimension Data terminology these are known as virtual listeners
 
@@ -150,10 +154,34 @@ class DimensionDataLBDriver(Driver):
     def balancer_attach_member(self, balancer, member):
         return True
 
+    def balancer_attach_compute_node(self, balancer, node):
+        return True
+
     def balancer_detach_member(self, balancer, member):
         return True
 
     def destroy_balancer(self, balancer):
+        return True
+
+    def ex_create_node(self,
+                       network_domain_id,
+                       name,
+                       ip,
+                       ex_description,
+                       connectionLimit=25000,
+                       connectionRateLimit=2000):
+        create_node_elm = ET.Element('createNode', {'xmlns': SERVER_NS})
+        ET.SubElement(create_node_elm, "networkDomainId").text = network_domain_id
+        ET.SubElement(create_node_elm, "description").text = ex_description
+        ET.SubElement(create_node_elm, "name").text = name
+        ET.SubElement(create_node_elm, "ipv4Address").text = ip
+        ET.SubElement(create_node_elm, "connectionLimit").text = connectionLimit
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = connectionRateLimit
+
+        self.connection.request_with_orgId_api_2(
+            'networkDomainVip/createNode',
+            method='POST',
+            data=ET.tostring(create_node_elm)).object
         return True
 
     def ex_get_pools(self):
