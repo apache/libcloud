@@ -17,6 +17,10 @@ Compute
   (GITHUB-561)
   [ZuluPro]
 
+- Add support and update Dimension Data driver to use API v2.0 by default.
+  (LIBCLOUD-736, GITHUB-564)
+  [Anthony Shaw]
+
 DNS
 ~~~
 
