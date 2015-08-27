@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="na9/2015-06-09T07:02:49.563-04:00/40653bb1-cf55-4ba8-ba00-121c19c50a54">
+<operation>ADD_POOL_MEMBER</operation>
+<responseCode>OK</responseCode>
+<message>Pool Member '10.0.3.13:9888' has been added.</message>
+<info name="poolMemberId" value="3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0"/>
+<info name="nodeName" value="10.0.3.13"/>
+</response>

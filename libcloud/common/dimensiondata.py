@@ -306,6 +306,7 @@ class DimensionDataVlan(object):
                 % (self.id, self.name, self.description,
                    self.location, self.status))
 
+
 class DimensionDataPool(object):
     """
     DimensionData VIP Pool.
@@ -322,21 +323,54 @@ class DimensionDataPool(object):
                  'description=%s, status=%s>')
                 % (self.id, self.name, self.description,
                    self.status))
-    
+
+
 class DimensionDataPoolMember(object):
     """
     DimensionData VIP Pool Member.
     """
 
-    def __init__(self, id, name, status, ip_address, port):
+    def __init__(self, id, name, status, ip, port):
         self.id = str(id)
         self.name = name
         self.status = status
-        self.ip_address = ip_address
+        self.ip = ip
         self.port = port
 
     def __repr__(self):
         return (('<DimensionDataPool: id=%s, name=%s, '
-                 'ip_address=%s, status=%s, port=%s>')
+                 'ip=%s, status=%s, port=%s>')
                 % (self.id, self.name,
-                   self.ip_address, self.status, self.port))
+                   self.ip, self.status, self.port))
+
+
+class DimensionDataVIPNode(object):
+    def __init__(self, id, name, status, ip):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.ip = ip
+
+    def __repr__(self):
+        return (('<DimensionDataVIPNode: id=%s, name=%s, '
+                 'status=%s, ip=%s>')
+                % (self.id, self.name,
+                   self.status, self.ip))
+
+
+class DimensionDataVirtualListener(object):
+    """
+    DimensionData Virtual Listener.
+    """
+
+    def __init__(self, id, name, status, ip):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.ip = ip
+
+    def __repr__(self):
+        return (('<DimensionDataPool: id=%s, name=%s, '
+                 'status=%s, ip=%s>')
+                % (self.id, self.name,
+                   self.status, self.ip))

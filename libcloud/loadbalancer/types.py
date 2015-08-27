@@ -41,7 +41,7 @@ class Provider(object):
     GCE = 'gce'
     SOFTLAYER = 'softlayer'
     DIMENSIONDATA = 'dimensiondata'
-    
+
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'

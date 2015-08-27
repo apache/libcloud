@@ -17,10 +17,11 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
-from libcloud.loadbalancer.base import LoadBalancer
-from libcloud.loadbalancer.drivers.dimensiondata import DimensionDataLBDriver as DimensionData
+from libcloud.common.dimensiondata import DimensionDataVIPNode, DimensionDataPool
+from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
+from libcloud.loadbalancer.drivers.dimensiondata \
+    import DimensionDataLBDriver as DimensionData
 from libcloud.loadbalancer.types import State
-from libcloud.common.dimensiondata import DimensionDataAPIException
 
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
@@ -39,10 +40,31 @@ class DimensionDataTests(unittest.TestCase):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_balancers()
-            self.assertTrue(
-                False)  # Above command should have thrown an InvalidCredsException
+            self.assertTrue(False)
+            # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
             pass
+
+    def test_create_balancer(self):
+        self.driver.ex_set_current_network_domain('1234')
+        members = []
+        members.append(Member(
+            id=None,
+            ip='1.2.3.4',
+            port=80))
+
+        balancer = self.driver.create_balancer(
+            name='test',
+            port=80,
+            protocol='http',
+            algorithm=Algorithm.ROUND_ROBIN,
+            members=members)
+        self.assertEqual(balancer.name, 'test')
+        self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
+        self.assertEqual(balancer.ip, '165.180.12.22')
+        self.assertEqual(balancer.port, 80)
+        self.assertEqual(balancer.extra['pool_id'], '9e6b496d-5261-4542-91aa-b50c7f569c54')
+        self.assertEqual(balancer.extra['network_domain_id'], '1234')
 
     def test_list_balancers(self):
         bal = self.driver.list_balancers()
@@ -53,8 +75,8 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(bal[0].state, State.RUNNING)
 
     def test_balancer_list_members(self):
-        extra={}
-        extra['pool_id']='4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+                 'network_domain_id': '1234'}
         balancer = LoadBalancer(
             id='234',
             name='test',
@@ -70,6 +92,122 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(members[0].id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
         self.assertEqual(members[0].port, 9889)
 
+    def test_balancer_attach_member(self):
+        extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+                 'network_domain_id': '1234'}
+        balancer = LoadBalancer(
+            id='234',
+            name='test',
+            state=State.RUNNING,
+            ip='1.2.3.4',
+            port=1234,
+            driver=self.driver,
+            extra=extra
+        )
+        member = Member(
+            id=None,
+            ip='112.12.2.2',
+            port=80,
+            balancer=balancer,
+            extra=None)
+        member = self.driver.balancer_attach_member(balancer, member)
+        self.assertEqual(member.id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
+
+    def test_balancer_detach_member(self):
+        extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+                 'network_domain_id': '1234'}
+        balancer = LoadBalancer(
+            id='234',
+            name='test',
+            state=State.RUNNING,
+            ip='1.2.3.4',
+            port=1234,
+            driver=self.driver,
+            extra=extra
+        )
+        member = Member(
+            id='3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0',
+            ip='112.12.2.2',
+            port=80,
+            balancer=balancer,
+            extra=None)
+        result = self.driver.balancer_detach_member(balancer, member)
+        self.assertEqual(result, True)
+
+    def test_destroy_balancer(self):
+        extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+                 'network_domain_id': '1234'}
+        balancer = LoadBalancer(
+            id='234',
+            name='test',
+            state=State.RUNNING,
+            ip='1.2.3.4',
+            port=1234,
+            driver=self.driver,
+            extra=extra
+        )
+        response = self.driver.destroy_balancer(balancer)
+        self.assertEqual(response, True)
+
+    def test_set_get_network_domain_id(self):
+        self.driver.ex_set_current_network_domain('1234')
+        nwd = self.driver.ex_get_current_network_domain()
+        self.assertEqual(nwd, '1234')
+
+    def test_ex_create_pool_member(self):
+        pool = DimensionDataPool(
+            id='4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+            name='test',
+            description='test',
+            status=State.RUNNING
+        )
+        node = DimensionDataVIPNode(
+            id='2344',
+            name='test',
+            status=State.RUNNING,
+            ip='123.23.3.2'
+        )
+        member = self.driver.ex_create_pool_member(
+            pool=pool,
+            node=node,
+            port=80
+        )
+        self.assertEqual(member.id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
+        self.assertEqual(member.name, '10.0.3.13')
+        self.assertEqual(member.ip, '123.23.3.2')
+
+    def test_ex_create_node(self):
+        node = self.driver.ex_create_node(
+            network_domain_id='12345',
+            name='test',
+            ip='123.12.32.2',
+            ex_description='',
+            connection_limit=25000,
+            connection_rate_limit=2000)
+        self.assertEqual(node.name, 'myProductionNode.1')
+        self.assertEqual(node.id, '9e6b496d-5261-4542-91aa-b50c7f569c54')
+
+    def test_ex_create_pool(self, ):
+        pool = self.driver.ex_create_pool(
+            network_domain_id='1234',
+            name='test',
+            balancer_method='ROUND_ROBIN',
+            ex_description='test',
+            service_down_action='NONE',
+            slow_ramp_time=30)
+        self.assertEqual(pool.id, '9e6b496d-5261-4542-91aa-b50c7f569c54')
+        self.assertEqual(pool.name, 'test')
+        self.assertEqual(pool.status, State.RUNNING)
+
+    def test_ex_create_virtual_listener(self):
+        listener = self.driver.ex_create_virtual_listener(
+            network_domain_id='12345',
+            name='test',
+            ex_description='test',
+            port=80)
+        self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
+        self.assertEqual(listener.name, 'test')
+
     def test_get_balancer(self):
         bal = self.driver.get_balancer('6115469d-a8bb-445b-bb23-d23b5283f2b9')
         self.assertEqual(bal.name, 'myProduction.Virtual.Listener')
@@ -81,14 +219,14 @@ class DimensionDataTests(unittest.TestCase):
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
         self.assertNotEqual(0, len(protocols))
-    
-    def test_get_pools(self):
+
+    def test_ex_get_pools(self):
         pools = self.driver.ex_get_pools()
         self.assertNotEqual(0, len(pools))
         self.assertEqual(pools[0].name, 'myDevelopmentPool.1')
         self.assertEqual(pools[0].id, '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7')
-        
-    def test_get_pool(self):
+
+    def test_ex_get_pool(self):
         pool = self.driver.ex_get_pool('4d360b1f-bc2c-4ab7-9884-1f03ba2768f7')
         self.assertEqual(pool.name, 'myDevelopmentPool.1')
         self.assertEqual(pool.id, '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7')
@@ -99,16 +237,17 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(members[0].id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
         self.assertEqual(members[0].name, '10.0.3.13')
         self.assertEqual(members[0].status, 'NORMAL')
-        self.assertEqual(members[0].ip_address, '10.0.3.13')
+        self.assertEqual(members[0].ip, '10.0.3.13')
         self.assertEqual(members[0].port, 9889)
-    
+
     def test_get_pool_member(self):
         member = self.driver.ex_get_pool_member('3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
         self.assertEqual(member.id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
         self.assertEqual(member.name, '10.0.3.13')
         self.assertEqual(member.status, 'NORMAL')
-        self.assertEqual(member.ip_address, '10.0.3.13')
+        self.assertEqual(member.ip, '10.0.3.13')
         self.assertEqual(member.port, 9889)
+
 
 class DimensionDataMockHttp(MockHttp):
 
@@ -144,7 +283,7 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember.xml')
@@ -153,6 +292,36 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
