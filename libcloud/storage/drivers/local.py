@@ -401,12 +401,11 @@ class LocalStorageDriver(StorageDriver):
         :param chunk_size: Optional chunk size (in bytes).
         :type chunk_size: ``int``
 
+        :return: A stream of binary chunks of data.
         :rtype: ``object``
         """
-
         path = self.get_object_cdn_url(obj)
-
-        with open(path) as obj_file:
+        with open(path, 'rb') as obj_file:
             for data in read_in_chunks(obj_file, chunk_size=chunk_size):
                 yield data
 
@@ -467,7 +466,8 @@ class LocalStorageDriver(StorageDriver):
         doesn't need to buffer whole object in the memory.
 
         :type iterator: ``object``
-        :param iterator: An object which implements the iterator interface.
+        :param iterator: An object which implements the iterator
+                         interface and yields binary chunks of data.
 
         :type container: :class:`Container`
         :param container: Destination container.
@@ -482,22 +482,15 @@ class LocalStorageDriver(StorageDriver):
 
         :rtype: ``object``
         """
-
         path = self.get_container_cdn_url(container, check=True)
         obj_path = os.path.join(path, object_name)
         base_path = os.path.dirname(obj_path)
-
         self._make_path(base_path)
-
         with LockLocalStorage(obj_path):
-            obj_file = open(obj_path, 'w')
-            for data in iterator:
-                obj_file.write(data)
-
-            obj_file.close()
-
+            with open(obj_path, 'wb') as obj_file:
+                for data in iterator:
+                    obj_file.write(data)
         os.chmod(obj_path, int('664', 8))
-
         return self._make_object(container, object_name)
 
     def delete_object(self, obj):
