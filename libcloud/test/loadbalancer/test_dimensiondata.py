@@ -204,7 +204,13 @@ class DimensionDataTests(unittest.TestCase):
             network_domain_id='12345',
             name='test',
             ex_description='test',
-            port=80)
+            port=80,
+            pool=DimensionDataPool(
+                id='1234',
+                name='test',
+                description='test',
+                status=State.RUNNING
+            ))
         self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(listener.name, 'test')
 

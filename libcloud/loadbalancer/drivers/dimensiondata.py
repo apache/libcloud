@@ -138,8 +138,9 @@ class DimensionDataLBDriver(Driver):
         listener = self.ex_create_virtual_listener(
             network_domain_id=network_domain_id,
             name=name,
-            ex_description=None,
-            port=port)
+            ex_description=name,
+            port=port,
+            pool=pool)
 
         return LoadBalancer(
             id=listener.id,
@@ -326,7 +327,7 @@ class DimensionDataLBDriver(Driver):
         create_pool_m = ET.Element('addPoolMember', {'xmlns': TYPES_URN})
         ET.SubElement(create_pool_m, "poolId").text = pool.id
         ET.SubElement(create_pool_m, "nodeId").text = node.id
-        ET.SubElement(create_pool_m, "port").text = str(port)
+        ET.SubElement(create_pool_m, "status").text = 'ENABLED'
 
         response = self.connection.request_with_orgId_api_2(
             'networkDomainVip/addPoolMember',
@@ -346,7 +347,8 @@ class DimensionDataLBDriver(Driver):
             name=node_name,
             status=State.RUNNING,
             ip=node.ip,
-            port=port
+            port=port,
+            node_id=node.id
         )
 
     def ex_create_node(self,
@@ -384,16 +386,18 @@ class DimensionDataLBDriver(Driver):
         create_node_elm = ET.Element('createNode', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
-        ET.SubElement(create_node_elm, "description").text = ex_description
         ET.SubElement(create_node_elm, "name").text = name
+        ET.SubElement(create_node_elm, "description").text \
+            = str(ex_description)
         ET.SubElement(create_node_elm, "ipv4Address").text = ip
+        ET.SubElement(create_node_elm, "status").text = 'ENABLED'
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(connection_limit)
         ET.SubElement(create_node_elm, "connectionRateLimit") \
             .text = str(connection_rate_limit)
 
         response = self.connection.request_with_orgId_api_2(
-            'networkDomainVip/createNode',
+            action='networkDomainVip/createNode',
             method='POST',
             data=ET.tostring(create_node_elm)).object
 
@@ -443,12 +447,15 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of ``DimensionDataPool``
         :rtype: ``DimensionDataPool``
         """
+        # Names cannot contain spaces.
+        name.replace(' ', '_')
         create_node_elm = ET.Element('createPool', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
-        ET.SubElement(create_node_elm, "description").text = str(ex_description)
         ET.SubElement(create_node_elm, "name").text = name
-        ET.SubElement(create_node_elm, "loadBalancerMethod") \
+        ET.SubElement(create_node_elm, "description").text \
+            = str(ex_description)
+        ET.SubElement(create_node_elm, "loadBalanceMethod") \
             .text = str(balancer_method)
         ET.SubElement(create_node_elm, "serviceDownAction") \
             .text = service_down_action
@@ -477,8 +484,8 @@ class DimensionDataLBDriver(Driver):
                                    name,
                                    ex_description,
                                    port,
-                                   listener_type='STANDARD',
-                                   protocol='ANY',
+                                   pool,
+                                   protocol='TCP',
                                    connection_limit=25000,
                                    connection_rate_limit=2000,
                                    source_port_preservation='PRESERVE'):
@@ -519,27 +526,35 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of the listener
         :rtype: ``DimensionDataVirtualListener``
         """
+        if port is 80 or 443:
+            listener_type = 'PERFORMANCE_LAYER_4'
+            protocol = 'HTTP'
+        else:
+            listener_type = 'STANDARD'
+
         create_node_elm = ET.Element('createVirtualListener',
                                      {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
-        ET.SubElement(create_node_elm, "description").text = ex_description
         ET.SubElement(create_node_elm, "name").text = name
-        ET.SubElement(create_node_elm, "port").text = str(port)
+        ET.SubElement(create_node_elm, "description").text = \
+            str(ex_description)
         ET.SubElement(create_node_elm, "type").text = listener_type
+        ET.SubElement(create_node_elm, "protocol") \
+            .text = protocol
+        ET.SubElement(create_node_elm, "port").text = str(port)
+        ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(connection_limit)
         ET.SubElement(create_node_elm, "connectionRateLimit") \
             .text = str(connection_rate_limit)
         ET.SubElement(create_node_elm, "sourcePortPreservation") \
             .text = source_port_preservation
-
-        if protocol != 'ANY':
-            ET.SubElement(create_node_elm, "protocol") \
-                .text = protocol
+        ET.SubElement(create_node_elm, "poolId") \
+            .text = pool.id
 
         response = self.connection.request_with_orgId_api_2(
-            'networkDomainVip/createVirtualListener',
+            action='networkDomainVip/createVirtualListener',
             method='POST',
             data=ET.tostring(create_node_elm)).object
 
@@ -569,6 +584,18 @@ class DimensionDataLBDriver(Driver):
                                       % pool_id).object
         return self._to_pool(pool)
 
+    def ex_destroy_pool(self, pool):
+        destroy_request = ET.Element('deletePool',
+                                     {'xmlns': TYPES_URN,
+                                      'id': pool.id})
+
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/deletePool',
+            method='POST',
+            data=ET.tostring(destroy_request)).object
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'OK'
+
     def ex_get_pool_members(self, pool_id):
         members = self.connection \
             .request_with_orgId_api_2('networkDomainVip/poolMember?poolId=%s'
@@ -580,6 +607,62 @@ class DimensionDataLBDriver(Driver):
             .request_with_orgId_api_2('networkDomainVip/poolMember/%s'
                                       % pool_member_id).object
         return self._to_member(member)
+
+    def ex_destroy_pool_member(self, member, destroy_node=False):
+        # remove the pool member
+        destroy_request = ET.Element('removePoolMember',
+                                     {'xmlns': TYPES_URN,
+                                      'id': member.id})
+
+        self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/removePoolMember',
+            method='POST',
+            data=ET.tostring(destroy_request)).object
+
+        if member.node_id is not None and destroy_node is True:
+            self.ex_destroy_node(member.node_id)
+
+    def ex_get_nodes(self):
+        nodes = self.connection \
+            .request_with_orgId_api_2('networkDomainVip/node').object
+        return self._to_nodes(nodes)
+
+    def ex_destroy_node(self, node_id):
+        # Destroy the node
+        destroy_request = ET.Element('deleteNode',
+                                     {'xmlns': TYPES_URN,
+                                      'id': node_id})
+
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/deleteNode',
+            method='POST',
+            data=ET.tostring(destroy_request)).object
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'OK'
+
+    def _to_nodes(self, object):
+        nodes = []
+        for element in object.findall(fixxpath("node", TYPES_URN)):
+            nodes.append(self._to_node(element))
+
+        return nodes
+
+    def _to_node(self, element):
+        ipaddress = findtext(element, 'ipv4Address', TYPES_URN)
+        if ipaddress is None:
+            ipaddress = findtext(element, 'ipv6Address', TYPES_URN)
+
+        name = findtext(element, 'name', TYPES_URN)
+
+        node = DimensionDataVIPNode(
+            id=element.get('id'),
+            name=name,
+            status=self._VALUE_TO_STATE_MAP.get(
+                findtext(element, 'state', TYPES_URN),
+                State.UNKNOWN),
+            ip=ipaddress)
+
+        return node
 
     def _to_balancers(self, object):
         loadbalancers = []
@@ -622,18 +705,24 @@ class DimensionDataLBDriver(Driver):
         return members
 
     def _to_member(self, element):
-        pool = DimensionDataPoolMember(
+        port = findtext(element, 'port', TYPES_URN)
+        if port is not None:
+            port = int(port)
+        pool_member = DimensionDataPoolMember(
             id=element.get('id'),
             name=element.find(fixxpath(
                 'node',
                 TYPES_URN)).get('name'),
             status=findtext(element, 'state', TYPES_URN),
+            node_id=element.find(fixxpath(
+                'node',
+                TYPES_URN)).get('id'),
             ip=element.find(fixxpath(
                 'node',
                 TYPES_URN)).get('ipAddress'),
-            port=int(findtext(element, 'port', TYPES_URN))
+            port=port
         )
-        return pool
+        return pool_member
 
     def _to_pools(self, object):
         pools = []

@@ -89,12 +89,19 @@ class DimensionDataResponse(XmlResponse):
 
         body = self.parse_body()
 
-        # TODO: The path is not fixed as server.
         if self.status == httplib.BAD_REQUEST:
             code = findtext(body, 'responseCode', SERVER_NS)
+            if code is None:
+                code = findtext(body, 'responseCode', TYPES_URN)
             message = findtext(body, 'message', SERVER_NS)
-            raise DimensionDataAPIException(code,
-                                            message,
+            if message is None:
+                message = findtext(body, 'message', TYPES_URN)
+            raise DimensionDataAPIException(code=code,
+                                            msg=message,
+                                            driver=self.connection.driver)
+        if self.status is not httplib.OK:
+            raise DimensionDataAPIException(code=self.status,
+                                            msg=body,
                                             driver=self.connection.driver)
 
         return self.body
@@ -146,6 +153,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
         headers['Authorization'] = \
             ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
                                                  self.key))).decode('utf-8'))
+        headers['Content-Type'] = 'application/xml'
         return headers
 
     def request_api_1(self, action, params=None, data='',
@@ -330,18 +338,20 @@ class DimensionDataPoolMember(object):
     DimensionData VIP Pool Member.
     """
 
-    def __init__(self, id, name, status, ip, port):
+    def __init__(self, id, name, status, ip, port, node_id):
         self.id = str(id)
         self.name = name
         self.status = status
         self.ip = ip
         self.port = port
+        self.node_id = node_id
 
     def __repr__(self):
         return (('<DimensionDataPool: id=%s, name=%s, '
-                 'ip=%s, status=%s, port=%s>')
+                 'ip=%s, status=%s, port=%s, node_id=%s')
                 % (self.id, self.name,
-                   self.ip, self.status, self.port))
+                   self.ip, self.status, self.port,
+                   self.node_id))
 
 
 class DimensionDataVIPNode(object):
