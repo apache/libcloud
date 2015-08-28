@@ -26,7 +26,6 @@ from libcloud.common.dimensiondata import DimensionDataVIPNode
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import SERVER_NS
 from libcloud.utils.misc import reverse_dict
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.loadbalancer.types import State
@@ -259,7 +258,7 @@ class DimensionDataLBDriver(Driver):
         :return: ``True`` if member detach was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        create_pool_m = ET.Element('removePoolMember', {'xmlns': SERVER_NS,
+        create_pool_m = ET.Element('removePoolMember', {'xmlns': TYPES_URN,
                                                         'id': member.id})
 
         result = self.connection.request_with_orgId_api_2(
@@ -280,7 +279,7 @@ class DimensionDataLBDriver(Driver):
         :rtype: ``bool``
         """
         delete_listener = ET.Element('deleteVirtualListener',
-                                     {'xmlns': SERVER_NS,
+                                     {'xmlns': TYPES_URN,
                                       'id': balancer.id})
 
         result = self.connection.request_with_orgId_api_2(
@@ -324,7 +323,7 @@ class DimensionDataLBDriver(Driver):
         :return: The node member, instance of ``DimensionDataPoolMember``
         :rtype: ``DimensionDataPoolMember``
         """
-        create_pool_m = ET.Element('addPoolMember', {'xmlns': SERVER_NS})
+        create_pool_m = ET.Element('addPoolMember', {'xmlns': TYPES_URN})
         ET.SubElement(create_pool_m, "poolId").text = pool.id
         ET.SubElement(create_pool_m, "nodeId").text = node.id
         ET.SubElement(create_pool_m, "port").text = str(port)
@@ -382,7 +381,7 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of ``DimensionDataVIPNode``
         :rtype: ``DimensionDataVIPNode``
         """
-        create_node_elm = ET.Element('createNode', {'xmlns': SERVER_NS})
+        create_node_elm = ET.Element('createNode', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
         ET.SubElement(create_node_elm, "description").text = ex_description
@@ -444,20 +443,20 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of ``DimensionDataPool``
         :rtype: ``DimensionDataPool``
         """
-        create_node_elm = ET.Element('createPool', {'xmlns': SERVER_NS})
+        create_node_elm = ET.Element('createPool', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
-        ET.SubElement(create_node_elm, "description").text = ex_description
+        ET.SubElement(create_node_elm, "description").text = str(ex_description)
         ET.SubElement(create_node_elm, "name").text = name
         ET.SubElement(create_node_elm, "loadBalancerMethod") \
-            .text = balancer_method
+            .text = str(balancer_method)
         ET.SubElement(create_node_elm, "serviceDownAction") \
             .text = service_down_action
         ET.SubElement(create_node_elm, "slowRampTime").text \
             = str(slow_ramp_time)
 
         response = self.connection.request_with_orgId_api_2(
-            'networkDomainVip/createPool',
+            action='networkDomainVip/createPool',
             method='POST',
             data=ET.tostring(create_node_elm)).object
 
@@ -521,7 +520,7 @@ class DimensionDataLBDriver(Driver):
         :rtype: ``DimensionDataVirtualListener``
         """
         create_node_elm = ET.Element('createVirtualListener',
-                                     {'xmlns': SERVER_NS})
+                                     {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
         ET.SubElement(create_node_elm, "description").text = ex_description
