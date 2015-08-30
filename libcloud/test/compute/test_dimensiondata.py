@@ -20,6 +20,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
+from libcloud.common.dimensiondata import DimensionDataAPIException
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
