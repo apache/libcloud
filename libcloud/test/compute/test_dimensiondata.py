@@ -17,8 +17,8 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
+from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
-from libcloud.compute.drivers.dimensiondata import DimensionDataAPIException
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
 from libcloud.test import MockHttp
