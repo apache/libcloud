@@ -328,7 +328,7 @@ class DNSDriver(BaseDriver):
         raise NotImplementedError(
             'create_record not implemented for this driver')
 
-    def update_record(self, record, name, type, data, extra):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
