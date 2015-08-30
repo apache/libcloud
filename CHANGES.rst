@@ -46,6 +46,14 @@ Storage
   (LIBCLOUD-725, GITHUB-568)
   [Torf]
 
+Loadbalancer
+~~~~~~~~~~~~
+
+- Add a new driver for DimensionData load-balancing service
+  (http://cloud.dimensiondata.com/).
+  (LIBCLOUD-737, GITHUB-567)
+  [Anthony Shaw]
+
 DNS
 ~~~
 
