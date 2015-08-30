@@ -99,13 +99,14 @@ class DimensionDataLBDriver(Driver):
         :param name: Name of the new load balancer (required)
         :type  name: ``str``
 
-        :param port: Port the load balancer should listen on, defaults to 80
+        :param port: Port the load balancer should listen on,
+                    defaults to 80 (required)
         :type  port: ``str``
 
         :param protocol: Loadbalancer protocol, defaults to http.
         :type  protocol: ``str``
 
-        :param members: list of Members to attach to balancer
+        :param members: list of Members to attach to balancer (optional)
         :type  members: ``list`` of :class:`Member`
 
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
@@ -114,6 +115,12 @@ class DimensionDataLBDriver(Driver):
         :rtype: :class:`LoadBalancer`
         """
         network_domain_id = self.network_domain_id
+        if port is None:
+            port = 80
+        if protocol is None:
+            protocol = 'http'
+        if algorithm is None:
+            algorithm = Algorithm.ROUND_ROBIN
 
         # Create a pool first
         pool = self.ex_create_pool(
@@ -123,16 +130,17 @@ class DimensionDataLBDriver(Driver):
             balancer_method=self._ALGORITHM_TO_VALUE_MAP[algorithm])
 
         # Attach the members to the pool as nodes
-        for member in members:
-            node = self.ex_create_node(
-                network_domain_id=network_domain_id,
-                name=member.ip,
-                ip=member.ip,
-                ex_description=None)
-            self.ex_create_pool_member(
-                pool=pool,
-                node=node,
-                port=port)
+        if members is not None:
+            for member in members:
+                node = self.ex_create_node(
+                    network_domain_id=network_domain_id,
+                    name=member.ip,
+                    ip=member.ip,
+                    ex_description=None)
+                self.ex_create_pool_member(
+                    pool=pool,
+                    node=node,
+                    port=port)
 
         # Create the virtual listener (balancer)
         listener = self.ex_create_virtual_listener(
@@ -574,17 +582,41 @@ class DimensionDataLBDriver(Driver):
         )
 
     def ex_get_pools(self):
+        """
+        Get all of the pools inside the current geography
+
+        :return: Returns a ``list`` of type ``DimensionDataPool``
+        :rtype: ``list`` of ``DimensionDataPool``
+        """
         pools = self.connection \
             .request_with_orgId_api_2('networkDomainVip/pool').object
         return self._to_pools(pools)
 
     def ex_get_pool(self, pool_id):
+        """
+        Get a specific pool inside the current geography
+
+        :param pool_id: The identifier of the pool
+        :type  pool_id: ``str``
+
+        :return: Returns an instance of ``DimensionDataPool``
+        :rtype: ``DimensionDataPool``
+        """
         pool = self.connection \
             .request_with_orgId_api_2('networkDomainVip/pool/%s'
                                       % pool_id).object
         return self._to_pool(pool)
 
     def ex_destroy_pool(self, pool):
+        """
+        Destroy an existing pool
+
+        :param pool: The instance of ``DimensionDataPool`` to destroy
+        :type  pool: ``DimensionDataPool``
+
+        :return: ``True`` for success, ``False`` for failure
+        :rtype: ``bool``
+        """
         destroy_request = ET.Element('deletePool',
                                      {'xmlns': TYPES_URN,
                                       'id': pool.id})
@@ -597,37 +629,85 @@ class DimensionDataLBDriver(Driver):
         return responseCode == 'OK'
 
     def ex_get_pool_members(self, pool_id):
+        """
+        Get the members of a pool
+
+        :param pool: The instance of a pool
+        :type  pool: ``DimensionDataPool``
+
+        :return: Returns an ``list`` of ``DimensionDataPoolMember``
+        :rtype: ``list`` of ``DimensionDataPoolMember``
+        """
         members = self.connection \
             .request_with_orgId_api_2('networkDomainVip/poolMember?poolId=%s'
                                       % pool_id).object
         return self._to_members(members)
 
     def ex_get_pool_member(self, pool_member_id):
+        """
+        Get a specific member of a pool
+
+        :param pool: The id of a pool member
+        :type  pool: ``str``
+
+        :return: Returns an instance of ``DimensionDataPoolMember``
+        :rtype: ``DimensionDataPoolMember``
+        """
         member = self.connection \
             .request_with_orgId_api_2('networkDomainVip/poolMember/%s'
                                       % pool_member_id).object
         return self._to_member(member)
 
     def ex_destroy_pool_member(self, member, destroy_node=False):
+        """
+        Destroy a specific member of a pool
+
+        :param pool: The instance of a pool member
+        :type  pool: ``DimensionDataPoolMember``
+
+        :param destroy_node: Also destroy the associated node
+        :type  destroy_node: ``bool``
+
+        :return: ``True`` for success, ``False`` for failure
+        :rtype: ``bool``
+        """
         # remove the pool member
         destroy_request = ET.Element('removePoolMember',
                                      {'xmlns': TYPES_URN,
                                       'id': member.id})
 
-        self.connection.request_with_orgId_api_2(
+        result = self.connection.request_with_orgId_api_2(
             action='networkDomainVip/removePoolMember',
             method='POST',
             data=ET.tostring(destroy_request)).object
 
         if member.node_id is not None and destroy_node is True:
-            self.ex_destroy_node(member.node_id)
+            return self.ex_destroy_node(member.node_id)
+        else:
+            responseCode = findtext(result, 'responseCode', TYPES_URN)
+            return responseCode == 'OK'
 
     def ex_get_nodes(self):
+        """
+        Get the nodes within this geography
+
+        :return: Returns an ``list`` of ``DimensionDataVIPNode``
+        :rtype: ``list`` of ``DimensionDataVIPNode``
+        """
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node').object
         return self._to_nodes(nodes)
 
     def ex_destroy_node(self, node_id):
+        """
+        Destroy a specific node
+
+        :param node_id: The ID of of a ``DimensionDataVIPNode``
+        :type  node_id: ``str``
+
+        :return: ``True`` for success, ``False`` for failure
+        :rtype: ``bool``
+        """
         # Destroy the node
         destroy_request = ET.Element('deleteNode',
                                      {'xmlns': TYPES_URN,
