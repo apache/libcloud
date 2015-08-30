@@ -240,7 +240,7 @@ class DimensionDataLBDriver(Driver):
         """
         node = self.ex_create_node(
             network_domain_id=balancer.extra['network_domain_id'],
-            name='Member.'+member.ip,
+            name='Member.' + member.ip,
             ip=member.ip,
             ex_description=''
         )
