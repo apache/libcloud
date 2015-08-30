@@ -3,6 +3,7 @@
 ===================== ========================================= ================= ======================================== ==============================
 Provider              Documentation                             Provider constant Module                                   Class Name                    
 ===================== ========================================= ================= ======================================== ==============================
+`AuroraDNS`_          :doc:`Click </dns/drivers/auroradns>`     AURORADNS         :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
 `DigitalOcean`_       :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
 `Gandi DNS`_                                                    GANDI             :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
 `Google DNS`_                                                   GOOGLE            :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
@@ -16,6 +17,7 @@ Provider              Documentation                             Provider constan
 `Zerigo DNS`_                                                   ZERIGO            :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
 ===================== ========================================= ================= ======================================== ==============================
 
+.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<networkDomains
+xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1"
+totalCount="1" pageSize="250">
+<networkDomain id="484174a2-ae74-4658-9e56-50fc90e086cf" datacenter="NA10">
+<name>Production Network Domain</name>
+<description></description>
+<type>ESSENTIALS</type>
+<snatIpv4Address>165.180.8.8</snatIpv4Address>
+<createTime>2015-02-12T18:18:14.000Z</createTime>
+<state>NORMAL</state>
+</networkDomain>
+</networkDomains>

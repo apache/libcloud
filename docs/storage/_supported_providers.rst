@@ -17,6 +17,7 @@ Provider                      Documentation                                   Pr
 `Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APNEStorageDriver`        
 `Amazon S3 (ap-southeast-1)`_                                                 S3_AP_SOUTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APSEStorageDriver`        
 `Amazon S3 (eu-west-1)`_                                                      S3_EU_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3EUWestStorageDriver`      
+`Amazon S3 (sa-east-1)`_                                                      S3_SA_EAST        :mod:`libcloud.storage.drivers.s3`             :class:`S3SAEastStorageDriver`      
 `Amazon S3 (us-west-1)`_                                                      S3_US_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestStorageDriver`      
 `Amazon S3 (us-west-2)`_                                                      S3_US_WEST_OREGON :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestOregonStorageDriver`
 ============================= =============================================== ================= ============================================== ====================================
@@ -35,5 +36,6 @@ Provider                      Documentation                                   Pr
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
