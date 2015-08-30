@@ -1,23 +1,26 @@
 Apache Libcloud - a unified interface into the cloud
 ====================================================
 
-.. image:: https://pypip.in/version/apache-libcloud/badge.png
+.. image:: https://img.shields.io/pypi/v/apache-libcloud.svg
     :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://pypip.in/d/apache-libcloud/badge.png
+.. image:: https://img.shields.io/pypi/dm/apache-libcloud.svg
         :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://secure.travis-ci.org/apache/libcloud.png?branch=trunk
+.. image:: https://img.shields.io/travis/apache/libcloud/trunk.svg
         :target: http://travis-ci.org/apache/libcloud
 
-.. image:: https://pypip.in/py_versions/apache-libcloud/badge.png
+.. image:: https://img.shields.io/pypi/pyversions/apache-libcloud.svg
         :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://pypip.in/wheel/apache-libcloud/badge.png
+.. image:: https://img.shields.io/pypi/wheel/apache-libcloud.svg
         :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://pypip.in/license/apache-libcloud/badge.png
+.. image:: https://img.shields.io/github/license/apache/libcloud.svg
         :target: https://github.com/apache/libcloud/blob/trunk/LICENSE
+
+.. image:: https://img.shields.io/irc/%23libcloud.png
+        :target: http://webchat.freenode.net/?channels=libcloud
 
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
