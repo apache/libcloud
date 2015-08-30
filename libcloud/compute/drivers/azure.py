@@ -363,7 +363,7 @@ class AzureNodeDriver(NodeDriver):
         """
         sizes = []
 
-        for key, values in self._instance_types.items():
+        for _, values in self._instance_types.items():
             node_size = self._to_node_size(copy.deepcopy(values))
             sizes.append(node_size)
 
@@ -517,6 +517,7 @@ class AzureNodeDriver(NodeDriver):
                     ex_storage_service_name=None, ex_new_deployment=False,
                     ex_deployment_slot="Production", ex_deployment_name=None,
                     ex_admin_user_id="azureuser", ex_custom_data=None,
+                    ex_virtual_network_name=None, ex_network_config=None,
                     auth=None, **kwargs):
         """
         Create Azure Virtual Machine
@@ -578,6 +579,15 @@ class AzureNodeDriver(NodeDriver):
 
         :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
         :type        ex_admin_user_id:  ``str``
+
+        :keyword     ex_virtual_network_name: Optional. If this is not passed
+                                              in no virtual network is used.
+        :type        ex_virtual_network_name:  ``str``
+
+        :keyword     ex_network_config: Optional. The ConfigurationSet to use
+                                        for network configuration
+        :type        ex_network_config:  `ConfigurationSet`
+
         """
         # TODO: Refactor this method to make it more readable, split it into
         # multiple smaller methods
@@ -599,7 +609,10 @@ class AzureNodeDriver(NodeDriver):
             ex_cloud_service_name=ex_cloud_service_name
         )
 
-        network_config = ConfigurationSet()
+        if ex_network_config is None:
+            network_config = ConfigurationSet()
+        else:
+            network_config = ex_network_config
         network_config.configuration_set_type = 'NetworkConfiguration'
 
         # Base64 encode custom data if provided
@@ -747,7 +760,7 @@ class AzureNodeDriver(NodeDriver):
                     None,
                     None,
                     size.id,
-                    None,
+                    ex_virtual_network_name,
                     vm_image_id
                 )
             )

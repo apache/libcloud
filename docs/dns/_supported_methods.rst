@@ -3,6 +3,7 @@
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 Provider              list zones list records create zone update zone create record update record delete zone delete record
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
+`AuroraDNS`_          yes        yes          yes         no          yes           yes           yes         yes          
 `DigitalOcean`_       yes        yes          yes         no          yes           yes           yes         yes          
 `Gandi DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Google DNS`_         yes        yes          yes         no          yes           no            yes         yes          
@@ -16,6 +17,7 @@ Provider              list zones list records create zone update zone create rec
 `Zerigo DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 
+.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/

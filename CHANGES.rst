@@ -4,6 +4,13 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Update Rackspace AUTH_URL
+  [LIBCLOUD-738)
+  [Brian Curtin]
+
 Compute
 ~~~~~~~
 
@@ -16,6 +23,35 @@ Compute
   RunAbove driver.
   (GITHUB-561)
   [ZuluPro]
+
+- Add support and update Dimension Data driver to use API v2.0 by default.
+  (LIBCLOUD-736, GITHUB-564)
+  [Anthony Shaw]
+
+- Add new ``ex_virtual_network_name`` and ``ex_network_config`` argument to the
+  `create_node`` method in the Azure driver. With those arguments user can now
+  specify which virtual network to use.
+  (GITHUB-569)
+  [Jesaja Everling]
+
+Storage
+~~~~~~~
+
+- Add support for ``sa-east-1`` region to the Amazon S3 driver.
+  (GITHUB-562)
+  [Iuri de Silvio]
+
+- Fix handling of binary data in Local storage driver on Python 3. Now the file
+  which is to be written or read from is opened in the binary mode (``b`` flag).
+  (LIBCLOUD-725, GITHUB-568)
+  [Torf]
+
+DNS
+~~~
+
+- Add new driver for AuroraDNS service.
+  (GITHUB-562, LIBCLOUD-735)
+  [Wido den Hollander]
 
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
