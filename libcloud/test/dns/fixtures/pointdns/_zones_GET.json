@@ -1,0 +1,20 @@
+[
+    {
+        "zone": {
+            "name": "example.com",
+            "id": 1,
+            "group": "Default Group",
+            "user-id": 3,
+            "ttl": 3600
+        }
+    },
+    {
+        "zone": {
+            "name": "example2.com",
+            "id": 2,
+            "group": "Default Group",
+            "user-id": 4,
+            "ttl": 3600
+        }
+    }
+]

@@ -37,6 +37,8 @@ DRIVERS = {
     ('libcloud.dns.drivers.softlayer', 'SoftLayerDNSDriver'),
     Provider.DIGITAL_OCEAN:
     ('libcloud.dns.drivers.digitalocean', 'DigitalOceanDNSDriver'),
+    Provider.POINTDNS:
+    ('libcloud.dns.drivers.pointdns', 'PointDNSDriver'),
     # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
