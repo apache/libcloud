@@ -11,6 +11,9 @@ General
   [LIBCLOUD-738)
   [Brian Curtin]
 
+- Fix ``LIBCLOUD_DEBUG`` mode so it works on Python 3.x.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -60,6 +63,10 @@ DNS
 - Add new driver for AuroraDNS service.
   (GITHUB-562, LIBCLOUD-735)
   [Wido den Hollander]
+
+- Fix "_to_record" in the Route53 driver - make sure it doesn't throw if the
+  record TTL is not available.
+  [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
