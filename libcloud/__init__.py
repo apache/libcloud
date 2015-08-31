@@ -55,12 +55,22 @@ def _init_once():
     This checks for the LIBCLOUD_DEBUG environment variable, which if it exists
     is where we will log debug information about the provider transports.
     """
+    from libcloud.utils.py3 import PY3
+
     path = os.getenv('LIBCLOUD_DEBUG')
     if path:
-        fo = codecs.open(path, 'a', encoding='utf8')
+        mode = 'a'
+
+        # Special case for /dev/stderr and /dev/stdout on Python 3.
+        # Opening those files in append mode will throw "illegal seek"
+        # exception there.
+        if path in ['/dev/stderr', '/dev/stdout'] and PY3:
+            mode = 'w'
+
+        fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-        if have_paramiko:
-            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
+    if have_paramiko:
+        paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()

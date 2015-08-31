@@ -313,7 +313,7 @@ class LoggingConnection():
         ht += "\r\n"
 
         # this is evil. laugh with me. ha arharhrhahahaha
-        class fakesock:
+        class fakesock(object):
             def __init__(self, s):
                 self.s = s
 
@@ -324,7 +324,7 @@ class LoggingConnection():
                 else:
                     cls = StringIO
 
-                return cls(self.s)
+                return cls(b(self.s))
         rr = r
         headers = lowercase_keys(dict(r.getheaders()))
 
