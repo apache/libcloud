@@ -24,6 +24,17 @@ driver constructor:
 
 * ``user_id`` - Your Dimension Data Cloud username
 * ``key`` - Your Dimension Data Cloud password
+* ``region`` - The region key, one of the possible region keys
+
+Possible regions:
+
+* dd-na : Dimension Data North America (USA)
+* dd-eu : Dimension Data Europe
+* dd-af : Dimension Data Africa
+* dd-au : Dimension Data Australia
+* dd-latam : Dimension Data Latin America
+* dd-ap : Dimension Data Asia Pacific
+* dd-canada : Dimension Data Canada region
 
 The base `libcloud` API allows you to:
 
