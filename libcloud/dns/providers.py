@@ -41,6 +41,9 @@ DRIVERS = {
     ('libcloud.dns.drivers.worldwidedns', 'WorldWideDNSDriver'),
     Provider.DNSIMPLE:
     ('libcloud.dns.drivers.dnsimple', 'DNSimpleDNSDriver'),
+    Provider.POINTDNS:
+    ('libcloud.dns.drivers.pointdns', 'PointDNSDriver'),
+    # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
     Provider.RACKSPACE_UK:

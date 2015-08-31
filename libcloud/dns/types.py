@@ -41,6 +41,7 @@ class Provider(object):
     AURORADNS = 'auroradns'
     WORLDWIDEDNS = 'worldwidedns'
     DNSIMPLE = 'dnsimple'
+    POINTDNS = 'pointdns'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
