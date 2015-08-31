@@ -37,6 +37,12 @@ class DimensionDataTests(unittest.TestCase):
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
+    def test_invalid_region(self):
+        try:
+            self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
+        except ValueError:
+            pass
+
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
         try:
@@ -60,6 +66,22 @@ class DimensionDataTests(unittest.TestCase):
             protocol='http',
             algorithm=Algorithm.ROUND_ROBIN,
             members=members)
+        self.assertEqual(balancer.name, 'test')
+        self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
+        self.assertEqual(balancer.ip, '165.180.12.22')
+        self.assertEqual(balancer.port, 80)
+        self.assertEqual(balancer.extra['pool_id'], '9e6b496d-5261-4542-91aa-b50c7f569c54')
+        self.assertEqual(balancer.extra['network_domain_id'], '1234')
+
+    def test_create_balancer_with_defaults(self):
+        self.driver.ex_set_current_network_domain('1234')
+
+        balancer = self.driver.create_balancer(
+            name='test',
+            port=None,
+            protocol=None,
+            algorithm=None,
+            members=None)
         self.assertEqual(balancer.name, 'test')
         self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(balancer.ip, '165.180.12.22')
@@ -249,6 +271,21 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(listener.name, 'test')
 
+    def test_ex_create_virtual_listener_unusual_port(self):
+        listener = self.driver.ex_create_virtual_listener(
+            network_domain_id='12345',
+            name='test',
+            ex_description='test',
+            port=8900,
+            pool=DimensionDataPool(
+                id='1234',
+                name='test',
+                description='test',
+                status=State.RUNNING
+            ))
+        self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
+        self.assertEqual(listener.name, 'test')
+
     def test_get_balancer(self):
         bal = self.driver.get_balancer('6115469d-a8bb-445b-bb23-d23b5283f2b9')
         self.assertEqual(bal.name, 'myProduction.Virtual.Listener')
@@ -260,6 +297,13 @@ class DimensionDataTests(unittest.TestCase):
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
         self.assertNotEqual(0, len(protocols))
+
+    def test_ex_get_nodes(self):
+        nodes = self.driver.ex_get_nodes()
+        self.assertEqual(2, len(nodes))
+        self.assertEqual(nodes[0].name, 'ProductionNode.1')
+        self.assertEqual(nodes[0].id, '34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        self.assertEqual(nodes[0].ip, '10.10.10.101')
 
     def test_ex_get_pools(self):
         pools = self.driver.ex_get_pools()
@@ -407,6 +451,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
