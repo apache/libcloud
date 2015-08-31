@@ -35,6 +35,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
+    def test_invalid_region(self):
+        try:
+            self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
+        except ValueError:
+            pass
+
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
         try:
@@ -56,7 +62,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 2)
+        self.assertEqual(len(ret), 3)
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
@@ -108,6 +114,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        ex_isStarted=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_no_network(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        try:
+            node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node', ex_network=None,
+                                       ex_isStarted=False)
+        except ValueError:
+            pass
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -165,6 +182,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         ret = self.driver.ex_reset(node)
         self.assertTrue(ret is True)
+
+    def test_list_networks(self):
+        nets = self.driver.list_networks()
+        self.assertEqual(nets[0].name, 'test-net1')
+        self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
     def test_ex_list_networks(self):
         nets = self.driver.ex_list_networks()
