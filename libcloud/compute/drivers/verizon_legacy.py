@@ -318,6 +318,11 @@ class VerizonNodeDriver(NodeDriver):
     connectionCls = VerizonConnection
 
     def list_images(self):
+        """
+        List available images
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
         pool = self.ex_get_default_pool()
         url = API_ROOT + '/templates/computepools/' + pool
         result = self.connection.request(url).object
@@ -329,6 +334,11 @@ class VerizonNodeDriver(NodeDriver):
         return [self._to_image(i) for i in templates]
 
     def list_nodes(self):
+        """
+        List all nodes
+
+        :rtype: ``list`` of :class:`Node`
+        """
         pool = self.ex_get_default_pool()
         url = API_ROOT + '/virtualmachines/computepools/' + pool
         result = self.connection.request(url).object
@@ -339,6 +349,11 @@ class VerizonNodeDriver(NodeDriver):
         return [self._to_node(i) for i in nodes]
 
     def list_sizes(self):
+        """
+        List all node sizes
+
+        :rtype: ``list`` of :class:`VerizonNodeSize`
+        """
         sizes = []
         for key, value in INSTANCE_TYPES.items():
             size = VerizonNodeSize(
@@ -351,7 +366,44 @@ class VerizonNodeDriver(NodeDriver):
 
     def create_node(self, name=None, size=None, image=None, ssh_admin_key=None,
                     pool=None, network=None, ipaddr=None, row=None, group=None, **kwargs):
+        """
+        Create a new node from a image. Will test for a libcloud group/row and
+        create them if not provided.
 
+        For any keywords that are not mandatory sane defaults will tried to be
+        obtained via API calls
+
+        :keyword name: Name of the node (mandatory)
+        :type    name: ``str``
+
+        :keyword size: the plan size to create (mandatory)
+        :type    size: :class:`NodeSize`
+
+        :keyword image: Which image to use
+        :type    image: :class:`NodeImage` (mandatory)
+
+        :keyword ssh_admin_key: SSH key to inject for the admin user. 
+        :type    ssh_admin_key: ``str``
+
+        :keyword pool: Compute pool to deploy in
+        :type    pool: ``str``
+
+        :keyword network: Network to attach
+        :type       pool: ``str``
+
+        :keyword ipaddr: IP address to use
+        :type    ipaddr: ``str``
+
+        :keyword row: Row to deploy on
+        :type    row: ``str``
+
+        :keyword group: Group to deploy on
+        :type    group: ``str``
+
+        :return: Node object of newly created node
+        :rtype: :class: `Node`
+
+        """
         if name is None:
             raise VerizonException('Parameter name is required')
         if image is None:
@@ -501,8 +553,8 @@ class VerizonNodeDriver(NodeDriver):
         """
         Returns default environment
 
-        :param  org:    Organization ID
-        :type   org:    ``str``
+        :keyword  org:    Organization ID
+        :type     org:    ``str``
 
         :rtype: ``str``
         """
@@ -516,8 +568,8 @@ class VerizonNodeDriver(NodeDriver):
         """
         Returns default compute pool
 
-        :param  org:    Organization ID
-        :type   org:    ``str``
+        :keyword org:    Organization ID
+        :type    org:    ``str``
 
         :rtype: ``str``
         """
@@ -531,10 +583,10 @@ class VerizonNodeDriver(NodeDriver):
         """
         Creates a row
 
-        :param  name:   Name of the row
-        :type   name:   ``str``
+        :keyword name:   Name of the row
+        :type    name:   ``str``
 
-        :param   env:   Environment to use
+        :keyword env:   Environment to use
         :type    env:   ``str``
 
         :return:        href to row
@@ -556,13 +608,13 @@ class VerizonNodeDriver(NodeDriver):
         """
         Creates a row
 
-        :param  name:   Name of the group
-        :type   name:   ``str``
+        :keyword name:   Name of the group
+        :type    name:   ``str``
 
-        :param   env:   Environment ID
+        :keyword env:   Environment ID
         :type    env:   ``str``
 
-        :param   row:   Row href
+        :keyword row:   Row href
         :type    row:   ``str``
 
         :return:        href to group
