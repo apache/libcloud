@@ -506,8 +506,9 @@ class DimensionDataNodeDriver(NodeDriver):
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
             'networkId': findtext(element, 'networkId', TYPES_URN),
-            'networkDomainId': element.find(fixxpath('networkInfo', TYPES_URN))\
-            .get('networkDomainId') \
+            'networkDomainId':
+                element.find(fixxpath('networkInfo', TYPES_URN))
+                .get('networkDomainId')
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
@@ -535,7 +536,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         private_ip = element.find(
             fixxpath('networkInfo/primaryNic', TYPES_URN)) \
-        .get('privateIpv4') \
+            .get('privateIpv4') \
             if has_network_info else \
             element.find(fixxpath('nic', TYPES_URN)).get('privateIpv4')
 
