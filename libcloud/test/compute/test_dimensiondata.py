@@ -118,11 +118,10 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        network = self.driver.ex_list_networks()[0]
         try:
-            node = self.driver.create_node(name='test2', image=image, auth=rootPw,
-                                       ex_description='test2 node', ex_network=None,
-                                       ex_isStarted=False)
+            self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                    ex_description='test2 node', ex_network=None,
+                                    ex_isStarted=False)
         except ValueError:
             pass
 
