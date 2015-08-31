@@ -480,7 +480,9 @@ class Route53DNSDriver(DNSDriver):
 
         type = self._string_to_record_type(findtext(element=elem, xpath='Type',
                                                     namespace=NAMESPACE))
-        ttl = int(findtext(element=elem, xpath='TTL', namespace=NAMESPACE))
+        ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
+        if ttl is not None:
+            ttl = int(ttl)
 
         value_elem = elem.findall(
             fixxpath(xpath='ResourceRecords/ResourceRecord',
