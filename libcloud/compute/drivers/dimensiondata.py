@@ -499,12 +499,17 @@ class DimensionDataNodeDriver(NodeDriver):
 
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
 
+        has_network_info \
+            = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
+
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
             'networkId': findtext(element, 'networkId', TYPES_URN),
-            'networkDomainId': element.find(fixxpath('networkInfo', TYPES_URN))
-                                      .get('networkDomainId'),
+            'networkDomainId':
+                element.find(fixxpath('networkInfo', TYPES_URN))
+                .get('networkDomainId')
+                if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
             'cpuCount': int(findtext(
@@ -529,8 +534,11 @@ class DimensionDataNodeDriver(NodeDriver):
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
 
-        private_ip = findtext(element, 'networkInfo/primaryNic/privateIpv4',
-                              TYPES_URN)
+        private_ip = element.find(
+            fixxpath('networkInfo/primaryNic', TYPES_URN)) \
+            .get('privateIpv4') \
+            if has_network_info else \
+            element.find(fixxpath('nic', TYPES_URN)).get('privateIpv4')
 
         n = Node(id=element.get('id'),
                  name=findtext(element, 'name', TYPES_URN),

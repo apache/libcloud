@@ -1,4 +1,4 @@
-Dimension Data Cloud Compute Driver Documentation
+Dimension Data Load Balancer Driver Documentation
 =======================================
 
 Dimension Data are a global IT Services company and form part of the NTT Group.
@@ -36,10 +36,9 @@ Possible regions:
 * dd-ap : Dimension Data Asia Pacific
 * dd-canada : Dimension Data Canada region
 
-
 The base `libcloud` API allows you to:
 
-* list nodes, images, instance types, locations
+* create balancers, add members and destroy members
 
 Non-standard functionality and extension methods
 ------------------------------------------------
@@ -49,8 +48,9 @@ functionalities through extension methods and arguments.
 
 These functionalities include:
 
-* start and stop a node
-* list networks
+* list nodes
+* list pools 
+* set the network domain (zone)
 
 For information on how to use these functionalities please see the method
 docstrings below. You can also use an interactive shell for exploration as
@@ -59,7 +59,7 @@ shown in the examples.
 API Docs
 --------
 
-.. autoclass:: libcloud.compute.drivers.dimensiondata.DimensionDataNodeDriver
+.. autoclass:: libcloud.loadbalancer.drivers.dimensiondata.DimensionDataLBDriver
     :members:
     :inherited-members:
 
