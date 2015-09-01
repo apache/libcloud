@@ -167,8 +167,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
     Provider.RUNABOVE:
     ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
-    Provider.VERIZON_LEGACY:
-    ('libcloud.compute.drivers.verizon_legacy', 'VerizonNodeDriver'),
+    Provider.VERIZON:
+    ('libcloud.compute.drivers.verizon', 'VerizonNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
