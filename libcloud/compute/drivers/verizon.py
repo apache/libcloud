@@ -33,8 +33,10 @@ API_ROOT = "/cloudapi/ecloud"
 API_VERSION = "2014-05-01"
 NODE_ONLINE_WAIT_TIMEOUT = 600
 SSH_CONNECT_TIMEOUT = 300
+CLOUDSPACE = None
 
 DEBUG = True
+
 
 NODE_STATE_MAP = {
     'ON': NodeState.RUNNING,
@@ -299,13 +301,19 @@ class VerizonConnection(ConnectionUserAndKey):
         headers['x-tmrk-authorization'] = self._build_request(self.action, timestamp, content_type, content_length)
         headers['x-tmrk-version'] = API_VERSION
         headers['Accept'] = 'application/json'
+        if CLOUDSPACE is not None:
+            headers['x-tmrk-cloudspace'] = CLOUDSPACE
         if DEBUG:
             print headers
         return headers
 
     def _build_request(self, path, timestamp, content_type, content_length):
         api_version = 'x-tmrk-version:%s' % API_VERSION
-        string = "%s\n%s\n%s\n%s\n%s\n%s\n" % (self.method, content_length, content_type, timestamp, api_version, path)
+        if CLOUDSPACE is not None:
+            cloudspace = 'x-tmrk-cloudspace:%s' % CLOUDSPACE
+            string = "%s\n%s\n%s\n%s\n%s\n%s\n%s\n" % (self.method, content_length, content_type, timestamp, api_version, cloudspace, path)
+        else:
+            string = "%s\n%s\n%s\n%s\n%s\n%s\n" % (self.method, content_length, content_type, timestamp, api_version, path)
         if DEBUG:
             print string
         signature = b64encode(hmac.new(key=self.key, msg=string, digestmod=hashlib.sha256).digest())
@@ -314,6 +322,12 @@ class VerizonConnection(ConnectionUserAndKey):
 
 
 class VerizonNodeDriver(NodeDriver):
+    def __new__(cls, key, secret=None, secure=True, host=None, port=None,
+                cloudspace=None, **kwargs):
+        global CLOUDSPACE
+        CLOUDSPACE = cloudspace
+        return super(VerizonNodeDriver, cls).__new__(cls)
+
     type = "verizon"
     connectionCls = VerizonConnection
 
@@ -460,6 +474,9 @@ class VerizonNodeDriver(NodeDriver):
         return self._to_node(result)
 
     def deploy_node(self, deploy=None, **kwargs):
+        """
+        Slightly modifed from the default deploy_node function.
+        """
         if deploy is None:
             raise VerizonException('Parameter deploy is required')
 
@@ -590,7 +607,6 @@ class VerizonNodeDriver(NodeDriver):
         :type    env:   ``str``
 
         :return:        href to row
-
         :rtype: ``str``
         """
         if name is None:
@@ -617,8 +633,7 @@ class VerizonNodeDriver(NodeDriver):
         :keyword row:   Row href
         :type    row:   ``str``
 
-        :return:        href to group
-
+        :return: href to group
         :rtype: ``str``
         """
         if name is None:
@@ -635,6 +650,15 @@ class VerizonNodeDriver(NodeDriver):
         return href
 
     def ex_get_network(self, type=None):
+        """
+        Get either the dmz or int network
+
+        :keyword type: dmz or int (mandatory)
+        :type    type: ``str``
+
+        :return: href to network
+        :rtpe:   ``str``
+        """
         if type is None:
             raise VerizonException('Argument "type" required')
         if type not in ('int', 'dmz'):
@@ -649,6 +673,15 @@ class VerizonNodeDriver(NodeDriver):
         return href
 
     def ex_get_address(self, network_href=None):
+        """
+        Get an availabe ip
+
+        :keyword          : network_href
+        :type network_href: ``str``
+
+        :return: ip name
+        :rtpe:   ``str``
+        """
         if network_href is None:
             raise VerizonException('Argument "network_href" required')
         result = self.connection.request(network_href).object['IpAddresses']
@@ -662,6 +695,12 @@ class VerizonNodeDriver(NodeDriver):
         return ipaddr
 
     def ex_get_ssh_key(self):
+        """
+        Grab the default ssh key
+
+        :return: href to key
+        :rtype:  ``str``
+        """
         org = self.ex_get_default_org()
         url = '%s/admin/sshkeys/organizations/%s' % (API_ROOT, org)
         result = self.connection.request(url).object['Items']
@@ -674,6 +713,14 @@ class VerizonNodeDriver(NodeDriver):
         return ssh_href
 
     def ex_poweron_node(self, node=None):
+        """
+        Power on a node
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :return: status
+        :rtype : ``str``
+        """
         if node is None:
             raise VerizonException('Parameter node is required')
         href = None
@@ -684,6 +731,17 @@ class VerizonNodeDriver(NodeDriver):
         return self.connection.request(href, method='POST').object
 
     def ex_wait_create(self, node=None, timeout=900):
+        """
+        Wait for node to power on
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :keyword timeout: Time to wait until failing
+        :type    timeout: ``int``
+
+        :return: status
+        :rtype : Boolean
+        """
         if node is None:
             raise VerizonException('Parameter node is required')
         end_time = int(time.time()) + timeout
@@ -695,13 +753,29 @@ class VerizonNodeDriver(NodeDriver):
             time.sleep(10)
         return True
 
-    def ex_get_node_state(self, node):
+    def ex_get_node_state(self, node=None):
+        """
+        Get node state
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :return: State of the node
+        :rtype: :class: `Node`
+        """
         if node is None:
             raise VerizonException('Parameter node is required')
         result = self.connection.request(node.id).object
         return self._to_node(result).state
 
     def ex_get_node(self, node=None):
+        """
+        Returns a node
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :return: State of the node
+        :rtype: :class: `Node`
+        """
         if node is None:
             raise VerizonException('Parameter node is required')
         result = self.connection.request(node.id).object
