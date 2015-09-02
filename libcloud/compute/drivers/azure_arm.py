@@ -34,7 +34,7 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
 
 class AzureImage(NodeImage):
-    """Represents a node image that an Azure VM can boot from."""
+    """Represents a Marketplace node image that an Azure VM can boot from."""
 
     def __init__(self, version, sku, offer, publisher, location, driver):
         self.publisher = publisher
@@ -50,6 +50,18 @@ class AzureImage(NodeImage):
 
     def __repr__(self):
         return (('<AzureImage: id=%s, name=%s, location=%s>')
+                % (self.id, self.name, self.location))
+
+
+class AzureVhdImage(NodeImage):
+    """Represents a VHD node image that an Azure VM can boot from."""
+
+    def __init__(self, storage_account, blob_container, name, driver):
+        urn = "https://%s.blob.core.windows.net/%s/%s" % (storage_account, blob_container, name)
+        super(AzureVhdImage, self).__init__(urn, name, driver)
+
+    def __repr__(self):
+        return (('<AzureVhdImage: id=%s, name=%s, location=%s>')
                 % (self.id, self.name, self.location))
 
 
@@ -267,23 +279,33 @@ class AzureNodeDriver(NodeDriver):
         return images
 
     def get_image(self, image_id, location=None):
-        """
-        Returns a single node image from a provider.
+        """Returns a single node image from a provider.
 
-        :param image_id: Image urn in the form `Publisher:Offer:Sku:Version`
+        :param image_id: Either an image urn in the form
+        `Publisher:Offer:Sku:Version` or a Azure blob store URI in the form
+        `http://storageaccount.blob.core.windows.net/container/image.vhd` pointing
+        to a VHD file.
         :type image_id: ``str``
 
         :param location: The location at which to search for the image
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
 
-        :rtype :class:`.AzureImage`:
-        :return: AzureImage instance on success.
+        :rtype :class:`.AzureImage`: or :class:`.AzureVhdImage`:
+        :return: AzureImage or AzureVhdImage instance on success.
+
         """
 
-        (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
-        i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
-        return i[0] if i else None
+        if image_id.startswith("http"):
+            uri = image_id.split("/")
+            storageAccount = uri[2].split(".")[0]
+            blobContainer = uri[3]
+            blob = uri[4]
+            return AzureVhdImage(storageAccount, blobContainer, blob, self)
+        else:
+            (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
+            i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
+            return i[0] if i else None
 
     def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True):
         """
@@ -372,7 +394,8 @@ class AzureNodeDriver(NodeDriver):
         :type ex_resource_group: ``str``
 
         :param ex_storage_account:  The storage account id in which to store
-        the node's disk image.
+        the node's disk image.  Note: when booting from a user image (AzureVhdImage)
+        the source image and the node image must use the same storage account.
         :type ex_storage_account: ``str``
 
         :param ex_blob_container:  The name of the blob container on the
@@ -430,6 +453,41 @@ class AzureNodeDriver(NodeDriver):
 
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
 
+        if isinstance(image, AzureVhdImage):
+            storageProfile = {
+                "osDisk": {
+                    "name": "virtualmachine-osDisk",
+                    "osType": "linux",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "image": {
+                        "uri": image.id
+                    },
+                    "vhd": {
+                        "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+                    }
+                }
+            }
+        elif isinstance(image, AzureImage):
+            storageProfile = {
+                "imageReference": {
+                    "publisher": image.publisher,
+                    "offer": image.offer,
+                    "sku": image.sku,
+                    "version": image.version
+                },
+                "osDisk": {
+                    "name": "virtualmachine-osDisk",
+                    "vhd": {
+                        "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+                    },
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+            }
+        else:
+            raise LibcloudError("Unknown image type %s, expected one of AzureImage, AzureVhdImage", type(image))
+
         data = {
             "id": target,
             "name": name,
@@ -440,22 +498,7 @@ class AzureNodeDriver(NodeDriver):
                 "hardwareProfile": {
                     "vmSize": size.id
                 },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": image.publisher,
-                        "offer": image.offer,
-                        "sku": image.sku,
-                        "version": image.version
-                    },
-                    "osDisk": {
-                        "name": "virtualmachine-osDisk",
-                        "vhd": {
-                            "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
+                "storageProfile": storageProfile,
                 "osProfile": {
                     "computerName": name
                 },
@@ -581,8 +624,16 @@ class AzureNodeDriver(NodeDriver):
                                                         storageAccount)
                 blobdriver = AzureBlobsStorageDriver(storageAccount,
                                                      keys["key1"])
-                blobdriver.delete_object(blobdriver.get_object(blobContainer,
-                                                               blob))
+                while True:
+                    try:
+                        blobdriver.delete_object(blobdriver.get_object(blobContainer,
+                                                                       blob))
+                        break
+                    except LibcloudError as e:
+                        if e.value.code == 412:
+                            time.sleep(10)
+                        else:
+                            return False
             except BaseHTTPError as h:
                 print h.code, h.message
                 if h.code == 202:
@@ -948,6 +999,81 @@ class AzureNodeDriver(NodeDriver):
                                     method="POST")
         return r.object
 
+    def ex_run_command(self, node,
+                       command,
+                       filerefs=[],
+                       storage_account_name=None,
+                       storage_account_key=None,
+                       location=None):
+        """
+        Run a command on the node as root.
+
+        Does not require ssh to log in, uses Windows Azure Agent (waagent) running
+        on the node.
+
+        :param node: The node on which to run the command.
+        :type node: :class:``.Node``
+
+        :param command: The actual command to run.  Note this is parsed
+        into separate arguments according to shell quoting rules but is
+        executed directly as a subprocess, not a shell command.
+        :type command: ``str``
+
+        :param filerefs: Optional files to fetch by URI from Azure blob store
+        (must provide storage_account_name and storage_account_key), or regular HTTP.
+        :type command: ``list`` of ``str``
+
+        :param location: The location of the virtual machine
+        (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+
+        :param storage_account_name: The storage account from which to fetch files in `filerefs`
+        :type storage_account_name: ``str``
+
+        :param storage_account_key: The storage key to authorize to the blob store.
+        :type storage_account_key: ``str``
+
+        :type: ``list`` of :class:`.NodeLocation`
+
+        """
+
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
+
+        name = "init"
+
+        target = node.id + "/extensions/" + name
+
+        data = {
+            "location": location.id,
+            "name": name,
+            "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.3",
+                "settings": {
+                    "fileUris": filerefs,
+                    "commandToExecute": command
+                }
+            }
+        }
+
+        if storage_account_name and storage_account_key:
+            data["properties"]["protectedSettings"] = {
+                "storageAccountName": storage_account_name,
+                "storageAccountKey": storage_account_key
+                }
+
+        r = self.connection.request(target,
+                                    params={"api-version": "2015-06-15"},
+                                    data=data,
+                                    method='PUT')
+        return r.object
+
+
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
         kwargs['tenant_id'] = self.tenant_id
@@ -978,10 +1104,16 @@ class AzureNodeDriver(NodeDriver):
             if status["code"] == "ProvisioningState/creating":
                 state = NodeState.PENDING
                 break
-            if status["code"] == "ProvisioningState/deleting":
+            elif status["code"] == "ProvisioningState/deleting":
                 state = NodeState.TERMINATED
                 break
-            elif status["code"] == "PowerState/deallocated":
+            elif status["code"].startswith("ProvisioningState/failed"):
+                state = NodeState.ERROR
+                break
+            elif status["code"] == "ProvisioningState/succeeded":
+                pass
+
+            if status["code"] == "PowerState/deallocated":
                 state = NodeState.STOPPED
                 break
             elif status["code"] == "PowerState/deallocating":
