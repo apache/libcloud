@@ -35,7 +35,7 @@ NODE_ONLINE_WAIT_TIMEOUT = 600
 SSH_CONNECT_TIMEOUT = 300
 CLOUDSPACE = None
 
-DEBUG = True
+DEBUG = False
 
 
 NODE_STATE_MAP = {
@@ -377,6 +377,23 @@ class VerizonNodeDriver(NodeDriver):
             sizes.append(size)
 
         return sizes
+
+    def destroy_node(self, node=None):
+        """
+        Destroy a node
+
+        :param node: Node object to destory
+        :type  node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        if node is None:
+            raise VerizonException('Parameter node is required')
+        if self.ex_get_node_state(node) != 5:
+            self.ex_poweroff_node(node=node)
+        time.sleep(60)
+        self.ex_remove_node(node=node)
+        return True
 
     def create_node(self, name=None, size=None, image=None, ssh_admin_key=None,
                     pool=None, network=None, ipaddr=None, row=None, group=None, **kwargs):
@@ -728,7 +745,8 @@ class VerizonNodeDriver(NodeDriver):
             if i is not None:
                 if i['name'] == 'power:powerOn':
                     href = i['href']
-        return self.connection.request(href, method='POST').object
+        headers = {'Content-Length': 0}
+        return self.connection.request(href,headers=headers,method='POST').object
 
     def ex_wait_create(self, node=None, timeout=900):
         """
@@ -739,8 +757,7 @@ class VerizonNodeDriver(NodeDriver):
         :keyword timeout: Time to wait until failing
         :type    timeout: ``int``
 
-        :return: status
-        :rtype : Boolean
+        :rtype : ``bool``
         """
         if node is None:
             raise VerizonException('Parameter node is required')
@@ -780,6 +797,39 @@ class VerizonNodeDriver(NodeDriver):
             raise VerizonException('Parameter node is required')
         result = self.connection.request(node.id).object
         return self._to_node(result)
+
+    def ex_poweroff_node(self, node=None):
+        """
+        Power off a node
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :return: State of the node
+        :rtype: :class: `Node`
+        """
+        if node is None:
+            raise VerizonException('Parameter node is required')
+        href = None
+        for i in node.extra['Actions']:
+            if i is not None:
+                if i['name'] == 'power:powerOff':
+                    href = i['href']
+        headers = {'Content-Length': 0}
+        return self.connection.request(href,headers=headers,method='POST').object
+
+    def ex_remove_node(self, node=None):
+        """
+        Deletes a node
+        :keyword node: Node object
+        :type    node: :class:`Node` (mandatory)
+
+        :return: State of the node
+        :rtype: :class: `Node`
+        """
+        if node is None:
+            raise VerizonException('Parameter node is required')
+        headers = {'Content-Length': 0}
+        return self.connection.request(node.id,headers=headers,method='DELETE').object
 
     def _to_node(self, node):
         public_ips = []
