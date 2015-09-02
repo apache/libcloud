@@ -354,7 +354,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                                     data=data)
         except AttributeError:
             raise GoogleAuthError('Invalid authorization response, please '
-                                  'check your credentials.')
+                                  'check your credentials and time drift.')
         token_info = response.object
         if 'expires_in' in token_info:
             expire_time = now + datetime.timedelta(
