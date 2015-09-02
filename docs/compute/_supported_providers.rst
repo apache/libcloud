@@ -70,6 +70,7 @@ Provider                              Documentation                             
 `vCloud`_                                                                           TERREMARK           :mod:`libcloud.compute.drivers.vcloud`         :class:`TerremarkDriver`            
 `VCL`_                                                                              VCL                 :mod:`libcloud.compute.drivers.vcl`            :class:`VCLNodeDriver`              
 `vCloud`_                             :doc:`Click </compute/drivers/vcloud>`        VCLOUD              :mod:`libcloud.compute.drivers.vcloud`         :class:`VCloudNodeDriver`           
+`Verizon`_                            :doc:`Clock </compute/drivers/verizon>`       VERIZON             :mod:`libcloud.compute.drivers.verizon`        :class:`VerizonDriver`
 `Voxel VoxCLOUD`_                                                                   VOXEL               :mod:`libcloud.compute.drivers.voxel`          :class:`VoxelNodeDriver`            
 `vps.net`_                                                                          VPSNET              :mod:`libcloud.compute.drivers.vpsnet`         :class:`VPSNetNodeDriver`           
 `VMware vSphere`_                     :doc:`Click </compute/drivers/vsphere>`       VSPHERE             :mod:`libcloud.compute.drivers.vsphere`        :class:`VSphereNodeDriver`          
@@ -143,6 +144,7 @@ Provider                              Documentation                             
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`VCL`: http://incubator.apache.org/vcl/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
+.. _`Verizon`: http://cloud.verizon.com/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
 .. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
