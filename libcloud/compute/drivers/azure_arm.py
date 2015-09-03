@@ -297,10 +297,7 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if image_id.startswith("http"):
-            uri = image_id.split("/")
-            storageAccount = uri[2].split(".")[0]
-            blobContainer = uri[3]
-            blob = uri[4]
+            (storageAccount, blobContainer, blob) = _split_blob_uri(image_id)
             return AzureVhdImage(storageAccount, blobContainer, blob, self)
         else:
             (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
@@ -616,10 +613,7 @@ class AzureNodeDriver(NodeDriver):
         if ex_destroy_vhd:
             try:
                 resourceGroup = node.id.split("/")[4]
-                uri = node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"].split("/")
-                storageAccount = uri[2].split(".")[0]
-                blobContainer = uri[3]
-                blob = uri[4]
+                (storageAccount, blobContainer, blob) = _split_blob_uri(node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
                 keys = self.ex_get_storage_account_keys(resourceGroup,
                                                         storageAccount)
                 blobdriver = AzureBlobsStorageDriver(storageAccount,
@@ -1159,3 +1153,11 @@ class AzureNodeDriver(NodeDriver):
         loc_id = loc.lower().replace(" ", "")
         return NodeLocation(loc_id, loc, self._location_to_country.get(loc_id),
                             self.connection.driver)
+
+
+def _split_blob_uri(uri):
+    uri = uri.split("/")
+    storageAccount = uri[2].split(".")[0]
+    blobContainer = uri[3]
+    blob = '/'.join(uri[4:])
+    return (storageAccount, blobContainer, blob)
