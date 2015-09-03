@@ -928,9 +928,9 @@ class AzureNodeDriver(NodeDriver):
             r.object["tags"] = tags
         else:
             r.object["tags"].update(tags)
-        r = self.connection.request(resource, data=r.object,
+        r = self.connection.request(resource, data={"tags": r.object["tags"]},
                                     params={"api-version": "2015-06-15"},
-                                    method="PUT")
+                                    method="PATCH")
 
     def ex_start_node(self, node):
         """
