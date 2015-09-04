@@ -26,7 +26,13 @@ class AzureBaseDriver(object):
 class AzureJsonResponse(JsonResponse):
     def parse_error(self):
         b = self.parse_body()
-        return "[%s] %s" % (b["error"]["code"], b["error"]["message"])
+
+        if isinstance(b, basestring):
+            return b
+        elif isinstance(b, dict) and "error" in b:
+            return "[%s] %s" % (b["error"].get("code"), b["error"].get("message"))
+        else:
+            return str(b)
 
 class AzureResourceManagementConnection(ConnectionUserAndKey):
     """
