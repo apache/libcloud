@@ -1064,7 +1064,7 @@ class AzureNodeDriver(NodeDriver):
     def _ex_delete_old_vhd(self, resource_group, uri):
         try:
             (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
-            keys = self.ex_get_storage_account_keys(resourceGroup,
+            keys = self.ex_get_storage_account_keys(resource_group,
                                                     storageAccount)
             blobdriver = AzureBlobsStorageDriver(storageAccount,
                                                  keys["key1"])
