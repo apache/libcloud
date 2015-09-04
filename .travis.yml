@@ -14,6 +14,11 @@ env:
   - TOX_ENV=py34
   - TOX_ENV=docs
 
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: os=osx
+
 install:
   - pip install tox
 
