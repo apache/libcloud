@@ -536,7 +536,7 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
-        self._ex_delete_old_vhd(instance_vhd)
+        self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -618,7 +618,8 @@ class AzureNodeDriver(NodeDriver):
         if ex_destroy_vhd:
             while True:
                 try:
-                    self._ex_delete_old_vhd(node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
+                    resourceGroup = node.id.split("/")[4]
+                    self._ex_delete_old_vhd(resourceGroup, node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
                 except LibcloudError as e:
                     if e.value.code == 412:
                         pass
@@ -1060,9 +1061,8 @@ class AzureNodeDriver(NodeDriver):
                                     method='PUT')
         return r.object
 
-    def _ex_delete_old_vhd(self, uri):
+    def _ex_delete_old_vhd(self, resource_group, uri):
         try:
-            resourceGroup = node.id.split("/")[4]
             (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
             keys = self.ex_get_storage_account_keys(resourceGroup,
                                                     storageAccount)
