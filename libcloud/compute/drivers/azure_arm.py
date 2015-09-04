@@ -29,6 +29,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, NodeAuthSSHKey
 from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState
+from libcloud.common.types import LibcloudError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
