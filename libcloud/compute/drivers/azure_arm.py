@@ -996,6 +996,7 @@ class AzureNodeDriver(NodeDriver):
     def ex_run_command(self, node,
                        command,
                        filerefs=[],
+                       timestamp=0,
                        storage_account_name=None,
                        storage_account_key=None,
                        location=None):
@@ -1050,7 +1051,8 @@ class AzureNodeDriver(NodeDriver):
                 "typeHandlerVersion": "1.3",
                 "settings": {
                     "fileUris": filerefs,
-                    "commandToExecute": command
+                    "commandToExecute": command,
+                    "timestamp": timestamp
                 }
             }
         }
