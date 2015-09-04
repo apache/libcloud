@@ -450,6 +450,8 @@ class AzureNodeDriver(NodeDriver):
 
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
 
+        instance_vhd = "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+
         if isinstance(image, AzureVhdImage):
             storageProfile = {
                 "osDisk": {
@@ -461,7 +463,7 @@ class AzureNodeDriver(NodeDriver):
                         "uri": image.id
                     },
                     "vhd": {
-                        "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+                        "uri": instance_vhd
                     }
                 }
             }
@@ -476,7 +478,7 @@ class AzureNodeDriver(NodeDriver):
                 "osDisk": {
                     "name": "virtualmachine-osDisk",
                     "vhd": {
-                        "uri": "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+                        "uri": instance_vhd
                     },
                     "caching": "ReadWrite",
                     "createOption": "FromImage"
@@ -532,6 +534,8 @@ class AzureNodeDriver(NodeDriver):
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
             raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
+
+        self._ex_delete_old_vhd(instance_vhd)
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -611,29 +615,15 @@ class AzureNodeDriver(NodeDriver):
                             return False
 
         if ex_destroy_vhd:
-            try:
-                resourceGroup = node.id.split("/")[4]
-                (storageAccount, blobContainer, blob) = _split_blob_uri(node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
-                keys = self.ex_get_storage_account_keys(resourceGroup,
-                                                        storageAccount)
-                blobdriver = AzureBlobsStorageDriver(storageAccount,
-                                                     keys["key1"])
-                while True:
-                    try:
-                        blobdriver.delete_object(blobdriver.get_object(blobContainer,
-                                                                       blob))
+            while True:
+                try:
+                    self._ex_delete_old_vhd(node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
+                except LibcloudError as e:
+                    if e.value.code == 412:
+                        pass
+                    else:
                         break
-                    except LibcloudError as e:
-                        if e.value.code == 412:
-                            time.sleep(10)
-                        else:
-                            return False
-            except BaseHTTPError as h:
-                print h.code, h.message
-                if h.code == 202:
-                    pass
-                else:
-                    return False
+
         return True
 
     def ex_list_publishers(self, location=None):
@@ -1069,6 +1059,28 @@ class AzureNodeDriver(NodeDriver):
                                     method='PUT')
         return r.object
 
+    def _ex_delete_old_vhd(self, uri):
+        try:
+            resourceGroup = node.id.split("/")[4]
+            (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
+            keys = self.ex_get_storage_account_keys(resourceGroup,
+                                                    storageAccount)
+            blobdriver = AzureBlobsStorageDriver(storageAccount,
+                                                 keys["key1"])
+            blobdriver.delete_object(blobdriver.get_object(blobContainer,
+                                                           blob))
+            return True
+        except LibcloudError as e:
+            if e.value.code == 404:
+                return True
+            else:
+                raise
+        except BaseHTTPError as h:
+            if h.code == 202 or h.code == 404:
+                return True
+            else:
+                raise
+        return False
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
