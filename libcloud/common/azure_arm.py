@@ -23,6 +23,10 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 class AzureBaseDriver(object):
     name = "Microsoft Azure Resource Management API"
 
+class AzureJsonResponse(JsonResponse):
+    def parse_error(self):
+        b = self.parse_body()
+        return "[%s] %s" % (b["error"]["code"], b["error"]["message"])
 
 class AzureResourceManagementConnection(ConnectionUserAndKey):
     """
@@ -32,7 +36,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     conn_classes = (None, LibcloudHTTPSConnection)
     driver = AzureBaseDriver
     name = 'Azure AD Auth'
-    responseCls = JsonResponse
+    responseCls = AzureJsonResponse
     rawResponseCls = RawResponse
     host = 'management.azure.com'
     login_host = 'login.windows.net'
