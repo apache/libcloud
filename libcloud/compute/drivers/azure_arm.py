@@ -30,6 +30,7 @@ from libcloud.compute.base import NodeImage, NodeAuthSSHKey
 from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError
+from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
@@ -1071,17 +1072,8 @@ class AzureNodeDriver(NodeDriver):
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
-        except LibcloudError as e:
-            if e.value.code == 404:
-                return True
-            else:
-                raise
-        except BaseHTTPError as h:
-            if h.code == 202 or h.code == 404:
-                return True
-            else:
-                raise
-        return False
+        except ObjectDoesNotExistError:
+            return True
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
