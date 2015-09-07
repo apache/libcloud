@@ -4899,15 +4899,11 @@ class GCENodeDriver(NodeDriver):
             return
         if response['status'] == 'DONE':
             status['node_response'] = None
-        if error:
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
-        else:
-            try:
+            if error:
+                status['node'] = GCEFailedNode(status['name'], error, code)
+            else:
                 status['node'] = self.ex_get_node(status['name'],
                                                   node_attrs['location'])
-            except ResourceNotFoundError:
-                return
 
     def _create_vol_req(self, size, name, location=None, snapshot=None,
                         image=None, ex_disk_type='pd-standard'):
