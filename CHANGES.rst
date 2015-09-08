@@ -46,6 +46,11 @@ Compute
   (GITHUB-569)
   [Jesaja Everling]
 
+- Fix ``create_node`` method in the GCE driver calling inexistent method
+  (ex_get_disk instead of ex_get_volume).
+  (GITHUB-574)
+  [Alex Poms]
+
 Storage
 ~~~~~~~
 
