@@ -620,12 +620,14 @@ class AzureNodeDriver(NodeDriver):
             while True:
                 try:
                     resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(resourceGroup, node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
+                    self._ex_delete_old_vhd(resourceGroup,
+                                            node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
+                    break
                 except LibcloudError as e:
-                    if e.value.code == 412:
-                        pass
-                    else:
-                        break
+                    # Unfortunately lease errors (which occur if the vhd blob
+                    # hasn't yet been released by the VM being destroyed) get raised as plain
+                    # LibcloudError.  Wait a bit and try again.
+                    time.sleep(10)
 
         return True
 
