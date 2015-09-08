@@ -2363,7 +2363,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
-            ex_boot_disk = self.ex_get_disk(ex_boot_disk, zone=location)
+            ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
