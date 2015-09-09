@@ -1094,16 +1094,19 @@ class AzureNodeDriver(NodeDriver):
         public_ips = []
         if fetch_nic:
             for nic in data["properties"]["networkProfile"]["networkInterfaces"]:
-                n = self.ex_get_nic(nic["id"])
-                priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
-                if priv:
-                    private_ips.append(priv)
-                pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
-                if pub:
-                    pub_addr = self.ex_get_public_ip(pub["id"])
-                    addr = pub_addr.extra.get("ipAddress")
-                    if addr:
-                        public_ips.append(addr)
+                try:
+                    n = self.ex_get_nic(nic["id"])
+                    priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
+                    if priv:
+                        private_ips.append(priv)
+                    pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
+                    if pub:
+                        pub_addr = self.ex_get_public_ip(pub["id"])
+                        addr = pub_addr.extra.get("ipAddress")
+                        if addr:
+                            public_ips.append(addr)
+                except BaseHTTPError as h:
+                    pass
 
         action = "%s/InstanceView" % (data["id"])
         r = self.connection.request(action,
