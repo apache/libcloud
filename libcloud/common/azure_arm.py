@@ -34,6 +34,19 @@ class AzureJsonResponse(JsonResponse):
         else:
             return str(b)
 
+
+class AzureAuthJsonResponse(JsonResponse):
+    def parse_error(self):
+        b = self.parse_body()
+
+        if isinstance(b, basestring):
+            return b
+        elif isinstance(b, dict) and "error_description" in b:
+            return b["error_description"]
+        else:
+            return str(b)
+
+
 class AzureResourceManagementConnection(ConnectionUserAndKey):
     """
     Represents a single connection to Azure
@@ -75,7 +88,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         })
         headers = {"Content-type": "application/x-www-form-urlencoded"}
         conn.request("POST", "/%s/oauth2/token" % self.tenant_id, params, headers)
-        js = JsonResponse(conn.getresponse(), conn)
+        js = AzureAuthJsonResponse(conn.getresponse(), conn)
         self.access_token = js.object["access_token"]
         self.expires_on = js.object["expires_on"]
 
