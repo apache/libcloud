@@ -537,7 +537,10 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
-        self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+        try:
+            self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+        except LibcloudError as e:
+            raise LibcloudError("While error deleting old VHD blob %s to make way for new VM: %s" % (instance_vhd, e))
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -624,10 +627,13 @@ class AzureNodeDriver(NodeDriver):
                                             node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
                     break
                 except LibcloudError as e:
-                    # Unfortunately lease errors (which occur if the vhd blob
-                    # hasn't yet been released by the VM being destroyed) get raised as plain
-                    # LibcloudError.  Wait a bit and try again.
-                    time.sleep(10)
+                    if "LeaseIdMissing" in str(e):
+                        # Unfortunately lease errors (which occur if the vhd blob
+                        # hasn't yet been released by the VM being destroyed) get raised as plain
+                        # LibcloudError.  Wait a bit and try again.
+                        time.sleep(10)
+                    else:
+                        raise
 
         return True
 
