@@ -780,7 +780,7 @@ class AzureNodeDriver(NodeDriver):
         Fetch information about a public IP resource.
 
         :param id: The complete resource path to the public IP resource.
-        :type id: ``str``
+        :type id: ``str`
 
         :return: The public ip object
         :rtype: :class:`.AzureIPAddress`
@@ -1108,31 +1108,34 @@ class AzureNodeDriver(NodeDriver):
                 except BaseHTTPError as h:
                     pass
 
-        action = "%s/InstanceView" % (data["id"])
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
         state = NodeState.UNKNOWN
-        for status in r.object["statuses"]:
-            if status["code"] == "ProvisioningState/creating":
-                state = NodeState.PENDING
-                break
-            elif status["code"] == "ProvisioningState/deleting":
-                state = NodeState.TERMINATED
-                break
-            elif status["code"].startswith("ProvisioningState/failed"):
-                state = NodeState.ERROR
-                break
-            elif status["code"] == "ProvisioningState/succeeded":
-                pass
+        try:
+            action = "%s/InstanceView" % (data["id"])
+            r = self.connection.request(action,
+                                        params={"api-version": "2015-06-15"})
+            for status in r.object["statuses"]:
+                if status["code"] == "ProvisioningState/creating":
+                    state = NodeState.PENDING
+                    break
+                elif status["code"] == "ProvisioningState/deleting":
+                    state = NodeState.TERMINATED
+                    break
+                elif status["code"].startswith("ProvisioningState/failed"):
+                    state = NodeState.ERROR
+                    break
+                elif status["code"] == "ProvisioningState/succeeded":
+                    pass
 
-            if status["code"] == "PowerState/deallocated":
-                state = NodeState.STOPPED
-                break
-            elif status["code"] == "PowerState/deallocating":
-                state = NodeState.PENDING
-                break
-            elif status["code"] == "PowerState/running":
-                state = NodeState.RUNNING
+                if status["code"] == "PowerState/deallocated":
+                    state = NodeState.STOPPED
+                    break
+                elif status["code"] == "PowerState/deallocating":
+                    state = NodeState.PENDING
+                    break
+                elif status["code"] == "PowerState/running":
+                    state = NodeState.RUNNING
+        except BaseHTTPError as h:
+            pass
 
         node = Node(data["id"],
                     data["name"],
