@@ -593,6 +593,9 @@ class AzureNodeDriver(NodeDriver):
         :return: True if the destroy was successful, False otherwise.
         :rtype: ``bool``
         """
+
+        # This returns a 202 (Accepted) which means that the delete happens
+        # asynchronously.
         try:
             self.connection.request(node.id,
                                     params={"api-version": "2015-06-15"},
@@ -603,6 +606,18 @@ class AzureNodeDriver(NodeDriver):
             else:
                 return False
 
+        # Need to poll until the node actually goes away.
+        while True:
+            try:
+                time.sleep(10)
+                self.connection.request(node.id, params={"api-version": "2015-06-15"})
+            except BaseHTTPError as h:
+                if h.code == 404:
+                    break
+                else:
+                    return False
+
+        # Optionally clean up the network interfaces that were attached to this node.
         if ex_destroy_nic:
             for nic in node.extra["properties"]["networkProfile"]["networkInterfaces"]:
                 while True:
@@ -619,6 +634,7 @@ class AzureNodeDriver(NodeDriver):
                         else:
                             return False
 
+        # Optionally clean up OS disk VHD.
         if ex_destroy_vhd:
             while True:
                 try:
