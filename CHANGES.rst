@@ -8,11 +8,16 @@ General
 ~~~~~~~
 
 - Update Rackspace AUTH_URL
-  [LIBCLOUD-738)
+  (LIBCLOUD-738)
   [Brian Curtin]
 
 - Fix ``LIBCLOUD_DEBUG`` mode so it works on Python 3.x.
   [Tomaz Muraus]
+
+- Fix Libcloud code so it doesn't throw an exception if simplejson < 2.1.0 is
+  installed.
+  (LIBCLOUD-714, GITHUB-577)
+  [Erik Johnson]
 
 Compute
 ~~~~~~~
