@@ -23,7 +23,11 @@ from os.path import join as pjoin
 
 try:
     import simplejson as json
-    JSONDecodeError = json.JSONDecodeError
+    try:
+        JSONDecodeError = json.JSONDecodeError
+    except AttributeError:
+        # simplejson < 2.1.0 does not have the JSONDecodeError exception class
+        JSONDecodeError = ValueError
 except ImportError:
     import json
     JSONDecodeError = ValueError
