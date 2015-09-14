@@ -851,7 +851,7 @@ class VCloud_1_5_Connection(VCloudConnection):
             self.connection.set_http_proxy ( self.proxy_url )
             self.connection.request(method='GET', url=org_list_url,
                                     headers=self.add_default_headers({}))
-            body = ET.XML(conn.getresponse().read())
+            body = ET.XML(self.connection.getresponse().read())
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')
