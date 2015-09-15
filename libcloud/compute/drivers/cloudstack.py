@@ -3490,8 +3490,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   method='GET')['success']
 
     def ex_authorize_security_group_ingress(self, securitygroupname, protocol,
-                                        cidrlist, startport=None, endport=None,
-                                        icmptype=None, icmpcode=None, **kwargs):
+                                            cidrlist, startport=None,
+                                            endport=None, icmptype=None,
+                                            icmpcode=None, **kwargs):
         """
         Creates a new Security Group Ingress rule
 
@@ -3522,8 +3523,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type    icmptype: ``int``
 
         :param   icmpcode: Code of the ICMP packet for the specified type.
-                           If the specified type doesn't require a code set this
-                           value to 0.
+                           If the specified type doesn't require a code set
+                           this value to 0.
                            -1 or None means "all codes".
                            Applies to protocol ICMP.
         :type    icmpcode: ``int``
@@ -3560,12 +3561,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         if protocol not in ('TCP', 'UDP') and \
                 (startport is not None or endport is not None):
-            raise LibcloudError('"startport" and "endport" are only valid with '
-                                'protocol TCP or UDP.')
+            raise LibcloudError('"startport" and "endport" are only valid '
+                                'with protocol TCP or UDP.')
 
-        if protocol != 'ICMP' and (icmptype is not None or icmpcode is not None):
-            raise LibcloudError('"icmptype" and "icmpcode" are only valid with '
-                                'protocol ICMP.')
+        if protocol != 'ICMP' and \
+                (icmptype is not None or icmpcode is not None):
+            raise LibcloudError('"icmptype" and "icmpcode" are only valid '
+                                'with protocol ICMP.')
 
         if protocol in ('TCP', 'UDP'):
             if startport is None:
