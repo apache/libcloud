@@ -740,12 +740,20 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertTrue(res)
 
     def test_ex_authorize_security_group_ingress(self):
-        res = self.driver.ex_authorize_security_group_ingress('MySG',
-                                                              'TCP',
-                                                              '22',
-                                                              '22',
-                                                              '0.0.0.0/0')
-        self.assertTrue(res)
+        res = self.driver.ex_authorize_security_group_ingress('test_sg',
+                                                              'udp',
+                                                              '0.0.0.0/0',
+                                                              '0',
+                                                              '65535')
+        self.assertEqual(res.get('name'), 'test_sg')
+        self.assertTrue('ingressrule' in res)
+        rules = res['ingressrule']
+        self.assertEqual(len(rules), 1)
+        rule = rules[0]
+        self.assertEqual(rule['cidr'], '0.0.0.0/0')
+        self.assertEqual(rule['endport'], 65535)
+        self.assertEqual(rule['protocol'], 'udp')
+        self.assertEqual(rule['startport'], 0)
 
     def test_ex_create_affinity_group(self):
         res = self.driver.ex_create_affinity_group('MyAG2',
