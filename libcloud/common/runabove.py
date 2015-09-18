@@ -54,14 +54,14 @@ class RunAboveException(Exception):
 class RunAboveResponse(JsonResponse):
     def parse_error(self):
         response = super(RunAboveResponse, self).parse_body()
-
         status_code = int(self.status)
         if status_code >= 300 and status_code < 600:
+            if response and \
+                    response.get('errorCode', None) == 'INVALID_SIGNATURE':
+                raise InvalidCredsError('Signature validation failed, probably'
+                                        ' using invalid credentials')
             raise ProviderError('Unknown error. Status code: %d' % self.status,
                                 http_code=status_code)
-        if response.get('errorCode', None) == 'INVALID_SIGNATURE':
-            raise InvalidCredsError('Signature validation failed, probably '
-                                    'using invalid credentials')
         return self.body
 
     def success(self):

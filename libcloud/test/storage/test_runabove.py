@@ -81,6 +81,23 @@ class ContainerMockConnection(BaseRunAboveMockHttp, StorageMockHttp):
     def _json_v1_AUTH_BAR_not_found_foo_file_delete(self, method, url, body, headers):
         return (httplib.NOT_FOUND, '', {}, httplib.responses[httplib.OK])
 
+    def _json_v1_AUTH_BAR_foo_foo_file_head(self, method, url, body, headers):
+        headers = {
+            'content-length': '186',
+            'accept-ranges': 'bytes',
+            'last-modified': 'Sun, 20 Sep 2015 16:57:41 GMT',
+            'connection': 'close',
+            'etag': '6107a6bf44ce1427a9d25cb1c3af93ec',
+            'x-timestamp': '1442768260.49150',
+            'x-trans-id': '58B88003:DF53_A77230F0:01BB_560738A1_1B16A67:2421',
+            'date': 'Sun, 27 Sep 2015 00:30:26 GMT',
+            'content-type': 'application/octet-stream'
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _json_v1_AUTH_BAR_foo_not_found_head(self, method, url, body, headers):
+        return (httplib.NOT_FOUND, '', {}, httplib.responses[httplib.OK])
+
     def success(self):
         return True
 
@@ -180,19 +197,10 @@ class RunAboveStorageTests(unittest.TestCase):
 
     def test_upload_object(self):
         test_file_path = '/tmp/foo'
-        open(test_file_path, 'w').close()
-        RunAboveContainer(name='foo', extra={'region': 'BHS-1'}, driver=self.driver)
-
-    def test_upload_object_not_found_container(self):
-        test_file_path = '/tmp/foo'
-        open(test_file_path, 'w').close()
-        container = RunAboveContainer(name='not_found', extra={'region': 'BHS-1'}, driver=self.driver)
-        try:
-            self.driver.upload_object(test_file_path, container, 'foo_file')
-        except ContainerDoesNotExistError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
+        with open(test_file_path, 'w') as fd:
+            fd.write('FOO')
+        container = RunAboveContainer(name='foo', extra={'region': 'BHS-1'}, driver=self.driver)
+        self.driver.upload_object(test_file_path, container, 'foo_file')
 
     def test_upload_object_via_stream(self):
         test_file = StringIO('bar')

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import ConnectionKey
 from libcloud.common.types import ProviderError
@@ -55,7 +56,6 @@ class RunAboveStorageDriver(StorageDriver):
     containerConnectionCls = ContainerConnection
     hash_type = 'md5'
     supports_chunked_encoding = False
-    ex_location = None
 
     def __init__(self, key, secret, ex_consumer_key=None, ex_location=None):
         """
@@ -77,10 +77,6 @@ class RunAboveStorageDriver(StorageDriver):
         self.location = ex_location
         StorageDriver.__init__(self, key, secret,
                                ex_consumer_key=ex_consumer_key)
-        response = self.connection.request(action='%s/token' % API_ROOT)\
-            .object
-        self.auth_token = response["X-Auth-Token"]
-        self.auth_description = response['token']
 
     def iterate_containers(self):
         action = API_ROOT + '/storage'
@@ -96,7 +92,8 @@ class RunAboveStorageDriver(StorageDriver):
         }
         try:
             response = self.connection.request(action, data=data)
-        except ProviderError as err:
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ContainerDoesNotExistError(value=None,
                                                  driver=self,
@@ -130,7 +127,8 @@ class RunAboveStorageDriver(StorageDriver):
         }
         try:
             response = self.connection.request(action, data=data)
-        except ProviderError as err:
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ContainerDoesNotExistError(value=None,
                                                  driver=self,
@@ -139,48 +137,72 @@ class RunAboveStorageDriver(StorageDriver):
         return self._to_container(response.object, location=location)
 
     def get_object(self, container_name, object_name, ex_location=None):
-        # TODO: Remake with Swift request
         location = self._check_location(ex_location)
-        action = '%s/storage/%s' % (API_ROOT, container_name)
-        data = {
-            'region': location,
-            'limit': 1000,
-        }
+        action = '/%s/%s' % (container_name, object_name)
+        conn = self._get_container_connection(location)
         try:
-            response = self.connection.request(action, data=data)
-            json_response = response.object
-            container = self._to_container(json_response, location)
-            obj = [o for o in json_response['objects']
-                   if o['name'] == object_name][0]
-        except ProviderError as err:
+            container = self.get_container(container_name,
+                                           ex_location=location)
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ContainerDoesNotExistError(value=None,
                                                  driver=self,
                                                  container_name=container_name)
             raise err
-        except IndexError:
+        try:
+            response = conn.request(action, method='HEAD')
+        except ProviderError:
             raise ObjectDoesNotExistError(object_name=object_name,
                                           value='', driver=self)
-        return self._to_object(obj, container=container)
+        return Object(name=object_name,
+                      size=response.headers['content-length'],
+                      hash=None, extra={}, meta_data=response.headers,
+                      container=container, driver=self)
 
     def _put_data(self, location, action, data):
         """Common method for put data and except errors."""
         conn = self._get_container_connection(location)
         try:
             conn.request(action=action, data=data, method="PUT")
-        except ProviderError as err:
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ContainerDoesNotExistError(value=None,
                                                  driver=self,
                                                  container_name=None)
             raise err
 
+    def _put_object(self, container, object_name, upload_func,
+                    upload_func_kwargs, extra=None, file_path=None,
+                    iterator=None, verify_hash=True, headers=None):
+        request_path = '/%s/%s' % (container.name, object_name)
+        content_type = None
+        meta_data = {}
+        # Hack for re-use self._upload_object with ContainerConnection
+        # without rewrite method (DRY)
+        base_connection = self.connection
+        self.connection = self._get_container_connection(
+            container.extra['region'])
+        self._upload_object(
+            object_name=object_name, content_type=content_type,
+            upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
+            request_path=request_path, request_method='PUT',
+            headers=headers, file_path=file_path, iterator=iterator)
+        base_connection = base_connection  # End of hack
+        return Object(name=object_name, size=None, hash=None, extra=None,
+                      meta_data=meta_data, container=container, driver=self)
+
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, headers=None):
-        action = '/%s/%s' % (container.name, object_name)
-        data = open(file_path, 'rb').read()
-        self._put_data(container.extra['region'], action, data)
-        return container.get_object(object_name)
+                      verify_hash=False, headers=None):
+        upload_func = self._upload_file
+        upload_func_kwargs = {'file_path': file_path}
+
+        return self._put_object(container=container, object_name=object_name,
+                                upload_func=upload_func,
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, file_path=file_path,
+                                verify_hash=verify_hash, headers=headers)
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None, headers=None):
@@ -194,7 +216,8 @@ class RunAboveStorageDriver(StorageDriver):
         conn = self._get_container_connection(obj.container.extra['region'])
         try:
             response = conn.request(action=action, method="DELETE")
-        except ProviderError as err:
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ObjectDoesNotExistError(value=None,
                                               driver=self,
@@ -219,7 +242,8 @@ class RunAboveStorageDriver(StorageDriver):
         conn = self._get_container_connection(location)
         try:
             conn.request(action, method='DELETE')
-        except ProviderError as err:
+        except ProviderError:
+            err = sys.exc_info()[1]
             if err.http_code == httplib.NOT_FOUND:
                 raise ContainerDoesNotExistError(value=None,
                                                  driver=self,
@@ -280,7 +304,15 @@ class RunAboveStorageDriver(StorageDriver):
                             "'ex_location'.")
         return location
 
+    def _set_openstack_auth_token(self):
+        response = self.connection.request(action='%s/token' % API_ROOT)\
+            .object
+        self.auth_token = response["X-Auth-Token"]
+        self.auth_description = response['token']
+
     def _get_container_connection(self, location):
+        if not getattr(self, 'auth_token', None):
+            self._set_openstack_auth_token()
         catalog = [e for e in self.auth_description['catalog']
                    if e['type'] == 'object-store'][0]
         endpoint = [e for e in catalog['endpoints']
