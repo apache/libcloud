@@ -1,25 +1,31 @@
 language: python
-python: 2.7
+python:
+    - 2.6
+    - 2.7
+    - 3.2
+    - 3.3
+    - 3.4
+    - "pypy"
 sudo: false
 os:
   - linux
   - osx
 env:
-  - TOX_ENV=lint
-  - TOX_ENV=py26
-  - TOX_ENV=py27
-  - TOX_ENV=pypy
-  - TOX_ENV=py32
-  - TOX_ENV=py33
-  - TOX_ENV=py34
-  - TOX_ENV=docs
 
 matrix:
   fast_finish: true
   allow_failures:
     - os: osx
+  include:
+    - python: 2.7
+      env: ENV=lint
+      before_script: TOX_ENV=lint
+    - python: 2.7
+      env: ENV=docs
+      before_script: TOX_ENV=docs
 
 install:
+  - TOX_ENV=py$TRAVIS_PYTHON_VERSION
   - pip install tox
 
 script:
