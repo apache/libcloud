@@ -65,6 +65,10 @@ Loadbalancer
 DNS
 ~~~
 
+- Update Google Cloud DNS API from 'v1beta1' to 'v1'
+  (GITHUB-583)
+  [Misha Brukman]
+
 - Add new driver for AuroraDNS service.
   (GITHUB-562, LIBCLOUD-735)
   [Wido den Hollander]
