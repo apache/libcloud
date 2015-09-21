@@ -3540,12 +3540,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :keyword projectid: An optional project of the security group
         :type    projectid: ``str``
 
-        :param securitygroupid: The ID of the security group.
-                                Mutually exclusive with securitygroupname
-        :type  securitygroupid: ``str``
+        :keyword securitygroupid: The ID of the security group.
+                                  Mutually exclusive with securitygroupname
+        :type    securitygroupid: ``str``
 
-        :param usersecuritygrouplist: User to security group mapping
-        :type  usersecuritygrouplist: ``dict``
+        :keyword usersecuritygrouplist: User to security group mapping
+        :type    usersecuritygrouplist: ``dict``
 
         :rtype: ``dict``
         """
