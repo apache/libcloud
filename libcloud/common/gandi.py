@@ -66,7 +66,8 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
         super(GandiConnection, self).__init__(key=key, secure=secure,
                                               timeout=timeout,
                                               retry_delay=retry_delay,
-                                              backoff=backoff, proxy_url=proxy_url)
+                                              backoff=backoff,
+                                              proxy_url=proxy_url)
         self.driver = BaseGandiDriver
 
     def request(self, method, *args):
