@@ -166,6 +166,8 @@ class MockHttp(BaseMockHttpObject):
 
     test = None  # TestCase instance which is using this mock
 
+    proxy_url = None
+
     def __init__(self, host, port, *args, **kwargs):
         self.host = host
         self.port = port
@@ -200,6 +202,9 @@ class MockHttp(BaseMockHttpObject):
 
     def close(self):
         pass
+
+    def set_http_proxy (self, proxy_url):
+        self.proxy_url = proxy_url
 
     # Mock request/response example
     def _example(self, method, url, body, headers):
