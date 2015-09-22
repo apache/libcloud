@@ -203,7 +203,7 @@ class MockHttp(BaseMockHttpObject):
     def close(self):
         pass
 
-    def set_http_proxy (self, proxy_url):
+    def set_http_proxy(self, proxy_url):
         self.proxy_url = proxy_url
 
     # Mock request/response example
