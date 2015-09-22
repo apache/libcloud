@@ -142,7 +142,8 @@ class CloudFramesConnection(XMLRPCConnection, ConnectionKey):
                                                     host=host, port=port,
                                                     url=url, timeout=timeout,
                                                     retry_delay=retry_delay,
-                                                    backoff=backoff, proxy_url=proxy_url)
+                                                    backoff=backoff,
+                                                    proxy_url=proxy_url)
         self._auth = base64.b64encode(
             b('%s:%s' % (key, secret))).decode('utf-8')
         self.endpoint = url

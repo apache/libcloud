@@ -187,7 +187,8 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
                                                host=host, port=port,
                                                url=url, timeout=timeout,
                                                retry_delay=retry_delay,
-                                               backoff=backoff, proxy_url=proxy_url)
+                                               backoff=backoff,
+                                               proxy_url=proxy_url)
 
         # This attribute stores data cached across multiple request
         self.cache = {}
