@@ -39,6 +39,7 @@ class Provider(object):
     SOFTLAYER = 'softlayer'
     DIGITAL_OCEAN = 'digitalocean'
     AURORADNS = 'auroradns'
+    POINTDNS = 'pointdns'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
@@ -51,6 +52,7 @@ class RecordType(object):
     """
     A = 'A'
     AAAA = 'AAAA'
+    ALIAS = 'ALIAS'
     MX = 'MX'
     NS = 'NS'
     CNAME = 'CNAME'
@@ -60,6 +62,7 @@ class RecordType(object):
     SOA = 'SOA'
     SPF = 'SPF'
     SRV = 'SRV'
+    SSHFP = 'SSHFP'
     PTR = 'PTR'
     NAPTR = 'NAPTR'
     REDIRECT = 'REDIRECT'

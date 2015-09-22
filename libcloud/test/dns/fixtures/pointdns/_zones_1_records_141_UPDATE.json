@@ -1,0 +1,11 @@
+{
+    "zone_record": {
+        "name": "updated.com",
+        "data": "1.2.3.5",
+        "id": 141,
+        "aux": null,
+        "record_type": "A",
+        "ttl": 4500,
+        "zone_id": 1
+    }
+}
