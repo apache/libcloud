@@ -126,7 +126,7 @@ class DreamhostNodeDriver(NodeDriver):
     """
     type = Provider.DREAMHOST
     api_name = 'dreamhost'
-    name = "Dreamhost"
+    name = "DreamHost VPS"
     website = 'http://dreamhost.com/'
     connectionCls = DreamhostConnection
 
