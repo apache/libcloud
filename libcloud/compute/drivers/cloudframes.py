@@ -117,7 +117,7 @@ class CloudFramesConnection(XMLRPCConnection, ConnectionKey):
 
     def __init__(self, key=None, secret=None, secure=True,
                  host=None, port=None, url=None, timeout=None,
-                 retry_delay=None, backoff=None):
+                 retry_delay=None, backoff=None, proxy_url=None):
         """
         :param    key:    The username to connect with to the cloudapi
         :type     key:    ``str``
@@ -142,7 +142,7 @@ class CloudFramesConnection(XMLRPCConnection, ConnectionKey):
                                                     host=host, port=port,
                                                     url=url, timeout=timeout,
                                                     retry_delay=retry_delay,
-                                                    backoff=backoff)
+                                                    backoff=backoff, proxy_url=proxy_url)
         self._auth = base64.b64encode(
             b('%s:%s' % (key, secret))).decode('utf-8')
         self.endpoint = url
