@@ -76,7 +76,9 @@ class DimensionDataNodeDriver(NodeDriver):
         return kwargs
 
     def create_node(self, name, image, auth, ex_description,
-                    ex_network, ex_is_started=True, **kwargs):
+                    ex_network=None, ex_network_domain=None,
+                    ex_vlan=None,
+                    ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
 
@@ -93,61 +95,64 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_description:  description for this node (required)
         :type       ex_description:  ``str``
 
-        :keyword    ex_network:  Network to create the node within (required)
+        :keyword    ex_network:  Network to create the node within (required,
+                                unless using Network Domain)
         :type       ex_network: :class:`DimensionDataNetwork`
+
+        :keyword    ex_network_domain:  Network Domain to create the node
+                                        (required unless using network)
+        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+
+        :keyword    ex_vlan:  VLAN to create the node within
+                                        (required unless using network)
+        :type       ex_vlan: :class:`DimensionDataVlan`
 
         :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
         :type       ex_is_started:  ``bool``
 
-        :return: The newly created :class:`Node`. NOTE: DimensionData does not
-                 provide a
-                 way to determine the ID of the server that was just created,
-                 so the returned :class:`Node` is not guaranteed to be the same
-                 one that was created.  This is only the case when multiple
-                 nodes with the same name exist.
+        :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
         """
 
-        # XXX:  Node sizes can be adjusted after a node is created, but
-        #       cannot be set at create time because size is part of the
-        #       image definition.
         password = None
         auth_obj = self._get_and_check_auth(auth)
         password = auth_obj.password
 
         if not isinstance(ex_network, DimensionDataNetwork):
-            raise ValueError('ex_network must be of DimensionDataNetwork type')
-        vlanResourcePath = "%s/%s" % (
-            self.connection.get_resource_path_api_1(),
-            ex_network.id)
+            if not isinstance(ex_network_domain, DimensionDataNetworkDomain):
+                raise ValueError('ex_network must be of DimensionDataNetwork '
+                                 'type or ex_network_domain must be of '
+                                 'DimensionDataNetworkDomain type')
 
-        imageResourcePath = None
-        if 'resourcePath' in image.extra:
-            imageResourcePath = image.extra['resourcePath']
-        else:
-            imageResourcePath = "%s/%s" % (
-                self.connection.get_resource_path_api_1(),
-                image.id)
-
-        server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
+        server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
         ET.SubElement(server_elm, "description").text = ex_description
-        ET.SubElement(server_elm, "vlanResourcePath").text = vlanResourcePath
-        ET.SubElement(server_elm, "imageResourcePath").text = imageResourcePath
+        ET.SubElement(server_elm, "imageId").text = image.id
+        ET.SubElement(server_elm, "start").text = str(ex_is_started)
         ET.SubElement(server_elm, "administratorPassword").text = password
-        ET.SubElement(server_elm, "isStarted").text = str(ex_is_started)
 
-        self.connection.request_with_orgId_api_1(
-            'server',
+        if ex_network is not None:
+            network_elm = ET.SubElement(server_elm, "network")
+            ET.SubElement(network_elm, "networkId").text = ex_network.id
+        if ex_network_domain is not None:
+            network_inf_elm = ET.SubElement(server_elm, "networkInfo",
+                                            {'networkDomainId':
+                                             ex_network_domain.id})
+            pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
+            ET.SubElement(pri_nic, "vlanId").text = ex_vlan.id
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/deployServer',
             method='POST',
             data=ET.tostring(server_elm)).object
 
-        # XXX: return the last node in the list that has a matching name.  this
-        #      is likely but not guaranteed to be the node we just created
-        #      because DimensionData allows multiple
-        #      nodes to have the same name
-        node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+        node_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'serverId':
+                node_id = info.get('value')
+
+        node = list(filter(lambda x: x.id == node_id, self.list_nodes()))[-1]
 
         if getattr(auth_obj, "generated", False):
             node.extra['password'] = auth_obj.password

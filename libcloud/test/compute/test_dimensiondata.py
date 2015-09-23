@@ -115,6 +115,19 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_network_domain(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        network_domain = self.driver.ex_list_network_domains()[0]
+        vlan = self.driver.ex_list_vlans()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain=network_domain,
+                                       ex_vlan=vlan,
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
@@ -368,6 +381,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
