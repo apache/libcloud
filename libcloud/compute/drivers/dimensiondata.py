@@ -255,7 +255,7 @@ class DimensionDataNodeDriver(NodeDriver):
     def _to_base_images(self, object):
         images = []
         locations = self.list_locations()
-        print(locations)
+
         for element in object.findall(fixxpath("image", SERVER_NS)):
             images.append(self._to_base_image(element, locations))
 
