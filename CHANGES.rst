@@ -19,6 +19,10 @@ General
   (LIBCLOUD-714, GITHUB-577)
   [Erik Johnson]
 
+- Fix endpoint URL for DimensionData Asia Pacific region.
+  (GITHUB-585)
+  [Anthony Shaw]
+
 Compute
 ~~~~~~~
 

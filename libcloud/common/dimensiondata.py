@@ -61,7 +61,7 @@ API_ENDPOINTS = {
     },
     'dd-ap': {
         'name': 'Asia Pacific (AP)',
-        'host': 'api-na.dimensiondata.com',
+        'host': 'api-ap.dimensiondata.com',
         'vendor': 'DimensionData'
     },
     'dd-latam': {
