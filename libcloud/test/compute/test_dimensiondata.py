@@ -238,7 +238,7 @@ class DimensionDataMockHttp(MockHttp):
     def _oec_0_9_base_imageWithDiskSpeed(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_base_imageWithDiskSpeed.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployed(self, method, url, body, headers):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployed.xml')
