@@ -53,9 +53,9 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
-        self.assertEqual(len(ret), 1)
+        self.assertEqual(len(ret), 5)
         first_node = ret[0]
-        self.assertEqual(first_node.id, 'NA10')
+        self.assertEqual(first_node.id, 'NA3')
         self.assertEqual(first_node.name, 'US - West')
         self.assertEqual(first_node.country, 'US')
 
@@ -117,9 +117,10 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_create_node_response_network_domain(self):
         rootPw = NodeAuthPassword('pass123')
-        image = self.driver.list_images()[0]
-        network_domain = self.driver.ex_list_network_domains()[0]
-        vlan = self.driver.ex_list_vlans()[0]
+        location = self.driver.ex_get_location_by_id('NA9')
+        image = self.driver.list_images(location=location)[0]
+        network_domain = self.driver.ex_list_network_domains(location=location)[0]
+        vlan = self.driver.ex_list_vlans(location=location)[0]
         node = self.driver.create_node(name='test2', image=image, auth=rootPw,
                                        ex_description='test2 node',
                                        ex_network_domain=network_domain,
@@ -207,12 +208,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_list_network_domains(self):
         nets = self.driver.ex_list_network_domains()
-        self.assertEqual(nets[0].name, 'Production Network Domain')
+        self.assertEqual(nets[0].name, 'Aurora')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
-        self.assertEqual(vlans[0].name, "Production VLAN")
+        self.assertEqual(vlans[0].name, "Primary")
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -232,6 +233,10 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_base_image(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_base_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_base_imageWithDiskSpeed(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_base_imageWithDiskSpeed.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployed(self, method, url, body, headers):
