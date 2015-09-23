@@ -243,13 +243,13 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
-        params = {}
+        url_ext = ''
         if location is not None:
-            params['location'] = location.id
+            url_ext = '/' + location.id
 
         return self._to_networks(
             self.connection
-            .request_with_orgId_api_1('networkWithLocation', params=params)
+            .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
 
     def _to_base_images(self, object):
