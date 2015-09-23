@@ -396,10 +396,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: :class:`NodeLocation`
         """
+        if not hasattr(self, '_cached_locations_'):
+            self._cached_locations_ = self.list_locations()
+
         location = None
         if id is not None:
             location = list(
-                filter(lambda x: x.id == id, self.list_locations()))[0]
+                filter(lambda x: x.id == id, self._cached_locations_))[0]
         return location
 
     def _to_networks(self, object):
