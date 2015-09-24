@@ -152,7 +152,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if info.get('name') == 'serverId':
                 node_id = info.get('value')
 
-        node = list(filter(lambda x: x.id == node_id, self.list_nodes()))[-1]
+        node = self.ex_get_node_by_id(node_id)
 
         if getattr(auth_obj, "generated", False):
             node.extra['password'] = auth_obj.password
@@ -421,6 +421,11 @@ class DimensionDataNodeDriver(NodeDriver):
                                                             params=params) \
                                   .object
         return self._to_vlans(response)
+
+    def ex_get_node_by_id(self, id):
+        node = self.connection.request_with_orgId_api_2(
+            'server/server/%s' % id).object
+        return self._to_node(node)
 
     def ex_get_location_by_id(self, id):
         """

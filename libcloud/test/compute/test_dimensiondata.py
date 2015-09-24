@@ -393,5 +393,10 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
