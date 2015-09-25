@@ -51,6 +51,11 @@ Compute
   (GITHUB-574)
   [Alex Poms]
 
+- Allow user to pass ``proxy_url`` keyword argument to the VCloud driver
+  constructor.
+  (GITHUB-578)
+  [Daniel Pool]
+
 Storage
 ~~~~~~~
 
