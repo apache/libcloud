@@ -1007,7 +1007,7 @@ class CertificateConnection(Connection):
     Base connection class which accepts a single ``cert_file`` argument.
     """
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
-                 timeout=None, backoff=None, retry_delay=None):
+                 proxy_url=None, timeout=None, backoff=None, retry_delay=None):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
@@ -1016,7 +1016,8 @@ class CertificateConnection(Connection):
                                                     port=port, url=url,
                                                     timeout=timeout,
                                                     backoff=backoff,
-                                                    retry_delay=retry_delay)
+                                                    retry_delay=retry_delay,
+                                                    proxy_url=proxy_url)
 
         self.cert_file = cert_file
 
@@ -1099,7 +1100,8 @@ class BaseDriver(object):
         conn_kwargs = self._ex_connection_class_kwargs()
         conn_kwargs.update({'timeout': kwargs.pop('timeout', None),
                             'retry_delay': kwargs.pop('retry_delay', None),
-                            'backoff': kwargs.pop('backoff', None)})
+                            'backoff': kwargs.pop('backoff', None),
+                            'proxy_url': kwargs.pop('proxy_url', None)})
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self

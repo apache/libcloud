@@ -41,7 +41,9 @@ Which one should I use?
   authorization is your Project ID.
 
 Once you have set up the authentication as described below, you pass the
-authentication information to the driver as described in `Examples`_
+authentication information to the driver as described in `Examples`_. Also
+bear in mind that large clock drift (difference in time) between authenticating
+host and google will cause authentication to fail.
 
 
 Service Account

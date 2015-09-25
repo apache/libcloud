@@ -8,11 +8,25 @@ General
 ~~~~~~~
 
 - Update Rackspace AUTH_URL
-  [LIBCLOUD-738)
+  (LIBCLOUD-738)
   [Brian Curtin]
 
 - Fix ``LIBCLOUD_DEBUG`` mode so it works on Python 3.x.
   [Tomaz Muraus]
+
+- Fix Libcloud code so it doesn't throw an exception if simplejson < 2.1.0 is
+  installed.
+  (LIBCLOUD-714, GITHUB-577)
+  [Erik Johnson]
+
+- Fix endpoint URL for DimensionData Asia Pacific region.
+  (GITHUB-585)
+  [Anthony Shaw]
+
+- Document potential time drift issue which could cause authentication in the
+  GCE drivers to fail.
+  (GITHUB-571)
+  [Michal Tekel]
 
 Compute
 ~~~~~~~
@@ -37,6 +51,16 @@ Compute
   (GITHUB-569)
   [Jesaja Everling]
 
+- Fix ``create_node`` method in the GCE driver calling inexistent method
+  (ex_get_disk instead of ex_get_volume).
+  (GITHUB-574)
+  [Alex Poms]
+
+- Allow user to pass ``proxy_url`` keyword argument to the VCloud driver
+  constructor.
+  (GITHUB-578)
+  [Daniel Pool]
+
 Storage
 ~~~~~~~
 
@@ -60,9 +84,9 @@ Loadbalancer
 DNS
 ~~~
 
-- Add new driver for WorldWideDNS service.
-  (GITHUB-566, LIBCLOUD-732)
-  [Alejandro Pereira]
+- Update Google Cloud DNS API from 'v1beta1' to 'v1'
+  (GITHUB-583)
+  [Misha Brukman]
 
 - Add new driver for AuroraDNS service.
   (GITHUB-562, LIBCLOUD-735)
@@ -71,6 +95,10 @@ DNS
 - Fix "_to_record" in the Route53 driver - make sure it doesn't throw if the
   record TTL is not available.
   [Tomaz Muraus]
+
+- Add new driver for WorldWideDNS service.
+  (GITHUB-566, LIBCLOUD-732)
+  [Alejandro Pereira]
 
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
