@@ -16,7 +16,7 @@
 Vultr DNS Driver
 """
 
-from libcloud.utils.py3 import urllib
+from libcloud.utils.py3 import urlencode
 from libcloud.common.vultr import VultrConnection, VultrResponse
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
@@ -179,7 +179,7 @@ class VultrDNSDriver(DNSDriver):
             serverip = extra['serverip']
 
         params = {'api_key': self.key}
-        data = urllib.urlencode({'domain': zone_id, 'serverip': serverip})
+        data = urlencode({'domain': zone_id, 'serverip': serverip})
         action = '/v1/dns/create_domain'
         zones = self.list_zones()
         if self.ex_zone_exists(zone_id, zones):
@@ -243,7 +243,7 @@ class VultrDNSDriver(DNSDriver):
         post_data = {'domain': zone.domain, 'name': name,
                      'type': self.RECORD_TYPE_MAP.get(type), 'data': data}
 
-        encoded_data = urllib.urlencode(post_data)
+        encoded_data = urlencode(post_data)
         params = {'api_key': self.key}
         action = '/v1/dns/create_record'
 
@@ -272,7 +272,7 @@ class VultrDNSDriver(DNSDriver):
         """
         action = '/v1/dns/delete_domain'
         params = {'api_key': self.key}
-        data = urllib.urlencode({'domain': zone.domain})
+        data = urlencode({'domain': zone.domain})
         zones = self.list_zones()
         if not self.ex_zone_exists(zone.domain, zones):
             raise ZoneDoesNotExistError(value='', driver=self,
@@ -294,8 +294,8 @@ class VultrDNSDriver(DNSDriver):
         """
         action = '/v1/dns/delete_record'
         params = {'api_key': self.key}
-        data = urllib.urlencode({'RECORDID': record.id,
-                                 'domain': record.zone.domain})
+        data = urlencode({'RECORDID': record.id,
+                         'domain': record.zone.domain})
 
         zone_records = self.list_records(record.zone)
         if not self.ex_record_exists(record.id, zone_records):
