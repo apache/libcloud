@@ -96,16 +96,21 @@ DNS
   record TTL is not available.
   [Tomaz Muraus]
 
-- Add new driver for WorldWideDNS service.
+- Add new driver for WorldWideDNS service
+  (http://www.worldwidedns.net/home.asp).
   (GITHUB-566, LIBCLOUD-732)
   [Alejandro Pereira]
 
-- Add new driver for DNSimple service.
+- Add new driver for DNSimple service (https://dnsimple.com/).
   (GITHUB-575, LIBCLOUD-739)
   [Alejandro Pereira]
 
-- Add new driver for PointDNS service (https://pointhq.com/).
+- Add new driver for PointDNS service (https://pointhq.com).
   (GITHUB-576, LIBCLOUD-740)
+  [Alejandro Pereira]
+
+- Add new driver for Vultr DNS service (https://www.vultr.com).
+  (GITHUB-579, LIBCLOUD-745)
   [Alejandro Pereira]
 
 Changes with Apache Libcloud 0.18.0
