@@ -71,90 +71,92 @@ class APIException(LiquidWebException):
         return "%s: %s" % (self.error_class, self.value)
 
 
-EXCEPTIONS_FIELDS = {'LW::Exception::API::Internal':
-                     {'fields': []},
-                     'LW::Exception::API::InvalidEncoding':
-                     {'fields': ['encoding']
-                      },
-                     'LW::Exception::API::InvalidMethod':
-                     {'fields': ['method']
-                      },
-                     'LW::Exception::API::Maintenance':
-                     {'fields': []
-                      },
-                     'LW::Exception::API::RateLimit':
-                     {'fields': ['account', 'ip', 'method']
-                      },
-                     'LW::Exception::Authorization':
-                     {'fields': ['username']
-                      },
-                     'LW::Exception::DNS::NoResponse':
-                     {'fields': ['nameservers']
-                      },
-                     'LW::Exception::DNS::Servfail':
-                     {'fields': ['nameservers']
-                      },
-                     'LW::Exception::Deserialize':
-                     {'fields': ['data', 'encoding']
-                      },
-                     'LW::Exception::DuplicateRecord':
-                     {'fields': ['field', 'input', 'statement']
-                      },
-                     'LW::Exception::Forbidden':
-                     {'fields': []
-                      },
-                     'LW::Exception::Incapable':
-                     {'fields': ['capability', 'thing']
-                      },
-                     'LW::Exception::Input':
-                     {'fields': ['field']
-                      },
-                     'LW::Exception::Input::Disallowed':
-                     {'fields': ['field']
-                      },
-                     'LW::Exception::Input::Multiple':
-                     {'fields': ['errors', 'field', 'type']
-                      },
-                     'LW::Exception::Input::NotInRealm':
-                     {'fields': ['field', 'valid', 'value']
-                      },
-                     'LW::Exception::Input::OutOfBounds':
-                     {'fields': ['field', 'max', 'min', 'value']
-                      },
-                     'LW::Exception::Input::Required':
-                     {'fields': ['field', 'position']
-                      },
-                     'LW::Exception::Input::Unknown':
-                     {'fields': ['field', 'value']
-                      },
-                     'LW::Exception::Input::Validation':
-                     {'fields': ['field', 'type', 'value']
-                      },
-                     'LW::Exception::Permission':
-                     {'fields': ['account', 'identifier']
-                      },
-                     'LW::Exception::RecordNotFound':
-                     {'fields': ['field', 'input']
-                      },
-                     'LW::Exception::RemoteService::Authorization':
-                     {'fields': ['url']
-                      },
-                     'LW::Exception::Resource':
-                     {'fields': ['resource']
-                      },
-                     'LW::Exception::Resource::Insufficient':
-                     {'fields': ['available', 'requested', 'resource']
-                      },
-                     'LW::Exception::Resource::Unavailable':
-                     {'fields': ['resource']
-                      },
-                     'LW::Exception::Serialize':
-                     {'fields': ['data', 'encoding']
-                      },
-                     'LW::Exception::Workflow::Conflict':
-                     {'fields': ['conflict', 'workflow']
-                      },
-                     }
+EXCEPTIONS_FIELDS = {
+    'LW::Exception::API::Internal': {
+        'fields': []
+    },
+    'LW::Exception::API::InvalidEncoding': {
+        'fields': ['encoding']
+    },
+    'LW::Exception::API::InvalidMethod': {
+        'fields': ['method']
+    },
+    'LW::Exception::API::Maintenance': {
+        'fields': []
+    },
+    'LW::Exception::API::RateLimit': {
+        'fields': ['account', 'ip', 'method']
+    },
+    'LW::Exception::Authorization': {
+        'fields': ['username']
+    },
+    'LW::Exception::DNS::NoResponse': {
+        'fields': ['nameservers']
+    },
+    'LW::Exception::DNS::Servfail': {
+        'fields': ['nameservers']
+    },
+    'LW::Exception::Deserialize': {
+        'fields': ['data', 'encoding']
+    },
+    'LW::Exception::DuplicateRecord': {
+        'fields': ['field', 'input', 'statement']
+    },
+    'LW::Exception::Forbidden': {
+        'fields': []
+    },
+    'LW::Exception::Incapable': {
+        'fields': ['capability', 'thing']
+    },
+    'LW::Exception::Input': {
+        'fields': ['field']
+    },
+    'LW::Exception::Input::Disallowed': {
+        'fields': ['field']
+    },
+    'LW::Exception::Input::Multiple': {
+        'fields': ['errors', 'field', 'type']
+    },
+    'LW::Exception::Input::NotInRealm': {
+        'fields': ['field', 'valid', 'value']
+    },
+    'LW::Exception::Input::OutOfBounds': {
+        'fields': ['field', 'max', 'min', 'value']
+    },
+    'LW::Exception::Input::Required': {
+        'fields': ['field', 'position']
+    },
+    'LW::Exception::Input::Unknown': {
+        'fields': ['field', 'value']
+    },
+    'LW::Exception::Input::Validation': {
+        'fields': ['field', 'type', 'value']
+    },
+    'LW::Exception::Permission': {
+        'fields': ['account', 'identifier']
+    },
+    'LW::Exception::RecordNotFound': {
+        'fields': ['field', 'input']
+    },
+    'LW::Exception::RemoteService::Authorization': {
+        'fields': ['url']
+    },
+    'LW::Exception::Resource': {
+        'fields': ['resource']
+    },
+    'LW::Exception::Resource::Insufficient': {
+        'fields': ['available', 'requested', 'resource']
+    },
+    'LW::Exception::Resource::Unavailable': {
+        'fields': ['resource']
+    },
+    'LW::Exception::Serialize': {
+        'fields': ['data', 'encoding']
+    },
+    'LW::Exception::Workflow::Conflict': {
+        'fields': ['conflict', 'workflow']
+    }
+}
 
 
 class LiquidWebResponse(JsonResponse):

@@ -16,11 +16,12 @@
 Liquid Web DNS Driver
 """
 
+import sys
+
 try:
     import simplejson as json
 except ImportError:
     import json
-import sys
 
 from libcloud.common.liquidweb import LiquidWebResponse, LiquidWebConnection
 from libcloud.common.liquidweb import APIException
