@@ -16,6 +16,7 @@ Provider              Documentation                             Provider constan
 `Rackspace DNS (US)`_                                           RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUSDNSDriver` 
 `Route53 DNS`_                                                  ROUTE53           :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
 `Softlayer DNS`_                                                SOFTLAYER         :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
+`Vultr DNS`_          :doc:`Click </dns/drivers/vultr>`         VULTR             :mod:`libcloud.dns.drivers.vultr`        :class:`VultrDNSDriver`       
 `World Wide DNS`_     :doc:`Click </dns/drivers/worldwidedns>`  WORLDWIDEDNS      :mod:`libcloud.dns.drivers.worldwidedns` :class:`WorldWideDNSDriver`   
 `Zerigo DNS`_                                                   ZERIGO            :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
 ===================== ========================================= ================= ======================================== ==============================
@@ -33,5 +34,6 @@ Provider              Documentation                             Provider constan
 .. _`Rackspace DNS (US)`: http://www.rackspace.com/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Softlayer DNS`: https://www.softlayer.com
+.. _`Vultr DNS`: http://www.vultr.com/
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
