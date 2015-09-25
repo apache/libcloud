@@ -104,6 +104,10 @@ DNS
   (GITHUB-575, LIBCLOUD-739)
   [Alejandro Pereira]
 
+- Add new driver for PointDNS service (https://pointhq.com/).
+  (GITHUB-576, LIBCLOUD-740)
+  [Alejandro Pereira]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
