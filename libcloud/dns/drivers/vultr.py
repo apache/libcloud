@@ -158,7 +158,7 @@ class VultrDNSDriver(DNSDriver):
 
         return ret_record
 
-    def create_zone(self, zone_id, type='master', ttl=None, extra={}):
+    def create_zone(self, zone_id, type='master', ttl=None, extra=None):
         """
         Returns a `Zone` object.
 
@@ -174,6 +174,7 @@ class VultrDNSDriver(DNSDriver):
         :param extra: (optional) Extra attributes (driver specific).
                       (e.g. {'serverip':'127.0.0.1'})
         """
+        extra = extra or {}
         if extra and extra.get('serverip'):
             serverip = extra['serverip']
 
@@ -192,7 +193,7 @@ class VultrDNSDriver(DNSDriver):
 
         return zone
 
-    def create_record(self, name, zone, type, data, extra={}):
+    def create_record(self, name, zone, type, data, extra=None):
         """
         Create a new record.
 
@@ -216,6 +217,8 @@ class VultrDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        extra = extra or {}
+
         ret_record = None
         old_records_list = self.list_records(zone=zone)
         # check if record already exists
