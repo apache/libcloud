@@ -14,7 +14,7 @@ Provider                              list key pairs get key pair create key pai
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
 `DigitalOcean`_                       yes            yes          yes             no                            no                          yes            
 `DimensionData`_                      no             no           no              no                            no                          no             
-`Dreamhost`_                          no             no           no              no                            no                          no             
+`DreamHost VPS`_                      no             no           no              no                            no                          no             
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-northeast-1)`_        yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-southeast-1)`_        yes            yes          yes             yes                           no                          yes            
@@ -87,7 +87,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
-.. _`Dreamhost`: http://dreamhost.com/
+.. _`DreamHost VPS`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

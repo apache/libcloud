@@ -55,15 +55,16 @@ def _init_once():
     This checks for the LIBCLOUD_DEBUG environment variable, which if it exists
     is where we will log debug information about the provider transports.
     """
-    from libcloud.utils.py3 import PY3
-
     path = os.getenv('LIBCLOUD_DEBUG')
     if path:
         mode = 'a'
 
         # Special case for /dev/stderr and /dev/stdout on Python 3.
+        from libcloud.utils.py3 import PY3
+
         # Opening those files in append mode will throw "illegal seek"
         # exception there.
+        # Late import to avoid setup.py related side affects
         if path in ['/dev/stderr', '/dev/stdout'] and PY3:
             mode = 'w'
 

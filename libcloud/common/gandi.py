@@ -58,7 +58,7 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
     endpoint = '/xmlrpc/'
 
     def __init__(self, key, secure=True, timeout=None,
-                 retry_delay=None, backoff=None):
+                 retry_delay=None, backoff=None, proxy_url=None):
         # Note: Method resolution order in this case is
         # XMLRPCConnection -> Connection and Connection doesn't take key as the
         # first argument so we specify a keyword argument instead.
@@ -66,7 +66,8 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
         super(GandiConnection, self).__init__(key=key, secure=secure,
                                               timeout=timeout,
                                               retry_delay=retry_delay,
-                                              backoff=backoff)
+                                              backoff=backoff,
+                                              proxy_url=proxy_url)
         self.driver = BaseGandiDriver
 
     def request(self, method, *args):
