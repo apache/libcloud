@@ -113,6 +113,10 @@ DNS
   (GITHUB-579, LIBCLOUD-745)
   [Alejandro Pereira]
 
+- Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
+  (GITHUB-581, LIBCLOUD-746)
+  [Alejandro Pereira]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
