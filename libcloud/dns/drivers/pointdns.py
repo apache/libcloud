@@ -20,7 +20,10 @@ __all__ = [
     'PointDNSDriver'
 ]
 
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.common.pointdns import PointDNSConnection
