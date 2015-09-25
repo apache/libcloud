@@ -23,6 +23,11 @@ General
   (GITHUB-585)
   [Anthony Shaw]
 
+- Document potential time drift issue which could cause authentication in the
+  GCE drivers to fail.
+  (GITHUB-571)
+  [Michal Tekel]
+
 Compute
 ~~~~~~~
 
