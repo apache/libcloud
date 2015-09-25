@@ -19,6 +19,7 @@ Point DNS Driver
 __all__ = [
     'PointDNSDriver'
 ]
+
 import json
 
 from libcloud.common.types import MalformedResponseError
@@ -113,12 +114,12 @@ class MailRedirect(object):
         self.driver = driver
 
     def update(self, destination, source=None, zone_id=None):
-        return self.driver.ex_update_mailredirect(mail_r=self,
-                                                  destination=destination,
-                                                  source=None)
+        return self.driver.ex_update_mail_redirect(mail_r=self,
+                                                   destination=destination,
+                                                   source=None)
 
     def delete(self):
-        return self.driver.ex_delete_mailredirect(mail_r=self)
+        return self.driver.ex_delete_mail_redirect(mail_r=self)
 
     def __repr__(self):
         return ('<PointDNSMailRedirect: source=%s, destination=%s,zone=%s ...>'
@@ -372,15 +373,15 @@ class PointDNSDriver(DNSDriver):
         redirects = self._to_redirects(response.object, zone)
         return redirects
 
-    def ex_list_mailredirects(self, zone):
+    def ex_list_mail_redirects(self, zone):
         """
         :param zone: Zone to list redirects for.
         :type zone: :class:`Zone`
         """
         response = self.connection.request('/zones/%s/mail_redirects' %
                                            zone.id)
-        mailredirects = self._to_mailredirects(response.object, zone)
-        return mailredirects
+        mail_redirects = self._to_mail_redirects(response.object, zone)
+        return mail_redirects
 
     def ex_create_redirect(self, redirect_to, name, type, zone, iframe=None,
                            query=None):
@@ -417,7 +418,7 @@ class PointDNSDriver(DNSDriver):
         redirect = self._to_redirect(response.object, zone.id)
         return redirect
 
-    def ex_create_mailredirect(self, destination, source, zone):
+    def ex_create_mail_redirect(self, destination, source, zone):
         """
         :param destination: The destination address of mail redirect.
         :type destination: ``str``
@@ -433,8 +434,8 @@ class PointDNSDriver(DNSDriver):
         response = self.connection.request('/zones/%s/mail_redirects' %
                                            zone.id, method='POST',
                                            data=r_data)
-        mailredirect = self._to_mailredirect(response.object, zone.id)
-        return mailredirect
+        mail_redirect = self._to_mail_redirect(response.object, zone.id)
+        return mail_redirect
 
     def ex_get_redirect(self, zone, redirect_id):
         """
@@ -449,7 +450,7 @@ class PointDNSDriver(DNSDriver):
         redirect = self._to_redirect(response.object, zone.id)
         return redirect
 
-    def ex_get_mailredirects(self, zone, mail_r_id):
+    def ex_get_mail_redirects(self, zone, mail_r_id):
         """
         :param zone: Zone to list redirects for.
         :type zone: :class:`Zone`
@@ -459,8 +460,8 @@ class PointDNSDriver(DNSDriver):
         """
         response = self.connection.request('/zones/%s/mail_redirects/%s' %
                                            (zone.id, mail_r_id))
-        mailredirect = self._to_mailredirect(response.object, zone.id)
-        return mailredirect
+        mail_redirect = self._to_mail_redirect(response.object, zone.id)
+        return mail_redirect
 
     def ex_update_redirect(self, redirect, redirect_to=None, name=None,
                            type=None, iframe=None, query=None):
@@ -504,7 +505,7 @@ class PointDNSDriver(DNSDriver):
         redirect = self._to_redirect(response.object, zone_id=zone_id)
         return redirect
 
-    def ex_update_mailredirect(self, mail_r, destination, source=None):
+    def ex_update_mail_redirect(self, mail_r, destination, source=None):
         """
         :param mail_r: Mail redirect to update
         :type mail_r: :class:`MailRedirect`
@@ -523,8 +524,9 @@ class PointDNSDriver(DNSDriver):
         response = self.connection.request('/zones/%s/mail_redirects/%s' %
                                            (zone_id, mail_r.id),
                                            method='PUT', data=r_data)
-        mailredirect = self._to_mailredirect(response.object, zone_id=zone_id)
-        return mailredirect
+        mail_redirect = self._to_mail_redirect(response.object,
+                                               zone_id=zone_id)
+        return mail_redirect
 
     def ex_delete_redirect(self, redirect):
         """
@@ -537,7 +539,7 @@ class PointDNSDriver(DNSDriver):
                                 redirect_id), method='DELETE')
         return True
 
-    def ex_delete_mailredirect(self, mail_r):
+    def ex_delete_mail_redirect(self, mail_r):
         """
         :param mail_r: Mail redirect to update
         :type mail_r: :class:`MailRedirect`
@@ -611,14 +613,14 @@ class PointDNSDriver(DNSDriver):
         return Redirect(id, name, redirect_to, type, self, zone_id,
                         iframe=iframe, query=query)
 
-    def _to_mailredirects(self, data, zone):
-        mailredirects = []
+    def _to_mail_redirects(self, data, zone):
+        mail_redirects = []
         for item in data:
-            mailredirect = self._to_mailredirect(item, zone=zone)
-            mailredirects.append(mailredirect)
-        return mailredirects
+            mail_redirect = self._to_mail_redirect(item, zone=zone)
+            mail_redirects.append(mail_redirect)
+        return mail_redirects
 
-    def _to_mailredirect(self, data, zone_id):
+    def _to_mail_redirect(self, data, zone_id):
         record = data.get('zone_mail_redirect')
         id = record.get('id')
         destination = record.get('destination_address')
