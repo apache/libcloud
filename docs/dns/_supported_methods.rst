@@ -10,6 +10,7 @@ Provider              list zones list records create zone update zone create rec
 `Google DNS`_         yes        yes          yes         no          yes           no            yes         yes          
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Linode DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
+`Point DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS (UK)`_ yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS (US)`_ yes        yes          yes         yes         yes           yes           yes         yes          
@@ -26,6 +27,7 @@ Provider              list zones list records create zone update zone create rec
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
+.. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/
 .. _`Rackspace DNS (US)`: http://www.rackspace.com/

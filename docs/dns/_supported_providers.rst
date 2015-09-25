@@ -10,6 +10,7 @@ Provider              Documentation                             Provider constan
 `Google DNS`_                                                   GOOGLE            :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
 `Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                   LINODE            :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
+`Point DNS`_          :doc:`Click </dns/drivers/pointdns>`      POINTDNS          :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
 `Rackspace DNS`_                                                RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `Rackspace DNS (UK)`_                                           RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUKDNSDriver` 
 `Rackspace DNS (US)`_                                           RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUSDNSDriver` 
@@ -26,6 +27,7 @@ Provider              Documentation                             Provider constan
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
+.. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/
 .. _`Rackspace DNS (US)`: http://www.rackspace.com/
