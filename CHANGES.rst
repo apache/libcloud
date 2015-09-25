@@ -100,6 +100,10 @@ DNS
   (GITHUB-566, LIBCLOUD-732)
   [Alejandro Pereira]
 
+- Add new driver for DNSimple service.
+  (GITHUB-575, LIBCLOUD-739)
+  [Alejandro Pereira]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
