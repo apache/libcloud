@@ -115,7 +115,7 @@ DNS
 
 - Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
   (GITHUB-581, LIBCLOUD-746)
-  [Alejandro Pereira]
+  [Oltjano Terpollari, Alejandro Pereira]
 
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
