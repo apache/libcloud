@@ -1,0 +1,42 @@
+{
+    "item_count": 3,
+    "item_total": "3",
+    "items": [
+        {
+            "active": 1,
+            "delegation_checked": "2015-06-25 09:14:54",
+            "delegation_status": "BAD_NAMESERVERS",
+            "id": 378451,
+            "master": "209.59.139.20",
+            "name": "blogtest.com",
+            "notified_serial": null,
+            "region_support": "0",
+            "type": "NATIVE"
+        },
+        {
+            "active": 1,
+            "delegation_checked": "2015-06-25 09:14:21",
+            "delegation_status": "NXDOMAIN",
+            "id": 378449,
+            "master": "209.59.139.20",
+            "name": "oltjanotest.com",
+            "notified_serial": null,
+            "region_support": "0",
+            "type": "NATIVE"
+        },
+        {
+            "active": 1,
+            "delegation_checked": "2015-06-25 09:14:39",
+            "delegation_status": "BAD_NAMESERVERS",
+            "id": 378450,
+            "master": "209.59.139.20",
+            "name": "pythontest.com",
+            "notified_serial": null,
+            "region_support": "0",
+            "type": "NATIVE"
+        }
+    ],
+    "page_num": "1",
+    "page_size": "25",
+    "page_total": 1
+}

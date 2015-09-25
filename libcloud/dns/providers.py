@@ -45,6 +45,8 @@ DRIVERS = {
     ('libcloud.dns.drivers.pointdns', 'PointDNSDriver'),
     Provider.VULTR:
     ('libcloud.dns.drivers.vultr', 'VultrDNSDriver'),
+    Provider.LIQUIDWEB:
+    ('libcloud.dns.drivers.liquidweb', 'LiquidWebDNSDriver'),
     # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),

@@ -1,0 +1,10 @@
+{
+    "name": "test.com",
+    "delegation_checked": "2015-06-26 12:36:42",
+    "region_support": "0",
+    "master": "209.59.139.20",
+    "delegation_status": "BAD_NAMESERVERS",
+    "active": 1,
+    "type": "NATIVE",
+    "id": 13
+}

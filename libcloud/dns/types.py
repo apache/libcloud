@@ -43,6 +43,7 @@ class Provider(object):
     DNSIMPLE = 'dnsimple'
     POINTDNS = 'pointdns'
     VULTR = 'vultr'
+    LIQUIDWEB = 'liquidweb'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
