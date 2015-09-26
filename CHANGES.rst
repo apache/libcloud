@@ -117,6 +117,10 @@ DNS
   (GITHUB-581, LIBCLOUD-746)
   [Oltjano Terpollari, Alejandro Pereira]
 
+- Add new driver for Zonomi DNS hosting service (http://zonomi.com/).
+  (GITHUB-582, LIBCLOUD-747)
+  [Oltjano Terpollari, Alejandro Pereira]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
