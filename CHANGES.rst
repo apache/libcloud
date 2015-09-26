@@ -61,6 +61,12 @@ Compute
   (GITHUB-578)
   [Daniel Pool]
 
+- Various fixes and improvements in the DimensionData driver (support for
+  creating servers in MCP 1 and 2 data center, performance improvements in the
+  location fetching, etc.).
+  (GITHUB-587, LIBCLOUD-750)
+  [Anthony Shaw]
+
 Storage
 ~~~~~~~
 
