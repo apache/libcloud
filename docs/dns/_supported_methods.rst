@@ -10,6 +10,7 @@ Provider              list zones list records create zone update zone create rec
 `Google DNS`_         yes        yes          yes         no          yes           no            yes         yes          
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Linode DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
+`Liquidweb DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
 `Point DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS (UK)`_ yes        yes          yes         yes         yes           yes           yes         yes          
@@ -19,6 +20,7 @@ Provider              list zones list records create zone update zone create rec
 `Vultr DNS`_          yes        yes          yes         no          yes           no            yes         yes          
 `World Wide DNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
 `Zerigo DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
+`Zonomi DNS`_         yes        yes          yes         no          yes           no            yes         yes          
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
@@ -28,6 +30,7 @@ Provider              list zones list records create zone update zone create rec
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
+.. _`Liquidweb DNS`: https://www.liquidweb.com
 .. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/
@@ -37,3 +40,4 @@ Provider              list zones list records create zone update zone create rec
 .. _`Vultr DNS`: http://www.vultr.com/
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
+.. _`Zonomi DNS`: https://zonomi.com
