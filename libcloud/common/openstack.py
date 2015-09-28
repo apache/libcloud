@@ -122,7 +122,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     _auth_version = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, timeout=None,
+                 host=None, port=None, timeout=None, proxy_url=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
@@ -134,7 +134,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  retry_delay=None, backoff=None):
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure, timeout=timeout,
-            retry_delay=retry_delay, backoff=backoff)
+            retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url)
 
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version

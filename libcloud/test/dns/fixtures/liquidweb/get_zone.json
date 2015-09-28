@@ -1,0 +1,11 @@
+{
+    "active": 1,
+    "delegation_checked": "2015-06-2509:14:54",
+    "delegation_status": "BAD_NAMESERVERS",
+    "id": 13,
+    "master": "209.59.139.20",
+    "name": "blogtest.com",
+    "notified_serial": null,
+    "region_support": "0",
+    "type": "NATIVE"
+}

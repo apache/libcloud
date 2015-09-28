@@ -1,0 +1,36 @@
+{
+    "items": [
+        {
+            "name": "nerd.domain.com",
+            "prio": "None",
+            "rdata": "127.0.0.1",
+            "ttl": 300,
+            "type": "A",
+            "id": 13,
+            "zone_id": 11
+        },
+        {
+            "name": "thisboy.domain.com",
+            "prio": "None",
+            "rdata": "127.0.0.1",
+            "ttl": 300,
+            "type": "A",
+            "id": 11,
+            "zone_id": 11
+        },
+        {
+            "name": "visitor.domain.com",
+            "prio": "None",
+            "rdata": "127.0.0.1",
+            "ttl": 300,
+            "type": "A",
+            "id": 10,
+            "zone_id": 1
+        }
+    ],
+    "page_num": "1",
+    "page_size": "25",
+    "item_count": 3,
+    "page_total": 1,
+    "item_total": "3"
+}

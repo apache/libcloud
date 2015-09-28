@@ -1,0 +1,11 @@
+{
+    "zone_record": {
+        "name": "site.example.com",
+        "data": "1.2.3.4",
+        "id": 141,
+        "aux": null,
+        "record_type": "A",
+        "ttl": 3600,
+        "zone_id": 1
+    }
+}

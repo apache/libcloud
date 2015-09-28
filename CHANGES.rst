@@ -23,6 +23,11 @@ General
   (GITHUB-585)
   [Anthony Shaw]
 
+- Document potential time drift issue which could cause authentication in the
+  GCE drivers to fail.
+  (GITHUB-571)
+  [Michal Tekel]
+
 Compute
 ~~~~~~~
 
@@ -45,6 +50,22 @@ Compute
   specify which virtual network to use.
   (GITHUB-569)
   [Jesaja Everling]
+
+- Fix ``create_node`` method in the GCE driver calling inexistent method
+  (ex_get_disk instead of ex_get_volume).
+  (GITHUB-574)
+  [Alex Poms]
+
+- Allow user to pass ``proxy_url`` keyword argument to the VCloud driver
+  constructor.
+  (GITHUB-578)
+  [Daniel Pool]
+
+- Various fixes and improvements in the DimensionData driver (support for
+  creating servers in MCP 1 and 2 data center, performance improvements in the
+  location fetching, etc.).
+  (GITHUB-587, LIBCLOUD-750)
+  [Anthony Shaw]
 
 Storage
 ~~~~~~~
@@ -80,6 +101,31 @@ DNS
 - Fix "_to_record" in the Route53 driver - make sure it doesn't throw if the
   record TTL is not available.
   [Tomaz Muraus]
+
+- Add new driver for WorldWideDNS service
+  (http://www.worldwidedns.net/home.asp).
+  (GITHUB-566, LIBCLOUD-732)
+  [Alejandro Pereira]
+
+- Add new driver for DNSimple service (https://dnsimple.com/).
+  (GITHUB-575, LIBCLOUD-739)
+  [Alejandro Pereira]
+
+- Add new driver for PointDNS service (https://pointhq.com).
+  (GITHUB-576, LIBCLOUD-740)
+  [Alejandro Pereira]
+
+- Add new driver for Vultr DNS service (https://www.vultr.com).
+  (GITHUB-579, LIBCLOUD-745)
+  [Alejandro Pereira]
+
+- Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
+  (GITHUB-581, LIBCLOUD-746)
+  [Oltjano Terpollari, Alejandro Pereira]
+
+- Add new driver for Zonomi DNS hosting service (http://zonomi.com/).
+  (GITHUB-582, LIBCLOUD-747)
+  [Oltjano Terpollari, Alejandro Pereira]
 
 Changes with Apache Libcloud 0.18.0
 -----------------------------------

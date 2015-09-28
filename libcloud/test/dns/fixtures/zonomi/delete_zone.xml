@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dnsapi_result>
+   <is_ok>OK:</is_ok>
+   \n
+   <result_counts added="0" changed="0" unchanged="0" deleted="1" />
+   \n
+   <actions>
+      \n\n
+      <action action="DELETEZONE" host="zone.com" type="A">
+         \n
+         <zone name="zone.com" type="NATIVE" notified_serial="0" deleted="" />
+      </action>
+   </actions>
+</dnsapi_result>

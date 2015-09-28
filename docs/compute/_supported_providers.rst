@@ -14,7 +14,7 @@ Provider                              Documentation                             
 `Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`     CLOUDWATT           :mod:`libcloud.compute.drivers.cloudwatt`      :class:`CloudwattNodeDriver`        
 `DigitalOcean`_                       :doc:`Click </compute/drivers/digital_ocean>` DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
 `DimensionData`_                      :doc:`Click </compute/drivers/dimensiondata>` DIMENSIONDATA       :mod:`libcloud.compute.drivers.dimensiondata`  :class:`DimensionDataNodeDriver`    
-`Dreamhost`_                                                                        DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
+`DreamHost VPS`_                                                                    DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
 `Amazon EC2`_                         :doc:`Click </compute/drivers/ec2>`           EC2                 :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
 `Amazon EC2 (ap-northeast-1)`_                                                      EC2_AP_NORTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APNENodeDriver`          
 `Amazon EC2 (ap-southeast-1)`_                                                      EC2_AP_SOUTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APSENodeDriver`          
@@ -87,7 +87,7 @@ Provider                              Documentation                             
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
-.. _`Dreamhost`: http://dreamhost.com/
+.. _`DreamHost VPS`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

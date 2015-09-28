@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server xmlns="urn:didata.com:api:cloud:types" id="e75ead52-692f-4314-8725-c8a4f4d13a87" datacenterId="NA5">
+    <name>us-dc2.us.aperture.cloud</name>
+    <description>Domain Controller 2 for us.aperture.cloud.</description>
+    <operatingSystem id="WIN2012S64" displayName="WIN2012S/64" family="WINDOWS"/>
+    <cpuCount>2</cpuCount>
+    <memoryGb>2</memoryGb>
+    <disk id="931d9035-251d-432c-8f52-8e9e3e15cbbb" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+    <disk id="f28de371-2b30-46d1-935d-913e1594c91c" scsiId="1" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+    <disk id="0033b75f-fb0d-4068-aa21-8fb814587ce2" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+    <disk id="f0c0dacf-33e4-42d4-9d80-3ebf3c899a37" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+    <nic id="fe72ee32-7b9d-11e4-8c14-b8ca3a5d9ef8" privateIpv4="10.192.176.12" networkId="4bba37be-506f-11e3-b29c-001517c4643e" networkName="Aperture US1" state="NORMAL"/>
+    <sourceImageId>4787337e-0f31-11e3-b29c-001517c4643e</sourceImageId>
+    <createTime>2013-11-29T23:17:09.000Z</createTime>
+    <deployed>true</deployed>
+    <started>false</started>
+    <state>NORMAL</state>
+    <progress>
+    <action>DEPLOY_SERVER</action>
+    <requestTime>2015-03-06T18:05:33.000Z</requestTime>
+    <userName>myuser</userName>
+    </progress>
+    <machineStatus name="vmwareToolsVersionStatus" value="NEED_UPGRADE"/>
+    <machineStatus name="vmwareToolsRunningStatus" value="NOT_RUNNING"/>
+    <machineStatus name="vmwareToolsApiVersion" value="9221"/>
+</server>

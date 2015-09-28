@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dnsapi_result>
+   <is_ok>OK:</is_ok>
+   \n
+   <msg>zone.com successfully converted to a slave zone.  Our name servers will pick up DNS changes from the master server you specified.</msg>
+</dnsapi_result>

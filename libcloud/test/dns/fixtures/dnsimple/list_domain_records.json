@@ -1,0 +1,42 @@
+[
+  {
+    "record": {
+      "name": "",
+      "ttl": 3600,
+      "created_at": "2010-07-04T04:41:31Z",
+      "updated_at": "2010-10-21T15:47:47Z",
+      "domain_id": 1,
+      "id": 31,
+      "content": "1.2.3.4",
+      "record_type": "A",
+      "prio": null
+    }
+  },
+  {
+    "record": {
+      "name": "www",
+      "ttl": 3600,
+      "created_at": "2010-07-01T08:01:18Z",
+      "updated_at": "2010-10-21T15:47:47Z",
+      "domain_id": 1,
+      "id": 2,
+      "content": "example.com",
+      "record_type": "CNAME",
+      "prio": null
+    }
+  },
+  {
+    "record": {
+      "name": "",
+      "ttl": 3600,
+      "created_at": "2010-07-04T04:42:11Z",
+      "updated_at": "2010-10-21T15:47:47Z",
+      "pdns_identifier": "40",
+      "domain_id": 1,
+      "id": 32,
+      "content": "mail.example.com",
+      "record_type": "MX",
+      "prio": 10
+    }
+  }
+]

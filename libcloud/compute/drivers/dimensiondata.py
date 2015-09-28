@@ -76,7 +76,9 @@ class DimensionDataNodeDriver(NodeDriver):
         return kwargs
 
     def create_node(self, name, image, auth, ex_description,
-                    ex_network, ex_is_started=True, **kwargs):
+                    ex_network=None, ex_network_domain=None,
+                    ex_vlan=None,
+                    ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
 
@@ -93,61 +95,64 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_description:  description for this node (required)
         :type       ex_description:  ``str``
 
-        :keyword    ex_network:  Network to create the node within (required)
+        :keyword    ex_network:  Network to create the node within (required,
+                                unless using Network Domain)
         :type       ex_network: :class:`DimensionDataNetwork`
+
+        :keyword    ex_network_domain:  Network Domain to create the node
+                                        (required unless using network)
+        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+
+        :keyword    ex_vlan:  VLAN to create the node within
+                                        (required unless using network)
+        :type       ex_vlan: :class:`DimensionDataVlan`
 
         :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
         :type       ex_is_started:  ``bool``
 
-        :return: The newly created :class:`Node`. NOTE: DimensionData does not
-                 provide a
-                 way to determine the ID of the server that was just created,
-                 so the returned :class:`Node` is not guaranteed to be the same
-                 one that was created.  This is only the case when multiple
-                 nodes with the same name exist.
+        :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
         """
 
-        # XXX:  Node sizes can be adjusted after a node is created, but
-        #       cannot be set at create time because size is part of the
-        #       image definition.
         password = None
         auth_obj = self._get_and_check_auth(auth)
         password = auth_obj.password
 
         if not isinstance(ex_network, DimensionDataNetwork):
-            raise ValueError('ex_network must be of DimensionDataNetwork type')
-        vlanResourcePath = "%s/%s" % (
-            self.connection.get_resource_path_api_1(),
-            ex_network.id)
+            if not isinstance(ex_network_domain, DimensionDataNetworkDomain):
+                raise ValueError('ex_network must be of DimensionDataNetwork '
+                                 'type or ex_network_domain must be of '
+                                 'DimensionDataNetworkDomain type')
 
-        imageResourcePath = None
-        if 'resourcePath' in image.extra:
-            imageResourcePath = image.extra['resourcePath']
-        else:
-            imageResourcePath = "%s/%s" % (
-                self.connection.get_resource_path_api_1(),
-                image.id)
-
-        server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
+        server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
         ET.SubElement(server_elm, "description").text = ex_description
-        ET.SubElement(server_elm, "vlanResourcePath").text = vlanResourcePath
-        ET.SubElement(server_elm, "imageResourcePath").text = imageResourcePath
+        ET.SubElement(server_elm, "imageId").text = image.id
+        ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
-        ET.SubElement(server_elm, "isStarted").text = str(ex_is_started)
 
-        self.connection.request_with_orgId_api_1(
-            'server',
+        if ex_network is not None:
+            network_elm = ET.SubElement(server_elm, "network")
+            ET.SubElement(network_elm, "networkId").text = ex_network.id
+        if ex_network_domain is not None:
+            network_inf_elm = ET.SubElement(server_elm, "networkInfo",
+                                            {'networkDomainId':
+                                             ex_network_domain.id})
+            pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
+            ET.SubElement(pri_nic, "vlanId").text = ex_vlan.id
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/deployServer',
             method='POST',
             data=ET.tostring(server_elm)).object
 
-        # XXX: return the last node in the list that has a matching name.  this
-        #      is likely but not guaranteed to be the node we just created
-        #      because DimensionData allows multiple
-        #      nodes to have the same name
-        node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+        node_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'serverId':
+                node_id = info.get('value')
+
+        node = self.ex_get_node_by_id(node_id)
 
         if getattr(auth_obj, "generated", False):
             node.extra['password'] = auth_obj.password
@@ -188,8 +193,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_images`
         """
+        params = {}
+        if location is not None:
+            params['location'] = location.id
+
         return self._to_base_images(
-            self.connection.request_api_1('base/image').object)
+            self.connection.request_api_1('base/imageWithDiskSpeed',
+                                          params=params)
+            .object)
 
     def list_sizes(self, location=None):
         """
@@ -232,24 +243,32 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
+        url_ext = ''
+        if location is not None:
+            url_ext = '/' + location.id
+
         return self._to_networks(
             self.connection
-            .request_with_orgId_api_1('networkWithLocation').object)
+            .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
+            .object)
 
     def _to_base_images(self, object):
         images = []
-        for element in object.findall(fixxpath("ServerImage", SERVER_NS)):
-            images.append(self._to_base_image(element))
+        locations = self.list_locations()
+
+        for element in object.findall(fixxpath("image", SERVER_NS)):
+            images.append(self._to_base_image(element, locations))
 
         return images
 
-    def _to_base_image(self, element):
+    def _to_base_image(self, element, locations):
         # Eventually we will probably need multiple _to_image() functions
         # that parse <ServerImage> differently than <DeployedImage>.
         # DeployedImages are customer snapshot images, and ServerImages are
         # 'base' images provided by DimensionData
-        location_id = findtext(element, 'location', SERVER_NS)
-        location = self.ex_get_location_by_id(location_id)
+        location_id = element.get('location')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
 
         extra = {
             'description': findtext(element, 'description', SERVER_NS),
@@ -266,7 +285,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'location': location,
         }
 
-        return NodeImage(id=str(findtext(element, 'id', SERVER_NS)),
+        return NodeImage(id=element.get('id'),
                          name=str(findtext(element, 'name', SERVER_NS)),
                          extra=extra,
                          driver=self.connection.driver)
@@ -352,7 +371,7 @@ class DimensionDataNodeDriver(NodeDriver):
         result = findtext(body, 'responseCode', TYPES_URN)
         return result == 'IN_PROGRESS'
 
-    def ex_list_networks(self):
+    def ex_list_networks(self, location=None):
         """
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
@@ -360,11 +379,16 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
+        params = {}
+        if location is not None:
+            params['location'] = location.id
+
         response = self.connection \
-            .request_with_orgId_api_1('networkWithLocation').object
+            .request_with_orgId_api_1('networkWithLocation',
+                                      params=params).object
         return self._to_networks(response)
 
-    def ex_list_network_domains(self):
+    def ex_list_network_domains(self, location=None):
         """
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
@@ -372,20 +396,36 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
+        params = {}
+        if location is not None:
+            params['datacenterId'] = location.id
+
         response = self.connection \
-            .request_with_orgId_api_2('network/networkDomain').object
+            .request_with_orgId_api_2('network/networkDomain',
+                                      params=params).object
         return self._to_network_domains(response)
 
-    def ex_list_vlans(self):
+    def ex_list_vlans(self, location=None, network_domain=None):
         """
         List VLANs available in a given networkDomain
 
         :return: a list of DimensionDataVlan objects
         :rtype: ``list`` of :class:`DimensionDataVlan`
         """
-        response = self.connection.request_with_orgId_api_2('network/vlan') \
+        params = {}
+        if location is not None:
+            params['datacenterId'] = location.id
+        if network_domain is not None:
+            params['networkDomainId'] = network_domain.id
+        response = self.connection.request_with_orgId_api_2('network/vlan',
+                                                            params=params) \
                                   .object
         return self._to_vlans(response)
+
+    def ex_get_node_by_id(self, id):
+        node = self.connection.request_with_orgId_api_2(
+            'server/server/%s' % id).object
+        return self._to_node(node)
 
     def ex_get_location_by_id(self, id):
         """
@@ -404,12 +444,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_networks(self, object):
         networks = []
+        locations = self.list_locations()
         for element in findall(object, 'network', NETWORK_NS):
-            networks.append(self._to_network(element))
+            networks.append(self._to_network(element, locations))
 
         return networks
 
-    def _to_network(self, element):
+    def _to_network(self, element, locations):
         multicast = False
         if findtext(element, 'multicast', NETWORK_NS) == 'true':
             multicast = True
@@ -417,7 +458,8 @@ class DimensionDataNodeDriver(NodeDriver):
         status = self._to_status(element.find(fixxpath('status', NETWORK_NS)))
 
         location_id = findtext(element, 'location', NETWORK_NS)
-        location = self.ex_get_location_by_id(location_id)
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
 
         return DimensionDataNetwork(
             id=findtext(element, 'id', NETWORK_NS),
@@ -432,16 +474,18 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_network_domains(self, object):
         network_domains = []
+        locations = self.list_locations()
         for element in findall(object, 'networkDomain', TYPES_URN):
-            network_domains.append(self._to_network_domain(element))
+            network_domains.append(self._to_network_domain(element, locations))
 
         return network_domains
 
-    def _to_network_domain(self, element):
+    def _to_network_domain(self, element, locations):
         status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
 
-        location_id = element.get('datacenter')
-        location = self.ex_get_location_by_id(location_id)
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
 
         return DimensionDataNetworkDomain(
             id=element.get('id'),
@@ -453,16 +497,18 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_vlans(self, object):
         vlans = []
+        locations = self.list_locations()
         for element in findall(object, 'vlan', TYPES_URN):
-            vlans.append(self._to_vlan(element))
+            vlans.append(self._to_vlan(element, locations=locations))
 
         return vlans
 
-    def _to_vlan(self, element):
+    def _to_vlan(self, element, locations):
         status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
 
-        location_id = element.get('location')
-        location = self.ex_get_location_by_id(location_id)
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
 
         return DimensionDataVlan(
             id=element.get('id'),

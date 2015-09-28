@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dnsapi_result>
+   <is_ok>OK:</is_ok>
+   \n
+   <result_counts added="0" changed="0" unchanged="0" deleted="0" />
+   \n
+   <actions>
+      \n\n
+      <action action="QUERY" host="zone.com">
+         \n
+         <record name="zone.com" type="SOA" content="ns1.zonomi.com. soacontact.zonomi.com. 13" ttl="86400 seconds" prio="0" />
+         \t\n
+         <record name="zone.com" type="NS" content="ns1.zonomi.com" ttl="3600 seconds" prio="0" />
+         \t\n
+         <record name="oltjano.zone.com" type="A" content="127.0.0.1" ttl="3600 seconds" prio="0" />
+         \t\n
+         <record name="zone.com" type="NS" content="ns5.zonomi.com" ttl="3600 seconds" prio="0" />
+         \t
+      </action>
+   </actions>
+</dnsapi_result>

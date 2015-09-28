@@ -176,6 +176,18 @@ class TestCommand(Command):
                 testfiles.append('.'.join(
                     [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
+        # Test loader simply throws "'module' object has no attribute" error
+        # if there is an issue with the test module so we manually try to
+        # import each module so we get a better and more friendly error message
+        for test_file in testfiles:
+            try:
+                __import__(test_file)
+            except Exception:
+                e = sys.exc_info()[1]
+                print('Failed to import test module "%s": %s' % (test_file,
+                                                                 str(e)))
+                raise e
+
         tests = TestLoader().loadTestsFromNames(testfiles)
 
         for test_module in DOC_TEST_MODULES:
