@@ -1,0 +1,8 @@
+{
+    "zone_mail_redirect": {
+        "source_address": "new_admin",
+        "destination_address": "new_user@example-site.com",
+        "id": 5,
+        "zone_id": 1
+    }
+}
