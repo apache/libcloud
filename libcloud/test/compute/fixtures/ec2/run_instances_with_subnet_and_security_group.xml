@@ -12,7 +12,7 @@
                 <code>0</code>
                 <name>pending</name>
             </instanceState>
-            <privateDnsName>ip-192-168-79-96.us-east-1.compute.internal</privateDnsName>
+            <privateDnsName>ip-192-0-2-5.us-east-1.compute.internal</privateDnsName>
             <dnsName/>
             <reason/>
             <amiLaunchIndex>0</amiLaunchIndex>
@@ -30,7 +30,7 @@
             </monitoring>
             <subnetId>subnet-11111111</subnetId>
             <vpcId>vpc-11111111</vpcId>
-            <privateIpAddress>192.168.79.96</privateIpAddress>
+            <privateIpAddress>192.0.2.5</privateIpAddress>
             <sourceDestCheck>true</sourceDestCheck>
             <groupSet>
                 <item>
@@ -58,7 +58,7 @@
                     <ownerId>111111111111</ownerId>
                     <status>in-use</status>
                     <macAddress>06:ea:24:17:f7:77</macAddress>
-                    <privateIpAddress>192.168.79.96</privateIpAddress>
+                    <privateIpAddress>192.0.2.5</privateIpAddress>
                     <sourceDestCheck>true</sourceDestCheck>
                     <groupSet>
                         <item>
@@ -75,7 +75,7 @@
                     </attachment>
                     <privateIpAddressesSet>
                         <item>
-                            <privateIpAddress>192.168.79.96</privateIpAddress>
+                            <privateIpAddress>192.0.2.5</privateIpAddress>
                             <primary>true</primary>
                         </item>
                     </privateIpAddressesSet>
