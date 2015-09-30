@@ -18,7 +18,6 @@ import base64
 from libcloud.common.base import JsonResponse
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.utils.py3 import b
-from libcloud.utils.py3 import PY3
 from libcloud.common.types import ProviderError
 
 
@@ -165,29 +164,15 @@ class LiquidWebResponse(JsonResponse):
     error_dict = {}
 
     def __init__(self, response, connection):
-        self.connection = connection
-
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.status = response.status
-
-        # This attribute is used when usng LoggingConnection
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data:
-            self.body = response._original_data
-        else:
-            self.body = self._decompress_response(body=response.read(),
-                                                  headers=self.headers)
-
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-        self.objects, self.errors = self.parse_body()
-        if not self.success():
+        self.errors = []
+        super(LiquidWebResponse, self).__init__(response=response,
+                                                connection=connection)
+        self.objects, self.errors = self.parse_body_and_errors()
+        if self.errors:
             error = self.errors.pop()
             raise self._make_excp(error, self.status)
 
-    def parse_body(self):
+    def parse_body_and_errors(self):
         data = []
         errors = []
         js = super(LiquidWebResponse, self).parse_body()

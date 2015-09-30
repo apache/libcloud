@@ -71,7 +71,7 @@ class WorldWideDNSDriver(DNSDriver):
         :type     reseller_id: ``str``
 
         :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
-                only support HTTPS, and it is on by default.
+                          only support HTTPS, and it is on by default.
         :type     secure: ``bool``
 
         :param    host: Override hostname used for connections.
@@ -180,10 +180,11 @@ class WorldWideDNSDriver(DNSDriver):
         :type  ttl: ``int``
 
         :param extra: Extra attributes (driver specific) (optional). Values not
-        specified such as *SECURE*, *IP*, *FOLDER*, *HOSTMASTER*, *REFRESH*,
-        *RETRY* and *EXPIRE* will be kept as already is. The same will be for
-        *S(1 to 40)*, *T(1 to 40)* and *D(1 to 40)* if not in raw mode and
-        for *ZONENS* and *ZONEDATA* if it is.
+                      specified such as *SECURE*, *IP*, *FOLDER*, *HOSTMASTER*,
+                      *REFRESH*, *RETRY* and *EXPIRE* will be kept as already
+                      is. The same will be for *S(1 to 40)*, *T(1 to 40)* and
+                      *D(1 to 40)* if not in raw mode and for *ZONENS* and
+                      *ZONEDATA* if it is.
         :type  extra: ``dict``
 
         :param ex_raw: Mode we use to do the update using zone file or not.
@@ -283,8 +284,8 @@ class WorldWideDNSDriver(DNSDriver):
         :type  ttl: ``int``
 
         :param extra: Extra attributes (driver specific). (optional). Possible
-        parameter in here should be *DYN* which values should be 1 for standart
-        and 2 for dynamic. Default is 1.
+                      parameter in here should be *DYN* which values should be
+                      1 for standart and 2 for dynamic. Default is 1.
         :type extra: ``dict``
 
         :rtype: :class:`Zone`
