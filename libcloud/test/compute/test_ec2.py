@@ -116,6 +116,26 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['tags']['Name'], 'foo')
         self.assertEqual(len(node.extra['tags']), 1)
 
+    def test_create_node_with_ex_assign_public_ip(self):
+        # assertions are done in _create_ex_assign_public_ip_RunInstances
+        EC2MockHttp.type = 'create_ex_assign_public_ip'
+        image = NodeImage(id='ami-11111111',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        subnet = EC2NetworkSubnet('subnet-11111111', "test_subnet", "pending")
+        self.driver.create_node(
+            name='foo',
+            image=image,
+            size=size,
+            ex_subnet=subnet,
+            ex_security_group_ids=[
+                'sg-11111111'
+            ],
+            ex_assign_public_ip=True,
+        )
+
     def test_create_node_with_metadata(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
@@ -1243,6 +1263,17 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _RunInstances(self, method, url, body, headers):
         body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _create_ex_assign_public_ip_RunInstances(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {
+            'NetworkInterface.1.AssociatePublicIpAddress': "true",
+            'NetworkInterface.1.DeleteOnTermination': "true",
+            'NetworkInterface.1.DeviceIndex': "0",
+            'NetworkInterface.1.SubnetId': "subnet-11111111",
+            'NetworkInterface.1.SecurityGroupId.1': "sg-11111111",
+        })
+        body = self.fixtures.load('run_instances_with_subnet_and_security_group.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
