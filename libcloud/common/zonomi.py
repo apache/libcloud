@@ -14,7 +14,6 @@
 
 from libcloud.common.base import XmlResponse
 from libcloud.common.base import ConnectionKey
-from libcloud.utils.py3 import b, PY3
 
 
 __all__ = [
@@ -51,25 +50,14 @@ class ZonomiResponse(XmlResponse):
     objects = None
 
     def __init__(self, response, connection):
-        self.connection = connection
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.status = response.status
-
-        # This attribute is used when using LoggingConnection
-        original_data = getattr(response, '_original_data', None)
-        if original_data:
-            self.body = response._original_data
-        else:
-            self.body = self._decompress_response(body=response.read(),
-                                                  headers=self.headers)
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-        self.objects, self.errors = self.parse_body()
+        self.errors = []
+        super(ZonomiResponse, self).__init__(response=response,
+                                             connection=connection)
+        self.objects, self.errors = self.parse_body_and_errors()
         if self.errors:
             raise self._make_excp(self.errors[0])
 
-    def parse_body(self):
+    def parse_body_and_errors(self):
         error_dict = {}
         actions = None
         result_counts = None
@@ -116,8 +104,8 @@ class ZonomiResponse(XmlResponse):
 
         return (data, errors)
 
-    # def success(self):
-    #     return (len(self.errors) == 0)
+    def success(self):
+        return (len(self.errors) == 0)
 
     def _make_excp(self, error):
         """

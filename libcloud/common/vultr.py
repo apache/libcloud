@@ -1,6 +1,4 @@
 from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.utils.misc import lowercase_keys
-from libcloud.utils.py3 import PY3, b
 
 
 __all__ = [
@@ -36,28 +34,14 @@ class VultrResponse(JsonResponse):
 
     def __init__(self, response, connection):
 
-        self.connection = connection
-        self.error = response.reason
-        self.status = response.status
-        self.headers = lowercase_keys(dict(response.getheaders()))
-
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data:
-            self.body = response._original_data
-
-        else:
-            self.body = self._decompress_response(body=response.read(),
-                                                  headers=self.headers)
-
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-
-        self.objects, self.errors = self.parse_body()
+        self.errors = []
+        super(VultrResponse, self).__init__(response=response,
+                                            connection=connection)
+        self.objects, self.errors = self.parse_body_and_errors()
         if not self.success():
             raise self._make_excp(self.errors[0])
 
-    def parse_body(self):
+    def parse_body_and_errors(self):
         """
         Returns JSON data in a python list.
         """
