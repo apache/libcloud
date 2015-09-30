@@ -31,6 +31,9 @@ General
 Compute
 ~~~~~~~
 
+- Added ``ex_assign_public_ip`` to ``create_node`` in ec2 driver
+  [Kyle Long]
+
 - Allow user to filter VPC by project in the CloudStack driver by passing
   ``project`` argument to the ``ex_list_vps`` method.
   (GITHUB-516)
