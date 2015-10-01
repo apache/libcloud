@@ -452,7 +452,14 @@ class AzureNodeDriver(NodeDriver):
 
         target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
 
-        instance_vhd = "https://%s.blob.core.windows.net/%s/%s-os.vhd" % (ex_storage_account, ex_blob_container, name)
+        n = 0
+        while True:
+            try:
+                instance_vhd = "https://%s.blob.core.windows.net/%s/%s-os_%i.vhd" % (ex_storage_account, ex_blob_container, name, n)
+                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+                break
+            except LibcloudError as e:
+                n += 1
 
         if isinstance(image, AzureVhdImage):
             storageProfile = {
@@ -536,11 +543,6 @@ class AzureNodeDriver(NodeDriver):
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
             raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
-
-        try:
-            self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-        except LibcloudError as e:
-            raise LibcloudError("While error deleting old VHD blob %s to make way for new VM: %s" % (instance_vhd, e))
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
