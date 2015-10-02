@@ -19,6 +19,7 @@ Driver for Microsoft Azure Resource Manager (ARM) Virtual Machines provider.
 http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
+import base64
 import binascii
 import os
 import time
@@ -343,7 +344,8 @@ class AzureNodeDriver(NodeDriver):
                     ex_network=None,
                     ex_subnet=None,
                     ex_nic=None,
-                    ex_tags={}):
+                    ex_tags={},
+                    ex_customdata=""):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -411,7 +413,7 @@ class AzureNodeDriver(NodeDriver):
         node on the given network) or `ex_nic` (to supply the NIC explicitly).
         :type ex_network: ``str``
 
-        :param ex_network: If ex_network is provided, the subnet of the
+        :param ex_subnet: If ex_network is provided, the subnet of the
         virtual network the node will be attached to.  Optional, default
         is the "default" subnet.
         :type ex_subnet: ``str``
@@ -425,6 +427,10 @@ class AzureNodeDriver(NodeDriver):
 
         :param ex_tags: Optional tags to associate with this node.
         :type ex_tags: ``dict``
+
+        :param ex_customdata: Custom data that will be placed in the file /var/lib/waagent/CustomData
+        https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-how-to-inject-custom-data/
+        :type ex_customdata: ``str``
 
         :return: The newly created node.
         :rtype: :class:`.Node`
@@ -508,7 +514,8 @@ class AzureNodeDriver(NodeDriver):
                 },
                 "storageProfile": storageProfile,
                 "osProfile": {
-                    "computerName": name
+                    "computerName": name,
+                    "customData": base64.b64encode(ex_customdata)
                 },
                 "networkProfile": {
                     "networkInterfaces": [
