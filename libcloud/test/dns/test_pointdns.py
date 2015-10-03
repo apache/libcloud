@@ -340,7 +340,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -366,7 +366,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -392,7 +392,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -404,8 +404,8 @@ class PointDNSTests(unittest.TestCase):
             self.driver.ex_get_redirect(zone.id, '36843229')
         except PointDNSException:
             e = sys.exc_info()[1]
-            self.assertEqual(e.code, httplib.NOT_FOUND)
-            self.assertEqual(e.message, "Couldn't found redirect")
+            self.assertEqual(e.http_code, httplib.NOT_FOUND)
+            self.assertEqual(e.value, "Couldn't found redirect")
         else:
             self.fail('Exception was not thrown')
 
@@ -428,7 +428,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -459,7 +459,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -488,7 +488,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -511,7 +511,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -524,8 +524,8 @@ class PointDNSTests(unittest.TestCase):
             self.driver.ex_delete_redirect(redirect)
         except PointDNSException:
             e = sys.exc_info()[1]
-            self.assertEqual(e.code, httplib.NOT_FOUND)
-            self.assertEqual(e.message, "Couldn't found redirect")
+            self.assertEqual(e.http_code, httplib.NOT_FOUND)
+            self.assertEqual(e.value, "Couldn't found redirect")
         else:
             self.fail('Exception was not thrown')
 
@@ -548,7 +548,7 @@ class PointDNSTests(unittest.TestCase):
             e = sys.exc_info()[1]
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.
-            self.assertEqual(e.code, httplib.METHOD_NOT_ALLOWED)
+            self.assertEqual(e.http_code, httplib.METHOD_NOT_ALLOWED)
         else:
             self.fail('Exception was not thrown')
 
@@ -561,8 +561,8 @@ class PointDNSTests(unittest.TestCase):
             self.driver.ex_delete_mail_redirect(mailredirect)
         except PointDNSException:
             e = sys.exc_info()[1]
-            self.assertEqual(e.code, httplib.NOT_FOUND)
-            self.assertEqual(e.message, "Couldn't found mail redirect")
+            self.assertEqual(e.http_code, httplib.NOT_FOUND)
+            self.assertEqual(e.value, "Couldn't found mail redirect")
         else:
             self.fail('Exception was not thrown')
 
