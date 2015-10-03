@@ -116,7 +116,7 @@ DNS
   [Alejandro Pereira]
 
 - Add new driver for PointDNS service (https://pointhq.com).
-  (GITHUB-576, LIBCLOUD-740)
+  (GITHUB-576, GITHUB-591, LIBCLOUD-740)
   [Alejandro Pereira]
 
 - Add new driver for Vultr DNS service (https://www.vultr.com).
