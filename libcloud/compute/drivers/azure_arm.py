@@ -514,8 +514,7 @@ class AzureNodeDriver(NodeDriver):
                 },
                 "storageProfile": storageProfile,
                 "osProfile": {
-                    "computerName": name,
-                    "customData": base64.b64encode(ex_customdata)
+                    "computerName": name
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -526,6 +525,9 @@ class AzureNodeDriver(NodeDriver):
                 }
             }
         }
+
+        if ex_customdata:
+            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata)
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 
