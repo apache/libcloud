@@ -3,77 +3,77 @@
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 Provider                              list nodes create node reboot node destroy node list images list sizes deploy node
 ===================================== ========== =========== =========== ============ =========== ========== ===========
-`Abiquo`_                             yes        yes         yes         yes          yes         yes        no         
-`PCextreme AuroraCompute`_            yes        yes         yes         yes          yes         yes        yes        
-`Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
-`Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
-`Brightbox`_                          yes        yes         no          yes          yes         yes        no         
-`CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
-`CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
-`CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
-`Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
-`DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
-`DimensionData`_                      yes        yes         yes         yes          yes         yes        yes        
-`DreamHost VPS`_                      yes        yes         yes         yes          yes         yes        no         
-`Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (ap-southeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (ap-southeast-2)`_        yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (eu-west-1)`_             yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (eu-west-1)`_             yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (sa-east-1)`_             yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (us-west-1)`_             yes        yes         yes         yes          yes         yes        yes        
-`Amazon EC2 (us-west-2)`_             yes        yes         yes         yes          yes         yes        yes        
-`Enomaly Elastic Computing Platform`_ yes        yes         yes         yes          yes         yes        no         
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (syd-y)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (tor-p)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (cn-1)`_                yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (lon-p)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (lon-b)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (sat-p)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (lax-p)`_               yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts (sjc-c)`_               yes        yes         yes         yes          yes         yes        yes        
-`Eucalyptus`_                         yes        yes         yes         yes          yes         yes        yes        
-`Exoscale`_                           yes        yes         yes         yes          yes         yes        yes        
-`Gandi`_                              yes        yes         yes         yes          yes         yes        no         
-`Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no         
-`GoGrid`_                             yes        yes         yes         yes          yes         yes        yes        
-`HostVirtual`_                        yes        yes         yes         yes          yes         yes        yes        
-`HP Public Cloud (Helion)`_           yes        yes         yes         yes          yes         yes        yes        
-`IBM SmartCloud Enterprise`_          yes        yes         yes         yes          yes         yes        no         
-`Ikoula`_                             yes        yes         yes         yes          yes         yes        yes        
-`Joyent`_                             yes        yes         yes         yes          yes         yes        yes        
-`Kili Public Cloud`_                  yes        yes         yes         yes          yes         yes        yes        
-`KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
-`Libvirt`_                            yes        no          yes         yes          no          no         no         
-`Linode`_                             yes        yes         yes         yes          yes         yes        yes        
-`NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
-`Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
-`Ninefold`_                           yes        yes         yes         yes          yes         yes        yes        
-`OnApp`_                              yes        yes         no          yes          no          no         no         
-`OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
-`OpenStack`_                          yes        no          yes         yes          yes         yes        no         
-`Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
-`Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
-`Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
-`Packet`_                             yes        yes         yes         yes          yes         yes        no         
-`ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
-`Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
-`Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
-`RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
-`RunAbove`_                           yes        yes         no          yes          yes         yes        yes        
-`ServerLove`_                         yes        yes         yes         yes          yes         yes        yes        
-`skalicloud`_                         yes        yes         yes         yes          yes         yes        yes        
-`SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
-`vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
-`VCL`_                                yes        yes         no          yes          yes         yes        no         
-`vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
-`Voxel VoxCLOUD`_                     yes        yes         yes         yes          yes         yes        no         
-`vps.net`_                            yes        yes         yes         yes          yes         yes        no         
-`VMware vSphere`_                     yes        no          yes         yes          yes         no         no         
-`Vultr`_                              yes        yes         yes         yes          yes         yes        no         
+`Abiquo`_                             yes        yes         yes         yes          yes         yes        no
+`PCextreme AuroraCompute`_            yes        yes         yes         yes          yes         yes        yes
+`Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes
+`Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes
+`Brightbox`_                          yes        yes         no          yes          yes         yes        no
+`CloudFrames`_                        yes        yes         yes         yes          yes         yes        no
+`CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no
+`CloudStack`_                         yes        yes         yes         yes          yes         yes        yes
+`Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes
+`DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no
+`DimensionData`_                      yes        yes         yes         yes          yes         yes        yes
+`DreamHost VPS`_                      yes        yes         yes         yes          yes         yes        no
+`Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (ap-southeast-1)`_        yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (ap-southeast-2)`_        yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (eu-west-1)`_             yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (eu-west-1)`_             yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (sa-east-1)`_             yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (us-west-1)`_             yes        yes         yes         yes          yes         yes        yes
+`Amazon EC2 (us-west-2)`_             yes        yes         yes         yes          yes         yes        yes
+`Enomaly Elastic Computing Platform`_ yes        yes         yes         yes          yes         yes        no
+`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (syd-y)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (tor-p)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (cn-1)`_                yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (lon-p)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (lon-b)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (sat-p)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (lax-p)`_               yes        yes         yes         yes          yes         yes        yes
+`ElasticHosts (sjc-c)`_               yes        yes         yes         yes          yes         yes        yes
+`Eucalyptus`_                         yes        yes         yes         yes          yes         yes        yes
+`Exoscale`_                           yes        yes         yes         yes          yes         yes        yes
+`Gandi`_                              yes        yes         yes         yes          yes         yes        no
+`Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no
+`GoGrid`_                             yes        yes         yes         yes          yes         yes        yes
+`HostVirtual`_                        yes        yes         yes         yes          yes         yes        yes
+`HP Public Cloud (Helion)`_           yes        yes         yes         yes          yes         yes        yes
+`IBM SmartCloud Enterprise`_          yes        yes         yes         yes          yes         yes        no
+`Ikoula`_                             yes        yes         yes         yes          yes         yes        yes
+`Joyent`_                             yes        yes         yes         yes          yes         yes        yes
+`Kili Public Cloud`_                  yes        yes         yes         yes          yes         yes        yes
+`KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes
+`Libvirt`_                            yes        no          yes         yes          no          no         no
+`Linode`_                             yes        yes         yes         yes          yes         yes        yes
+`NephoScale`_                         yes        yes         yes         yes          yes         yes        yes
+`Nimbus`_                             yes        yes         yes         yes          yes         yes        yes
+`Ninefold`_                           yes        yes         yes         yes          yes         yes        yes
+`OnApp`_                              yes        yes         no          yes          no          no         no
+`OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no
+`OpenStack`_                          yes        no          yes         yes          yes         yes        no
+`Opsource`_                           yes        yes         yes         yes          yes         yes        yes
+`Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes
+`Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes
+`Packet`_                             yes        yes         yes         yes          yes         yes        no
+`ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no
+`Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes
+`Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes
+`RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes
+`RunAbove`_                           yes        yes         no          yes          yes         yes        yes
+`ServerLove`_                         yes        yes         yes         yes          yes         yes        yes
+`skalicloud`_                         yes        yes         yes         yes          yes         yes        yes
+`SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes
+`vCloud`_                             yes        yes         yes         yes          yes         yes        yes
+`VCL`_                                yes        yes         no          yes          yes         yes        no
+`vCloud`_                             yes        yes         yes         yes          yes         yes        yes
+`Voxel VoxCLOUD`_                     yes        yes         yes         yes          yes         yes        no
+`vps.net`_                            yes        yes         yes         yes          yes         yes        no
+`VMware vSphere`_                     yes        no          yes         yes          yes         no         no
+`Vultr`_                              yes        yes         yes         yes          yes         yes        no
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 
 .. _`Abiquo`: http://www.abiquo.com/
