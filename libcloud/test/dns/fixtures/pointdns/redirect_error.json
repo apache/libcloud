@@ -1,0 +1,10 @@
+{
+    "zone_redirect": {
+        "redirect_type": [
+            "is not included in the list"
+        ],
+        "name": [
+            "There is already A type record or redirect for this subdomain. Please remove it first."
+        ]
+    }
+}

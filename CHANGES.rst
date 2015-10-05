@@ -67,6 +67,10 @@ Compute
   (GITHUB-587, LIBCLOUD-750)
   [Anthony Shaw]
 
+- Added ``ex_assign_public_ip`` argument to ``create_node`` in the EC2 driver.
+  (GITHUB-590)
+  [Kyle Long]
+
 Storage
 ~~~~~~~
 
@@ -112,7 +116,7 @@ DNS
   [Alejandro Pereira]
 
 - Add new driver for PointDNS service (https://pointhq.com).
-  (GITHUB-576, LIBCLOUD-740)
+  (GITHUB-576, GITHUB-591, LIBCLOUD-740)
   [Alejandro Pereira]
 
 - Add new driver for Vultr DNS service (https://www.vultr.com).

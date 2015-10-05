@@ -2312,6 +2312,15 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_placement_group: The name of the placement group to
                                         launch the instance into.
         :type       ex_placement_group: ``str``
+
+        :keyword    ex_assign_public_ip: If True, the instance will
+                                         be assigned a public ip address.
+                                         Note : It takes takes a short
+                                         while for the instance to be
+                                         assigned the public ip so the
+                                         node returned will NOT have
+                                         the public ip assigned yet.
+        :type       ex_assign_public_ip: ``bool``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -2345,13 +2354,14 @@ class BaseEC2NodeDriver(NodeDriver):
                              ' combinated with ex_subnet')
 
         security_group_ids = kwargs.get('ex_security_group_ids', None)
+        security_group_id_params = {}
 
         if security_group_ids:
             if not isinstance(security_group_ids, (tuple, list)):
                 security_group_ids = [security_group_ids]
 
             for sig in range(len(security_group_ids)):
-                params['SecurityGroupId.%d' % (sig + 1,)] =\
+                security_group_id_params['SecurityGroupId.%d' % (sig + 1,)] =\
                     security_group_ids[sig]
 
         if 'location' in kwargs:
@@ -2397,11 +2407,39 @@ class BaseEC2NodeDriver(NodeDriver):
         if 'ex_ebs_optimized' in kwargs:
             params['EbsOptimized'] = kwargs['ex_ebs_optimized']
 
+        subnet_id = None
         if 'ex_subnet' in kwargs:
-            params['SubnetId'] = kwargs['ex_subnet'].id
+            subnet_id = kwargs['ex_subnet'].id
 
         if 'ex_placement_group' in kwargs and kwargs['ex_placement_group']:
             params['Placement.GroupName'] = kwargs['ex_placement_group']
+
+        assign_public_ip = kwargs.get('ex_assign_public_ip', False)
+        # In the event that a public ip is requested a NetworkInterface
+        # needs to be specified.  Some properties that would
+        # normally be at the root (security group ids and subnet id)
+        # need to be moved to the level of the NetworkInterface because
+        # the NetworkInterface is no longer created implicitly
+        if assign_public_ip:
+            root_key = 'NetworkInterface.1.'
+            params[root_key + 'AssociatePublicIpAddress'] = "true"
+            # This means that when the instance is terminated, the
+            # NetworkInterface we created for the instance will be
+            # deleted automatically
+            params[root_key + 'DeleteOnTermination'] = "true"
+            # Required to be 0 if we are associating a public ip
+            params[root_key + 'DeviceIndex'] = "0"
+
+            if subnet_id:
+                params[root_key + 'SubnetId'] = subnet_id
+
+            for key, security_group_id in security_group_id_params.items():
+                key = root_key + key
+                params[key] = security_group_id
+        else:
+            params.update(security_group_id_params)
+            if subnet_id:
+                params['SubnetId'] = subnet_id
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')

@@ -2187,8 +2187,7 @@ class GCENodeDriver(NodeDriver):
         elif isinstance(next_hop, str):
             route_data['nextHopIp'] = next_hop
         else:
-            node = self.ex_get_node(next_hop)
-            route_data['nextHopInstance'] = node.extra['selfLink']
+            route_data['nextHopInstance'] = next_hop.extra['selfLink']
 
         request = '/global/routes'
         self.connection.async_request(request, method='POST',
@@ -4899,15 +4898,11 @@ class GCENodeDriver(NodeDriver):
             return
         if response['status'] == 'DONE':
             status['node_response'] = None
-        if error:
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
-        else:
-            try:
+            if error:
+                status['node'] = GCEFailedNode(status['name'], error, code)
+            else:
                 status['node'] = self.ex_get_node(status['name'],
                                                   node_attrs['location'])
-            except ResourceNotFoundError:
-                return
 
     def _create_vol_req(self, size, name, location=None, snapshot=None,
                         image=None, ex_disk_type='pd-standard'):

@@ -1,0 +1,11 @@
+{
+    "zone_redirect": {
+        "name": "redirect2.domain1.com.",
+        "redirect_to": "http://other.com",
+        "id": 36843229,
+        "redirect_type": 302,
+        "iframe_title": "An Iframe",
+        "redirect_query_string": true,
+        "zone_id": 1
+    }
+}

@@ -1,0 +1,24 @@
+[
+    {
+        "zone_redirect": {
+            "name": "redirect2.domain1.com.",
+            "redirect_to": "http://other.com",
+            "id": 36843229,
+            "redirect_type": 302,
+            "iframe_title": null,
+            "redirect_query_string": false,
+            "zone_id": 1
+        }
+    },
+    {
+        "zone_redirect": {
+            "name": "redirect1.domain1.com.",
+            "redirect_to": "http://someother.com",
+            "id": 36843497,
+            "redirect_type": 302,
+            "iframe_title": null,
+            "redirect_query_string": false,
+            "zone_id": 1
+        }
+    }
+]

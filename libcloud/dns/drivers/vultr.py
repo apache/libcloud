@@ -73,9 +73,9 @@ class VultrDNSDriver(DNSDriver):
         """
         action = '/v1/dns/list'
         params = {'api_key': self.key}
-        response, errors = self.connection.request(action=action,
-                                                   params=params).parse_body()
-        zones = self._to_zones(response[0])
+        response = self.connection.request(action=action,
+                                           params=params)
+        zones = self._to_zones(response.objects[0])
 
         return zones
 
@@ -99,9 +99,9 @@ class VultrDNSDriver(DNSDriver):
 
         action = '/v1/dns/records'
         params = {'domain': zone.domain}
-        response, errors = self.connection.request(action=action,
-                                                   params=params).parse_body()
-        records = self._to_records(response[0], zone=zone)
+        response = self.connection.request(action=action,
+                                           params=params)
+        records = self._to_records(response.objects[0], zone=zone)
 
         return records
 
@@ -118,9 +118,9 @@ class VultrDNSDriver(DNSDriver):
 
         action = '/v1/dns/list'
         params = {'api_key': self.key}
-        response, errors = self.connection.request(action=action,
-                                                   params=params).parse_body()
-        zones = self._to_zones(response[0])
+        response = self.connection.request(action=action,
+                                           params=params)
+        zones = self._to_zones(response.objects[0])
 
         if not self.ex_zone_exists(zone_id, zones):
             raise ZoneDoesNotExistError(value=None, zone_id=zone_id,
@@ -247,10 +247,8 @@ class VultrDNSDriver(DNSDriver):
         params = {'api_key': self.key}
         action = '/v1/dns/create_record'
 
-        response, errors = self.connection.request(action=action,
-                                                   params=params,
-                                                   data=encoded_data,
-                                                   method='POST').parse_body()
+        self.connection.request(action=action, params=params,
+                                data=encoded_data, method='POST')
         updated_zone_records = zone.list_records()
 
         for record in updated_zone_records:
