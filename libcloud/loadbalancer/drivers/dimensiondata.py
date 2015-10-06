@@ -430,7 +430,7 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "connectionRateLimit") \
             .text = str(node.connection_rate_limit)
 
-        response = self.connection.request_with_orgId_api_2(
+        self.connection.request_with_orgId_api_2(
             action='networkDomainVip/createNode',
             method='POST',
             data=ET.tostring(create_node_elm)).object
@@ -441,7 +441,7 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "status") \
             .text = "ENABLED" if enabled is True else "DISABLED"
 
-        response = self.connection.request_with_orgId_api_2(
+        self.connection.request_with_orgId_api_2(
             action='networkDomainVip/editNode',
             method='POST',
             data=ET.tostring(create_node_elm)).object
@@ -707,7 +707,7 @@ class DimensionDataLBDriver(Driver):
         request = ET.Element('editPoolMember',
                              {'xmlns': TYPES_URN,
                               'id': member.id})
-        state = "ENABLED" if enabled == True else "DISABLED"
+        state = "ENABLED" if enabled is True else "DISABLED"
         ET.SubElement(request, 'status').text = state
 
         result = self.connection.request_with_orgId_api_2(
