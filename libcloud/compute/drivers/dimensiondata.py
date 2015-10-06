@@ -28,6 +28,7 @@ from libcloud.common.dimensiondata import (DimensionDataConnection,
 from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
+from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
@@ -388,6 +389,12 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_networks(response)
 
+    def ex_get_network_domain(self, network_domain_id):
+        locations = self.list_locations()
+        net = self.connection.request_with_orgId_api_2(
+            'network/networkDomain/%s' % network_domain_id).object
+        return self._to_network_domain(net, locations)
+
     def ex_list_network_domains(self, location=None):
         """
         List networks deployed across all data center locations for your
@@ -404,6 +411,69 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_2('network/networkDomain',
                                       params=params).object
         return self._to_network_domains(response)
+
+    def ex_create_network_domain(self, location, name, description=None,
+                                 service_plan=
+                                 NetworkDomainServicePlan.ADVANCED):
+        """
+        Deploy a new network domain to a data center
+        """
+        create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "datacenterId").text = location.id
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "type").text = service_plan
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deployNetworkDomain',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        network_domain_id = None
+
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'networkDomainId"':
+                network_domain_id = info.get('value')
+
+        return DimensionDataNetworkDomain(
+            id=network_domain_id,
+            name=name,
+            description=description,
+            location=location,
+            status=NodeState.RUNNING,
+            plan=service_plan
+        )
+
+    def ex_update_network_domain(self, network_domain):
+        """
+        Update the properties of a network domain
+        """
+        edit_node = ET.Element('editNetworkDomain', {'xmlns': TYPES_URN})
+        edit_node.set('id', network_domain.id)
+        ET.SubElement(edit_node, "name").text = network_domain.name
+        if network_domain.description is not None:
+            ET.SubElement(edit_node, "description").text \
+                = network_domain.description
+        ET.SubElement(edit_node, "type").text = network_domain.plan
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/editNetworkDomain',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return network_domain
+
+    def ex_delete_network_domain(self, network_domain):
+        delete_node = ET.Element('deleteNetworkDomain', {'xmlns': TYPES_URN})
+        delete_node.set('id', network_domain.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteNetworkDomain',
+            method='POST',
+            data=ET.tostring(delete_node)).object
+
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS'
 
     def ex_list_vlans(self, location=None, network_domain=None):
         """
@@ -486,12 +556,16 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
-
+        plan = findtext(element, 'type', TYPES_URN)
+        if plan is 'ESSENTIALS':
+            plan_type = NetworkDomainServicePlan.ESSENTIALS
+        else:
+            plan_type = NetworkDomainServicePlan.ADVANCED
         return DimensionDataNetworkDomain(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
-            description=findtext(element, 'description',
-                                 TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),
+            plan=plan_type,
             location=location,
             status=status)
 

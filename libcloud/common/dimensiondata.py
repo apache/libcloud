@@ -79,6 +79,10 @@ API_ENDPOINTS = {
 # Default API end-point for the base connection class.
 DEFAULT_REGION = 'dd-na'
 
+# Service plans
+class NetworkDomainServicePlan(object):
+    ESSENTIALS = "ESSENTIALS"
+    ADVANCED = "ADVANCED"
 
 class DimensionDataResponse(XmlResponse):
     def parse_error(self):
@@ -282,12 +286,13 @@ class DimensionDataNetworkDomain(object):
     DimensionData network domain with location.
     """
 
-    def __init__(self, id, name, description, location, status):
+    def __init__(self, id, name, description, location, status, plan):
         self.id = str(id)
         self.name = name
         self.description = description
         self.location = location
         self.status = status
+        self.plan = plan
 
     def __repr__(self):
         return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
