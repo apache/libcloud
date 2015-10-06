@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-08T06:17:52.133-04:00/70e7458c-038c-4819-a1de-90d15007c2f5">
+<operation>ADD_NIC</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>The request to add NIC for VLAN 'Subsystem VLAN' on Server
+'Production Mail Server' has been accepted and is being processed..</message>
+<info name="nicId" value="a202e51b-41c0-4cfc-add0-b1c62fc0ecf6"/>
+</response>

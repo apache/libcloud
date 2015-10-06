@@ -196,6 +196,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_reset(node)
         self.assertTrue(ret is True)
 
+    def test_ex_attach_node_to_vlan(self):
+        node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        ret = self.driver.ex_attach_node_to_vlan(node, vlan)
+
+    def test_ex_destroy_nic(self):
+        node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
+
     def test_list_networks(self):
         nets = self.driver.list_networks()
         self.assertEqual(nets[0].name, 'test-net1')
@@ -657,6 +665,16 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

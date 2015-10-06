@@ -376,6 +376,32 @@ class DimensionDataNodeDriver(NodeDriver):
         responseCode = findtext(body, 'responseCode', TYPES_URN)
         return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
 
+    def ex_attach_node_to_vlan(self, node, vlan):
+        request = ET.Element('addNic',
+                             {'xmlns': TYPES_URN})
+        ET.SubElement(request, 'serverId').text = node.id
+        nic = ET.SubElement(request, 'nic')
+        ET.SubElement(nic, 'vlanId').text = vlan.id
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/addNic',
+            method='POST',
+            data=ET.tostring(request)).object
+        responseCode = findtext(response, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+
+    def ex_destroy_nic(self, nic_id):
+        request = ET.Element('removeNic',
+                             {'xmlns': TYPES_URN,
+                              'id': nic_id})
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/removeNic',
+            method='POST',
+            data=ET.tostring(request)).object
+        responseCode = findtext(response, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+
     def ex_list_networks(self, location=None):
         """
         List networks deployed across all data center locations for your
