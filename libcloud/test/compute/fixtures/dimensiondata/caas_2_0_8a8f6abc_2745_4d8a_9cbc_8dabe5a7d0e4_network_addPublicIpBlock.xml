@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response requestId="na/2014-04-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e" xmlns="urn:didata.com:api:cloud:types">
+<operation>ADD_PUBLIC_IP_BLOCK</operation>
+<responseCode>OK</responseCode>
+<message>Public IPv4 Address Block has been added successfully to Network Domain.</message>
+<info name="publicIpBlockId" value="4487241a-f0ca-11e3-9315-d4bed9b167ba"/>
+</response>

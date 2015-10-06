@@ -301,6 +301,27 @@ class DimensionDataNetworkDomain(object):
                    self.status))
 
 
+class DimensionDataPublicIpBlock(object):
+    """
+    DimensionData Public IP Block with location.
+    """
+
+    def __init__(self, id, baseIp, size, location, network_domain,
+                 status):
+        self.id = str(id)
+        self.baseIp = baseIp
+        self.size = size
+        self.location = location
+        self.network_domain = network_domain
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, baseIp=%s,'
+                 'size=%s, location=%s, status=%s>')
+                % (self.id, self.baseIp, self.size, self.location,
+                   self.status))
+
+
 class DimensionDataVlan(object):
     """
     DimensionData VLAN.
