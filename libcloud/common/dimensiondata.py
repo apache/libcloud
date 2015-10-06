@@ -322,6 +322,45 @@ class DimensionDataPublicIpBlock(object):
                    self.status))
 
 
+class DimensionDataFirewallRule(object):
+    """
+    DimensionData Firewall Rule for a network domain
+    """
+
+    def __init__(self, id, name, action, location, network_domain,
+                 status, ipVersion, protocol, source, destination,
+                 enabled):
+        self.id = str(id)
+        self.name = name
+        self.action = action
+        self.location = location
+        self.network_domain = network_domain
+        self.status = status
+        self.ipVersion = ipVersion
+        self.protocol = protocol
+        self.source = source
+        self.destination = destination
+        self.enabled = enabled
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
+                 'action=%s, location=%s, status=%s>')
+                % (self.id, self.name, self.action, self.location,
+                   self.status))
+
+
+class DimensionDataFirewallAddress(object):
+    """
+    The source or destination model in a firewall rule
+    """
+    def __init__(self, any_ip, ip_address, ip_prefix_size, port_begin, port_end):
+        self.any_ip = any_ip
+        self.ip_address = ip_address
+        self.ip_prefix_size = ip_prefix_size
+        self.port_begin = port_begin
+        self.port_end = port_end
+    
+
 class DimensionDataVlan(object):
     """
     DimensionData VLAN.

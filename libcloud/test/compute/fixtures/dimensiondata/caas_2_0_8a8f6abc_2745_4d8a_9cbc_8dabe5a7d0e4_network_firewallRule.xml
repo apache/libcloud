@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<firewallRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="13" totalCount="13" pageSize="50">
+    <firewallRule id="756cba02-b0bc-48f4-aea5-9445870b6148" datacenterId="NA9" ruleType="DEFAULT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>CCDEFAULT.BlockOutboundMailIPv4</name>
+        <action>DROP</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="25"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="8ffbe8c1-e545-424b-bfcc-e25c2017537d" datacenterId="NA9" ruleType="DEFAULT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>CCDEFAULT.BlockOutboundMailIPv4Secure</name>
+        <action>DROP</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="587"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="f93b5139-402b-45c5-af80-aa00e311572e" datacenterId="NA9" ruleType="DEFAULT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>CCDEFAULT.BlockOutboundMailIPv6</name>
+        <action>DROP</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="25"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="83ade810-3983-4009-a250-155c5ab47f54" datacenterId="NA9" ruleType="DEFAULT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>CCDEFAULT.BlockOutboundMailIPv6Secure</name>
+        <action>DROP</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="587"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="cc9e1475-9218-484d-af5f-aba5c9a37c2d" datacenterId="NA9" ruleType="DEFAULT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>CCDEFAULT.DenyExternalInboundIPv6</name>
+        <action>DROP</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>IP</protocol>
+        <source>
+            <ip address="EXTERNAL_IPV6"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="a23db203-99c9-42de-9dce-3a97724b7d4d" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>AllowOctopusTentacleComms6</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
+            <port begin="10933"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="bc26b74f-9b52-4923-8eda-7fc434759611" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>AllowOctopusComms4</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="10933"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="0bb8cc91-75fd-48a1-b9f8-1d728dabbca1" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>AllowHTTPSinbound</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="38ff959f-58c5-47b9-af6b-568a23e3c299" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>AllowHTTPSinbound6</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
+            <port begin="443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="04159804-e48c-40b5-80f5-48c40d1b7f2f" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>Allow8843Inbound</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="8443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="4250d8db-db42-4e40-acb0-672ec1a1af1b" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>Allow9443Inbound</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+            <port begin="9443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="f0119d2f-e891-44ee-af89-76122b4be219" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>Allow9443Inbound6</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
+            <port begin="8443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="b976e0e6-4fb2-4f3e-a016-652e02d191b4" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>AllowSTSInbound6</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="ANY"/>
+        </source>
+        <destination>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
+            <port begin="9443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+</firewallRules>
