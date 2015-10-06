@@ -201,6 +201,34 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_create_network_domain(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_create_network_domain(location=location,
+                                                   name='test',
+                                                   description='test')
+        self.assertEqual(net.name, 'test')
+        self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
+
+    def test_get_network_domain(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        self.assertEqual(net.id, '8cdfd607-f429-4df6-9352-162cfc0891be')
+        self.assertEqual(net.description, 'test2')
+        self.assertEqual(net.name, 'test')
+
+    def test_update_network_domain(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        net.name = 'new name'
+        net2 = self.driver.ex_update_network_domain(net)
+        self.assertEqual(net2.name, 'new name')
+
+    def test_delete_network_domain(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        result = self.driver.ex_delete_network_domain(net)
+        self.assertTrue(result)
+
     def test_ex_list_networks(self):
         nets = self.driver.ex_list_networks()
         self.assertEqual(nets[0].name, 'test-net1')
@@ -396,6 +424,26 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

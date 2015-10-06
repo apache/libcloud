@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-24T10:19:41.471-05:00/27083502-a2ea-4331-b0cb-c2a11bb044b0">
+<operation>DELETE_NETWORK_DOMAIN</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to Delete Network Domain (Id: 8cdfd607-f429-4df6-9352-
+162cfc0891be) has been accepted and is being processed</message>
+</response>
