@@ -79,10 +79,11 @@ API_ENDPOINTS = {
 # Default API end-point for the base connection class.
 DEFAULT_REGION = 'dd-na'
 
-# Service plans
+
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
     ADVANCED = "ADVANCED"
+
 
 class DimensionDataResponse(XmlResponse):
     def parse_error(self):
@@ -353,7 +354,8 @@ class DimensionDataFirewallAddress(object):
     """
     The source or destination model in a firewall rule
     """
-    def __init__(self, any_ip, ip_address, ip_prefix_size, port_begin, port_end):
+    def __init__(self, any_ip, ip_address, ip_prefix_size,
+                 port_begin, port_end):
         self.any_ip = any_ip
         self.ip_address = ip_address
         self.ip_prefix_size = ip_prefix_size
@@ -375,6 +377,7 @@ class DimensionDataNatRule(object):
     def __repr__(self):
         return (('<DimensionDataNatRule: id=%s, status=%s>')
                 % (self.id, self.status))
+
 
 class DimensionDataVlan(object):
     """

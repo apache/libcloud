@@ -17,7 +17,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.dimensiondata import DimensionDataAPIException
+from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
@@ -200,9 +200,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         ret = self.driver.ex_attach_node_to_vlan(node, vlan)
+        self.assertTrue(ret)
 
     def test_ex_destroy_nic(self):
         node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
+        self.assertTrue(node)
 
     def test_list_networks(self):
         nets = self.driver.list_networks()
@@ -211,9 +213,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_create_network_domain(self):
         location = self.driver.ex_get_location_by_id('NA9')
+        plan = NetworkDomainServicePlan.ADVANCED
         net = self.driver.ex_create_network_domain(location=location,
                                                    name='test',
-                                                   description='test')
+                                                   description='test',
+                                                   service_plan=plan)
         self.assertEqual(net.name, 'test')
         self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
 
@@ -278,12 +282,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_expand_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         vlan.private_ipv4_range_size = '23'
-        result = self.driver.ex_expand_vlan(vlan)
+        vlan = self.driver.ex_expand_vlan(vlan)
         self.assertEqual(vlan.private_ipv4_range_size, '23')
 
     def test_ex_add_public_ip_block_to_network_domain(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         block = self.driver.ex_add_public_ip_block_to_network_domain(net)
+        self.assertEqual(block.id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
 
     def test_ex_list_public_ip_blocks(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')

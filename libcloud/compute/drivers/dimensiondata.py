@@ -442,9 +442,8 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_network_domains(response)
 
-    def ex_create_network_domain(self, location, name, description=None,
-                                 service_plan=
-                                 NetworkDomainServicePlan.ADVANCED):
+    def ex_create_network_domain(self, location, name, service_plan,
+                                 description=None):
         """
         Deploy a new network domain to a data center
         """
@@ -487,7 +486,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 = network_domain.description
         ET.SubElement(edit_node, "type").text = network_domain.plan
 
-        response = self.connection.request_with_orgId_api_2(
+        self.connection.request_with_orgId_api_2(
             'network/editNetworkDomain',
             method='POST',
             data=ET.tostring(edit_node)).object
@@ -563,7 +562,7 @@ class DimensionDataNodeDriver(NodeDriver):
             ET.SubElement(edit_node, "description").text \
                 = vlan.description
 
-        response = self.connection.request_with_orgId_api_2(
+        self.connection.request_with_orgId_api_2(
             'network/editVlan',
             method='POST',
             data=ET.tostring(edit_node)).object
@@ -582,7 +581,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(edit_node, "privateIpv4PrefixSize").text =\
             vlan.private_ipv4_range_size
 
-        response = self.connection.request_with_orgId_api_2(
+        self.connection.request_with_orgId_api_2(
             'network/expandVlan',
             method='POST',
             data=ET.tostring(edit_node)).object
@@ -972,18 +971,14 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
-
+        ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
         return DimensionDataVlan(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description',
                                  TYPES_URN),
-            private_ipv4_range_address= \
-                element.find(fixxpath('privateIpv4Range', TYPES_URN)) \
-                    .get('address'),
-            private_ipv4_range_size= \
-                element.find(fixxpath('privateIpv4Range', TYPES_URN)) \
-                    .get('prefixSize'),
+            private_ipv4_range_address=ip_range.get('address'),
+            private_ipv4_range_size=ip_range.get('prefixSize'),
             location=location,
             status=status)
 
