@@ -336,6 +336,31 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_delete_firewall_rule(rule)
         self.assertTrue(result)
 
+    def test_ex_create_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_create_nat_rule(net, '1.2.3.4', '4.3.2.1')
+        self.assertEqual(rule.id, 'd31c2db0-be6b-4d50-8744-9a7a534b5fba')
+
+    def test_ex_list_nat_rules(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_nat_rules(net)
+        self.assertEqual(rules[0].id, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rules[0].internal_ip, '10.0.0.15')
+        self.assertEqual(rules[0].external_ip, '165.180.12.18')
+
+    def test_ex_get_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_nat_rule(net, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rule.id, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rule.internal_ip, '10.0.0.16')
+        self.assertEqual(rule.external_ip, '165.180.12.19')
+
+    def test_ex_delete_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_nat_rule(net, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        result = self.driver.ex_delete_nat_rule(rule)
+        self.assertTrue(result)
+
 
 class DimensionDataMockHttp(MockHttp):
 
@@ -613,6 +638,27 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

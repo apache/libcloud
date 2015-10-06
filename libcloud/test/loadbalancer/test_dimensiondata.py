@@ -216,7 +216,11 @@ class DimensionDataTests(unittest.TestCase):
             id='4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
             name='test',
             description='test',
-            status=State.RUNNING
+            status=State.RUNNING,
+            health_monitor_id=None,
+            load_balance_method=None,
+            service_down_action=None,
+            slow_ramp_time=None
         )
         node = DimensionDataVIPNode(
             id='2344',
@@ -266,7 +270,11 @@ class DimensionDataTests(unittest.TestCase):
                 id='1234',
                 name='test',
                 description='test',
-                status=State.RUNNING
+                status=State.RUNNING,
+                health_monitor_id=None,
+                load_balance_method=None,
+                service_down_action=None,
+                slow_ramp_time=None
             ))
         self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(listener.name, 'test')
@@ -281,7 +289,11 @@ class DimensionDataTests(unittest.TestCase):
                 id='1234',
                 name='test',
                 description='test',
-                status=State.RUNNING
+                status=State.RUNNING,
+                health_monitor_id=None,
+                load_balance_method=None,
+                service_down_action=None,
+                slow_ramp_time=None
             ))
         self.assertEqual(listener.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(listener.name, 'test')
@@ -305,6 +317,27 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(nodes[0].id, '34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
         self.assertEqual(nodes[0].ip, '10.10.10.101')
 
+    def test_ex_get_node(self):
+        node = self.driver.ex_get_node('34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        self.assertEqual(node.name, 'ProductionNode.2')
+        self.assertEqual(node.id, '34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        self.assertEqual(node.ip, '10.10.10.101')
+
+    def test_ex_update_node(self):
+        node = self.driver.ex_get_node('34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        node.connection_limit = '100'
+        result = self.driver.ex_update_node(node)
+        self.assertEqual(result.connection_limit, '100')
+
+    def test_ex_destroy_node(self):
+        result = self.driver.ex_destroy_node('34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        self.assertTrue(result)
+
+    def test_ex_set_node_state(self):
+        node = self.driver.ex_get_node('34de6ed6-46a4-4dae-a753-2f8d3840c6f9')
+        result = self.driver.ex_set_node_state(node, False)
+        self.assertEqual(result.connection_limit, '10000')
+
     def test_ex_get_pools(self):
         pools = self.driver.ex_get_pools()
         self.assertNotEqual(0, len(pools))
@@ -316,13 +349,23 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(pool.name, 'myDevelopmentPool.1')
         self.assertEqual(pool.id, '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7')
 
+    def test_ex_update_pool(self):
+        pool = self.driver.ex_get_pool('4d360b1f-bc2c-4ab7-9884-1f03ba2768f7')
+        pool.slow_ramp_time = '120'
+        result = self.driver.ex_update_pool(pool)
+        self.assertTrue(result)
+
     def test_ex_destroy_pool(self):
         response = self.driver.ex_destroy_pool(
             pool=DimensionDataPool(
                 id='4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
                 name='test',
                 description='test',
-                status=State.RUNNING))
+                status=State.RUNNING,
+                health_monitor_id=None,
+                load_balance_method=None,
+                service_down_action=None,
+                slow_ramp_time=None))
         self.assertTrue(response)
 
     def test_get_pool_members(self):
@@ -342,6 +385,11 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(member.status, 'NORMAL')
         self.assertEqual(member.ip, '10.0.3.13')
         self.assertEqual(member.port, 9889)
+
+    def test_set_pool_member_state(self):
+        member = self.driver.ex_get_pool_member('3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
+        result = self.driver.ex_set_pool_member_state(member, True)
+        self.assertTrue(result)
 
     def test_ex_destroy_pool_member(self):
         response = self.driver.ex_destroy_pool_member(
@@ -457,7 +505,26 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
