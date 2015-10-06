@@ -475,6 +475,101 @@ class DimensionDataNodeDriver(NodeDriver):
         responseCode = findtext(result, 'responseCode', TYPES_URN)
         return responseCode == 'IN_PROGRESS'
 
+    def ex_create_vlan(self,
+                       network_domain,
+                       name,
+                       private_ipv4_base_address,
+                       description=None,
+                       private_ipv4_prefix_size='24'):
+        """
+        Deploy a new VLAN to a network domain
+        """
+        create_node = ET.Element('deployVlan', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "privateIpv4BaseAddress").text = \
+            private_ipv4_base_address
+        ET.SubElement(create_node, "privateIpv4PrefixSize").text = \
+            private_ipv4_prefix_size
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deployVlan',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        vlan_id = None
+
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'vlanId':
+                vlan_id = info.get('value')
+
+        return DimensionDataVlan(
+            id=vlan_id,
+            name=name,
+            description=description,
+            location=network_domain.location,
+            status=NodeState.RUNNING,
+            private_ipv4_range_address=private_ipv4_base_address,
+            private_ipv4_range_size=private_ipv4_prefix_size
+        )
+
+    def ex_get_vlan(self, vlan_id):
+        locations = self.list_locations()
+        vlan = self.connection.request_with_orgId_api_2(
+            'network/vlan/%s' % vlan_id).object
+        return self._to_vlan(vlan, locations)
+
+    def ex_update_vlan(self, vlan):
+        """
+        Updates the properties of the given VLAN
+        Only name and description are updated
+        """
+        edit_node = ET.Element('editVlan', {'xmlns': TYPES_URN})
+        edit_node.set('id', vlan.id)
+        ET.SubElement(edit_node, "name").text = vlan.name
+        if vlan.description is not None:
+            ET.SubElement(edit_node, "description").text \
+                = vlan.description
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/editVlan',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return vlan
+
+    def ex_expand_vlan(self, vlan):
+        """
+        Expands the VLAN to the prefix size in private_ipv4_range_size
+        The expansion will
+        not be permitted if the proposed IP space overlaps with an
+        already deployed VLANs IP space.
+        """
+        edit_node = ET.Element('expandVlan', {'xmlns': TYPES_URN})
+        edit_node.set('id', vlan.id)
+        ET.SubElement(edit_node, "privateIpv4PrefixSize").text =\
+            vlan.private_ipv4_range_size
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/expandVlan',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return vlan
+
+    def ex_delete_vlan(self, vlan):
+        delete_node = ET.Element('deleteVlan', {'xmlns': TYPES_URN})
+        delete_node.set('id', vlan.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteVlan',
+            method='POST',
+            data=ET.tostring(delete_node)).object
+
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS'
+
     def ex_list_vlans(self, location=None, network_domain=None):
         """
         List VLANs available in a given networkDomain
@@ -589,6 +684,12 @@ class DimensionDataNodeDriver(NodeDriver):
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description',
                                  TYPES_URN),
+            private_ipv4_range_address= \
+                element.find(fixxpath('privateIpv4Range', TYPES_URN)) \
+                    .get('address'),
+            private_ipv4_range_size= \
+                element.find(fixxpath('privateIpv4Range', TYPES_URN)) \
+                    .get('prefixSize'),
             location=location,
             status=status)
 
