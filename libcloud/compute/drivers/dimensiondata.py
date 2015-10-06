@@ -29,6 +29,8 @@ from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
+from libcloud.common.dimensiondata import DimensionDataFirewallRule
+from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
@@ -643,7 +645,86 @@ class DimensionDataNodeDriver(NodeDriver):
         response = self.connection \
             .request_with_orgId_api_2('network/firewallRule',
                                       params=params).object
-        return self._to_firewall_rules(response)
+        return self._to_firewall_rules(response, network_domain)
+
+    def ex_create_firewall_rule(self, network_domain, rule, position):
+        create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "name").text = rule.name
+        ET.SubElement(create_node, "action").text = rule.action
+        ET.SubElement(create_node, "ipVersion").text = rule.ipVersion
+        ET.SubElement(create_node, "protocol").text = rule.protocol
+        # Setup source port rule
+        source = ET.SubElement(create_node, "source")
+        source_ip = ET.SubElement(source, 'ip')
+        if rule.source.any_ip:
+            source_ip.set('address', 'ANY')
+        else:
+            source_ip.set('address', rule.source.ip_address)
+            source_ip.set('prefixSize', rule.source.ip_prefix_size)
+            source_port = ET.SubElement(source, 'port')
+            source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_end is not None:
+                source_port.set('end', rule.source.port_end)
+        # Setup destination port rule
+        dest = ET.SubElement(create_node, "destination")
+        dest_ip = ET.SubElement(dest, 'ip')
+        if rule.destination.any_ip:
+            dest_ip.set('address', 'ANY')
+        else:
+            dest_ip.set('address', rule.destination.ip_address)
+            dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+            dest_port = ET.SubElement(dest, 'port')
+            dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_end is not None:
+                dest_port.set('end', rule.destination.port_end)
+        ET.SubElement(create_node, "enabled").text = 'true'
+        placement = ET.SubElement(create_node, "placement")
+        placement.set('position', position)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/createFirewallRule',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        rule_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'firewallRuleId':
+                rule_id = info.get('value')
+        rule.id = rule_id
+        return rule
+
+    def ex_get_firewall_rule(self, network_domain, rule_id):
+        locations = self.list_locations()
+        rule = self.connection.request_with_orgId_api_2(
+            'network/firewallRule/%s' % rule_id).object
+        return self._to_firewall_rule(rule, locations, network_domain)
+
+    def ex_set_firewall_rule_state(self, rule, state):
+        """
+        Change the state (enabled or disabled) of a rule
+        """
+        update_node = ET.Element('editFirewallrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        ET.SubElement(update_node, 'enabled').text = str(state).lower()
+        result = self.connection.request_with_orgId_api_2(
+            'network/editFirewallRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+
+    def ex_delete_firewall_rule(self, rule):
+        update_node = ET.Element('deleteFirewallrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteFirewallRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
 
     def ex_get_location_by_id(self, id):
         """
@@ -659,6 +740,48 @@ class DimensionDataNodeDriver(NodeDriver):
             location = list(
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
+
+    def _to_firewall_rules(self, object, network_domain):
+        rules = []
+        locations = self.list_locations()
+        for element in findall(object, 'firewallRule', TYPES_URN):
+            rules.append(
+                self._to_firewall_rule(element, locations, network_domain))
+
+        return rules
+
+    def _to_firewall_rule(self, element, locations, network_domain):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+
+        return DimensionDataFirewallRule(
+            id=element.get('id'),
+            network_domain=network_domain,
+            name=findtext(element, 'name', TYPES_URN),
+            action=findtext(element, 'action', TYPES_URN),
+            ipVersion=findtext(element, 'ipVersion', TYPES_URN),
+            protocol=findtext(element, 'protocol', TYPES_URN),
+            enabled=findtext(element, 'enabled', TYPES_URN),
+            source=self._to_firewall_address(
+                element.find(fixxpath('source', TYPES_URN))),
+            destination=self._to_firewall_address(
+                element.find(fixxpath('destination', TYPES_URN))),
+            location=location,
+            status=status)
+
+    def _to_firewall_address(self, element):
+        ip = element.find(fixxpath('ip', TYPES_URN))
+        port = element.find(fixxpath('port', TYPES_URN))
+        return DimensionDataFirewallAddress(
+            any_ip=ip.get('address') == 'ANY',
+            ip_address=ip.get('address'),
+            ip_prefix_size=ip.get('prefixSize'),
+            port_begin=port.get('begin') if port is not None else None,
+            port_end=port.get('end') if port is not None else None
+        )
 
     def _to_ip_blocks(self, object):
         blocks = []
