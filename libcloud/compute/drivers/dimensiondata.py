@@ -31,6 +31,7 @@ from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
+from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
@@ -726,6 +727,54 @@ class DimensionDataNodeDriver(NodeDriver):
         responseCode = findtext(result, 'responseCode', TYPES_URN)
         return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
 
+    def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
+        create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, 'networkDomainId').text = network_domain.id
+        ET.SubElement(create_node, 'internalIp').text = internal_ip
+        ET.SubElement(create_node, 'externalIp').text = external_ip
+        result = self.connection.request_with_orgId_api_2(
+            'network/createNatRule',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        rule_id = None
+        for info in findall(result, 'info', TYPES_URN):
+            if info.get('name') == 'natRuleId':
+                rule_id = info.get('value')
+
+        return DimensionDataNatRule(
+            id=rule_id,
+            network_domain=network_domain,
+            internal_ip=internal_ip,
+            external_ip=external_ip,
+            status=NodeState.RUNNING
+        )
+
+    def ex_list_nat_rules(self, network_domain):
+        params = {}
+        params['networkDomainId'] = network_domain.id
+
+        response = self.connection \
+            .request_with_orgId_api_2('network/natRule',
+                                      params=params).object
+        return self._to_nat_rules(response, network_domain)
+
+    def ex_get_nat_rule(self, network_domain, rule_id):
+        rule = self.connection.request_with_orgId_api_2(
+            'network/natRule/%s' % rule_id).object
+        return self._to_nat_rule(rule, network_domain)
+
+    def ex_delete_nat_rule(self, rule):
+        update_node = ET.Element('deleteNatrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteNatRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        responseCode = findtext(result, 'responseCode', TYPES_URN)
+        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+
     def ex_get_location_by_id(self, id):
         """
         Get location by ID.
@@ -740,6 +789,24 @@ class DimensionDataNodeDriver(NodeDriver):
             location = list(
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
+
+    def _to_nat_rules(self, object, network_domain):
+        rules = []
+        for element in findall(object, 'natRule', TYPES_URN):
+            rules.append(
+                self._to_nat_rule(element, network_domain))
+
+        return rules
+
+    def _to_nat_rule(self, element, network_domain):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        return DimensionDataNatRule(
+            id=element.get('id'),
+            network_domain=network_domain,
+            internal_ip=findtext(element, 'internalIp', TYPES_URN),
+            external_ip=findtext(element, 'externalIp', TYPES_URN),
+            status=status)
 
     def _to_firewall_rules(self, object, network_domain):
         rules = []

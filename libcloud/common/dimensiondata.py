@@ -359,7 +359,22 @@ class DimensionDataFirewallAddress(object):
         self.ip_prefix_size = ip_prefix_size
         self.port_begin = port_begin
         self.port_end = port_end
-    
+
+
+class DimensionDataNatRule(object):
+    """
+    An IP NAT rule in a network domain
+    """
+    def __init__(self, id, network_domain, internal_ip, external_ip, status):
+        self.id = id
+        self.network_domain = network_domain
+        self.internal_ip = internal_ip
+        self.external_ip = external_ip
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNatRule: id=%s, status=%s>')
+                % (self.id, self.status))
 
 class DimensionDataVlan(object):
     """
@@ -388,11 +403,16 @@ class DimensionDataPool(object):
     DimensionData VIP Pool.
     """
 
-    def __init__(self, id, name, description, status):
+    def __init__(self, id, name, description, status, load_balance_method,
+                 health_monitor_id, service_down_action, slow_ramp_time):
         self.id = str(id)
         self.name = name
         self.description = description
         self.status = status
+        self.load_balance_method = load_balance_method
+        self.health_monitor_id = health_monitor_id
+        self.service_down_action = service_down_action
+        self.slow_ramp_time = slow_ramp_time
 
     def __repr__(self):
         return (('<DimensionDataPool: id=%s, name=%s, '
@@ -423,11 +443,14 @@ class DimensionDataPoolMember(object):
 
 
 class DimensionDataVIPNode(object):
-    def __init__(self, id, name, status, ip):
+    def __init__(self, id, name, status, ip, connection_limit='10000',
+                 connection_rate_limit='10000'):
         self.id = str(id)
         self.name = name
         self.status = status
         self.ip = ip
+        self.connection_limit = connection_limit
+        self.connection_rate_limit = connection_rate_limit
 
     def __repr__(self):
         return (('<DimensionDataVIPNode: id=%s, name=%s, '

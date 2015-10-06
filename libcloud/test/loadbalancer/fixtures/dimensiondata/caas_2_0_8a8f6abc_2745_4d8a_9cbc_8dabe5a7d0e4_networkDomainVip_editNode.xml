@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-05-29T11:57:29.793-04:00/9f7191df-de3a-4cf3-a0a1-6321e88b5af5">
+<operation>EDIT_NODE</operation>
+<responseCode>OK</responseCode>
+<message>Node 'ProductionNode.2' has been edited successfully.</message>
+<info name="nodeId" value="34de6ed6-46a4-4dae-a753-2f8d3840c6f9"/>
+</response>
