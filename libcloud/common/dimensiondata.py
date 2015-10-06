@@ -306,15 +306,18 @@ class DimensionDataVlan(object):
     DimensionData VLAN.
     """
 
-    def __init__(self, id, name, description, location, status):
+    def __init__(self, id, name, description, location, status,
+                 private_ipv4_range_address, private_ipv4_range_size):
         self.id = str(id)
         self.name = name
         self.location = location
         self.description = description
         self.status = status
+        self.private_ipv4_range_address = private_ipv4_range_address
+        self.private_ipv4_range_size = private_ipv4_range_size
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
+        return (('<DimensionDataVlan: id=%s, name=%s, '
                  'description=%s, location=%s, status=%s>')
                 % (self.id, self.name, self.description,
                    self.location, self.status))

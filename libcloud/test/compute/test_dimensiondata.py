@@ -201,7 +201,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
-    def test_create_network_domain(self):
+    def test_ex_create_network_domain(self):
         location = self.driver.ex_get_location_by_id('NA9')
         net = self.driver.ex_create_network_domain(location=location,
                                                    name='test',
@@ -209,22 +209,19 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(net.name, 'test')
         self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
 
-    def test_get_network_domain(self):
-        location = self.driver.ex_get_location_by_id('NA9')
+    def test_ex_get_network_domain(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         self.assertEqual(net.id, '8cdfd607-f429-4df6-9352-162cfc0891be')
         self.assertEqual(net.description, 'test2')
         self.assertEqual(net.name, 'test')
 
-    def test_update_network_domain(self):
-        location = self.driver.ex_get_location_by_id('NA9')
+    def test_ex_update_network_domain(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         net.name = 'new name'
         net2 = self.driver.ex_update_network_domain(net)
         self.assertEqual(net2.name, 'new name')
 
-    def test_delete_network_domain(self):
-        location = self.driver.ex_get_location_by_id('NA9')
+    def test_ex_delete_network_domain(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         result = self.driver.ex_delete_network_domain(net)
         self.assertTrue(result)
@@ -242,6 +239,39 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
         self.assertEqual(vlans[0].name, "Primary")
+
+    def test_ex_create_vlan(self,):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        vlan = self.driver.ex_create_vlan(network_domain=net,
+                                          name='test',
+                                          private_ipv4_base_address='10.3.4.0',
+                                          private_ipv4_prefix_size='24')
+        self.assertEqual(vlan.id, 'cee8df03-9117-44cc-baaa-631ffa099683')
+
+    def test_ex_get_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
+        self.assertEqual(vlan.description, 'test2')
+        self.assertEqual(vlan.name, 'Production VLAN')
+        self.assertEqual(vlan.private_ipv4_range_address, '10.0.3.0')
+        self.assertEqual(vlan.private_ipv4_range_size, '24')
+
+    def test_ex_update_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        vlan.name = 'new name'
+        vlan2 = self.driver.ex_update_vlan(vlan)
+        self.assertEqual(vlan2.name, 'new name')
+
+    def test_ex_delete_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        result = self.driver.ex_delete_vlan(vlan)
+        self.assertTrue(result)
+
+    def test_ex_expand_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        vlan.private_ipv4_range_size = '23'
+        result = self.driver.ex_expand_vlan(vlan)
+        self.assertEqual(vlan.private_ipv4_range_size, '23')
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -445,6 +475,32 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
