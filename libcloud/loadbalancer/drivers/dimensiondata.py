@@ -274,7 +274,7 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/removePoolMember',
             method='POST',
             data=ET.tostring(create_pool_m)).object
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def destroy_balancer(self, balancer):
@@ -295,7 +295,7 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/deleteVirtualListener',
             method='POST',
             data=ET.tostring(delete_listener)).object
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_set_current_network_domain(self, network_domain_id):
@@ -680,7 +680,7 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/editPool',
             method='POST',
             data=ET.tostring(create_node_elm)).object
-        response_code = findtext(response, 'response_code', TYPES_URN)
+        response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_pool(self, pool):
@@ -701,7 +701,7 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deletePool',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_pool_members(self, pool_id):
@@ -746,7 +746,7 @@ class DimensionDataLBDriver(Driver):
             method='POST',
             data=ET.tostring(request)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_pool_member(self, member, destroy_node=False):
@@ -775,7 +775,7 @@ class DimensionDataLBDriver(Driver):
         if member.node_id is not None and destroy_node is True:
             return self.ex_destroy_node(member.node_id)
         else:
-            response_code = findtext(result, 'response_code', TYPES_URN)
+            response_code = findtext(result, 'responseCode', TYPES_URN)
             return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_nodes(self):
@@ -820,7 +820,7 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deleteNode',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_nodes(self, object):

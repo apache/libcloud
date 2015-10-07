@@ -171,7 +171,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/deleteServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def reboot_node(self, node):
@@ -181,7 +181,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/rebootServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def list_nodes(self):
@@ -310,7 +310,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/startServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_shutdown_graceful(self, node):
@@ -331,7 +331,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/shutdownServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_power_off(self, node):
@@ -352,7 +352,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/powerOffServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_reset(self, node):
@@ -373,7 +373,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/resetServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'response_code', TYPES_URN)
+        response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_attach_node_to_vlan(self, node, vlan):
@@ -387,7 +387,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/addNic',
             method='POST',
             data=ET.tostring(request)).object
-        response_code = findtext(response, 'response_code', TYPES_URN)
+        response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_nic(self, nic_id):
@@ -399,7 +399,7 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/removeNic',
             method='POST',
             data=ET.tostring(request)).object
-        response_code = findtext(response, 'response_code', TYPES_URN)
+        response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_networks(self, location=None):
@@ -501,7 +501,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_vlan(self,
@@ -596,7 +596,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_vlans(self, location=None, network_domain=None):
@@ -656,7 +656,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_node_by_id(self, id):
@@ -738,7 +738,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_delete_firewall_rule(self, rule):
@@ -749,7 +749,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
@@ -797,7 +797,7 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        response_code = findtext(result, 'response_code', TYPES_URN)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_location_by_id(self, id):
