@@ -293,7 +293,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_list_public_ip_blocks(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         blocks = self.driver.ex_list_public_ip_blocks(net)
-        self.assertEqual(blocks[0].baseIp, '168.128.4.18')
+        self.assertEqual(blocks[0].base_ip, '168.128.4.18')
         self.assertEqual(blocks[0].size, '2')
         self.assertEqual(blocks[0].id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
         self.assertEqual(blocks[0].location.id, 'NA9')
@@ -302,7 +302,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_get_public_ip_block(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         block = self.driver.ex_get_public_ip_block('9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
-        self.assertEqual(block.baseIp, '168.128.4.18')
+        self.assertEqual(block.base_ip, '168.128.4.18')
         self.assertEqual(block.size, '2')
         self.assertEqual(block.id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
         self.assertEqual(block.location.id, 'NA9')
@@ -320,7 +320,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(rules[0].network_domain.id, '8cdfd607-f429-4df6-9352-162cfc0891be')
         self.assertEqual(rules[0].name, 'CCDEFAULT.BlockOutboundMailIPv4')
         self.assertEqual(rules[0].action, 'DROP')
-        self.assertEqual(rules[0].ipVersion, 'IPV4')
+        self.assertEqual(rules[0].ip_version, 'IPV4')
         self.assertEqual(rules[0].protocol, 'TCP')
         self.assertEqual(rules[0].source.ip_address, 'ANY')
         self.assertTrue(rules[0].source.any_ip)

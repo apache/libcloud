@@ -274,8 +274,8 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/removePoolMember',
             method='POST',
             data=ET.tostring(create_pool_m)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def destroy_balancer(self, balancer):
         """
@@ -295,8 +295,8 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/deleteVirtualListener',
             method='POST',
             data=ET.tostring(delete_listener)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_set_current_network_domain(self, network_domain_id):
         """
@@ -424,6 +424,15 @@ class DimensionDataLBDriver(Driver):
         )
 
     def ex_update_node(self, node):
+        """
+        Update the properties of a node
+
+        :param pool: The instance of ``DimensionDataNode`` to update
+        :type  pool: ``DimensionDataNode``
+
+        :return: The instance of ``DimensionDataNode``
+        :rtype: ``DimensionDataNode``
+        """
         create_node_elm = ET.Element('editNode', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(node.connection_limit)
@@ -437,6 +446,18 @@ class DimensionDataLBDriver(Driver):
         return node
 
     def ex_set_node_state(self, node, enabled):
+        """
+        Change the state of a node (enable/disable)
+
+        :param pool: The instance of ``DimensionDataNode`` to update
+        :type  pool: ``DimensionDataNode``
+
+        :param enabled: The target state of the node
+        :type  enabled: ``bool``
+
+        :return: The instance of ``DimensionDataNode``
+        :rtype: ``DimensionDataNode``
+        """
         create_node_elm = ET.Element('editNode', {'xmlns': TYPES_URN})
         ET.SubElement(create_node_elm, "status") \
             .text = "ENABLED" if enabled is True else "DISABLED"
@@ -636,6 +657,16 @@ class DimensionDataLBDriver(Driver):
         return self._to_pool(pool)
 
     def ex_update_pool(self, pool):
+        """
+        Update the properties of an existing pool
+        only method, serviceDownAction and slowRampTime are updated
+
+        :param pool: The instance of ``DimensionDataPool`` to update
+        :type  pool: ``DimensionDataPool``
+
+        :return: ``True`` for success, ``False`` for failure
+        :rtype: ``bool``
+        """
         create_node_elm = ET.Element('editPool', {'xmlns': TYPES_URN})
 
         ET.SubElement(create_node_elm, "loadBalanceMethod") \
@@ -649,8 +680,8 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/editPool',
             method='POST',
             data=ET.tostring(create_node_elm)).object
-        responseCode = findtext(response, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(response, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_pool(self, pool):
         """
@@ -670,8 +701,8 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deletePool',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_pool_members(self, pool_id):
         """
@@ -715,8 +746,8 @@ class DimensionDataLBDriver(Driver):
             method='POST',
             data=ET.tostring(request)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_pool_member(self, member, destroy_node=False):
         """
@@ -744,8 +775,8 @@ class DimensionDataLBDriver(Driver):
         if member.node_id is not None and destroy_node is True:
             return self.ex_destroy_node(member.node_id)
         else:
-            responseCode = findtext(result, 'responseCode', TYPES_URN)
-            return responseCode == 'OK'
+            response_code = findtext(result, 'response_code', TYPES_URN)
+            return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_nodes(self):
         """
@@ -789,8 +820,8 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deleteNode',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK' or responseCode == 'IN_PROGRESS'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_nodes(self, object):
         nodes = []

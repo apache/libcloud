@@ -171,8 +171,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/deleteServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def reboot_node(self, node):
         request_elm = ET.Element('rebootServer',
@@ -181,8 +181,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/rebootServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def list_nodes(self):
         nodes = self._to_nodes(
@@ -310,8 +310,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/startServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_shutdown_graceful(self, node):
         """
@@ -331,8 +331,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/shutdownServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_power_off(self, node):
         """
@@ -352,8 +352,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/powerOffServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_reset(self, node):
         """
@@ -373,8 +373,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/resetServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        responseCode = findtext(body, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(body, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_attach_node_to_vlan(self, node, vlan):
         request = ET.Element('addNic',
@@ -387,8 +387,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/addNic',
             method='POST',
             data=ET.tostring(request)).object
-        responseCode = findtext(response, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(response, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_nic(self, nic_id):
         request = ET.Element('removeNic',
@@ -399,8 +399,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/removeNic',
             method='POST',
             data=ET.tostring(request)).object
-        responseCode = findtext(response, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(response, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_networks(self, location=None):
         """
@@ -462,7 +462,7 @@ class DimensionDataNodeDriver(NodeDriver):
         network_domain_id = None
 
         for info in findall(response, 'info', TYPES_URN):
-            if info.get('name') == 'networkDomainId"':
+            if info.get('name') == 'networkDomainId':
                 network_domain_id = info.get('value')
 
         return DimensionDataNetworkDomain(
@@ -501,8 +501,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_vlan(self,
                        network_domain,
@@ -596,8 +596,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_vlans(self, location=None, network_domain=None):
         """
@@ -656,8 +656,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(delete_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_node_by_id(self, id):
         node = self.connection.request_with_orgId_api_2(
@@ -678,7 +678,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(create_node, "networkDomainId").text = network_domain.id
         ET.SubElement(create_node, "name").text = rule.name
         ET.SubElement(create_node, "action").text = rule.action
-        ET.SubElement(create_node, "ipVersion").text = rule.ipVersion
+        ET.SubElement(create_node, "ipVersion").text = rule.ip_version
         ET.SubElement(create_node, "protocol").text = rule.protocol
         # Setup source port rule
         source = ET.SubElement(create_node, "source")
@@ -738,8 +738,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_delete_firewall_rule(self, rule):
         update_node = ET.Element('deleteFirewallrule', {'xmlns': TYPES_URN})
@@ -749,8 +749,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
         create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
@@ -797,8 +797,8 @@ class DimensionDataNodeDriver(NodeDriver):
             method='POST',
             data=ET.tostring(update_node)).object
 
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'IN_PROGRESS' or responseCode == 'OK'
+        response_code = findtext(result, 'response_code', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_location_by_id(self, id):
         """
@@ -854,7 +854,7 @@ class DimensionDataNodeDriver(NodeDriver):
             network_domain=network_domain,
             name=findtext(element, 'name', TYPES_URN),
             action=findtext(element, 'action', TYPES_URN),
-            ipVersion=findtext(element, 'ipVersion', TYPES_URN),
+            ip_version=findtext(element, 'ipVersion', TYPES_URN),
             protocol=findtext(element, 'protocol', TYPES_URN),
             enabled=findtext(element, 'enabled', TYPES_URN),
             source=self._to_firewall_address(
@@ -895,7 +895,7 @@ class DimensionDataNodeDriver(NodeDriver):
             network_domain=self.ex_get_network_domain(
                 findtext(element, 'networkDomainId', TYPES_URN)
             ),
-            baseIp=findtext(element, 'baseIp', TYPES_URN),
+            base_ip=findtext(element, 'baseIp', TYPES_URN),
             size=findtext(element, 'size', TYPES_URN),
             location=location,
             status=status)
