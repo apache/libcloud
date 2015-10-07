@@ -307,19 +307,19 @@ class DimensionDataPublicIpBlock(object):
     DimensionData Public IP Block with location.
     """
 
-    def __init__(self, id, baseIp, size, location, network_domain,
+    def __init__(self, id, base_ip, size, location, network_domain,
                  status):
         self.id = str(id)
-        self.baseIp = baseIp
+        self.base_ip = base_ip
         self.size = size
         self.location = location
         self.network_domain = network_domain
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, baseIp=%s,'
+        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s,'
                  'size=%s, location=%s, status=%s>')
-                % (self.id, self.baseIp, self.size, self.location,
+                % (self.id, self.base_ip, self.size, self.location,
                    self.status))
 
 
@@ -329,7 +329,7 @@ class DimensionDataFirewallRule(object):
     """
 
     def __init__(self, id, name, action, location, network_domain,
-                 status, ipVersion, protocol, source, destination,
+                 status, ip_version, protocol, source, destination,
                  enabled):
         self.id = str(id)
         self.name = name
@@ -337,7 +337,7 @@ class DimensionDataFirewallRule(object):
         self.location = location
         self.network_domain = network_domain
         self.status = status
-        self.ipVersion = ipVersion
+        self.ip_version = ip_version
         self.protocol = protocol
         self.source = source
         self.destination = destination
@@ -386,6 +386,32 @@ class DimensionDataVlan(object):
 
     def __init__(self, id, name, description, location, status,
                  private_ipv4_range_address, private_ipv4_range_size):
+        """
+        Initialize an instance of ``DimensionDataVlan``
+
+        :param id: The ID of the VLAN
+        :type  id: ``string``
+
+        :param name: The name of the VLAN
+        :type  name: ``string``
+
+        :param description: Plan text description of the VLAN
+        :type  description: ``string``
+
+        :param location: The location (data center) of the VLAN
+        :type  location: ``NodeLocation``
+
+        :param status: The status of the VLAN
+        :type  status: ``DimensionDataStatus``
+
+        :param private_ipv4_range_address: The host address of the VLAN
+                                            IP space
+        :type  private_ipv4_range_address: ``string``
+
+        :param private_ipv4_range_address: The size (e.g. '24') of the VLAN
+                                            as a CIDR range size
+        :type  private_ipv4_range_address: ``string``
+        """
         self.id = str(id)
         self.name = name
         self.location = location
