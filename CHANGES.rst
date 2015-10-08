@@ -64,7 +64,7 @@ Compute
 - Various fixes and improvements in the DimensionData driver (support for
   creating servers in MCP 1 and 2 data center, performance improvements in the
   location fetching, etc.).
-  (GITHUB-587, LIBCLOUD-750)
+  (GITHUB-587, GITHUB-593, LIBCLOUD-750, LIBCLOUD-753)
   [Anthony Shaw]
 
 - Added ``ex_assign_public_ip`` argument to ``create_node`` in the EC2 driver.
