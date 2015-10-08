@@ -38,7 +38,7 @@ Changes in the OpenStack authentication and service catalog classes
 
 .. note::
     If you are only working with the driver classes and have never dorectly
-    touched the classes mentioned bellow, then you aren't affected and those
+    touched the classes mentioned below, then you aren't affected and those
     changes are fully backward compatible.
 
 To make OpenStack authentication and identity related classes more extensible,
