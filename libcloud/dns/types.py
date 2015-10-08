@@ -45,6 +45,7 @@ class Provider(object):
     VULTR = 'vultr'
     LIQUIDWEB = 'liquidweb'
     ZONOMI = 'zonomi'
+    DURABLEDNS = 'durabledns'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
@@ -66,10 +67,12 @@ class RecordType(object):
     TXT = 'TXT'
     PTR = 'PTR'
     SOA = 'SOA'
+    HINFO = 'HINFO'
     SPF = 'SPF'
     SRV = 'SRV'
     SSHFP = 'SSHFP'
     PTR = 'PTR'
+    RP = 'RP'
     NAPTR = 'NAPTR'
     REDIRECT = 'REDIRECT'
     GEO = 'GEO'
