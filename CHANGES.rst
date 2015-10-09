@@ -131,6 +131,10 @@ DNS
   (GITHUB-582, LIBCLOUD-747)
   [Oltjano Terpollari, Alejandro Pereira]
 
+- Add new driver for Durable DNS service (https://durabledns.com/).
+  (GITHUB-588, LIBCLOUD-748)
+  [Oltjano Terpollari, Alejandro Pereira]
+
 Changes with Apache Libcloud 0.18.0
 -----------------------------------
 
