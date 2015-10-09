@@ -71,6 +71,11 @@ Compute
   (GITHUB-590)
   [Kyle Long]
 
+- Added ``ex_terminate_on_shutdown`` argument to ``create_node`` in the EC2
+  driver.
+  (GITHUB-595)
+  [Kyle Long]
+
 Storage
 ~~~~~~~
 
