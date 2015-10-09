@@ -59,5 +59,4 @@ chapter in our documentation
 License
 =======
 
-Apache Libcloud is licensed under the Apache 2.0 license. For more information,
-please see LICENSE and NOTICE file.
+Apache Libcloud is licensed under the Apache 2.0 license. For more information, please see [LICENSE](https://github.com/apache/libcloud/blob/trunk/LICENSE) and [NOTICE](https://github.com/apache/libcloud/blob/trunk/NOTICE) file.
