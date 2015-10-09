@@ -2321,6 +2321,13 @@ class BaseEC2NodeDriver(NodeDriver):
                                          node returned will NOT have
                                          the public ip assigned yet.
         :type       ex_assign_public_ip: ``bool``
+
+        :keyword    ex_terminate_on_shutdown: Indicates if the instance
+                                              should be terminated instead
+                                              of just shut down when using
+                                              the operating systems command
+                                              for system shutdown.
+        :type       ex_terminate_on_shutdown: ``bool``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -2331,6 +2338,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'MaxCount': str(kwargs.get('ex_maxcount', '1')),
             'InstanceType': size.id
         }
+
+        if kwargs.get("ex_terminate_on_shutdown", False):
+            params["InstanceInitiatedShutdownBehavior"] = "terminate"
 
         if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
             raise ValueError('You can only supply ex_security_groups or'

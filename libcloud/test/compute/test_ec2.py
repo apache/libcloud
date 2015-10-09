@@ -136,6 +136,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             ex_assign_public_ip=True,
         )
 
+    def test_create_node_with_ex_terminate_on_shutdown(self):
+        EC2MockHttp.type = 'create_ex_terminate_on_shutdown'
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        # The important part about the test is asserted inside
+        # EC2MockHttp._create_ex_terminate_on_shutdown
+        self.driver.create_node(name='foo', image=image, size=size, ex_terminate_on_shutdown=True)
+
     def test_create_node_with_metadata(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
@@ -1274,6 +1286,14 @@ class EC2MockHttp(MockHttpTestCase):
             'NetworkInterface.1.SecurityGroupId.1': "sg-11111111",
         })
         body = self.fixtures.load('run_instances_with_subnet_and_security_group.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _create_ex_terminate_on_shutdown_RunInstances(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {
+            'InstanceInitiatedShutdownBehavior': 'terminate'
+        })
+
+        body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
