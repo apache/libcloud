@@ -125,8 +125,8 @@ DNS
   [Alejandro Pereira]
 
 - Add new driver for Vultr DNS service (https://www.vultr.com).
-  (GITHUB-579, LIBCLOUD-745)
-  [Alejandro Pereira]
+  (GITHUB-579, GITHUB-596, LIBCLOUD-745)
+  [Alejandro Pereira, Janez Troha]
 
 - Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
   (GITHUB-581, LIBCLOUD-746)
