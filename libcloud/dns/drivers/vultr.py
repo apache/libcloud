@@ -184,7 +184,7 @@ class VultrDNSDriver(DNSDriver):
         zones = self.list_zones()
         if self.ex_zone_exists(domain, zones):
             raise ZoneAlreadyExistsError(value='', driver=self,
-                                         domain=domain)
+                                         zone_id=domain)
 
         self.connection.request(params=params, action=action, data=data,
                                 method='POST')

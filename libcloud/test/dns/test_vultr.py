@@ -111,7 +111,7 @@ class VultrTests(unittest.TestCase):
         self.assertTrue(status)
 
     def test_create_zone_success(self):
-        zone = self.driver.create_zone(zone_id='test.com',
+        zone = self.driver.create_zone(domain='test.com',
                                        extra={'serverip': '127.0.0.1'})
 
         self.assertEqual(zone.id, 'test.com')
@@ -123,7 +123,7 @@ class VultrTests(unittest.TestCase):
         VultrMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'
 
         try:
-            self.driver.create_zone(zone_id='example.com',
+            self.driver.create_zone(domain='example.com',
                                     extra={'serverip': '127.0.0.1'})
         except ZoneAlreadyExistsError:
             e = sys.exc_info()[1]
