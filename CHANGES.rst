@@ -76,6 +76,11 @@ Compute
   (GITHUB-595)
   [Kyle Long]
 
+- Various fixes and improvements in the ``ex_authorize_security_group_ingress``
+  in the CloudStack driver.
+  (LIBCLOUD-749, GITHUB-580)
+  [Lionel Schaub]
+
 Storage
 ~~~~~~~
 
