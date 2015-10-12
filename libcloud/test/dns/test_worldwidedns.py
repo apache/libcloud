@@ -70,7 +70,7 @@ class WorldWideDNSTests(unittest.TestCase):
         self.assertEqual(len(records), 3)
 
         www = records[0]
-        self.assertEqual(www.id, 'www')
+        self.assertEqual(www.id, '1')
         self.assertEqual(www.name, 'www')
         self.assertEqual(www.type, RecordType.A)
         self.assertEqual(www.data, '0.0.0.0')
@@ -109,8 +109,8 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_get_record_success(self):
         record = self.driver.get_record(zone_id='niteowebsponsoredthisone.com',
-                                        record_id='www')
-        self.assertEqual(record.id, 'www')
+                                        record_id='1')
+        self.assertEqual(record.id, '1')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '0.0.0.0')
@@ -195,55 +195,76 @@ class WorldWideDNSTests(unittest.TestCase):
                                            type=RecordType.A, data='0.0.0.4',
                                            extra={'entry': 4})
 
-        self.assertEqual(record.id, 'domain4')
+        self.assertEqual(record.id, '4')
         self.assertEqual(record.name, 'domain4')
         self.assertNotEqual(record.zone.extra.get('S4'), zone.extra.get('S4'))
         self.assertNotEqual(record.zone.extra.get('D4'), zone.extra.get('D4'))
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '0.0.0.4')
 
-    def test_create_record_missing_entry(self):
+    def test_create_record_finding_entry(self):
         zone = self.driver.list_zones()[0]
         WorldWideDNSMockHttp.type = 'CREATE_RECORD'
+        record = self.driver.create_record(name='domain4', zone=zone,
+                                           type=RecordType.A, data='0.0.0.4')
+        WorldWideDNSMockHttp.type = 'CREATE_SECOND_RECORD'
+        zone = record.zone
+        record2 = self.driver.create_record(name='domain1', zone=zone,
+                                            type=RecordType.A, data='0.0.0.1')
+        self.assertEqual(record.id, '4')
+        self.assertEqual(record2.id, '5')
+
+    def test_create_record_max_entry_reached(self):
+        zone = self.driver.list_zones()[0]
+        WorldWideDNSMockHttp.type = 'CREATE_RECORD_MAX_ENTRIES'
+        record = self.driver.create_record(name='domain40', zone=zone,
+                                           type=RecordType.A, data='0.0.0.40')
+        WorldWideDNSMockHttp.type = 'CREATE_RECORD'
+        zone = record.zone
         try:
-            self.driver.create_record(name='domain1', zone=zone,
-                                      type=RecordType.A, data='0.0.0.1',
-                                      extra={'non_entry': 1})
+            self.driver.create_record(
+                name='domain41', zone=zone, type=RecordType.A, data='0.0.0.41')
         except WorldWideDNSError:
             e = sys.exc_info()[1]
-            self.assertEqual(e.value, "You must enter 'entry' parameter")
+            self.assertEqual(e.value, 'All record entries are full')
         else:
             self.fail('Exception was not thrown')
 
+    def test_create_record_max_entry_reached_give_entry(self):
+        WorldWideDNSMockHttp.type = 'CREATE_RECORD_MAX_ENTRIES'
+        zone = self.driver.list_zones()[0]
+        record = self.driver.get_record(zone.id, '23')
+        self.assertEqual(record.id, '23')
+        self.assertEqual(record.name, 'domain23')
+        self.assertEqual(record.type, 'A')
+        self.assertEqual(record.data, '0.0.0.23')
+
+        # No matter if we have all entries full, if we choose a specific
+        # entry, the record will be replaced with the new one.
+        WorldWideDNSMockHttp.type = 'CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY'
+        record = self.driver.create_record(name='domain23b', zone=zone,
+                                           type=RecordType.A, data='0.0.0.41',
+                                           extra={'entry': 23})
+        zone = record.zone
+        self.assertEqual(record.id, '23')
+        self.assertEqual(record.name, 'domain23b')
+        self.assertEqual(record.type, 'A')
+        self.assertEqual(record.data, '0.0.0.41')
+
     def test_update_record_success(self):
         zone = self.driver.list_zones()[0]
-        record = self.driver.get_record(zone.id, 'www')
+        record = self.driver.get_record(zone.id, '1')
         WorldWideDNSMockHttp.type = 'UPDATE_RECORD'
         record = self.driver.update_record(record=record, name='domain1',
                                            type=RecordType.A, data='0.0.0.1',
                                            extra={'entry': 1})
 
-        self.assertEqual(record.id, 'domain1')
+        self.assertEqual(record.id, '1')
         self.assertEqual(record.name, 'domain1')
         self.assertNotEqual(record.zone.extra.get('S1'), zone.extra.get('S1'))
         self.assertNotEqual(record.zone.extra.get('D1'), zone.extra.get('D1'))
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '0.0.0.1')
-
-    def test_update_record_missing_entry(self):
-        zone = self.driver.list_zones()[0]
-        record = self.driver.get_record(zone.id, 'www')
-        WorldWideDNSMockHttp.type = 'UPDATE_RECORD'
-        try:
-            record = self.driver.update_record(record=record, name='domain1',
-                                               type=RecordType.A,
-                                               data='0.0.0.1',
-                                               extra={'non_entry': 1})
-        except WorldWideDNSError:
-            e = sys.exc_info()[1]
-            self.assertEqual(e.value, "You must enter 'entry' parameter")
-        else:
-            self.fail('Exception was not thrown')
 
     def test_delete_zone_success(self):
         zone = self.driver.list_zones()[0]
@@ -323,13 +344,66 @@ class WorldWideDNSMockHttp(MockHttp):
         body = self.fixtures.load('api_dns_list')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _api_dns_list_asp_CREATE_SECOND_RECORD(self, method, url, body,
+                                               headers):
+        body = self.fixtures.load('api_dns_list')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _api_dns_modify_asp_CREATE_RECORD(self, method, url, body, headers):
+        return (httplib.OK, '211\r\n212\r\n213', {},
+                httplib.responses[httplib.OK])
+
+    def _api_dns_modify_asp_CREATE_SECOND_RECORD(self, method, url, body,
+                                                 headers):
         return (httplib.OK, '211\r\n212\r\n213', {},
                 httplib.responses[httplib.OK])
 
     def _api_dns_list_domain_asp_CREATE_RECORD(self, method, url, body,
                                                headers):
         body = self.fixtures.load('api_dns_list_domain_asp_CREATE_RECORD')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_dns_list_domain_asp_CREATE_SECOND_RECORD(self, method, url, body,
+                                                      headers):
+        body = self.fixtures.load(
+            'api_dns_list_domain_asp_CREATE_SECOND_RECORD')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES(self, method, url,
+                                                           body, headers):
+        body = self.fixtures.load(
+            'api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES(self, method, url, body,
+                                                      headers):
+        return (httplib.OK, '211\r\n212\r\n213', {},
+                httplib.responses[httplib.OK])
+
+    def _api_dns_list_asp_CREATE_RECORD_MAX_ENTRIES(self, method, url, body,
+                                                    headers):
+        body = self.fixtures.load('api_dns_list')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(self,
+                                                                      method,
+                                                                      url,
+                                                                      body,
+                                                                      headers):
+        body = self.fixtures.load(
+            '_api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(self, method,
+                                                                 url, body,
+                                                                 headers):
+        return (httplib.OK, '211\r\n212\r\n213', {},
+                httplib.responses[httplib.OK])
+
+    def _api_dns_list_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(self, method,
+                                                               url, body,
+                                                               headers):
+        body = self.fixtures.load('api_dns_list')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_dns_list_asp_UPDATE_RECORD(self, method, url, body, headers):
