@@ -20,6 +20,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.worldwidedns import WorldWideDNSDriver
+from libcloud.dns.drivers.worldwidedns import WorldWideDNSError
 from libcloud.common.worldwidedns import NonExistentDomain
 from libcloud.common.worldwidedns import InvalidDomainName
 
@@ -192,7 +193,7 @@ class WorldWideDNSTests(unittest.TestCase):
         WorldWideDNSMockHttp.type = 'CREATE_RECORD'
         record = self.driver.create_record(name='domain4', zone=zone,
                                            type=RecordType.A, data='0.0.0.4',
-                                           ex_entry=4)
+                                           extra={'entry': 4})
 
         self.assertEqual(record.id, 'domain4')
         self.assertEqual(record.name, 'domain4')
@@ -201,13 +202,26 @@ class WorldWideDNSTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '0.0.0.4')
 
+    def test_create_record_missing_entry(self):
+        zone = self.driver.list_zones()[0]
+        WorldWideDNSMockHttp.type = 'CREATE_RECORD'
+        try:
+            self.driver.create_record(name='domain1', zone=zone,
+                                      type=RecordType.A, data='0.0.0.1',
+                                      extra={'non_entry': 1})
+        except WorldWideDNSError:
+            e = sys.exc_info()[1]
+            self.assertEqual(e.value, "You must enter 'entry' parameter")
+        else:
+            self.fail('Exception was not thrown')
+
     def test_update_record_success(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.get_record(zone.id, 'www')
         WorldWideDNSMockHttp.type = 'UPDATE_RECORD'
         record = self.driver.update_record(record=record, name='domain1',
                                            type=RecordType.A, data='0.0.0.1',
-                                           ex_entry=1)
+                                           extra={'entry': 1})
 
         self.assertEqual(record.id, 'domain1')
         self.assertEqual(record.name, 'domain1')
@@ -215,6 +229,21 @@ class WorldWideDNSTests(unittest.TestCase):
         self.assertNotEqual(record.zone.extra.get('D1'), zone.extra.get('D1'))
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '0.0.0.1')
+
+    def test_update_record_missing_entry(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.get_record(zone.id, 'www')
+        WorldWideDNSMockHttp.type = 'UPDATE_RECORD'
+        try:
+            record = self.driver.update_record(record=record, name='domain1',
+                                               type=RecordType.A,
+                                               data='0.0.0.1',
+                                               extra={'non_entry': 1})
+        except WorldWideDNSError:
+            e = sys.exc_info()[1]
+            self.assertEqual(e.value, "You must enter 'entry' parameter")
+        else:
+            self.fail('Exception was not thrown')
 
     def test_delete_zone_success(self):
         zone = self.driver.list_zones()[0]

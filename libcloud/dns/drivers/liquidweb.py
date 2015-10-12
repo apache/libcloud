@@ -152,17 +152,34 @@ class LiquidWebDNSDriver(DNSDriver):
         record = self._to_record(response.objects[0], zone=zone)
         return record
 
-    def create_zone(self, domain):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
         """
         Create a new zone.
 
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
 
+        :param type: Zone type (This is not really used. See API docs for extra
+                     parameters).
+        :type  type: ``str``
+
+        :param ttl: TTL for new records. (This is not really used)
+        :type  ttl: ``int``
+
+        :param extra: Extra attributes (driver specific). ('region_support',
+                      'zone_data')
+        :type extra: ``dict``
+
         :rtype: :class:`Zone`
+
+        For more info, please see:
+        https://www.liquidweb.com/storm/api/docs/v1/Network/DNS/Zone.html
         """
         action = '/v1/Network/DNS/Zone/create'
         data = json.dumps({'params': {'name': domain}})
+        if extra is not None:
+            params = data.get('params')
+            params.update(extra)
         try:
             response = self.connection.request(action=action,
                                                method='POST',
@@ -171,7 +188,8 @@ class LiquidWebDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.error_class == 'LW::Exception::DuplicateRecord':
                 raise ZoneAlreadyExistsError(zone_id=domain,
-                                             value=e.value, driver=self)
+                                             value=e.value,
+                                             driver=self)
             else:
                 raise e
 
@@ -179,7 +197,7 @@ class LiquidWebDNSDriver(DNSDriver):
 
         return zone
 
-    def create_record(self, name, zone, rtype, data, extra=None):
+    def create_record(self, name, zone, type, data, extra=None):
         """
         Create a record.
 
@@ -192,9 +210,9 @@ class LiquidWebDNSDriver(DNSDriver):
         :param zone: Zone which the records will be created for.
         :type zone: :class:`Zone`
 
-        :param rtype: DNS record type ( 'A', 'AAAA', 'CNAME', 'MX', 'NS',
+        :param type: DNS record type ( 'A', 'AAAA', 'CNAME', 'MX', 'NS',
                      'PTR', 'SOA', 'SRV', 'TXT').
-        :type  rtype: :class:`RecordType`
+        :type  type: :class:`RecordType`
 
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
@@ -207,7 +225,7 @@ class LiquidWebDNSDriver(DNSDriver):
         action = '/v1/Network/DNS/Record/create'
         to_post = {'params': {'name': name,
                               'rdata': data,
-                              'type': rtype,
+                              'type': type,
                               'zone': zone.domain,
                               'zone_id': zone.id
                               }
@@ -231,12 +249,25 @@ class LiquidWebDNSDriver(DNSDriver):
         record = self._to_record(response.objects[0], zone=zone)
         return record
 
-    def update_record(self, record, extra=None):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
         :param record: Record to update.
         :type  record: :class:`Record`
+
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
+        :type  name: ``str``
+
+        :param type: DNS record type ( 'A', 'AAAA', 'CNAME', 'MX', 'NS',
+                     'PTR', 'SOA', 'SRV', 'TXT').
+        :type  type: :class:`RecordType`
+
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
 
         :param extra: (optional) Extra attributes ('name', 'rdata', 'prio',
                       'ttl').
@@ -246,14 +277,16 @@ class LiquidWebDNSDriver(DNSDriver):
         """
         zone = record.zone
         action = '/v1/Network/DNS/Record/update'
-        to_post = {'params': {'id': int(record.id)}}
+        to_post = {'params': {'id': int(record.id),
+                              'name': name,
+                              'rdata': data}}
         if extra is not None:
             to_post['params'].update(extra)
-        data = json.dumps(to_post)
+        j_data = json.dumps(to_post)
         try:
             response = self.connection.request(action=action,
                                                method='PUT',
-                                               data=data)
+                                               data=j_data)
         except APIException:
             e = sys.exc_info()[1]
             if e.error_class == 'LW::Exception::RecordNotFound':

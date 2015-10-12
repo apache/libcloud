@@ -232,7 +232,7 @@ class WorldWideDNSDriver(DNSDriver):
         zone = self.get_zone(zone.id)
         return zone
 
-    def update_record(self, record, name, type, data, ex_entry):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
@@ -251,11 +251,15 @@ class WorldWideDNSDriver(DNSDriver):
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
 
-        :param ex_entry: Entry position (1 thru 40)
-        :type  ex_entry: ``int``
+        :param extra: Contains 'entry' Entry position (1 thru 40)
+        :type extra: ``dict``
 
         :rtype: :class:`Record`
         """
+        if (extra is None) or ('entry' not in extra):
+            raise WorldWideDNSError(value="You must enter 'entry' parameter",
+                                    driver=self)
+        entry = extra.get('entry')
         if name == '':
             name = '@'
         if type not in self.RECORD_TYPE_MAP:
@@ -263,9 +267,9 @@ class WorldWideDNSDriver(DNSDriver):
                               driver=record.zone.driver,
                               record_id=name)
         zone = record.zone
-        extra = {'S%s' % ex_entry: name,
-                 'T%s' % ex_entry: type,
-                 'D%s' % ex_entry: data}
+        extra = {'S%s' % entry: name,
+                 'T%s' % entry: type,
+                 'D%s' % entry: data}
         zone = self.update_zone(zone, zone.domain, extra=extra)
         record = self.get_record(zone.id, name)
         return record
@@ -315,7 +319,7 @@ class WorldWideDNSDriver(DNSDriver):
             zone = self.update_zone(zone, zone.domain, ttl=ttl)
         return zone
 
-    def create_record(self, name, zone, type, data, ex_entry):
+    def create_record(self, name, zone, type, data, extra=None):
         """
         Create a new record.
 
@@ -334,20 +338,24 @@ class WorldWideDNSDriver(DNSDriver):
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
 
-        :param ex_entry: Entry position (1 thru 40)
-        :type  ex_entry: ``int``
+        :param extra: Contains 'entry' Entry position (1 thru 40)
+        :type extra: ``dict``
 
         :rtype: :class:`Record`
         """
+        if (extra is None) or ('entry' not in extra):
+            raise WorldWideDNSError(value="You must enter 'entry' parameter",
+                                    driver=zone.driver)
+        entry = extra.get('entry')
         if name == '':
             name = '@'
         if type not in self.RECORD_TYPE_MAP:
             raise RecordError(value="Record type is not allowed",
                               driver=zone.driver,
                               record_id=name)
-        extra = {'S%s' % ex_entry: name,
-                 'T%s' % ex_entry: type,
-                 'D%s' % ex_entry: data}
+        extra = {'S%s' % entry: name,
+                 'T%s' % entry: type,
+                 'D%s' % entry: data}
         zone = self.update_zone(zone, zone.domain, extra=extra)
         record = self.get_record(zone.id, name)
         return record
