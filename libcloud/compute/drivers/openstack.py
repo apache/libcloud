@@ -335,6 +335,34 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         return self._reboot_node(node, reboot_type='HARD')
 
+    def ex_list_subnet(self, network_id=None):
+        """
+        List all subnet resources
+        :param        network_id:   filter for subnets for this network ID
+        :type         network_id:   ``str``
+        :rtype:       ``list`` of :class:``OpenStackSubnet``
+        """
+        uri = '/subnets'
+        resp = self.connection.request(uri, method='GET')
+        if resp.status == httplib.NOT_FOUND:
+            return None
+        return self._to_subnets(resp.object)
+
+
+class OpenStackSubnet(object):
+    """
+    Represents information about an OpenStack subnet
+    NOTE: This class is openStack specific
+    """
+    def __init__(self, id, name, cidr, alloc_pools):
+        self.id = id
+        self.name = name
+        self.cidr = cidr
+        self.alloc_pools = alloc_pools
+
+    def __repr__(self):
+        return (('<OpenStackSubnet: id=%s, name=%s') % (self.id, self.name))
+
 
 class OpenStackNodeSize(NodeSize):
     """
@@ -963,6 +991,16 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return OpenStack_1_0_NodeIpAddresses(public_ips, private_ips)
 
+    def _to_subnets(self, obj):
+        subnets = obj['subnets']
+        return [self._to_subnet(subnet) for subnet in subnets]
+
+    def _to_subnet(self, obj):
+        return OpenStackSubnet(id=obj['id'],
+                               name=obj['name'],
+                               cidr=obj.get('cidr', False),
+                               alloc_pools=obj.get('allocation_pools'))
+
     def _get_size_price(self, size_id):
         try:
             return get_size_price(driver_type='compute',
@@ -1559,6 +1597,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         potential_data = self._create_args_to_params(node, **node_updates)
         updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
+
+    def _to_subnets(self, obj):
+        subnets = obj['subnets']
+        return [self._to_subnet(subnet) for subnet in subnets]
+
+    def _to_subnet(self, obj):
+        return OpenStackSubnet(id=obj['id'],
+                               name=obj['name'],
+                               cidr=obj.get('cidr', False),
+                               alloc_pools=obj.get('allocation_pools'))
 
     def _to_networks(self, obj):
         networks = obj['networks']
