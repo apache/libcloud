@@ -236,12 +236,15 @@ class PointDNSDriver(DNSDriver):
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
-    def create_zone(self, domain, ttl=None, extra=None):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
         """
         Create a new zone.
 
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
+
+        :param type: Zone type (All zones are master by design).
+        :type  type: ``str``
 
         :param ttl: TTL for new records. (optional)
         :type  ttl: ``int``
@@ -305,7 +308,7 @@ class PointDNSDriver(DNSDriver):
         record = self._to_record(response.object, zone=zone)
         return record
 
-    def update_zone(self, zone, domain, ttl=None, extra=None):
+    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
         """
         Update en existing zone.
 
@@ -314,6 +317,9 @@ class PointDNSDriver(DNSDriver):
 
         :param domain: Zone domain name (e.g. example.com)
         :type  domain: ``str``
+
+        :param type: Zone type (All zones are master by design).
+        :type  type: ``str``
 
         :param ttl: TTL for new records. (optional)
         :type  ttl: ``int``

@@ -168,6 +168,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         DNSimpleDNSMockHttp.type = 'UPDATE'
         extra = {'ttl': 4500}
         record1 = self.driver.update_record(record=record, name='www',
+                                            type=record.type,
                                             data='updated.com',
                                             extra=extra)
         self.assertEqual(record.data, 'example.com')
