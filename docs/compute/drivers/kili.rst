@@ -16,7 +16,7 @@ Examples
 Unlike other OpenStack based providers, Kili cloud also requires you to specify
 tenant name when connecting to their cloud. You can do that by passing
 ``tenant_name`` argument to the driver constructor as shown in the code example
-bellow.
+below.
 
 This attribute represents a company name you have entered while signing up for
 Kili.

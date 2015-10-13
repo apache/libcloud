@@ -43,7 +43,7 @@ Changes in the OpenStack authentication and service catalog classes
 
 To make OpenStack authentication and identity related classes more extensible,
 easier to main and easier to use, those classes have been refactored. All of
-the changes are described bellow.
+the changes are described below.
 
 * New ``libcloud.common.openstack_identity`` module has been added. This module
   contains code for working with OpenStack Identity (Keystone) service.
@@ -95,7 +95,7 @@ this version is move away from the old "one class per region" model to a new
 single class plus ``region`` argument model.
 
 More information on how this affects existing drivers and your code can be
-found bellow.
+found below.
 
 Default Content-Type is now provided if none is supplied and none can be guessed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,7 +316,7 @@ value:
 * ``RACKSPACE_AU`` -> ``syd``
 
 More examples which show how to update your code to work with a new version can
-be found bellow.
+be found below.
 
 Old code (connecting to a first-gen provider):
 
@@ -375,7 +375,7 @@ CloudStack compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudStack driver received a lot of changes and additions which will make it
-more pleasant to use. Backward incompatible changes are listed bellow:
+more pleasant to use. Backward incompatible changes are listed below:
 
 * ``CloudStackForwardingRule`` class has been renamed to
   ``CloudStackIPForwardingRule``

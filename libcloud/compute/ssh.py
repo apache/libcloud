@@ -372,7 +372,7 @@ class ParamikoSSHClient(BaseSSHClient):
             stderr.write(self._consume_stderr(chan).getvalue())
 
             # We need to check the exist status here, because the command could
-            # print some output and exit during this sleep bellow.
+            # print some output and exit during this sleep below.
             exit_status_ready = chan.exit_status_ready()
 
             if exit_status_ready:

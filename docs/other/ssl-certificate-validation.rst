@@ -15,7 +15,7 @@ following platforms:
 * ``curl-ca-bundle`` port on Mac OS X
 
 If no valid CA certificate files are found, you will see an error message
-similar to the one bellow:
+similar to the one below:
 
 ``No CA Certificates were found in CA_CERTS_PATH.``
 
