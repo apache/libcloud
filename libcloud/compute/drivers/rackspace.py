@@ -14,7 +14,7 @@
 """
 Rackspace driver
 """
-from libcloud.compute.types import Provider, LibcloudError
+from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
 from libcloud.compute.base import NodeLocation, VolumeSnapshot
 from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
@@ -216,6 +216,11 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
                  'description': api_node['displayDescription'],
                  'status': api_node['status']}
 
+        state = self.SNAPSHOT_STATE_MAP.get(
+            api_node['status'],
+            VolumeSnapshotState.UNKNOWN
+        )
+
         try:
             created_td = parse_date(api_node['createdAt'])
         except ValueError:
@@ -223,7 +228,9 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
 
         snapshot = VolumeSnapshot(id=api_node['id'], driver=self,
                                   size=api_node['size'],
-                                  extra=extra, created=created_td)
+                                  extra=extra,
+                                  created=created_td,
+                                  state=state)
         return snapshot
 
     def _ex_connection_class_kwargs(self):

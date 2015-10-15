@@ -127,6 +127,10 @@ Compute
   (LIBCLOUD-759, GITHUB-603)
   [David Wilson]
 
+- Standardize VolumeSnapshot states into the ``state`` attribute.
+  (LIBCLOUD-758, GITHUB-602)
+  [Allard Hoeve]
+
 Storage
 ~~~~~~~
 
