@@ -122,8 +122,8 @@ DNS
   [Alejandro Pereira]
 
 - Add new driver for DNSimple service (https://dnsimple.com/).
-  (GITHUB-575, LIBCLOUD-739)
-  [Alejandro Pereira]
+  (GITHUB-575, GITHUB-604, LIBCLOUD-739)
+  [Alejandro Pereira, Patrick Humpal]
 
 - Add new driver for PointDNS service (https://pointhq.com).
   (GITHUB-576, GITHUB-591, LIBCLOUD-740)
