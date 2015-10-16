@@ -36,6 +36,10 @@ General
 Compute
 ~~~~~~~
 
+- Update list of scopes for Google Compute Engine driver.
+  (GITHUB-607)
+  [Otto Bretz]
+
 - Allow user to filter VPC by project in the CloudStack driver by passing
   ``project`` argument to the ``ex_list_vps`` method.
   (GITHUB-516)

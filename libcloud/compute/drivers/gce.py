@@ -973,15 +973,20 @@ class GCENodeDriver(NodeDriver):
     SA_SCOPES_MAP = {
         # list derived from 'gcloud compute instances create --help'
         "bigquery": "bigquery",
+        "cloud-platform": "cloud-platform",
         "compute-ro": "compute.readonly",
         "compute-rw": "compute",
         "datastore": "datastore",
+        "logging-write": "logging.write",
+        "monitoring": "monitoring",
         "sql": "sqlservice",
         "sql-admin": "sqlservice.admin",
         "storage-full": "devstorage.full_control",
         "storage-ro": "devstorage.read_only",
         "storage-rw": "devstorage.read_write",
         "taskqueue": "taskqueue",
+        "useraccounts-ro": "cloud.useraccounts.readonly",
+        "useraccounts-rw": "cloud.useraccounts",
         "userinfo-email": "userinfo.email"
     }
 
