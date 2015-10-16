@@ -13,8 +13,8 @@ SIZE_ID = 't1.micro'
 
 # 'us-west-1' region is available in Libcloud under EC2_US_WEST provider
 # constant
-cls = get_driver(Provider.EC2_US_WEST)
-driver = cls(ACCESS_ID, SECRET_KEY)
+cls = get_driver(Provider.EC2)
+driver = cls(ACCESS_ID, SECRET_KEY, region="us-west-1")
 
 # Here we select
 sizes = driver.list_sizes()
