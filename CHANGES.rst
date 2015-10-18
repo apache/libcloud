@@ -28,6 +28,11 @@ General
   (GITHUB-571)
   [Michal Tekel]
 
+- Update documentation for EC2 - make sure they reflect region changes from
+  0.14 release.
+  (GITHUB-606)
+  [James Guthrie]
+
 Compute
 ~~~~~~~
 
