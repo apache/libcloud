@@ -730,7 +730,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Change the state (enabled or disabled) of a rule
         """
-        update_node = ET.Element('editFirewallrule', {'xmlns': TYPES_URN})
+        update_node = ET.Element('editFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         ET.SubElement(update_node, 'enabled').text = str(state).lower()
         result = self.connection.request_with_orgId_api_2(
@@ -742,7 +742,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_delete_firewall_rule(self, rule):
-        update_node = ET.Element('deleteFirewallrule', {'xmlns': TYPES_URN})
+        update_node = ET.Element('deleteFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
             'network/deleteFirewallRule',
@@ -790,7 +790,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return self._to_nat_rule(rule, network_domain)
 
     def ex_delete_nat_rule(self, rule):
-        update_node = ET.Element('deleteNatrule', {'xmlns': TYPES_URN})
+        update_node = ET.Element('deleteNatRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
             'network/deleteNatRule',
