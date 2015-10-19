@@ -77,6 +77,8 @@ class SoftLayerTests(unittest.TestCase):
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 13)
+        for size in sizes:
+            self.assertTrue(size.price > 0.0)
 
     def test_create_node(self):
         node = self.driver.create_node(name="libcloud-testing",
