@@ -18,7 +18,7 @@ First congratulations and welcome to the team!
 
 If you haven't yet, subscribe to {dev,users,commits}@apache.libcloud.org
 mailing lists. Committs mailing list is especially important because all of
-the JIRA notification, Gihub Pull Request notifications and build notifications
+the JIRA notification, Github Pull Request notifications and build notifications
 are sent there.
 
 2. Subscribe to the private mailing list
@@ -227,7 +227,7 @@ root of the main code repository.
 
 Check out the website using SVN: ``svn co https://svn.apache.org/repos/asf/libcloud/site/trunk``
 
-* Upate the front page (``source/index.html`` file)
+* Update the front page (``source/index.html`` file)
 * Update "Downloads" page (``source/downloads.md`` file)
 * Add a blog entry in the ``_posts`` directory.
 
