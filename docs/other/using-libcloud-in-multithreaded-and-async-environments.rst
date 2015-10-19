@@ -60,7 +60,7 @@ calls inside a thread. In Twisted this can be achieved using
 ``threads.deferToThread`` which runs a provided method inside the Twisted
 thread pool.
 
-The example bellow demonstrates how to create a new node inside a thread
+The example below demonstrates how to create a new node inside a thread
 without blocking the whole reactor.
 
 .. literalinclude:: /examples/misc/twisted_create_node.py

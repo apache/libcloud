@@ -28,6 +28,11 @@ from libcloud.common.dimensiondata import (DimensionDataConnection,
 from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
+from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
+from libcloud.common.dimensiondata import DimensionDataFirewallRule
+from libcloud.common.dimensiondata import DimensionDataFirewallAddress
+from libcloud.common.dimensiondata import DimensionDataNatRule
+from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
@@ -166,8 +171,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/deleteServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def reboot_node(self, node):
         request_elm = ET.Element('rebootServer',
@@ -176,8 +181,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/rebootServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def list_nodes(self):
         nodes = self._to_nodes(
@@ -305,8 +310,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/startServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_shutdown_graceful(self, node):
         """
@@ -326,8 +331,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/shutdownServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_power_off(self, node):
         """
@@ -347,8 +352,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/powerOffServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_reset(self, node):
         """
@@ -368,8 +373,34 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/resetServer',
             method='POST',
             data=ET.tostring(request_elm)).object
-        result = findtext(body, 'responseCode', TYPES_URN)
-        return result == 'IN_PROGRESS'
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_attach_node_to_vlan(self, node, vlan):
+        request = ET.Element('addNic',
+                             {'xmlns': TYPES_URN})
+        ET.SubElement(request, 'serverId').text = node.id
+        nic = ET.SubElement(request, 'nic')
+        ET.SubElement(nic, 'vlanId').text = vlan.id
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/addNic',
+            method='POST',
+            data=ET.tostring(request)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_destroy_nic(self, nic_id):
+        request = ET.Element('removeNic',
+                             {'xmlns': TYPES_URN,
+                              'id': nic_id})
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/removeNic',
+            method='POST',
+            data=ET.tostring(request)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_networks(self, location=None):
         """
@@ -388,6 +419,12 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_networks(response)
 
+    def ex_get_network_domain(self, network_domain_id):
+        locations = self.list_locations()
+        net = self.connection.request_with_orgId_api_2(
+            'network/networkDomain/%s' % network_domain_id).object
+        return self._to_network_domain(net, locations)
+
     def ex_list_network_domains(self, location=None):
         """
         List networks deployed across all data center locations for your
@@ -404,6 +441,163 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_2('network/networkDomain',
                                       params=params).object
         return self._to_network_domains(response)
+
+    def ex_create_network_domain(self, location, name, service_plan,
+                                 description=None):
+        """
+        Deploy a new network domain to a data center
+        """
+        create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "datacenterId").text = location.id
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "type").text = service_plan
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deployNetworkDomain',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        network_domain_id = None
+
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'networkDomainId':
+                network_domain_id = info.get('value')
+
+        return DimensionDataNetworkDomain(
+            id=network_domain_id,
+            name=name,
+            description=description,
+            location=location,
+            status=NodeState.RUNNING,
+            plan=service_plan
+        )
+
+    def ex_update_network_domain(self, network_domain):
+        """
+        Update the properties of a network domain
+        """
+        edit_node = ET.Element('editNetworkDomain', {'xmlns': TYPES_URN})
+        edit_node.set('id', network_domain.id)
+        ET.SubElement(edit_node, "name").text = network_domain.name
+        if network_domain.description is not None:
+            ET.SubElement(edit_node, "description").text \
+                = network_domain.description
+        ET.SubElement(edit_node, "type").text = network_domain.plan
+
+        self.connection.request_with_orgId_api_2(
+            'network/editNetworkDomain',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return network_domain
+
+    def ex_delete_network_domain(self, network_domain):
+        delete_node = ET.Element('deleteNetworkDomain', {'xmlns': TYPES_URN})
+        delete_node.set('id', network_domain.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteNetworkDomain',
+            method='POST',
+            data=ET.tostring(delete_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_vlan(self,
+                       network_domain,
+                       name,
+                       private_ipv4_base_address,
+                       description=None,
+                       private_ipv4_prefix_size='24'):
+        """
+        Deploy a new VLAN to a network domain
+        """
+        create_node = ET.Element('deployVlan', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "privateIpv4BaseAddress").text = \
+            private_ipv4_base_address
+        ET.SubElement(create_node, "privateIpv4PrefixSize").text = \
+            private_ipv4_prefix_size
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deployVlan',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        vlan_id = None
+
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'vlanId':
+                vlan_id = info.get('value')
+
+        return DimensionDataVlan(
+            id=vlan_id,
+            name=name,
+            description=description,
+            location=network_domain.location,
+            status=NodeState.RUNNING,
+            private_ipv4_range_address=private_ipv4_base_address,
+            private_ipv4_range_size=private_ipv4_prefix_size
+        )
+
+    def ex_get_vlan(self, vlan_id):
+        locations = self.list_locations()
+        vlan = self.connection.request_with_orgId_api_2(
+            'network/vlan/%s' % vlan_id).object
+        return self._to_vlan(vlan, locations)
+
+    def ex_update_vlan(self, vlan):
+        """
+        Updates the properties of the given VLAN
+        Only name and description are updated
+        """
+        edit_node = ET.Element('editVlan', {'xmlns': TYPES_URN})
+        edit_node.set('id', vlan.id)
+        ET.SubElement(edit_node, "name").text = vlan.name
+        if vlan.description is not None:
+            ET.SubElement(edit_node, "description").text \
+                = vlan.description
+
+        self.connection.request_with_orgId_api_2(
+            'network/editVlan',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return vlan
+
+    def ex_expand_vlan(self, vlan):
+        """
+        Expands the VLAN to the prefix size in private_ipv4_range_size
+        The expansion will
+        not be permitted if the proposed IP space overlaps with an
+        already deployed VLANs IP space.
+        """
+        edit_node = ET.Element('expandVlan', {'xmlns': TYPES_URN})
+        edit_node.set('id', vlan.id)
+        ET.SubElement(edit_node, "privateIpv4PrefixSize").text =\
+            vlan.private_ipv4_range_size
+
+        self.connection.request_with_orgId_api_2(
+            'network/expandVlan',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        return vlan
+
+    def ex_delete_vlan(self, vlan):
+        delete_node = ET.Element('deleteVlan', {'xmlns': TYPES_URN})
+        delete_node.set('id', vlan.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteVlan',
+            method='POST',
+            data=ET.tostring(delete_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_vlans(self, location=None, network_domain=None):
         """
@@ -422,10 +616,189 @@ class DimensionDataNodeDriver(NodeDriver):
                                   .object
         return self._to_vlans(response)
 
+    def ex_add_public_ip_block_to_network_domain(self, network_domain):
+        add_node = ET.Element('addPublicIpBlock', {'xmlns': TYPES_URN})
+        ET.SubElement(add_node, "networkDomainId").text =\
+            network_domain.id
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/addPublicIpBlock',
+            method='POST',
+            data=ET.tostring(add_node)).object
+
+        block_id = None
+
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'publicIpBlockId':
+                block_id = info.get('value')
+        return self.ex_get_public_ip_block(block_id)
+
+    def ex_list_public_ip_blocks(self, network_domain):
+        params = {}
+        params['networkDomainId'] = network_domain.id
+
+        response = self.connection \
+            .request_with_orgId_api_2('network/publicIpBlock',
+                                      params=params).object
+        return self._to_ip_blocks(response)
+
+    def ex_get_public_ip_block(self, block_id):
+        locations = self.list_locations()
+        block = self.connection.request_with_orgId_api_2(
+            'network/publicIpBlock/%s' % block_id).object
+        return self._to_ip_block(block, locations)
+
+    def ex_delete_public_ip_block(self, block):
+        delete_node = ET.Element('removePublicIpBlock', {'xmlns': TYPES_URN})
+        delete_node.set('id', block.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/removePublicIpBlock',
+            method='POST',
+            data=ET.tostring(delete_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_get_node_by_id(self, id):
         node = self.connection.request_with_orgId_api_2(
             'server/server/%s' % id).object
         return self._to_node(node)
+
+    def ex_list_firewall_rules(self, network_domain):
+        params = {}
+        params['networkDomainId'] = network_domain.id
+
+        response = self.connection \
+            .request_with_orgId_api_2('network/firewallRule',
+                                      params=params).object
+        return self._to_firewall_rules(response, network_domain)
+
+    def ex_create_firewall_rule(self, network_domain, rule, position):
+        create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "name").text = rule.name
+        ET.SubElement(create_node, "action").text = rule.action
+        ET.SubElement(create_node, "ipVersion").text = rule.ip_version
+        ET.SubElement(create_node, "protocol").text = rule.protocol
+        # Setup source port rule
+        source = ET.SubElement(create_node, "source")
+        source_ip = ET.SubElement(source, 'ip')
+        if rule.source.any_ip:
+            source_ip.set('address', 'ANY')
+        else:
+            source_ip.set('address', rule.source.ip_address)
+            source_ip.set('prefixSize', rule.source.ip_prefix_size)
+            source_port = ET.SubElement(source, 'port')
+            source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_end is not None:
+                source_port.set('end', rule.source.port_end)
+        # Setup destination port rule
+        dest = ET.SubElement(create_node, "destination")
+        dest_ip = ET.SubElement(dest, 'ip')
+        if rule.destination.any_ip:
+            dest_ip.set('address', 'ANY')
+        else:
+            dest_ip.set('address', rule.destination.ip_address)
+            dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+            dest_port = ET.SubElement(dest, 'port')
+            dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_end is not None:
+                dest_port.set('end', rule.destination.port_end)
+        ET.SubElement(create_node, "enabled").text = 'true'
+        placement = ET.SubElement(create_node, "placement")
+        placement.set('position', position)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/createFirewallRule',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        rule_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'firewallRuleId':
+                rule_id = info.get('value')
+        rule.id = rule_id
+        return rule
+
+    def ex_get_firewall_rule(self, network_domain, rule_id):
+        locations = self.list_locations()
+        rule = self.connection.request_with_orgId_api_2(
+            'network/firewallRule/%s' % rule_id).object
+        return self._to_firewall_rule(rule, locations, network_domain)
+
+    def ex_set_firewall_rule_state(self, rule, state):
+        """
+        Change the state (enabled or disabled) of a rule
+        """
+        update_node = ET.Element('editFirewallrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        ET.SubElement(update_node, 'enabled').text = str(state).lower()
+        result = self.connection.request_with_orgId_api_2(
+            'network/editFirewallRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_delete_firewall_rule(self, rule):
+        update_node = ET.Element('deleteFirewallrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteFirewallRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
+        create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, 'networkDomainId').text = network_domain.id
+        ET.SubElement(create_node, 'internalIp').text = internal_ip
+        ET.SubElement(create_node, 'externalIp').text = external_ip
+        result = self.connection.request_with_orgId_api_2(
+            'network/createNatRule',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        rule_id = None
+        for info in findall(result, 'info', TYPES_URN):
+            if info.get('name') == 'natRuleId':
+                rule_id = info.get('value')
+
+        return DimensionDataNatRule(
+            id=rule_id,
+            network_domain=network_domain,
+            internal_ip=internal_ip,
+            external_ip=external_ip,
+            status=NodeState.RUNNING
+        )
+
+    def ex_list_nat_rules(self, network_domain):
+        params = {}
+        params['networkDomainId'] = network_domain.id
+
+        response = self.connection \
+            .request_with_orgId_api_2('network/natRule',
+                                      params=params).object
+        return self._to_nat_rules(response, network_domain)
+
+    def ex_get_nat_rule(self, network_domain, rule_id):
+        rule = self.connection.request_with_orgId_api_2(
+            'network/natRule/%s' % rule_id).object
+        return self._to_nat_rule(rule, network_domain)
+
+    def ex_delete_nat_rule(self, rule):
+        update_node = ET.Element('deleteNatrule', {'xmlns': TYPES_URN})
+        update_node.set('id', rule.id)
+        result = self.connection.request_with_orgId_api_2(
+            'network/deleteNatRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_location_by_id(self, id):
         """
@@ -441,6 +814,91 @@ class DimensionDataNodeDriver(NodeDriver):
             location = list(
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
+
+    def _to_nat_rules(self, object, network_domain):
+        rules = []
+        for element in findall(object, 'natRule', TYPES_URN):
+            rules.append(
+                self._to_nat_rule(element, network_domain))
+
+        return rules
+
+    def _to_nat_rule(self, element, network_domain):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        return DimensionDataNatRule(
+            id=element.get('id'),
+            network_domain=network_domain,
+            internal_ip=findtext(element, 'internalIp', TYPES_URN),
+            external_ip=findtext(element, 'externalIp', TYPES_URN),
+            status=status)
+
+    def _to_firewall_rules(self, object, network_domain):
+        rules = []
+        locations = self.list_locations()
+        for element in findall(object, 'firewallRule', TYPES_URN):
+            rules.append(
+                self._to_firewall_rule(element, locations, network_domain))
+
+        return rules
+
+    def _to_firewall_rule(self, element, locations, network_domain):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+
+        return DimensionDataFirewallRule(
+            id=element.get('id'),
+            network_domain=network_domain,
+            name=findtext(element, 'name', TYPES_URN),
+            action=findtext(element, 'action', TYPES_URN),
+            ip_version=findtext(element, 'ipVersion', TYPES_URN),
+            protocol=findtext(element, 'protocol', TYPES_URN),
+            enabled=findtext(element, 'enabled', TYPES_URN),
+            source=self._to_firewall_address(
+                element.find(fixxpath('source', TYPES_URN))),
+            destination=self._to_firewall_address(
+                element.find(fixxpath('destination', TYPES_URN))),
+            location=location,
+            status=status)
+
+    def _to_firewall_address(self, element):
+        ip = element.find(fixxpath('ip', TYPES_URN))
+        port = element.find(fixxpath('port', TYPES_URN))
+        return DimensionDataFirewallAddress(
+            any_ip=ip.get('address') == 'ANY',
+            ip_address=ip.get('address'),
+            ip_prefix_size=ip.get('prefixSize'),
+            port_begin=port.get('begin') if port is not None else None,
+            port_end=port.get('end') if port is not None else None
+        )
+
+    def _to_ip_blocks(self, object):
+        blocks = []
+        locations = self.list_locations()
+        for element in findall(object, 'publicIpBlock', TYPES_URN):
+            blocks.append(self._to_ip_block(element, locations))
+
+        return blocks
+
+    def _to_ip_block(self, element, locations):
+        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+
+        return DimensionDataPublicIpBlock(
+            id=element.get('id'),
+            network_domain=self.ex_get_network_domain(
+                findtext(element, 'networkDomainId', TYPES_URN)
+            ),
+            base_ip=findtext(element, 'baseIp', TYPES_URN),
+            size=findtext(element, 'size', TYPES_URN),
+            location=location,
+            status=status)
 
     def _to_networks(self, object):
         networks = []
@@ -486,12 +944,16 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
-
+        plan = findtext(element, 'type', TYPES_URN)
+        if plan is 'ESSENTIALS':
+            plan_type = NetworkDomainServicePlan.ESSENTIALS
+        else:
+            plan_type = NetworkDomainServicePlan.ADVANCED
         return DimensionDataNetworkDomain(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
-            description=findtext(element, 'description',
-                                 TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),
+            plan=plan_type,
             location=location,
             status=status)
 
@@ -509,12 +971,14 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
-
+        ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
         return DimensionDataVlan(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description',
                                  TYPES_URN),
+            private_ipv4_range_address=ip_range.get('address'),
+            private_ipv4_range_size=ip_range.get('prefixSize'),
             location=location,
             status=status)
 

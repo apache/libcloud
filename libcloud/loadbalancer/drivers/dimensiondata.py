@@ -274,8 +274,8 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/removePoolMember',
             method='POST',
             data=ET.tostring(create_pool_m)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK'
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def destroy_balancer(self, balancer):
         """
@@ -295,8 +295,8 @@ class DimensionDataLBDriver(Driver):
             'networkDomainVip/deleteVirtualListener',
             method='POST',
             data=ET.tostring(delete_listener)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK'
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_set_current_network_domain(self, network_domain_id):
         """
@@ -423,6 +423,51 @@ class DimensionDataLBDriver(Driver):
             ip=ip
         )
 
+    def ex_update_node(self, node):
+        """
+        Update the properties of a node
+
+        :param pool: The instance of ``DimensionDataNode`` to update
+        :type  pool: ``DimensionDataNode``
+
+        :return: The instance of ``DimensionDataNode``
+        :rtype: ``DimensionDataNode``
+        """
+        create_node_elm = ET.Element('editNode', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node_elm, "connectionLimit") \
+            .text = str(node.connection_limit)
+        ET.SubElement(create_node_elm, "connectionRateLimit") \
+            .text = str(node.connection_rate_limit)
+
+        self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/createNode',
+            method='POST',
+            data=ET.tostring(create_node_elm)).object
+        return node
+
+    def ex_set_node_state(self, node, enabled):
+        """
+        Change the state of a node (enable/disable)
+
+        :param pool: The instance of ``DimensionDataNode`` to update
+        :type  pool: ``DimensionDataNode``
+
+        :param enabled: The target state of the node
+        :type  enabled: ``bool``
+
+        :return: The instance of ``DimensionDataNode``
+        :rtype: ``DimensionDataNode``
+        """
+        create_node_elm = ET.Element('editNode', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node_elm, "status") \
+            .text = "ENABLED" if enabled is True else "DISABLED"
+
+        self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/editNode',
+            method='POST',
+            data=ET.tostring(create_node_elm)).object
+        return node
+
     def ex_create_pool(self,
                        network_domain_id,
                        name,
@@ -484,7 +529,11 @@ class DimensionDataLBDriver(Driver):
             id=pool_id,
             name=name,
             description=ex_description,
-            status=State.RUNNING
+            status=State.RUNNING,
+            load_balance_method=str(balancer_method),
+            health_monitor_id=None,
+            service_down_action=service_down_action,
+            slow_ramp_time=str(slow_ramp_time)
         )
 
     def ex_create_virtual_listener(self,
@@ -607,6 +656,33 @@ class DimensionDataLBDriver(Driver):
                                       % pool_id).object
         return self._to_pool(pool)
 
+    def ex_update_pool(self, pool):
+        """
+        Update the properties of an existing pool
+        only method, serviceDownAction and slowRampTime are updated
+
+        :param pool: The instance of ``DimensionDataPool`` to update
+        :type  pool: ``DimensionDataPool``
+
+        :return: ``True`` for success, ``False`` for failure
+        :rtype: ``bool``
+        """
+        create_node_elm = ET.Element('editPool', {'xmlns': TYPES_URN})
+
+        ET.SubElement(create_node_elm, "loadBalanceMethod") \
+            .text = str(pool.load_balance_method)
+        ET.SubElement(create_node_elm, "serviceDownAction") \
+            .text = pool.service_down_action
+        ET.SubElement(create_node_elm, "slowRampTime").text \
+            = str(pool.slow_ramp_time)
+
+        response = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/editPool',
+            method='POST',
+            data=ET.tostring(create_node_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_destroy_pool(self, pool):
         """
         Destroy an existing pool
@@ -625,8 +701,8 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deletePool',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK'
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_pool_members(self, pool_id):
         """
@@ -658,6 +734,21 @@ class DimensionDataLBDriver(Driver):
                                       % pool_member_id).object
         return self._to_member(member)
 
+    def ex_set_pool_member_state(self, member, enabled=True):
+        request = ET.Element('editPoolMember',
+                             {'xmlns': TYPES_URN,
+                              'id': member.id})
+        state = "ENABLED" if enabled is True else "DISABLED"
+        ET.SubElement(request, 'status').text = state
+
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/editPoolMember',
+            method='POST',
+            data=ET.tostring(request)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_destroy_pool_member(self, member, destroy_node=False):
         """
         Destroy a specific member of a pool
@@ -684,8 +775,8 @@ class DimensionDataLBDriver(Driver):
         if member.node_id is not None and destroy_node is True:
             return self.ex_destroy_node(member.node_id)
         else:
-            responseCode = findtext(result, 'responseCode', TYPES_URN)
-            return responseCode == 'OK'
+            response_code = findtext(result, 'responseCode', TYPES_URN)
+            return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_nodes(self):
         """
@@ -697,6 +788,18 @@ class DimensionDataLBDriver(Driver):
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node').object
         return self._to_nodes(nodes)
+
+    def ex_get_node(self, node_id):
+        """
+        Get the node specified by node_id
+
+        :return: Returns an instance of ``DimensionDataVIPNode``
+        :rtype: Instance of ``DimensionDataVIPNode``
+        """
+        nodes = self.connection \
+            .request_with_orgId_api_2('networkDomainVip/node/%s'
+                                      % node_id).object
+        return self._to_node(nodes)
 
     def ex_destroy_node(self, node_id):
         """
@@ -717,8 +820,8 @@ class DimensionDataLBDriver(Driver):
             action='networkDomainVip/deleteNode',
             method='POST',
             data=ET.tostring(destroy_request)).object
-        responseCode = findtext(result, 'responseCode', TYPES_URN)
-        return responseCode == 'OK'
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_nodes(self, object):
         nodes = []
@@ -740,6 +843,9 @@ class DimensionDataLBDriver(Driver):
             status=self._VALUE_TO_STATE_MAP.get(
                 findtext(element, 'state', TYPES_URN),
                 State.UNKNOWN),
+            connection_rate_limit=findtext(element,
+                                           'connectionRateLimit', TYPES_URN),
+            connection_limit=findtext(element, 'connectionLimit', TYPES_URN),
             ip=ipaddress)
 
         return node
@@ -816,6 +922,12 @@ class DimensionDataLBDriver(Driver):
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
             status=findtext(element, 'state', TYPES_URN),
-            description=findtext(element, 'description', TYPES_URN)
+            description=findtext(element, 'description', TYPES_URN),
+            load_balance_method=findtext(element, 'loadBalanceMethod',
+                                         TYPES_URN),
+            health_monitor_id=findtext(element, 'healthMonitorId', TYPES_URN),
+            service_down_action=findtext(element, 'serviceDownAction',
+                                         TYPES_URN),
+            slow_ramp_time=findtext(element, 'slowRampTime', TYPES_URN),
         )
         return pool

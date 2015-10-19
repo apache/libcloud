@@ -17,7 +17,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.dimensiondata import DimensionDataAPIException
+from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
@@ -196,10 +196,47 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_reset(node)
         self.assertTrue(ret is True)
 
+    def test_ex_attach_node_to_vlan(self):
+        node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        ret = self.driver.ex_attach_node_to_vlan(node, vlan)
+        self.assertTrue(ret)
+
+    def test_ex_destroy_nic(self):
+        node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
+        self.assertTrue(node)
+
     def test_list_networks(self):
         nets = self.driver.list_networks()
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
+
+    def test_ex_create_network_domain(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        plan = NetworkDomainServicePlan.ADVANCED
+        net = self.driver.ex_create_network_domain(location=location,
+                                                   name='test',
+                                                   description='test',
+                                                   service_plan=plan)
+        self.assertEqual(net.name, 'test')
+        self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
+
+    def test_ex_get_network_domain(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        self.assertEqual(net.id, '8cdfd607-f429-4df6-9352-162cfc0891be')
+        self.assertEqual(net.description, 'test2')
+        self.assertEqual(net.name, 'test')
+
+    def test_ex_update_network_domain(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        net.name = 'new name'
+        net2 = self.driver.ex_update_network_domain(net)
+        self.assertEqual(net2.name, 'new name')
+
+    def test_ex_delete_network_domain(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        result = self.driver.ex_delete_network_domain(net)
+        self.assertTrue(result)
 
     def test_ex_list_networks(self):
         nets = self.driver.ex_list_networks()
@@ -214,6 +251,128 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
         self.assertEqual(vlans[0].name, "Primary")
+
+    def test_ex_create_vlan(self,):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        vlan = self.driver.ex_create_vlan(network_domain=net,
+                                          name='test',
+                                          private_ipv4_base_address='10.3.4.0',
+                                          private_ipv4_prefix_size='24')
+        self.assertEqual(vlan.id, 'cee8df03-9117-44cc-baaa-631ffa099683')
+
+    def test_ex_get_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
+        self.assertEqual(vlan.description, 'test2')
+        self.assertEqual(vlan.name, 'Production VLAN')
+        self.assertEqual(vlan.private_ipv4_range_address, '10.0.3.0')
+        self.assertEqual(vlan.private_ipv4_range_size, '24')
+
+    def test_ex_update_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        vlan.name = 'new name'
+        vlan2 = self.driver.ex_update_vlan(vlan)
+        self.assertEqual(vlan2.name, 'new name')
+
+    def test_ex_delete_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        result = self.driver.ex_delete_vlan(vlan)
+        self.assertTrue(result)
+
+    def test_ex_expand_vlan(self):
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+        vlan.private_ipv4_range_size = '23'
+        vlan = self.driver.ex_expand_vlan(vlan)
+        self.assertEqual(vlan.private_ipv4_range_size, '23')
+
+    def test_ex_add_public_ip_block_to_network_domain(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        block = self.driver.ex_add_public_ip_block_to_network_domain(net)
+        self.assertEqual(block.id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
+
+    def test_ex_list_public_ip_blocks(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        blocks = self.driver.ex_list_public_ip_blocks(net)
+        self.assertEqual(blocks[0].base_ip, '168.128.4.18')
+        self.assertEqual(blocks[0].size, '2')
+        self.assertEqual(blocks[0].id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
+        self.assertEqual(blocks[0].location.id, 'NA9')
+        self.assertEqual(blocks[0].network_domain.id, net.id)
+
+    def test_ex_get_public_ip_block(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        block = self.driver.ex_get_public_ip_block('9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
+        self.assertEqual(block.base_ip, '168.128.4.18')
+        self.assertEqual(block.size, '2')
+        self.assertEqual(block.id, '9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
+        self.assertEqual(block.location.id, 'NA9')
+        self.assertEqual(block.network_domain.id, net.id)
+
+    def test_ex_delete_public_ip_block(self):
+        block = self.driver.ex_get_public_ip_block('9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8')
+        result = self.driver.ex_delete_public_ip_block(block)
+        self.assertTrue(result)
+
+    def test_ex_list_firewall_rules(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        self.assertEqual(rules[0].id, '756cba02-b0bc-48f4-aea5-9445870b6148')
+        self.assertEqual(rules[0].network_domain.id, '8cdfd607-f429-4df6-9352-162cfc0891be')
+        self.assertEqual(rules[0].name, 'CCDEFAULT.BlockOutboundMailIPv4')
+        self.assertEqual(rules[0].action, 'DROP')
+        self.assertEqual(rules[0].ip_version, 'IPV4')
+        self.assertEqual(rules[0].protocol, 'TCP')
+        self.assertEqual(rules[0].source.ip_address, 'ANY')
+        self.assertTrue(rules[0].source.any_ip)
+        self.assertTrue(rules[0].destination.any_ip)
+
+    def test_ex_create_firewall_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[0], 'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_get_firewall_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_set_firewall_rule_state(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        result = self.driver.ex_set_firewall_rule_state(rule, False)
+        self.assertTrue(result)
+
+    def test_ex_delete_firewall_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        result = self.driver.ex_delete_firewall_rule(rule)
+        self.assertTrue(result)
+
+    def test_ex_create_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_create_nat_rule(net, '1.2.3.4', '4.3.2.1')
+        self.assertEqual(rule.id, 'd31c2db0-be6b-4d50-8744-9a7a534b5fba')
+
+    def test_ex_list_nat_rules(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_nat_rules(net)
+        self.assertEqual(rules[0].id, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rules[0].internal_ip, '10.0.0.15')
+        self.assertEqual(rules[0].external_ip, '165.180.12.18')
+
+    def test_ex_get_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_nat_rule(net, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rule.id, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        self.assertEqual(rule.internal_ip, '10.0.0.16')
+        self.assertEqual(rule.external_ip, '165.180.12.19')
+
+    def test_ex_delete_nat_rule(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_nat_rule(net, '2187a636-7ebb-49a1-a2ff-5d617f496dce')
+        result = self.driver.ex_delete_nat_rule(rule)
+        self.assertTrue(result)
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -397,6 +556,132 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

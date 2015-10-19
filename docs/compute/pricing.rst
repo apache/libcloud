@@ -9,7 +9,7 @@ on the :class:`NodeSize` object. :attr:`price` attribute is a :func:`float`
 type and tells user how much it costs (in US dollars) to run a ``Node`` with a
 specified :class:`NodeSize` for an hour.
 
-Example bellow shows how to retrieve pricing for ``NodeSize`` objects using
+Example below shows how to retrieve pricing for ``NodeSize`` objects using
 :func:`list_sizes` method.
 
 .. literalinclude:: /examples/compute/pricing.py

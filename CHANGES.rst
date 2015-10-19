@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Changes with Apache Libcloud in development
--------------------------------------------
+Changes with Apache Libcloud 0.19.0
+-----------------------------------
 
 General
 ~~~~~~~
@@ -28,8 +28,17 @@ General
   (GITHUB-571)
   [Michal Tekel]
 
+- Update documentation for EC2 - make sure they reflect region changes from
+  0.14 release.
+  (GITHUB-606)
+  [James Guthrie]
+
 Compute
 ~~~~~~~
+
+- Update list of scopes for Google Compute Engine driver.
+  (GITHUB-607)
+  [Otto Bretz]
 
 - Allow user to filter VPC by project in the CloudStack driver by passing
   ``project`` argument to the ``ex_list_vps`` method.
@@ -64,12 +73,26 @@ Compute
 - Various fixes and improvements in the DimensionData driver (support for
   creating servers in MCP 1 and 2 data center, performance improvements in the
   location fetching, etc.).
-  (GITHUB-587, LIBCLOUD-750)
+  (GITHUB-587, GITHUB-593, LIBCLOUD-750, LIBCLOUD-753)
   [Anthony Shaw]
 
 - Added ``ex_assign_public_ip`` argument to ``create_node`` in the EC2 driver.
   (GITHUB-590)
   [Kyle Long]
+
+- Added ``ex_terminate_on_shutdown`` argument to ``create_node`` in the EC2
+  driver.
+  (GITHUB-595)
+  [Kyle Long]
+
+- Various fixes and improvements in the ``ex_authorize_security_group_ingress``
+  in the CloudStack driver.
+  (LIBCLOUD-749, GITHUB-580)
+  [Lionel Schaub]
+
+- Add pricing information for Softlayer.
+  (LIBCLOUD-759, GITHUB-603)
+  [David Wilson]
 
 Storage
 ~~~~~~~
@@ -112,16 +135,16 @@ DNS
   [Alejandro Pereira]
 
 - Add new driver for DNSimple service (https://dnsimple.com/).
-  (GITHUB-575, LIBCLOUD-739)
-  [Alejandro Pereira]
+  (GITHUB-575, GITHUB-604, LIBCLOUD-739)
+  [Alejandro Pereira, Patrick Humpal]
 
 - Add new driver for PointDNS service (https://pointhq.com).
   (GITHUB-576, GITHUB-591, LIBCLOUD-740)
   [Alejandro Pereira]
 
 - Add new driver for Vultr DNS service (https://www.vultr.com).
-  (GITHUB-579, LIBCLOUD-745)
-  [Alejandro Pereira]
+  (GITHUB-579, GITHUB-596, LIBCLOUD-745)
+  [Alejandro Pereira, Janez Troha]
 
 - Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
   (GITHUB-581, LIBCLOUD-746)
@@ -129,6 +152,10 @@ DNS
 
 - Add new driver for Zonomi DNS hosting service (http://zonomi.com/).
   (GITHUB-582, LIBCLOUD-747)
+  [Oltjano Terpollari, Alejandro Pereira]
+
+- Add new driver for Durable DNS service (https://durabledns.com/).
+  (GITHUB-588, LIBCLOUD-748)
   [Oltjano Terpollari, Alejandro Pereira]
 
 Changes with Apache Libcloud 0.18.0

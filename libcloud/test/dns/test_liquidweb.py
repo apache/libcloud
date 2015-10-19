@@ -200,7 +200,10 @@ class LiquidWebTests(unittest.TestCase):
         self.assertEqual(record.data, '127.0.0.1')
         self.assertEqual(record.extra.get('ttl'), 300)
         LiquidWebMockHttp.type = ''
-        record1 = self.driver.update_record(record, extra={'ttl': 5600})
+        record1 = self.driver.update_record(record=record, name=record.name,
+                                            type=record.type,
+                                            data=record.data,
+                                            extra={'ttl': 5600})
         self.assertEqual(record1.id, '13')
         self.assertEqual(record1.type, 'A')
         self.assertEqual(record1.name, 'nerd.domain.com')

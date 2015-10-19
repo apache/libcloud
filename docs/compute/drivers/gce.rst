@@ -92,7 +92,7 @@ Internal Authentication
 
 To use GCE's internal metadata service to authenticate, simply specify
 your Project ID and let the driver handle the rest. See the
-`5. Using GCE Internal Authorization`_ example bellow.
+`5. Using GCE Internal Authorization`_ example below.
 
 Accessing Google Cloud services from your Libcloud nodes
 --------------------------------------------------------

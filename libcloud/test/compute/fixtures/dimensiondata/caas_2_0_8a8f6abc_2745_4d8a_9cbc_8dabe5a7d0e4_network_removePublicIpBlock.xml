@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-27T09:31:34.239-05:00/3e762559-c7f5-4d2b-abab-63306d406aa1">
+<operation>REMOVE_PUBLIC_IP_BLOCK</operation>
+<responseCode>OK</responseCode>
+<message>Public Ip Block bef4334a-844b-11e4-a91c-0030487e0302 has been
+removed successfully</message>
+</response>

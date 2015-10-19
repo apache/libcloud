@@ -80,6 +80,11 @@ API_ENDPOINTS = {
 DEFAULT_REGION = 'dd-na'
 
 
+class NetworkDomainServicePlan(object):
+    ESSENTIALS = "ESSENTIALS"
+    ADVANCED = "ADVANCED"
+
+
 class DimensionDataResponse(XmlResponse):
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
@@ -282,12 +287,13 @@ class DimensionDataNetworkDomain(object):
     DimensionData network domain with location.
     """
 
-    def __init__(self, id, name, description, location, status):
+    def __init__(self, id, name, description, location, status, plan):
         self.id = str(id)
         self.name = name
         self.description = description
         self.location = location
         self.status = status
+        self.plan = plan
 
     def __repr__(self):
         return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
@@ -296,20 +302,126 @@ class DimensionDataNetworkDomain(object):
                    self.status))
 
 
+class DimensionDataPublicIpBlock(object):
+    """
+    DimensionData Public IP Block with location.
+    """
+
+    def __init__(self, id, base_ip, size, location, network_domain,
+                 status):
+        self.id = str(id)
+        self.base_ip = base_ip
+        self.size = size
+        self.location = location
+        self.network_domain = network_domain
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s,'
+                 'size=%s, location=%s, status=%s>')
+                % (self.id, self.base_ip, self.size, self.location,
+                   self.status))
+
+
+class DimensionDataFirewallRule(object):
+    """
+    DimensionData Firewall Rule for a network domain
+    """
+
+    def __init__(self, id, name, action, location, network_domain,
+                 status, ip_version, protocol, source, destination,
+                 enabled):
+        self.id = str(id)
+        self.name = name
+        self.action = action
+        self.location = location
+        self.network_domain = network_domain
+        self.status = status
+        self.ip_version = ip_version
+        self.protocol = protocol
+        self.source = source
+        self.destination = destination
+        self.enabled = enabled
+
+    def __repr__(self):
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
+                 'action=%s, location=%s, status=%s>')
+                % (self.id, self.name, self.action, self.location,
+                   self.status))
+
+
+class DimensionDataFirewallAddress(object):
+    """
+    The source or destination model in a firewall rule
+    """
+    def __init__(self, any_ip, ip_address, ip_prefix_size,
+                 port_begin, port_end):
+        self.any_ip = any_ip
+        self.ip_address = ip_address
+        self.ip_prefix_size = ip_prefix_size
+        self.port_begin = port_begin
+        self.port_end = port_end
+
+
+class DimensionDataNatRule(object):
+    """
+    An IP NAT rule in a network domain
+    """
+    def __init__(self, id, network_domain, internal_ip, external_ip, status):
+        self.id = id
+        self.network_domain = network_domain
+        self.internal_ip = internal_ip
+        self.external_ip = external_ip
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataNatRule: id=%s, status=%s>')
+                % (self.id, self.status))
+
+
 class DimensionDataVlan(object):
     """
     DimensionData VLAN.
     """
 
-    def __init__(self, id, name, description, location, status):
+    def __init__(self, id, name, description, location, status,
+                 private_ipv4_range_address, private_ipv4_range_size):
+        """
+        Initialize an instance of ``DimensionDataVlan``
+
+        :param id: The ID of the VLAN
+        :type  id: ``string``
+
+        :param name: The name of the VLAN
+        :type  name: ``string``
+
+        :param description: Plan text description of the VLAN
+        :type  description: ``string``
+
+        :param location: The location (data center) of the VLAN
+        :type  location: ``NodeLocation``
+
+        :param status: The status of the VLAN
+        :type  status: ``DimensionDataStatus``
+
+        :param private_ipv4_range_address: The host address of the VLAN
+                                            IP space
+        :type  private_ipv4_range_address: ``string``
+
+        :param private_ipv4_range_address: The size (e.g. '24') of the VLAN
+                                            as a CIDR range size
+        :type  private_ipv4_range_address: ``string``
+        """
         self.id = str(id)
         self.name = name
         self.location = location
         self.description = description
         self.status = status
+        self.private_ipv4_range_address = private_ipv4_range_address
+        self.private_ipv4_range_size = private_ipv4_range_size
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
+        return (('<DimensionDataVlan: id=%s, name=%s, '
                  'description=%s, location=%s, status=%s>')
                 % (self.id, self.name, self.description,
                    self.location, self.status))
@@ -320,11 +432,16 @@ class DimensionDataPool(object):
     DimensionData VIP Pool.
     """
 
-    def __init__(self, id, name, description, status):
+    def __init__(self, id, name, description, status, load_balance_method,
+                 health_monitor_id, service_down_action, slow_ramp_time):
         self.id = str(id)
         self.name = name
         self.description = description
         self.status = status
+        self.load_balance_method = load_balance_method
+        self.health_monitor_id = health_monitor_id
+        self.service_down_action = service_down_action
+        self.slow_ramp_time = slow_ramp_time
 
     def __repr__(self):
         return (('<DimensionDataPool: id=%s, name=%s, '
@@ -355,11 +472,14 @@ class DimensionDataPoolMember(object):
 
 
 class DimensionDataVIPNode(object):
-    def __init__(self, id, name, status, ip):
+    def __init__(self, id, name, status, ip, connection_limit='10000',
+                 connection_rate_limit='10000'):
         self.id = str(id)
         self.name = name
         self.status = status
         self.ip = ip
+        self.connection_limit = connection_limit
+        self.connection_rate_limit = connection_rate_limit
 
     def __repr__(self):
         return (('<DimensionDataVIPNode: id=%s, name=%s, '

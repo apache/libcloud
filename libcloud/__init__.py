@@ -20,7 +20,7 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 __all__ = ['__version__', 'enable_debug']
-__version__ = '0.18.0'
+__version__ = '0.19.0'
 
 import os
 import codecs

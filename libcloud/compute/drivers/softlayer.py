@@ -150,6 +150,7 @@ class SoftLayerNodeDriver(NodeDriver):
     type = Provider.SOFTLAYER
 
     features = {'create_node': ['generates_password', 'ssh_key']}
+    api_name = 'softlayer'
 
     def _to_node(self, host):
         try:
@@ -438,7 +439,7 @@ class SoftLayerNodeDriver(NodeDriver):
             ram=size['ram'],
             disk=size['disk'],
             bandwidth=size.get('bandwidth'),
-            price=None,
+            price=self._get_size_price(str(id)),
             driver=self.connection.driver,
         )
 

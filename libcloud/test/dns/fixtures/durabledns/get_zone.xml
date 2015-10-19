@@ -1,0 +1,17 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <SOAP-ENV:Body>
+      <getZoneResponse>
+         <origin xsi:type="xsd:string">myzone.com.</origin>
+         <ns xsi:type="xsd:string">ns1.durabledns.com.</ns>
+         <mbox xsi:type="xsd:string">mail.myzone.com</mbox>
+         <serial xsi:type="xsd:int">1437473456</serial>
+         <refresh xsi:type="xsd:int">13000</refresh>
+         <retry xsi:type="xsd:int">7200</retry>
+         <expire xsi:type="xsd:int">1300</expire>
+         <minimum xsi:type="xsd:int">13</minimum>
+         <ttl xsi:type="xsd:int">1300</ttl>
+         <xfer xsi:type="xsd:string">127.0.0.1/32</xfer>
+         <update_acl xsi:type="xsd:string">127.0.0.1/32,127.0.0.100/32</update_acl>
+      </getZoneResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

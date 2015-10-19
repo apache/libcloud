@@ -8,7 +8,7 @@ Prerequisites
 
 .. note::
 
-    If you use the tox method described bellow you don't need to install any
+    If you use the tox method described below you don't need to install any
     dependencies, because tox automatically installs them for you in an virtual
     environment.
 

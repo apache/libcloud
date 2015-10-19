@@ -3489,70 +3489,108 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   params={'name': name},
                                   method='GET')['success']
 
-    def ex_authorize_security_group_ingress(self, securitygroupname,
-                                            protocol, cidrlist, startport,
-                                            endport=None):
+    def ex_authorize_security_group_ingress(self, securitygroupname, protocol,
+                                            cidrlist, startport=None,
+                                            endport=None, icmptype=None,
+                                            icmpcode=None, **kwargs):
         """
         Creates a new Security Group Ingress rule
 
-        :param domainid: An optional domainId for the security group.
-                         If the account parameter is used,
-                         domainId must also be used.
-        :type domainid: ``str``
+        :param   securitygroupname: The name of the security group.
+                                    Mutually exclusive with securitygroupid.
+        :type    securitygroupname: ``str``
 
-        :param startport: Start port for this ingress rule
-        :type  startport: ``int``
+        :param   protocol: Can be TCP, UDP or ICMP.
+                           Sometime other protocols can be used like AH, ESP
+                           or GRE.
+        :type    protocol: ``str``
 
-        :param securitygroupid: The ID of the security group.
-                                Mutually exclusive with securityGroupName
-                                parameter
-        :type  securitygroupid: ``str``
+        :param   cidrlist: Source address CIDR for which this rule applies.
+        :type    cidrlist: ``str``
 
-        :param cidrlist: The cidr list associated
-        :type  cidrlist: ``list``
+        :param   startport: Start port of the range for this ingress rule.
+                            Applies to protocols TCP and UDP.
+        :type    startport: ``int``
 
-        :param usersecuritygrouplist: user to security group mapping
-        :type  usersecuritygrouplist: ``dict``
+        :param   endport: End port of the range for this ingress rule.
+                          It can be None to set only one port.
+                          Applies to protocols TCP and UDP.
+        :type    endport: ``int``
 
-        :param securitygroupname: The name of the security group.
-                                  Mutually exclusive with
-                                  securityGroupName parameter
-        :type  securitygroupname: ``str``
+        :param   icmptype: Type of the ICMP packet (eg: 8 for Echo Request).
+                           -1 or None means "all types".
+                           Applies to protocol ICMP.
+        :type    icmptype: ``int``
 
-        :param account: An optional account for the security group.
-                        Must be used with domainId.
-        :type  account: ``str``
+        :param   icmpcode: Code of the ICMP packet for the specified type.
+                           If the specified type doesn't require a code set
+                           this value to 0.
+                           -1 or None means "all codes".
+                           Applies to protocol ICMP.
+        :type    icmpcode: ``int``
 
-        :param icmpcode: Error code for this icmp message
-        :type  icmpcode: ``int``
+        :keyword   account: An optional account for the security group.
+                            Must be used with domainId.
+        :type      account: ``str``
 
-        :param protocol: TCP is default. UDP is the other supported protocol
-        :type  protocol: ``str``
+        :keyword domainid: An optional domainId for the security group.
+                           If the account parameter is used, domainId must also
+                           be used.
 
-        :param icmptype: type of the icmp message being sent
-        :type  icmptype: ``int``
+        :keyword projectid: An optional project of the security group
+        :type    projectid: ``str``
 
-        :param projectid: An optional project of the security group
-        :type  projectid: ``str``
+        :keyword securitygroupid: The ID of the security group.
+                                  Mutually exclusive with securitygroupname
+        :type    securitygroupid: ``str``
 
-        :param endport: end port for this ingress rule
-        :type  endport: ``int``
+        :keyword usersecuritygrouplist: User to security group mapping
+        :type    usersecuritygrouplist: ``dict``
 
-        :rtype: ``list``
+        :rtype: ``dict``
         """
 
+        args = kwargs.copy()
         protocol = protocol.upper()
-        if protocol not in ('TCP', 'ICMP'):
-            raise LibcloudError('Only TCP and ICMP are allowed')
 
-        args = {
+        args.update({
             'securitygroupname': securitygroupname,
             'protocol': protocol,
-            'startport': int(startport),
             'cidrlist': cidrlist
-        }
-        if endport is None:
-            args['endport'] = int(startport)
+        })
+
+        if protocol not in ('TCP', 'UDP') and \
+                (startport is not None or endport is not None):
+            raise LibcloudError('"startport" and "endport" are only valid '
+                                'with protocol TCP or UDP.')
+
+        if protocol != 'ICMP' and \
+                (icmptype is not None or icmpcode is not None):
+            raise LibcloudError('"icmptype" and "icmpcode" are only valid '
+                                'with protocol ICMP.')
+
+        if protocol in ('TCP', 'UDP'):
+            if startport is None:
+                raise LibcloudError('Protocols TCP and UDP require at least '
+                                    '"startport" to be set.')
+            if startport is not None and endport is None:
+                endport = startport
+
+            args.update({
+                'startport': startport,
+                'endport': endport
+            })
+
+        if protocol == 'ICMP':
+            if icmptype is None:
+                icmptype = -1
+            if icmpcode is None:
+                icmpcode = -1
+
+            args.update({
+                'icmptype': icmptype,
+                'icmpcode': icmpcode
+            })
 
         return self._async_request(command='authorizeSecurityGroupIngress',
                                    params=args,

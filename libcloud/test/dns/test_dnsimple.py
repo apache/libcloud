@@ -94,7 +94,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         self.assertEqual(record1.type, RecordType.A)
         self.assertEqual(record1.data, '1.2.3.4')
         self.assertHasKeys(record1.extra, ['ttl', 'created_at', 'updated_at',
-                                           'domain_id', 'prio'])
+                                           'domain_id', 'priority'])
 
         record2 = records[1]
         self.assertEqual(record2.id, '2')
@@ -102,7 +102,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         self.assertEqual(record2.type, RecordType.CNAME)
         self.assertEqual(record2.data, 'example.com')
         self.assertHasKeys(record2.extra, ['ttl', 'created_at', 'updated_at',
-                                           'domain_id', 'prio'])
+                                           'domain_id', 'priority'])
 
         record3 = records[2]
         self.assertEqual(record3.id, '32')
@@ -110,7 +110,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         self.assertEqual(record3.type, RecordType.MX)
         self.assertEqual(record3.data, 'mail.example.com')
         self.assertHasKeys(record3.extra, ['ttl', 'created_at', 'updated_at',
-                                           'domain_id', 'prio'])
+                                           'domain_id', 'priority'])
 
     def test_get_zone_success(self):
         zone1 = self.driver.get_zone(zone_id='1')
@@ -133,7 +133,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 'example.com')
         self.assertHasKeys(record.extra, ['ttl', 'created_at', 'updated_at',
-                                          'domain_id', 'prio'])
+                                          'domain_id', 'priority'])
 
     def test_create_zone_success(self):
         DNSimpleDNSMockHttp.type = 'CREATE'
@@ -160,7 +160,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.MX)
         self.assertEqual(record.data, 'mail.example.com')
         self.assertHasKeys(record.extra, ['ttl', 'created_at', 'updated_at',
-                                          'domain_id', 'prio'])
+                                          'domain_id', 'priority'])
 
     def test_update_record_success(self):
         record = self.driver.get_record(zone_id='1',
@@ -168,6 +168,7 @@ class DNSimpleDNSTests(unittest.TestCase):
         DNSimpleDNSMockHttp.type = 'UPDATE'
         extra = {'ttl': 4500}
         record1 = self.driver.update_record(record=record, name='www',
+                                            type=record.type,
                                             data='updated.com',
                                             extra=extra)
         self.assertEqual(record.data, 'example.com')

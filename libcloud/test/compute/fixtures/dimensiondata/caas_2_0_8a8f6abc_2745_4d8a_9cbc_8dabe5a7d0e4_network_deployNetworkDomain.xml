@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response requestId="na/2015-01-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e" xmlns="urn:didata.com:api:cloud:types">
+<operation>DEPLOY_NETWORK_DOMAIN</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to Deploy Network Domain 'A Network Domain' has been
+accepted and is being processed</message>
+<info name="networkDomainId" value="f14a871f-9a25-470c-aef8-51e13202e1aa"/>
+</response>

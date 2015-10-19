@@ -158,12 +158,12 @@ class VultrDNSDriver(DNSDriver):
 
         return ret_record
 
-    def create_zone(self, zone_id, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
         """
         Returns a `Zone` object.
 
-        :param zone_id: Zone domain name, (e.g. example.com).
-        :type zone_id: ``str``
+        :param domain: Zone domain name, (e.g. example.com).
+        :type domain: ``str``
 
         :param type: Zone type (master / slave).
         :type  type: ``str``
@@ -179,16 +179,16 @@ class VultrDNSDriver(DNSDriver):
             serverip = extra['serverip']
 
         params = {'api_key': self.key}
-        data = urlencode({'domain': zone_id, 'serverip': serverip})
+        data = urlencode({'domain': domain, 'serverip': serverip})
         action = '/v1/dns/create_domain'
         zones = self.list_zones()
-        if self.ex_zone_exists(zone_id, zones):
+        if self.ex_zone_exists(domain, zones):
             raise ZoneAlreadyExistsError(value='', driver=self,
-                                         zone_id=zone_id)
+                                         zone_id=domain)
 
         self.connection.request(params=params, action=action, data=data,
                                 method='POST')
-        zone = Zone(id=zone_id, domain=zone_id, type=type, ttl=ttl,
+        zone = Zone(id=domain, domain=domain, type=type, ttl=ttl,
                     driver=self, extra=extra)
 
         return zone
@@ -228,20 +228,17 @@ class VultrDNSDriver(DNSDriver):
                 raise RecordAlreadyExistsError(value='', driver=self,
                                                record_id=record.id)
 
-        if extra and extra.get('priority'):
-            priority = int(extra['priority'])
-
         MX = self.RECORD_TYPE_MAP.get('MX')
         SRV = self.RECORD_TYPE_MAP.get('SRV')
 
-        post_data = {'domain': zone.domain, 'name': name,
-                     'type': self.RECORD_TYPE_MAP.get('type'), 'data': data}
-
-        if type == MX or type == SRV:
-            post_data['priority'] = priority
+        if extra and extra.get('priority'):
+            priority = int(extra['priority'])
 
         post_data = {'domain': zone.domain, 'name': name,
                      'type': self.RECORD_TYPE_MAP.get(type), 'data': data}
+
+        if type == MX or type == SRV:
+            post_data['priority'] = priority
 
         encoded_data = urlencode(post_data)
         params = {'api_key': self.key}

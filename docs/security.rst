@@ -9,9 +9,9 @@ Reporting a vulnerability
 .. note::
 
     Please do **not** report security issues using our public JIRA instance. Use
-    the private mailing list described bellow.
+    the private mailing list described below.
 
-If you believe you found a security issue or a vulnerability, please send a
+If you believe you've found a security issue or a vulnerability, please send a
 description of it to our private mailing list at security@libcloud.apache.org
 
 You are also encouraged to encrypt this email using PGP. Keys of our developers

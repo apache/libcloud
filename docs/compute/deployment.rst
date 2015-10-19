@@ -28,7 +28,7 @@ Deployment module exposes multiple classes which make running common
 bootstrap tasks such as installing a file and running a shell command
 on a server easier.
 
-All the available classes are listed bellow.
+All the available classes are listed below.
 
 .. autoclass:: libcloud.compute.deployment.SSHKeyDeployment
 .. autoclass:: libcloud.compute.deployment.FileDeployment
@@ -70,12 +70,12 @@ method and couple of additional arguments. The most important ones are
   method docstring.
 
 Some examples which demonstrate how this method can be used are displayed
-bellow.
+below.
 
 Run a single deploy step using ScriptDeployment class
 -----------------------------------------------------
 
-The example bellow runs a single step and installs your public key on the
+The example below runs a single step and installs your public key on the
 server.
 
 .. literalinclude:: /examples/compute/deployment_single_step_install_public_key.py
@@ -84,7 +84,7 @@ server.
 Run multiple deploy steps using MultiStepDeployment class
 ---------------------------------------------------------
 
-The example bellow runs two steps on the server using ``MultiStepDeployment``
+The example below runs two steps on the server using ``MultiStepDeployment``
 class. As a first step it installs you SSH key and as a second step it runs a
 shell script.
 

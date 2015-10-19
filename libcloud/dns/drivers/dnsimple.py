@@ -111,12 +111,18 @@ class DNSimpleDNSDriver(DNSDriver):
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
-    def create_zone(self, domain, extra=None):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
         """
         Create a new zone.
 
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
+
+        :param type: Zone type (All zones are master by design).
+        :type  type: ``str``
+
+        :param ttl: TTL for new records. (This is not really used)
+        :type  ttl: ``int``
 
         :param extra: Extra attributes (driver specific). (optional)
         :type extra: ``dict``
@@ -130,8 +136,8 @@ class DNSimpleDNSDriver(DNSDriver):
         if extra is not None:
             r_json.update(extra)
         r_data = json.dumps({'domain': r_json})
-        response = self.connection.request('/v1/domains', method='POST',
-                                           data=r_data)
+        response = self.connection.request(
+            '/v1/domains', method='POST', data=r_data)
         zone = self._to_zone(response.object)
         return zone
 
@@ -168,7 +174,7 @@ class DNSimpleDNSDriver(DNSDriver):
         record = self._to_record(response.object, zone=zone)
         return record
 
-    def update_record(self, record, name, data, extra=None):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
@@ -180,6 +186,9 @@ class DNSimpleDNSDriver(DNSDriver):
                      name, you should specify empty string ('') for this
                      argument.
         :type  name: ``str``
+
+        :param type: DNS record type (A, AAAA, ...).
+        :type  type: :class:`RecordType`
 
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
@@ -280,5 +289,5 @@ class DNSimpleDNSDriver(DNSDriver):
                  'created_at': record.get('created_at'),
                  'updated_at': record.get('updated_at'),
                  'domain_id': record.get('domain_id'),
-                 'prio': record.get('prio')}
+                 'priority': record.get('prio')}
         return Record(id, name, type, data, zone, self, extra=extra)

@@ -21,10 +21,10 @@ Examples
 Unlike other OpenStack based providers, HP cloud also requires you to specify
 tenant name when connecting to their cloud. You can do that by passing
 ``tenant_name`` argument to the driver constructor as shown in the code example
-bellow.
+below.
 
 This attribute represents a project name and can be obtained in the `HP Cloud
-console`_ as shown in the picture bellow.
+console`_ as shown in the picture below.
 
 .. figure:: /_static/images/misc/hp_cloud_console_projects.jpg
     :align: center
