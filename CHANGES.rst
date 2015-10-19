@@ -86,6 +86,10 @@ Compute
   (LIBCLOUD-749, GITHUB-580)
   [Lionel Schaub]
 
+- Add pricing information for Softlayer.
+  (LIBCLOUD-759, GITHUB-603)
+  [David Wilson]
+
 Storage
 ~~~~~~~
 
