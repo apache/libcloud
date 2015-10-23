@@ -36,6 +36,10 @@ General
 Compute
 ~~~~~~~
 
+- Fixed malformed XML requests with Dimension Data driver.
+  (LIBCLOUD-760, GITHUB-610)
+  [Anthony Shaw]
+
 - Update list of scopes for Google Compute Engine driver.
   (GITHUB-607)
   [Otto Bretz]

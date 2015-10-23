@@ -12,6 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 import sys
 import unittest
 from libcloud.utils.py3 import httplib
@@ -375,6 +381,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(result)
 
 
+class InvalidRequestError(Exception):
+    def __init__(self, tag):
+        super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
+
+
 class DimensionDataMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('dimensiondata')
@@ -473,21 +484,33 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_INPROGRESS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_RESOURCEBUSY.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}rebootServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_INPROGRESS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}rebootServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_RESOURCEBUSY.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
@@ -503,36 +526,57 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}startServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}startServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}resetServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}powerOffServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}powerOffServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
@@ -548,6 +592,9 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deployServer":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -558,6 +605,9 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deployNetworkDomain":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -568,16 +618,25 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editNetworkDomain":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteNetworkDomain":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deployVlan":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -588,21 +647,33 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editVlan":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteVlan":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}expandVlan":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}addPublicIpBlock":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -623,6 +694,9 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}removePublicIpBlock":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -633,6 +707,9 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createFirewallRule":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -643,16 +720,25 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editFirewallRule":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteFirewallRule":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createNatRule":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -668,16 +754,25 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteNatRule":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}addNic":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}removeNic":
+            raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
