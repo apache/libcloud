@@ -302,6 +302,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(sizes_all), 100)
         self.assertEqual(sizes[0].name, 'f1-micro')
         self.assertEqual(sizes[0].extra['zone'].name, 'us-central1-a')
+        for size in sizes:
+            self.assertTrue(size.price > 0.0)
         names = [s.name for s in sizes_all]
         self.assertEqual(names.count('n1-standard-1'), 5)
 
