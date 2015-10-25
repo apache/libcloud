@@ -165,31 +165,13 @@ def str2dicts(data):
     becomes:
     [{'cpu': '1100', 'ram': '640'}, {'cpu': '2200', 'ram': '1024'}]
     """
-    list_data = []
-    list_data.append({})
-    d = list_data[-1]
-
-    lines = data.split('\n')
-    for line in lines:
-        line = line.strip()
-
-        if not line:
-            d = {}
-            list_data.append(d)
-            d = list_data[-1]
-            continue
-
-        whitespace = line.find(' ')
-
-        if not whitespace:
-            continue
-
-        key = line[0:whitespace]
-        value = line[whitespace + 1:]
-        d.update({key: value})
-
-    list_data = [val for val in list_data if val != {}]
-    return list_data
+    if data is not None and data != "":
+        data_blocks = data.split("\n\n")
+        line_list = [line.rstrip('\n').lstrip('\n').split('\n')
+                     for line in data_blocks]
+        return [dict(key_value_string.split(' ') for key_value_string in line)
+                for line in line_list]
+    return list({})
 
 
 def str2list(data):
