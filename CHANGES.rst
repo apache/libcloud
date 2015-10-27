@@ -15,6 +15,10 @@ Compute
   (GITHUB-617)
   [Wido den Hollander]
 
+- Return proper volume state for CloudStack volumes.
+  (GITHUB-615, LIBCLOUD-764)
+  [Wido den Hollander]
+    
 Storage
 ~~~~~~~
 
