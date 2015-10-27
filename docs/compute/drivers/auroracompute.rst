@@ -23,6 +23,24 @@ The AuroraCompute driver is based on the CloudStack driver. Please refer to
 information.
 
 
+Instantiating a driver
+----------------------
+
+When you instantiate a driver you need to pass the following arguments to the
+driver constructor:
+
+* ``key`` - Your AuroraCompute API key
+* ``secret`` - Your AuroraCompute secret key
+
+You can find your 'key' and 'secret' in the AuroraCompute `Control Panel`_ under
+your users.
+
+With these credentials you can instantiate a driver:
+
+.. literalinclude:: /examples/compute/auroracompute/instantiate_driver.py
+   :language: python
+
+
 API Docs
 --------
 
@@ -31,3 +49,4 @@ API Docs
     :inherited-members:
 
 .. _`PCextreme B.V.`: https://www.pcextreme.nl/
+.. _`Control Panel`: https://cp.pcextreme.nl/
