@@ -16,7 +16,7 @@ The datacenters / availability zones are located in:
 .. figure:: /_static/images/provider_logos/pcextreme.png
     :align: center
     :width: 300
-    :target: https://www.pcextreme.nl/en/aurora/compute
+    :target: https://www.pcextreme.com/aurora/compute
 
 The AuroraCompute driver is based on the CloudStack driver. Please refer to
 :doc:`CloudStack Compute Driver Documentation <cloudstack>` page for more
@@ -41,6 +41,23 @@ With these credentials you can instantiate a driver:
    :language: python
 
 
+Using a different region
+------------------------
+
+By default the region AMS (Amsterdam) is selected by the driver.
+
+AuroraCompute supports multiple regions and when instantiating the driver you can
+choose a region.
+
+Keep in mind that each region uses different credentials. These can be found in
+the `Control Panel`_ under your users.
+
+In this example we select the Miami (MIA) region:
+
+.. literalinclude:: /examples/compute/auroracompute/instantiate_driver_region.py
+   :language: python
+
+
 API Docs
 --------
 
@@ -48,5 +65,5 @@ API Docs
     :members:
     :inherited-members:
 
-.. _`PCextreme B.V.`: https://www.pcextreme.nl/
+.. _`PCextreme B.V.`: https://www.pcextreme.com/
 .. _`Control Panel`: https://cp.pcextreme.nl/
