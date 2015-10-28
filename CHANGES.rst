@@ -22,6 +22,10 @@ Compute
 - Return proper volume state for CloudStack volumes.
   (GITHUB-615, LIBCLOUD-764)
   [Wido den Hollander]
+
+- Add support for multiple regions in Aurora compute driver
+  (GITHUB-623)
+  [Wido den Hollander]
     
 Storage
 ~~~~~~~
