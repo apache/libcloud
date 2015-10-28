@@ -2168,8 +2168,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                          method='GET')
 
         list_volumes = []
+
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['volume']
-        for vol in volumes['volume']:
+        for vol in volumes.get('volume', []):
             extra = self._get_extra_dict(vol, extra_map)
 
             if 'tags' in vol:
