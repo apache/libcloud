@@ -9,7 +9,7 @@ All data is stored on servers in the European Union.
 .. figure:: /_static/images/provider_logos/pcextreme.png
     :align: center
     :width: 300
-    :target: https://www.pcextreme.nl/en/aurora/objects
+    :target: https://www.pcextreme.com/aurora/objects
 
 Protocol
 ------------------
@@ -21,6 +21,19 @@ It however does not support CDN support. Calling any of the CDN functions will r
 a LibcloudError.
 
 As a backend AuroraObjects uses `Ceph`_ for storage.
+
+
+Instantiating a driver
+----------------------
+
+When instantiating the AuroraObjects you need a access key and secret key.
+These can be obtained from the `Control Panel`_ of AuroraObjects.
+
+With these credentials you can instantiate the driver:
+
+.. literalinclude:: /examples/storage/auroraobjects/instantiate.py
+   :language: python
+
 
 Multipart uploads
 ------------------
@@ -49,9 +62,10 @@ Please refer to the Amazon S3 storage driver documentation for examples.
 API Docs
 --------
 
-.. autoclass:: libcloud.compute.drivers.auroraobjects.AuroraObjectsStorageDriver
+.. autoclass:: libcloud.storage.drivers.auroraobjects.AuroraObjectsStorageDriver
     :members:
     :inherited-members:
 
-.. _`PCextreme B.V.`: https://www.pcextreme.nl/
+.. _`PCextreme B.V.`: https://www.pcextreme.com/
 .. _`Ceph`: https://ceph.com/
+.. _`Control Panel`: https://cp.pcextreme.nl/
