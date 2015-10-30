@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+import hmac
 import os
 import sys
 import unittest
+
+from hashlib import sha1
 
 try:
     from lxml import etree as ET
@@ -30,16 +34,19 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
+from libcloud.storage.drivers.s3 import BaseS3Connection
 from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
 from libcloud.storage.drivers.s3 import S3APSEStorageDriver
 from libcloud.storage.drivers.s3 import S3APNEStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
+from libcloud.utils.py3 import b
 
 from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
@@ -458,6 +465,26 @@ class S3Tests(unittest.TestCase):
         self.driver = self.driver_type(*self.driver_args, token='asdf')
         self.driver.list_containers()
 
+    def test_signature(self):
+        secret_key = 'ssssh!'
+        sig = BaseS3Connection.get_auth_signature(
+            method='GET',
+            headers={'foo': 'bar',
+                     'content-type': 'TYPE!',
+                     'x-aws-test': 'test_value'},
+            params={'hello': 'world'},
+            expires=None,
+            secret_key=secret_key,
+            path='/',
+            vendor_prefix='x-aws'
+        )
+        string_to_sign = 'GET\n\nTYPE!\n\nx-aws-test:test_value\n/'
+        b64_hmac = base64.b64encode(
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
+        )
+        expected_sig = b64_hmac.decode('utf-8')
+        self.assertEqual(sig, expected_sig)
+
     def test_bucket_is_located_in_different_region(self):
         self.mock_response_klass.type = 'DIFFERENT_REGION'
         try:
@@ -571,12 +598,12 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.extra['content_type'], 'application/zip')
         self.assertEqual(obj.meta_data['rabbits'], 'monkeys')
 
-    def test_create_container_invalid_name(self):
-        # invalid container name
+    def test_create_container_bad_request(self):
+        # invalid container name, returns a 400 bad request
         self.mock_response_klass.type = 'INVALID_NAME'
         try:
             self.driver.create_container(container_name='new_container')
-        except InvalidContainerNameError:
+        except ContainerError:
             pass
         else:
             self.fail('Exception was not thrown')
