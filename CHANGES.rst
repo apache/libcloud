@@ -1,6 +1,24 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+General
+~~~~~~~
+
+Compute
+~~~~~~~
+
+Storage
+~~~~~~~
+
+Loadbalancer
+~~~~~~~~~~~~
+
+DNS
+~~~
+
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
 
