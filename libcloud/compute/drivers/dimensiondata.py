@@ -486,10 +486,10 @@ class DimensionDataNodeDriver(NodeDriver):
             ET.SubElement(create_node, "description").text = description
         ET.SubElement(create_node, "location").text = location.id
 
-        response = self.connection.request_with_orgId_api_1(
+        self.connection.request_with_orgId_api_1(
             'networkWithLocation',
             method='POST',
-            data=ET.tostring(create_node)).object
+            data=ET.tostring(create_node))
 
         # MCP1 API does not return the ID, but name is unique for location
         network = list(
@@ -582,7 +582,8 @@ class DimensionDataNodeDriver(NodeDriver):
             or "ADVANCED"
         :type       service_plan: ``str``
 
-        :param      description: An additional description of the network domain
+        :param      description: An additional description of
+                                 the network domain
         :type       description: ``str``
 
         :return: an instance of `DimensionDataNetworkDomain`
