@@ -217,6 +217,22 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_ex_create_network(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_create_network(location, "Test Network", "test")
+        self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
+        self.assertEqual(net.name, "Test Network")
+
+    def test_ex_delete_network(self):
+        net = self.driver.ex_list_networks()[0]
+        result = self.driver.ex_delete_network(net)
+        self.assertTrue(result)
+
+    def test_ex_rename_network(self):
+        net = self.driver.ex_list_networks()[0]
+        result = self.driver.ex_rename_network(net, "barry")
+        self.assertTrue(result)
+
     def test_ex_create_network_domain(self):
         location = self.driver.ex_get_location_by_id('NA9')
         plan = NetworkDomainServicePlan.ADVANCED
@@ -474,8 +490,18 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation(self, method, url, body, headers):
+        if method is "POST":
+            request = ET.fromstring(body)
+            if request.tag != "{http://oec.api.opsource.net/schemas/network}NewNetworkWithLocation":
+                raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_4bba37be_506f_11e3_b29c_001517c4643e(self, method,
+                                                                                                   url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_4bba37be_506f_11e3_b29c_001517c4643e.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):

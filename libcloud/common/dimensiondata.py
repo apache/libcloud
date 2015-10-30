@@ -33,6 +33,7 @@ ORGANIZATION_NS = NAMESPACE_BASE + "/organization"
 SERVER_NS = NAMESPACE_BASE + "/server"
 NETWORK_NS = NAMESPACE_BASE + "/network"
 DIRECTORY_NS = NAMESPACE_BASE + "/directory"
+GENERAL_NS = NAMESPACE_BASE + "/general"
 
 # API 2.0 Namespaces and URNs
 TYPES_URN = "urn:didata.com:api:cloud:types"

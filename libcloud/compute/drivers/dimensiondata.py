@@ -33,11 +33,9 @@ from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
-from libcloud.common.dimensiondata import API_ENDPOINTS
-from libcloud.common.dimensiondata import DEFAULT_REGION
+from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import SERVER_NS
-from libcloud.common.dimensiondata import NETWORK_NS
+from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
@@ -464,6 +462,75 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_1('networkWithLocation',
                                       params=params).object
         return self._to_networks(response)
+
+    def ex_create_network(self, location, name, description=None):
+        """
+        Create a new network in an MCP 1.0 location
+
+        :param   location: The target location (MCP1)
+        :type    location: :class:`NodeLocation`
+
+        :param   name: The name of the network
+        :type    name: ``str``
+
+        :param   description: Additional description of the network
+        :type    description: ``str``
+
+        :return: A new instance of `DimensionDataNetwork`
+        :rtype:  Instance of :class:`DimensionDataNetwork`
+        """
+        create_node = ET.Element('NewNetworkWithLocation',
+                                 {'xmlns': NETWORK_NS})
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "location").text = location.id
+
+        response = self.connection.request_with_orgId_api_1(
+            'networkWithLocation',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        # MCP1 API does not return the ID, but name is unique for location
+        network = list(
+            filter(lambda x: x.name == name,
+                   self.ex_list_networks(location)))[0]
+
+        return network
+
+    def ex_delete_network(self, network):
+        """
+        Delete a network from an MCP 1 data center
+
+        :param  network: The network to delete
+        :type   network: :class:`DimensionDataNetwork`
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s?delete' % network.id,
+            method='GET').object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
+
+    def ex_rename_network(self, network, new_name):
+        """
+        Rename a network in MCP 1 data center
+
+        :param  network: The network to rename
+        :type   network: :class:`DimensionDataNetwork`
+
+        :param  new_name: The new name of the network
+        :type   new_name: ``str``
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s' % network.id,
+            method='POST',
+            data='name=%s' % new_name).object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
 
     def ex_get_network_domain(self, network_domain_id):
         """
