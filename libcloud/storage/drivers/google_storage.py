@@ -20,113 +20,159 @@ import hmac
 from email.utils import formatdate
 from hashlib import sha1
 
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey
-
+from libcloud.common.google import GoogleAuthType
+from libcloud.common.google import GoogleBaseConnection
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver, S3Response
 from libcloud.storage.drivers.s3 import S3RawResponse
+from libcloud.utils.py3 import b
 
+# Docs are a lie. Actual namespace returned is different that the one listed
+# in the docs.
 SIGNATURE_IDENTIFIER = 'GOOG1'
-
-# Docs are a lie. Actual namespace returned is different that the one listed in
-# the docs.
-AUTH_HOST = 'commondatastorage.googleapis.com'
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://doc.s3.amazonaws.com/%s' % (API_VERSION)
 
 
-class GoogleStorageConnection(ConnectionUserAndKey):
+def _get_aws_auth_param(method, headers, params, expires, secret_key,
+                        path='/'):
+    # TODO: Refactor and re-use in S3 driver
     """
-    Repersents a single connection to the Google storage API endpoint.
+    Signature = URL-Encode( Base64( HMAC-SHA1( YourSecretAccessKeyID,
+                            UTF-8-Encoding-Of( StringToSign ) ) ) );
+    StringToSign = HTTP-VERB + "\n" +
+        Content-MD5 + "\n" +
+        Content-Type + "\n" +
+        Date + "\n" +
+        CanonicalizedHeaders +
+        CanonicalizedResource;
+    """
+    special_header_keys = ['content-md5', 'content-type', 'date']
+    special_header_values = {}
+    extension_header_values = {}
+
+    headers_copy = copy.deepcopy(headers)
+    for key, value in list(headers_copy.items()):
+        if key.lower() in special_header_keys:
+            if key.lower() == 'date':
+                value = value.strip()
+            else:
+                value = value.lower().strip()
+            special_header_values[key.lower()] = value
+        elif key.lower().startswith('x-goog-'):
+            extension_header_values[key.lower()] = value.strip()
+
+    if 'content-md5' not in special_header_values:
+        special_header_values['content-md5'] = ''
+
+    if 'content-type' not in special_header_values:
+        special_header_values['content-type'] = ''
+
+    keys_sorted = list(special_header_values.keys())
+    keys_sorted.sort()
+
+    buf = [method]
+    for key in keys_sorted:
+        value = special_header_values[key]
+        buf.append(value)
+    string_to_sign = '\n'.join(buf)
+
+    keys_sorted = list(extension_header_values.keys())
+    keys_sorted.sort()
+
+    extension_header_string = []
+    for key in keys_sorted:
+        value = extension_header_values[key]
+        extension_header_string.append('%s:%s' % (key, value))
+    extension_header_string = '\n'.join(extension_header_string)
+
+    values_to_sign = []
+    for value in [string_to_sign, extension_header_string, path]:
+        if value:
+            values_to_sign.append(value)
+
+    string_to_sign = '\n'.join(values_to_sign)
+    b64_hmac = base64.b64encode(
+        hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
+    )
+    return b64_hmac.decode('utf-8')
+
+
+class GoogleStorageConnection(GoogleBaseConnection):
+    """
+    Represents a single connection to the Google storage API endpoint.
+
+    This can either authenticate via the Google OAuth2 methods or via
+    the S3 interoperability method.
     """
 
-    host = AUTH_HOST
+    host = 'storage.googleapis.com'
     responseCls = S3Response
     rawResponseCls = S3RawResponse
+    PROJECT_ID_HEADER = 'x-goog-project-id'
+
+    def __init__(self, user_id, key, secure, auth_type=None,
+                 credential_file=None, **kwargs):
+        super(GoogleStorageConnection, self).__init__(
+            user_id, key, secure=secure, auth_type=auth_type,
+            credential_file=credential_file, **kwargs)
 
     def add_default_headers(self, headers):
-        date = formatdate(usegmt=True)
-        headers['Date'] = date
+        if self.auth_type == GoogleAuthType.GCS_S3:
+            date = formatdate(usegmt=True)
+            headers['Date'] = date
+        else:
+            headers = super(GoogleStorageConnection,
+                            self).add_default_headers(headers)
+        project = self.get_project()
+        if project:
+            headers[self.PROJECT_ID_HEADER] = project
         return headers
 
+    def encode_data(self, data):
+        if self.auth_type == GoogleAuthType.GCS_S3:
+            return data
+        return super(GoogleStorageConnection, self).encode_data(data)
+
+    def get_project(self):
+        return getattr(self.driver, 'project')
+
     def pre_connect_hook(self, params, headers):
-        signature = self._get_aws_auth_param(method=self.method,
-                                             headers=headers,
-                                             params=params,
-                                             expires=None,
-                                             secret_key=self.key,
-                                             path=self.action)
-        headers['Authorization'] = '%s %s:%s' % (SIGNATURE_IDENTIFIER,
-                                                 self.user_id, signature)
+        if self.auth_type == GoogleAuthType.GCS_S3:
+            signature = _get_aws_auth_param(method=self.method,
+                                            headers=headers,
+                                            params=params,
+                                            expires=None,
+                                            secret_key=self.key,
+                                            path=self.action)
+            headers['Authorization'] = '%s %s:%s' % (SIGNATURE_IDENTIFIER,
+                                                     self.user_id, signature)
+        else:
+            params, headers = super(GoogleStorageConnection,
+                                    self).pre_connect_hook(params, headers)
         return params, headers
-
-    def _get_aws_auth_param(self, method, headers, params, expires,
-                            secret_key, path='/'):
-        # TODO: Refactor and re-use in S3 driver
-        """
-        Signature = URL-Encode( Base64( HMAC-SHA1( YourSecretAccessKeyID,
-                                UTF-8-Encoding-Of( StringToSign ) ) ) );
-
-        StringToSign = HTTP-VERB + "\n" +
-            Content-MD5 + "\n" +
-            Content-Type + "\n" +
-            Date + "\n" +
-            CanonicalizedHeaders +
-            CanonicalizedResource;
-        """
-        special_header_keys = ['content-md5', 'content-type', 'date']
-        special_header_values = {}
-        extension_header_values = {}
-
-        headers_copy = copy.deepcopy(headers)
-        for key, value in list(headers_copy.items()):
-            if key.lower() in special_header_keys:
-                if key.lower() == 'date':
-                    value = value.strip()
-                else:
-                    value = value.lower().strip()
-                special_header_values[key.lower()] = value
-            elif key.lower().startswith('x-goog-'):
-                extension_header_values[key.lower()] = value.strip()
-
-        if 'content-md5' not in special_header_values:
-            special_header_values['content-md5'] = ''
-
-        if 'content-type' not in special_header_values:
-            special_header_values['content-type'] = ''
-
-        keys_sorted = list(special_header_values.keys())
-        keys_sorted.sort()
-
-        buf = [method]
-        for key in keys_sorted:
-            value = special_header_values[key]
-            buf.append(value)
-        string_to_sign = '\n'.join(buf)
-
-        keys_sorted = list(extension_header_values.keys())
-        keys_sorted.sort()
-
-        extension_header_string = []
-        for key in keys_sorted:
-            value = extension_header_values[key]
-            extension_header_string.append('%s:%s' % (key, value))
-        extension_header_string = '\n'.join(extension_header_string)
-
-        values_to_sign = []
-        for value in [string_to_sign, extension_header_string, path]:
-            if value:
-                values_to_sign.append(value)
-
-        string_to_sign = '\n'.join(values_to_sign)
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class GoogleStorageDriver(BaseS3StorageDriver):
+    """
+    Driver for Google Cloud Storage.
+
+    Can authenticate via standard Google Cloud methods (Service Accounts,
+    Installed App credentials, and GCE instance service accounts)
+
+    Examples:
+    Service Accounts
+        driver = GoogleStorageDriver(key=client_email, secret=private_key, ...)
+    Installed Application
+        driver = GoogleStorageDriver(key=client_id, secret=client_secret, ...)
+    From GCE instance
+        driver = GoogleStorageDriver(key=foo , secret=bar, ...)
+
+    Can also authenticate via Google Cloud Storage's S3 interoperability API.
+    S3 user keys are 20 alphanumeric characters, starting with GOOG
+    Example:
+        driver = GoogleStorageDriver(key='GOOG0123456789ABCXYZ',
+                                     secret=key_secret)
+    """
     name = 'Google Storage'
     website = 'http://cloud.google.com/'
     connectionCls = GoogleStorageConnection
@@ -135,3 +181,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
     supports_chunked_encoding = False
     supports_s3_multipart_upload = False
     http_vendor_prefix = 'x-goog'
+
+    def __init__(self, key, secret=None, project=None, **kwargs):
+        self.project = project
+        super(GoogleStorageDriver, self).__init__(key, secret, **kwargs)

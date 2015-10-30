@@ -16,9 +16,10 @@
 Tests for Google Connection classes.
 """
 import datetime
+import mock
+import os
 import sys
 import unittest
-import os
 
 try:
     import simplejson as json
@@ -29,6 +30,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.common.google import (GoogleAuthError,
+                                    GoogleAuthType,
                                     GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
@@ -56,6 +58,8 @@ GCE_PARAMS_JSON_KEY = ('email@developer.gserviceaccount.com', JSON_KEY)
 GCE_PARAMS_KEY = ('email@developer.gserviceaccount.com', KEY_STR)
 GCE_PARAMS_IA = ('client_id', 'client_secret')
 GCE_PARAMS_GCE = ('foo', 'bar')
+GCS_S3_PARAMS = ('GOOG0123456789ABCXYZ',  # GOOG + 16 alphanumeric chars
+                 '0102030405060708091011121314151617181920')  # 40 base64 chars
 
 
 class MockJsonResponse(object):
@@ -67,8 +71,6 @@ class GoogleBaseAuthConnectionTest(LibcloudTestCase):
     """
     Tests for GoogleBaseAuthConnection
     """
-    GoogleBaseAuthConnection._now = lambda x: datetime.datetime(2013, 6, 26,
-                                                                19, 0, 0)
 
     def setUp(self):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
@@ -89,7 +91,9 @@ class GoogleBaseAuthConnectionTest(LibcloudTestCase):
         new_headers = self.conn.add_default_headers(old_headers)
         self.assertEqual(new_headers, expected_headers)
 
-    def test_token_request(self):
+    @mock.patch('libcloud.common.google._now')
+    def test_token_request(self, mock_now):
+        mock_now.return_value = datetime.datetime(2013, 6, 26, 19, 0, 0)
         request_body = {'code': 'asdf', 'client_id': self.conn.user_id,
                         'client_secret': self.conn.key,
                         'redirect_uri': self.conn.redirect_uri,
@@ -133,6 +137,24 @@ class GoogleInstalledAppAuthConnectionTest(LibcloudTestCase):
         self.assertTrue('refresh_token' in new_token2)
 
 
+class GoogleAuthTypeTest(LibcloudTestCase):
+
+    def test_guess(self):
+        self.assertEqual(
+            GoogleAuthType.guess_type(GCE_PARAMS[0]),
+            GoogleAuthType.SA)
+        self.assertEqual(
+            GoogleAuthType.guess_type(GCE_PARAMS_IA[0]),
+            GoogleAuthType.IA)
+        with mock.patch('libcloud.common.google._is_gce', return_value=True):
+            self.assertEqual(
+                GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
+                GoogleAuthType.GCE)
+        self.assertEqual(
+            GoogleAuthType.guess_type(GCS_S3_PARAMS[0]),
+            GoogleAuthType.GCS_S3)
+
+
 class GoogleBaseConnectionTest(LibcloudTestCase):
     """
     Tests for GoogleBaseConnection
@@ -161,7 +183,7 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         kwargs = {'scopes': self.mock_scopes}
 
         if SHA256:
-            kwargs['auth_type'] = 'SA'
+            kwargs['auth_type'] = GoogleAuthType.SA
             conn1 = GoogleBaseConnection(*GCE_PARAMS_PEM_KEY, **kwargs)
             self.assertTrue(isinstance(conn1.auth_conn,
                                        GoogleServiceAcctAuthConnection))
@@ -174,15 +196,19 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
             self.assertTrue(isinstance(conn1.auth_conn,
                                        GoogleServiceAcctAuthConnection))
 
-        kwargs['auth_type'] = 'IA'
+        kwargs['auth_type'] = GoogleAuthType.IA
         conn2 = GoogleBaseConnection(*GCE_PARAMS_IA, **kwargs)
         self.assertTrue(isinstance(conn2.auth_conn,
                                    GoogleInstalledAppAuthConnection))
 
-        kwargs['auth_type'] = 'GCE'
+        kwargs['auth_type'] = GoogleAuthType.GCE
         conn3 = GoogleBaseConnection(*GCE_PARAMS_GCE, **kwargs)
         self.assertTrue(isinstance(conn3.auth_conn,
                                    GoogleGCEServiceAcctAuthConnection))
+
+        kwargs['auth_type'] = GoogleAuthType.GCS_S3
+        conn4 = GoogleBaseConnection(*GCS_S3_PARAMS, **kwargs)
+        self.assertIsNone(conn4.auth_conn)
 
     def test_add_default_headers(self):
         old_headers = {}

@@ -1047,7 +1047,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            '~/.gce_libcloud_auth' + '.' + self.project
+            GCEConnection.credential_file + '.' + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
