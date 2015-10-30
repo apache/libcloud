@@ -1001,6 +1001,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return self._to_nat_rule(rule, network_domain)
 
     def ex_delete_nat_rule(self, rule):
+        """
+        Delete an existing NAT rule
+
+        :param  rule: The rule to delete
+        :type   rule: :class:`DimensionDataNatRule`
+
+        :rtype: ``bool``
+        """
         update_node = ET.Element('deleteNatRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -1025,6 +1033,76 @@ class DimensionDataNodeDriver(NodeDriver):
             location = list(
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
+
+    def ex_enable_monitoring(self, node, service_plan="ESSENTIALS"):
+        """
+        Enables cloud monitoring on a node
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('enableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/enableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_monitoring_plan(self, node, service_plan="ESSENTIALS"):
+        """
+        Updates the service plan on a node with monitoring
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('changeServerMonitoringPlan',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/changeServerMonitoringPlan',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_disable_monitoring(self, node):
+        """
+        Disables cloud monitoring for a node
+
+        :param   node: The node to stop monitoring
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('disableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/disableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_nat_rules(self, object, network_domain):
         rules = []

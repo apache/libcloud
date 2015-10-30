@@ -396,6 +396,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_delete_nat_rule(rule)
         self.assertTrue(result)
 
+    def test_ex_enable_monitoring(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_enable_monitoring(node, "ADVANCED")
+        self.assertTrue(result)
+
+    def test_ex_disable_monitoring(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_disable_monitoring(node)
+        self.assertTrue(result)
+
+    def test_ex_change_monitoring_plan(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_update_monitoring_plan(node, "ESSENTIALS")
+        self.assertTrue(result)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -801,6 +816,30 @@ class DimensionDataMockHttp(MockHttp):
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_disableServerMonitoring(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}disableServerMonitoring":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_disableServerMonitoring.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_enableServerMonitoring(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}enableServerMonitoring":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_enableServerMonitoring.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}changeServerMonitoringPlan":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
