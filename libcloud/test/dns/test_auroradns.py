@@ -16,6 +16,7 @@ import sys
 import json
 
 from libcloud.dns.drivers.auroradns import AuroraDNSDriver
+from libcloud.dns.drivers.auroradns import AuroraDNSHealthCheckType
 from libcloud.dns.types import RecordType
 from libcloud.dns.types import ZoneDoesNotExistError
 from libcloud.dns.types import ZoneAlreadyExistsError
@@ -166,6 +167,43 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         except:
             raise
 
+    def test_create_health_check(self):
+        zone = self.driver.get_zone('example.com')
+
+        type = AuroraDNSHealthCheckType.HTTP
+        hostname = "www.pcextreme.nl"
+        ipaddress = "109.72.87.252"
+        port = 8080
+        interval = 10
+        threshold = 3
+
+        check = self.driver.ex_create_healthcheck(zone=zone,
+                                                  type=type,
+                                                  hostname=hostname,
+                                                  port=port,
+                                                  path=None,
+                                                  interval=interval,
+                                                  threshold=threshold,
+                                                  ipaddress=ipaddress)
+
+        self.assertEqual(check.interval, interval)
+        self.assertEqual(check.threshold, threshold)
+        self.assertEqual(check.port, port)
+        self.assertEqual(check.type, type)
+        self.assertEqual(check.hostname, hostname)
+        self.assertEqual(check.path, "/")
+        self.assertEqual(check.ipaddress, ipaddress)
+
+    def test_list_health_checks(self):
+        zone = self.driver.get_zone('example.com')
+        checks = self.driver.ex_list_healthchecks(zone)
+
+        self.assertEqual(len(checks), 3)
+
+        for check in checks:
+            self.assertEqual(check.interval, 60)
+            self.assertEqual(check.type, AuroraDNSHealthCheckType.HTTP)
+
 
 class AuroraDNSDriverMockHttp(MockHttpTestCase):
     fixtures = DNSFileFixtures('auroradns')
@@ -203,6 +241,15 @@ class AuroraDNSDriverMockHttp(MockHttpTestCase):
             body = self.fixtures.load('zone_example_com_record_localhost.json')
         else:
             body = self.fixtures.load('zone_example_com_records.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _zones_ffb62570_8414_4578_a346_526b44e320b7_health_checks(self, method,
+                                                                  url, body,
+                                                                  headers):
+        if method == 'POST':
+            body = self.fixtures.load('zone_example_com_health_check.json')
+        else:
+            body = self.fixtures.load('zone_example_com_health_checks.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _zones_1(self, method, url, body, headers):
