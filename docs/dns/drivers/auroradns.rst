@@ -52,10 +52,29 @@ served.
 Afterwards we enable the record and this make the DNS server serve this specific
 record.
 
+Health Checks
+-------------
+
+AuroraDNS has support for Health Checks which will disable all records attached
+to that health check should it fail. With this you can create DNS based
+loadbalancing over multiple records.
+
+In the example below we create a health check and afterwards attach a newly
+created record to this health check.
+
+For example:
+
+.. literalinclude:: /examples/dns/auroradns/health_checks.py
+   :language: python
+
 API Docs
 --------
 
 .. autoclass:: libcloud.dns.drivers.auroradns.AuroraDNSDriver
+    :members:
+    :inherited-members:
+
+.. autoclass:: libcloud.dns.drivers.auroradns.AuroraDNSHealthCheck
     :members:
     :inherited-members:
 
