@@ -19,6 +19,12 @@ Loadbalancer
 DNS
 ~~~
 
+- Update ``create_record`` in the WorldWideDNS driver so it automatically
+  selects a slot if one is not provided by the user via ``extra['entry']``
+  argument.
+  (GITHUB-621)
+  [Alejandro Pereira]
+
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
 
