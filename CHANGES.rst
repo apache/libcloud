@@ -10,6 +10,11 @@ General
 Compute
 ~~~~~~~
 
+- Fix a bug in the ``list_volumes`` method in the CloudStack driver so it
+  returns an empty list if no volumes are found.
+  (GITHUB-617)
+  [Wido den Hollander]
+
 Storage
 ~~~~~~~
 
