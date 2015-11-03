@@ -118,6 +118,11 @@ Compute
   (GITHUB-633)
   [Scott Crunkleton]
 
+- All NodeState, StorageVolumeState, VolumeSnapshotState and Provider attributes
+  are now strings instead of integers.
+  (GITHUB-624)
+  [Allard Hoeve]
+
 Storage
 ~~~~~~~
 
