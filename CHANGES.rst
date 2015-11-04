@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development
 General
 ~~~~~~~
 
+- Added .editorconfig file for easier editing
+  (GITHUB-625)
+  [Misha Brukman]
+
 Compute
 ~~~~~~~
 
