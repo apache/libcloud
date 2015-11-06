@@ -236,15 +236,27 @@ class StorageVolumeState(object):
     """
     Standard states of a StorageVolume
     """
+    AVAILABLE = "available"
+    ERROR = "error"
+    INUSE = "in_use"
+    CREATING = "creating"
+    DELETING = "deleting"
+    DELETED = "deleted"
+    BACKUP = "backup"
+    ATTACHING = "attaching"
+    UNKNOWN = "unknown"
+
+
+class VolumeSnapshotState(object):
+    """
+    Standard states of VolumeSnapshots
+    """
     AVAILABLE = 0
     ERROR = 1
-    INUSE = 2
-    CREATING = 3
-    DELETING = 4
-    DELETED = 5
-    BACKUP = 6
-    ATTACHING = 7
-    UNKNOWN = 8
+    CREATING = 2
+    DELETING = 3
+    RESTORING = 4
+    UNKNOWN = 5
 
 
 class Architecture(object):

@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development
 General
 ~~~~~~~
 
+- Added .editorconfig file for easier editing
+  (GITHUB-625)
+  [Misha Brukman]
+
 - Fix a bug with Libcloud accidentally setting paramiko root logger level to
   DEBUG (this should only happen if ``LIBCLOUD_DEBUG`` environment variable is
   provided).
@@ -21,6 +25,14 @@ Compute
 - Fix a bug in the ``list_volumes`` method in the CloudStack driver so it
   returns an empty list if no volumes are found.
   (GITHUB-617)
+  [Wido den Hollander]
+
+- Return proper volume state for CloudStack volumes.
+  (GITHUB-615, LIBCLOUD-764)
+  [Wido den Hollander]
+
+- Add support for multiple regions in Aurora compute driver
+  (GITHUB-623)
   [Wido den Hollander]
 
 Storage
@@ -134,6 +146,10 @@ Compute
 - Add pricing information for Softlayer.
   (LIBCLOUD-759, GITHUB-603)
   [David Wilson]
+
+- Standardize VolumeSnapshot states into the ``state`` attribute.
+  (LIBCLOUD-758, GITHUB-602)
+  [Allard Hoeve]
 
 Storage
 ~~~~~~~

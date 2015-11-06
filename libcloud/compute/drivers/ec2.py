@@ -43,7 +43,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
-    StorageVolumeState
+    StorageVolumeState, VolumeSnapshotState
 
 __all__ = [
     'API_VERSION',
@@ -2105,6 +2105,12 @@ class BaseEC2NodeDriver(NodeDriver):
         'deleting': StorageVolumeState.DELETING,
         'deleted': StorageVolumeState.DELETED,
         'error_deleting': StorageVolumeState.ERROR
+    }
+
+    SNAPSHOT_STATE_MAP = {
+        'pending': VolumeSnapshotState.CREATING,
+        'completed': VolumeSnapshotState.AVAILABLE,
+        'error': VolumeSnapshotState.ERROR,
     }
 
     def list_nodes(self, ex_node_ids=None, ex_filters=None):
@@ -4917,8 +4923,18 @@ class BaseEC2NodeDriver(NodeDriver):
         extra['tags'] = tags
         extra['name'] = name
 
-        return VolumeSnapshot(snapId, size=int(size),
-                              driver=self, extra=extra, created=created)
+        # state
+        state = self.SNAPSHOT_STATE_MAP.get(
+            extra["state"],
+            VolumeSnapshotState.UNKNOWN
+        )
+
+        return VolumeSnapshot(snapId,
+                              size=int(size),
+                              driver=self,
+                              extra=extra,
+                              created=created,
+                              state=state)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
