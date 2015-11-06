@@ -7,6 +7,14 @@ Changes with Apache Libcloud in development
 General
 ~~~~~~~
 
+- Fix a bug with Libcloud accidentally setting paramiko root logger level to
+  DEBUG (this should only happen if ``LIBCLOUD_DEBUG`` environment variable is
+  provided).
+
+  Reported by John Bresnahan.
+  (LIBCLOUD-765)
+  [Tomaz Muraus, John Bresnahan]
+
 Compute
 ~~~~~~~
 

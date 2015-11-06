@@ -71,7 +71,7 @@ def _init_once():
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-    if have_paramiko:
-        paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
+        if have_paramiko:
+            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()
