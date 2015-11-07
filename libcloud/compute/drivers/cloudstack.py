@@ -4653,7 +4653,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             extra['tags'] = self._get_resource_tags(data['tags'])
 
         node = CloudStackNode(id=id, name=name, state=state,
-                              public_ips=public_ips, private_ips=private_ips,
+                              public_ips=list(set(public_ips)),
+                              private_ips=private_ips,
                               driver=self, extra=extra)
         return node
 
