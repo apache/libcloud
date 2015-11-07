@@ -373,6 +373,7 @@ class LoggingConnection():
         rv += ("\n# -------- end %d:%d response ----------\n"
                % (id(self), id(r)))
 
+        rv = rv.decode('utf-8')
         rr._original_data = body
         return (rr, rv)
 
