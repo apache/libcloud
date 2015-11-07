@@ -590,6 +590,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', node.id)
         self.assertEqual([], node.extra['security_group'])
         self.assertEqual(None, node.extra['key_name'])
+        self.assertEqual(1, len(node.extra['ip_addresses']))
+        self.assertEqual(34000, node.extra['ip_addresses'][0].id)
 
     def test_ex_get_node_doesnt_exist(self):
         self.assertRaises(Exception, self.driver.ex_get_node(26), node_id=26)
