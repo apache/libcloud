@@ -1364,11 +1364,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         vms = self._sync_request('listVirtualMachines', params=args)
         addrs = self._sync_request('listPublicIpAddresses', params=args)
         port_forwarding_rules = self._sync_request('listPortForwardingRules')
-
-        try:
-            ip_forwarding_rules = self._sync_request('listIpForwardingRules')
-        except:
-            ip_forwarding_rules = {}
+        ip_forwarding_rules = self._sync_request('listIpForwardingRules')
 
         public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
