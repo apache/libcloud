@@ -19,6 +19,10 @@ General
   (LIBCLOUD-765)
   [Tomaz Muraus, John Bresnahan]
 
+- Simply travis and tox config (.travis.yml, tox.ini).
+  (GITHUB-608)
+  [Anthony Monthe]
+
 Compute
 ~~~~~~~
 
@@ -106,7 +110,7 @@ Compute
 - Add volume management methods and other various improvements and fixes in the
   RunAbove driver.
   (GITHUB-561)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add support and update Dimension Data driver to use API v2.0 by default.
   (LIBCLOUD-736, GITHUB-564)
@@ -429,7 +433,7 @@ Compute
 
 - Add new driver for Cloudwatt (https://www.cloudwatt.com/en/) provider.
   (GITHUB-338)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add new driver for Packet (https://www.packet.net/) provider.
   (LIBCLOUD-703, GITHUB-527)
@@ -442,7 +446,7 @@ Compute
 
 - Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver.
   (GITHUB-532)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Update CloudSigma driver so the "unavailable" and "paused" node state is
   correctly mapped to "error" and "paused" respectively.
@@ -451,11 +455,11 @@ Compute
 
 - Add SSH key pair management methods to the Gandi driver.
   (GITHUB-534)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add ``ex_get_node`` and ``ex_get_volume`` methods to Gandi driver.
   (GITHUB-534)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
   returned by the OpenStack driver.
@@ -495,7 +499,7 @@ Compute
 
 - Add new driver for RunAbove (https://www.runabove.com) provider.
   (GITHUB-550)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Fix a bug with exception being throw inside the CloudStack driver when the
   provider returned no error message in the body.
@@ -644,7 +648,7 @@ Compute
 
 - Add new `us-east-2` and `us-east-3` region to the Joyent driver.
   (GITHUB-386)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add missing t2. instance types to the us-west-1 region in the EC2 driver.
   (GITHUB-388)
@@ -699,7 +703,7 @@ Compute
 
 - Add ``ex_get_node`` method to the Joyent driver.
   (GITHUB-421)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add support for placement group management to the EC2 driver.
   (GITHUB-418)
