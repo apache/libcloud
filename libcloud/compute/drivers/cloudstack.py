@@ -1454,8 +1454,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         node = self._to_node(data=vm, public_ips=list(public_ips.keys()))
 
-        addresses = [CloudStackAddress(address_id, address, node.driver)
-                     for address, address_id in public_ips.items()]
+        addresses = [CloudStackAddress(id=address_id, address=address,
+                                       driver=node.driver) for
+                     address, address_id in public_ips.items()]
         node.extra['ip_addresses'] = addresses
 
         rules = []
