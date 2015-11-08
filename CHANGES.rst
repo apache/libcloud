@@ -35,6 +35,11 @@ Compute
   (GITHUB-623)
   [Wido den Hollander]
 
+- Fix value of ``node.extra['ip_addresses']`` node attribute in the CloudStack
+  driver.
+  (LIBCLOUD-767, GITHUB-627)
+  [Atsushi Sasaki]
+
 Storage
 ~~~~~~~
 
