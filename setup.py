@@ -48,10 +48,11 @@ HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
 TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
               'libcloud/test/storage', 'libcloud/test/loadbalancer',
-              'libcloud/test/dns']
+              'libcloud/test/dns', 'libcloud/test/backup']
 DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.storage.drivers.dummy',
-                    'libcloud.dns.drivers.dummy']
+                    'libcloud.dns.drivers.dummy',
+                    'libcloud.backup.drivers.dummy']
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
