@@ -774,7 +774,7 @@ Updated code:
   code you need to do it now, otherwise it won't work with 0.7 and future
   releases.
 
-Bellow is a list of old paths and their new locations:
+Below is a list of old paths and their new locations:
 
 * ``libcloud.base`` -> ``libcloud.compute.base``
 * ``libcloud.deployment`` -> ``libcloud.compute.deployment``
