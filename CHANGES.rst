@@ -1,6 +1,64 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+General
+~~~~~~~
+
+- Added .editorconfig file for easier editing
+  (GITHUB-625)
+  [Misha Brukman]
+
+- Fix a bug with Libcloud accidentally setting paramiko root logger level to
+  DEBUG (this should only happen if ``LIBCLOUD_DEBUG`` environment variable is
+  provided).
+
+  Reported by John Bresnahan.
+  (LIBCLOUD-765)
+  [Tomaz Muraus, John Bresnahan]
+
+- Simply travis and tox config (.travis.yml, tox.ini).
+  (GITHUB-608)
+  [Anthony Monthe]
+
+Compute
+~~~~~~~
+
+- Fix a bug in the ``list_volumes`` method in the CloudStack driver so it
+  returns an empty list if no volumes are found.
+  (GITHUB-617)
+  [Wido den Hollander]
+
+- Return proper volume state for CloudStack volumes.
+  (GITHUB-615, LIBCLOUD-764)
+  [Wido den Hollander]
+
+- Add support for multiple regions in Aurora compute driver
+  (GITHUB-623)
+  [Wido den Hollander]
+
+- Fix value of ``node.extra['ip_addresses']`` node attribute in the CloudStack
+  driver.
+  (LIBCLOUD-767, GITHUB-627)
+  [Atsushi Sasaki]
+
+Storage
+~~~~~~~
+
+Loadbalancer
+~~~~~~~~~~~~
+
+DNS
+~~~
+
+- Update ``create_record`` in the WorldWideDNS driver so it automatically
+  selects a slot if one is not provided by the user via ``extra['entry']``
+  argument.
+  (GITHUB-621)
+  [Alejandro Pereira]
+
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
 
@@ -52,7 +110,7 @@ Compute
 - Add volume management methods and other various improvements and fixes in the
   RunAbove driver.
   (GITHUB-561)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add support and update Dimension Data driver to use API v2.0 by default.
   (LIBCLOUD-736, GITHUB-564)
@@ -97,6 +155,10 @@ Compute
 - Add pricing information for Softlayer.
   (LIBCLOUD-759, GITHUB-603)
   [David Wilson]
+
+- Standardize VolumeSnapshot states into the ``state`` attribute.
+  (LIBCLOUD-758, GITHUB-602)
+  [Allard Hoeve]
 
 Storage
 ~~~~~~~
@@ -371,7 +433,7 @@ Compute
 
 - Add new driver for Cloudwatt (https://www.cloudwatt.com/en/) provider.
   (GITHUB-338)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add new driver for Packet (https://www.packet.net/) provider.
   (LIBCLOUD-703, GITHUB-527)
@@ -384,7 +446,7 @@ Compute
 
 - Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver.
   (GITHUB-532)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Update CloudSigma driver so the "unavailable" and "paused" node state is
   correctly mapped to "error" and "paused" respectively.
@@ -393,11 +455,11 @@ Compute
 
 - Add SSH key pair management methods to the Gandi driver.
   (GITHUB-534)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add ``ex_get_node`` and ``ex_get_volume`` methods to Gandi driver.
   (GITHUB-534)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
   returned by the OpenStack driver.
@@ -437,7 +499,7 @@ Compute
 
 - Add new driver for RunAbove (https://www.runabove.com) provider.
   (GITHUB-550)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Fix a bug with exception being throw inside the CloudStack driver when the
   provider returned no error message in the body.
@@ -586,7 +648,7 @@ Compute
 
 - Add new `us-east-2` and `us-east-3` region to the Joyent driver.
   (GITHUB-386)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add missing t2. instance types to the us-west-1 region in the EC2 driver.
   (GITHUB-388)
@@ -641,7 +703,7 @@ Compute
 
 - Add ``ex_get_node`` method to the Joyent driver.
   (GITHUB-421)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add support for placement group management to the EC2 driver.
   (GITHUB-418)

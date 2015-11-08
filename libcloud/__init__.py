@@ -20,7 +20,7 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 __all__ = ['__version__', 'enable_debug']
-__version__ = '0.19.0'
+__version__ = '0.19.1-dev'
 
 import os
 import codecs
@@ -71,7 +71,7 @@ def _init_once():
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-    if have_paramiko:
-        paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
+        if have_paramiko:
+            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()

@@ -45,7 +45,8 @@ from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, StorageVolumeState, Provider
+from libcloud.compute.types import NodeState, StorageVolumeState, Provider, \
+    VolumeSnapshotState
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
 
@@ -117,6 +118,16 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'restoring-backup': StorageVolumeState.BACKUP,
         'error_restoring': StorageVolumeState.ERROR,
         'error_extending': StorageVolumeState.ERROR,
+    }
+
+    # http://developer.openstack.org/api-ref-blockstorage-v2.html#ext-backups-v2
+    SNAPSHOT_STATE_MAP = {
+        'creating': VolumeSnapshotState.CREATING,
+        'available': VolumeSnapshotState.AVAILABLE,
+        'deleting': VolumeSnapshotState.DELETING,
+        'error': VolumeSnapshotState.ERROR,
+        'restoring': VolumeSnapshotState.RESTORING,
+        'error_restoring': VolumeSnapshotState.ERROR
     }
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
@@ -2165,6 +2176,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                  'description': description,
                  'status': status}
 
+        state = self.SNAPSHOT_STATE_MAP.get(
+            status,
+            VolumeSnapshotState.UNKNOWN
+        )
+
         try:
             created_dt = parse_date(created_at)
         except ValueError:
@@ -2172,7 +2188,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         snapshot = VolumeSnapshot(id=data['id'], driver=self,
                                   size=data['size'], extra=extra,
-                                  created=created_dt)
+                                  created=created_dt, state=state)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):

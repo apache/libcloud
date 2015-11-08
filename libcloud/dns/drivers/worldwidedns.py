@@ -144,22 +144,24 @@ class WorldWideDNSDriver(DNSDriver):
         :param zone_id: ID of the required zone
         :type  zone_id: ``str``
 
-        :param record_id: ID of the required record
+        :param record_id: ID number of the required record.
         :type  record_id: ``str``
 
         :rtype: :class:`Record`
         """
         zone = self.get_zone(zone_id)
-        r_entry = [i for i in range(MAX_RECORD_ENTRIES) if
-                   zone.extra.get('S%s' % i) == record_id]
-        if not r_entry:
-            raise RecordDoesNotExistError(value="Record doesn't exists",
-                                          driver=zone.driver,
-                                          record_id=record_id)
-        entry = r_entry[0]
-        type = zone.extra.get('T%s' % entry)
-        data = zone.extra.get('D%s' % entry)
-        record = self._to_record(record_id, type, data, zone)
+        try:
+            if int(record_id) not in range(1, MAX_RECORD_ENTRIES + 1):
+                raise RecordDoesNotExistError(value="Record doesn't exists",
+                                              driver=zone.driver,
+                                              record_id=record_id)
+        except ValueError:
+            raise WorldWideDNSError(
+                value="Record id should be a string number", driver=self)
+        subdomain = zone.extra.get('S%s' % record_id)
+        type = zone.extra.get('T%s' % record_id)
+        data = zone.extra.get('D%s' % record_id)
+        record = self._to_record(record_id, subdomain, type, data, zone)
         return record
 
     def update_zone(self, zone, domain, type='master', ttl=None, extra=None,
@@ -259,7 +261,7 @@ class WorldWideDNSDriver(DNSDriver):
         if (extra is None) or ('entry' not in extra):
             raise WorldWideDNSError(value="You must enter 'entry' parameter",
                                     driver=self)
-        entry = extra.get('entry')
+        record_id = extra.get('entry')
         if name == '':
             name = '@'
         if type not in self.RECORD_TYPE_MAP:
@@ -267,11 +269,11 @@ class WorldWideDNSDriver(DNSDriver):
                               driver=record.zone.driver,
                               record_id=name)
         zone = record.zone
-        extra = {'S%s' % entry: name,
-                 'T%s' % entry: type,
-                 'D%s' % entry: data}
+        extra = {'S%s' % record_id: name,
+                 'T%s' % record_id: type,
+                 'D%s' % record_id: data}
         zone = self.update_zone(zone, zone.domain, extra=extra)
-        record = self.get_record(zone.id, name)
+        record = self.get_record(zone.id, record_id)
         return record
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
@@ -323,6 +325,9 @@ class WorldWideDNSDriver(DNSDriver):
         """
         Create a new record.
 
+        We can create 40 record per domain. If all slots are full, we can
+        replace one of them by choosing a specific entry in ``extra`` argument.
+
         :param name: Record name without the domain name (e.g. www).
                      Note: If you want to create a record for a base domain
                      name, you should specify empty string ('') for this
@@ -344,20 +349,25 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         if (extra is None) or ('entry' not in extra):
-            raise WorldWideDNSError(value="You must enter 'entry' parameter",
-                                    driver=zone.driver)
-        entry = extra.get('entry')
+            # If no entry is specified, we look for an available one. If all
+            # are full, raise error.
+            record_id = self._get_available_record_entry(zone)
+            if not record_id:
+                raise WorldWideDNSError(value="All record entries are full",
+                                        driver=zone.driver)
+        else:
+            record_id = extra.get('entry')
         if name == '':
             name = '@'
         if type not in self.RECORD_TYPE_MAP:
             raise RecordError(value="Record type is not allowed",
                               driver=zone.driver,
-                              record_id=name)
-        extra = {'S%s' % entry: name,
-                 'T%s' % entry: type,
-                 'D%s' % entry: data}
+                              record_id=record_id)
+        extra = {'S%s' % record_id: name,
+                 'T%s' % record_id: type,
+                 'D%s' % record_id: data}
         zone = self.update_zone(zone, zone.domain, extra=extra)
-        record = self.get_record(zone.id, name)
+        record = self.get_record(zone.id, record_id)
         return record
 
     def delete_zone(self, zone):
@@ -454,6 +464,17 @@ class WorldWideDNSDriver(DNSDriver):
                                            params=params)
         return response.success()
 
+    def _get_available_record_entry(self, zone):
+        """Return an available entry to store a record."""
+        entries = zone.extra
+        for entry in range(1, MAX_RECORD_ENTRIES + 1):
+            subdomain = entries.get('S%s' % entry)
+            _type = entries.get('T%s' % entry)
+            data = entries.get('D%s' % entry)
+            if not any([subdomain, _type, data]):
+                return entry
+        return None
+
     def _to_zones(self, data):
         domain_list = re.split('\r?\n', data)
         zones = []
@@ -479,7 +500,8 @@ class WorldWideDNSDriver(DNSDriver):
             for line in range(MAX_RECORD_ENTRIES):
                 line_data = zone_data[line].split('\x1f')
                 extra['S%s' % (line + 1)] = line_data[0]
-                extra['T%s' % (line + 1)] = line_data[1]
+                _type = line_data[1]
+                extra['T%s' % (line + 1)] = _type if _type != 'NONE' else ''
                 try:
                     extra['D%s' % (line + 1)] = line_data[2]
                 except IndexError:
@@ -499,14 +521,15 @@ class WorldWideDNSDriver(DNSDriver):
 
     def _to_records(self, zone):
         records = []
-        for entry in range(MAX_RECORD_ENTRIES):
-            subdomain = zone.extra['S%s' % (entry + 1)]
-            type = zone.extra['T%s' % (entry + 1)]
-            data = zone.extra['D%s' % (entry + 1)]
+        for record_id in range(1, MAX_RECORD_ENTRIES + 1):
+            subdomain = zone.extra['S%s' % (record_id)]
+            type = zone.extra['T%s' % (record_id)]
+            data = zone.extra['D%s' % (record_id)]
             if subdomain and type and data:
-                record = self._to_record(subdomain, type, data, zone)
+                record = self._to_record(
+                    record_id, subdomain, type, data, zone)
                 records.append(record)
         return records
 
-    def _to_record(self, subdomain, type, data, zone):
-        return Record(subdomain, subdomain, type, data, zone, zone.driver)
+    def _to_record(self, _id, subdomain, type, data, zone):
+        return Record(_id, subdomain, type, data, zone, zone.driver)

@@ -554,7 +554,8 @@ class VolumeSnapshot(object):
     """
     A base VolumeSnapshot class to derive from.
     """
-    def __init__(self, id, driver, size=None, extra=None, created=None):
+    def __init__(self, id, driver, size=None, extra=None, created=None,
+                 state=None):
         """
         VolumeSnapshot constructor.
 
@@ -574,12 +575,17 @@ class VolumeSnapshot(object):
         :param      created: A datetime object that represents when the
                              snapshot was created
         :type       created: ``datetime.datetime``
+
+        :param      state: A string representing the state the snapshot is
+                           in. See `libcloud.compute.types.StorageVolumeState`.
+        :type       state: ``str``
         """
         self.id = id
         self.driver = driver
         self.size = size
         self.extra = extra or {}
         self.created = created
+        self.state = state
 
     def destroy(self):
         """
@@ -590,8 +596,8 @@ class VolumeSnapshot(object):
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
     def __repr__(self):
-        return ('<VolumeSnapshot id=%s size=%s driver=%s>' %
-                (self.id, self.size, self.driver.name))
+        return ('<VolumeSnapshot id=%s size=%s driver=%s state=%s>' %
+                (self.id, self.size, self.driver.name, self.state))
 
 
 class KeyPair(object):

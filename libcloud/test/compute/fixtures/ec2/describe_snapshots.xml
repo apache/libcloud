@@ -22,7 +22,7 @@
       <item>
          <snapshotId>snap-18349159</snapshotId>
          <volumeId>vol-b5a2c1v9</volumeId>
-         <status>pending</status>
+         <status>completed</status>
          <startTime>2013-09-15T16:00:30.000Z</startTime>
          <progress>30%</progress>
          <ownerId>1938218230</ownerId>

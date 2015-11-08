@@ -33,7 +33,7 @@ class BaseAuroraObjectsConnection(BaseS3Connection):
 class BaseAuroraObjectsStorageDriver(BaseS3StorageDriver):
     type = Provider.AURORAOBJECTS
     name = 'PCextreme AuroraObjects'
-    website = 'https://www.pcextreme.nl/en/aurora/objects'
+    website = 'https://www.pcextreme.com/aurora/objects'
 
 
 class AuroraObjectsStorageDriver(BaseAuroraObjectsStorageDriver):

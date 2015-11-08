@@ -14,12 +14,14 @@ RUN set -e && \
     python3.2 \
     python3.3 \
     python3.4 \
+    python3.5 \
     python-dev \
     python2.6-dev \
     python2.7-dev \
     python3.2-dev \
     python3.3-dev \
     python3.4-dev \
+    python3.5-dev \
     python-pip
 
 RUN set -e && \
@@ -35,4 +37,4 @@ RUN set -e && \
 
 COPY . /libcloud
 WORKDIR /libcloud
-CMD tox -e py26,py27,pypy,py32,py33,py34,lint
+CMD tox -e py2.6,py2.7,pypypy,py3.2,py3.3,py3.4,py3.5,lint

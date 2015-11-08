@@ -39,7 +39,8 @@ from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
-from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
+from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState, \
+    VolumeSnapshotState
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -866,6 +867,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('Test snapshot', snap.extra['name'])
         self.assertEqual(vol.id, snap.extra['volume_id'])
         self.assertEqual('pending', snap.extra['state'])
+        self.assertEqual(VolumeSnapshotState.CREATING, snap.state)
         # 2013-08-15T16:22:30.000Z
         self.assertEqual(datetime(2013, 8, 15, 16, 22, 30, tzinfo=UTC), snap.created)
 
@@ -875,11 +877,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(snaps), 3)
 
         self.assertEqual('snap-428abd35', snaps[0].id)
+        self.assertEqual(VolumeSnapshotState.CREATING, snaps[0].state)
         self.assertEqual('vol-e020df80', snaps[0].extra['volume_id'])
         self.assertEqual(30, snaps[0].size)
         self.assertEqual('Daily Backup', snaps[0].extra['description'])
 
         self.assertEqual('snap-18349159', snaps[1].id)
+        self.assertEqual(VolumeSnapshotState.AVAILABLE, snaps[1].state)
         self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
         self.assertEqual(15, snaps[1].size)
         self.assertEqual('Weekly backup', snaps[1].extra['description'])

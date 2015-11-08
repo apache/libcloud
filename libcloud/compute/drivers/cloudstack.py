@@ -28,7 +28,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, LibcloudError
-from libcloud.compute.types import KeyPairDoesNotExistError
+from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
 from libcloud.utils.networking import is_private_subnet
 
 
@@ -1241,6 +1241,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Error': NodeState.TERMINATED
     }
 
+    VOLUME_STATE_MAP = {
+        'Creating': StorageVolumeState.CREATING,
+        'Destroying': StorageVolumeState.DELETING,
+        'Expunging': StorageVolumeState.DELETING,
+        'Destroy': StorageVolumeState.DELETED,
+        'Expunged': StorageVolumeState.DELETED,
+        'Allocated': StorageVolumeState.AVAILABLE,
+        'Ready': StorageVolumeState.AVAILABLE,
+        'Snapshotting': StorageVolumeState.BACKUP,
+        'UploadError': StorageVolumeState.ERROR
+    }
+
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, url=None, *args, **kwargs):
         """
@@ -1442,8 +1454,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         node = self._to_node(data=vm, public_ips=list(public_ips.keys()))
 
-        addresses = public_ips.items()
-        addresses = [CloudStackAddress(node, v, k) for k, v in addresses]
+        addresses = [CloudStackAddress(id=address_id, address=address,
+                                       driver=node.driver) for
+                     address, address_id in public_ips.items()]
         node.extra['ip_addresses'] = addresses
 
         rules = []
@@ -2112,9 +2125,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         volumeResponse = requestResult['volume']
 
+        state = self._to_volume_state(volumeResponse)
+
         return StorageVolume(id=volumeResponse['id'],
                              name=name,
                              size=size,
+                             state=state,
                              driver=self,
                              extra=dict(name=volumeResponse['name']))
 
@@ -2168,16 +2184,20 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                          method='GET')
 
         list_volumes = []
+
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['volume']
-        for vol in volumes['volume']:
+        for vol in volumes.get('volume', []):
             extra = self._get_extra_dict(vol, extra_map)
 
             if 'tags' in vol:
                 extra['tags'] = self._get_resource_tags(vol['tags'])
 
+            state = self._to_volume_state(vol)
+
             list_volumes.append(StorageVolume(id=vol['id'],
                                               name=vol['name'],
                                               size=vol['size'],
+                                              state=state,
                                               driver=self,
                                               extra=extra))
         return list_volumes
@@ -2209,7 +2229,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if 'tags' in vol:
             extra['tags'] = self._get_resource_tags(vol['tags'])
 
-        volume = StorageVolume(id=vol['id'], name=vol['name'],
+        state = self._to_volume_state(vol)
+
+        volume = StorageVolume(id=vol['id'], name=vol['name'], state=state,
                                size=vol['size'], driver=self, extra=extra)
         return volume
 
@@ -4704,3 +4726,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra[attribute] = None
 
         return extra
+
+    def _to_volume_state(self, vol):
+        state = self.VOLUME_STATE_MAP.get(vol['state'],
+                                          StorageVolumeState.UNKNOWN)
+
+        # If a volume is 'Ready' and is attached to a virtualmachine, set
+        # the status to INUSE
+        if state == StorageVolumeState.AVAILABLE and 'virtualmachineid' in vol:
+            state = StorageVolumeState.INUSE
+
+        return state
