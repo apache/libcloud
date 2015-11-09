@@ -400,6 +400,22 @@ class BackupDriver(BaseDriver):
         raise NotImplementedError(
             'delete_target not implemented for this driver')
 
+    def get_target_job(self, target, id):
+        """
+        Get a specific backup job by ID
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param id: Backup target with the backup data
+        :type  id: Instance of :class:`BackupTarget`
+
+        :rtype: :class:`BackupTargetJob`
+        """
+        jobs = self.list_target_jobs(target)
+        return list(filter(lambda x: x.id == id, jobs))[0]
+
+
     def list_target_jobs(self, target):
         """
         List the backup jobs on a target
