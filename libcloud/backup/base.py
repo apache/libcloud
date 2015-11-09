@@ -14,10 +14,183 @@
 # limitations under the License.
 
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.backup.types import BackupTargetType
 
 __all__ = [
-    'BackupDriver'
+    'BackupTarget',
+    'BackupDriver',
+    'BackupTargetJob',
+    'BackupTargetRecoveryPoint'
 ]
+
+
+class BackupTarget(object):
+    """
+    A backup target
+    """
+
+    def __init__(self, id, name, address, type, driver, extra=None):
+        """
+        :param id: Record id
+        :type id: ``str``
+
+        :param name: Name of the target
+        :type name: ``str``
+
+        :param address: Hostname, FQDN, IP, file path etc.
+        :type address: ``str``
+
+        :param type: Backup target type (Physical, Virtual, ...).
+        :type type: :class:`BackupTargetType`
+
+        :param driver: BackupDriver instance.
+        :type driver: :class:`BackupDriver`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+        """
+        self.id = str(id) if id else None
+        self.name = name
+        self.address = address
+        self.type = type
+        self.driver = driver
+        self.extra = extra or {}
+
+    def update(self, name=None, address=None, extra=None):
+        return self.driver.update_target(target=self,
+                                         name=name,
+                                         address=address,
+                                         extra=extra)
+
+    def delete(self):
+        return self.driver.delete_target(target=self)
+
+    def _get_numeric_id(self):
+        target_id = self.id
+
+        if target_id.isdigit():
+            target_id = int(target_id)
+
+        return target_id
+
+    def __repr__(self):
+        return ('<Target: id=%s, name=%s, address=%s'
+                'type=%s, provider=%s ...>' %
+                (self.id, self.name, self.address,
+                 self.type, self.driver.name))
+
+
+class BackupTargetJob(object):
+    """
+    A backup target job
+    """
+
+    def __init__(self, id, status, progress, target, driver, extra=None):
+        """
+        :param id: Job id
+        :type id: ``str``
+
+        :param status: Status of the job
+        :type status: :class:`BackupTargetJobStatus`
+
+        :param progress: Progress of the job, as a percentage
+        :type progress: ``int``
+
+        :param target: BackupTarget instance.
+        :type target: :class:`BackupTarget`
+
+        :param driver: BackupDriver instance.
+        :type driver: :class:`BackupDriver`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+        """
+        self.id = str(id) if id else None
+        self.status = status
+        self.progress = progress
+        self.target = target
+        self.driver = driver
+        self.extra = extra or {}
+
+    def cancel(self):
+        return self.driver.cancel_target_job(target=self.target, job=self)
+
+    def suspend(self):
+        return self.driver.suspend_target_job(target=self.target, job=self)
+
+    def resume(self):
+        return self.driver.resume_target_job(target=self.target, job=self)
+
+    def __repr__(self):
+        return ('<Job: id=%s, status=%s, progress=%s'
+                'target=%s, provider=%s ...>' %
+                (self.id, self.status, self.progress,
+                 self.target.id, self.driver.name))
+
+
+class BackupTargetRecoveryPoint(object):
+    """
+    A backup target recovery point
+    """
+
+    def __init__(self, id, date, target, driver, extra=None):
+        """
+        :param id: Job id
+        :type id: ``str``
+
+        :param date: The date taken
+        :type date: :class:`datetime.datetime`
+
+        :param target: BackupTarget instance.
+        :type target: :class:`BackupTarget`
+
+        :param driver: BackupDriver instance.
+        :type driver: :class:`BackupDriver`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+        """
+        self.id = str(id) if id else None
+        self.date = date
+        self.target = target
+        self.driver = driver
+        self.extra = extra or {}
+
+    def recover(self, path=None):
+        """
+        Recover this recovery point
+
+        :param path: The part of the recovery point to recover (optional)
+        :type  path: ``str``
+
+        :rtype: Instance of :class:`BackupTargetJob`
+        """
+        return self.driver.recover_target(target=self.target,
+                                          recovery_point=self, path=path)
+
+    def recover_to(self, recovery_target, path=None):
+        """
+        Recover this recovery point out of place
+
+        :param recovery_target: Backup target with to recover the data to
+        :type  recovery_target: Instance of :class:`BackupTarget`
+
+        :param path: The part of the recovery point to recover (optional)
+        :type  path: ``str``
+
+        :rtype: Instance of :class:`BackupTargetJob`
+        """
+        return self.driver.recover_target_out_of_place(
+            target=self.target,
+            recovery_point=self,
+            recovery_target=recovery_target,
+            path=path)
+
+    def __repr__(self):
+        return ('<RecoveryPoint: id=%s, date=%s, '
+                'target=%s, provider=%s ...>' %
+                (self.id, self.date,
+                 self.target.id, self.driver.name))
 
 
 class BackupDriver(BaseDriver):
@@ -54,3 +227,225 @@ class BackupDriver(BaseDriver):
         super(BackupDriver, self).__init__(key=key, secret=secret,
                                            secure=secure, host=host, port=port,
                                            **kwargs)
+
+    def get_supported_target_types(self):
+        """
+        Get a list of backup target types this driver supports
+
+        :return: ``list`` of :class:``BackupTargetType``
+        """
+        raise NotImplementedError(
+            'get_supported_target_types not implemented for this driver')
+
+    def list_targets(self):
+        """
+        List all backuptargets
+
+        :rtype: ``list`` of :class:`BackupTarget`
+        """
+        raise NotImplementedError(
+            'list_targets not implemented for this driver')
+
+    def create_target(self, name, address,
+                      type=BackupTargetType.VIRTUAL, extra=None):
+        """
+        Creates a new backup target
+
+        :param name: Name of the target
+        :type name: ``str``
+
+        :param address: Hostname, FQDN, IP, file path etc.
+        :type address: ``str``
+
+        :param type: Backup target type (Physical, Virtual, ...).
+        :type type: :class:`BackupTargetType`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+
+        :rtype: Instance of :class:`BackupTarget`
+        """
+        raise NotImplementedError(
+            'create_target not implemented for this driver')
+
+    def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
+                                extra=None):
+        """
+        Creates a new backup target from an existing node
+
+        :param node: The Node to backup
+        :type  node: ``Node``
+
+        :param type: Backup target type (Physical, Virtual, ...).
+        :type type: :class:`BackupTargetType`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+
+        :rtype: Instance of :class:`BackupTarget`
+        """
+        return self.create_target(name=node.name,
+                                  address=node.public_ips[0],
+                                  type=BackupTargetType.VIRTUAL,
+                                  extra=None)
+
+    def update_target(self, target, name, address, extra):
+        """
+        Update the properties of a backup target
+
+        :param target: Backup target to update
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param name: Name of the target
+        :type name: ``str``
+
+        :param address: Hostname, FQDN, IP, file path etc.
+        :type address: ``str``
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+
+        :rtype: Instance of :class:`BackupTarget`
+        """
+        raise NotImplementedError(
+            'update_target not implemented for this driver')
+
+    def delete_target(self, target):
+        """
+        Delete a backup target
+
+        :param target: Backup target to delete
+        :type  target: Instance of :class:`BackupTarget`
+        """
+        raise NotImplementedError(
+            'delete_target not implemented for this driver')
+
+    def list_recovery_points(self, target, start_date=None, end_date=None):
+        """
+        List the recovery points available for a target
+
+        :param target: Backup target to delete
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param start_date: The start date to show jobs between (optional)
+        :type  start_date: :class:`datetime.datetime`
+
+        :param end_date: The end date to show jobs between (optional)
+        :type  end_date: :class:`datetime.datetime``
+
+        :rtype: ``list`` of :class:`BackupTargetJob`
+        """
+        raise NotImplementedError(
+            'delete_target not implemented for this driver')
+
+    def recover_target(self, target, recovery_point, path=None):
+        """
+        Recover a backup target to a recovery point
+
+        :param target: Backup target to delete
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param recovery_point: Backup target with the backup data
+        :type  recovery_point: Instance of :class:`BackupTarget`
+
+        :param path: The part of the recovery point to recover (optional)
+        :type  path: ``str``
+
+        :rtype: Instance of :class:`BackupTargetJob`
+        """
+        raise NotImplementedError(
+            'delete_target not implemented for this driver')
+
+    def recover_target_out_of_place(self, target, recovery_point,
+                                    recovery_target, path=None):
+        """
+        Recover a backup target to a recovery point out-of-place
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param recovery_point: Backup target with the backup data
+        :type  recovery_point: Instance of :class:`BackupTarget`
+
+        :param recovery_target: Backup target with to recover the data to
+        :type  recovery_target: Instance of :class:`BackupTarget`
+
+        :param path: The part of the recovery point to recover (optional)
+        :type  path: ``str``
+
+        :rtype: Instance of :class:`BackupTargetJob`
+        """
+        raise NotImplementedError(
+            'delete_target not implemented for this driver')
+
+    def list_target_jobs(self, target):
+        """
+        List the backup jobs on a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :rtype: ``list`` of :class:`BackupTargetJob`
+        """
+        raise NotImplementedError(
+            'list_target_jobs not implemented for this driver')
+
+    def create_target_job(self, target, extra=None):
+        """
+        Create a new backup job on a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+
+        :rtype: Instance of :class:`BackupTargetJob`
+        """
+        raise NotImplementedError(
+            'create_target_job not implemented for this driver')
+
+    def resume_target_job(self, target, job):
+        """
+        Resume a suspended backup job on a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param job: Backup target job to resume
+        :type  job: Instance of :class:`BackupTargetJob`
+
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'resume_target_job not implemented for this driver')
+
+    def suspend_target_job(self, target, job):
+        """
+        List the backup jobs on a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param job: Backup target job to suspend
+        :type  job: Instance of :class:`BackupTargetJob`
+
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'suspend_target_job not implemented for this driver')
+
+    def cancel_target_job(self, target, job):
+        """
+        List the backup jobs on a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget`
+
+        :param job: Backup target job to suspend
+        :type  job: Instance of :class:`BackupTargetJob`
+
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'cancel_target_job not implemented for this driver')

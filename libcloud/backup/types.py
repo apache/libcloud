@@ -15,8 +15,40 @@
 
 __all__ = [
     'Provider',
+    'BackupTargetType',
+    'BackupTargetJobStatus'
 ]
 
 
 class Provider(object):
     DUMMY = 'dummy'
+
+
+class BackupTargetType(object):
+    """
+    Backup Target type.
+    """
+
+    """ Denotes a virtual host """
+    VIRTUAL = 'Virtual'
+
+    """ Denotes a physical host """
+    PHYSICAL = 'Physical'
+
+    """ Denotes a file system (e.g. NAS) """
+    FILESYSTEM = 'Filesystem'
+
+    """ Denotes a database target """
+    DATABASE = 'Database'
+
+
+class BackupTargetJobStatus(object):
+    """
+    The status of a backup target job
+    """
+
+    RUNNING = 'Running'
+    CANCELLED = 'Cancelled'
+    FAILED = 'Failed'
+    COMPLETED = 'Completed'
+    PENDING = 'Pending'
