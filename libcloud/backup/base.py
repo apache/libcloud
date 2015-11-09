@@ -91,7 +91,7 @@ class BackupTargetJob(object):
         :type id: ``str``
 
         :param status: Status of the job
-        :type status: :class:`BackupTargetJobStatus`
+        :type status: :class:`BackupTargetJobStatusType`
 
         :param progress: Progress of the job, as a percentage
         :type progress: ``int``

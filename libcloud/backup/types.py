@@ -16,7 +16,7 @@
 __all__ = [
     'Provider',
     'BackupTargetType',
-    'BackupTargetJobStatus'
+    'BackupTargetJobStatusType'
 ]
 
 
@@ -45,7 +45,7 @@ class BackupTargetType(object):
     OBJECT = 'Object'
 
 
-class BackupTargetJobStatus(object):
+class BackupTargetJobStatusType(object):
     """
     The status of a backup target job
     """
