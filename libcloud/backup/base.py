@@ -415,7 +415,6 @@ class BackupDriver(BaseDriver):
         jobs = self.list_target_jobs(target)
         return list(filter(lambda x: x.id == id, jobs))[0]
 
-
     def list_target_jobs(self, target):
         """
         List the backup jobs on a target
