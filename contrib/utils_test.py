@@ -16,10 +16,7 @@
 #
 ################################################################################
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import simplejson
 import unittest
 import utils
 
@@ -59,7 +56,7 @@ class SortKeysNumericallyTest(unittest.TestCase):
 }\
 """
         self.assertEqual(
-            json.dumps(input, indent=4 * ' ',
+            simplejson.dumps(input, indent=4 * ' ',
                              item_sort_key=utils.sortKeysNumerically),
             output)
 
