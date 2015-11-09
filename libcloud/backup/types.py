@@ -28,21 +28,21 @@ class BackupTargetType(object):
     """
     Backup Target type.
     """
-
-    """ Denotes a virtual host """
+    
     VIRTUAL = 'Virtual'
-
-    """ Denotes a physical host """
+    """ Denotes a virtual host """
+    
     PHYSICAL = 'Physical'
-
-    """ Denotes a file system (e.g. NAS) """
+    """ Denotes a physical host """
+    
     FILESYSTEM = 'Filesystem'
+    """ Denotes a file system (e.g. NAS) """
 
-    """ Denotes a database target """
     DATABASE = 'Database'
+    """ Denotes a database target """
 
-    """ Denotes an object based file system """
     OBJECT = 'Object'
+    """ Denotes an object based file system """
 
 
 class BackupTargetJobStatusType(object):
