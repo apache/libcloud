@@ -28,13 +28,13 @@ class BackupTargetType(object):
     """
     Backup Target type.
     """
-    
+
     VIRTUAL = 'Virtual'
     """ Denotes a virtual host """
-    
+
     PHYSICAL = 'Physical'
     """ Denotes a physical host """
-    
+
     FILESYSTEM = 'Filesystem'
     """ Denotes a file system (e.g. NAS) """
 
