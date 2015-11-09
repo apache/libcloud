@@ -41,6 +41,9 @@ class BackupTargetType(object):
     """ Denotes a database target """
     DATABASE = 'Database'
 
+    """ Denotes an object based file system """
+    OBJECT = 'Object'
+
 
 class BackupTargetJobStatus(object):
     """

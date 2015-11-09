@@ -31,7 +31,7 @@ class BackupTarget(object):
 
     def __init__(self, id, name, address, type, driver, extra=None):
         """
-        :param id: Record id
+        :param id: Target id
         :type id: ``str``
 
         :param name: Name of the target
@@ -286,7 +286,28 @@ class BackupDriver(BaseDriver):
         """
         return self.create_target(name=node.name,
                                   address=node.public_ips[0],
-                                  type=BackupTargetType.VIRTUAL,
+                                  type=type,
+                                  extra=None)
+
+    def create_target_from_container(self, container, type=BackupTargetType.OBJECT,
+                                extra=None):
+        """
+        Creates a new backup target from an existing storage container
+
+        :param node: The Container to backup
+        :type  node: ``Container``
+
+        :param type: Backup target type (Physical, Virtual, ...).
+        :type type: :class:`BackupTargetType`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+
+        :rtype: Instance of :class:`BackupTarget`
+        """
+        return self.create_target(name=container.name,
+                                  address=container.get_cdn_url(),
+                                  type=type,
                                   extra=None)
 
     def update_target(self, target, name, address, extra):
@@ -422,7 +443,7 @@ class BackupDriver(BaseDriver):
 
     def suspend_target_job(self, target, job):
         """
-        List the backup jobs on a target
+        Suspend a running backup job on a target
 
         :param target: Backup target with the backup data
         :type  target: Instance of :class:`BackupTarget`
@@ -437,12 +458,12 @@ class BackupDriver(BaseDriver):
 
     def cancel_target_job(self, target, job):
         """
-        List the backup jobs on a target
+        Cancel a backup job on a target
 
         :param target: Backup target with the backup data
         :type  target: Instance of :class:`BackupTarget`
 
-        :param job: Backup target job to suspend
+        :param job: Backup target job to cancel
         :type  job: Instance of :class:`BackupTargetJob`
 
         :rtype: ``bool``
