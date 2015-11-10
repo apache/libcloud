@@ -29,6 +29,7 @@ from libcloud.common.google import GoogleResponse, GoogleBaseConnection
 API_VERSION = 'v1'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
 
+
 class GCEResponse(GoogleResponse):
     pass
 
