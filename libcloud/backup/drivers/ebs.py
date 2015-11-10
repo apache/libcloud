@@ -17,10 +17,9 @@ __all__ = [
     'EBSBackupDriver'
 ]
 
-from datetime import datetime
 
 from libcloud.utils.xml import findtext, findall
-
+from libcloud.utils.iso8601 import parse_date
 from libcloud.backup.base import BackupDriver, BackupTargetRecoveryPoint,\
     BackupTargetJob, BackupTarget
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
@@ -114,10 +113,16 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        return self.create_target(name=node.name,
-                                  address=node.public_ips[0],
-                                  type=BackupTargetType.VOLUME,
-                                  extra=None)
+        # Get the first EBS volume.
+        device_mapping = node.extra['block_device_mapping']
+        if device_mapping is not None:
+            return self.create_target(
+                name=node.name,
+                address=device_mapping['ebs'][0]['volume_id'],
+                type=BackupTargetType.VOLUME,
+                extra=None)
+        else:
+            raise RuntimeError("Node does not have any block devices")
 
     def create_target_from_container(self, container,
                                      type=BackupTargetType.OBJECT,
@@ -280,11 +285,12 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         params = {
-            'Action': 'DescribeSnapshots',
+            'Action': 'CreateSnapshot',
             'VolumeId': target.extra['volume-id']
         }
         data = self.connection.request(ROOT, params=params).object
-        return self._to_jobs(data)[0]
+        xpath = 'CreateSnapshotResponse'
+        return self._to_job(findall(element=data, xpath=xpath, namespace=NS)[0])
 
     def resume_target_job(self, target, job):
         """
@@ -299,7 +305,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: ``bool``
         """
         raise NotImplementedError(
-            'resume_target_job not implemented for this driver')
+            'resume_target_job not supported for this driver')
 
     def suspend_target_job(self, target, job):
         """
@@ -314,7 +320,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: ``bool``
         """
         raise NotImplementedError(
-            'suspend_target_job not implemented for this driver')
+            'suspend_target_job not supported for this driver')
 
     def cancel_target_job(self, target, job):
         """
@@ -329,7 +335,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: ``bool``
         """
         raise NotImplementedError(
-            'cancel_target_job not implemented for this driver')
+            'cancel_target_job not supported for this driver')
 
     def _to_recovery_points(self, data, target):
         xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
@@ -338,15 +344,17 @@ class EBSBackupDriver(BackupDriver):
 
     def _to_recovery_point(self, el, target):
         id = findtext(element=el, xpath='snapshotId', namespace=NS)
-        date = datetime.strptime(
-            findtext(element=el, xpath='startTime', namespace=NS),
-            'YYYY-MM-DDTHH:MM:SS.SSSZ')
+        date = parse_date(
+            findtext(element=el, xpath='startTime', namespace=NS))
+        tags = self._get_resource_tags(el)
         point = BackupTargetRecoveryPoint(
             id=id,
             date=date,
             target=target,
             driver=self.connection.driver,
             extra={
+                'snapshot-id': id,
+                'tags': tags
             },
         )
         return point
@@ -384,3 +392,30 @@ class EBSBackupDriver(BackupDriver):
                 "volume-id": volume_id
             }
         )
+
+    def _get_resource_tags(self, element):
+        """
+        Parse tags from the provided element and return a dictionary with
+        key/value pairs.
+
+        :rtype: ``dict``
+        """
+        tags = {}
+
+        # Get our tag set by parsing the element
+        tag_set = findall(element=element,
+                          xpath='tagSet/item',
+                          namespace=NS)
+
+        for tag in tag_set:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NS)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NS)
+
+            tags[key] = value
+
+        return tags
