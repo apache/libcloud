@@ -20,6 +20,10 @@ from libcloud.backup.types import Provider
 DRIVERS = {
     Provider.DUMMY:
     ('libcloud.backup.drivers.dummy', 'DummyBackupDriver'),
+    Provider.EBS:
+    ('libcloud.backup.drivers.ebs', 'EBSBackupDriver'),
+    Provider.GCE:
+    ('libcloud.backup.drivers.gce', 'GCEBackupDriver'),
 }
 
 

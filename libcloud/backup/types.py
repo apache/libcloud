@@ -22,6 +22,8 @@ __all__ = [
 
 class Provider(object):
     DUMMY = 'dummy'
+    EBS = 'ebs'
+    GCE = 'gce'
 
 
 class BackupTargetType(object):

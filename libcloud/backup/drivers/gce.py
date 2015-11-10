@@ -1,3 +1,5 @@
+
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,49 +16,144 @@
 # limitations under the License.
 
 __all__ = [
-    'EBSBackupDriver'
+    'GCEBackupDriver'
 ]
 
-
-from libcloud.utils.xml import findtext, findall
 from libcloud.utils.iso8601 import parse_date
 from libcloud.backup.base import BackupDriver, BackupTargetRecoveryPoint,\
     BackupTargetJob, BackupTarget
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
-from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
+
+from libcloud.common.google import GoogleResponse, GoogleBaseConnection
+
+API_VERSION = 'v1'
+DEFAULT_TASK_COMPLETION_TIMEOUT = 180
+
+class GCEResponse(GoogleResponse):
+    pass
 
 
-VERSION = '2015-10-01'
-HOST = 'ec2.amazonaws.com'
-ROOT = '/%s/' % (VERSION)
-NS = 'http://ec2.amazonaws.com/doc/%s/' % (VERSION, )
-
-
-class EBSResponse(AWSGenericResponse):
+class GCEConnection(GoogleBaseConnection):
     """
-    Amazon EBS response class.
+    Connection class for the GCE driver.
+
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+      1. modify request_path for GCE URI.
+      2. Implement gce_params functionality described below.
+
+    If the parameter gce_params is set to a dict prior to calling request(),
+    the URL parameters will be updated to include those key/values FOR A
+    SINGLE REQUEST. If the response contains a nextPageToken,
+    gce_params['pageToken'] will be set to its value. This can be used to
+    implement paging in list:
+
+    >>> params, more_results = {'maxResults': 2}, True
+    >>> while more_results:
+    ...     driver.connection.gce_params=params
+    ...     driver.ex_list_urlmaps()
+    ...     more_results = 'pageToken' in params
+    ...
+    [<GCEUrlMap id="..." name="cli-map">, <GCEUrlMap id="..." name="lc-map">]
+    [<GCEUrlMap id="..." name="web-map">]
     """
-    namespace = NS
-    exceptions = {}
-    xpath = 'Error'
+    host = 'www.googleapis.com'
+    responseCls = GCEResponse
+
+    def __init__(self, user_id, key, secure, auth_type=None,
+                 credential_file=None, project=None, **kwargs):
+        super(GCEConnection, self).__init__(user_id, key, secure=secure,
+                                            auth_type=auth_type,
+                                            credential_file=credential_file,
+                                            **kwargs)
+        self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
+                                                         project)
+        self.gce_params = None
+
+    def pre_connect_hook(self, params, headers):
+        """
+        Update URL parameters with values from self.gce_params.
+
+        @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
+        """
+        params, headers = super(GCEConnection, self).pre_connect_hook(params,
+                                                                      headers)
+        if self.gce_params:
+            params.update(self.gce_params)
+        return params, headers
+
+    def request(self, *args, **kwargs):
+        """
+        Perform request then do GCE-specific processing of URL params.
+
+        @inherits: :class:`GoogleBaseConnection.request`
+        """
+        response = super(GCEConnection, self).request(*args, **kwargs)
+
+        # If gce_params has been set, then update the pageToken with the
+        # nextPageToken so it can be used in the next request.
+        if self.gce_params:
+            if 'nextPageToken' in response.object:
+                self.gce_params['pageToken'] = response.object['nextPageToken']
+            elif 'pageToken' in self.gce_params:
+                del self.gce_params['pageToken']
+            self.gce_params = None
+
+        return response
 
 
-class EBSConnection(SignedAWSConnection):
-    version = VERSION
-    host = HOST
-    responseCls = EBSResponse
-    service_name = 'backup'
+class GCEBackupDriver(BackupDriver):
+    name = 'Google Compute Engine Backup Driver'
+    website = 'http://cloud.google.com/'
+    connectionCls = GCEConnection
 
+    def __init__(self, user_id, key=None, project=None,
+                 auth_type=None, scopes=None, credential_file=None, **kwargs):
+        """
+        :param  user_id: The email address (for service accounts) or Client ID
+                         (for installed apps) to be used for authentication.
+        :type   user_id: ``str``
 
-class EBSBackupDriver(BackupDriver):
-    name = 'Amazon EBS Backup Driver'
-    website = 'http://aws.amazon.com/ebs/'
-    connectionCls = EBSConnection
+        :param  key: The RSA Key (for service accounts) or file path containing
+                     key or Client Secret (for installed apps) to be used for
+                     authentication.
+        :type   key: ``str``
 
-    def __init__(self, access_id, secret, region):
-        super(EBSBackupDriver, self).__init__(access_id, secret)
-        self.region = region
-        self.connection.host = HOST % (region)
+        :keyword  project: Your GCE project name. (required)
+        :type     project: ``str``
+
+        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
+                             ("Service Account" or "Installed Application" or
+                             "GCE" if libcloud is being used on a GCE instance
+                             with service account enabled).
+                             If not supplied, auth_type will be guessed based
+                             on value of user_id or if the code is being
+                             executed in a GCE instance.
+        :type     auth_type: ``str``
+
+        :keyword  scopes: List of authorization URLs. Default is empty and
+                          grants read/write to Compute, Storage, DNS.
+        :type     scopes: ``list``
+
+        :keyword  credential_file: Path to file for caching authentication
+                                   information used by GCEConnection.
+        :type     credential_file: ``str``
+        """
+        if not project:
+            raise ValueError('Project name must be specified using '
+                             '"project" keyword.')
+
+        self.auth_type = auth_type
+        self.project = project
+        self.scopes = scopes
+        self.credential_file = credential_file or \
+            '~/.gce_libcloud_auth' + '.' + self.project
+
+        super(GCEBackupDriver, self).__init__(user_id, key, **kwargs)
+
+        # Cache Zone and Region information to reduce API calls and
+        # increase speed
+        self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
+                                                      self.project)
 
     def get_supported_target_types(self):
         """
@@ -95,7 +192,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTarget`
         """
         # Does nothing since any volume can be snapped at anytime.
-        return self.ex_get_target_by_volume_id(address)
+        return self.ex_get_target_by_source(address)
 
     def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
                                 extra=None):
@@ -113,12 +210,12 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        # Get the first EBS volume.
-        device_mapping = node.extra['block_device_mapping']
-        if device_mapping is not None:
+        # Get the first persistent disk
+        disks = node.extra['disks']
+        if disks is not None:
             return self.create_target(
                 name=node.name,
-                address=device_mapping['ebs'][0]['volume_id'],
+                address=disks[0]['source'],
                 type=BackupTargetType.VOLUME,
                 extra=None)
         else:
@@ -163,7 +260,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTarget`
         """
         # Does nothing since any volume can be snapped at anytime.
-        return self.ex_get_target_by_volume_id(address)
+        return self.ex_get_target_by_source(address)
 
     def delete_target(self, target):
         """
@@ -190,13 +287,9 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`BackupTargetRecoveryPoint`
         """
-        params = {
-            'Action': 'DescribeSnapshots',
-            'Filter.1.Name': 'volume-id',
-            'Filter.1.Value': target.extra['volume-id']
-        }
-        data = self.connection.request(ROOT, params=params).object
-        return self._to_recovery_points(data, target)
+        request = '/global/snapshots'
+        response = self.connection.request(request, method='GET').object
+        return self._to_recovery_points(response, target)
 
     def recover_target(self, target, recovery_point, path=None):
         """
@@ -214,7 +307,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         raise NotImplementedError(
-            'delete_target not implemented for this driver')
+            'recover_target not implemented for this driver')
 
     def recover_target_out_of_place(self, target, recovery_point,
                                     recovery_target, path=None):
@@ -236,7 +329,7 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         raise NotImplementedError(
-            'delete_target not implemented for this driver')
+            'recover_target_out_of_place not implemented for this driver')
 
     def get_target_job(self, target, id):
         """
@@ -262,15 +355,7 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`BackupTargetJob`
         """
-        params = {
-            'Action': 'DescribeSnapshots',
-            'Filter.1.Name': 'volume-id',
-            'Filter.1.Value': target.extra['volume-id'],
-            'Filter.2.Name': 'status',
-            'Filter.2.Value': 'pending'
-        }
-        data = self.connection.request(ROOT, params=params).object
-        return self._to_jobs(data)
+        return []
 
     def create_target_job(self, target, extra=None):
         """
@@ -284,14 +369,15 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        params = {
-            'Action': 'CreateSnapshot',
-            'VolumeId': target.extra['volume-id']
+        name = target.name
+        request = '/zones/%s/disks/%s/createSnapshot' % (
+            target.extra['zone'].name, target.name)
+        snapshot_data = {
+            'source': target.extra['source']
         }
-        data = self.connection.request(ROOT, params=params).object
-        xpath = 'CreateSnapshotResponse'
-        return self._to_job(findall(element=data,
-                                    xpath=xpath, namespace=NS)[0])
+        self.connection.async_request(request, method='POST',
+                                      data=snapshot_data)
+        return self._to_job(self.ex_get_snapshot(name), target)
 
     def resume_target_job(self, target, job):
         """
@@ -339,15 +425,12 @@ class EBSBackupDriver(BackupDriver):
             'cancel_target_job not supported for this driver')
 
     def _to_recovery_points(self, data, target):
-        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
-        return [self._to_recovery_point(el, target)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        return [self._to_recovery_point(item, target)
+                for item in data.items]
 
-    def _to_recovery_point(self, el, target):
-        id = findtext(element=el, xpath='snapshotId', namespace=NS)
-        date = parse_date(
-            findtext(element=el, xpath='startTime', namespace=NS))
-        tags = self._get_resource_tags(el)
+    def _to_recovery_point(self, item, target):
+        id = item.id
+        date = parse_date(item.creationTimestamp)
         point = BackupTargetRecoveryPoint(
             id=id,
             date=date,
@@ -355,26 +438,20 @@ class EBSBackupDriver(BackupDriver):
             driver=self.connection.driver,
             extra={
                 'snapshot-id': id,
-                'tags': tags
             },
         )
         return point
 
-    def _to_jobs(self, data):
-        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
-        return [self._to_job(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+    def _to_jobs(self, data, target):
+        return [self._to_job(item, target)
+                for item in data.items]
 
-    def _to_job(self, el):
-        id = findtext(element=el, xpath='snapshotId', namespace=NS)
-        progress = findtext(element=el, xpath='progress', namespace=NS)\
-            .replace('%', '')
-        volume_id = findtext(element=el, xpath='volumeId', namespace=NS)
-        target = self.ex_get_target_by_volume_id(volume_id)
+    def _to_job(self, item, target):
+        id = item.id
         job = BackupTargetJob(
             id=id,
             status=BackupTargetJobStatusType.PENDING,
-            progress=int(progress),
+            progress=0,
             target=target,
             driver=self.connection.driver,
             extra={
@@ -382,41 +459,19 @@ class EBSBackupDriver(BackupDriver):
         )
         return job
 
-    def ex_get_target_by_volume_id(self, volume_id):
+    def ex_get_snapshot(self, name):
+        request = '/global/snapshots/%s' % (name)
+        response = self.connection.request(request, method='GET').object
+        return response
+
+    def ex_get_target_by_source(self, source):
         return BackupTarget(
-            id=volume_id,
-            name=volume_id,
-            address=volume_id,
+            id=source,
+            name=source,
+            address=source,
             type=BackupTargetType.VOLUME,
             driver=self.connection.driver,
             extra={
-                "volume-id": volume_id
+                "source": source
             }
         )
-
-    def _get_resource_tags(self, element):
-        """
-        Parse tags from the provided element and return a dictionary with
-        key/value pairs.
-
-        :rtype: ``dict``
-        """
-        tags = {}
-
-        # Get our tag set by parsing the element
-        tag_set = findall(element=element,
-                          xpath='tagSet/item',
-                          namespace=NS)
-
-        for tag in tag_set:
-            key = findtext(element=tag,
-                           xpath='key',
-                           namespace=NS)
-
-            value = findtext(element=tag,
-                             xpath='value',
-                             namespace=NS)
-
-            tags[key] = value
-
-        return tags
