@@ -44,6 +44,8 @@ class BackupTargetType(object):
     OBJECT = 'Object'
     """ Denotes an object based file system """
 
+    VOLUME = 'Volume'
+    """ Denotes a block storage volume """
 
 class BackupTargetJobStatusType(object):
     """

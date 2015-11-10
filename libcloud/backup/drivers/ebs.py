@@ -13,220 +13,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
-from libcloud.backup.types import BackupTargetType
-
 __all__ = [
-    'BackupTarget',
-    'BackupDriver',
-    'BackupTargetJob',
-    'BackupTargetRecoveryPoint'
+    'EBSBackupDriver'
 ]
 
+from datetime import datetime
 
-class BackupTarget(object):
+from libcloud.utils.xml import findtext, findall
+
+from libcloud.backup.base import BackupDriver, BackupTargetRecoveryPoint,\
+    BackupTargetJob, BackupTarget
+from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
+from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
+
+
+VERSION = '2015-10-01'
+HOST = 'ec2.amazonaws.com'
+ROOT = '/%s/' % (VERSION)
+NS = 'http://ec2.amazonaws.com/doc/%s/' % (VERSION, )
+
+
+class EBSResponse(AWSGenericResponse):
     """
-    A backup target
+    Amazon EBS response class.
     """
-
-    def __init__(self, id, name, address, type, driver, extra=None):
-        """
-        :param id: Target id
-        :type id: ``str``
-
-        :param name: Name of the target
-        :type name: ``str``
-
-        :param address: Hostname, FQDN, IP, file path etc.
-        :type address: ``str``
-
-        :param type: Backup target type (Physical, Virtual, ...).
-        :type type: :class:`BackupTargetType`
-
-        :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
-
-        :param extra: (optional) Extra attributes (driver specific).
-        :type extra: ``dict``
-        """
-        self.id = str(id) if id else None
-        self.name = name
-        self.address = address
-        self.type = type
-        self.driver = driver
-        self.extra = extra or {}
-
-    def update(self, name=None, address=None, extra=None):
-        return self.driver.update_target(target=self,
-                                         name=name,
-                                         address=address,
-                                         extra=extra)
-
-    def delete(self):
-        return self.driver.delete_target(target=self)
-
-    def _get_numeric_id(self):
-        target_id = self.id
-
-        if target_id.isdigit():
-            target_id = int(target_id)
-
-        return target_id
-
-    def __repr__(self):
-        return ('<Target: id=%s, name=%s, address=%s'
-                'type=%s, provider=%s ...>' %
-                (self.id, self.name, self.address,
-                 self.type, self.driver.name))
+    namespace = NS
+    exceptions = {}
+    xpath = 'Error'
 
 
-class BackupTargetJob(object):
-    """
-    A backup target job
-    """
-
-    def __init__(self, id, status, progress, target, driver, extra=None):
-        """
-        :param id: Job id
-        :type id: ``str``
-
-        :param status: Status of the job
-        :type status: :class:`BackupTargetJobStatusType`
-
-        :param progress: Progress of the job, as a percentage
-        :type progress: ``int``
-
-        :param target: BackupTarget instance.
-        :type target: :class:`BackupTarget`
-
-        :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
-
-        :param extra: (optional) Extra attributes (driver specific).
-        :type extra: ``dict``
-        """
-        self.id = str(id) if id else None
-        self.status = status
-        self.progress = progress
-        self.target = target
-        self.driver = driver
-        self.extra = extra or {}
-
-    def cancel(self):
-        return self.driver.cancel_target_job(target=self.target, job=self)
-
-    def suspend(self):
-        return self.driver.suspend_target_job(target=self.target, job=self)
-
-    def resume(self):
-        return self.driver.resume_target_job(target=self.target, job=self)
-
-    def __repr__(self):
-        return ('<Job: id=%s, status=%s, progress=%s'
-                'target=%s, provider=%s ...>' %
-                (self.id, self.status, self.progress,
-                 self.target.id, self.driver.name))
+class EBSConnection(SignedAWSConnection):
+    version = VERSION
+    host = HOST
+    responseCls = EBSResponse
+    service_name = 'backup'
 
 
-class BackupTargetRecoveryPoint(object):
-    """
-    A backup target recovery point
-    """
+class EBSBackupDriver(BackupDriver):
+    name = 'Amazon EBS Backup Driver'
+    website = 'http://aws.amazon.com/ebs/'
+    connectionCls = EBSConnection
 
-    def __init__(self, id, date, target, driver, extra=None):
-        """
-        :param id: Job id
-        :type id: ``str``
-
-        :param date: The date taken
-        :type date: :class:`datetime.datetime`
-
-        :param target: BackupTarget instance.
-        :type target: :class:`BackupTarget`
-
-        :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
-
-        :param extra: (optional) Extra attributes (driver specific).
-        :type extra: ``dict``
-        """
-        self.id = str(id) if id else None
-        self.date = date
-        self.target = target
-        self.driver = driver
-        self.extra = extra or {}
-
-    def recover(self, path=None):
-        """
-        Recover this recovery point
-
-        :param path: The part of the recovery point to recover (optional)
-        :type  path: ``str``
-
-        :rtype: Instance of :class:`BackupTargetJob`
-        """
-        return self.driver.recover_target(target=self.target,
-                                          recovery_point=self, path=path)
-
-    def recover_to(self, recovery_target, path=None):
-        """
-        Recover this recovery point out of place
-
-        :param recovery_target: Backup target with to recover the data to
-        :type  recovery_target: Instance of :class:`BackupTarget`
-
-        :param path: The part of the recovery point to recover (optional)
-        :type  path: ``str``
-
-        :rtype: Instance of :class:`BackupTargetJob`
-        """
-        return self.driver.recover_target_out_of_place(
-            target=self.target,
-            recovery_point=self,
-            recovery_target=recovery_target,
-            path=path)
-
-    def __repr__(self):
-        return ('<RecoveryPoint: id=%s, date=%s, '
-                'target=%s, provider=%s ...>' %
-                (self.id, self.date,
-                 self.target.id, self.driver.name))
-
-
-class BackupDriver(BaseDriver):
-    """
-    A base BackupDriver class to derive from
-
-    This class is always subclassed by a specific driver.
-    """
-    connectionCls = ConnectionUserAndKey
-    name = None
-    website = None
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 **kwargs):
-        """
-        :param    key: API key or username to used (required)
-        :type     key: ``str``
-
-        :param    secret: Secret password to be used (required)
-        :type     secret: ``str``
-
-        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
-                only support HTTPS, and it is on by default.
-        :type     secure: ``bool``
-
-        :param    host: Override hostname used for connections.
-        :type     host: ``str``
-
-        :param    port: Override port used for connections.
-        :type     port: ``int``
-
-        :return: ``None``
-        """
-        super(BackupDriver, self).__init__(key=key, secret=secret,
-                                           secure=secure, host=host, port=port,
-                                           **kwargs)
+    def __init__(self, access_id, secret, region):
+        super(EBSBackupDriver, self).__init__(access_id, secret)
+        self.region = region
+        self.connection.host = HOST % (region)
 
     def get_supported_target_types(self):
         """
@@ -234,8 +65,7 @@ class BackupDriver(BaseDriver):
 
         :return: ``list`` of :class:``BackupTargetType``
         """
-        raise NotImplementedError(
-            'get_supported_target_types not implemented for this driver')
+        return [BackupTargetType.VOLUME]
 
     def list_targets(self):
         """
@@ -247,14 +77,14 @@ class BackupDriver(BaseDriver):
             'list_targets not implemented for this driver')
 
     def create_target(self, name, address,
-                      type=BackupTargetType.VIRTUAL, extra=None):
+                      type=BackupTargetType.VOLUME, extra=None):
         """
         Creates a new backup target
 
         :param name: Name of the target
         :type name: ``str``
 
-        :param address: Hostname, FQDN, IP, file path etc.
+        :param address: The volume ID.
         :type address: ``str``
 
         :param type: Backup target type (Physical, Virtual, ...).
@@ -265,8 +95,8 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            'create_target not implemented for this driver')
+        # Does nothing since any volume can be snapped at anytime.
+        return self.ex_get_target_by_volume_id(address)
 
     def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
                                 extra=None):
@@ -286,7 +116,7 @@ class BackupDriver(BaseDriver):
         """
         return self.create_target(name=node.name,
                                   address=node.public_ips[0],
-                                  type=type,
+                                  type=BackupTargetType.VOLUME,
                                   extra=None)
 
     def create_target_from_container(self, container,
@@ -306,10 +136,8 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        return self.create_target(name=container.name,
-                                  address=container.get_cdn_url(),
-                                  type=type,
-                                  extra=None)
+        raise NotImplementedError(
+            'create_target_from_container not implemented for this driver')
 
     def update_target(self, target, name, address, extra):
         """
@@ -329,8 +157,8 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            'update_target not implemented for this driver')
+        # Does nothing since any volume can be snapped at anytime.
+        return self.ex_get_target_by_volume_id(address)
 
     def delete_target(self, target):
         """
@@ -357,8 +185,13 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`BackupTargetRecoveryPoint`
         """
-        raise NotImplementedError(
-            'list_recovery_points not implemented for this driver')
+        params = {
+            'Action': 'DescribeSnapshots',
+            'Filter.1.Name': 'volume-id',
+            'Filter.1.Value': target.extra['volume-id']
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_recovery_points(data, target)
 
     def recover_target(self, target, recovery_point, path=None):
         """
@@ -376,7 +209,7 @@ class BackupDriver(BaseDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         raise NotImplementedError(
-            'recover_target not implemented for this driver')
+            'delete_target not implemented for this driver')
 
     def recover_target_out_of_place(self, target, recovery_point,
                                     recovery_target, path=None):
@@ -398,7 +231,7 @@ class BackupDriver(BaseDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         raise NotImplementedError(
-            'recover_target_out_of_place not implemented for this driver')
+            'delete_target not implemented for this driver')
 
     def get_target_job(self, target, id):
         """
@@ -424,8 +257,15 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            'list_target_jobs not implemented for this driver')
+        params = {
+            'Action': 'DescribeSnapshots',
+            'Filter.1.Name': 'volume-id',
+            'Filter.1.Value': target.extra['volume-id'],
+            'Filter.2.Name': 'status',
+            'Filter.2.Value': 'pending'
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_jobs(data)
 
     def create_target_job(self, target, extra=None):
         """
@@ -439,8 +279,12 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            'create_target_job not implemented for this driver')
+        params = {
+            'Action': 'DescribeSnapshots',
+            'VolumeId': target.extra['volume-id']
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_jobs(data)[0]
 
     def resume_target_job(self, target, job):
         """
@@ -486,3 +330,57 @@ class BackupDriver(BaseDriver):
         """
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
+
+    def _to_recovery_points(self, data, target):
+        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
+        return [self._to_recovery_point(el, target)
+                for el in findall(element=data, xpath=xpath, namespace=NS)]
+
+    def _to_recovery_point(self, el, target):
+        id = findtext(element=el, xpath='snapshotId', namespace=NS)
+        date = datetime.strptime(
+            findtext(element=el, xpath='startTime', namespace=NS),
+            'YYYY-MM-DDTHH:MM:SS.SSSZ')
+        point = BackupTargetRecoveryPoint(
+            id=id,
+            date=date,
+            target=target,
+            driver=self.connection.driver,
+            extra={
+            },
+        )
+        return point
+
+    def _to_jobs(self, data):
+        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
+        return [self._to_job(el)
+                for el in findall(element=data, xpath=xpath, namespace=NS)]
+
+    def _to_job(self, el):
+        id = findtext(element=el, xpath='snapshotId', namespace=NS)
+        progress = findtext(element=el, xpath='progress', namespace=NS)\
+            .replace('%', '')
+        volume_id = findtext(element=el, xpath='volumeId', namespace=NS)
+        target = self.ex_get_target_by_volume_id(volume_id)
+        job = BackupTargetJob(
+            id=id,
+            status=BackupTargetJobStatusType.PENDING,
+            progress=int(progress),
+            target=target,
+            driver=self.connection.driver,
+            extra={
+            },
+        )
+        return job
+
+    def ex_get_target_by_volume_id(self, volume_id):
+        return BackupTarget(
+            id=volume_id,
+            name=volume_id,
+            address=volume_id,
+            type=BackupTargetType.VOLUME,
+            driver=self.connection.driver,
+            extra={
+                "volume-id": volume_id
+            }
+        )
