@@ -47,6 +47,7 @@ class BackupTargetType(object):
     VOLUME = 'Volume'
     """ Denotes a block storage volume """
 
+
 class BackupTargetJobStatusType(object):
     """
     The status of a backup target job
