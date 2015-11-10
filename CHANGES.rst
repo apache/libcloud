@@ -48,6 +48,11 @@ Compute
   (LIBCLOUD-767, GITHUB-627)
   [Atsushi Sasaki]
 
+- Make sure that ``node.public_ips`` attribute in the CloudStack driver doesn't
+  contain duplicated values..
+  (LIBCLOUD-766, GITHUB-626)
+  [Atsushi Sasaki]
+
 Storage
 ~~~~~~~
 
