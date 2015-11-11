@@ -1408,8 +1408,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                               address=a['ipaddress'],
                                               driver=node.driver)
                             for a in addrs.get('publicipaddress', [])
-                            if a['ipaddress'] == r['ipaddress']
-                    ]
+                            if a['ipaddress'] == r['ipaddress']]
                     rule = CloudStackPortForwardingRule(node, r['id'],
                                                         addr[0],
                                                         r['protocol'].upper(),
