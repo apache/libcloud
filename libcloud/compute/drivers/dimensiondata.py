@@ -816,7 +816,8 @@ class DimensionDataNodeDriver(NodeDriver):
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
-    def ex_wait_for_state(self, state, func, *args, **kwargs):
+    def ex_wait_for_state(self, state, func, poll_interval=2,
+                          timeout=60, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -829,10 +830,20 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  func: The function to call, e.g. ex_get_vlan
         :type   func: ``function``
 
+        :param  poll_interval: The number of seconds to wait between checks
+        :type   poll_interval: `int`
+
+        :param  timeout: The total number of seconds to wait to reach a state
+        :type   timeout: `int`
+
+        :param  args: The arguments for func
+        :type   args: Positional arguments
+
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        self.connection.wait_for_state(state, func, *args, **kwargs)
+        return self.connection.wait_for_state(state, func, poll_interval,
+                                              timeout, *args, **kwargs)
 
     def _to_nat_rules(self, object, network_domain):
         rules = []
