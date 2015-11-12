@@ -218,7 +218,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
-    def wait_for_state(self, state, func, poll_interval, timeout, *args, **kwargs):
+    def wait_for_state(self, state, func, poll_interval,
+                       timeout, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -244,12 +245,12 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :type   kwargs: Keyword arguments
         """
         cnt = 0
-        while cnt < timeout/poll_interval:
+        while cnt < timeout / poll_interval:
             response = func(*args, **kwargs)
             if response.status is state or response.status in state:
                 return response
             sleep(poll_interval)
-            cnt+=1
+            cnt += 1
         raise DimensionDataAPIException(code=response.status,
                                         msg="Status check timed out",
                                         driver=self.connection.driver)
