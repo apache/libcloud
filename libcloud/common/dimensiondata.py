@@ -218,7 +218,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
-    def wait_for_state(self, state, func, *args, **kwargs):
+    def wait_for_state(self, state, func, poll_interval, timeout, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -231,14 +231,26 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :param  func: The function to call, e.g. ex_get_vlan
         :type   func: ``function``
 
+        :param  poll_interval: The number of seconds to wait between checks
+        :type   poll_interval: `int`
+
+        :param  timeout: The total number of seconds to wait to reach a state
+        :type   timeout: `int`
+
+        :param  args: The arguments for func
+        :type   args: Positional arguments
+
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        while(True):
+        cnt = 0
+        while cnt < timeout/poll_interval:
             response = func(*args, **kwargs)
             if response.status is state or response.status in state:
-                break
-            sleep(2)
+                return response
+            sleep(poll_interval)
+            cnt+=1
+        raise Error("Request timed out")
 
     def _get_orgId(self):
         """
