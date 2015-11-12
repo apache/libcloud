@@ -218,7 +218,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
-    def wait_for_state(self, state, func, **kwargs):
+    def wait_for_state(self, state, func, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -234,9 +234,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        response = func(kwargs)
         while(True):
-            response = func(kwargs)
+            response = func(*args, **kwargs)
             if response.status is state or response.status in state:
                 break
             sleep(2)

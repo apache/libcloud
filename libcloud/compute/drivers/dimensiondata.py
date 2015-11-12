@@ -815,7 +815,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
-    def ex_wait_for_state(self, state, func, **kwargs):
+    def ex_wait_for_state(self, state, func, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -831,7 +831,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        self.connection.wait_for_state(state, func, kwargs)
+        self.connection.wait_for_state(state, func, *args, **kwargs)
 
     def _to_nat_rules(self, object, network_domain):
         rules = []
@@ -842,14 +842,12 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_nat_rule(self, element, network_domain):
-        status = element.find(fixxpath('state', TYPES_URN))
-
         return DimensionDataNatRule(
             id=element.get('id'),
             network_domain=network_domain,
             internal_ip=findtext(element, 'internalIp', TYPES_URN),
             external_ip=findtext(element, 'externalIp', TYPES_URN),
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_rules(self, object, network_domain):
         rules = []
@@ -861,8 +859,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_firewall_rule(self, element, locations, network_domain):
-        status = element.find(fixxpath('state', TYPES_URN))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -880,7 +876,7 @@ class DimensionDataNodeDriver(NodeDriver):
             destination=self._to_firewall_address(
                 element.find(fixxpath('destination', TYPES_URN))),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_address(self, element):
         ip = element.find(fixxpath('ip', TYPES_URN))
@@ -902,8 +898,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return blocks
 
     def _to_ip_block(self, element, locations):
-        status = element.find(fixxpath('state', TYPES_URN))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -916,7 +910,7 @@ class DimensionDataNodeDriver(NodeDriver):
             base_ip=findtext(element, 'baseIp', TYPES_URN),
             size=findtext(element, 'size', TYPES_URN),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_networks(self, object):
         networks = []
@@ -957,8 +951,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return network_domains
 
     def _to_network_domain(self, element, locations):
-        status = element.find(fixxpath('state', TYPES_URN))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -973,7 +965,7 @@ class DimensionDataNodeDriver(NodeDriver):
             description=findtext(element, 'description', TYPES_URN),
             plan=plan_type,
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_vlans(self, object):
         vlans = []
@@ -984,8 +976,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return vlans
 
     def _to_vlan(self, element, locations):
-        status = element.find(fixxpath('state', TYPES_URN))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -998,7 +988,7 @@ class DimensionDataNodeDriver(NodeDriver):
             private_ipv4_range_address=ip_range.get('address'),
             private_ipv4_range_size=ip_range.get('prefixSize'),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_locations(self, object):
         locations = []
