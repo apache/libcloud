@@ -250,7 +250,9 @@ class DimensionDataConnection(ConnectionUserAndKey):
                 return response
             sleep(poll_interval)
             cnt+=1
-        raise Error("Request timed out")
+        raise DimensionDataAPIException(code=response.status,
+                                        msg="Status check timed out",
+                                        driver=self.connection.driver)
 
     def _get_orgId(self):
         """
