@@ -221,15 +221,17 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
                        **kwargs):
         """
-        Wait for the function which returns a instance
-        with field status to match
+        Wait for the function which returns a instance with field status to
+        match.
 
         Keep polling func until one of the desired states is matched
 
         :param state: Either the desired state (`str`) or a `list` of states
         :type  state: ``str`` or ``list``
 
-        :param  func: The function to call, e.g. ex_get_vlan
+        :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                      function needs to return an object which has ``status``
+                      attribute.
         :type   func: ``function``
 
         :param  poll_interval: The number of seconds to wait between checks
@@ -243,17 +245,19 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
+
+        :return: Result from the calling function.
         """
         cnt = 0
         while cnt < timeout / poll_interval:
-            response = func(*args, **kwargs)
-            if response.status is state or response.status in state:
-                return response
+            result = func(*args, **kwargs)
+            if result.status is state or result.status in state:
+                return result
             sleep(poll_interval)
             cnt += 1
 
-        msg = 'Status check timed out: %s' % (response.body)
-        raise DimensionDataAPIException(code=response.status,
+        msg = 'Status check for object %s timed out' % (result)
+        raise DimensionDataAPIException(code=result.status,
                                         msg=msg,
                                         driver=self.connection.driver)
 
