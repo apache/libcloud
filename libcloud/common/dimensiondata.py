@@ -218,7 +218,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
-    def wait_for_state(self, state, func, **kwargs):
+    def wait_for_state(self, state, func, poll_interval,
+                       timeout, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -231,15 +232,28 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :param  func: The function to call, e.g. ex_get_vlan
         :type   func: ``function``
 
+        :param  poll_interval: The number of seconds to wait between checks
+        :type   poll_interval: `int`
+
+        :param  timeout: The total number of seconds to wait to reach a state
+        :type   timeout: `int`
+
+        :param  args: The arguments for func
+        :type   args: Positional arguments
+
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        response = func(kwargs)
-        while(True):
-            response = func(kwargs)
+        cnt = 0
+        while cnt < timeout / poll_interval:
+            response = func(*args, **kwargs)
             if response.status is state or response.status in state:
-                break
-            sleep(2)
+                return response
+            sleep(poll_interval)
+            cnt += 1
+        raise DimensionDataAPIException(code=response.status,
+                                        msg="Status check timed out",
+                                        driver=self.connection.driver)
 
     def _get_orgId(self):
         """
@@ -408,8 +422,8 @@ class DimensionDataVlan(object):
     DimensionData VLAN.
     """
 
-    def __init__(self, id, name, description, location, status,
-                 private_ipv4_range_address, private_ipv4_range_size):
+    def __init__(self, id, name, description, location, network_domain,
+                 status, private_ipv4_range_address, private_ipv4_range_size):
         """
         Initialize an instance of ``DimensionDataVlan``
 
@@ -425,8 +439,11 @@ class DimensionDataVlan(object):
         :param location: The location (data center) of the VLAN
         :type  location: ``NodeLocation``
 
+        :param network_domain: The Network Domain that owns this VLAN
+        :type  network_domain: :class:`DimensionDataNetworkDomain`
+
         :param status: The status of the VLAN
-        :type  status: ``DimensionDataStatus``
+        :type  status: :class:`DimensionDataStatus`
 
         :param private_ipv4_range_address: The host address of the VLAN
                                             IP space
@@ -440,6 +457,7 @@ class DimensionDataVlan(object):
         self.name = name
         self.location = location
         self.description = description
+        self.network_domain = network_domain
         self.status = status
         self.private_ipv4_range_address = private_ipv4_range_address
         self.private_ipv4_range_size = private_ipv4_range_size
