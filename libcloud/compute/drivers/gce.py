@@ -945,7 +945,7 @@ class GCENodeDriver(NodeDriver):
     result in additional GCE API calls.
     """
     connectionCls = GCEConnection
-    api_name = 'googleapis'
+    api_name = 'google'
     name = "Google Compute Engine"
     type = Provider.GCE
     website = 'https://cloud.google.com/'

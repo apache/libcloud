@@ -583,6 +583,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', nodes[0].id)
         self.assertEqual([], nodes[0].extra['security_group'])
         self.assertEqual(None, nodes[0].extra['key_name'])
+        self.assertEqual(1, len(nodes[0].public_ips))
+        self.assertEqual('1.1.1.116', nodes[0].public_ips[0])
 
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)
@@ -590,6 +592,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', node.id)
         self.assertEqual([], node.extra['security_group'])
         self.assertEqual(None, node.extra['key_name'])
+        self.assertEqual(1, len(node.public_ips))
+        self.assertEqual('1.1.1.116', node.public_ips[0])
         self.assertEqual(1, len(node.extra['ip_addresses']))
         self.assertEqual(34000, node.extra['ip_addresses'][0].id)
 
