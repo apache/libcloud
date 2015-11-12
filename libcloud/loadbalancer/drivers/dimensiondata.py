@@ -823,10 +823,10 @@ class DimensionDataLBDriver(Driver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_wait_for_state(self, state, func, **kwargs):
+    def ex_wait_for_state(self, state, func, *args, **kwargs):
         """
-        Wait for the function which returns a instance with
-        field status to match
+        Wait for the function which returns a instance
+        with field status to match
 
         Keep polling func until one of the desired states is matched
 
@@ -839,7 +839,7 @@ class DimensionDataLBDriver(Driver):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        self.connection.wait_for_state(state, func, kwargs)
+        self.connection.wait_for_state(state, func, *args, **kwargs)
 
     def _to_nodes(self, object):
         nodes = []
