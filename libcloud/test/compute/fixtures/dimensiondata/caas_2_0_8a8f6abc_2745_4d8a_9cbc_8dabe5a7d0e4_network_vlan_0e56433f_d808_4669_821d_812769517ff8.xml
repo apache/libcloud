@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <vlan
 xmlns="urn:didata.com:api:cloud:types" id="0e56433f-d808-4669-821d-812769517ff8" datacenterId="NA9">
-<networkDomain id="484174a2-ae74-4658-9e56-50fc90e086cf" name="Production
+<networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Production
 Network Domain"/>
 <name>Production VLAN</name>
 <description>test2</description>

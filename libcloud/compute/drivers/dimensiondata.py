@@ -538,6 +538,7 @@ class DimensionDataNodeDriver(NodeDriver):
             id=vlan_id,
             name=name,
             description=description,
+            network_domain=network_domain,
             location=network_domain.location,
             status=NodeState.RUNNING,
             private_ipv4_range_address=private_ipv4_base_address,
@@ -980,11 +981,16 @@ class DimensionDataNodeDriver(NodeDriver):
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
+        network_domain_el = element.find(
+            fixxpath('networkDomain', TYPES_URN))
+        network_domain = self.ex_get_network_domain(
+            network_domain_el.get('id'))
         return DimensionDataVlan(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description',
                                  TYPES_URN),
+            network_domain=network_domain,
             private_ipv4_range_address=ip_range.get('address'),
             private_ipv4_range_size=ip_range.get('prefixSize'),
             location=location,

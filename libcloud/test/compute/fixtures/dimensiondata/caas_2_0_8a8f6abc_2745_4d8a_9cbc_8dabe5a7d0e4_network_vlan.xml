@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vlans xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="4" totalCount="4" pageSize="250">
     <vlan id="55b236ad-9119-4b48-a1bb-cf5c76a7ac0f" datacenterId="NA9">
-        <networkDomain id="b30c224c-c95b-4cd9-bb8b-bfdfb5486abf" name="Aurora"/>
+        <networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Aurora"/>
         <name>Primary</name>
         <description></description>
         <privateIpv4Range address="10.0.0.0" prefixSize="24"/>
@@ -12,7 +12,7 @@
         <state>NORMAL</state>
     </vlan>
     <vlan id="7ede3b25-2222-4285-ab61-21ffb137a763" datacenterId="NA9">
-        <networkDomain id="d3320077-c2ce-4523-8c65-d417e766077b" name="Imports"/>
+        <networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Imports"/>
         <name>Wi-Fi</name>
         <description>Wi-Fi</description>
         <privateIpv4Range address="10.230.98.0" prefixSize="24"/>
@@ -20,28 +20,6 @@
         <ipv6Range address="2607:f480:111:1199:0:0:0:0" prefixSize="64"/>
         <ipv6GatewayAddress>2607:f480:111:1199:0:0:0:1</ipv6GatewayAddress>
         <createTime>2015-08-18T23:47:04.000Z</createTime>
-        <state>NORMAL</state>
-    </vlan>
-    <vlan id="ab2f6a8b-333e-4b73-8e55-390f0460b739" datacenterId="NA9">
-        <networkDomain id="68a60a3c-030d-4d4b-a8fd-4a6991afc27b" name="Platform R2.0 Lab (MCP 2.0)"/>
-        <name>Platform R2 Development</name>
-        <description>Development lab network for Platform R2.0.</description>
-        <privateIpv4Range address="10.0.1.0" prefixSize="24"/>
-        <ipv4GatewayAddress>10.0.1.1</ipv4GatewayAddress>
-        <ipv6Range address="2607:f480:111:1343:0:0:0:0" prefixSize="64"/>
-        <ipv6GatewayAddress>2607:f480:111:1343:0:0:0:1</ipv6GatewayAddress>
-        <createTime>2015-08-25T01:41:37.000Z</createTime>
-        <state>NORMAL</state>
-    </vlan>
-    <vlan id="b82803ce-eb6c-4059-961c-8727031d3ab7" datacenterId="NA9">
-        <networkDomain id="68a60a3c-030d-4d4b-a8fd-4a6991afc27b" name="Platform R2.0 Lab (MCP 2.0)"/>
-        <name>Lab Infrastructure</name>
-        <description>Lab infrastructure network for Platform R2.0.</description>
-        <privateIpv4Range address="10.0.0.0" prefixSize="24"/>
-        <ipv4GatewayAddress>10.0.0.1</ipv4GatewayAddress>
-        <ipv6Range address="2607:f480:111:1347:0:0:0:0" prefixSize="64"/>
-        <ipv6GatewayAddress>2607:f480:111:1347:0:0:0:1</ipv6GatewayAddress>
-        <createTime>2015-08-25T01:42:56.000Z</createTime>
         <state>NORMAL</state>
     </vlan>
 </vlans>
