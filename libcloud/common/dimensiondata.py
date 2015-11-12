@@ -407,8 +407,8 @@ class DimensionDataVlan(object):
     DimensionData VLAN.
     """
 
-    def __init__(self, id, name, description, location, status,
-                 private_ipv4_range_address, private_ipv4_range_size):
+    def __init__(self, id, name, description, location, network_domain,
+                 status, private_ipv4_range_address, private_ipv4_range_size):
         """
         Initialize an instance of ``DimensionDataVlan``
 
@@ -424,8 +424,11 @@ class DimensionDataVlan(object):
         :param location: The location (data center) of the VLAN
         :type  location: ``NodeLocation``
 
+        :param network_domain: The Network Domain that owns this VLAN
+        :type  network_domain: :class:`DimensionDataNetworkDomain`
+
         :param status: The status of the VLAN
-        :type  status: ``DimensionDataStatus``
+        :type  status: :class:`DimensionDataStatus`
 
         :param private_ipv4_range_address: The host address of the VLAN
                                             IP space
@@ -439,6 +442,7 @@ class DimensionDataVlan(object):
         self.name = name
         self.location = location
         self.description = description
+        self.network_domain = network_domain
         self.status = status
         self.private_ipv4_range_address = private_ipv4_range_address
         self.private_ipv4_range_size = private_ipv4_range_size

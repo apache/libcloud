@@ -783,6 +783,5 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-
 if __name__ == '__main__':
     sys.exit(unittest.main())
