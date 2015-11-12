@@ -16,6 +16,7 @@
 Dimension Data Common Components
 """
 from base64 import b64encode
+from time import sleep
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
@@ -216,6 +217,29 @@ class DimensionDataConnection(ConnectionUserAndKey):
         """
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
+
+    def wait_for_state(self, state, func, **kwargs):
+        """
+        Wait for the function which returns a instance
+        with field status to match
+
+        Keep polling func until one of the desired states is matched
+
+        :param state: Either the desired state (`str`) or a `list` of states
+        :type  state: ``str`` or ``list``
+
+        :param  func: The function to call, e.g. ex_get_vlan
+        :type   func: ``function``
+
+        :param  kwargs: The arguments for func
+        :type   kwargs: Keyword arguments
+        """
+        response = func(kwargs)
+        while(True):
+            response = func(kwargs)
+            if response.status is state or response.status in state:
+                break
+            sleep(2)
 
     def _get_orgId(self):
         """
