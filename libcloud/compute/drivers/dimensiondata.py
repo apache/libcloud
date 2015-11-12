@@ -815,6 +815,24 @@ class DimensionDataNodeDriver(NodeDriver):
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
+    def ex_wait_for_state(self, state, func, **kwargs):
+        """
+        Wait for the function which returns a instance
+        with field status to match
+
+        Keep polling func until one of the desired states is matched
+
+        :param state: Either the desired state (`str`) or a `list` of states
+        :type  state: ``str`` or ``list``
+
+        :param  func: The function to call, e.g. ex_get_vlan
+        :type   func: ``function``
+
+        :param  kwargs: The arguments for func
+        :type   kwargs: Keyword arguments
+        """
+        self.connection.wait_for_state(state, func, kwargs)
+
     def _to_nat_rules(self, object, network_domain):
         rules = []
         for element in findall(object, 'natRule', TYPES_URN):
@@ -824,7 +842,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_nat_rule(self, element, network_domain):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = element.find(fixxpath('state', TYPES_URN))
 
         return DimensionDataNatRule(
             id=element.get('id'),
@@ -843,7 +861,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_firewall_rule(self, element, locations, network_domain):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = element.find(fixxpath('state', TYPES_URN))
 
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
@@ -884,7 +902,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return blocks
 
     def _to_ip_block(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = element.find(fixxpath('state', TYPES_URN))
 
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
@@ -939,7 +957,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return network_domains
 
     def _to_network_domain(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = element.find(fixxpath('state', TYPES_URN))
 
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
@@ -966,7 +984,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return vlans
 
     def _to_vlan(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
+        status = element.find(fixxpath('state', TYPES_URN))
 
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
