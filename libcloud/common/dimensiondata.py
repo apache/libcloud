@@ -16,6 +16,7 @@
 Dimension Data Common Components
 """
 from base64 import b64encode
+from time import sleep
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
@@ -217,6 +218,49 @@ class DimensionDataConnection(ConnectionUserAndKey):
         return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
                               self._get_orgId()))
 
+    def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
+                       **kwargs):
+        """
+        Wait for the function which returns a instance with field status to
+        match.
+
+        Keep polling func until one of the desired states is matched
+
+        :param state: Either the desired state (`str`) or a `list` of states
+        :type  state: ``str`` or ``list``
+
+        :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                      function needs to return an object which has ``status``
+                      attribute.
+        :type   func: ``function``
+
+        :param  poll_interval: The number of seconds to wait between checks
+        :type   poll_interval: `int`
+
+        :param  timeout: The total number of seconds to wait to reach a state
+        :type   timeout: `int`
+
+        :param  args: The arguments for func
+        :type   args: Positional arguments
+
+        :param  kwargs: The arguments for func
+        :type   kwargs: Keyword arguments
+
+        :return: Result from the calling function.
+        """
+        cnt = 0
+        while cnt < timeout / poll_interval:
+            result = func(*args, **kwargs)
+            if result.status is state or result.status in state:
+                return result
+            sleep(poll_interval)
+            cnt += 1
+
+        msg = 'Status check for object %s timed out' % (result)
+        raise DimensionDataAPIException(code=result.status,
+                                        msg=msg,
+                                        driver=self.connection.driver)
+
     def _get_orgId(self):
         """
         Send the /myaccount API request to DimensionData cloud and parse the
@@ -384,8 +428,8 @@ class DimensionDataVlan(object):
     DimensionData VLAN.
     """
 
-    def __init__(self, id, name, description, location, status,
-                 private_ipv4_range_address, private_ipv4_range_size):
+    def __init__(self, id, name, description, location, network_domain,
+                 status, private_ipv4_range_address, private_ipv4_range_size):
         """
         Initialize an instance of ``DimensionDataVlan``
 
@@ -401,8 +445,11 @@ class DimensionDataVlan(object):
         :param location: The location (data center) of the VLAN
         :type  location: ``NodeLocation``
 
+        :param network_domain: The Network Domain that owns this VLAN
+        :type  network_domain: :class:`DimensionDataNetworkDomain`
+
         :param status: The status of the VLAN
-        :type  status: ``DimensionDataStatus``
+        :type  status: :class:`DimensionDataStatus`
 
         :param private_ipv4_range_address: The host address of the VLAN
                                             IP space
@@ -416,6 +463,7 @@ class DimensionDataVlan(object):
         self.name = name
         self.location = location
         self.description = description
+        self.network_domain = network_domain
         self.status = status
         self.private_ipv4_range_address = private_ipv4_range_address
         self.private_ipv4_range_size = private_ipv4_range_size

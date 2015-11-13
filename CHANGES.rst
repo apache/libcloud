@@ -53,6 +53,11 @@ Compute
   (LIBCLOUD-766, GITHUB-626)
   [Atsushi Sasaki]
 
+- Allow user to wait for a resource to reach a desired state in the
+  Dimension Data driver by using new ``ex_wait_for_state`` method.
+  [LIBCLOUD-707, GITHUB-631]
+  [Anthony Shaw]
+
 Storage
 ~~~~~~~
 
