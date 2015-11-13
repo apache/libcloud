@@ -22,7 +22,7 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 
-.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/

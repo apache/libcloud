@@ -6,6 +6,7 @@ Provider              Documentation                             Provider constan
 `AuroraDNS`_          :doc:`Click </dns/drivers/auroradns>`     AURORADNS         :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
 `DigitalOcean`_       :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
 `DNSimple`_           :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
+`DurableDNS`_         :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
 `Gandi DNS`_                                                    GANDI             :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
 `Google DNS`_                                                   GOOGLE            :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
 `Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
@@ -26,6 +27,7 @@ Provider              Documentation                             Provider constan
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
+.. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
