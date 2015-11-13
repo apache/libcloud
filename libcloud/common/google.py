@@ -79,6 +79,7 @@ import time
 import datetime
 import logging
 import os
+import re
 import socket
 import sys
 
@@ -104,11 +105,24 @@ except ImportError:
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 
+def _now():
+    return datetime.datetime.utcnow()
+
+
 def _is_gce():
     http_code, http_reason, body = _get_gce_metadata()
     if http_code == httplib.OK and body:
         return True
     return False
+
+
+def _is_gcs_s3(user_id):
+    """Checks S3 key format: 20 alphanumeric chars starting with GOOG."""
+    return bool(re.match(r'GOOG[A-Z0-9]{16}', user_id))
+
+
+def _is_sa(user_id):
+    return user_id.endswith('@developer.gserviceaccount.com')
 
 
 def _get_gce_metadata(path=''):
@@ -328,9 +342,6 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
 
         super(GoogleBaseAuthConnection, self).__init__(user_id, key, **kwargs)
 
-    def _now(self):
-        return datetime.datetime.utcnow()
-
     def add_default_headers(self, headers):
         headers['Content-Type'] = "application/x-www-form-urlencoded"
         headers['Host'] = self.host
@@ -348,7 +359,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         :rtype:   ``dict``
         """
         data = urlencode(request_body)
-        now = self._now()
+        now = _now()
         try:
             response = self.request('/o/oauth2/token', method='POST',
                                     data=data)
@@ -545,10 +556,41 @@ class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
                              "'%s'" % str(http_reason))
         token_info = json.loads(token_info)
         if 'expires_in' in token_info:
-            expire_time = self._now() + datetime.timedelta(
+            expire_time = _now() + datetime.timedelta(
                 seconds=token_info['expires_in'])
             token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
         return token_info
+
+
+class GoogleAuthType(object):
+    """
+    SA (Service Account),
+    IA (Installed Application),
+    GCE (Auth from a GCE instance with service account enabled)
+    GCS_S3 (Cloud Storage S3 interoperability authentication)
+    """
+    SA = 'SA'
+    IA = 'IA'
+    GCE = 'GCE'
+    GCS_S3 = 'GCS_S3'
+
+    ALL_TYPES = [SA, IA, GCE, GCS_S3]
+    OAUTH2_TYPES = [SA, IA, GCE]
+
+    @classmethod
+    def guess_type(cls, user_id):
+        if _is_sa(user_id):
+            return cls.SA
+        elif _is_gce():
+            return cls.GCE
+        elif _is_gcs_s3(user_id):
+            return cls.GCS_S3
+        else:
+            return cls.IA
+
+    @classmethod
+    def is_oauth2(cls, auth_type):
+        return auth_type in cls.OAUTH2_TYPES
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
@@ -558,6 +600,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     host = 'www.googleapis.com'
     poll_interval = 2.0
     timeout = 180
+    credential_file = '~/.google_libcloud_auth'
 
     def __init__(self, user_id, key=None, auth_type=None,
                  credential_file=None, scopes=None, **kwargs):
@@ -574,13 +617,8 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                      authentication.
         :type   key: ``str``
 
-        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
-                             ("Service Account" or "Installed Application" or
-                             "GCE" if libcloud is being used on a GCE instance
-                             with service account enabled).
-                             If not supplied, auth_type will be guessed based
-                             on value of user_id or if the code is being
-                             executed in a GCE instance.).
+        :keyword  auth_type: See GoogleAuthType class for list and description
+                             of accepted values.
                              If not supplied, auth_type will be guessed based
                              on value of user_id or if the code is running
                              on a GCE instance.
@@ -594,49 +632,24 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                           read/write access to Compute, Storage, and DNS.
         :type     scopes: ``list``
         """
-        self.credential_file = credential_file or '~/.gce_libcloud_auth'
+        self.user_id = user_id
+        self.key = key
+        if auth_type and auth_type not in GoogleAuthType.ALL_TYPES:
+            raise GoogleAuthError('Invalid auth type: %s' % auth_type)
+        self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
 
-        if auth_type is None:
-            # Try to guess.
-            if '@' in user_id:
-                auth_type = 'SA'
-            elif _is_gce():
-                auth_type = 'GCE'
-            else:
-                auth_type = 'IA'
-
-        # Default scopes to read/write for compute, storage, and dns.  Can
-        # override this when calling get_driver() or setting in secrets.py
+        # OAuth2 stuff and placeholders
         self.scopes = scopes
-        if not self.scopes:
-            self.scopes = [
-                'https://www.googleapis.com/auth/compute',
-                'https://www.googleapis.com/auth/devstorage.full_control',
-                'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            ]
-        self.token_info = self._get_token_info_from_file()
+        self.auth_conn = None
+        self.token_expire_time = None
+        self.token_info = None
+        if credential_file:
+            self.credential_file = credential_file
+        elif self.auth_type == GoogleAuthType.SA:
+            self.credential_file += '.' + user_id
 
-        if auth_type == 'GCE':
-            self.auth_conn = GoogleGCEServiceAcctAuthConnection(
-                user_id, self.scopes, **kwargs)
-        elif auth_type == 'SA':
-            if '@' not in user_id:
-                raise GoogleAuthError('Service Account auth requires a '
-                                      'valid email address')
-            self.auth_conn = GoogleServiceAcctAuthConnection(
-                user_id, key, self.scopes, **kwargs)
-        elif auth_type == 'IA':
-            self.auth_conn = GoogleInstalledAppAuthConnection(
-                user_id, key, self.scopes, **kwargs)
-        else:
-            raise GoogleAuthError('Invalid auth_type: %s' % str(auth_type))
-
-        if self.token_info is None:
-            self.token_info = self.auth_conn.get_new_token()
-            self._write_token_info_to_file()
-
-        self.token_expire_time = datetime.datetime.strptime(
-            self.token_info['expire_time'], TIMESTAMP_FORMAT)
+        if GoogleAuthType.is_oauth2(self.auth_type):
+            self._setup_oauth2(**kwargs)
 
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
 
@@ -645,14 +658,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         ver_platform = 'Python %s/%s' % (python_ver, sys.platform)
         self.user_agent_append(ver_platform)
 
-    def _now(self):
-        return datetime.datetime.utcnow()
-
     def add_default_headers(self, headers):
         """
         @inherits: :class:`Connection.add_default_headers`
         """
-        headers['Content-Type'] = "application/json"
+        headers['Content-Type'] = 'application/json'
         headers['Host'] = self.host
         return headers
 
@@ -663,7 +673,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         @inherits: :class:`Connection.pre_connect_hook`
         """
-        now = self._now()
+        now = _now()
         if self.token_expire_time < now:
             self.token_info = self.auth_conn.refresh_token(self.token_info)
             self.token_expire_time = datetime.datetime.strptime(
@@ -698,33 +708,6 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                     raise e
         # One more time, then give up.
         return super(GoogleBaseConnection, self).request(*args, **kwargs)
-
-    def _get_token_info_from_file(self):
-        """
-        Read credential file and return token information.
-
-        :return:  Token information dictionary, or None
-        :rtype:   ``dict`` or ``None``
-        """
-        token_info = None
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-
-        try:
-            with open(filename, 'r') as f:
-                data = f.read()
-            token_info = json.loads(data)
-        except IOError:
-            pass
-        return token_info
-
-    def _write_token_info_to_file(self):
-        """
-        Write token_info to credential file.
-        """
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        data = json.dumps(self.token_info)
-        with open(filename, 'w') as f:
-            f.write(data)
 
     def has_completed(self, response):
         """
@@ -768,3 +751,61 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         else:
             request = self.request_path + action
         return request
+
+    def _setup_oauth2(self, **kwargs):
+        # Default scopes to read/write for compute, storage, and dns.  Can
+        # override this when calling get_driver() or setting in secrets.py
+        if not self.scopes:
+            self.scopes = [
+                'https://www.googleapis.com/auth/compute',
+                'https://www.googleapis.com/auth/devstorage.full_control',
+                'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            ]
+        self.token_info = self._get_token_info_from_file()
+
+        if self.auth_type == GoogleAuthType.GCE:
+            self.auth_conn = GoogleGCEServiceAcctAuthConnection(
+                self.user_id, self.scopes, **kwargs)
+        elif self.auth_type == GoogleAuthType.SA:
+            self.auth_conn = GoogleServiceAcctAuthConnection(
+                self.user_id, self.key, self.scopes, **kwargs)
+        elif self.auth_type == GoogleAuthType.IA:
+            self.auth_conn = GoogleInstalledAppAuthConnection(
+                self.user_id, self.key, self.scopes, **kwargs)
+        else:
+            raise GoogleAuthError('Invalid auth_type: %s' %
+                                  str(self.auth_type))
+
+        if self.token_info is None:
+            self.token_info = self.auth_conn.get_new_token()
+            self._write_token_info_to_file()
+
+        self.token_expire_time = datetime.datetime.strptime(
+            self.token_info['expire_time'], TIMESTAMP_FORMAT)
+
+    def _get_token_info_from_file(self):
+        """
+        Read credential file and return token information.
+
+        :return:  Token information dictionary, or None
+        :rtype:   ``dict`` or ``None``
+        """
+        token_info = None
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+
+        try:
+            with open(filename, 'r') as f:
+                data = f.read()
+            token_info = json.loads(data)
+        except IOError:
+            pass
+        return token_info
+
+    def _write_token_info_to_file(self):
+        """
+        Write token_info to credential file.
+        """
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+        data = json.dumps(self.token_info)
+        with open(filename, 'w') as f:
+            f.write(data)

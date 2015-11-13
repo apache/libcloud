@@ -30,6 +30,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
@@ -571,12 +572,12 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.extra['content_type'], 'application/zip')
         self.assertEqual(obj.meta_data['rabbits'], 'monkeys')
 
-    def test_create_container_invalid_name(self):
-        # invalid container name
+    def test_create_container_bad_request(self):
+        # invalid container name, returns a 400 bad request
         self.mock_response_klass.type = 'INVALID_NAME'
         try:
             self.driver.create_container(container_name='new_container')
-        except InvalidContainerNameError:
+        except ContainerError:
             pass
         else:
             self.fail('Exception was not thrown')

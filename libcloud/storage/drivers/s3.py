@@ -39,6 +39,7 @@ from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
@@ -379,10 +380,10 @@ class BaseS3StorageDriver(StorageDriver):
                       'be unique among all the containers in the system',
                 container_name=container_name, driver=self)
         elif response.status == httplib.BAD_REQUEST:
-            raise InvalidContainerNameError(value='Container name contains ' +
-                                            'invalid characters.',
-                                            container_name=container_name,
-                                            driver=self)
+            raise ContainerError(
+                value='Bad request when creating container: %s' %
+                      response.body,
+                container_name=container_name, driver=self)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)

@@ -520,9 +520,7 @@ class Connection(object):
             (self.host, self.port, self.secure,
              self.request_path) = self._tuple_from_url(url)
 
-        if timeout is None:
-            timeout = self.__class__.timeout
-        self.timeout = timeout
+        self.timeout = timeout or self.timeout
         self.retry_delay = retry_delay
         self.backoff = backoff
         self.proxy_url = proxy_url
