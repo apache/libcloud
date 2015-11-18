@@ -22,7 +22,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (us-west-2)`_      no                   no                no                    no                
 ============================= ==================== ================= ===================== ==================
 
-.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/

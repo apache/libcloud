@@ -22,7 +22,7 @@ Provider                      Documentation                                   Pr
 `Amazon S3 (us-west-2)`_                                                      S3_US_WEST_OREGON :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestOregonStorageDriver`
 ============================= =============================================== ================= ============================================== ====================================
 
-.. _`PCextreme AuroraObjects`: https://www.pcextreme.nl/en/aurora/objects
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/

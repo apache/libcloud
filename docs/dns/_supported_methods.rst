@@ -6,6 +6,7 @@ Provider              list zones list records create zone update zone create rec
 `AuroraDNS`_          yes        yes          yes         no          yes           yes           yes         yes          
 `DigitalOcean`_       yes        yes          yes         no          yes           yes           yes         yes          
 `DNSimple`_           yes        yes          yes         no          yes           yes           yes         yes          
+`DurableDNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
 `Gandi DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Google DNS`_         yes        yes          yes         no          yes           no            yes         yes          
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
@@ -26,6 +27,7 @@ Provider              list zones list records create zone update zone create rec
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
+.. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/

@@ -227,7 +227,7 @@ contains.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When checking if a variable is provided or defined, prefer to use
-``is foo is not None`` instead of ``if foo``.
+``if foo is not None`` instead of ``if foo``.
 
 If you use ``if foo`` approach, it's easy to make a mistake when a valid value
 can also be falsy (e.g. a number ``0``).
