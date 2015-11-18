@@ -375,10 +375,10 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
-    def create_node(self, name, image, size=None, volume=None,
-                    ex_datacenter=None, ex_internet_access=True,
-                    ex_availability_zone=None, ex_ram=None,
-                    ex_cores=None, ex_disk=None, **kwargs):
+    def create_node(self, name, image, size=None, location=None,
+                    volume=None, ex_datacenter=None, ex_internet_access=True,
+                    ex_availability_zone=None, ex_ram=None, ex_cores=None,
+                    ex_disk=None, **kwargs):
         """
         Creates a node.
 
@@ -388,6 +388,10 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :param volume: If the volume already exists then pass this in.
         :type volume: :class:`StorageVolume`
+
+        :param location: The location of the new data center
+            if one is not supplied.
+        :type location: : :class:`NodeLocation`
 
         :param ex_datacenter: If you've already created the DC then pass
                            it in.
@@ -417,7 +421,10 @@ class ProfitBricksNodeDriver(NodeDriver):
             '''
 
             'Creating a Datacenter for the node since one was not provided.'
-            new_datacenter = self._create_new_datacenter_for_node(name=name)
+            new_datacenter = self._create_new_datacenter_for_node(
+                name=name,
+                location=location
+            )
             datacenter_id = new_datacenter.id
 
             'Waiting for the Datacenter create operation to finish.'
@@ -1431,13 +1438,17 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return datacenter
 
-    def _create_new_datacenter_for_node(self, name):
+    def _create_new_datacenter_for_node(self, name, location):
         """
         Creates a Datacenter for a node.
         """
         dc_name = name + '-DC'
 
-        return self.ex_create_datacenter(name=dc_name, location='us/las')
+        if not location:
+            loc = 'us/las'
+        else:
+            loc = location.id
+        return self.ex_create_datacenter(name=dc_name, location=loc)
 
     def _wait_for_storage_volume_state(self, volume, state=NodeState.RUNNING,
                                        timeout=300, interval=5):
