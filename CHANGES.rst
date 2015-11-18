@@ -57,6 +57,10 @@ Compute
   Dimension Data driver by using new ``ex_wait_for_state`` method.
   [LIBCLOUD-707, GITHUB-631]
   [Anthony Shaw]
+  
+- Added M4 pricing and instance information to EC2 driver
+  [GITHUB-634]
+  [Benjamin Zaitlen]
 
 Storage
 ~~~~~~~
