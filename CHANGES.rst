@@ -62,6 +62,10 @@ Compute
   [GITHUB-634]
   [Benjamin Zaitlen]
 
+- Allow location of the datacenter to be supplied in ProfitBricks driver
+  [LIBCLOUD-771, GITHUB-635]
+  [Joel Reymont]
+
 Storage
 ~~~~~~~
 
