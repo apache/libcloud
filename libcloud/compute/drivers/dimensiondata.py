@@ -33,11 +33,9 @@ from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
-from libcloud.common.dimensiondata import API_ENDPOINTS
-from libcloud.common.dimensiondata import DEFAULT_REGION
+from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import SERVER_NS
-from libcloud.common.dimensiondata import NETWORK_NS
+from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
@@ -165,6 +163,15 @@ class DimensionDataNodeDriver(NodeDriver):
         return node
 
     def destroy_node(self, node):
+        """
+        Deletes a node, node must be stopped before deletion
+
+
+        :keyword node: The node to delete
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         request_elm = ET.Element('deleteServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -175,6 +182,15 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def reboot_node(self, node):
+        """
+        Reboots a node by requesting the OS restart via the hypervisor
+
+
+        :keyword node: The node to reboot
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         request_elm = ET.Element('rebootServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -185,6 +201,13 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def list_nodes(self):
+        """
+        List nodes deployed across all data center locations for your
+        organization.
+
+        :return: a list of `Node` objects
+        :rtype: ``list`` of :class:`Node`
+        """
         nodes = self._to_nodes(
             self.connection.request_with_orgId_api_2('server/server').object)
 
@@ -377,6 +400,19 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_attach_node_to_vlan(self, node, vlan):
+        """
+        Attach a node to a VLAN by adding an additional NIC to
+        the node on the target VLAN. The IP will be automatically
+        assigned based on the VLAN IP network space.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      vlan: VLAN to attach the node to
+        :type       vlan: :class:`DimensionDataVlan`
+
+        :rtype: ``bool``
+        """
         request = ET.Element('addNic',
                              {'xmlns': TYPES_URN})
         ET.SubElement(request, 'serverId').text = node.id
@@ -391,6 +427,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_nic(self, nic_id):
+        """
+        Remove a NIC on a node, removing the node from a VLAN
+
+        :param      nic_id: The identifier of the NIC to remove
+        :type       nic_id: ``str``
+
+        :rtype: ``bool``
+        """
         request = ET.Element('removeNic',
                              {'xmlns': TYPES_URN,
                               'id': nic_id})
@@ -419,7 +463,84 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_networks(response)
 
+    def ex_create_network(self, location, name, description=None):
+        """
+        Create a new network in an MCP 1.0 location
+
+        :param   location: The target location (MCP1)
+        :type    location: :class:`NodeLocation`
+
+        :param   name: The name of the network
+        :type    name: ``str``
+
+        :param   description: Additional description of the network
+        :type    description: ``str``
+
+        :return: A new instance of `DimensionDataNetwork`
+        :rtype:  Instance of :class:`DimensionDataNetwork`
+        """
+        create_node = ET.Element('NewNetworkWithLocation',
+                                 {'xmlns': NETWORK_NS})
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "location").text = location.id
+
+        self.connection.request_with_orgId_api_1(
+            'networkWithLocation',
+            method='POST',
+            data=ET.tostring(create_node))
+
+        # MCP1 API does not return the ID, but name is unique for location
+        network = list(
+            filter(lambda x: x.name == name,
+                   self.ex_list_networks(location)))[0]
+
+        return network
+
+    def ex_delete_network(self, network):
+        """
+        Delete a network from an MCP 1 data center
+
+        :param  network: The network to delete
+        :type   network: :class:`DimensionDataNetwork`
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s?delete' % network.id,
+            method='GET').object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
+
+    def ex_rename_network(self, network, new_name):
+        """
+        Rename a network in MCP 1 data center
+
+        :param  network: The network to rename
+        :type   network: :class:`DimensionDataNetwork`
+
+        :param  new_name: The new name of the network
+        :type   new_name: ``str``
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s' % network.id,
+            method='POST',
+            data='name=%s' % new_name).object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
+
     def ex_get_network_domain(self, network_domain_id):
+        """
+        Get an individual Network Domain, by identifier
+
+        :param      network_domain_id: The identifier of the network domain
+        :type       network_domain_id: ``str``
+
+        :rtype: :class:`DimensionDataNetworkDomain`
+        """
         locations = self.list_locations()
         net = self.connection.request_with_orgId_api_2(
             'network/networkDomain/%s' % network_domain_id).object
@@ -427,10 +548,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_list_network_domains(self, location=None):
         """
-        List networks deployed across all data center locations for your
-        organization.  The response includes the location of each network.
+        List networks domains deployed across all data center locations
+        for your organization.
+        The response includes the location of each network domain.
 
-        :return: a list of DimensionDataNetwork objects
+        :param      location: The data center to list (optional)
+        :type       location: :class:`NodeLocation`
+
+        :return: a list of `DimensionDataNetwork` objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         params = {}
@@ -446,6 +571,23 @@ class DimensionDataNodeDriver(NodeDriver):
                                  description=None):
         """
         Deploy a new network domain to a data center
+
+        :param      location: The data center to list
+        :type       location: :class:`NodeLocation`
+
+        :param      name: The name of the network domain to create
+        :type       name: ``str``
+
+        :param      service_plan: The service plan, either "ESSENTIALS"
+            or "ADVANCED"
+        :type       service_plan: ``str``
+
+        :param      description: An additional description of
+                                 the network domain
+        :type       description: ``str``
+
+        :return: an instance of `DimensionDataNetworkDomain`
+        :rtype: :class:`DimensionDataNetworkDomain`
         """
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "datacenterId").text = location.id
@@ -477,6 +619,12 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_update_network_domain(self, network_domain):
         """
         Update the properties of a network domain
+
+        :param      network_domain: The network domain with updated properties
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataNetworkDomain`
+        :rtype: :class:`DimensionDataNetworkDomain`
         """
         edit_node = ET.Element('editNetworkDomain', {'xmlns': TYPES_URN})
         edit_node.set('id', network_domain.id)
@@ -494,6 +642,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return network_domain
 
     def ex_delete_network_domain(self, network_domain):
+        """
+        Delete a network domain
+
+        :param      network_domain: The network domain to delete
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``bool``
+        """
         delete_node = ET.Element('deleteNetworkDomain', {'xmlns': TYPES_URN})
         delete_node.set('id', network_domain.id)
         result = self.connection.request_with_orgId_api_2(
@@ -509,9 +665,29 @@ class DimensionDataNodeDriver(NodeDriver):
                        name,
                        private_ipv4_base_address,
                        description=None,
-                       private_ipv4_prefix_size='24'):
+                       private_ipv4_prefix_size=24):
         """
         Deploy a new VLAN to a network domain
+
+        :param      network_domain: The network domain to add the VLAN to
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param      name: The name of the VLAN to create
+        :type       name: ``str``
+
+        :param      private_ipv4_base_address: The base IPv4 address
+            e.g. 192.168.1.0
+        :type       private_ipv4_base_address: ``str``
+
+        :param      description: An additional description of the VLAN
+        :type       description: ``str``
+
+        :param      private_ipv4_prefix_size: The size of the IPv4
+            address space, e.g 24
+        :type       private_ipv4_prefix_size: ``int``
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         create_node = ET.Element('deployVlan', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "networkDomainId").text = network_domain.id
@@ -521,7 +697,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(create_node, "privateIpv4BaseAddress").text = \
             private_ipv4_base_address
         ET.SubElement(create_node, "privateIpv4PrefixSize").text = \
-            private_ipv4_prefix_size
+            str(private_ipv4_prefix_size)
 
         response = self.connection.request_with_orgId_api_2(
             'network/deployVlan',
@@ -546,6 +722,15 @@ class DimensionDataNodeDriver(NodeDriver):
         )
 
     def ex_get_vlan(self, vlan_id):
+        """
+        Get a single VLAN, by it's identifier
+
+        :param   vlan_id: The identifier of the VLAN
+        :type    vlan_id: ``str``
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
+        """
         locations = self.list_locations()
         vlan = self.connection.request_with_orgId_api_2(
             'network/vlan/%s' % vlan_id).object
@@ -555,6 +740,12 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Updates the properties of the given VLAN
         Only name and description are updated
+
+        :param      vlan: The VLAN to update
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         edit_node = ET.Element('editVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
@@ -576,6 +767,12 @@ class DimensionDataNodeDriver(NodeDriver):
         The expansion will
         not be permitted if the proposed IP space overlaps with an
         already deployed VLANs IP space.
+
+        :param      vlan: The VLAN to update
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         edit_node = ET.Element('expandVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
@@ -590,6 +787,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return vlan
 
     def ex_delete_vlan(self, vlan):
+        """
+        Deletes an existing VLAN
+
+        :param      vlan: The VLAN to delete
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``bool``
+        """
         delete_node = ET.Element('deleteVlan', {'xmlns': TYPES_URN})
         delete_node.set('id', vlan.id)
         result = self.connection.request_with_orgId_api_2(
@@ -602,7 +807,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_list_vlans(self, location=None, network_domain=None):
         """
-        List VLANs available in a given networkDomain
+        List VLANs available, can filter by location and/or network domain
+
+        :param      location: Only VLANs in this location (optional)
+        :type       location: :class:`NodeLocation`
+
+        :param      network_domain: Only VLANs in this domain (optional)
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
 
         :return: a list of DimensionDataVlan objects
         :rtype: ``list`` of :class:`DimensionDataVlan`
@@ -791,6 +1002,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return self._to_nat_rule(rule, network_domain)
 
     def ex_delete_nat_rule(self, rule):
+        """
+        Delete an existing NAT rule
+
+        :param  rule: The rule to delete
+        :type   rule: :class:`DimensionDataNatRule`
+
+        :rtype: ``bool``
+        """
         update_node = ET.Element('deleteNatRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -844,6 +1063,76 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         return self.connection.wait_for_state(state, func, poll_interval,
                                               timeout, *args, **kwargs)
+
+    def ex_enable_monitoring(self, node, service_plan="ESSENTIALS"):
+        """
+        Enables cloud monitoring on a node
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('enableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/enableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_monitoring_plan(self, node, service_plan="ESSENTIALS"):
+        """
+        Updates the service plan on a node with monitoring
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('changeServerMonitoringPlan',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/changeServerMonitoringPlan',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_disable_monitoring(self, node):
+        """
+        Disables cloud monitoring for a node
+
+        :param   node: The node to stop monitoring
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('disableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/disableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_nat_rules(self, object, network_domain):
         rules = []

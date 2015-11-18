@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns7:Status xmlns:ns16="http://oec.api.opsource.net/schemas/serverbootstrap"
+            xmlns="http://oec.api.opsource.net/schemas/network"
+            xmlns:ns14="http://oec.api.opsource.net/schemas/storage"
+            xmlns:ns15="http://oec.api.opsource.net/schemas/backup"
+            xmlns:ns9="http://oec.api.opsource.net/schemas/admin"
+            xmlns:ns5="http://oec.api.opsource.net/schemas/organization"
+            xmlns:ns12="http://oec.api.opsource.net/schemas/support"
+            xmlns:ns13="http://oec.api.opsource.net/schemas/multigeo"
+            xmlns:ns6="http://oec.api.opsource.net/schemas/directory"
+            xmlns:ns7="http://oec.api.opsource.net/schemas/general" xmlns:ns10="http://oec.api.opsource.net/schemas/reset" xmlns:ns8="http://oec.api.opsource.net/schemas/vip" xmlns:ns11="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns2="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns4="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns3="http://oec.api.opsource.net/schemas/server">
+    <ns7:operation>Add Network</ns7:operation>
+    <ns7:result>SUCCESS</ns7:result>
+    <ns7:resultDetail>Network created successfully (Network ID: 9eb15060-e2f7-11e1-9153-001b21cfdbe0)</ns7:resultDetail>
+    <ns7:resultCode>REASON_0</ns7:resultCode>
+</ns7:Status>
