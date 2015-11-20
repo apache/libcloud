@@ -70,7 +70,7 @@ class WorldWideDNSDriver(DNSDriver):
         :param    reseller_id: Reseller ID for reseller accounts
         :type     reseller_id: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
                           only support HTTPS, and it is on by default.
         :type     secure: ``bool``
 
