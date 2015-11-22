@@ -83,7 +83,7 @@ class CloudFlareDNSResponse(JsonResponse):
                                           driver=self.connection.driver,
                                           record_id=context_record_id)
         elif (is_error_result and 'invalid zone' in msg.lower() and
-                  context_zone_domain):
+              context_zone_domain):
             raise ZoneDoesNotExistError(value=msg,
                                         driver=self.connection.driver,
                                         zone_id=context_zone_domain)
@@ -151,8 +151,9 @@ class CloudFlareDNSDriver(DNSDriver):
         # TODO: Support pagination
         params = {'z': zone.domain}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='rec_load_all', params=params).object
-        records = self._to_records(zone=zone, data=result['response']['recs']['objs'])
+        resp = self.connection.request(action='rec_load_all', params=params)
+        data = resp.object['response']['recs']['objs']
+        records = self._to_records(zone=zone, data=data)
         return records
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -167,8 +168,9 @@ class CloudFlareDNSDriver(DNSDriver):
             params['prio'] = extra['priority']
 
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='rec_new', params=params).object
-        record = self._to_record(zone=zone, item=result['response']['rec']['obj'])
+        resp = self.connection.request(action='rec_new', params=params)
+        item = resp.object['response']['rec']['obj']
+        record = self._to_record(zone=zone, item=item)
         return record
 
     def update_record(self, record, name=None, type=None, data=None,
@@ -183,30 +185,32 @@ class CloudFlareDNSDriver(DNSDriver):
 
         self.connection.set_context({'zone_domain': record.zone.domain})
         self.connection.set_context({'record_id': record.id})
-        result = self.connection.request(action='rec_edit', params=params).object
-        record = self._to_record(zone=record.zone, item=result['response']['rec']['obj'])
+        resp = self.connection.request(action='rec_edit', params=params)
+        item = resp.object['response']['rec']['obj']
+        record = self._to_record(zone=record.zone, item=item)
         return record
 
     def delete_record(self, record):
         params = {'z': record.zone.domain, 'id': record.id}
         self.connection.set_context({'zone_domain': record.zone.domain})
         self.connection.set_context({'record_id': record.id})
-        result = self.connection.request(action='rec_delete', params=params).object
+        resp = self.connection.request(action='rec_delete', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_get_zone_stats(self, zone, interval=30):
         params = {'z': zone.domain, 'interval': interval}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='stats', params=params).object
-        result = result['response']['result']['objs']
+        resp = self.connection.request(action='stats', params=params)
+        result = resp.object['response']['result']['objs']
         return result
 
     def ex_zone_check(self, zones):
         zone_domains = [zone.domain for zone in zones]
         zone_domains = ','.join(zone_domains)
         params = {'zones': zone_domains}
-        result = self.connection.request(action='zone_check', params=params).object
-        result = result['response']['zones']
+        resp = self.connection.request(action='zone_check', params=params)
+        result = resp.object['response']['zones']
         return result
 
     def ex_get_ip_threat_score(self, ip):
@@ -215,8 +219,8 @@ class CloudFlareDNSDriver(DNSDriver):
         a logarithmic scale, where a higher score indicates a higher threat.
         """
         params = {'ip': ip}
-        result = self.connection.request(action='ip_lkup', params=params).object
-        result = result['response']
+        resp = self.connection.request(action='ip_lkup', params=params)
+        result = resp.object['response']
         return result
 
     def ex_get_zone_settings(self, zone):
@@ -225,14 +229,14 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='zone_settings', params=params).object
-        result = result['response']['result']['objs'][0]
+        resp = self.connection.request(action='zone_settings', params=params)
+        result = resp.object['response']['result']['objs'][0]
         return result
 
     def ex_set_zone_security_level(self, zone, level):
         """
-        Set the zone Basic Security Level to I'M UNDER ATTACK! / HIGH / MEDIUM /
-        LOW / ESSENTIALLY OFF.
+        Set the zone Basic Security Level to I'M UNDER ATTACK! / HIGH /
+        MEDIUM / LOW / ESSENTIALLY OFF.
 
         :param level: Security level. Valid values are: help, high, med, low,
                       eoff.
@@ -240,7 +244,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': level}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='sec_lvl', params=params).object
+        resp = self.connection.request(action='sec_lvl', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_set_zone_cache_level(self, zone, level):
@@ -252,7 +257,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': level}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='cache_lvl', params=params).object
+        resp = self.connection.request(action='cache_lvl', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_enable_development_mode(self, zone):
@@ -263,7 +269,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': 1}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='devmode', params=params).object
+        resp = self.connection.request(action='devmode', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_disable_development_mode(self, zone):
@@ -272,7 +279,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': 0}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='devmode', params=params).object
+        resp = self.connection.request(action='devmode', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_purge_cache_files(self, zone):
@@ -281,7 +289,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': 1}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='fpurge_ts', params=params).object
+        resp = self.connection.request(action='fpurge_ts', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_purge_cache_file(self, zone, url):
@@ -293,7 +302,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'url': url}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='zone_file_purge', params=params).object
+        resp = self.connection.request(action='zone_file_purge', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_whitelist_ip(self, zone, ip):
@@ -302,7 +312,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'key': ip}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='wl', params=params).object
+        resp = self.connection.request(action='wl', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_blacklist_ip(self, zone, ip):
@@ -311,7 +322,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'key': ip}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='ban', params=params).object
+        resp = self.connection.request(action='ban', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_unlist_ip(self, zone, ip):
@@ -320,7 +332,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'key': ip}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='nul', params=params).object
+        resp = self.connection.request(action='nul', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_enable_ipv6_support(self, zone):
@@ -329,7 +342,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': 3}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='ipv46', params=params).object
+        resp = self.connection.request(action='ipv46', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def ex_disable_ipv6_support(self, zone):
@@ -338,7 +352,8 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         params = {'z': zone.domain, 'v': 0}
         self.connection.set_context({'zone_domain': zone.domain})
-        result = self.connection.request(action='ipv46', params=params).object
+        resp = self.connection.request(action='ipv46', params=params)
+        result = resp.object
         return result.get('result', None) == 'success'
 
     def _to_zones(self, data):
@@ -351,7 +366,8 @@ class CloudFlareDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, item):
-        type = 'master' if item.get('zone_type', '').lower() == 'p' else 'slave'
+        zone_type = item.get('zone_type', '').lower()
+        type = 'master' if zone_type == 'p' else 'slave'
 
         extra = {}
         extra['props'] = item.get('props', {})
@@ -361,8 +377,8 @@ class CloudFlareDNSDriver(DNSDriver):
             value = item.get(attribute, None)
             extra[attribute] = value
 
-        zone = Zone(id=str(item['zone_id']), domain=item['zone_name'], type=type,
-                    ttl=None, driver=self, extra=extra)
+        zone = Zone(id=str(item['zone_id']), domain=item['zone_name'],
+                    type=type, ttl=None, driver=self, extra=extra)
         return zone
 
     def _to_records(self, zone, data):
