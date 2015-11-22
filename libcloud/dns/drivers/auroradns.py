@@ -237,7 +237,7 @@ class AuroraDNSDriver(DNSDriver):
 
         return Record(id=record['id'], name=name, type=record['type'],
                       data=record['content'], zone=zone, driver=self,
-                      extra=extra)
+                      ttl=record['ttl'], extra=extra)
 
     def __res_to_zone(self, zone):
         return Zone(id=zone['id'], domain=zone['name'], type=DEFAULT_ZONE_TYPE,

@@ -438,7 +438,7 @@ class ZerigoDNSDriver(DNSDriver):
                  'priority': priority, 'ttl': ttl}
 
         record = Record(id=id, name=name, type=type, data=data,
-                        zone=zone, driver=self, extra=extra)
+                        zone=zone, driver=self, ttl=ttl, extra=extra)
         return record
 
     def _get_more(self, rtype, **kwargs):

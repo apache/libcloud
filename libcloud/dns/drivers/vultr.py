@@ -369,7 +369,6 @@ class VultrDNSDriver(DNSDriver):
         return zones
 
     def _to_record(self, item, zone):
-
         extra = {}
 
         if item.get('priority'):
