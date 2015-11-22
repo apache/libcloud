@@ -2318,7 +2318,6 @@ class BaseEC2NodeDriver(NodeDriver):
             attributes = copy.deepcopy(attributes)
             price = self._get_size_price(size_id=instance_type)
             attributes.update({'price': price})
-            print attributes
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
