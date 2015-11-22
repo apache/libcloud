@@ -67,9 +67,20 @@ class CloudFlareDNSResponse(JsonResponse):
 
     def parse_body(self):
         body = super(CloudFlareDNSResponse, self).parse_body()
+
         result = body.get('result', None)
         error_code = body.get('err_code', None)
         msg = body.get('msg', None)
+        is_error_result = result == 'error'
+
+        context= self.connection.context or {}
+        context_record_id = context.get('record_id', None)
+
+        if (is_error_result and 'invalid record id' in msg.lower()
+            and context_record_id):
+            raise RecordDoesNotExistError(value=msg,
+                                          driver=self.connection.driver,
+                                          record_id=context_record_id)
 
         if error_code == 'E_UNAUTH':
             raise InvalidCredsError(msg)
@@ -162,12 +173,14 @@ class CloudFlareDNSDriver(DNSDriver):
         params['content'] = data or record.data
         params['ttl'] = extra.get('ttl', None) or record.extra['ttl']
 
+        self.connection.set_context({'record_id': record.id})
         result = self.connection.request(action='rec_edit', params=params).object
         record = self._to_record(zone=record.zone, item=result['response']['rec']['obj'])
         return record
 
     def delete_record(self, record):
         params = {'z': record.zone.domain, 'id': record.id}
+        self.connection.set_context({'record_id': record.id})
         result = self.connection.request(action='rec_delete', params=params).object
         return result.get('result', None) == 'success'
 
