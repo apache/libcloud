@@ -5,8 +5,19 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
-Development
------------
+In development
+--------------
+
+* New optional ``ttl`` argument has been added to ``libcloud.dns.base.Record``
+  class constructor before the existing ``extra`` argument.
+
+  If you have previously manually instantiated this class and didn't use
+  keyword arguments, you need to update your code to correctly pass arguments
+  to the constructor (you are encouraged to use keyword arguments to avoid such
+  issues in the future).
+
+Libcloud 0.19.0
+---------------
 
 * The base signature of NodeDriver.create_volume has changed. The snapshot
   argument is now expected to be a VolumeSnapshot instead of a string.
