@@ -23,7 +23,7 @@ from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.utils.py3 import httplib
 from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import Provider
+from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 
 API_URL = 'https://www.cloudflare.com/api_json.html'
@@ -85,6 +85,18 @@ class CloudFlareDNSConnection(ConnectionUserAndKey):
     secure = True
     responseCls = CloudFlareDNSResponse
 
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.TXT: 'TXT',
+        RecordType.SPF: 'SPF',
+        RecordType.NS: 'NS',
+        RecordType.SRV: 'SRV',
+        RecordType.URL: 'LOC'
+    }
+
     def request(self, action, params=None, data=None, headers=None,
                 method='GET'):
         params = params or {}
@@ -124,6 +136,26 @@ class CloudFlareDNSDriver(DNSDriver):
         result = self.connection.request(action='rec_load_all', params=params).object
         records = self._to_records(zone=zone, data=result['response']['recs']['objs'])
         return records
+
+    def create_record(self, name, zone, type, data, extra=None):
+        extra = extra or {}
+        params = {'name': name, 'z': zone.domain, 'type': type,
+                  'content': data}
+
+        params['ttl'] = extra.get('ttl', 120)
+
+        if 'priority' in extra:
+            # For MX and SRV records
+            params['prio'] = extra['priority']
+
+        result = self.connection.request(action='rec_new', params=params).object
+        record = self._to_record(zone=zone, item=result['response']['rec']['obj'])
+        return record
+
+    def delete_record(self, record):
+        params = {'z': record.zone.domain, 'id': record.id}
+        result = self.connection.request(action='rec_delete', params=params).object
+        return result.get('result', None) == 'success'
 
     def ex_get_zone_stats(self, zone, interval=30):
         params = {'z': zone.domain, 'interval': interval}
@@ -258,7 +290,6 @@ class CloudFlareDNSDriver(DNSDriver):
         params = {'z': zone.domain, 'v': 0}
         result = self.connection.request(action='ipv46', params=params).object
         return result.get('result', None) == 'success'
-
 
     def _to_zones(self, data):
         zones = []
