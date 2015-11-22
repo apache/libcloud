@@ -297,14 +297,14 @@ INSTANCE_TYPES = {
     },
     'c4.xlarge': {
         'id': 'c4.xlarge',
-        'name': 'Compute Optimized Double Extra Large Instance',
+        'name': 'Compute Optimized Extra Large Instance',
         'ram': 7500,
         'disk': 0,
         'bandwidth': None
     },
     'c4.2xlarge': {
         'id': 'c4.2xlarge',
-        'name': 'Compute Optimized Extra Large Instance',
+        'name': 'Compute Optimized Double Large Instance',
         'ram': 15000,
         'disk': 0,
         'bandwidth': None
