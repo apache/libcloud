@@ -288,13 +288,6 @@ INSTANCE_TYPES = {
         'disk': 640,  # x2
         'bandwidth': None
     },
-    'cr1.8xlarge': {
-        'id': 'cr1.8xlarge',
-        'name': 'High Memory Cluster Eight Extra Large',
-        'ram': 244000,
-        'disk': 240,
-        'bandwidth': None
-    },
     'c4.large': {
         'id': 'c4.large',
         'name': 'Compute Optimized Large Instance',
@@ -328,6 +321,13 @@ INSTANCE_TYPES = {
         'name': 'Compute Optimized Eight Extra Large Instance',
         'ram': 60000,
         'disk': 0,
+        'bandwidth': None
+    },
+    'cr1.8xlarge': {
+        'id': 'cr1.8xlarge',
+        'name': 'High Memory Cluster Eight Extra Large',
+        'ram': 244000,
+        'disk': 240,
         'bandwidth': None
     },
     'hs1.4xlarge': {
