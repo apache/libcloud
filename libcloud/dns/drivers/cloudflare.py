@@ -152,6 +152,20 @@ class CloudFlareDNSDriver(DNSDriver):
         record = self._to_record(zone=zone, item=result['response']['rec']['obj'])
         return record
 
+    def update_record(self, record, name=None, type=None, data=None,
+                      extra=None):
+        extra = extra or {}
+        params = {'z': record.zone.domain, 'id': record.id}
+
+        params['name'] = name or record.name
+        params['type'] = type or record.type
+        params['content'] = data or record.data
+        params['ttl'] = extra.get('ttl', None) or record.extra['ttl']
+
+        result = self.connection.request(action='rec_edit', params=params).object
+        record = self._to_record(zone=record.zone, item=result['response']['rec']['obj'])
+        return record
+
     def delete_record(self, record):
         params = {'z': record.zone.domain, 'id': record.id}
         result = self.connection.request(action='rec_delete', params=params).object
