@@ -60,6 +60,9 @@ can find build reports on the following two links:
 Travis-CI builder is also integrated with Github which means that if you open a
 pull request there, Travis-CI will automatically build it.
 
+If you want to validate the build before raising the PR, Travis-CI can be enabled for personal
+accounts and branches separately.
+
 Test Coverage
 -------------
 
