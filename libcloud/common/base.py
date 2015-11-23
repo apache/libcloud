@@ -75,6 +75,12 @@ __all__ = [
 # Module level variable indicates if the failed HTTP requests should be retried
 RETRY_FAILED_HTTP_REQUESTS = False
 
+# If cloud WebService returns utf-8 caracters
+# Usage:
+# import libcloud.common.base
+# libcloud.common.base.HTTP_RESPONSE_UTF8 = True
+HTTP_RESPONSE_UTF8 = False
+
 
 class HTTPResponse(httplib.HTTPResponse):
     # On python 2.6 some calls can hang because HEAD isn't quite properly
@@ -232,6 +238,10 @@ class XmlResponse(Response):
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
+
+        if HTTP_RESPONSE_UTF8 and not PY3:
+            self.body = self.body.decode('utf-8')\
+                .encode('ascii', 'xmlcharrefreplace')
 
         try:
             body = ET.XML(self.body)
