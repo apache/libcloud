@@ -103,6 +103,7 @@ class GoDaddyDNSConnection(ConnectionKey):
             (self.key, self.secret)
         return headers
 
+
 class GoDaddyDNSDriver(DNSDriver):
     type = Provider.GODADDY
     name = 'GoDaddy DNS'
@@ -179,9 +180,9 @@ class GoDaddyDNSDriver(DNSDriver):
 
     def get_record(self, zone_id, record_type, record_name):
         result = self.connection.request(
-            '/v1/domains/%s/record/%s/%s' % (zone_id, record_type, record_name)
-            ).object
-        record = self._to_record(item=result, zone=self.get_zone(zone_id))
+            '/v1/domains/%s/record/%s/%s' % (zone_id, record_type, record_name))
+        record = self._to_record(item=result.object,
+                                 zone=self.get_zone(zone_id))
         return record
 
     def delete_zone(self, zone):
