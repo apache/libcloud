@@ -513,12 +513,7 @@ class AzureNodeDriver(NodeDriver):
         volumes = [self._to_volume(volume=v, node=node) for v in data]
         return volumes
 
-    def create_node(self, name, size, image, ex_cloud_service_name,
-                    ex_storage_service_name=None, ex_new_deployment=False,
-                    ex_deployment_slot="Production", ex_deployment_name=None,
-                    ex_admin_user_id="azureuser", ex_custom_data=None,
-                    ex_virtual_network_name=None, ex_network_config=None,
-                    auth=None, **kwargs):
+    def create_node(self, **kwargs):
         """
         Create Azure Virtual Machine
 
@@ -591,6 +586,21 @@ class AzureNodeDriver(NodeDriver):
         """
         # TODO: Refactor this method to make it more readable, split it into
         # multiple smaller methods
+
+        name = kwargs["name"]
+        size = kwargs["size"]
+        image = kwargs["image"]
+        ex_cloud_service_name = kwargs["ex_cloud_service_name"]
+        ex_storage_service_name = kwargs.get("ex_storage_service_name", None)
+        ex_new_deployment = kwargs.get("ex_storage_service_name", False)
+        ex_deployment_slot = kwargs.get("ex_deployment_slot", "Production")
+        ex_deployment_name = kwargs.get("ex_deployment_name", None)
+        ex_admin_user_id = kwargs.get("ex_admin_user_id", "azureuser")
+        ex_custom_data = kwargs.get("ex_custom_data", None)
+        ex_virtual_network_name = kwargs.get("ex_virtual_network_name", None)
+        ex_network_config = kwargs.get("ex_network_config", None)
+        auth = kwargs.get("auth", None)
+
         auth = self._get_and_check_auth(auth)
         password = auth.password
 
