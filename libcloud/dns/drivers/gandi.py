@@ -154,6 +154,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             data=record['value'],
             zone=zone,
             driver=self,
+            ttl=record['ttl'],
             extra={'ttl': record['ttl']}
         )
 

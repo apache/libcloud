@@ -62,9 +62,17 @@ Compute
   [GITHUB-634]
   [Benjamin Zaitlen]
 
+- Added C4 instance information to EC2 driver
+  [GITHUB-638]
+  [amitofs]
+  
 - Allow location of the datacenter to be supplied in ProfitBricks driver
   [LIBCLOUD-771, GITHUB-635]
   [Joel Reymont]
+
+- Reduce redundant API calls in CloudStack driver
+  [LIBCLOUD-590, GITHUB-641]
+  [Atsushi Sasaki]
 
 Storage
 ~~~~~~~

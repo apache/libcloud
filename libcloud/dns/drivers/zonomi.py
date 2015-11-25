@@ -327,6 +327,8 @@ class ZonomiDNSDriver(DNSDriver):
     def _to_record(self, item, zone):
         if len(item.get('ttl')) > 0:
             ttl = item.get('ttl').split(' ')[0]
+        else:
+            ttl = None
         extra = {'ttl': ttl,
                  'prio': item.get('prio')}
         if len(item['name']) > len(zone.domain):
@@ -337,7 +339,7 @@ class ZonomiDNSDriver(DNSDriver):
             record_name = zone.domain
         record = Record(id=record_name, name=record_name,
                         data=item['content'], type=item['type'], zone=zone,
-                        driver=self, extra=extra)
+                        driver=self, ttl=ttl, extra=extra)
 
         return record
 

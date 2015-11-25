@@ -532,4 +532,5 @@ class WorldWideDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, _id, subdomain, type, data, zone):
-        return Record(_id, subdomain, type, data, zone, zone.driver)
+        return Record(id=_id, name=subdomain, type=type, data=data, zone=zone,
+                      driver=zone.driver)
