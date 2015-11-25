@@ -108,7 +108,8 @@ class HostVirtualDNSDriver(DNSDriver):
         name = item['name'][:-len(zone.domain) - 1]
         record = Record(id=item['id'], name=name,
                         type=type, data=item['content'],
-                        zone=zone, driver=self, extra=extra)
+                        zone=zone, driver=self, ttl=item['ttl'],
+                        extra=extra)
         return record
 
     def list_zones(self):
@@ -222,7 +223,9 @@ class HostVirtualDNSDriver(DNSDriver):
             data=json.dumps(params), method='POST').object
         record = Record(id=result['id'], name=name,
                         type=type, data=data,
-                        extra=merged, zone=zone, driver=self)
+                        extra=merged, zone=zone,
+                        ttl=merged.get('ttl', None),
+                        driver=self)
         return record
 
     def update_record(self, record, name=None, type=None,

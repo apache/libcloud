@@ -373,7 +373,8 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                 extra[key] = data[key]
 
         record = Record(id=str(id), name=name, type=type, data=record_data,
-                        zone=zone, driver=self, extra=extra)
+                        zone=zone, driver=self, ttl=extra.get('ttl', None),
+                        extra=extra)
         return record
 
     def _to_full_record_name(self, domain, name):

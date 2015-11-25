@@ -372,7 +372,8 @@ class GoogleDNSDriver(DNSDriver):
         record_id = '%s:%s' % (r['type'], r['name'])
         return Record(id=record_id, name=r['name'],
                       type=r['type'], data=r, zone=zone,
-                      driver=self, extra={})
+                      driver=self, ttl=r.get('ttl', None),
+                      extra={})
 
     def _cleanup_domain(self, domain):
         # name can only contain lower case alphanumeric characters and hyphens

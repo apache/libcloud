@@ -648,7 +648,7 @@ class DurableDNSDriver(DNSDriver):
         extra = {'aux': int(item.get('aux')), 'ttl': int(item.get('ttl'))}
         record = Record(id=item.get('id'), type=item.get('type'), zone=zone,
                         name=item.get('name'), data=item.get('data'),
-                        driver=self, extra=extra)
+                        driver=self, ttl=item.get('ttl', None), extra=extra)
 
         return record
 

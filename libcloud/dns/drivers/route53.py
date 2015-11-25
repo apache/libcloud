@@ -189,7 +189,7 @@ class Route53DNSDriver(DNSDriver):
         self._post_changeset(zone, batch)
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
         return Record(id=id, name=name, type=type, data=data, zone=zone,
-                      driver=self, extra=extra)
+                      driver=self, ttl=extra.get('ttl', None), extra=extra)
 
     def update_record(self, record, name=None, type=None, data=None,
                       extra=None):
@@ -216,7 +216,7 @@ class Route53DNSDriver(DNSDriver):
 
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
         return Record(id=id, name=name, type=type, data=data, zone=record.zone,
-                      driver=self, extra=extra)
+                      driver=self, ttl=extra.get('ttl', None), extra=extra)
 
     def delete_record(self, record):
         try:
@@ -270,7 +270,8 @@ class Route53DNSDriver(DNSDriver):
         records = []
         for value in values:
             record = Record(id=id, name=name, type=type, data=value, zone=zone,
-                            driver=self, extra=extra)
+                            driver=self, ttl=extra.get('ttl', None),
+                            extra=extra)
             records.append(record)
 
         return records
@@ -505,7 +506,7 @@ class Route53DNSDriver(DNSDriver):
 
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
         record = Record(id=id, name=name, type=type, data=data, zone=zone,
-                        driver=self, extra=extra)
+                        driver=self, ttl=extra.get('ttl', None), extra=extra)
         return record
 
     def _get_more(self, rtype, **kwargs):
