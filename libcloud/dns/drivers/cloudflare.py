@@ -102,18 +102,6 @@ class CloudFlareDNSConnection(ConnectionUserAndKey):
     secure = True
     responseCls = CloudFlareDNSResponse
 
-    RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT',
-        RecordType.SPF: 'SPF',
-        RecordType.NS: 'NS',
-        RecordType.SRV: 'SRV',
-        RecordType.URL: 'LOC'
-    }
-
     def request(self, action, params=None, data=None, headers=None,
                 method='GET'):
         params = params or {}
@@ -139,6 +127,18 @@ class CloudFlareDNSDriver(DNSDriver):
     name = 'CloudFlare DNS'
     website = 'https://www.cloudflare.com'
     connectionCls = CloudFlareDNSConnection
+
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.TXT: 'TXT',
+        RecordType.SPF: 'SPF',
+        RecordType.NS: 'NS',
+        RecordType.SRV: 'SRV',
+        RecordType.URL: 'LOC'
+    }
 
     def iterate_zones(self):
         # TODO: Support pagination
