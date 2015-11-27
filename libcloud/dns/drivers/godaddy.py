@@ -438,6 +438,34 @@ class GoDaddyDNSDriver(DNSDriver):
         ).object
         return result
 
+    def ex_get_agreements(self, tld, privacy=True):
+        """
+        Get the legal agreements for a tld
+        Use this in conjunction with ex_purchase_domain
+
+        :param   tld: The top level domain e.g com, eu, uk
+        :type    tld: `str`
+
+        :rtype: `dict` the JSON Schema
+        """
+        result = self.connection.request(
+            '/v1/domains/agreements',
+            params={
+                'tlds':tld,
+                'privacy':str(privacy)
+            },
+            method='GET'
+        ).object
+        agreements = []
+        for item in result:
+            agreements.append(
+                GoDaddyLegalAgreement(
+                    agreement_key=item['agreementKey'],
+                    title=item['title'],
+                    url=item['url'],
+                    content=item['content']))
+        return agreements
+
     def ex_purchase_domain(self, purchase_request):
         """
         Purchase a domain with GoDaddy
@@ -483,3 +511,11 @@ class GoDaddyDomainPurchaseResponse(object):
         self.item_count = item_count
         self.total = total
         self.current = currency
+
+
+class GoDaddyLegalAgreement(object):
+    def __init__(self, agreement_key, title, url, content):
+        self.agreement_key = agreement_key
+        self.title = title
+        self.url = url
+        self.content = content

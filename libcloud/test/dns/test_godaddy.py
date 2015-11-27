@@ -59,6 +59,17 @@ class GoDaddyTests(unittest.TestCase):
         self.assertEqual(schema['id'],
                          'https://api.godaddy.com/DomainPurchase#')
 
+    def test_ex_get_agreements(self):
+        ags = self.driver.ex_get_agreements('com')
+        self.assertEqual(len(ags), 1)
+        self.assertEqual(ags[0].title, 'Domain Name Registration Agreement')
+
+    def test_ex_purchase_domain(self):
+        fixtures = DNSFileFixtures('godaddy')
+        document = fixtures.load('purchase_request.json')
+        order = self.driver.ex_purchase_domain(document)
+        self.assertEqual(order.order_id, 1)
+
     def test_list_records(self):
         zone = Zone(id='177184419',
                     domain='aperture-platform.com',
@@ -98,10 +109,33 @@ class GoDaddyTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '50.63.202.42')
 
+    def test_update_record(self):
+        record = self.driver.get_record(
+            'aperture-platform.com',
+            'www:A')
+        record = self.driver.update_record(
+            record=record,
+            name='www',
+            type=RecordType.A,
+            data='50.63.202.22'
+        )
+        self.assertEqual(record.id, 'www:A')
+        self.assertEqual(record.name, 'www')
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.data, '50.63.202.22')
+
     def test_get_zone(self):
         zone = self.driver.get_zone('aperture-platform.com')
         self.assertEqual(zone.id, '177184419')
         self.assertEqual(zone.domain, 'aperture-platform.com')
+
+    def test_delete_zone(self):
+        zone = Zone(id='177184419',
+                    domain='aperture-platform.com',
+                    type='master',
+                    ttl=None,
+                    driver=self.driver)
+        self.driver.delete_zone(zone)
 
 
 class GoDaddyMockHttp(MockHttp):
@@ -133,6 +167,14 @@ class GoDaddyMockHttp(MockHttp):
 
     def _v1_domains_purchase_schema_com(self, method, url, body, headers):
         body = self.fixtures.load('v1_domains_purchase_schema_com.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_domains_agreements(self, method, url, body, headers):
+        body = self.fixtures.load('v1_domains_agreements.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_domains_purchase(self, method, url, body, headers):
+        body = self.fixtures.load('v1_domains_purchase.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
