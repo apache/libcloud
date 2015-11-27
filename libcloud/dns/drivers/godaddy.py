@@ -24,7 +24,7 @@ except:
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import LibcloudError
 from libcloud.utils.py3 import httplib
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.types import Provider, RecordType, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 API_ROOT = 'https://api.godaddy.com/'
@@ -157,7 +157,7 @@ class GoDaddyDNSDriver(DNSDriver):
         :return: ``list`` of :class:`Record`
         """
         result = self.connection.request(
-            '/v1/domains/%s/records' % zone.domain).object
+            '/v1/domains/%s/records' % (zone.domain)).object
         records = self._to_records(items=result, zone=zone)
         return records
 
@@ -185,35 +185,9 @@ class GoDaddyDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        if extra is None:
-            extra = {}
-        new_record = {}
-        if type is RecordType.SRV:
-            new_record = {
-                'type': type,
-                'name': name,
-                'data': data,
-                'priority': 1,
-                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5,
-                'service': extra['service']
-                if hasattr(extra, 'service') else '',
-                'protocol': extra['protocol']
-                if hasattr(extra, 'protocol') else '',
-                'port': extra['port']
-                if hasattr(extra, 'port') else '',
-                'weight': extra['weight']
-                if hasattr(extra, 'weight') else ''
-            }
-        else:
-            new_record = {
-                'type': type,
-                'name': name,
-                'data': data,
-                'priority': 1,
-                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
-            }
+        new_record = self._format_record(name, type, data, extra)
         self.connection.request(
-            '/v1/domains/%s/records' % zone.domain, method='PATCH',
+            '/v1/domains/%s/records' % (zone.domain), method='PATCH',
             data=[new_record])
         id = '%s:%s' % (name, type)
         return Record(
@@ -246,35 +220,9 @@ class GoDaddyDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        if extra is None:
-            extra = {}
-        new_record = {}
-        if type is RecordType.SRV:
-            new_record = {
-                'type': type,
-                'name': name,
-                'data': data,
-                'priority': 1,
-                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5,
-                'service': extra['service']
-                if hasattr(extra, 'service') else '',
-                'protocol': extra['protocol']
-                if hasattr(extra, 'protocol') else '',
-                'port': extra['port']
-                if hasattr(extra, 'port') else '',
-                'weight': extra['weight']
-                if hasattr(extra, 'weight') else ''
-            }
-        else:
-            new_record = {
-                'type': type,
-                'name': name,
-                'data': data,
-                'priority': 1,
-                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
-            }
+        new_record = self._format_record(name, type, data, extra)
         self.connection.request(
-            '/v1/domains/{0}/records' % record.zone.domain, method='PUT',
+            '/v1/domains/{0}/records' % (record.zone.domain), method='PUT',
             data=[new_record])
         id = '%s:%s' % (name, type)
         return Record(
@@ -302,7 +250,7 @@ class GoDaddyDNSDriver(DNSDriver):
                 parts[1],
                 parts[0])).object
         if len(result) is 0:
-            raise GoDaddyDNSException("Could not locate record")
+            raise RecordDoesNotExistError()
         return self._to_record(result[0],
                                self.get_zone(zone_id))
 
@@ -332,7 +280,7 @@ class GoDaddyDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         self.connection.request(
-            '/v1/domains/%s' % zone.domain,
+            '/v1/domains/%s' % (zone.domain),
             method='DELETE')
         # no error means ok
         return True
@@ -442,6 +390,32 @@ class GoDaddyDNSDriver(DNSDriver):
             total=result['total'],
             currency=result['currency']
         )
+
+    def _format_record(self, name, type, data, extra):
+        if extra is None:
+            extra = {}
+        new_record = {}
+        if type is RecordType.SRV:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra.get('ttl', 5),
+                'service': extra.get('service', ''),
+                'protocol': extra.get('protocol', ''),
+                'port': extra.get('port', ''),
+                'weight': extra.get('weight', '1')
+            }
+        else:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra.get('ttl', 5)
+            }
+        return new_record
 
     def _to_zones(self, items):
         zones = []
