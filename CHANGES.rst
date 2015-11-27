@@ -26,6 +26,9 @@ General
 Compute
 ~~~~~~~
 
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
+
 - [google compute] add pricing data update script
   (GITHUB-464)
   [Misha Brukman]
