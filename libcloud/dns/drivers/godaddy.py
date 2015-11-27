@@ -223,7 +223,7 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         new_record = self._format_record(name, type, data, extra)
         self.connection.request(
-            '/v1/domains/{0}/records' % (record.zone.domain), method='PUT',
+            '/v1/domains/%s/records' % (record.zone.domain), method='PUT',
             data=[new_record])
         id = '%s:%s' % (name, type)
         return Record(
