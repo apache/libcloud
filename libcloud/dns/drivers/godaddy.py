@@ -122,62 +122,19 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         Instantiate a new `GoDaddyDNSDriver`
 
-        :param  shopper_id: Your customer ID or shopped ID with GoDaddy
-        :type   shopper_id: `str`
+        :param  shopper_id: Your customer ID or shopper ID with GoDaddy
+        :type   shopper_id: ``str``
 
         :param  key: Your access key from developer.godaddy.com
-        :type   key: `str`
+        :type   key: ``str``
 
         :param  secret: Your access key secret
-        :type   secret: `str`
+        :type   secret: ``str``
         """
         super(GoDaddyDNSDriver, self).__init__(key=key, secret=secret,
                                                secure=secure,
                                                host=host, port=port,
                                                shopper_id=str(shopper_id))
-
-    def _to_zones(self, items):
-        zones = []
-        for item in items:
-            zones.append(self._to_zone(item))
-        return zones
-
-    def _to_zone(self, item):
-        extra = {"expires": item['expires']}
-        zone = Zone(id=item['domainId'], domain=item['domain'],
-                    type='master', ttl=None,
-                    driver=self, extra=extra)
-        return zone
-
-    def _to_records(self, items, zone=None):
-        records = []
-
-        for item in items:
-            records.append(self._to_record(item=item, zone=zone))
-        return records
-
-    def _to_record(self, item, zone=None):
-        ttl = item['ttl']
-        type = self._string_to_record_type(item['type'])
-        name = item['name']
-        id = '{0}:{1}'.format(name, type)
-        record = Record(id=id, name=name,
-                        type=type, data=item['data'],
-                        zone=zone, driver=self,
-                        extra={'ttl': ttl})
-        return record
-
-    def _to_tlds(self, items):
-        tlds = []
-        for item in items:
-            tlds.append(self._to_tld(item))
-        return tlds
-
-    def _to_tld(self, item):
-        return GoDaddyTLD(
-            name=item['name'],
-            tld_type=item['type']
-        )
 
     def list_zones(self):
         """
@@ -256,10 +213,9 @@ class GoDaddyDNSDriver(DNSDriver):
                 'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
             }
         self.connection.request(
-            '/v1/domains/{0}/records'.format(
-                zone.domain), method='PATCH',
+            '/v1/domains/%s/records' % zone.domain, method='PATCH',
             data=[new_record])
-        id = '{0}:{1}'.format(name, type)
+        id = '%s:%s' % (name, type)
         return Record(
             id=id, name=name,
             type=type, data=data,
@@ -318,10 +274,9 @@ class GoDaddyDNSDriver(DNSDriver):
                 'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
             }
         self.connection.request(
-            '/v1/domains/{0}/records'.format(
-                record.zone.domain), method='PUT',
+            '/v1/domains/{0}/records' % record.zone.domain, method='PUT',
             data=[new_record])
-        id = '{0}:{1}'.format(name, type)
+        id = '%s:%s' % (name, type)
         return Record(
             id=id, name=name,
             type=type, data=data,
@@ -342,7 +297,7 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         parts = record_id.split(':')
         result = self.connection.request(
-            '/v1/domains/{0}/records/{1}/{2}'.format(
+            '/v1/domains/%s/records/%s/%s' % (
                 zone_id,
                 parts[1],
                 parts[0])).object
@@ -356,7 +311,7 @@ class GoDaddyDNSDriver(DNSDriver):
         Get a zone (by domain)
 
         :param  zone_id: The domain, not the ID
-        :type   zone_id: `str`
+        :type   zone_id: ``str``
 
         :rtype:  :class:`Zone`
         """
@@ -387,10 +342,10 @@ class GoDaddyDNSDriver(DNSDriver):
         Check the availability of the domain
 
         :param   domain: the domain name e.g. wazzlewobbleflooble.com
-        :type    domain: `str`
+        :type    domain: ``str``
 
         :param   for_transfer: Check if domain is available for transfer
-        :type    for_transfer: `bool`
+        :type    for_transfer: ``bool``
 
         :rtype: `list` of :class:`GoDaddyAvailability`
         """
@@ -414,7 +369,7 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         List available TLDs for sale
 
-        :rtype: `list` of `GoDaddyTLD`
+        :rtype: ``list`` of :class:`GoDaddyTLD`
         """
         result = self.connection.request(
             '/v1/domains/tlds',
@@ -428,12 +383,12 @@ class GoDaddyDNSDriver(DNSDriver):
         Use this in conjunction with ex_purchase_domain
 
         :param   tld: The top level domain e.g com, eu, uk
-        :type    tld: `str`
+        :type    tld: ``str``
 
         :rtype: `dict` the JSON Schema
         """
         result = self.connection.request(
-            '/v1/domains/purchase/schema/{0}'.format(tld),
+            '/v1/domains/purchase/schema/%s' % tld,
             method='GET'
         ).object
         return result
@@ -444,7 +399,7 @@ class GoDaddyDNSDriver(DNSDriver):
         Use this in conjunction with ex_purchase_domain
 
         :param   tld: The top level domain e.g com, eu, uk
-        :type    tld: `str`
+        :type    tld: ``str``
 
         :rtype: `dict` the JSON Schema
         """
@@ -472,7 +427,7 @@ class GoDaddyDNSDriver(DNSDriver):
 
         :param  purchase_request: The completed document
             from ex_get_purchase_schema
-        :type   purchase_request: `dict`
+        :type   purchase_request: ``dict``
 
         :rtype: :class:`GoDaddyDomainPurchaseResponse` Your order
         """
@@ -486,6 +441,49 @@ class GoDaddyDNSDriver(DNSDriver):
             item_count=result['itemCount'],
             total=result['total'],
             currency=result['currency']
+        )
+
+    def _to_zones(self, items):
+        zones = []
+        for item in items:
+            zones.append(self._to_zone(item))
+        return zones
+
+    def _to_zone(self, item):
+        extra = {"expires": item['expires']}
+        zone = Zone(id=item['domainId'], domain=item['domain'],
+                    type='master', ttl=None,
+                    driver=self, extra=extra)
+        return zone
+
+    def _to_records(self, items, zone=None):
+        records = []
+
+        for item in items:
+            records.append(self._to_record(item=item, zone=zone))
+        return records
+
+    def _to_record(self, item, zone=None):
+        ttl = item['ttl']
+        type = self._string_to_record_type(item['type'])
+        name = item['name']
+        id = '%s:%s' % (name, type)
+        record = Record(id=id, name=name,
+                        type=type, data=item['data'],
+                        zone=zone, driver=self,
+                        extra={'ttl': ttl})
+        return record
+
+    def _to_tlds(self, items):
+        tlds = []
+        for item in items:
+            tlds.append(self._to_tld(item))
+        return tlds
+
+    def _to_tld(self, item):
+        return GoDaddyTLD(
+            name=item['name'],
+            tld_type=item['type']
         )
 
 
