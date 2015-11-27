@@ -189,7 +189,7 @@ class GoDaddyDNSDriver(DNSDriver):
         self.connection.request(
             '/v1/domains/%s/records' % (zone.domain), method='PATCH',
             data=[new_record])
-        id = '%s:%s' % (name, type)
+        id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
             type=type, data=data,
@@ -225,7 +225,7 @@ class GoDaddyDNSDriver(DNSDriver):
         self.connection.request(
             '/v1/domains/%s/records' % (record.zone.domain), method='PUT',
             data=[new_record])
-        id = '%s:%s' % (name, type)
+        id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
             type=type, data=data,
@@ -443,7 +443,7 @@ class GoDaddyDNSDriver(DNSDriver):
         ttl = item['ttl']
         type = self._string_to_record_type(item['type'])
         name = item['name']
-        id = '%s:%s' % (name, type)
+        id = self._get_id_of_record(name, type)
         record = Record(id=id, name=name,
                         type=type, data=item['data'],
                         zone=zone, driver=self,
@@ -461,6 +461,9 @@ class GoDaddyDNSDriver(DNSDriver):
             name=item['name'],
             tld_type=item['type']
         )
+
+    def _get_id_of_record(self, name, type):
+        return '%s:%s' % (name, type)
 
 
 class GoDaddyAvailability(object):
