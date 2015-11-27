@@ -208,6 +208,7 @@ class SoftLayerDNSDriver(DNSDriver):
             data=item['data'],
             zone=zone,
             driver=self,
+            ttl=item['ttl'],
             extra=extra
         )
         return record

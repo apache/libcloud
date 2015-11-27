@@ -751,7 +751,8 @@ class PointDNSDriver(DNSDriver):
         extra = {'ttl': record.get('ttl'),
                  'zone_id': record.get('zone_id'),
                  'aux': record.get('aux')}
-        return Record(id, name, type, data, zone, self, extra=extra)
+        return Record(id=id, name=name, type=type, data=data, zone=zone,
+                      driver=self, ttl=record.get('ttl', None), extra=extra)
 
     def _to_redirects(self, data, zone):
         redirects = []

@@ -91,7 +91,8 @@ class Record(object):
     Zone record / resource.
     """
 
-    def __init__(self, id, name, type, data, zone, driver, extra=None):
+    def __init__(self, id, name, type, data, zone, driver, ttl=None,
+                 extra=None):
         """
         :param id: Record id
         :type id: ``str``
@@ -111,6 +112,9 @@ class Record(object):
         :param driver: DNSDriver instance.
         :type driver: :class:`DNSDriver`
 
+        :param ttl: Record TTL.
+        :type ttl: ``int``
+
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
         """
@@ -120,6 +124,7 @@ class Record(object):
         self.data = data
         self.zone = zone
         self.driver = driver
+        self.ttl = ttl
         self.extra = extra or {}
 
     def update(self, name=None, type=None, data=None, extra=None):
@@ -138,10 +143,10 @@ class Record(object):
         return record_id
 
     def __repr__(self):
-        return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s '
-                '...>' %
+        return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, '
+                'ttl=%s ...>' %
                 (self.zone.id, self.name, self.type, self.data,
-                 self.driver.name))
+                 self.driver.name, self.ttl))
 
 
 class DNSDriver(BaseDriver):

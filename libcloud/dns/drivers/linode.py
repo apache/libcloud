@@ -174,7 +174,8 @@ class LinodeDNSDriver(DNSDriver):
 
         result = self.connection.request(API_ROOT, params=params).objects[0]
         record = Record(id=result['ResourceID'], name=name, type=type,
-                        data=data, extra=merged, zone=zone, driver=self)
+                        data=data, extra=merged, zone=zone, driver=self,
+                        ttl=merged.get('TTL_sec', None))
         return record
 
     def update_record(self, record, name=None, type=None, data=None,
@@ -268,5 +269,5 @@ class LinodeDNSDriver(DNSDriver):
         type = self._string_to_record_type(item['TYPE'])
         record = Record(id=item['RESOURCEID'], name=item['NAME'], type=type,
                         data=item['TARGET'], zone=zone, driver=self,
-                        extra=extra)
+                        ttl=item['TTL_SEC'], extra=extra)
         return record

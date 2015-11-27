@@ -70,6 +70,10 @@ Compute
   [LIBCLOUD-771, GITHUB-635]
   [Joel Reymont]
 
+- Reduce redundant API calls in CloudStack driver
+  [LIBCLOUD-590, GITHUB-641]
+  [Atsushi Sasaki]
+
 Storage
 ~~~~~~~
 
