@@ -621,6 +621,9 @@ General
 Compute
 ~~~~~~~
 
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
+
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)
   [Eric Johnson]
