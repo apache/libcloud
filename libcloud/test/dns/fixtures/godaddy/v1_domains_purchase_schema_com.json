@@ -1,0 +1,432 @@
+{
+  "id": "https://api.godaddy.com/DomainPurchase#",
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "type": "string",
+      "format": "domain",
+      "pattern": "^[^.]{1,63}(\.[^.]{2,}){1,2}$"
+    },
+    "consent": {
+      "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Consent"
+    },
+    "period": {
+      "type": "integer",
+      "format": "integer-positive",
+      "defaultValue": 1,
+      "minimum": 1,
+      "maximum": 10,
+      "pattern": "[1]?[0-9]"
+    },
+    "renewAuto": {
+      "type": "boolean",
+      "defaultValue": true
+    },
+    "privacy": {
+      "type": "boolean",
+      "defaultValue": false
+    },
+    "nameServers": {
+      "type": "array",
+      "items": {
+        "format": "host-name",
+        "pattern": "([^.]+\.)*[^.]+\.[^.]+",
+        "type": "string"
+      },
+      "minItems": 0,
+      "maxItems": 13
+    },
+    "contactAdmin": {
+      "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Contact"
+    },
+    "contactBilling": {
+      "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Contact"
+    },
+    "contactRegistrant": {
+      "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Contact"
+    },
+    "contactTech": {
+      "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Contact"
+    }
+  },
+  "required": [
+    "domain",
+    "consent",
+    "contactAdmin",
+    "contactBilling",
+    "contactRegistrant",
+    "contactTech"
+  ],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "Consent": {
+      "id": "Consent",
+      "additionalProperties": false,
+      "properties": {
+        "agreementKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Unique identifiers of the legal agreements to which the end-user has agreed, as returned from the/domains/agreements endpoint"
+        },
+        "agreedBy": {
+          "type": "string",
+          "description": "Originating client IP address of the end-user's computer when they consented to these legal agreements"
+        },
+        "agreedAt": {
+          "type": "string",
+          "format": "iso-datetime",
+          "description": "Timestamp indicating when the end-user consented to these legal agreements"
+        }
+      },
+      "required": [
+        "agreementKeys",
+        "agreedBy",
+        "agreedAt"
+      ]
+    },
+    "Contact": {
+      "id": "Contact",
+      "additionalProperties": false,
+      "properties": {
+        "nameFirst": {
+          "type": "string",
+          "format": "person-name",
+          "maxLength": 30
+        },
+        "nameMiddle": {
+          "type": "string"
+        },
+        "nameLast": {
+          "type": "string",
+          "format": "person-name",
+          "maxLength": 30
+        },
+        "organization": {
+          "type": "string",
+          "format": "organization-name",
+          "maxLength": 100
+        },
+        "jobTitle": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 80
+        },
+        "phone": {
+          "type": "string",
+          "format": "phone",
+          "maxLength": 17
+        },
+        "fax": {
+          "type": "string",
+          "format": "phone",
+          "maxLength": 17
+        },
+        "addressMailing": {
+          "$ref": "https://api.godaddy.com/DomainPurchase#/definitions/Address"
+        }
+      },
+      "required": [
+        "nameFirst",
+        "nameLast",
+        "email",
+        "phone",
+        "addressMailing"
+      ]
+    },
+    "Address": {
+      "id": "Address",
+      "additionalProperties": false,
+      "properties": {
+        "address1": {
+          "type": "string",
+          "format": "street-address",
+          "maxLength": 41
+        },
+        "address2": {
+          "type": "string",
+          "format": "street-address2",
+          "maxLength": 41
+        },
+        "city": {
+          "type": "string",
+          "format": "city-name",
+          "maxLength": 30
+        },
+        "state": {
+          "type": "string",
+          "format": "state-province-territory",
+          "minLength": 2,
+          "maxLength": 30,
+          "description": "State or province or territory"
+        },
+        "postalCode": {
+          "type": "string",
+          "format": "postal-code",
+          "minLength": 2,
+          "maxLength": 10,
+          "description": "Postal or zip code"
+        },
+        "country": {
+          "type": "string",
+          "format": "iso-country-code",
+          "defaultValue": "US",
+          "enum": [
+            "AD",
+            "AE",
+            "AF",
+            "AG",
+            "AI",
+            "AL",
+            "AM",
+            "AO",
+            "AQ",
+            "AR",
+            "AS",
+            "AT",
+            "AU",
+            "AW",
+            "AZ",
+            "BA",
+            "BB",
+            "BD",
+            "BE",
+            "BF",
+            "BG",
+            "BH",
+            "BI",
+            "BJ",
+            "BM",
+            "BN",
+            "BO",
+            "BQ",
+            "BR",
+            "BS",
+            "BT",
+            "BV",
+            "BW",
+            "BY",
+            "BZ",
+            "CA",
+            "CC",
+            "CD",
+            "CF",
+            "CG",
+            "CH",
+            "CI",
+            "CK",
+            "CL",
+            "CM",
+            "CN",
+            "CO",
+            "CR",
+            "CV",
+            "CW",
+            "CX",
+            "CY",
+            "CZ",
+            "DE",
+            "DJ",
+            "DK",
+            "DM",
+            "DO",
+            "DZ",
+            "EC",
+            "EE",
+            "EG",
+            "EH",
+            "ER",
+            "ES",
+            "ET",
+            "FI",
+            "FJ",
+            "FK",
+            "FM",
+            "FO",
+            "FR",
+            "GA",
+            "GB",
+            "GD",
+            "GE",
+            "GF",
+            "GG",
+            "GH",
+            "GI",
+            "GL",
+            "GM",
+            "GN",
+            "GP",
+            "GQ",
+            "GR",
+            "GS",
+            "GT",
+            "GU",
+            "GW",
+            "GY",
+            "HK",
+            "HM",
+            "HN",
+            "HR",
+            "HT",
+            "HU",
+            "ID",
+            "IE",
+            "IL",
+            "IM",
+            "IN",
+            "IO",
+            "IQ",
+            "IS",
+            "IT",
+            "JE",
+            "JM",
+            "JO",
+            "JP",
+            "KE",
+            "KG",
+            "KH",
+            "KI",
+            "KM",
+            "KN",
+            "KR",
+            "KW",
+            "KY",
+            "KZ",
+            "LA",
+            "LB",
+            "LC",
+            "LI",
+            "LK",
+            "LR",
+            "LS",
+            "LT",
+            "LU",
+            "LV",
+            "LY",
+            "MA",
+            "MC",
+            "MD",
+            "ME",
+            "MG",
+            "MH",
+            "MK",
+            "ML",
+            "MM",
+            "MN",
+            "MO",
+            "MP",
+            "MQ",
+            "MR",
+            "MS",
+            "MT",
+            "MU",
+            "MV",
+            "MW",
+            "MX",
+            "MY",
+            "MZ",
+            "NA",
+            "NC",
+            "NE",
+            "NF",
+            "NG",
+            "NI",
+            "NL",
+            "NO",
+            "NP",
+            "NR",
+            "NU",
+            "NZ",
+            "OM",
+            "PA",
+            "PE",
+            "PF",
+            "PG",
+            "PH",
+            "PK",
+            "PL",
+            "PM",
+            "PN",
+            "PR",
+            "PS",
+            "PT",
+            "PW",
+            "PY",
+            "QA",
+            "RE",
+            "RO",
+            "RS",
+            "RU",
+            "RW",
+            "SA",
+            "SB",
+            "SC",
+            "SE",
+            "SG",
+            "SH",
+            "SI",
+            "SJ",
+            "SK",
+            "SL",
+            "SM",
+            "SN",
+            "SO",
+            "SR",
+            "ST",
+            "SV",
+            "SX",
+            "SZ",
+            "TC",
+            "TD",
+            "TF",
+            "TG",
+            "TH",
+            "TJ",
+            "TK",
+            "TL",
+            "TM",
+            "TN",
+            "TO",
+            "TR",
+            "TT",
+            "TV",
+            "TW",
+            "TZ",
+            "UA",
+            "UG",
+            "UM",
+            "US",
+            "UY",
+            "UZ",
+            "VA",
+            "VC",
+            "VE",
+            "VG",
+            "VI",
+            "VN",
+            "VU",
+            "WF",
+            "WS",
+            "YE",
+            "YT",
+            "ZA",
+            "ZM",
+            "ZW"
+          ],
+          "description": "Two-letter ISO country code to be used as a hint for target region<br/><br/>\nNOTE: These are sample values, there are many\n<a href='http://www.iso.org/iso/country_codes.htm'>more</a>"
+        }
+      },
+      "required": [
+        "address1",
+        "city",
+        "state",
+        "postalCode",
+        "country"
+      ]
+    }
+  }
+}

@@ -51,23 +51,16 @@ class GoDaddyDNSResponse(JsonResponse):
     def parse_body(self):
         if not self.body:
             return None
+        # json.loads doesn't like the regex expressions used in godaddy schema
+        self.body = self.body.replace('\\.', '\\\\.')
 
         data = json.loads(self.body)
         return data
 
     def parse_error(self):
         data = self.parse_body()
-
-        if self.status == httplib.UNAUTHORIZED:
-            raise GoDaddyDNSException('%(code)s:%(message)s' % (data['error']))
-        elif self.status == httplib.PRECONDITION_FAILED:
-            raise GoDaddyDNSException(
-                data['error']['code'], data['error']['message'])
-        elif self.status == httplib.NOT_FOUND:
-            raise GoDaddyDNSException(
-                data['error']['code'], data['error']['message'])
-
-        return self.body
+        raise GoDaddyDNSException(
+            data['code'], data['message'])
 
     def success(self):
         return self.status in self.valid_response_codes
@@ -82,11 +75,8 @@ class GoDaddyDNSConnection(ConnectionKey):
     def __init__(self, key, secret, shopper_id, secure=True, host=None,
                  port=None, url=None, timeout=None,
                  proxy_url=None, backoff=None, retry_delay=None):
-        """
-        Initialize `user_id` and `key`; set `secure` to an ``int`` based on
-        passed value.
-        """
         super(GoDaddyDNSConnection, self).__init__(
+            key,
             secure=secure, host=host,
             port=port, url=url,
             timeout=timeout,
@@ -105,6 +95,13 @@ class GoDaddyDNSConnection(ConnectionKey):
 
 
 class GoDaddyDNSDriver(DNSDriver):
+    """
+    A driver for GoDaddy DNS.
+
+    This is for customers of GoDaddy
+    who wish to purchase, update existing domains
+    and manage records for DNS zones owned by GoDaddy NS servers.
+    """
     type = Provider.GODADDY
     name = 'GoDaddy DNS'
     website = 'https://www.godaddy.com/'
@@ -122,10 +119,22 @@ class GoDaddyDNSDriver(DNSDriver):
 
     def __init__(self, shopper_id, key, secret,
                  secure=True, host=None, port=None):
+        """
+        Instantiate a new `GoDaddyDNSDriver`
+
+        :param  shopper_id: Your customer ID or shopped ID with GoDaddy
+        :type   shopper_id: `str`
+
+        :param  key: Your access key from developer.godaddy.com
+        :type   key: `str`
+
+        :param  secret: Your access key secret
+        :type   secret: `str`
+        """
         super(GoDaddyDNSDriver, self).__init__(key=key, secret=secret,
                                                secure=secure,
                                                host=host, port=port,
-                                               shopper_id=shopper_id)
+                                               shopper_id=str(shopper_id))
 
     def _to_zones(self, items):
         zones = []
@@ -134,13 +143,9 @@ class GoDaddyDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, item):
-        extra = {}
-        if 'records' in item:
-            extra['records'] = item['records']
-        if item['type'] == 'NATIVE':
-            item['type'] = 'master'
-        zone = Zone(id=item['id'], domain=item['name'],
-                    type=item['type'], ttl=item['ttl'],
+        extra = {"expires": item['expires']}
+        zone = Zone(id=item['domainId'], domain=item['domain'],
+                    type='master', ttl=None,
                     driver=self, extra=extra)
         return zone
 
@@ -152,41 +157,329 @@ class GoDaddyDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, item, zone=None):
-        extra = {'ttl': item['ttl']}
+        ttl = item['ttl']
         type = self._string_to_record_type(item['type'])
-        name = item['name'][:-len(zone.domain) - 1]
-        record = Record(id=item['id'], name=name,
-                        type=type, data=item['content'],
-                        zone=zone, driver=self, extra=extra)
+        name = item['name']
+        id = '{0}:{1}'.format(name, type)
+        record = Record(id=id, name=name,
+                        type=type, data=item['data'],
+                        zone=zone, driver=self,
+                        extra={'ttl': ttl})
         return record
 
+    def _to_tlds(self, items):
+        tlds = []
+        for item in items:
+            tlds.append(self._to_tld(item))
+        return tlds
+
+    def _to_tld(self, item):
+        return GoDaddyTLD(
+            name=item['name'],
+            tld_type=item['type']
+        )
+
     def list_zones(self):
+        """
+        Return a list of zones (purchased domains)
+
+        :return: ``list`` of :class:`Zone`
+        """
         result = self.connection.request(
             '/v1/domains/').object
         zones = self._to_zones(result)
         return zones
 
     def list_records(self, zone):
+        """
+        Return a list of records for the provided zone.
+
+        :param zone: Zone to list records for.
+        :type zone: :class:`Zone`
+
+        :return: ``list`` of :class:`Record`
+        """
         result = self.connection.request(
-            '/v1/domains/%s/records' % zone.id).object
+            '/v1/domains/%s/records' % zone.domain).object
         records = self._to_records(items=result, zone=zone)
         return records
 
+    def create_record(self, name, zone, type, data, extra=None):
+        """
+        Create a new record.
+
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
+        :type  name: ``str``
+
+        :param zone: Zone where the requested record is created.
+        :type  zone: :class:`Zone`
+
+        :param type: DNS record type (A, AAAA, ...).
+        :type  type: :class:`RecordType`
+
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
+
+        :param extra: Extra attributes (driver specific). (optional)
+        :type extra: ``dict``
+
+        :rtype: :class:`Record`
+        """
+        if extra is None:
+            extra = {}
+        new_record = {}
+        if type is RecordType.SRV:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5,
+                'service': extra['service']
+                if hasattr(extra, 'service') else '',
+                'protocol': extra['protocol']
+                if hasattr(extra, 'protocol') else '',
+                'port': extra['port']
+                if hasattr(extra, 'port') else '',
+                'weight': extra['weight']
+                if hasattr(extra, 'weight') else ''
+            }
+        else:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
+            }
+        self.connection.request(
+            '/v1/domains/{0}/records'.format(
+                zone.domain), method='PATCH',
+            data=[new_record])
+        id = '{0}:{1}'.format(name, type)
+        return Record(
+            id=id, name=name,
+            type=type, data=data,
+            zone=zone, driver=self,
+            extra=extra)
+
+    def update_record(self, record, name, type, data, extra=None):
+        """
+        Update an existing record.
+
+        :param record: Record to update.
+        :type  record: :class:`Record`
+
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
+        :type  name: ``str``
+
+        :param type: DNS record type (A, AAAA, ...).
+        :type  type: :class:`RecordType`
+
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type  extra: ``dict``
+
+        :rtype: :class:`Record`
+        """
+        if extra is None:
+            extra = {}
+        new_record = {}
+        if type is RecordType.SRV:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5,
+                'service': extra['service']
+                if hasattr(extra, 'service') else '',
+                'protocol': extra['protocol']
+                if hasattr(extra, 'protocol') else '',
+                'port': extra['port']
+                if hasattr(extra, 'port') else '',
+                'weight': extra['weight']
+                if hasattr(extra, 'weight') else ''
+            }
+        else:
+            new_record = {
+                'type': type,
+                'name': name,
+                'data': data,
+                'priority': 1,
+                'ttl': extra['ttl'] if hasattr(extra, 'ttl') else 5
+            }
+        self.connection.request(
+            '/v1/domains/{0}/records'.format(
+                record.zone.domain), method='PUT',
+            data=[new_record])
+        id = '{0}:{1}'.format(name, type)
+        return Record(
+            id=id, name=name,
+            type=type, data=data,
+            zone=record.zone, driver=self,
+            extra=extra)
+
+    def get_record(self, zone_id, record_id):
+        """
+        Return a Record instance.
+
+        :param zone_id: ID of the required zone
+        :type  zone_id: ``str``
+
+        :param record_id: ID of the required record
+        :type  record_id: ``str``
+
+        :rtype: :class:`Record`
+        """
+        parts = record_id.split(':')
+        result = self.connection.request(
+            '/v1/domains/{0}/records/{1}/{2}'.format(
+                zone_id,
+                parts[1],
+                parts[0])).object
+        if len(result) is 0:
+            raise GoDaddyDNSException("Could not locate record")
+        return self._to_record(result[0],
+                               self.get_zone(zone_id))
+
     def get_zone(self, zone_id):
+        """
+        Get a zone (by domain)
+
+        :param  zone_id: The domain, not the ID
+        :type   zone_id: `str`
+
+        :rtype:  :class:`Zone`
+        """
         result = self.connection.request(
             '/v1/domains/%s/' % zone_id).object
         zone = self._to_zone(result)
         return zone
 
-    def get_record(self, zone_id, record_type, record_name):
-        result = self.connection.request(
-            '/v1/domains/%s/record/%s/%s' % (zone_id, record_type, record_name))
-        record = self._to_record(item=result.object,
-                                 zone=self.get_zone(zone_id))
-        return record
-
     def delete_zone(self, zone):
+        """
+        Delete a zone.
+
+        Note: This will CANCEL a purchased domain
+
+        :param zone: Zone to delete.
+        :type  zone: :class:`Zone`
+
+        :rtype: ``bool``
+        """
+        self.connection.request(
+            '/v1/domains/%s' % zone.domain,
+            method='DELETE')
+        # no error means ok
+        return True
+
+    def ex_check_availability(self, domain, for_transfer=False):
+        """
+        Check the availability of the domain
+
+        :param   domain: the domain name e.g. wazzlewobbleflooble.com
+        :type    domain: `str`
+
+        :param   for_transfer: Check if domain is available for transfer
+        :type    for_transfer: `bool`
+
+        :rtype: `list` of :class:`GoDaddyAvailability`
+        """
         result = self.connection.request(
-            '/v1/domains/%s' % zone.id,
-            method='DELETE').object
-        return bool(result)
+            '/v1/domains/available',
+            method='GET',
+            params={
+                'domain': domain,
+                'forTransfer': str(for_transfer)
+            }
+        ).object
+        return GoDaddyAvailability(
+            domain=result['domain'],
+            available=result['available'],
+            price=result['price'],
+            currency=result['currency'],
+            period=result['period']
+        )
+
+    def ex_list_tlds(self):
+        """
+        List available TLDs for sale
+
+        :rtype: `list` of `GoDaddyTLD`
+        """
+        result = self.connection.request(
+            '/v1/domains/tlds',
+            method='GET'
+        ).object
+        return self._to_tlds(result)
+
+    def ex_get_purchase_schema(self, tld):
+        """
+        Get the schema that needs completing to purchase a new domain
+        Use this in conjunction with ex_purchase_domain
+
+        :param   tld: The top level domain e.g com, eu, uk
+        :type    tld: `str`
+
+        :rtype: `dict` the JSON Schema
+        """
+        result = self.connection.request(
+            '/v1/domains/purchase/schema/{0}'.format(tld),
+            method='GET'
+        ).object
+        return result
+
+    def ex_purchase_domain(self, purchase_request):
+        """
+        Purchase a domain with GoDaddy
+
+        :param  purchase_request: The completed document
+            from ex_get_purchase_schema
+        :type   purchase_request: `dict`
+
+        :rtype: :class:`GoDaddyDomainPurchaseResponse` Your order
+        """
+        result = self.connection.request(
+            '/v1/domains/purchase',
+            data=purchase_request,
+            method='POST'
+        ).object
+        return GoDaddyDomainPurchaseResponse(
+            order_id=result['orderId'],
+            item_count=result['itemCount'],
+            total=result['total'],
+            currency=result['currency']
+        )
+
+
+class GoDaddyAvailability(object):
+    def __init__(self, domain, available, price, currency, period):
+        self.domain = domain
+        self.available = bool(available)
+        # currency comes in micro-units, convert to dollars.
+        self.price = float(price) / 1000000
+        self.currency = currency
+        self.period = int(period)
+
+
+class GoDaddyTLD(object):
+    def __init__(self, name, tld_type):
+        self.name = name
+        self.type = tld_type
+
+
+class GoDaddyDomainPurchaseResponse(object):
+    def __init__(self, order_id, item_count, total, currency):
+        self.order_id = order_id
+        self.item_count = item_count
+        self.total = total
+        self.current = currency

@@ -1,0 +1,1326 @@
+[
+  {
+    "name": "academy",
+    "type": "GENERIC"
+  },
+  {
+    "name": "accountants",
+    "type": "GENERIC"
+  },
+  {
+    "name": "actor",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ag",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "agency",
+    "type": "GENERIC"
+  },
+  {
+    "name": "airforce",
+    "type": "GENERIC"
+  },
+  {
+    "name": "am",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "apartments",
+    "type": "GENERIC"
+  },
+  {
+    "name": "archi",
+    "type": "GENERIC"
+  },
+  {
+    "name": "army",
+    "type": "GENERIC"
+  },
+  {
+    "name": "associates",
+    "type": "GENERIC"
+  },
+  {
+    "name": "at",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "auction",
+    "type": "GENERIC"
+  },
+  {
+    "name": "audio",
+    "type": "GENERIC"
+  },
+  {
+    "name": "band",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bar",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bargains",
+    "type": "GENERIC"
+  },
+  {
+    "name": "be",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "beer",
+    "type": "GENERIC"
+  },
+  {
+    "name": "best",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bid",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bike",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bingo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bio",
+    "type": "GENERIC"
+  },
+  {
+    "name": "biz",
+    "type": "GENERIC"
+  },
+  {
+    "name": "black",
+    "type": "GENERIC"
+  },
+  {
+    "name": "blackfriday",
+    "type": "GENERIC"
+  },
+  {
+    "name": "blue",
+    "type": "GENERIC"
+  },
+  {
+    "name": "boutique",
+    "type": "GENERIC"
+  },
+  {
+    "name": "build",
+    "type": "GENERIC"
+  },
+  {
+    "name": "builders",
+    "type": "GENERIC"
+  },
+  {
+    "name": "business",
+    "type": "GENERIC"
+  },
+  {
+    "name": "buzz",
+    "type": "GENERIC"
+  },
+  {
+    "name": "bz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "ca",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "cab",
+    "type": "GENERIC"
+  },
+  {
+    "name": "camera",
+    "type": "GENERIC"
+  },
+  {
+    "name": "camp",
+    "type": "GENERIC"
+  },
+  {
+    "name": "capital",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cards",
+    "type": "GENERIC"
+  },
+  {
+    "name": "care",
+    "type": "GENERIC"
+  },
+  {
+    "name": "careers",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cash",
+    "type": "GENERIC"
+  },
+  {
+    "name": "catering",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cc",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "center",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ch",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "chat",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cheap",
+    "type": "GENERIC"
+  },
+  {
+    "name": "christmas",
+    "type": "GENERIC"
+  },
+  {
+    "name": "church",
+    "type": "GENERIC"
+  },
+  {
+    "name": "city",
+    "type": "GENERIC"
+  },
+  {
+    "name": "claims",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cleaning",
+    "type": "GENERIC"
+  },
+  {
+    "name": "click",
+    "type": "GENERIC"
+  },
+  {
+    "name": "clinic",
+    "type": "GENERIC"
+  },
+  {
+    "name": "clothing",
+    "type": "GENERIC"
+  },
+  {
+    "name": "club",
+    "type": "GENERIC"
+  },
+  {
+    "name": "co",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "co.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "co.nz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "co.uk",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "coach",
+    "type": "GENERIC"
+  },
+  {
+    "name": "codes",
+    "type": "GENERIC"
+  },
+  {
+    "name": "coffee",
+    "type": "GENERIC"
+  },
+  {
+    "name": "com",
+    "type": "GENERIC"
+  },
+  {
+    "name": "com.ag",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.bz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.co",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.es",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.mx",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.ph",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "com.tw",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "community",
+    "type": "GENERIC"
+  },
+  {
+    "name": "company",
+    "type": "GENERIC"
+  },
+  {
+    "name": "computer",
+    "type": "GENERIC"
+  },
+  {
+    "name": "condos",
+    "type": "GENERIC"
+  },
+  {
+    "name": "construction",
+    "type": "GENERIC"
+  },
+  {
+    "name": "consulting",
+    "type": "GENERIC"
+  },
+  {
+    "name": "contractors",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cooking",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cool",
+    "type": "GENERIC"
+  },
+  {
+    "name": "country",
+    "type": "GENERIC"
+  },
+  {
+    "name": "credit",
+    "type": "GENERIC"
+  },
+  {
+    "name": "creditcard",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cruises",
+    "type": "GENERIC"
+  },
+  {
+    "name": "cz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "dance",
+    "type": "GENERIC"
+  },
+  {
+    "name": "dating",
+    "type": "GENERIC"
+  },
+  {
+    "name": "de",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "deals",
+    "type": "GENERIC"
+  },
+  {
+    "name": "degree",
+    "type": "GENERIC"
+  },
+  {
+    "name": "delivery",
+    "type": "GENERIC"
+  },
+  {
+    "name": "democrat",
+    "type": "GENERIC"
+  },
+  {
+    "name": "dental",
+    "type": "GENERIC"
+  },
+  {
+    "name": "desi",
+    "type": "GENERIC"
+  },
+  {
+    "name": "design",
+    "type": "GENERIC"
+  },
+  {
+    "name": "diamonds",
+    "type": "GENERIC"
+  },
+  {
+    "name": "diet",
+    "type": "GENERIC"
+  },
+  {
+    "name": "digital",
+    "type": "GENERIC"
+  },
+  {
+    "name": "direct",
+    "type": "GENERIC"
+  },
+  {
+    "name": "directory",
+    "type": "GENERIC"
+  },
+  {
+    "name": "discount",
+    "type": "GENERIC"
+  },
+  {
+    "name": "domains",
+    "type": "GENERIC"
+  },
+  {
+    "name": "education",
+    "type": "GENERIC"
+  },
+  {
+    "name": "email",
+    "type": "GENERIC"
+  },
+  {
+    "name": "energy",
+    "type": "GENERIC"
+  },
+  {
+    "name": "engineer",
+    "type": "GENERIC"
+  },
+  {
+    "name": "engineering",
+    "type": "GENERIC"
+  },
+  {
+    "name": "enterprises",
+    "type": "GENERIC"
+  },
+  {
+    "name": "equipment",
+    "type": "GENERIC"
+  },
+  {
+    "name": "es",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "estate",
+    "type": "GENERIC"
+  },
+  {
+    "name": "eu",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "events",
+    "type": "GENERIC"
+  },
+  {
+    "name": "exchange",
+    "type": "GENERIC"
+  },
+  {
+    "name": "expert",
+    "type": "GENERIC"
+  },
+  {
+    "name": "exposed",
+    "type": "GENERIC"
+  },
+  {
+    "name": "fail",
+    "type": "GENERIC"
+  },
+  {
+    "name": "farm",
+    "type": "GENERIC"
+  },
+  {
+    "name": "finance",
+    "type": "GENERIC"
+  },
+  {
+    "name": "financial",
+    "type": "GENERIC"
+  },
+  {
+    "name": "firm.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "fish",
+    "type": "GENERIC"
+  },
+  {
+    "name": "fishing",
+    "type": "GENERIC"
+  },
+  {
+    "name": "fitness",
+    "type": "GENERIC"
+  },
+  {
+    "name": "flights",
+    "type": "GENERIC"
+  },
+  {
+    "name": "florist",
+    "type": "GENERIC"
+  },
+  {
+    "name": "flowers",
+    "type": "GENERIC"
+  },
+  {
+    "name": "fm",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "forsale",
+    "type": "GENERIC"
+  },
+  {
+    "name": "foundation",
+    "type": "GENERIC"
+  },
+  {
+    "name": "fund",
+    "type": "GENERIC"
+  },
+  {
+    "name": "furniture",
+    "type": "GENERIC"
+  },
+  {
+    "name": "futbol",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gallery",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gen.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "gift",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gifts",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gives",
+    "type": "GENERIC"
+  },
+  {
+    "name": "glass",
+    "type": "GENERIC"
+  },
+  {
+    "name": "global",
+    "type": "GENERIC"
+  },
+  {
+    "name": "graphics",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gratis",
+    "type": "GENERIC"
+  },
+  {
+    "name": "green",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gripe",
+    "type": "GENERIC"
+  },
+  {
+    "name": "gs",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "guide",
+    "type": "GENERIC"
+  },
+  {
+    "name": "guitars",
+    "type": "GENERIC"
+  },
+  {
+    "name": "guru",
+    "type": "GENERIC"
+  },
+  {
+    "name": "haus",
+    "type": "GENERIC"
+  },
+  {
+    "name": "healthcare",
+    "type": "GENERIC"
+  },
+  {
+    "name": "help",
+    "type": "GENERIC"
+  },
+  {
+    "name": "hiphop",
+    "type": "GENERIC"
+  },
+  {
+    "name": "hiv",
+    "type": "GENERIC"
+  },
+  {
+    "name": "holdings",
+    "type": "GENERIC"
+  },
+  {
+    "name": "holiday",
+    "type": "GENERIC"
+  },
+  {
+    "name": "horse",
+    "type": "GENERIC"
+  },
+  {
+    "name": "host",
+    "type": "GENERIC"
+  },
+  {
+    "name": "hosting",
+    "type": "GENERIC"
+  },
+  {
+    "name": "house",
+    "type": "GENERIC"
+  },
+  {
+    "name": "idv.tw",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "immo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "immobilien",
+    "type": "GENERIC"
+  },
+  {
+    "name": "in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "ind.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "industries",
+    "type": "GENERIC"
+  },
+  {
+    "name": "info",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ink",
+    "type": "GENERIC"
+  },
+  {
+    "name": "institute",
+    "type": "GENERIC"
+  },
+  {
+    "name": "insure",
+    "type": "GENERIC"
+  },
+  {
+    "name": "international",
+    "type": "GENERIC"
+  },
+  {
+    "name": "investments",
+    "type": "GENERIC"
+  },
+  {
+    "name": "juegos",
+    "type": "GENERIC"
+  },
+  {
+    "name": "kaufen",
+    "type": "GENERIC"
+  },
+  {
+    "name": "kim",
+    "type": "GENERIC"
+  },
+  {
+    "name": "kitchen",
+    "type": "GENERIC"
+  },
+  {
+    "name": "kiwi",
+    "type": "GENERIC"
+  },
+  {
+    "name": "la",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "land",
+    "type": "GENERIC"
+  },
+  {
+    "name": "lease",
+    "type": "GENERIC"
+  },
+  {
+    "name": "legal",
+    "type": "GENERIC"
+  },
+  {
+    "name": "lgbt",
+    "type": "GENERIC"
+  },
+  {
+    "name": "life",
+    "type": "GENERIC"
+  },
+  {
+    "name": "lighting",
+    "type": "GENERIC"
+  },
+  {
+    "name": "limited",
+    "type": "GENERIC"
+  },
+  {
+    "name": "limo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "link",
+    "type": "GENERIC"
+  },
+  {
+    "name": "loans",
+    "type": "GENERIC"
+  },
+  {
+    "name": "london",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ltda",
+    "type": "GENERIC"
+  },
+  {
+    "name": "maison",
+    "type": "GENERIC"
+  },
+  {
+    "name": "management",
+    "type": "GENERIC"
+  },
+  {
+    "name": "market",
+    "type": "GENERIC"
+  },
+  {
+    "name": "marketing",
+    "type": "GENERIC"
+  },
+  {
+    "name": "me",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "me.uk",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "media",
+    "type": "GENERIC"
+  },
+  {
+    "name": "memorial",
+    "type": "GENERIC"
+  },
+  {
+    "name": "menu",
+    "type": "GENERIC"
+  },
+  {
+    "name": "mobi",
+    "type": "GENERIC"
+  },
+  {
+    "name": "moda",
+    "type": "GENERIC"
+  },
+  {
+    "name": "moe",
+    "type": "GENERIC"
+  },
+  {
+    "name": "money",
+    "type": "GENERIC"
+  },
+  {
+    "name": "mortgage",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ms",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "mx",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "nagoya",
+    "type": "GENERIC"
+  },
+  {
+    "name": "navy",
+    "type": "GENERIC"
+  },
+  {
+    "name": "net",
+    "type": "GENERIC"
+  },
+  {
+    "name": "net.ag",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "net.bz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "net.co",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "net.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "net.nz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "net.ph",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "network",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ninja",
+    "type": "GENERIC"
+  },
+  {
+    "name": "nl",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "nom.co",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "nom.es",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "nyc",
+    "type": "GENERIC"
+  },
+  {
+    "name": "okinawa",
+    "type": "GENERIC"
+  },
+  {
+    "name": "onl",
+    "type": "GENERIC"
+  },
+  {
+    "name": "org",
+    "type": "GENERIC"
+  },
+  {
+    "name": "org.ag",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.es",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.in",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.nz",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.ph",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.tw",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "org.uk",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "partners",
+    "type": "GENERIC"
+  },
+  {
+    "name": "parts",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ph",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "photo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "photography",
+    "type": "GENERIC"
+  },
+  {
+    "name": "photos",
+    "type": "GENERIC"
+  },
+  {
+    "name": "pics",
+    "type": "GENERIC"
+  },
+  {
+    "name": "pictures",
+    "type": "GENERIC"
+  },
+  {
+    "name": "pink",
+    "type": "GENERIC"
+  },
+  {
+    "name": "pizza",
+    "type": "GENERIC"
+  },
+  {
+    "name": "place",
+    "type": "GENERIC"
+  },
+  {
+    "name": "plumbing",
+    "type": "GENERIC"
+  },
+  {
+    "name": "poker",
+    "type": "GENERIC"
+  },
+  {
+    "name": "press",
+    "type": "GENERIC"
+  },
+  {
+    "name": "productions",
+    "type": "GENERIC"
+  },
+  {
+    "name": "properties",
+    "type": "GENERIC"
+  },
+  {
+    "name": "property",
+    "type": "GENERIC"
+  },
+  {
+    "name": "pub",
+    "type": "GENERIC"
+  },
+  {
+    "name": "qpon",
+    "type": "GENERIC"
+  },
+  {
+    "name": "recipes",
+    "type": "GENERIC"
+  },
+  {
+    "name": "red",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rehab",
+    "type": "GENERIC"
+  },
+  {
+    "name": "reisen",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rentals",
+    "type": "GENERIC"
+  },
+  {
+    "name": "repair",
+    "type": "GENERIC"
+  },
+  {
+    "name": "report",
+    "type": "GENERIC"
+  },
+  {
+    "name": "republican",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rest",
+    "type": "GENERIC"
+  },
+  {
+    "name": "restaurant",
+    "type": "GENERIC"
+  },
+  {
+    "name": "reviews",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rich",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rip",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rocks",
+    "type": "GENERIC"
+  },
+  {
+    "name": "rodeo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ryukyu",
+    "type": "GENERIC"
+  },
+  {
+    "name": "sale",
+    "type": "GENERIC"
+  },
+  {
+    "name": "sarl",
+    "type": "GENERIC"
+  },
+  {
+    "name": "schule",
+    "type": "GENERIC"
+  },
+  {
+    "name": "services",
+    "type": "GENERIC"
+  },
+  {
+    "name": "sexy",
+    "type": "GENERIC"
+  },
+  {
+    "name": "shiksha",
+    "type": "GENERIC"
+  },
+  {
+    "name": "shoes",
+    "type": "GENERIC"
+  },
+  {
+    "name": "singles",
+    "type": "GENERIC"
+  },
+  {
+    "name": "site",
+    "type": "GENERIC"
+  },
+  {
+    "name": "social",
+    "type": "GENERIC"
+  },
+  {
+    "name": "software",
+    "type": "GENERIC"
+  },
+  {
+    "name": "solar",
+    "type": "GENERIC"
+  },
+  {
+    "name": "solutions",
+    "type": "GENERIC"
+  },
+  {
+    "name": "space",
+    "type": "GENERIC"
+  },
+  {
+    "name": "style",
+    "type": "GENERIC"
+  },
+  {
+    "name": "supplies",
+    "type": "GENERIC"
+  },
+  {
+    "name": "supply",
+    "type": "GENERIC"
+  },
+  {
+    "name": "support",
+    "type": "GENERIC"
+  },
+  {
+    "name": "surf",
+    "type": "GENERIC"
+  },
+  {
+    "name": "surgery",
+    "type": "GENERIC"
+  },
+  {
+    "name": "systems",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tattoo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tax",
+    "type": "GENERIC"
+  },
+  {
+    "name": "technology",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tennis",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tienda",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tips",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tires",
+    "type": "GENERIC"
+  },
+  {
+    "name": "today",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tokyo",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tools",
+    "type": "GENERIC"
+  },
+  {
+    "name": "town",
+    "type": "GENERIC"
+  },
+  {
+    "name": "toys",
+    "type": "GENERIC"
+  },
+  {
+    "name": "trade",
+    "type": "GENERIC"
+  },
+  {
+    "name": "training",
+    "type": "GENERIC"
+  },
+  {
+    "name": "tv",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "tw",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "university",
+    "type": "GENERIC"
+  },
+  {
+    "name": "uno",
+    "type": "GENERIC"
+  },
+  {
+    "name": "us",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "vacations",
+    "type": "GENERIC"
+  },
+  {
+    "name": "vegas",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ventures",
+    "type": "GENERIC"
+  },
+  {
+    "name": "vet",
+    "type": "GENERIC"
+  },
+  {
+    "name": "viajes",
+    "type": "GENERIC"
+  },
+  {
+    "name": "video",
+    "type": "GENERIC"
+  },
+  {
+    "name": "villas",
+    "type": "GENERIC"
+  },
+  {
+    "name": "vision",
+    "type": "GENERIC"
+  },
+  {
+    "name": "vodka",
+    "type": "GENERIC"
+  },
+  {
+    "name": "vote",
+    "type": "GENERIC"
+  },
+  {
+    "name": "voto",
+    "type": "GENERIC"
+  },
+  {
+    "name": "voyage",
+    "type": "GENERIC"
+  },
+  {
+    "name": "watch",
+    "type": "GENERIC"
+  },
+  {
+    "name": "webcam",
+    "type": "GENERIC"
+  },
+  {
+    "name": "website",
+    "type": "GENERIC"
+  },
+  {
+    "name": "wiki",
+    "type": "GENERIC"
+  },
+  {
+    "name": "works",
+    "type": "GENERIC"
+  },
+  {
+    "name": "world",
+    "type": "GENERIC"
+  },
+  {
+    "name": "ws",
+    "type": "COUNTRY_CODE"
+  },
+  {
+    "name": "wtf",
+    "type": "GENERIC"
+  },
+  {
+    "name": "xxx",
+    "type": "GENERIC"
+  },
+  {
+    "name": "xyz",
+    "type": "GENERIC"
+  },
+  {
+    "name": "yokohama",
+    "type": "GENERIC"
+  },
+  {
+    "name": "zone",
+    "type": "GENERIC"
+  }
+]
