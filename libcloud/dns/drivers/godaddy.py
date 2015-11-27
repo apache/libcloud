@@ -194,6 +194,7 @@ class GoDaddyDNSDriver(DNSDriver):
             id=id, name=name,
             type=type, data=data,
             zone=zone, driver=self,
+            ttl=new_record['ttl'],
             extra=extra)
 
     def update_record(self, record, name, type, data, extra=None):
@@ -229,6 +230,7 @@ class GoDaddyDNSDriver(DNSDriver):
             id=id, name=name,
             type=type, data=data,
             zone=record.zone, driver=self,
+            ttl=new_record['ttl'],
             extra=extra)
 
     def get_record(self, zone_id, record_id):
@@ -249,7 +251,7 @@ class GoDaddyDNSDriver(DNSDriver):
                 zone_id,
                 parts[1],
                 parts[0])).object
-        if len(result) is 0:
+        if len(result) == 0:
             raise RecordDoesNotExistError()
         return self._to_record(result[0],
                                self.get_zone(zone_id))
@@ -445,7 +447,7 @@ class GoDaddyDNSDriver(DNSDriver):
         record = Record(id=id, name=name,
                         type=type, data=item['data'],
                         zone=zone, driver=self,
-                        extra={'ttl': ttl})
+                        ttl=ttl)
         return record
 
     def _to_tlds(self, items):
