@@ -1,0 +1,86 @@
+{
+  "domainId": 177184419,
+  "domain": "aperture-platform.com",
+  "status": "ACTIVE",
+  "expires": "2016-09-25T19:29:32Z",
+  "expirationProtected": false,
+  "holdRegistrar": false,
+  "limited": false,
+  "locked": true,
+  "privacy": false,
+  "renewAuto": true,
+  "renewable": true,
+  "renewDeadline": "2016-11-09T19:29:32Z",
+  "smart": false,
+  "transferProtected": false,
+  "createdAt": "2014-09-25T19:29:32Z",
+  "authCode": "nowayamiputtingthishere",
+  "nameServers": [
+    "ns25.domaincontrol.com",
+    "ns26.domaincontrol.com"
+  ],
+  "contactRegistrant": {
+    "nameFirst": "Anthony",
+    "nameLast": "Shaw",
+    "organization": "DIMENSION DATA Cloud Solutions Australia",
+    "email": "anthony.shaw@dimensiondata.com",
+    "phone": 61.414529701,
+    "fax": "",
+    "addressMailing": {
+      "address1": "3 Richardson Place",
+      "address2": "",
+      "city": "North Ryde",
+      "state": "New South Wales",
+      "postalCode": 2113,
+      "country": "AU"
+    }
+  },
+  "contactBilling": {
+    "nameFirst": "Anthony",
+    "nameLast": "Shaw",
+    "organization": "DIMENSION DATA Cloud Solutions Australia",
+    "email": "anthony.shaw@dimensiondata.com",
+    "phone": 61.414529701,
+    "fax": "",
+    "addressMailing": {
+      "address1": "3 Richardson Place",
+      "address2": "",
+      "city": "North Ryde",
+      "state": "New South Wales",
+      "postalCode": 2113,
+      "country": "AU"
+    }
+  },
+  "contactAdmin": {
+    "nameFirst": "Anthony",
+    "nameLast": "Shaw",
+    "organization": "DIMENSION DATA Cloud Solutions Australia",
+    "email": "anthony.shaw@dimensiondata.com",
+    "phone": 61.414529701,
+    "fax": "",
+    "addressMailing": {
+      "address1": "3 Richardson Place",
+      "address2": "",
+      "city": "North Ryde",
+      "state": "New South Wales",
+      "postalCode": 2113,
+      "country": "AU"
+    }
+  },
+  "contactTech": {
+    "nameFirst": "Anthony",
+    "nameLast": "Shaw",
+    "organization": "DIMENSION DATA Cloud Solutions Australia",
+    "email": "anthony.shaw@dimensiondata.com",
+    "phone": 61.414529701,
+    "fax": "",
+    "addressMailing": {
+      "address1": "3 Richardson Place",
+      "address2": "",
+      "city": "North Ryde",
+      "state": "New South Wales",
+      "postalCode": 2113,
+      "country": "AU"
+    }
+  }
+}
