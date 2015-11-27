@@ -451,8 +451,8 @@ class GoDaddyDNSDriver(DNSDriver):
         result = self.connection.request(
             '/v1/domains/agreements',
             params={
-                'tlds':tld,
-                'privacy':str(privacy)
+                'tlds': tld,
+                'privacy': str(privacy)
             },
             method='GET'
         ).object
