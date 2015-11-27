@@ -252,7 +252,9 @@ class GoDaddyDNSDriver(DNSDriver):
                 parts[1],
                 parts[0])).object
         if len(result) == 0:
-            raise RecordDoesNotExistError()
+            raise RecordDoesNotExistError(record_id,
+                                          driver=self,
+                                          record_id=record_id)
         return self._to_record(result[0],
                                self.get_zone(zone_id))
 
@@ -397,7 +399,7 @@ class GoDaddyDNSDriver(DNSDriver):
         if extra is None:
             extra = {}
         new_record = {}
-        if type is RecordType.SRV:
+        if type == RecordType.SRV:
             new_record = {
                 'type': type,
                 'name': name,
