@@ -592,7 +592,7 @@ class AzureNodeDriver(NodeDriver):
         image = kwargs["image"]
         ex_cloud_service_name = kwargs["ex_cloud_service_name"]
         ex_storage_service_name = kwargs.get("ex_storage_service_name", None)
-        ex_new_deployment = kwargs.get("ex_storage_service_name", False)
+        ex_new_deployment = kwargs.get("ex_new_deployment", False)
         ex_deployment_slot = kwargs.get("ex_deployment_slot", "Production")
         ex_deployment_name = kwargs.get("ex_deployment_name", None)
         ex_admin_user_id = kwargs.get("ex_admin_user_id", "azureuser")
