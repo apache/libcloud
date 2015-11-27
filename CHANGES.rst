@@ -74,6 +74,15 @@ Compute
   [LIBCLOUD-590, GITHUB-641]
   [Atsushi Sasaki]
 
+- Add an additional argument to libcloud.compute.drivers.GCENodeDriver.create_node
+  to allow for creation of preemptible GCE instances
+  [GITHUB-643]
+  [@blawney]
+
+- GoogleStorageDriver can now use either our S3 authentication or other Google Cloud Platform OAuth2 authentication methods.
+  [GITHUB-633]
+  [Scott Crunkleton]
+
 Storage
 ~~~~~~~
 
@@ -88,6 +97,10 @@ DNS
   argument.
   (GITHUB-621)
   [Alejandro Pereira]
+
+- Introduced GoDaddy DNS Driver
+  (LIBCLOUD-772, GITHUB-640)
+  [Anthony Shaw]
 
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
