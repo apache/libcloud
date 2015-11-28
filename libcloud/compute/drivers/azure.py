@@ -407,7 +407,7 @@ class AzureNodeDriver(NodeDriver):
 
         return [self._to_location(l) for l in data]
 
-    def list_nodes(self, ex_cloud_service_name):
+    def list_nodes(self, **kwargs):
         """
         List all nodes
 
@@ -421,6 +421,8 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`Node`
         """
+        ex_cloud_service_name = kwargs["ex_cloud_service_name"]
+
         response = self._perform_get(
             self._get_hosted_service_path(ex_cloud_service_name) +
             '?embed-detail=True',
