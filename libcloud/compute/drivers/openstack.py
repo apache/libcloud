@@ -862,6 +862,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      'uri': "https://%s%s/servers/%s" % (
                          self.connection.host,
                          self.connection.request_path, el.get('id')),
+                     'service_name': self.connection.get_service_name(),
                      'metadata': metadata})
         return n
 
@@ -2116,6 +2117,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
+                service_name=self.connection.get_service_name(),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass', None),
                 created=api_node['created'],

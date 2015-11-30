@@ -135,6 +135,8 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancers[0].id, "8155")
         self.assertEqual(balancers[0].port, 80)
         self.assertEqual(balancers[0].ip, "1.1.1.25")
+        self.assertTrue(balancers[0].extra.get('service_name') is not None)
+        self.assertTrue(balancers[0].extra.get('uri') is not None)
         self.assertEqual(balancers[1].name, "test1")
         self.assertEqual(balancers[1].id, "8156")
 
