@@ -185,6 +185,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_power_off(node)
         self.assertTrue(ret is True)
 
+    def test_ex_update_vm_tools(self):
+        node = Node(id='11', name=None, state=None,
+                    public_ips=None, private_ips=None, driver=self.driver)
+        ret = self.driver.ex_update_vm_tools(node)
+        self.assertTrue(ret is True)
+
     def test_ex_power_off_INPROGRESS(self):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
@@ -417,6 +423,36 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_update_monitoring_plan(node, "ESSENTIALS")
         self.assertTrue(result)
 
+    def test_ex_add_storage_to_node(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_add_storage_to_node(node, 30, 'PERFORMANCE')
+        self.assertTrue(result)
+
+    def test_ex_remove_storage_from_node(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_remove_storage_from_node(node, 1)
+        self.assertTrue(result)
+
+    def test_ex_change_storage_speed(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_change_storage_speed(node, 1, 'PERFORMANCE')
+        self.assertTrue(result)
+
+    def test_ex_change_storage_size(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_change_storage_size(node, 1, 100)
+        self.assertTrue(result)
+
+    def test_ex_clone_node_to_image(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_clone_node_to_image(node, 'my image', 'a description')
+        self.assertTrue(result)
+
+    def test_ex_update_node(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_update_node(node, 'my new name', 'a description', 2, 4048)
+        self.assertTrue(result)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -525,6 +561,33 @@ class DimensionDataMockHttp(MockHttp):
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_4bba37be_506f_11e3_b29c_001517c4643e.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1_changeSize(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1_changeSize.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1_changeSpeed(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1_changeSpeed.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1(self, method, url, body, headers):
+        action = url.split('?')[-1]
+        if action == 'delete':
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_disk_1.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'POST':
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_POST.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server.xml')
@@ -570,6 +633,14 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}updateVmwareTools":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer(self, method, url, body, headers):
