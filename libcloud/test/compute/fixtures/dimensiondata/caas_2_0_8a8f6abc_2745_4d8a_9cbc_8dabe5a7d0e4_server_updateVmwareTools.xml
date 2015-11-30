@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-08-
+12T11:49:17.375-04:00/d5bb0975-1ade-4350-aaec-24807bdf7038">
+<operation>POWER_OFF_SERVER</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to power off Server 'Production Server' has been accepted
+and is being processed.</message>
+</response>
