@@ -219,6 +219,18 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         return self.service_catalog
 
+    def get_service_name(self):
+        """
+        Gets the service name used to look up the endpoint in the service
+        catalog.
+
+        :return: name of the service in the catalog
+        """
+        if self._ex_force_service_name:
+            return self._ex_force_service_name
+
+        return self.service_name
+
     def get_endpoint(self):
         """
         Selects the endpoint to use based on provider specific values,

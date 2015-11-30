@@ -24,25 +24,27 @@ from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
 from libcloud.common.rackspace import AUTH_URL
 from libcloud.utils.iso8601 import parse_date
 
-
+SERVICE_TYPE = 'compute'
+SERVICE_NAME_GEN1 = 'cloudServers'
+SERVICE_NAME_GEN2 = 'cloudServersOpenStack'
 ENDPOINT_ARGS_MAP = {
-    'dfw': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'dfw': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'DFW'},
-    'ord': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'ord': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'ORD'},
-    'iad': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'iad': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'IAD'},
-    'lon': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'lon': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'LON'},
-    'syd': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'syd': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'SYD'},
-    'hkg': {'service_type': 'compute',
-            'name': 'cloudServersOpenStack',
+    'hkg': {'service_type': SERVICE_TYPE,
+            'name': SERVICE_NAME_GEN2,
             'region': 'HKG'},
 
 }
@@ -64,8 +66,8 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
 
     def get_endpoint(self):
         if '2.0' in self._auth_version:
-            ep = self.service_catalog.get_endpoint(service_type='compute',
-                                                   name='cloudServers')
+            ep = self.service_catalog.get_endpoint(service_type=SERVICE_TYPE,
+                                                   name=SERVICE_NAME_GEN1)
         else:
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
@@ -90,6 +92,9 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
                                             'https://lon.servers.api')
 
         return public_url
+
+    def get_service_name(self):
+        return SERVICE_NAME_GEN1
 
 
 class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
@@ -152,6 +157,13 @@ class RackspaceConnection(OpenStack_1_1_Connection):
         self.region = kwargs.pop('region', None)
         self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
         super(RackspaceConnection, self).__init__(*args, **kwargs)
+
+    def get_service_name(self):
+        if not self.get_endpoint_args:
+            # if they used ex_force_base_url, assume the Rackspace default
+            return SERVICE_NAME_GEN2
+
+        return self.get_endpoint_args.get('name', SERVICE_NAME_GEN2)
 
     def get_endpoint(self):
         if not self.get_endpoint_args:

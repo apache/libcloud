@@ -1336,6 +1336,9 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
             "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
             "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
             "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet"),
+            "service_name": self.connection.get_service_name(),
+            "uri": "https://%s%s/loadbalancers/%s" % (
+                self.connection.host, self.connection.request_path, el["id"]),
         }
 
         if 'virtualIps' in el:
