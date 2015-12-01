@@ -55,6 +55,7 @@
             "d2.8xlarge": "6.752",
             "d2.xlarge": "0.844",
             "g2.2xlarge": "0.898",
+            "g2.8xlarge": "3.592",
             "hi1.4xlarge": "3.276",
             "hs1.8xlarge": "5.400",
             "i2.2xlarge": "2.001",
@@ -85,7 +86,8 @@
             "t1.micro": "0.026",
             "t2.medium": "0.080",
             "t2.micro": "0.020",
-            "t2.small": "0.040"
+            "t2.small": "0.040",
+            "t2.large": "0.16"
         },
         "ec2_ap_southeast": {
             "c1.medium": "0.164",
@@ -104,6 +106,7 @@
             "d2.4xlarge": "3.480",
             "d2.8xlarge": "6.960",
             "d2.xlarge": "0.870",
+            "g2.8xlarge": "4",
             "g2.2xlarge": "1.000",
             "hi1.4xlarge": "N/A",
             "hs1.8xlarge": "5.570",
@@ -135,7 +138,8 @@
             "t1.micro": "0.020",
             "t2.medium": "0.080",
             "t2.micro": "0.020",
-            "t2.small": "0.040"
+            "t2.small": "0.040",
+            "t2.large": "0.16"
         },
         "ec2_ap_southeast_2": {
             "c1.medium": "0.164",
@@ -155,6 +159,7 @@
             "d2.8xlarge": "6.960",
             "d2.xlarge": "0.870",
             "g2.2xlarge": "0.898",
+            "g2.8xlarge": "3.592",
             "hi1.4xlarge": "N/A",
             "hs1.8xlarge": "5.570",
             "i2.2xlarge": "2.035",
@@ -185,7 +190,8 @@
             "t1.micro": "0.020",
             "t2.medium": "0.080",
             "t2.micro": "0.020",
-            "t2.small": "0.040"
+            "t2.small": "0.040",
+            "t2.large": "0.16"
         },
         "ec2_eu_central": {
             "c3.2xlarge": "0.516",
@@ -203,6 +209,7 @@
             "d2.8xlarge": "6.352",
             "d2.xlarge": "0.794",
             "g2.2xlarge": null,
+            "g2.8xlarge": "3.088",
             "i2.2xlarge": "2.026",
             "i2.4xlarge": "4.051",
             "i2.8xlarge": "8.102",
@@ -223,7 +230,8 @@
             "r3.xlarge": "0.421",
             "t2.medium": "0.060",
             "t2.micro": "0.015",
-            "t2.small": "0.030"
+            "t2.small": "0.030",
+            "t2.large": "0.12"
         },
         "ec2_eu_west": {
             "c1.medium": "0.148",
@@ -246,6 +254,7 @@
             "d2.8xlarge": "5.880",
             "d2.xlarge": "0.735",
             "g2.2xlarge": "0.702",
+            "g2.8xlarge": "2.808",
             "hi1.4xlarge": "3.100",
             "hs1.8xlarge": "4.900",
             "i2.2xlarge": "1.876",
@@ -276,7 +285,8 @@
             "t1.micro": "0.020",
             "t2.medium": "0.056",
             "t2.micro": "0.014",
-            "t2.small": "0.028"
+            "t2.small": "0.028",
+            "t2.large": "0.112"
         },
         "ec2_sa_east": {
             "c1.medium": "0.179",
@@ -302,7 +312,8 @@
             "t1.micro": "0.027",
             "t2.medium": "0.108",
             "t2.micro": "0.027",
-            "t2.small": "0.054"
+            "t2.small": "0.054",
+            "t2.large": "0.216"
         },
         "ec2_us_east": {
             "c1.medium": "0.130",
@@ -325,6 +336,7 @@
             "d2.8xlarge": "5.520",
             "d2.xlarge": "0.690",
             "g2.2xlarge": "0.650",
+            "g2.8xlarge": "2.6",
             "hi1.4xlarge": "3.100",
             "hs1.8xlarge": "4.600",
             "i2.2xlarge": "1.705",
@@ -391,7 +403,8 @@
             "t1.micro": "0.024",
             "t2.medium": "0.062",
             "t2.micro": "0.015",
-            "t2.small": "0.031"
+            "t2.small": "0.031",
+            "t2.large": "0.124"
         },
         "ec2_us_west": {
             "c1.medium": "0.148",
@@ -407,6 +420,7 @@
             "c4.large": "0.138",
             "c4.xlarge": "0.276",
             "g2.2xlarge": "0.702",
+            "g2.8xlarge": "2.808",
             "hi1.4xlarge": "N/A",
             "hs1.8xlarge": "N/A",
             "i2.2xlarge": "1.876",
@@ -437,7 +451,8 @@
             "t1.micro": "0.025",
             "t2.medium": "0.068",
             "t2.micro": "0.017",
-            "t2.small": "0.034"
+            "t2.small": "0.034",
+            "t2.large": "0.136"
         },
         "ec2_us_west_oregon": {
             "c1.medium": "0.130",
@@ -459,6 +474,7 @@
             "d2.8xlarge": "5.520",
             "d2.xlarge": "0.690",
             "g2.2xlarge": "0.650",
+            "g2.8xlarge": "2.6",
             "hi1.4xlarge": "3.100",
             "hs1.8xlarge": "4.600",
             "i2.2xlarge": "1.705",
@@ -489,7 +505,8 @@
             "t1.micro": "0.020",
             "t2.medium": "0.052",
             "t2.micro": "0.013",
-            "t2.small": "0.026"
+            "t2.small": "0.026",
+            "t2.large": "0.104"
         },
         "elastichosts": {
             "extra-large": 0.579,
