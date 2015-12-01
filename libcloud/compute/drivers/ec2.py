@@ -293,6 +293,16 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'g2.8xlarge': {
+        'id': 'g2.8xlarge',
+        'name': 'Cluster GPU G2 Eight Extra Large Instance',
+        'ram': GiB(60),
+        'disk': 2 * 120,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
+    },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
         'name': 'Cluster Compute Quadruple Extra Large Instance',
@@ -603,6 +613,16 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 2
         }
+    },
+    't2.large': {
+        'id': 't2.large',
+        'name': 'Burstable Performance Medium Instance',
+        'ram': GiB(8),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     }
 }
 
@@ -646,6 +666,7 @@ REGION_DETAILS = {
             'c4.8xlarge',
             'cg1.4xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -663,7 +684,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # US West (Northern California) Region
@@ -693,6 +715,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -714,7 +737,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # US West (Oregon) Region
@@ -744,6 +768,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -771,7 +796,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # EU (Ireland) Region
@@ -801,6 +827,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -828,7 +855,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # EU (Frankfurt) Region
@@ -872,7 +900,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -922,7 +951,8 @@ REGION_DETAILS = {
             'd2.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -946,6 +976,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c1.xlarge',
             'c3.large',
             'c3.xlarge',
@@ -978,7 +1009,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # South America (Sao Paulo) Region
@@ -1004,7 +1036,8 @@ REGION_DETAILS = {
             'c1.xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Sydney) Region
@@ -1059,7 +1092,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     'us-gov-west-1': {
@@ -1083,6 +1117,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1106,7 +1141,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     'nimbus': {
