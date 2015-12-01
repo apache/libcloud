@@ -454,7 +454,7 @@ INSTANCE_TYPES = {
     # i2 instances have up to eight SSD drives
     'i2.xlarge': {
         'id': 'i2.xlarge',
-        'name': 'High Storage Optimized Extra Large Instance',
+        'name': 'High I/O Storage Optimized Extra Large Instance',
         'ram': GiB(30.5),
         'disk': 800,  # GB
         'bandwidth': None,
@@ -464,7 +464,7 @@ INSTANCE_TYPES = {
     },
     'i2.2xlarge': {
         'id': 'i2.2xlarge',
-        'name': 'High Storage Optimized Double Extra Large Instance',
+        'name': 'High I/O Storage Optimized Double Extra Large Instance',
         'ram': GiB(61),
         'disk': 2 * 800,  # GB
         'bandwidth': None,
@@ -474,7 +474,7 @@ INSTANCE_TYPES = {
     },
     'i2.4xlarge': {
         'id': 'i2.4xlarge',
-        'name': 'High Storage Optimized Quadruple Large Instance',
+        'name': 'High I/O Storage Optimized Quadruple Large Instance',
         'ram': GiB(122),
         'disk': 4 * 800,  # GB
         'bandwidth': None,
@@ -484,7 +484,7 @@ INSTANCE_TYPES = {
     },
     'i2.8xlarge': {
         'id': 'i2.8xlarge',
-        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'name': 'High I/O Storage Optimized Eight Extra Large Instance',
         'ram': GiB(244),
         'disk': 8 * 800,  # GB
         'bandwidth': None,
@@ -494,7 +494,7 @@ INSTANCE_TYPES = {
     },
     'd2.xlarge': {
         'id': 'd2.xlarge',
-        'name': 'High Storage Optimized Extra Large Instance',
+        'name': 'Dense Storage Optimized Extra Large Instance',
         'ram': GiB(30.5),
         'disk': 3 * 2000,  # GB
         'bandwidth': None,
@@ -504,7 +504,7 @@ INSTANCE_TYPES = {
     },
     'd2.2xlarge': {
         'id': 'd2.2xlarge',
-        'name': 'High Storage Optimized Double Extra Large Instance',
+        'name': 'Dense Storage Optimized Double Extra Large Instance',
         'ram': GiB(61),
         'disk': 6 * 2000,  # GB
         'bandwidth': None,
@@ -514,7 +514,7 @@ INSTANCE_TYPES = {
     },
     'd2.4xlarge': {
         'id': 'd2.4xlarge',
-        'name': 'High Storage Optimized Quadruple Extra Large Instance',
+        'name': 'Dense Storage Optimized Quadruple Extra Large Instance',
         'ram': GiB(122),
         'disk': 12 * 2000,  # GB
         'bandwidth': None,
@@ -524,7 +524,7 @@ INSTANCE_TYPES = {
     },
     'd2.8xlarge': {
         'id': 'd2.8xlarge',
-        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'name': 'Dense Storage Optimized Eight Extra Large Instance',
         'ram': GiB(244),
         'disk': 24 * 2000,  # GB
         'bandwidth': None,
