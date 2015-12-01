@@ -90,151 +90,157 @@ EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
 """
+
+
+def GiB(value):
+    return int(value * 1024)
+
+
 INSTANCE_TYPES = {
     't1.micro': {
         'id': 't1.micro',
         'name': 'Micro Instance',
-        'ram': 613,
+        'ram': GiB(0.613),
         'disk': 15,
         'bandwidth': None
     },
     'm1.small': {
         'id': 'm1.small',
         'name': 'Small Instance',
-        'ram': 1740,
+        'ram': GiB(1.7),
         'disk': 160,
         'bandwidth': None
     },
     'm1.medium': {
         'id': 'm1.medium',
         'name': 'Medium Instance',
-        'ram': 3700,
+        'ram': GiB(3.75),
         'disk': 410,
         'bandwidth': None
     },
     'm1.large': {
         'id': 'm1.large',
         'name': 'Large Instance',
-        'ram': 7680,
+        'ram': GiB(7.5),
         'disk': 850,
         'bandwidth': None
     },
     'm1.xlarge': {
         'id': 'm1.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 15360,
+        'ram': GiB(15),
         'disk': 1690,
         'bandwidth': None
     },
     'c1.medium': {
         'id': 'c1.medium',
         'name': 'High-CPU Medium Instance',
-        'ram': 1740,
+        'ram': GiB(1.7),
         'disk': 350,
         'bandwidth': None
     },
     'c1.xlarge': {
         'id': 'c1.xlarge',
         'name': 'High-CPU Extra Large Instance',
-        'ram': 7680,
+        'ram': GiB(7),
         'disk': 1690,
         'bandwidth': None
     },
     'm2.xlarge': {
         'id': 'm2.xlarge',
         'name': 'High-Memory Extra Large Instance',
-        'ram': 17510,
+        'ram': GiB(17.1),
         'disk': 420,
         'bandwidth': None
     },
     'm2.2xlarge': {
         'id': 'm2.2xlarge',
         'name': 'High-Memory Double Extra Large Instance',
-        'ram': 35021,
+        'ram': GiB(34.2),
         'disk': 850,
         'bandwidth': None
     },
     'm2.4xlarge': {
         'id': 'm2.4xlarge',
         'name': 'High-Memory Quadruple Extra Large Instance',
-        'ram': 70042,
+        'ram': GiB(68.4),
         'disk': 1690,
         'bandwidth': None
     },
     'm3.medium': {
         'id': 'm3.medium',
         'name': 'Medium Instance',
-        'ram': 3840,
+        'ram': GiB(3.75),
         'disk': 4000,
         'bandwidth': None
     },
     'm3.large': {
         'id': 'm3.large',
         'name': 'Large Instance',
-        'ram': 7168,
+        'ram': GiB(7.5),
         'disk': 32000,
         'bandwidth': None
     },
     'm3.xlarge': {
         'id': 'm3.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 15360,
+        'ram': GiB(15),
         'disk': 80000,
         'bandwidth': None
     },
     'm3.2xlarge': {
         'id': 'm3.2xlarge',
         'name': 'Double Extra Large Instance',
-        'ram': 30720,
+        'ram': GiB(30),
         'disk': 160000,
         'bandwidth': None
     },
     'm4.large': {
         'id': 'm4.large',
         'name': 'Large Instance',
-        'ram': 8192,
+        'ram': GiB(8),
         'disk': 0,
         'bandwidth': None
     },
     'm4.xlarge': {
         'id': 'm4.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 16384,
+        'ram': GiB(16),
         'disk': 0,
         'bandwidth': None
     },
     'm4.2xlarge': {
         'id': 'm4.2xlarge',
         'name': 'Double Extra Large Instance',
-        'ram': 32768,
+        'ram': GiB(32),
         'disk': 0,
         'bandwidth': None
     },
     'm4.4xlarge': {
         'id': 'm4.4xlarge',
         'name': 'Quadruple Extra Large Instance',
-        'ram': 65536,
+        'ram': GiB(64),
         'disk': 0,
         'bandwidth': None
     },
     'm4.10xlarge': {
         'id': 'm4.10xlarge',
         'name': '10 Extra Large Instance',
-        'ram': 163840,
+        'ram': GiB(160),
         'disk': 0,
         'bandwidth': None
     },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
-        'ram': 22528,
+        'ram': GiB(22.5),
         'disk': 1690,
         'bandwidth': None
     },
     'g2.2xlarge': {
         'id': 'g2.2xlarge',
         'name': 'Cluster GPU G2 Double Extra Large Instance',
-        'ram': 15000,
+        'ram': GiB(15),
         'disk': 60,
         'bandwidth': None,
     },
@@ -248,7 +254,7 @@ INSTANCE_TYPES = {
     'cc2.8xlarge': {
         'id': 'cc2.8xlarge',
         'name': 'Cluster Compute Eight Extra Large Instance',
-        'ram': 63488,
+        'ram': GiB(60.5),
         'disk': 3370,
         'bandwidth': None
     },
@@ -256,91 +262,91 @@ INSTANCE_TYPES = {
     'c3.large': {
         'id': 'c3.large',
         'name': 'Compute Optimized Large Instance',
-        'ram': 3750,
+        'ram': GiB(3.75),
         'disk': 32,  # x2
         'bandwidth': None
     },
     'c3.xlarge': {
         'id': 'c3.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7500,
+        'ram': GiB(7.5),
         'disk': 80,  # x2
         'bandwidth': None
     },
     'c3.2xlarge': {
         'id': 'c3.2xlarge',
         'name': 'Compute Optimized Double Extra Large Instance',
-        'ram': 15000,
+        'ram': GiB(15),
         'disk': 160,  # x2
         'bandwidth': None
     },
     'c3.4xlarge': {
         'id': 'c3.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': 30000,
+        'ram': GiB(30),
         'disk': 320,  # x2
         'bandwidth': None
     },
     'c3.8xlarge': {
         'id': 'c3.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': 60000,
+        'ram': GiB(60),
         'disk': 640,  # x2
         'bandwidth': None
     },
     'c4.large': {
         'id': 'c4.large',
         'name': 'Compute Optimized Large Instance',
-        'ram': 3750,
+        'ram': GiB(3.75),
         'disk': 0,
         'bandwidth': None
     },
     'c4.xlarge': {
         'id': 'c4.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7500,
+        'ram': GiB(7.5),
         'disk': 0,
         'bandwidth': None
     },
     'c4.2xlarge': {
         'id': 'c4.2xlarge',
         'name': 'Compute Optimized Double Large Instance',
-        'ram': 15000,
+        'ram': GiB(15),
         'disk': 0,
         'bandwidth': None
     },
     'c4.4xlarge': {
         'id': 'c4.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': 30000,
+        'ram': GiB(30),
         'disk': 0,
         'bandwidth': None
     },
     'c4.8xlarge': {
         'id': 'c4.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': 60000,
+        'ram': GiB(60),
         'disk': 0,
         'bandwidth': None
     },
     'cr1.8xlarge': {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
-        'ram': 244000,
+        'ram': GiB(244),
         'disk': 240,
         'bandwidth': None
     },
     'hs1.4xlarge': {
         'id': 'hs1.4xlarge',
         'name': 'High Storage Quadruple Extra Large Instance',
-        'ram': 61952,
+        'ram': GiB(64),
         'disk': 2048,
         'bandwidth': None
     },
     'hs1.8xlarge': {
         'id': 'hs1.8xlarge',
         'name': 'High Storage Eight Extra Large Instance',
-        'ram': 119808,
+        'ram': GiB(117),
         'disk': 48000,
         'bandwidth': None
     },
@@ -348,56 +354,56 @@ INSTANCE_TYPES = {
     'i2.xlarge': {
         'id': 'i2.xlarge',
         'name': 'High Storage Optimized Extra Large Instance',
-        'ram': 31232,
+        'ram': GiB(30.5),
         'disk': 800,
         'bandwidth': None
     },
     'i2.2xlarge': {
         'id': 'i2.2xlarge',
         'name': 'High Storage Optimized Double Extra Large Instance',
-        'ram': 62464,
+        'ram': GiB(61),
         'disk': 1600,
         'bandwidth': None
     },
     'i2.4xlarge': {
         'id': 'i2.4xlarge',
         'name': 'High Storage Optimized Quadruple Large Instance',
-        'ram': 124928,
+        'ram': GiB(122),
         'disk': 3200,
         'bandwidth': None
     },
     'i2.8xlarge': {
         'id': 'i2.8xlarge',
         'name': 'High Storage Optimized Eight Extra Large Instance',
-        'ram': 249856,
+        'ram': GiB(244),
         'disk': 6400,
         'bandwidth': None
     },
     'd2.xlarge': {
         'id': 'd2.xlarge',
         'name': 'High Storage Optimized Extra Large Instance',
-        'ram': 30050,
+        'ram': GiB(30.5),
         'disk': 6000,  # 3 x 2 TB
         'bandwidth': None
     },
     'd2.2xlarge': {
         'id': 'd2.2xlarge',
         'name': 'High Storage Optimized Double Extra Large Instance',
-        'ram': 61952,
+        'ram': GiB(61),
         'disk': 12000,  # 6 x 2 TB
         'bandwidth': None
     },
     'd2.4xlarge': {
         'id': 'd2.4xlarge',
         'name': 'High Storage Optimized Quadruple Extra Large Instance',
-        'ram': 122000,
+        'ram': GiB(122),
         'disk': 24000,  # 12 x 2 TB
         'bandwidth': None
     },
     'd2.8xlarge': {
         'id': 'd2.8xlarge',
         'name': 'High Storage Optimized Eight Extra Large Instance',
-        'ram': 244000,
+        'ram': GiB(244),
         'disk': 48000,  # 24 x 2 TB
         'bandwidth': None
     },
@@ -405,42 +411,42 @@ INSTANCE_TYPES = {
     'r3.large': {
         'id': 'r3.large',
         'name': 'Memory Optimized Large instance',
-        'ram': 15000,
+        'ram': GiB(15.25),
         'disk': 32,
         'bandwidth': None
     },
     'r3.xlarge': {
         'id': 'r3.xlarge',
         'name': 'Memory Optimized Extra Large instance',
-        'ram': 30500,
+        'ram': GiB(30.5),
         'disk': 80,
         'bandwidth': None
     },
     'r3.2xlarge': {
         'id': 'r3.2xlarge',
         'name': 'Memory Optimized Double Extra Large instance',
-        'ram': 61000,
+        'ram': GiB(61),
         'disk': 160,
         'bandwidth': None
     },
     'r3.4xlarge': {
         'id': 'r3.4xlarge',
         'name': 'Memory Optimized Quadruple Extra Large instance',
-        'ram': 122000,
+        'ram': GiB(122),
         'disk': 320,
         'bandwidth': None
     },
     'r3.8xlarge': {
         'id': 'r3.8xlarge',
         'name': 'Memory Optimized Eight Extra Large instance',
-        'ram': 244000,
+        'ram': GiB(244),
         'disk': 320,  # x2
         'bandwidth': None
     },
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
-        'ram': 1024,
+        'ram': GiB(1),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
@@ -451,7 +457,7 @@ INSTANCE_TYPES = {
     't2.small': {
         'id': 't2.small',
         'name': 'Burstable Performance Small Instance',
-        'ram': 2048,
+        'ram': GiB(2),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
@@ -461,7 +467,7 @@ INSTANCE_TYPES = {
     't2.medium': {
         'id': 't2.medium',
         'name': 'Burstable Performance Medium Instance',
-        'ram': 4028,
+        'ram': GiB(4),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
