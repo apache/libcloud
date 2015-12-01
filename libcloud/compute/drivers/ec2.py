@@ -89,6 +89,8 @@ EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
+and <http://aws.amazon.com/ec2/previous-generation/>
+ram = [MiB], disk = [GB]
 """
 
 
@@ -631,6 +633,7 @@ INSTANCE_TYPES = {
     }
 }
 
+#  From <https://aws.amazon.com/marketplace/help/200777880>
 REGION_DETAILS = {
     # US East (Northern Virginia) Region
     'us-east-1': {
