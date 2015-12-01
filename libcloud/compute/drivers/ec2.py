@@ -588,6 +588,7 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    # Burstable Performance General Purpose
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
@@ -598,7 +599,6 @@ INSTANCE_TYPES = {
             'cpu': 1
         }
     },
-    # Burstable Performance General Purpose
     't2.small': {
         'id': 't2.small',
         'name': 'Burstable Performance Small Instance',
