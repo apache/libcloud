@@ -114,6 +114,18 @@ REGION_NAME_MAP = {
     'us-gov-west-1': 'ec2_us_govwest'
 }
 
+INSTANCE_SIZES = [
+    'micro',
+    'small',
+    'medium',
+    'large',
+    'xlarge',
+    'x-large',
+    'extra-large'
+]
+
+RE_NUMERIC_OTHER = re.compile(r'(?:([0-9]+)|([-A-Z_a-z]+)|([^-0-9A-Z_a-z]+))')
+
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, '../libcloud/data/pricing.json')
 PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
@@ -178,13 +190,24 @@ def sort_nested_dict(value):
     """
     result = OrderedDict()
 
-    for key, value in sorted(value.items()):
+    for key, value in sorted(value.items(), key=sort_key_by_numeric_other):
         if isinstance(value, (dict, OrderedDict)):
             result[key] = sort_nested_dict(value)
         else:
             result[key] = value
 
     return result
+
+
+def sort_key_by_numeric_other(key_value):
+    """
+    Split key into numeric, alpha and other part and sort accordingly.
+    """
+    return tuple((
+        int(numeric) if numeric else None,
+        INSTANCE_SIZES.index(alpha) if alpha in INSTANCE_SIZES else alpha,
+        other
+    ) for (numeric, alpha, other) in RE_NUMERIC_OTHER.findall(key_value[0]))
 
 
 def main():
