@@ -29,29 +29,24 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           GCETargetHttpProxy, GCEUrlMap,
                                           GCEZone)
 from libcloud.common.google import (GoogleBaseAuthConnection,
-                                    GoogleInstalledAppAuthConnection,
-                                    GoogleBaseConnection,
                                     ResourceNotFoundError, ResourceExistsError)
-from libcloud.test.common.test_google import GoogleAuthMockHttp
+from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttpTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
 
-class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
+class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     """
     Google Compute Engine Test Class.
     """
     # Mock out a few specific calls that interact with the user, system or
     # environment.
-    GoogleBaseConnection._get_token_info_from_file = lambda x: None
-    GoogleBaseConnection._write_token_info_to_file = lambda x: None
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
     GCEZone._now = lambda x: datetime.datetime(2013, 6, 26, 19, 0, 0)
     datacenter = 'us-central1-a'
 

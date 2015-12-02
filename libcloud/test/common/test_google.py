@@ -26,16 +26,17 @@ try:
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.common.google import (GoogleAuthError,
                                     GoogleAuthType,
                                     GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
                                     GoogleGCEServiceAcctAuthConnection,
-                                    GoogleBaseConnection)
+                                    GoogleBaseConnection,
+                                    _utcnow,
+                                    _utc_timestamp)
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
 
 
 # Skip some tests if PyCrypto is unavailable
@@ -61,13 +62,92 @@ GCE_PARAMS_GCE = ('foo', 'bar')
 GCS_S3_PARAMS = ('GOOG0123456789ABCXYZ',  # GOOG + 16 alphanumeric chars
                  '0102030405060708091011121314151617181920')  # 40 base64 chars
 
+STUB_UTCNOW = _utcnow()
+
+STUB_TOKEN = {
+    'access_token': 'tokentoken',
+    'token_type': 'Bearer',
+    'expires_in': 3600
+}
+
+STUB_IA_TOKEN = {
+    'access_token': 'installedapp',
+    'token_type': 'Bearer',
+    'expires_in': 3600,
+    'refresh_token': 'refreshrefresh'
+}
+
+STUB_REFRESH_TOKEN = {
+    'access_token': 'refreshrefresh',
+    'token_type': 'Bearer',
+    'expires_in': 3600
+}
+
+STUB_TOKEN_FROM_FILE = {
+    'access_token': 'token_from_file',
+    'token_type': 'Bearer',
+    'expire_time': _utc_timestamp(STUB_UTCNOW +
+                                  datetime.timedelta(seconds=3600)),
+    'expires_in': 3600
+}
+
 
 class MockJsonResponse(object):
     def __init__(self, body):
         self.object = body
 
 
-class GoogleBaseAuthConnectionTest(LibcloudTestCase):
+class GoogleTestCase(LibcloudTestCase):
+    """
+    Assists in making Google tests hermetic and deterministic.
+
+    Add anything that needs to be mocked here. Create a patcher with the
+    suffix '_patcher'.
+
+    e.g.
+        _foo_patcher = mock.patch('module.submodule.class.foo', ...)
+
+    Patchers are started at setUpClass and stopped at tearDownClass.
+
+    Ideally, you should make a note in the thing being mocked, for clarity.
+    """
+    PATCHER_SUFFIX = '_patcher'
+
+    _utcnow_patcher = mock.patch(
+        'libcloud.common.google._utcnow', return_value=STUB_UTCNOW)
+
+    _authtype_is_gce_patcher = mock.patch(
+        'libcloud.common.google.GoogleAuthType._is_gce', return_value=False)
+
+    _read_token_file_patcher = mock.patch(
+        'libcloud.common.google.GoogleBaseConnection._get_token_from_file',
+        return_value=STUB_TOKEN_FROM_FILE
+    )
+
+    _write_token_file_patcher = mock.patch(
+        'libcloud.common.google.GoogleBaseConnection._write_token_to_file')
+
+    _ia_get_code_patcher = mock.patch(
+        'libcloud.common.google.GoogleInstalledAppAuthConnection.get_code',
+        return_value=1234
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        super(GoogleTestCase, cls).setUpClass()
+
+        for patcher in [a for a in dir(cls) if a.endswith(cls.PATCHER_SUFFIX)]:
+            getattr(cls, patcher).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(GoogleTestCase, cls).tearDownClass()
+
+        for patcher in [a for a in dir(cls) if a.endswith(cls.PATCHER_SUFFIX)]:
+            getattr(cls, patcher).stop()
+
+
+class GoogleBaseAuthConnectionTest(GoogleTestCase):
     """
     Tests for GoogleBaseAuthConnection
     """
@@ -91,23 +171,23 @@ class GoogleBaseAuthConnectionTest(LibcloudTestCase):
         new_headers = self.conn.add_default_headers(old_headers)
         self.assertEqual(new_headers, expected_headers)
 
-    @mock.patch('libcloud.common.google._now')
-    def test_token_request(self, mock_now):
-        mock_now.return_value = datetime.datetime(2013, 6, 26, 19, 0, 0)
+    def test_token_request(self):
         request_body = {'code': 'asdf', 'client_id': self.conn.user_id,
                         'client_secret': self.conn.key,
                         'redirect_uri': self.conn.redirect_uri,
                         'grant_type': 'authorization_code'}
         new_token = self.conn._token_request(request_body)
-        self.assertEqual(new_token['access_token'], 'installedapp')
-        self.assertEqual(new_token['expire_time'], '2013-06-26T20:00:00Z')
+        self.assertEqual(new_token['access_token'],
+                         STUB_IA_TOKEN['access_token'])
+        exp = STUB_UTCNOW + datetime.timedelta(
+            seconds=STUB_IA_TOKEN['expires_in'])
+        self.assertEqual(new_token['expire_time'], _utc_timestamp(exp))
 
 
-class GoogleInstalledAppAuthConnectionTest(LibcloudTestCase):
+class GoogleInstalledAppAuthConnectionTest(GoogleTestCase):
     """
     Tests for GoogleInstalledAppAuthConnection
     """
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
 
     def setUp(self):
         GoogleInstalledAppAuthConnection.conn_classes = (GoogleAuthMockHttp,
@@ -123,21 +203,23 @@ class GoogleInstalledAppAuthConnectionTest(LibcloudTestCase):
         token_info1 = {'access_token': 'tokentoken', 'token_type': 'Bearer',
                        'expires_in': 3600}
         new_token1 = self.conn.refresh_token(token_info1)
-        self.assertEqual(new_token1['access_token'], 'installedapp')
+        self.assertEqual(new_token1['access_token'],
+                         STUB_IA_TOKEN['access_token'])
 
         # This token info has a refresh token, so it will be able to be
         # refreshed.
         token_info2 = {'access_token': 'tokentoken', 'token_type': 'Bearer',
                        'expires_in': 3600, 'refresh_token': 'refreshrefresh'}
         new_token2 = self.conn.refresh_token(token_info2)
-        self.assertEqual(new_token2['access_token'], 'refreshrefresh')
+        self.assertEqual(new_token2['access_token'],
+                         STUB_REFRESH_TOKEN['access_token'])
 
         # Both sets should have refresh info
         self.assertTrue('refresh_token' in new_token1)
         self.assertTrue('refresh_token' in new_token2)
 
 
-class GoogleAuthTypeTest(LibcloudTestCase):
+class GoogleAuthTypeTest(GoogleTestCase):
 
     def test_guess(self):
         self.assertEqual(
@@ -146,7 +228,7 @@ class GoogleAuthTypeTest(LibcloudTestCase):
         self.assertEqual(
             GoogleAuthType.guess_type(GCE_PARAMS_IA[0]),
             GoogleAuthType.IA)
-        with mock.patch('libcloud.common.google._is_gce', return_value=True):
+        with mock.patch.object(GoogleAuthType, '_is_gce', return_value=True):
             self.assertEqual(
                 GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
                 GoogleAuthType.GCE)
@@ -155,25 +237,17 @@ class GoogleAuthTypeTest(LibcloudTestCase):
             GoogleAuthType.GCS_S3)
 
 
-class GoogleBaseConnectionTest(LibcloudTestCase):
+class GoogleBaseConnectionTest(GoogleTestCase):
     """
     Tests for GoogleBaseConnection
     """
-    GoogleBaseConnection._get_token_info_from_file = lambda x: None
-    GoogleBaseConnection._write_token_info_to_file = lambda x: None
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
-    GoogleServiceAcctAuthConnection.get_new_token = \
-        lambda x: x._token_request({})
-    GoogleGCEServiceAcctAuthConnection.get_new_token = \
-        lambda x: x._token_request({})
-    GoogleBaseConnection._now = lambda x: datetime.datetime(2013, 6, 26,
-                                                            19, 0, 0)
 
     def setUp(self):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
         self.mock_scopes = ['https://www.googleapis.com/auth/foo']
-        kwargs = {'scopes': self.mock_scopes, 'auth_type': 'IA'}
+        kwargs = {'scopes': self.mock_scopes,
+                  'auth_type': GoogleAuthType.IA}
         self.conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
 
     def test_auth_type(self):
@@ -185,30 +259,30 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         if SHA256:
             kwargs['auth_type'] = GoogleAuthType.SA
             conn1 = GoogleBaseConnection(*GCE_PARAMS_PEM_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.auth_conn,
+            self.assertTrue(isinstance(conn1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
             conn1 = GoogleBaseConnection(*GCE_PARAMS_JSON_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.auth_conn,
+            self.assertTrue(isinstance(conn1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
             conn1 = GoogleBaseConnection(*GCE_PARAMS_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.auth_conn,
+            self.assertTrue(isinstance(conn1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
         kwargs['auth_type'] = GoogleAuthType.IA
         conn2 = GoogleBaseConnection(*GCE_PARAMS_IA, **kwargs)
-        self.assertTrue(isinstance(conn2.auth_conn,
+        self.assertTrue(isinstance(conn2.oauth2_conn,
                                    GoogleInstalledAppAuthConnection))
 
         kwargs['auth_type'] = GoogleAuthType.GCE
         conn3 = GoogleBaseConnection(*GCE_PARAMS_GCE, **kwargs)
-        self.assertTrue(isinstance(conn3.auth_conn,
+        self.assertTrue(isinstance(conn3.oauth2_conn,
                                    GoogleGCEServiceAcctAuthConnection))
 
         kwargs['auth_type'] = GoogleAuthType.GCS_S3
         conn4 = GoogleBaseConnection(*GCS_S3_PARAMS, **kwargs)
-        self.assertIsNone(conn4.auth_conn)
+        self.assertIsNone(conn4.oauth2_conn)
 
     def test_add_default_headers(self):
         old_headers = {}
@@ -220,8 +294,10 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
     def test_pre_connect_hook(self):
         old_params = {}
         old_headers = {}
+        auth_str = '%s %s' % (STUB_TOKEN_FROM_FILE['token_type'],
+                              STUB_TOKEN_FROM_FILE['access_token'])
         new_expected_params = {}
-        new_expected_headers = {'Authorization': 'Bearer installedapp'}
+        new_expected_headers = {'Authorization': auth_str}
         new_params, new_headers = self.conn.pre_connect_hook(old_params,
                                                              old_headers)
         self.assertEqual(new_params, new_expected_params)
@@ -271,6 +347,24 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         self.assertEqual(request1, expected_request)
         self.assertEqual(request2, expected_request)
 
+    def test_init_oauth2(self):
+        mock_scopes = ['https://www.googleapis.com/auth/foo']
+        kwargs = {'scopes': mock_scopes,
+                  'auth_type': GoogleAuthType.IA}
+        conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+
+        # If there is a viable token file, this gets used first
+        self.assertEqual(conn.oauth2_token, STUB_TOKEN_FROM_FILE)
+
+        # No token file, get a new token. Check that it gets written to file.
+        with mock.patch.object(GoogleBaseConnection,
+                               '_get_token_from_file', return_value=None):
+            conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
+            expected = STUB_IA_TOKEN
+            expected['expire_time'] = conn.oauth2_token['expire_time']
+            self.assertEqual(conn.oauth2_token, expected)
+            conn._write_token_to_file.assert_called_once_with()
+
 
 class GoogleAuthMockHttp(MockHttp):
     """
@@ -279,22 +373,12 @@ class GoogleAuthMockHttp(MockHttp):
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 
     def _o_oauth2_token(self, method, url, body, headers):
-        token_info = {'access_token': 'tokentoken',
-                      'token_type': 'Bearer',
-                      'expires_in': 3600}
-        refresh_token = {'access_token': 'refreshrefresh',
-                         'token_type': 'Bearer',
-                         'expires_in': 3600}
-        ia_token = {'access_token': 'installedapp',
-                    'token_type': 'Bearer',
-                    'expires_in': 3600,
-                    'refresh_token': 'refreshrefresh'}
         if 'code' in body:
-            body = json.dumps(ia_token)
+            body = json.dumps(STUB_IA_TOKEN)
         elif 'refresh_token' in body:
-            body = json.dumps(refresh_token)
+            body = json.dumps(STUB_REFRESH_TOKEN)
         else:
-            body = json.dumps(token_info)
+            body = json.dumps(STUB_TOKEN)
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
 

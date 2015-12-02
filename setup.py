@@ -97,6 +97,8 @@ def forbid_publish():
 class TestCommand(Command):
     description = "run test suite"
     user_options = []
+    unittest_TestLoader = TestLoader
+    unittest_TextTestRunner = TextTestRunner
 
     def initialize_options(self):
         THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
@@ -121,8 +123,9 @@ class TestCommand(Command):
 
         if unittest2_required:
             try:
-                import unittest2
-                unittest2
+                from unittest2 import TextTestRunner, TestLoader
+                self.unittest_TestLoader = TestLoader
+                self.unittest_TextTestRunner = TextTestRunner
             except ImportError:
                 print('Python version: %s' % (sys.version))
                 print('Missing "unittest2" library. unittest2 is library is '
@@ -188,12 +191,12 @@ class TestCommand(Command):
                                                                  str(e)))
                 raise e
 
-        tests = TestLoader().loadTestsFromNames(testfiles)
+        tests = self.unittest_TestLoader().loadTestsFromNames(testfiles)
 
         for test_module in DOC_TEST_MODULES:
             tests.addTests(doctest.DocTestSuite(test_module))
 
-        t = TextTestRunner(verbosity=2)
+        t = self.unittest_TextTestRunner(verbosity=2)
         res = t.run(tests)
         return not res.wasSuccessful()
 
