@@ -3392,6 +3392,8 @@ class GCENodeDriver(NodeDriver):
             volume_data['interface'] = ex_interface
         if ex_type:
             volume_data['type'] = ex_type
+        if ex_auto_delete:
+            volume_data['autoDelete'] = ex_auto_delete
 
         volume_data['source'] = ex_source or volume.extra['selfLink']
         volume_data['mode'] = ex_mode or 'READ_WRITE'

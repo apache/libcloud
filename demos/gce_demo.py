@@ -366,7 +366,7 @@ def main_compute():
         display('Creating a new disk:')
         disk_name = '%s-attach-disk' % DEMO_BASE_NAME
         volume = gce.create_volume(10, disk_name)
-        if volume.attach(node_1):
+        if gce.attach_volume(node_1, volume, ex_auto_delete=True):
             display('  Attached %s to %s' % (volume.name, node_1.name))
         display('  Disabled auto-delete for %s on %s' % (volume.name,
                                                          node_1.name))
