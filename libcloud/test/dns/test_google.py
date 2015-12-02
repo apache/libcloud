@@ -20,20 +20,15 @@ from libcloud.utils.py3 import httplib
 from libcloud.dns.types import ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.google import GoogleDNSDriver
-from libcloud.common.google import (GoogleBaseAuthConnection,
-                                    GoogleInstalledAppAuthConnection,
-                                    GoogleBaseConnection)
+from libcloud.common.google import GoogleBaseAuthConnection
 
-from libcloud.test.common.test_google import GoogleAuthMockHttp
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
+from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_GOOGLE, DNS_KEYWORD_PARAMS_GOOGLE
 
 
-class GoogleTests(LibcloudTestCase):
-    GoogleBaseConnection._get_token_info_from_file = lambda x: None
-    GoogleBaseConnection._write_token_info_to_file = lambda x: None
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
+class GoogleTests(GoogleTestCase):
 
     def setUp(self):
         GoogleDNSMockHttp.test = self

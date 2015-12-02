@@ -22,7 +22,7 @@ import email.utils
 
 from libcloud.common.google import GoogleAuthType
 from libcloud.storage.drivers import google_storage
-from libcloud.test import LibcloudTestCase
+from libcloud.test.common.test_google import GoogleTestCase
 from libcloud.test.file_fixtures import StorageFileFixtures
 from libcloud.test.secrets import STORAGE_GOOGLE_STORAGE_PARAMS
 from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
@@ -32,9 +32,6 @@ CONN_CLS = google_storage.GoogleStorageConnection
 STORAGE_CLS = google_storage.GoogleStorageDriver
 
 TODAY = email.utils.formatdate(usegmt=True)
-
-OAUTH2_MOCK = mock.patch(
-    'libcloud.common.google.GoogleBaseConnection._setup_oauth2', spec=True)
 
 
 class GoogleStorageMockHttp(S3MockHttp):
@@ -60,17 +57,7 @@ class GoogleStorageMockHttp(S3MockHttp):
         )
 
 
-class GoogleStorageConnectionTest(LibcloudTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super(LibcloudTestCase, cls).setUpClass()
-        OAUTH2_MOCK.start()
-
-    @classmethod
-    def tearDownClass(cls):
-        super(LibcloudTestCase, cls).tearDownClass()
-        OAUTH2_MOCK.stop()
+class GoogleStorageConnectionTest(GoogleTestCase):
 
     @mock.patch('email.utils.formatdate')
     @mock.patch('libcloud.common.google.'
@@ -254,20 +241,11 @@ class GoogleStorageConnectionTest(LibcloudTestCase):
         )
 
 
-class GoogleStorageTests(S3Tests):
+class GoogleStorageTests(S3Tests, GoogleTestCase):
     driver_type = STORAGE_CLS
     driver_args = STORAGE_GOOGLE_STORAGE_PARAMS
     mock_response_klass = GoogleStorageMockHttp
-
-    @classmethod
-    def setUpClass(cls):
-        super(S3Tests, cls).setUpClass()
-        OAUTH2_MOCK.start()
-
-    @classmethod
-    def tearDownClass(cls):
-        super(S3Tests, cls).tearDownClass()
-        OAUTH2_MOCK.stop()
+    driver = google_storage.GoogleStorageDriver
 
     def test_billing_not_enabled(self):
         # TODO

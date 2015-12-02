@@ -23,6 +23,10 @@ General
   (GITHUB-608)
   [Anthony Monthe]
 
+- Fixed Python2.6 unit testing (and Google Cloud Storage tests)
+  (GITHUB-648)
+  [Scott Crunkleton]
+
 Compute
 ~~~~~~~
 
