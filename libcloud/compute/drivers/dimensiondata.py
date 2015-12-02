@@ -1282,12 +1282,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_change_storage_speed(self, node, disk_id, speed):
         """
-        Remove storage from a node
+        Change the speed (disk tier) of a disk
 
-        :param  node: The server to add storage to
+        :param  node: The server to change the disk speed of
         :type   node: :class:`Node`
 
-        :param  disk_id: The ID of the disk to remove
+        :param  disk_id: The ID of the disk to change
         :type   disk_id: ``str``
 
         :param  speed: The disk speed type e.g. STANDARD
@@ -1307,12 +1307,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_change_storage_size(self, node, disk_id, size):
         """
-        Remove storage from a node
+        Change the size of a disk
 
-        :param  node: The server to add storage to
+        :param  node: The server to change the disk of
         :type   node: :class:`Node`
 
-        :param  disk_id: The ID of the disk to remove
+        :param  disk_id: The ID of the disk to resize
         :type   disk_id: ``str``
 
         :param  size: The disk size in GB
