@@ -117,8 +117,8 @@ DNS
   (GITHUB-621)
   [Alejandro Pereira]
 
-- Introduced GoDaddy DNS Driver
-  (LIBCLOUD-772, GITHUB-640)
+- Introduced GoDaddy DNS Driver with examples and documentation
+  (LIBCLOUD-772, GITHUB-640, LIBCLOUD-778)
   [Anthony Shaw]
 
 Changes with Apache Libcloud 0.19.0

@@ -8,6 +8,6 @@ driver = cls(*CREDENTIALS_ZERIGO)
 
 zone = [z for z in driver.list_zones() if z.domain == 'example.com'][0]
 
-extra = {'ttl': 900}
+ttl = 900
 record = zone.create_record(name='www', type=RecordType.A, data='127.0.0.1',
-                            extra=extra)
+                            ttl=ttl)
