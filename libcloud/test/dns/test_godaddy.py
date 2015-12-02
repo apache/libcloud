@@ -15,7 +15,7 @@
 
 import sys
 import unittest
-from pprint import pprint
+
 from libcloud.utils.py3 import httplib
 from libcloud.dns.drivers.godaddy import GoDaddyDNSDriver
 from libcloud.test import MockHttp
