@@ -26,6 +26,18 @@ General
 Compute
 ~~~~~~~
 
+- Add update node, update VMware tools, add storage, change storage size or speed, remove storage.
+  (LIBCLOUD-775, GITHUB-644)
+  [Anthony Shaw]
+
+- Include 'service_name' support in _parse_service_catalog_auth_v3 for Openstack Drivers
+  (GITHUB-647)
+  [Steve Gregory]
+
+- Outscale inc & sas driver update
+  (GITHUB-645)
+  [@LordShion]
+
 - Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
   [Filipe Silva /lordshion]
 
@@ -58,32 +70,32 @@ Compute
 
 - Allow user to wait for a resource to reach a desired state in the
   Dimension Data driver by using new ``ex_wait_for_state`` method.
-  [LIBCLOUD-707, GITHUB-631]
+  (LIBCLOUD-707, GITHUB-631)
   [Anthony Shaw]
   
 - Added M4 pricing and instance information to EC2 driver
-  [GITHUB-634]
+  (GITHUB-634)
   [Benjamin Zaitlen]
 
 - Added C4 instance information to EC2 driver
-  [GITHUB-638]
+  (GITHUB-638)
   [amitofs]
   
 - Allow location of the datacenter to be supplied in ProfitBricks driver
-  [LIBCLOUD-771, GITHUB-635]
+  (LIBCLOUD-771, GITHUB-635)
   [Joel Reymont]
 
 - Reduce redundant API calls in CloudStack driver
-  [LIBCLOUD-590, GITHUB-641]
+  (LIBCLOUD-590, GITHUB-641)
   [Atsushi Sasaki]
 
 - Add an additional argument to libcloud.compute.drivers.GCENodeDriver.create_node
   to allow for creation of preemptible GCE instances
-  [GITHUB-643]
+  (GITHUB-643)
   [@blawney]
 
 - GoogleStorageDriver can now use either our S3 authentication or other Google Cloud Platform OAuth2 authentication methods.
-  [GITHUB-633]
+  (GITHUB-633)
   [Scott Crunkleton]
 
 Storage
