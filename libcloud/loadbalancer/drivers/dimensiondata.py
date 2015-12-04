@@ -950,9 +950,7 @@ class DimensionDataLBDriver(Driver):
             compatible.append(
                 DimensionDataVirtualListenerCompatibility(
                     type=match_element.get('type'),
-                    protocol=match_element.get('protocol', None)
-                )
-                )
+                    protocol=match_element.get('protocol', None)))
         irule_element = element.find(fixxpath('irule', TYPES_URN))
         return DimensionDataDefaultiRule(
             id=irule_element.get('id'),
@@ -976,14 +974,12 @@ class DimensionDataLBDriver(Driver):
             compatible.append(
                 DimensionDataVirtualListenerCompatibility(
                     type=match_element.get('type'),
-                    protocol=match_element.get('protocol', None)
-                )
-                )
+                    protocol=match_element.get('protocol', None)))
 
         return DimensionDataPersistenceProfile(
             id=element.get('id'),
-            fallback_compatible=bool(element.get('fallbackCompatible')
-                                     == "true"),
+            fallback_compatible=bool(
+                element.get('fallbackCompatible') == "true"),
             name=findtext(element, 'name', TYPES_URN),
             compatible_listeners=compatible
         )
