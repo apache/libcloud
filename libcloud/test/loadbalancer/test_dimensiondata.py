@@ -415,6 +415,37 @@ class DimensionDataTests(unittest.TestCase):
             destroy_node=True)
         self.assertTrue(response)
 
+    def test_ex_get_default_health_monitors(self):
+        monitors = self.driver.ex_get_default_health_monitors(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(monitors), 6)
+        self.assertEqual(monitors[0].id, '01683574-d487-11e4-811f-005056806999')
+        self.assertEqual(monitors[0].name, 'CCDEFAULT.Http')
+        self.assertFalse(monitors[0].node_compatible)
+        self.assertTrue(monitors[0].pool_compatible)
+
+    def test_ex_get_default_persistence_profiles(self):
+        profiles = self.driver.ex_get_default_persistence_profiles(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(profiles), 4)
+        self.assertEqual(profiles[0].id, 'a34ca024-f3db-11e4-b010-005056806999')
+        self.assertEqual(profiles[0].name, 'CCDEFAULT.Cookie')
+        self.assertEqual(profiles[0].fallback_compatible, False)
+        self.assertEqual(len(profiles[0].compatible_listeners), 1)
+        self.assertEqual(profiles[0].compatible_listeners[0].type, 'PERFORMANCE_LAYER_4')
+
+    def test_ex_get_default_irules(self):
+        irules = self.driver.ex_get_default_irules(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(irules), 4)
+        self.assertEqual(irules[0].id, '2b20cb2c-ffdc-11e4-b010-005056806999')
+        self.assertEqual(irules[0].name, 'CCDEFAULT.HttpsRedirect')
+        self.assertEqual(len(irules[0].compatible_listeners), 1)
+        self.assertEqual(irules[0].compatible_listeners[0].type, 'PERFORMANCE_LAYER_4')
+
 
 class DimensionDataMockHttp(MockHttp):
 
@@ -524,6 +555,21 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultIrule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultIrule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

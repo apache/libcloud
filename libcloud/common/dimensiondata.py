@@ -553,3 +553,64 @@ class DimensionDataVirtualListener(object):
                  'status=%s, ip=%s>')
                 % (self.id, self.name,
                    self.status, self.ip))
+
+
+class DimensionDataDefaultHealthMonitor(object):
+    """
+    A default health monitor for a VIP (node, pool or listener)
+    """
+    def __init__(self, id, name, node_compatible, pool_compatible):
+        self.id = id
+        self.name = name
+        self.node_compatible = node_compatible
+        self.pool_compatible = pool_compatible
+
+    def __repr__(self):
+        return (('<DimensionDataDefaultHealthMonitor: id=%s, name=%s>')
+                % (self.id, self.name))
+
+
+class DimensionDataPersistenceProfile(object):
+    """
+    Each Persistence Profile declares the combination of Virtual Listener
+    type and protocol with which it is
+    compatible and whether or not it is compatible as a
+    Fallback Persistence Profile.
+    """
+    def __init__(self, id, name, compatible_listeners, fallback_compatible):
+        self.id = id
+        self.name = name
+        self.compatible_listeners = compatible_listeners
+        self.fallback_compatible = fallback_compatible
+
+    def __repr__(self):
+        return (('<DimensionDataPersistenceProfile: id=%s, name=%s>')
+                % (self.id, self.name))
+
+
+class DimensionDataDefaultiRule(object):
+    """
+    A default iRule for a network domain, can be applied to a listener
+    """
+    def __init__(self, id, name, compatible_listeners):
+        self.id = id
+        self.name = name
+        self.compatible_listeners = compatible_listeners
+
+    def __repr__(self):
+        return (('<DimensionDataDefaultiRule: id=%s, name=%s>')
+                % (self.id, self.name))
+
+
+class DimensionDataVirtualListenerCompatibility(object):
+    """
+    A compatibility preference for a persistence profile
+    """
+    def __init__(self, type, protocol):
+        self.type = type
+        self.protocol = protocol
+
+    def __repr__(self):
+        return (('<DimensionDataVirtualListenerCompatibility: '
+                 'type=%s, protocol=%s>')
+                % (self.type, self.protocol))
