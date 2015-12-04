@@ -30,7 +30,13 @@ General
 Compute
 ~~~~~~~
 
-- Add update node, update VMware tools, add storage, change storage size or speed, remove storage.
+- The EC2 Instance Type updated with correct disk sizes (especially the disk size for the m3 instances),
+  conversion errors between GiB an M[i]B, disk count were the cause.
+  Added instance types - g2.8xlarge and t2.large.
+  (GITHUB-646)
+  [Philipp Hahn]
+
+- Add update node, update VMware tools, add storage, change storage size or speed, remove storage to Dimension Data Driver.
   (LIBCLOUD-775, GITHUB-644)
   [Anthony Shaw]
 
@@ -111,6 +117,17 @@ Loadbalancer
 DNS
 ~~~
 
+- RackSpace driver - New DNS driver methods:
+    ex_iterate_ptr_records
+    ex_get_ptr_record
+    ex_create_ptr_record
+    ex_update_ptr_record
+    ex_delete_ptr_record
+    This should cover all of the functionality offered by the Rackspace
+    DNS API in regards to RDNS.
+  (LIBCLOUD-780, GITHUB-652)
+  [Greg Hill]
+
 - Update ``create_record`` in the WorldWideDNS driver so it automatically
   selects a slot if one is not provided by the user via ``extra['entry']``
   argument.
@@ -155,7 +172,7 @@ General
 
 Compute
 ~~~~~~~
-
+  
 - Fixed malformed XML requests with Dimension Data driver.
   (LIBCLOUD-760, GITHUB-610)
   [Anthony Shaw]
