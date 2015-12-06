@@ -435,13 +435,13 @@ class DimensionDataVlan(object):
         Initialize an instance of ``DimensionDataVlan``
 
         :param id: The ID of the VLAN
-        :type  id: ``string``
+        :type  id: ``str``
 
         :param name: The name of the VLAN
-        :type  name: ``string``
+        :type  name: ``str``
 
         :param description: Plan text description of the VLAN
-        :type  description: ``string``
+        :type  description: ``str``
 
         :param location: The location (data center) of the VLAN
         :type  location: ``NodeLocation``
@@ -454,11 +454,11 @@ class DimensionDataVlan(object):
 
         :param private_ipv4_range_address: The host address of the VLAN
                                             IP space
-        :type  private_ipv4_range_address: ``string``
+        :type  private_ipv4_range_address: ``str``
 
         :param private_ipv4_range_address: The size (e.g. '24') of the VLAN
                                             as a CIDR range size
-        :type  private_ipv4_range_address: ``string``
+        :type  private_ipv4_range_address: ``str``
         """
         self.id = str(id)
         self.name = name
@@ -483,6 +483,33 @@ class DimensionDataPool(object):
 
     def __init__(self, id, name, description, status, load_balance_method,
                  health_monitor_id, service_down_action, slow_ramp_time):
+        """
+        Initialize an instance of ``DimensionDataPool``
+
+        :param id: The ID of the pool
+        :type  id: ``str``
+
+        :param name: The name of the pool
+        :type  name: ``str``
+
+        :param description: Plan text description of the pool
+        :type  description: ``str``
+
+        :param status: The status of the pool
+        :type  status: :class:`DimensionDataStatus`
+
+        :param load_balance_method: The load balancer method
+        :type  load_balance_method: ``str``
+
+        :param health_monitor_id: The ID of the health monitor
+        :type  health_monitor_id: ``str``
+
+        :param service_down_action: Action to take when pool is down
+        :type  service_down_action: ``str``
+
+        :param slow_ramp_time: The ramp-up time for service recovery
+        :type  slow_ramp_time: ``int``
+        """
         self.id = str(id)
         self.name = name
         self.description = description
@@ -505,6 +532,27 @@ class DimensionDataPoolMember(object):
     """
 
     def __init__(self, id, name, status, ip, port, node_id):
+        """
+        Initialize an instance of ``DimensionDataPoolMember``
+
+        :param id: The ID of the pool member
+        :type  id: ``str``
+
+        :param name: The name of the pool member
+        :type  name: ``str``
+
+        :param status: The status of the pool
+        :type  status: :class:`DimensionDataStatus`
+
+        :param ip: The IP of the pool member
+        :type  ip: ``str``
+
+        :param port: The port of the pool member
+        :type  port: ``int``
+
+        :param node_id: The ID of the associated node
+        :type  node_id: ``str``
+        """
         self.id = str(id)
         self.name = name
         self.status = status
@@ -523,6 +571,27 @@ class DimensionDataPoolMember(object):
 class DimensionDataVIPNode(object):
     def __init__(self, id, name, status, ip, connection_limit='10000',
                  connection_rate_limit='10000'):
+        """
+        Initialize an instance of :class:`DimensionDataVIPNode`
+
+        :param id: The ID of the node
+        :type  id: ``str``
+
+        :param name: The name of the node
+        :type  name: ``str``
+
+        :param status: The status of the node
+        :type  status: :class:`DimensionDataStatus`
+
+        :param ip: The IP of the node
+        :type  ip: ``str``
+
+        :param connection_limit: The total connection limit for the node
+        :type  connection_limit: ``int``
+
+        :param connection_rate_limit: The rate limit for the node
+        :type  connection_rate_limit: ``int``
+        """
         self.id = str(id)
         self.name = name
         self.status = status
@@ -543,6 +612,21 @@ class DimensionDataVirtualListener(object):
     """
 
     def __init__(self, id, name, status, ip):
+        """
+        Initialize an instance of :class:`DimensionDataVirtualListener`
+
+        :param id: The ID of the listener
+        :type  id: ``str``
+
+        :param name: The name of the listener
+        :type  name: ``str``
+
+        :param status: The status of the listener
+        :type  status: :class:`DimensionDataStatus`
+
+        :param ip: The IP of the listener
+        :type  ip: ``str``
+        """
         self.id = str(id)
         self.name = name
         self.status = status
@@ -560,6 +644,21 @@ class DimensionDataDefaultHealthMonitor(object):
     A default health monitor for a VIP (node, pool or listener)
     """
     def __init__(self, id, name, node_compatible, pool_compatible):
+        """
+        Initialize an instance of :class:`DimensionDataDefaultHealthMonitor`
+
+        :param id: The ID of the monitor
+        :type  id: ``str``
+
+        :param name: The name of the monitor
+        :type  name: ``str``
+
+        :param node_compatible: Is a monitor capable of monitoring nodes
+        :type  node_compatible: ``bool``
+
+        :param pool_compatible: Is a monitor capable of monitoring pools
+        :type  pool_compatible: ``bool``
+        """
         self.id = id
         self.name = name
         self.node_compatible = node_compatible
@@ -578,6 +677,22 @@ class DimensionDataPersistenceProfile(object):
     Fallback Persistence Profile.
     """
     def __init__(self, id, name, compatible_listeners, fallback_compatible):
+        """
+        Initialize an instance of :class:`DimensionDataPersistenceProfile`
+
+        :param id: The ID of the profile
+        :type  id: ``str``
+
+        :param name: The name of the profile
+        :type  name: ``str``
+
+        :param compatible_listeners: List of compatible Virtual Listener types
+        :type  compatible_listeners: ``list`` of
+            :class:`DimensionDataVirtualListenerCompatibility`
+
+        :param fallback_compatible: Is capable as a fallback profile
+        :type  fallback_compatible: ``bool``
+        """
         self.id = id
         self.name = name
         self.compatible_listeners = compatible_listeners
@@ -593,6 +708,19 @@ class DimensionDataDefaultiRule(object):
     A default iRule for a network domain, can be applied to a listener
     """
     def __init__(self, id, name, compatible_listeners):
+        """
+        Initialize an instance of :class:`DimensionDataDefaultiRule`
+
+        :param id: The ID of the iRule
+        :type  id: ``str``
+
+        :param name: The name of the iRule
+        :type  name: ``str``
+
+        :param compatible_listeners: List of compatible Virtual Listener types
+        :type  compatible_listeners: ``list`` of
+            :class:`DimensionDataVirtualListenerCompatibility`
+        """
         self.id = id
         self.name = name
         self.compatible_listeners = compatible_listeners
@@ -604,7 +732,9 @@ class DimensionDataDefaultiRule(object):
 
 class DimensionDataVirtualListenerCompatibility(object):
     """
-    A compatibility preference for a persistence profile
+    A compatibility preference for a persistence profile or iRule
+    specifies which virtual listener types this profile or iRule can be
+    applied to.
     """
     def __init__(self, type, protocol):
         self.type = type
