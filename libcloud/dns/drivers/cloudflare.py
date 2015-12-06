@@ -202,7 +202,7 @@ class CloudFlareDNSDriver(DNSDriver):
         params = {'z': zone.domain, 'interval': interval}
         self.connection.set_context({'zone_domain': zone.domain})
         resp = self.connection.request(action='stats', params=params)
-        result = resp.object['response']['result']['objs']
+        result = resp.object['response']['result']['objs'][0]
         return result
 
     def ex_zone_check(self, zones):
@@ -367,7 +367,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
     def _to_zone(self, item):
         zone_type = item.get('zone_type', '').lower()
-        type = 'master' if zone_type == 'p' else 'slave'
+        type = 'master'
 
         extra = {}
         extra['props'] = item.get('props', {})
@@ -395,15 +395,21 @@ class CloudFlareDNSDriver(DNSDriver):
         type = item['type']
         data = item['content']
 
+        if item.get('ttl', None):
+            ttl = int(item['ttl'])
+        else:
+            ttl = None
+
         extra = {}
-        extra['ttl'] = item['ttl']
+        extra['ttl'] = ttl
         extra['props'] = item.get('props', {})
         for attribute in RECORD_EXTRA_ATTRIBUTES:
             value = item.get(attribute, None)
             extra[attribute] = value
 
         record = Record(id=str(item['rec_id']), name=name, type=type,
-                        data=data, zone=zone, driver=self, extra=extra)
+                        data=data, zone=zone, driver=self, ttl=ttl,
+                        extra=extra)
         return record
 
     def _get_record_name(self, item):
