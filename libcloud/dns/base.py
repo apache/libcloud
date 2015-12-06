@@ -143,9 +143,10 @@ class Record(object):
         return record_id
 
     def __repr__(self):
+        zone = self.zone.domain if self.zone.domain else self.zone.id
         return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, '
                 'ttl=%s ...>' %
-                (self.zone.id, self.name, self.type, self.data,
+                (zone, self.name, self.type, self.data,
                  self.driver.name, self.ttl))
 
 
