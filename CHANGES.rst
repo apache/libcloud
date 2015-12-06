@@ -134,9 +134,13 @@ DNS
   (GITHUB-621)
   [Alejandro Pereira]
 
-- Introduced GoDaddy DNS Driver with examples and documentation
+- Introduce GoDaddy DNS Driver with examples and documentation.
   (LIBCLOUD-772, GITHUB-640, LIBCLOUD-778)
   [Anthony Shaw]
+
+- Add new driver for CloudFlare DNS (https://www.cloudflare.com/dns/).
+  (GITHUB-637)
+  [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
