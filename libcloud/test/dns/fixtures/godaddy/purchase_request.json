@@ -1,0 +1,88 @@
+{
+  "domain": " ",
+  "consent": {
+    "agreementKeys": [
+      " "
+    ],
+    "agreedBy": " ",
+    "agreedAt": " "
+  },
+  "period": 1,
+  "nameServers": [
+    " "
+  ],
+  "renewAuto": true,
+  "privacy": false,
+  "contactRegistrant": {
+    "nameFirst": " ",
+    "nameMiddle": " ",
+    "nameLast": " ",
+    "organization": " ",
+    "jobTitle": " ",
+    "email": " ",
+    "phone": " ",
+    "fax": " ",
+    "addressMailing": {
+      "address1": " ",
+      "address2": " ",
+      "city": " ",
+      "state": " ",
+      "postalCode": " ",
+      "country": "US"
+    }
+  },
+  "contactAdmin": {
+    "nameFirst": " ",
+    "nameMiddle": " ",
+    "nameLast": " ",
+    "organization": " ",
+    "jobTitle": " ",
+    "email": " ",
+    "phone": " ",
+    "fax": " ",
+    "addressMailing": {
+      "address1": " ",
+      "address2": " ",
+      "city": " ",
+      "state": " ",
+      "postalCode": " ",
+      "country": "US"
+    }
+  },
+  "contactTech": {
+    "nameFirst": " ",
+    "nameMiddle": " ",
+    "nameLast": " ",
+    "organization": " ",
+    "jobTitle": " ",
+    "email": " ",
+    "phone": " ",
+    "fax": " ",
+    "addressMailing": {
+      "address1": " ",
+      "address2": " ",
+      "city": " ",
+      "state": " ",
+      "postalCode": " ",
+      "country": "US"
+    }
+  },
+  "contactBilling": {
+    "nameFirst": " ",
+    "nameMiddle": " ",
+    "nameLast": " ",
+    "organization": " ",
+    "jobTitle": " ",
+    "email": " ",
+    "phone": " ",
+    "fax": " ",
+    "addressMailing": {
+      "address1": " ",
+      "address2": " ",
+      "city": " ",
+      "state": " ",
+      "postalCode": " ",
+      "country": "US"
+    }
+  }
+}

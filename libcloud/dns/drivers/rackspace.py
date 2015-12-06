@@ -23,6 +23,7 @@ from libcloud.utils.py3 import httplib
 import copy
 
 from libcloud.common.base import PollingConnection
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.rackspace import AUTH_URL
@@ -34,7 +35,8 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
-VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'priority']
+VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'priority', 'created',
+                             'updated']
 
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
@@ -129,6 +131,28 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
                                             'https://lon.dns.api')
 
         return public_url
+
+
+class RackspacePTRRecord(object):
+    def __init__(self, id, ip, domain, driver, extra=None):
+        self.id = str(id) if id else None
+        self.ip = ip
+        self.type = RecordType.PTR
+        self.domain = domain
+        self.driver = driver
+        self.extra = extra or {}
+
+    def update(self, domain, extra=None):
+        return self.driver.ex_update_ptr_record(record=self, domain=domain,
+                                                extra=extra)
+
+    def delete(self):
+        return self.driver.ex_delete_ptr_record(record=self)
+
+    def __repr__(self):
+        return ('<%s: ip=%s, domain=%s, provider=%s ...>' %
+                (self.__class__.__name__, self.ip,
+                 self.domain, self.driver.name))
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
@@ -343,6 +367,183 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                                       method='DELETE')
         return True
 
+    def ex_iterate_ptr_records(self, device):
+        """
+        Return a generator to iterate over existing PTR Records.
+
+        The ``device`` should be an instance of one of these:
+            :class:`libcloud.compute.base.Node`
+            :class:`libcloud.loadbalancer.base.LoadBalancer`
+
+        And it needs to have the following ``extra`` fields set:
+            service_name - the service catalog name for the device
+            uri - the URI pointing to the GET endpoint for the device
+
+        Those are automatically set for you if you got the device from
+        the Rackspace driver for that service.
+
+        For example:
+            server = rs_compute.ex_get_node_details(id)
+            ptr_iter = rs_dns.ex_list_ptr_records(server)
+
+            loadbalancer = rs_lbs.get_balancer(id)
+            ptr_iter = rs_dns.ex_list_ptr_records(loadbalancer)
+
+        Note: the Rackspace DNS API docs indicate that the device 'href' is
+        optional, but testing does not bear this out. It throws a
+        400 Bad Request error if you do not pass in the 'href' from
+        the server or loadbalancer.  So ``device`` is required.
+
+        :param device: the device that owns the IP
+        :rtype: ``generator`` of :class:`RackspacePTRRecord`
+        """
+        _check_ptr_extra_fields(device)
+        params = {'href': device.extra['uri']}
+
+        service_name = device.extra['service_name']
+
+        # without a valid context, the 404 on empty list will blow up
+        # in the error-handling code
+        self.connection.set_context({'resource': 'ptr_records'})
+        try:
+            response = self.connection.request(
+                action='/rdns/%s' % (service_name), params=params).object
+            records = response['records']
+            link = dict(rel=service_name, **params)
+            for item in records:
+                record = self._to_ptr_record(data=item, link=link)
+                yield record
+        except BaseHTTPError as exc:
+            # 404 just means empty list
+            if exc.code == 404:
+                return
+            raise
+
+    def ex_get_ptr_record(self, service_name, record_id):
+        """
+        Get a specific PTR record by id.
+
+        :param service_name: the service catalog name of the linked device(s)
+                             i.e. cloudLoadBalancers or cloudServersOpenStack
+        :param record_id: the id (i.e. PTR-12345) of the PTR record
+        :rtype: instance of :class:`RackspacePTRRecord`
+        """
+        self.connection.set_context({'resource': 'record', 'id': record_id})
+        response = self.connection.request(
+            action='/rdns/%s/%s' % (service_name, record_id)).object
+        item = next(iter(response['recordsList']['records']))
+        return self._to_ptr_record(data=item, link=response['link'])
+
+    def ex_create_ptr_record(self, device, ip, domain, extra=None):
+        """
+        Create a PTR record for a specific IP on a specific device.
+
+        The ``device`` should be an instance of one of these:
+            :class:`libcloud.compute.base.Node`
+            :class:`libcloud.loadbalancer.base.LoadBalancer`
+
+        And it needs to have the following ``extra`` fields set:
+            service_name - the service catalog name for the device
+            uri - the URI pointing to the GET endpoint for the device
+
+        Those are automatically set for you if you got the device from
+        the Rackspace driver for that service.
+
+        For example:
+            server = rs_compute.ex_get_node_details(id)
+            rs_dns.create_ptr_record(server, ip, domain)
+
+            loadbalancer = rs_lbs.get_balancer(id)
+            rs_dns.create_ptr_record(loadbalancer, ip, domain)
+
+        :param device: the device that owns the IP
+        :param ip: the IP for which you want to set reverse DNS
+        :param domain: the fqdn you want that IP to represent
+        :param extra: a ``dict`` with optional extra values:
+            ttl - the time-to-live of the PTR record
+        :rtype: instance of :class:`RackspacePTRRecord`
+        """
+        _check_ptr_extra_fields(device)
+
+        if extra is None:
+            extra = {}
+
+        # the RDNS API reverse the name and data fields for PTRs
+        # the record name *should* be the ip and the data the fqdn
+        data = {
+            "name": domain,
+            "type": RecordType.PTR,
+            "data": ip
+        }
+
+        if 'ttl' in extra:
+            data['ttl'] = extra['ttl']
+
+        payload = {
+            "recordsList": {
+                "records": [data]
+            },
+            "link": {
+                "content": "",
+                "href": device.extra['uri'],
+                "rel": device.extra['service_name'],
+            }
+        }
+        response = self.connection.async_request(
+            action='/rdns', method='POST', data=payload).object
+        item = next(iter(response['response']['records']))
+        return self._to_ptr_record(data=item, link=payload['link'])
+
+    def ex_update_ptr_record(self, record, domain=None, extra=None):
+        """
+        Update a PTR record for a specific IP on a specific device.
+
+        If you need to change the domain or ttl, use this API to
+        update the record by deleting the old one and creating a new one.
+
+        :param record: the original :class:`RackspacePTRRecord`
+        :param domain: the fqdn you want that IP to represent
+        :param extra: a ``dict`` with optional extra values:
+            ttl - the time-to-live of the PTR record
+        :rtype: instance of :class:`RackspacePTRRecord`
+        """
+        if domain is not None and domain == record.domain:
+            domain = None
+
+        if extra is not None:
+            extra = dict(extra)
+            for key in extra:
+                if key in record.extra and record.extra[key] == extra[key]:
+                    del extra[key]
+
+        if domain is None and not extra:
+            # nothing to do, it already matches
+            return record
+
+        _check_ptr_extra_fields(record)
+        ip = record.ip
+
+        self.ex_delete_ptr_record(record)
+        # records have the same metadata in 'extra' as the original device
+        # so you can pass the original record object in instead
+        return self.ex_create_ptr_record(record, ip, domain, extra=extra)
+
+    def ex_delete_ptr_record(self, record):
+        """
+        Delete an existing PTR Record
+
+        :param record: the original :class:`RackspacePTRRecord`
+        :rtype: ``bool``
+        """
+        _check_ptr_extra_fields(record)
+        self.connection.set_context({'resource': 'record', 'id': record.id})
+        self.connection.async_request(
+            action='/rdns/%s' % (record.extra['service_name']),
+            method='DELETE',
+            params={'href': record.extra['uri'], 'ip': record.ip},
+        )
+        return True
+
     def _to_zone(self, data):
         id = data['id']
         domain = data['name']
@@ -375,6 +576,20 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         record = Record(id=str(id), name=name, type=type, data=record_data,
                         zone=zone, driver=self, ttl=extra.get('ttl', None),
                         extra=extra)
+        return record
+
+    def _to_ptr_record(self, data, link):
+        id = data['id']
+        ip = data['data']
+        domain = data['name']
+        extra = {'uri': link['href'], 'service_name': link['rel']}
+
+        for key in VALID_RECORD_EXTRA_PARAMS:
+            if key in data:
+                extra[key] = data[key]
+
+        record = RackspacePTRRecord(id=str(id), ip=ip, domain=domain,
+                                    driver=self, extra=extra)
         return record
 
     def _to_full_record_name(self, domain, name):
@@ -449,3 +664,12 @@ def _rackspace_result_has_more(response, result_length, limit):
         if item['rel'] == 'next':
             return True
     return False
+
+
+def _check_ptr_extra_fields(device_or_record):
+    if not (getattr(device_or_record, 'extra') and
+            device_or_record.extra.get('uri') is not None and
+            device_or_record.extra.get('service_name') is not None):
+        raise LibcloudError("Can't create PTR Record for %s because it "
+                            "doesn't have a 'uri' and 'service_name' in "
+                            "'extra'")

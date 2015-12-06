@@ -1,0 +1,88 @@
+[
+  {
+    "type": "A",
+    "name": "@",
+    "data": "50.63.202.42",
+    "ttl": 600
+  },
+  {
+    "type": "A",
+    "name": "mercury",
+    "data": "197.96.19.72",
+    "ttl": 3600
+  },
+  {
+    "type": "A",
+    "name": "secure",
+    "data": "175.184.215.248",
+    "ttl": 3600
+  },
+  {
+    "type": "A",
+    "name": "manga",
+    "data": "175.184.205.28",
+    "ttl": 3600
+  },
+  {
+    "type": "CNAME",
+    "name": "email",
+    "data": "email.secureserver.net",
+    "ttl": 3600
+  },
+  {
+    "type": "CNAME",
+    "name": "ftp",
+    "data": "@",
+    "ttl": 3600
+  },
+  {
+    "type": "CNAME",
+    "name": "www",
+    "data": "@",
+    "ttl": 3600
+  },
+  {
+    "type": "MX",
+    "name": "@",
+    "data": "mailstore1.secureserver.net",
+    "priority": 10,
+    "ttl": 3600
+  },
+  {
+    "type": "MX",
+    "name": "@",
+    "data": "smtp.secureserver.net",
+    "priority": 0,
+    "ttl": 3600
+  },
+  {
+    "type": "TXT",
+    "name": "@",
+    "data": "MS=ms30628878",
+    "ttl": 3600
+  },
+  {
+    "type": "AAAA",
+    "name": "wazzle",
+    "data": "2607:f480:111:1336:6503:544c:74a6:3a28",
+    "ttl": 3600
+  },
+  {
+    "type": "AAAA",
+    "name": "flerg",
+    "data": "2607:f480:111:1336:6503:544c:74a6:3a28",
+    "ttl": 3600
+  },
+  {
+    "type": "NS",
+    "name": "@",
+    "data": "ns25.domaincontrol.com",
+    "ttl": 3600
+  },
+  {
+    "type": "NS",
+    "name": "@",
+    "data": "ns26.domaincontrol.com",
+    "ttl": 3600
+  }
+]

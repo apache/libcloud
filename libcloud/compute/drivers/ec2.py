@@ -89,154 +89,226 @@ EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
+and <http://aws.amazon.com/ec2/previous-generation/>
+ram = [MiB], disk = [GB]
 """
+
+
+def GiB(value):
+    return int(value * 1024)
+
+
 INSTANCE_TYPES = {
     't1.micro': {
         'id': 't1.micro',
         'name': 'Micro Instance',
-        'ram': 613,
-        'disk': 15,
+        'ram': GiB(0.613),
+        'disk': 15,  # GB
         'bandwidth': None
     },
     'm1.small': {
         'id': 'm1.small',
         'name': 'Small Instance',
-        'ram': 1740,
-        'disk': 160,
+        'ram': GiB(1.7),
+        'disk': 160,  # GB
         'bandwidth': None
     },
     'm1.medium': {
         'id': 'm1.medium',
         'name': 'Medium Instance',
-        'ram': 3700,
-        'disk': 410,
+        'ram': GiB(3.75),
+        'disk': 410,  # GB
         'bandwidth': None
     },
     'm1.large': {
         'id': 'm1.large',
         'name': 'Large Instance',
-        'ram': 7680,
-        'disk': 850,
-        'bandwidth': None
+        'ram': GiB(7.5),
+        'disk': 2 * 420,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'm1.xlarge': {
         'id': 'm1.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 15360,
-        'disk': 1690,
-        'bandwidth': None
+        'ram': GiB(15),
+        'disk': 4 * 420,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'c1.medium': {
         'id': 'c1.medium',
         'name': 'High-CPU Medium Instance',
-        'ram': 1740,
-        'disk': 350,
-        'bandwidth': None
+        'ram': GiB(1.7),
+        'disk': 350,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'c1.xlarge': {
         'id': 'c1.xlarge',
         'name': 'High-CPU Extra Large Instance',
-        'ram': 7680,
-        'disk': 1690,
-        'bandwidth': None
+        'ram': GiB(7),
+        'disk': 4 * 420,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'm2.xlarge': {
         'id': 'm2.xlarge',
         'name': 'High-Memory Extra Large Instance',
-        'ram': 17510,
-        'disk': 420,
-        'bandwidth': None
+        'ram': GiB(17.1),
+        'disk': 420,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'm2.2xlarge': {
         'id': 'm2.2xlarge',
         'name': 'High-Memory Double Extra Large Instance',
-        'ram': 35021,
-        'disk': 850,
-        'bandwidth': None
+        'ram': GiB(34.2),
+        'disk': 850,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'm2.4xlarge': {
         'id': 'm2.4xlarge',
         'name': 'High-Memory Quadruple Extra Large Instance',
-        'ram': 70042,
-        'disk': 1690,
-        'bandwidth': None
+        'ram': GiB(68.4),
+        'disk': 2 * 840,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'm3.medium': {
         'id': 'm3.medium',
         'name': 'Medium Instance',
-        'ram': 3840,
-        'disk': 4000,
-        'bandwidth': None
+        'ram': GiB(3.75),
+        'disk': 4,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 1
+        }
     },
     'm3.large': {
         'id': 'm3.large',
         'name': 'Large Instance',
-        'ram': 7168,
-        'disk': 32000,
-        'bandwidth': None
+        'ram': GiB(7.5),
+        'disk': 32,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'm3.xlarge': {
         'id': 'm3.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 15360,
-        'disk': 80000,
-        'bandwidth': None
+        'ram': GiB(15),
+        'disk': 2 * 40,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'm3.2xlarge': {
         'id': 'm3.2xlarge',
         'name': 'Double Extra Large Instance',
-        'ram': 30720,
-        'disk': 160000,
-        'bandwidth': None
+        'ram': GiB(30),
+        'disk': 2 * 80,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'm4.large': {
         'id': 'm4.large',
         'name': 'Large Instance',
-        'ram': 8192,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(8),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'm4.xlarge': {
         'id': 'm4.xlarge',
         'name': 'Extra Large Instance',
-        'ram': 16384,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(16),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'm4.2xlarge': {
         'id': 'm4.2xlarge',
         'name': 'Double Extra Large Instance',
-        'ram': 32768,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(32),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'm4.4xlarge': {
         'id': 'm4.4xlarge',
         'name': 'Quadruple Extra Large Instance',
-        'ram': 65536,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(64),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'm4.10xlarge': {
         'id': 'm4.10xlarge',
         'name': '10 Extra Large Instance',
-        'ram': 163840,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(160),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 40
+        }
     },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
-        'ram': 22528,
-        'disk': 1690,
-        'bandwidth': None
+        'ram': GiB(22.5),
+        'disk': 2 * 840,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'g2.2xlarge': {
         'id': 'g2.2xlarge',
         'name': 'Cluster GPU G2 Double Extra Large Instance',
-        'ram': 15000,
-        'disk': 60,
+        'ram': GiB(15),
+        'disk': 60,  # GB
         'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'g2.8xlarge': {
+        'id': 'g2.8xlarge',
+        'name': 'Cluster GPU G2 Eight Extra Large Instance',
+        'ram': GiB(60),
+        'disk': 2 * 120,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
@@ -248,210 +320,291 @@ INSTANCE_TYPES = {
     'cc2.8xlarge': {
         'id': 'cc2.8xlarge',
         'name': 'Cluster Compute Eight Extra Large Instance',
-        'ram': 63488,
-        'disk': 3370,
-        'bandwidth': None
+        'ram': GiB(60.5),
+        'disk': 4 * 840,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     # c3 instances have 2 SSDs of the specified disk size
     'c3.large': {
         'id': 'c3.large',
         'name': 'Compute Optimized Large Instance',
-        'ram': 3750,
-        'disk': 32,  # x2
-        'bandwidth': None
+        'ram': GiB(3.75),
+        'disk': 2 * 16,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'c3.xlarge': {
         'id': 'c3.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7500,
-        'disk': 80,  # x2
-        'bandwidth': None
+        'ram': GiB(7.5),
+        'disk': 2 * 40,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'c3.2xlarge': {
         'id': 'c3.2xlarge',
         'name': 'Compute Optimized Double Extra Large Instance',
-        'ram': 15000,
-        'disk': 160,  # x2
-        'bandwidth': None
+        'ram': GiB(15),
+        'disk': 2 * 80,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'c3.4xlarge': {
         'id': 'c3.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': 30000,
-        'disk': 320,  # x2
-        'bandwidth': None
+        'ram': GiB(30),
+        'disk': 2 * 160,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'c3.8xlarge': {
         'id': 'c3.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': 60000,
-        'disk': 640,  # x2
-        'bandwidth': None
+        'ram': GiB(60),
+        'disk': 2 * 320,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     'c4.large': {
         'id': 'c4.large',
         'name': 'Compute Optimized Large Instance',
-        'ram': 3750,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(3.75),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'c4.xlarge': {
         'id': 'c4.xlarge',
         'name': 'Compute Optimized Extra Large Instance',
-        'ram': 7500,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(7.5),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'c4.2xlarge': {
         'id': 'c4.2xlarge',
         'name': 'Compute Optimized Double Large Instance',
-        'ram': 15000,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(15),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'c4.4xlarge': {
         'id': 'c4.4xlarge',
         'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': 30000,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(30),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'c4.8xlarge': {
         'id': 'c4.8xlarge',
         'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': 60000,
-        'disk': 0,
-        'bandwidth': None
+        'ram': GiB(60),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     'cr1.8xlarge': {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
-        'ram': 244000,
-        'disk': 240,
-        'bandwidth': None
+        'ram': GiB(244),
+        'disk': 2 * 120,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     'hs1.4xlarge': {
         'id': 'hs1.4xlarge',
         'name': 'High Storage Quadruple Extra Large Instance',
-        'ram': 61952,
-        'disk': 2048,
-        'bandwidth': None
+        'ram': GiB(64),
+        'disk': 2 * 1024,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'hs1.8xlarge': {
         'id': 'hs1.8xlarge',
         'name': 'High Storage Eight Extra Large Instance',
-        'ram': 119808,
-        'disk': 48000,
-        'bandwidth': None
+        'ram': GiB(117),
+        'disk': 24 * 2000,
+        'bandwidth': None,
+        'extra': {
+            'cpu': 17
+        }
     },
     # i2 instances have up to eight SSD drives
     'i2.xlarge': {
         'id': 'i2.xlarge',
-        'name': 'High Storage Optimized Extra Large Instance',
-        'ram': 31232,
-        'disk': 800,
-        'bandwidth': None
+        'name': 'High I/O Storage Optimized Extra Large Instance',
+        'ram': GiB(30.5),
+        'disk': 800,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'i2.2xlarge': {
         'id': 'i2.2xlarge',
-        'name': 'High Storage Optimized Double Extra Large Instance',
-        'ram': 62464,
-        'disk': 1600,
-        'bandwidth': None
+        'name': 'High I/O Storage Optimized Double Extra Large Instance',
+        'ram': GiB(61),
+        'disk': 2 * 800,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'i2.4xlarge': {
         'id': 'i2.4xlarge',
-        'name': 'High Storage Optimized Quadruple Large Instance',
-        'ram': 124928,
-        'disk': 3200,
-        'bandwidth': None
+        'name': 'High I/O Storage Optimized Quadruple Large Instance',
+        'ram': GiB(122),
+        'disk': 4 * 800,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'i2.8xlarge': {
         'id': 'i2.8xlarge',
-        'name': 'High Storage Optimized Eight Extra Large Instance',
-        'ram': 249856,
-        'disk': 6400,
-        'bandwidth': None
+        'name': 'High I/O Storage Optimized Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 8 * 800,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
     'd2.xlarge': {
         'id': 'd2.xlarge',
-        'name': 'High Storage Optimized Extra Large Instance',
-        'ram': 30050,
-        'disk': 6000,  # 3 x 2 TB
-        'bandwidth': None
+        'name': 'Dense Storage Optimized Extra Large Instance',
+        'ram': GiB(30.5),
+        'disk': 3 * 2000,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'd2.2xlarge': {
         'id': 'd2.2xlarge',
-        'name': 'High Storage Optimized Double Extra Large Instance',
-        'ram': 61952,
-        'disk': 12000,  # 6 x 2 TB
-        'bandwidth': None
+        'name': 'Dense Storage Optimized Double Extra Large Instance',
+        'ram': GiB(61),
+        'disk': 6 * 2000,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'd2.4xlarge': {
         'id': 'd2.4xlarge',
-        'name': 'High Storage Optimized Quadruple Extra Large Instance',
-        'ram': 122000,
-        'disk': 24000,  # 12 x 2 TB
-        'bandwidth': None
+        'name': 'Dense Storage Optimized Quadruple Extra Large Instance',
+        'ram': GiB(122),
+        'disk': 12 * 2000,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'd2.8xlarge': {
         'id': 'd2.8xlarge',
-        'name': 'High Storage Optimized Eight Extra Large Instance',
-        'ram': 244000,
-        'disk': 48000,  # 24 x 2 TB
-        'bandwidth': None
+        'name': 'Dense Storage Optimized Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 24 * 2000,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 36
+        }
     },
     # 1x SSD
     'r3.large': {
         'id': 'r3.large',
         'name': 'Memory Optimized Large instance',
-        'ram': 15000,
-        'disk': 32,
-        'bandwidth': None
+        'ram': GiB(15.25),
+        'disk': 32,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
     },
     'r3.xlarge': {
         'id': 'r3.xlarge',
         'name': 'Memory Optimized Extra Large instance',
-        'ram': 30500,
-        'disk': 80,
-        'bandwidth': None
+        'ram': GiB(30.5),
+        'disk': 80,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
     },
     'r3.2xlarge': {
         'id': 'r3.2xlarge',
         'name': 'Memory Optimized Double Extra Large instance',
-        'ram': 61000,
-        'disk': 160,
-        'bandwidth': None
+        'ram': GiB(61),
+        'disk': 160,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
     },
     'r3.4xlarge': {
         'id': 'r3.4xlarge',
         'name': 'Memory Optimized Quadruple Extra Large instance',
-        'ram': 122000,
-        'disk': 320,
-        'bandwidth': None
+        'ram': GiB(122),
+        'disk': 320,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
     },
     'r3.8xlarge': {
         'id': 'r3.8xlarge',
         'name': 'Memory Optimized Eight Extra Large instance',
-        'ram': 244000,
-        'disk': 320,  # x2
-        'bandwidth': None
+        'ram': GiB(244),
+        'disk': 2 * 320,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
     },
+    # Burstable Performance General Purpose
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
-        'ram': 1024,
+        'ram': GiB(1),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
             'cpu': 1
         }
     },
-    # Burstable Performance General Purpose
     't2.small': {
         'id': 't2.small',
         'name': 'Burstable Performance Small Instance',
-        'ram': 2048,
+        'ram': GiB(2),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
@@ -461,7 +614,17 @@ INSTANCE_TYPES = {
     't2.medium': {
         'id': 't2.medium',
         'name': 'Burstable Performance Medium Instance',
-        'ram': 4028,
+        'ram': GiB(4),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    't2.large': {
+        'id': 't2.large',
+        'name': 'Burstable Performance Medium Instance',
+        'ram': GiB(8),
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
@@ -470,6 +633,7 @@ INSTANCE_TYPES = {
     }
 }
 
+#  From <https://aws.amazon.com/marketplace/help/200777880>
 REGION_DETAILS = {
     # US East (Northern Virginia) Region
     'us-east-1': {
@@ -510,6 +674,7 @@ REGION_DETAILS = {
             'c4.8xlarge',
             'cg1.4xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -527,7 +692,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # US West (Northern California) Region
@@ -557,6 +723,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -578,7 +745,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # US West (Oregon) Region
@@ -608,6 +776,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -635,7 +804,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # EU (Ireland) Region
@@ -665,6 +835,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -692,7 +863,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # EU (Frankfurt) Region
@@ -736,7 +908,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -786,7 +959,8 @@ REGION_DETAILS = {
             'd2.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -810,6 +984,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c1.xlarge',
             'c3.large',
             'c3.xlarge',
@@ -842,7 +1017,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # South America (Sao Paulo) Region
@@ -868,7 +1044,8 @@ REGION_DETAILS = {
             'c1.xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     # Asia Pacific (Sydney) Region
@@ -923,7 +1100,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     'us-gov-west-1': {
@@ -947,6 +1125,7 @@ REGION_DETAILS = {
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
+            'g2.8xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -970,7 +1149,8 @@ REGION_DETAILS = {
             'r3.8xlarge',
             't2.micro',
             't2.small',
-            't2.medium'
+            't2.medium',
+            't2.large'
         ]
     },
     'nimbus': {
@@ -1290,9 +1470,144 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'os1.8xlarge'
         ]
     },
+    'eu-west-2': {
+        'endpoint': 'fcu.eu-west-2.outscale.com',
+        'api_name': 'osc_sas_eu_west_2',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
     'us-east-1': {
         'endpoint': 'api.us-east-1.outscale.com',
         'api_name': 'osc_sas_us_east_1',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-2': {
+        'endpoint': 'fcu.us-east-2.outscale.com',
+        'api_name': 'osc_sas_us_east_2',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-2': {
+        'endpoint': 'fcu.us-east-2.outscale.com',
+        'api_name': 'osc_sas_us_east_2',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-2': {
+        'endpoint': 'fcu.us-east-2.outscale.com',
+        'api_name': 'osc_sas_us_east_2',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-2': {
+        'endpoint': 'fcu.us-east-2.outscale.com',
+        'api_name': 'osc_sas_us_east_2',
         'country': 'USA',
         'instance_types': [
             't1.micro',
@@ -1348,6 +1663,33 @@ OUTSCALE_INC_REGION_DETAILS = {
             'os1.8xlarge'
         ]
     },
+    'eu-west-2': {
+        'endpoint': 'fcu.eu-west-2.outscale.com',
+        'api_name': 'osc_inc_eu_west_2',
+        'country': 'FRANCE',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
     'eu-west-3': {
         'endpoint': 'api-ppd.outscale.com',
         'api_name': 'osc_inc_eu_west_3',
@@ -1378,6 +1720,33 @@ OUTSCALE_INC_REGION_DETAILS = {
     'us-east-1': {
         'endpoint': 'api.us-east-1.outscale.com',
         'api_name': 'osc_inc_us_east_1',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'nv1.small',
+            'nv1.medium',
+            'nv1.large',
+            'nv1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'cr1.8xlarge',
+            'os1.8xlarge'
+        ]
+    },
+    'us-east-2': {
+        'endpoint': 'fcu.us-east-2.outscale.com',
+        'api_name': 'osc_inc_us_east_2',
         'country': 'USA',
         'instance_types': [
             't1.micro',

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns6:Status xmlns:ns6="http://oec.api.opsource.net/schemas/general">
+    <ns6:operation>Edit Server</ns6:operation>
+    <ns6:result>SUCCESS</ns6:result>
+<ns6:resultDetail>Server edited</ns6:resultDetail>
+<ns6:resultCode>REASON_0</ns6:resultCode>
+</ns6:Status>

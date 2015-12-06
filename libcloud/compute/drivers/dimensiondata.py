@@ -36,6 +36,7 @@ from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
@@ -398,6 +399,63 @@ class DimensionDataNodeDriver(NodeDriver):
             data=ET.tostring(request_elm)).object
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_vm_tools(self, node):
+        """
+        This function triggers an update of the VMware Tools
+        software running on the guest OS of a Server.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        request_elm = ET.Element('updateVmwareTools',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/updateVmwareTools',
+            method='POST',
+            data=ET.tostring(request_elm)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_node(self, node, name=None, description=None,
+                       cpu_count=None, ram_mb=None):
+        """
+        Update the node, the name, CPU or RAM
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      name: The new name (optional)
+        :type       name: ``str``
+
+        :param      description: The new description (optional)
+        :type       description: ``str``
+
+        :param      cpu_count: The new CPU count (optional)
+        :type       cpu_count: ``int``
+
+        :param      ram_mb: The new Memory in MB (optional)
+        :type       ram_mb: ``int``
+
+        :rtype: ``bool``
+        """
+        data = {}
+        if name is not None:
+            data['name'] = name
+        if description is not None:
+            data['description'] = description
+        if cpu_count is not None:
+            data['cpuCount'] = str(cpu_count)
+        if ram_mb is not None:
+            data['memory'] = str(ram_mb)
+        body = self.connection.request_with_orgId_api_1(
+            'server/%s' % (node.id),
+            method='POST',
+            data=urlencode(data, True)).object
+        response_code = findtext(body, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_attach_node_to_vlan(self, node, vlan):
         """
@@ -941,6 +999,14 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_set_firewall_rule_state(self, rule, state):
         """
         Change the state (enabled or disabled) of a rule
+
+        :param rule: The rule to delete
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :param state: The desired state enabled (True) or disabled (False)
+        :type  state: ``bool``
+
+        :rtype: ``bool``
         """
         update_node = ET.Element('editFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
@@ -954,6 +1020,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_delete_firewall_rule(self, rule):
+        """
+        Delete a firewall rule
+
+        :param rule: The rule to delete
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :rtype: ``bool``
+        """
         update_node = ET.Element('deleteFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -965,6 +1039,20 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
+        """
+        Create a NAT rule
+
+        :param  network_domain: The network domain the rule belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param  internal_ip: The IPv4 address internally
+        :type   internal_ip: ``str``
+
+        :param  external_ip: The IPv4 address externally
+        :type   external_ip: ``str``
+
+        :rtype: :class:`DimensionDataNatRule`
+        """
         create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, 'networkDomainId').text = network_domain.id
         ET.SubElement(create_node, 'internalIp').text = internal_ip
@@ -988,6 +1076,14 @@ class DimensionDataNodeDriver(NodeDriver):
         )
 
     def ex_list_nat_rules(self, network_domain):
+        """
+        Get NAT rules for the network domain
+
+        :param  network_domain: The network domain the rules belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``list`` of :class:`DimensionDataNatRule`
+        """
         params = {}
         params['networkDomainId'] = network_domain.id
 
@@ -997,6 +1093,17 @@ class DimensionDataNodeDriver(NodeDriver):
         return self._to_nat_rules(response, network_domain)
 
     def ex_get_nat_rule(self, network_domain, rule_id):
+        """
+        Get a NAT rule by ID
+
+        :param  network_domain: The network domain the rule belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param  rule_id: The ID of the NAT rule to fetch
+        :type   rule_id: ``str``
+
+        :rtype: :class:`DimensionDataNatRule`
+        """
         rule = self.connection.request_with_orgId_api_2(
             'network/natRule/%s' % rule_id).object
         return self._to_nat_rule(rule, network_domain)
@@ -1133,6 +1240,118 @@ class DimensionDataNodeDriver(NodeDriver):
 
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_add_storage_to_node(self, node, amount, speed='STANDARD'):
+        """
+        Add storage to the node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  amount: The amount of storage to add, in GB
+        :type   amount: ``int``
+
+        :param  speed: The disk speed type
+        :type   speed: ``str``
+
+        :rtype: ``bool``
+        """
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s?addLocalStorage&amount=%s&speed=%s' %
+            (node.id, amount, speed)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_remove_storage_from_node(self, node, disk_id):
+        """
+        Remove storage from a node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to remove
+        :type   disk_id: ``str``
+
+        :rtype: ``bool``
+        """
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s?delete' %
+            (node.id, disk_id)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_change_storage_speed(self, node, disk_id, speed):
+        """
+        Change the speed (disk tier) of a disk
+
+        :param  node: The server to change the disk speed of
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to change
+        :type   disk_id: ``str``
+
+        :param  speed: The disk speed type e.g. STANDARD
+        :type   speed: ``str``
+
+        :rtype: ``bool``
+        """
+        create_node = ET.Element('ChangeDiskSpeed', {'xmlns': SERVER_NS})
+        ET.SubElement(create_node, 'speed').text = speed
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s/changeSpeed' %
+            (node.id, disk_id),
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_change_storage_size(self, node, disk_id, size):
+        """
+        Change the size of a disk
+
+        :param  node: The server to change the disk of
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to resize
+        :type   disk_id: ``str``
+
+        :param  size: The disk size in GB
+        :type   size: ``int``
+
+        :rtype: ``bool``
+        """
+        create_node = ET.Element('ChangeDiskSize', {'xmlns': SERVER_NS})
+        ET.SubElement(create_node, 'newSizeGb').text = str(size)
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s/changeSize' %
+            (node.id, disk_id),
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_clone_node_to_image(self, node, image_name, image_description=None):
+        """
+        Clone a server into a customer image.
+
+        :param  node: The server to clone
+        :type   node: :class:`Node`
+
+        :param  image_name: The name of the clone image
+        :type   image_name: ``str``
+
+        :param  description: The description of the image
+        :type   description: ``str``
+
+        :rtype: ``bool``
+        """
+        if image_description is None:
+            image_description = ''
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s?clone=%s&desc=%s' %
+            (node.id, image_name, image_description)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def _to_nat_rules(self, object, network_domain):
         rules = []

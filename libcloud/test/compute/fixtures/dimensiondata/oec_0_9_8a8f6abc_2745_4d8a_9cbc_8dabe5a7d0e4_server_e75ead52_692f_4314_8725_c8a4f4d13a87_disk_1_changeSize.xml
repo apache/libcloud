@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns4:Status xmlns:ns16="http://oec.api.opsource.net/schemas/reset" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/backup" xmlns:ns15="http://oec.api.opsource.net/schemas/storage" xmlns:ns9="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns5="http://oec.api.opsource.net/schemas/network" xmlns:ns12="http://oec.api.opsource.net/schemas/support" xmlns:ns13="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns6="http://oec.api.opsource.net/schemas/vip" xmlns:ns7="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns10="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns8="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns11="http://oec.api.opsource.net/schemas/admin" xmlns:ns2="http://oec.api.opsource.net/schemas/organization" xmlns:ns4="http://oec.api.opsource.net/schemas/general" xmlns:ns3="http://oec.api.opsource.net/schemas/directory">
+    <ns4:operation>Change Server Disk Size</ns4:operation>
+    <ns4:result>SUCCESS</ns4:result>
+    <ns4:resultDetail>Server "Change Server Disk Size" issued</ns4:resultDetail>
+    <ns4:resultCode>REASON_0</ns4:resultCode>
+</ns4:Status>

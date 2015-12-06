@@ -200,7 +200,6 @@ class NodeState(object):
     :cvar TERMINATED: Node is terminated. This node can't be started later on.
     :cvar STOPPED: Node is stopped. This node can be started later on.
     :cvar PENDING: Node is pending.
-    :cvar STOPPED: Node is stopped.
     :cvar SUSPENDED: Node is suspended.
     :cvar ERROR: Node is an error state. Usually no operations can be performed
                  on the node once it ends up in the error state.

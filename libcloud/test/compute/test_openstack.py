@@ -790,6 +790,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('power_state'), 1)
         self.assertEqual(node.extra.get('progress'), 25)
         self.assertEqual(node.extra.get('fault')['id'], 1234)
+        self.assertTrue(node.extra.get('service_name') is not None)
+        self.assertTrue(node.extra.get('uri') is not None)
 
     def test_list_nodes_no_image_id_attribute(self):
         # Regression test for LIBCLOD-455

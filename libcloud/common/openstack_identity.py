@@ -419,6 +419,7 @@ class OpenStackServiceCatalog(object):
 
         for item in service_catalog:
             service_type = item['type']
+            service_name = item.get('name', None)
 
             entry_endpoints = []
             for endpoint in item['endpoints']:
@@ -438,6 +439,7 @@ class OpenStackServiceCatalog(object):
                 entry_endpoints.append(entry_endpoint)
 
             entry = OpenStackServiceCatalogEntry(service_type=service_type,
+                                                 service_name=service_name,
                                                  endpoints=entry_endpoints)
             entries.append(entry)
 
