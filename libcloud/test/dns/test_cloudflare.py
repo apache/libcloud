@@ -143,6 +143,65 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertTrue('email_filter' in result)
         self.assertTrue('secureheader_settings' in result)
 
+    def test_ex_set_one_security_level(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_set_zone_security_level(zone=zone, level='med')
+        self.assertTrue(result)
+
+    def test_ex_set_zone_cache_level(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_set_zone_cache_level(zone=zone, level='agg')
+        self.assertTrue(result)
+
+    def test_ex_enable_development_mode(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_enable_development_mode(zone=zone)
+        self.assertTrue(result)
+
+    def test_ex_disable_development_mode(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_disable_development_mode(zone=zone)
+        self.assertTrue(result)
+
+    def test_ex_purge_cached_files(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_purge_cached_files(zone=zone)
+        self.assertTrue(result)
+
+    def test_ex_purge_cached_file(self):
+        zone = self.driver.list_zones()[0]
+        url = 'https://www.example.com/test.html'
+        result = self.driver.ex_purge_cached_file(zone=zone, url=url)
+        self.assertTrue(result)
+
+    def test_ex_whitelist_ip(self):
+        zone = self.driver.list_zones()[0]
+        ip = '127.0.0.1'
+        result = self.driver.ex_whitelist_ip(zone=zone, ip=ip)
+        self.assertTrue(result)
+
+    def test_ex_blacklist_ip(self):
+        zone = self.driver.list_zones()[0]
+        ip = '127.0.0.1'
+        result = self.driver.ex_blacklist_ip(zone=zone, ip=ip)
+        self.assertTrue(result)
+
+    def test_ex_unlist_ip(self):
+        zone = self.driver.list_zones()[0]
+        ip = '127.0.0.1'
+        result = self.driver.ex_unlist_ip(zone=zone, ip=ip)
+        self.assertTrue(result)
+
+    def test_enable_ipv6_support(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_enable_development_mode(zone=zone)
+        self.assertTrue(result)
+
+    def test_ex_disable_ipv6_support(self):
+        zone = self.driver.list_zones()[0]
+        result = self.driver.ex_disable_development_mode(zone=zone)
+        self.assertTrue(result)
+
 
 class CloudFlareMockHttp(MockHttp):
     fixtures = DNSFileFixtures('cloudflare')
@@ -215,6 +274,78 @@ class CloudFlareMockHttp(MockHttp):
             self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('zone_settings.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_sec_lvl(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('sec_lvl.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_cache_lvl(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('cache_lvl.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_devmode(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('devmode.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_fpurge_ts(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('fpurge_ts.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_zone_file_purge(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('zone_file_purge.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_wl(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('wl.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_ban(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('ban.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_nul(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('nul.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_json_html_ipv46(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('ipv46.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

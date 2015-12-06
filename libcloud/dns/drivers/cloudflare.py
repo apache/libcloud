@@ -294,7 +294,7 @@ class CloudFlareDNSDriver(DNSDriver):
         result = resp.object
         return result.get('result', None) == 'success'
 
-    def ex_purge_cache_files(self, zone):
+    def ex_purge_cached_files(self, zone):
         """
         Purge CloudFlare of any cached files.
         """
@@ -304,7 +304,7 @@ class CloudFlareDNSDriver(DNSDriver):
         result = resp.object
         return result.get('result', None) == 'success'
 
-    def ex_purge_cache_file(self, zone, url):
+    def ex_purge_cached_file(self, zone, url):
         """
         Purgle single file from CloudFlare's cache.
 
