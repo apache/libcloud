@@ -76,7 +76,7 @@ class DummyDNSDriver(DNSDriver):
         >>> record = driver.create_record(name='libcloud', zone=zone,
         ...                               type=RecordType.A, data='127.0.0.1')
         >>> list(zone.list_records()) #doctest: +ELLIPSIS
-        [<Record: zone=id-apache.org, name=libcloud, type=A...>]
+        [<Record: zone=apache.org, name=libcloud, type=A...>]
         """
         return self._zones[zone.id]['records'].values()
 
@@ -152,7 +152,7 @@ class DummyDNSDriver(DNSDriver):
         >>> record = driver.create_record(name='libcloud', zone=zone,
         ...                               type=RecordType.A, data='127.0.0.1')
         >>> record #doctest: +ELLIPSIS
-        <Record: zone=id-apache.org, name=libcloud, type=A, data=127.0.0.1...>
+        <Record: zone=apache.org, name=libcloud, type=A, data=127.0.0.1...>
         >>> record = driver.create_record(name='libcloud', zone=zone,
         ...                               type=RecordType.A, data='127.0.0.1')
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
