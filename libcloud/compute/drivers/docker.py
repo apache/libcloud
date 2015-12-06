@@ -60,7 +60,8 @@ class DockerResponse(JsonResponse):
                 error_msg = m.group(1)
                 raise Exception(error_msg)
             else:
-                raise Exception('ConnectionError: Failed to parse JSON response')
+                raise Exception(
+                    'ConnectionError: Failed to parse JSON response')
         return body
 
     def parse_error(self):
@@ -103,7 +104,8 @@ class DockerNodeDriver(NodeDriver):
 
     connect with tls authentication, by providing a hostname, port, a private
     key file (.pem) and certificate (.pem) file
-    >>> conn = driver(host='https://198.61.239.128', port=4243, key_file='key.pem', cert_file='cert.pem')
+    >>> conn = driver(host='https://198.61.239.128',
+        port=4243, key_file='key.pem', cert_file='cert.pem')
     """
 
     type = Provider.DOCKER
@@ -112,11 +114,13 @@ class DockerNodeDriver(NodeDriver):
     connectionCls = DockerConnection
     features = {'create_node': ['password']}
 
-    def __init__(self, key=None, secret=None, host='localhost',
-                 port=4243, secure=False, key_file=None, cert_file=None):
+    def __init__(self, key=None, secret=None, secure=False, host='localhost',
+                 port=4243, key_file=None, cert_file=None):
 
         super(DockerNodeDriver, self).__init__(key=key, secret=secret,
-                                               host=host, port=port, secure=secure, key_file=key_file, cert_file=cert_file)
+                                               secure=secure, host=host,
+                                               port=port, key_file=key_file,
+                                               cert_file=cert_file)
         if host.startswith('https://'):
             secure = True
 
@@ -127,11 +131,15 @@ class DockerNodeDriver(NodeDriver):
                 host = host.strip(prefix)
 
         if key_file or cert_file:
-            # docker tls authentication - https://docs.docker.com/articles/https/
-            # We pass two files, a key_file with the private key and cert_file with the certificate
+            # docker tls authentication-
+            # https://docs.docker.com/articles/https/
+            # We pass two files, a key_file with the
+            # private key and cert_file with the certificate
             # libcloud will handle them through LibcloudHTTPSConnection
             if not (key_file and cert_file):
-                    raise Exception('Needs both private key file and certificate file for tls authentication')
+                raise Exception(
+                    'Needs both private key file and '
+                    'certificate file for tls authentication')
             self.connection.key_file = key_file
             self.connection.cert_file = cert_file
             self.connection.secure = True
@@ -141,154 +149,13 @@ class DockerNodeDriver(NodeDriver):
         self.connection.host = host
         self.connection.port = port
 
-    def list_sizes(self):
-        return (
-            [NodeSize(
-                id='default',
-                name='default',
-                ram='unlimited',
-                disk='unlimited',
-                bandwidth='unlimited',
-                price=0,
-                driver=self)]
-        )
-
-    def list_nodes(self, show_all=True):
-        """
-        List running and stopped containers
-        show_all=False will show only running containers
-        """
-        try:
-            result = self.connection.request("/containers/ps?all=%s" %
-                                         str(show_all)).object
-        except Exception as exc:
-            if hasattr(exc,'errno') and exc.errno == 111:
-                raise Exception('Make sure docker host is accessible and the API port is correct')
-            raise
-
-        nodes = [self._to_node(value) for value in result]
-        return nodes
-
-    def ex_inspect_node(self, node):
-        """
-        Inspect a container
-        """
-        result = self.connection.request("/containers/%s/json" %
-                                         node.id).object
-
-        name = result.get('Name').strip('/')
-        if result['State']['Running']:
-            state = NodeState.RUNNING
-        else:
-            state = NodeState.STOPPED
-
-        extra = {
-            'image': result.get('Image'),
-            'volumes': result.get('Volumes'),
-            'env': result.get('Config', {}).get('Env'),
-            'ports': result.get('ExposedPorts'),
-            'network_settings': result.get('NetworkSettings', {})
-        }
-        node_id = result.get('Id')
-        if not node_id:
-            node_id = result.get('ID', '')
-        node = (Node(id=node_id ,
-                     name=name,
-                     state=state,
-                     public_ips=[self.connection.host],
-                     private_ips=[],
-                     driver=self.connection.driver,
-                     extra=extra))
-        return node
-
-    def list_processes(self, node):
-        """
-        List processes running inside a container
-        """
-        result = self.connection.request("/containers/%s/top" % node.id).object
-
-        return result
-
-    def reboot_node(self, node):
-        """
-        Restart a container
-        """
-        data = json.dumps({'t': 10})
-        #number of seconds to wait before killing the container
-        result = self.connection.request('/containers/%s/restart' % (node.id),
-                                         data=data, method='POST')
-        return result.status in VALID_RESPONSE_CODES
-
-    def destroy_node(self, node):
-        """
-        Remove a container
-        """
-
-        result = self.connection.request('/containers/%s' % (node.id),
-                                         method='DELETE')
-        return result.status in VALID_RESPONSE_CODES
-
-    def ex_start_node(self, node):
-        """
-        Start a container
-        """
-
-        payload = {
-            'Binds': [],
-            'PublishAllPorts': True,
-        }
-        data = json.dumps(payload)
-        result = self.connection.request('/containers/%s/start' % (node.id),
-                                         method='POST', data=data)
-        return result.status in VALID_RESPONSE_CODES
-
-    def ex_stop_node(self, node):
-        """
-        Stop a container
-        """
-        result = self.connection.request('/containers/%s/stop' % (node.id),
-                                         method='POST')
-        return result.status in VALID_RESPONSE_CODES
-
-    def ex_rename_node(self, node, name):
-        """
-        rename a container
-        """
-        result = self.connection.request('/containers/%s/rename?name=%s' % (node.id, name),
-                                         method='POST')
-        return result.status in VALID_RESPONSE_CODES
-
-    def ex_get_logs(self, node, stream=False):
-        """
-        Get container logs
-
-        If stream == True, logs will be yielded as a stream
-        From Api Version 1.11 and above we need a GET request to get the logs
-        Logs are in different format of those of Version 1.10 and below
-
-        """
-        payload = {}
-        data = json.dumps(payload)
-
-        if float(self._get_api_version()) > 1.10:
-            result = self.connection.request("/containers/%s/logs?follow=\
-                                              %s&stdout=1&stderr=1" %
-                                              (node.id, str(stream))).object
-            logs = json.loads(result)
-        else:
-            result = self.connection.request("/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
-                                            (node.id, str(stream)), method='POST', data=data)
-            logs = result.body
-
-        return logs
-
     def create_node(self, name, image, command=None, hostname=None, user='',
-                    detach=False, stdin_open=True, tty=True,
+                    stdin_open=True, tty=True,
                     mem_limit=0, ports=None, environment=None, dns=None,
                     volumes=None, volumes_from=None,
                     network_disabled=False, entrypoint=None,
                     cpu_shares=None, working_dir='', domainname=None,
-                    memswap_limit=0, port_bindings={}):
+                    memswap_limit=0, port_bindings=None):
         """
         Create a container
 
@@ -297,7 +164,8 @@ class DockerNodeDriver(NodeDriver):
         After the container is created, start it
         """
         command = shlex.split(str(command))
-
+        if port_bindings is None:
+            port_bindings = {}
         params = {
             'name': name
         }
@@ -334,10 +202,10 @@ class DockerNodeDriver(NodeDriver):
             result = self.connection.request('/containers/create', data=data,
                                              params=params, method='POST')
         except Exception as e:
-            #if image not found, try to pull it
+            # if image not found, try to pull it
             if e.message.startswith('No such image:'):
                 try:
-                    self.pull_image(image=image)
+                    self.ex_pull_image(image=image)
                     result = self.connection.request('/containers/create',
                                                      data=data, params=params,
                                                      method='POST')
@@ -363,7 +231,38 @@ class DockerNodeDriver(NodeDriver):
                     public_ips=[], private_ips=[],
                     driver=self.connection.driver, extra={})
 
-    def list_images(self):
+    def list_sizes(self, location=None):
+        """
+        List sizes on this docker server (default size)
+
+        :param location: The location at which to list sizes
+        :type location: :class:`.NodeLocation`
+
+        :return: list of node size objects
+        :rtype: ``list`` of :class:`.NodeSize`
+        """
+        return (
+            [NodeSize(
+                id='default',
+                name='default',
+                ram='unlimited',
+                disk='unlimited',
+                bandwidth='unlimited',
+                price=0,
+                driver=self)]
+        )
+
+    def list_nodes(self):
+        """
+        List running and stopped containers
+        show_all=False will show only running containers
+
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`.Node`
+        """
+        return self.ex_list_nodes(True)
+
+    def list_images(self, location=None):
         "Return list of images as NodeImage objects"
 
         result = self.connection.request('/images/json').object
@@ -385,6 +284,174 @@ class DockerNodeDriver(NodeDriver):
             ))
 
         return images
+
+    def ex_list_nodes(self, show_all=True):
+        """
+        List running and stopped containers
+        show_all=False will show only running containers
+
+        :param show_all: Show all images
+        :type  show_all: ``bool``
+
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`.Node`
+        """
+        try:
+            result = self.connection.request(
+                "/containers/ps?all=%s" %
+                str(show_all)).object
+        except Exception as exc:
+            if hasattr(exc, 'errno') and exc.errno == 111:
+                raise Exception(
+                    'Make sure docker host is accessible'
+                    'and the API port is correct')
+            raise
+
+        nodes = [self._to_node(value) for value in result]
+        return nodes
+
+    def ex_inspect_node(self, node):
+        """
+        Inspect a container
+        """
+        result = self.connection.request("/containers/%s/json" %
+                                         node.id).object
+
+        name = result.get('Name').strip('/')
+        if result['State']['Running']:
+            state = NodeState.RUNNING
+        else:
+            state = NodeState.STOPPED
+
+        extra = {
+            'image': result.get('Image'),
+            'volumes': result.get('Volumes'),
+            'env': result.get('Config', {}).get('Env'),
+            'ports': result.get('ExposedPorts'),
+            'network_settings': result.get('NetworkSettings', {})
+        }
+        node_id = result.get('Id')
+        if not node_id:
+            node_id = result.get('ID', '')
+        node = (Node(id=node_id,
+                     name=name,
+                     state=state,
+                     public_ips=[self.connection.host],
+                     private_ips=[],
+                     driver=self.connection.driver,
+                     extra=extra))
+        return node
+
+    def ex_list_processes(self, node):
+        """
+        List processes running inside a container
+        """
+        result = self.connection.request("/containers/%s/top" % node.id).object
+
+        return result
+
+    def reboot_node(self, node):
+        """
+        Restart a container
+
+        :param node: The node to be rebooted
+        :type node: :class:`.Node`
+
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
+        """
+        data = json.dumps({'t': 10})
+        # number of seconds to wait before killing the container
+        result = self.connection.request('/containers/%s/restart' % (node.id),
+                                         data=data, method='POST')
+        return result.status in VALID_RESPONSE_CODES
+
+    def destroy_node(self, node):
+        """
+        Remove a container
+
+        :param node: The node to be destroyed
+        :type node: :class:`.Node`
+
+        :return: True if the destroy was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        result = self.connection.request('/containers/%s' % (node.id),
+                                         method='DELETE')
+        return result.status in VALID_RESPONSE_CODES
+
+    def ex_start_node(self, node):
+        """
+        Start a container
+
+        :param node: The node to be started
+        :type node: :class:`.Node`
+
+        :return: True if the start was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        payload = {
+            'Binds': [],
+            'PublishAllPorts': True,
+        }
+        data = json.dumps(payload)
+        result = self.connection.request('/containers/%s/start' % (node.id),
+                                         method='POST', data=data)
+        return result.status in VALID_RESPONSE_CODES
+
+    def ex_stop_node(self, node):
+        """
+        Stop a container
+
+        :param node: The node to be stopped
+        :type node: :class:`.Node`
+
+        :return: True if the stop was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        result = self.connection.request('/containers/%s/stop' % (node.id),
+                                         method='POST')
+        return result.status in VALID_RESPONSE_CODES
+
+    def ex_rename_node(self, node, name):
+        """
+        Rename a container
+
+        :param node: The node to be renamed
+        :type node: :class:`.Node`
+
+        :return: True if the rename was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        result = self.connection.request('/containers/%s/rename?name=%s'
+                                         % (node.id, name),
+                                         method='POST')
+        return result.status in VALID_RESPONSE_CODES
+
+    def ex_get_logs(self, node, stream=False):
+        """
+        Get container logs
+
+        If stream == True, logs will be yielded as a stream
+        From Api Version 1.11 and above we need a GET request to get the logs
+        Logs are in different format of those of Version 1.10 and below
+
+        """
+        payload = {}
+        data = json.dumps(payload)
+
+        if float(self._get_api_version()) > 1.10:
+            result = self.connection.request(
+                "/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
+                (node.id, str(stream))).object
+            logs = json.loads(result)
+        else:
+            result = self.connection.request(
+                "/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
+                (node.id, str(stream)), method='POST', data=data)
+            logs = result.body
+
+        return logs
 
     def ex_search_images(self, term):
         """Search for an image on Docker.io.
@@ -435,7 +502,7 @@ class DockerNodeDriver(NodeDriver):
         if "errorDetail" in result.body:
             raise Exception(result.body)
         try:
-            #get image id
+            # get image id
             image_id = re.findall(
                 r'{"status":"Download complete"'
                 r',"progressDetail":{},"id":"\w+"}',
