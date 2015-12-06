@@ -156,6 +156,17 @@ class CloudFlareDNSDriver(DNSDriver):
         records = self._to_records(zone=zone, data=data)
         return records
 
+    def get_zone(self, zone_id):
+        # TODO: This is not efficient
+        zones = self.list_zones()
+
+        try:
+            zone = [z for z in zones if z.id == zone_id][0]
+        except IndexError:
+            raise ZoneDoesNotExistError(value='', driver=self, zone_id=zone_id)
+
+        return zone
+
     def create_record(self, name, zone, type, data, extra=None):
         extra = extra or {}
         params = {'name': name, 'z': zone.domain, 'type': type,
@@ -366,7 +377,6 @@ class CloudFlareDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, item):
-        zone_type = item.get('zone_type', '').lower()
         type = 'master'
 
         extra = {}
