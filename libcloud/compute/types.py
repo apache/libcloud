@@ -54,7 +54,6 @@ class Provider(object):
     :cvar ECP: Enomaly
     :cvar IBM: IBM Developer Cloud
     :cvar OPENNEBULA: OpenNebula.org
-    :cvar DREAMHOST: DreamHost Private Server
     :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar CLOUDSIGMA: CloudSigma
     :cvar NIMBUS: Nimbus
@@ -98,7 +97,6 @@ class Provider(object):
     ECP = 'ecp'
     IBM = 'ibm'
     OPENNEBULA = 'opennebula'
-    DREAMHOST = 'dreamhost'
     ELASTICHOSTS = 'elastichosts'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'

@@ -28,14 +28,7 @@
             "standard-large": 0.381,
             "standard-small": 0.0796
         },
-        "dreamhost": {
-            "default": 115,
-            "high": 150,
-            "low": 50,
-            "maximum": 200,
-            "minimum": 15
-        },
-        "ec2_ap_northeast": {
+       "ec2_ap_northeast": {
             "c1.medium": "0.158",
             "c1.xlarge": "0.632",
             "c3.large": "0.128",
