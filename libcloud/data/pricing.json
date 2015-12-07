@@ -28,7 +28,7 @@
             "standard-large": 0.381,
             "standard-small": 0.0796
         },
-       "ec2_ap_northeast": {
+        "ec2_ap_northeast": {
             "c1.medium": "0.158",
             "c1.xlarge": "0.632",
             "c3.large": "0.128",
