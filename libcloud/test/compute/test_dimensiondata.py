@@ -311,7 +311,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                           name='test',
                                           private_ipv4_base_address='10.3.4.0',
                                           private_ipv4_prefix_size='24')
-        self.assertEqual(vlan.id, 'cee8df03-9117-44cc-baaa-631ffa099683')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
 
     def test_ex_get_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
@@ -320,7 +320,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vlan.status, 'NORMAL')
         self.assertEqual(vlan.name, 'Production VLAN')
         self.assertEqual(vlan.private_ipv4_range_address, '10.0.3.0')
-        self.assertEqual(vlan.private_ipv4_range_size, '24')
+        self.assertEqual(vlan.private_ipv4_range_size, 24)
+        self.assertEqual(vlan.ipv6_range_size, 64)
+        self.assertEqual(vlan.ipv6_range_address, '2607:f480:1111:1153:0:0:0:0')
+        self.assertEqual(vlan.ipv4_gateway, '10.0.3.1')
+        self.assertEqual(vlan.ipv6_gateway, '2607:f480:1111:1153:0:0:0:1')
 
     def test_ex_wait_for_state(self):
         self.driver.ex_wait_for_state('NORMAL',

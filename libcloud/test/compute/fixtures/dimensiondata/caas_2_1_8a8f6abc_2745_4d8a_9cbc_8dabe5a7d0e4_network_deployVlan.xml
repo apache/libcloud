@@ -5,5 +5,5 @@ xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-13T05:58:00.905-05
 <responseCode>IN_PROGRESS</responseCode>
 <message>Request to deploy VLAN 'Production VLAN' has been accepted and is
 being processed.</message>
-<info name="vlanId" value="cee8df03-9117-44cc-baaa-631ffa099683"/>
+<info name="vlanId" value="0e56433f_d808_4669_821d_812769517ff8"/>
 </response>

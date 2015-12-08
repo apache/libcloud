@@ -751,16 +751,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if info.get('name') == 'vlanId':
                 vlan_id = info.get('value')
 
-        return DimensionDataVlan(
-            id=vlan_id,
-            name=name,
-            description=description,
-            network_domain=network_domain,
-            location=network_domain.location,
-            status=NodeState.RUNNING,
-            private_ipv4_range_address=private_ipv4_base_address,
-            private_ipv4_range_size=private_ipv4_prefix_size
-        )
+        return self.ex_get_vlan(vlan_id)
 
     def ex_get_vlan(self, vlan_id):
         """
@@ -941,8 +932,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             source_ip.set('address', rule.source.ip_address)
             source_ip.set('prefixSize', rule.source.ip_prefix_size)
-            source_port = ET.SubElement(source, 'port')
-            source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', rule.source.port_begin)
             if rule.source.port_end is not None:
                 source_port.set('end', rule.source.port_end)
         # Setup destination port rule
@@ -953,8 +945,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             dest_ip.set('address', rule.destination.ip_address)
             dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
-            dest_port = ET.SubElement(dest, 'port')
-            dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
         ET.SubElement(create_node, "enabled").text = 'true'
@@ -1577,6 +1570,7 @@ class DimensionDataNodeDriver(NodeDriver):
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
+        ip6_range = element.find(fixxpath('ipv6Range', TYPES_URN))
         network_domain_el = element.find(
             fixxpath('networkDomain', TYPES_URN))
         network_domain = self.ex_get_network_domain(
@@ -1588,7 +1582,17 @@ class DimensionDataNodeDriver(NodeDriver):
                                  TYPES_URN),
             network_domain=network_domain,
             private_ipv4_range_address=ip_range.get('address'),
-            private_ipv4_range_size=ip_range.get('prefixSize'),
+            private_ipv4_range_size=int(ip_range.get('prefixSize')),
+            ipv6_range_address=ip6_range.get('address'),
+            ipv6_range_size=int(ip6_range.get('prefixSize')),
+            ipv4_gateway=findtext(
+                element,
+                'ipv4GatewayAddress',
+                TYPES_URN),
+            ipv6_gateway=findtext(
+                element,
+                'ipv6GatewayAddress',
+                TYPES_URN),
             location=location,
             status=findtext(element, 'state', TYPES_URN))
 
