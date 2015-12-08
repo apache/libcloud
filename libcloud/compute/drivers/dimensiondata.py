@@ -152,8 +152,9 @@ class DimensionDataNodeDriver(NodeDriver):
         if ex_cpu_specification is not None:
             cpu = ET.SubElement(server_elm, "cpu")
             cpu.set('speed', ex_cpu_specification.performance)
-            cpu.set('count', ex_cpu_specification.cpu_count)
-            cpu.set('coresPerSocket', ex_cpu_specification.core_per_socket)
+            cpu.set('count', str(ex_cpu_specification.cpu_count))
+            cpu.set('coresPerSocket',
+                    str(ex_cpu_specification.cores_per_socket))
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
