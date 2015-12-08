@@ -28,6 +28,7 @@ from libcloud.common.dimensiondata import (DimensionDataConnection,
 from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
@@ -242,11 +243,12 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['location'] = location.id
+            params['datacenterId'] = location.id
 
         return self._to_base_images(
-            self.connection.request_api_1('base/imageWithDiskSpeed',
-                                          params=params)
+            self.connection.request_with_orgId_api_2(
+                'image/osImage',
+                params=params)
             .object)
 
     def list_sizes(self, location=None):
@@ -303,7 +305,7 @@ class DimensionDataNodeDriver(NodeDriver):
         images = []
         locations = self.list_locations()
 
-        for element in object.findall(fixxpath("image", SERVER_NS)):
+        for element in object.findall(fixxpath("osImage", TYPES_URN)):
             images.append(self._to_base_image(element, locations))
 
         return images
@@ -313,27 +315,25 @@ class DimensionDataNodeDriver(NodeDriver):
         # that parse <ServerImage> differently than <DeployedImage>.
         # DeployedImages are customer snapshot images, and ServerImages are
         # 'base' images provided by DimensionData
-        location_id = element.get('location')
+        location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
 
         extra = {
-            'description': findtext(element, 'description', SERVER_NS),
-            'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
+            'description': findtext(element, 'description', TYPES_URN),
+            'OS_type': findtext(element, 'operatingSystem/type', TYPES_URN),
             'OS_displayName': findtext(element, 'operatingSystem/displayName',
-                                       SERVER_NS),
-            'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
-            'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
-            'memory': findtext(element, 'memory', SERVER_NS),
-            'osStorage': findtext(element, 'osStorage', SERVER_NS),
-            'additionalStorage': findtext(element, 'additionalStorage',
-                                          SERVER_NS),
-            'created': findtext(element, 'created', SERVER_NS),
+                                       TYPES_URN),
+            'cpu': cpu_spec,
+            'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
+            'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
+            'created': findtext(element, 'createTime', TYPES_URN),
             'location': location,
         }
 
         return NodeImage(id=element.get('id'),
-                         name=str(findtext(element, 'name', SERVER_NS)),
+                         name=str(findtext(element, 'name', TYPES_URN)),
                          extra=extra,
                          driver=self.connection.driver)
 
@@ -1547,6 +1547,12 @@ class DimensionDataNodeDriver(NodeDriver):
                          driver=self)
         return l
 
+    def _to_cpu_spec(self, element):
+        return DimensionDataServerCpuSpecification(
+            cpu_count=int(element.get('count')),
+            cores_per_socket=int(element.get('coresPerSocket')),
+            performance=element.get('speed'))
+
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
 
@@ -1563,6 +1569,8 @@ class DimensionDataNodeDriver(NodeDriver):
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
 
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -1573,10 +1581,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
-            'cpuCount': int(findtext(
-                element,
-                'cpuCount',
-                TYPES_URN)),
+            'cpu': cpu_spec,
             'memoryMb': int(findtext(
                 element,
                 'memoryGb',
