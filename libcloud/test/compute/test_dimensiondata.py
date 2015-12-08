@@ -68,7 +68,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 3)
+        self.assertEqual(len(ret), 2)
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
@@ -110,6 +110,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                 False)  # above command should have thrown DimensionDataAPIException
         except DimensionDataAPIException:
             pass
+
+    def test_list_images(self):
+        images = self.driver.list_images()
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0].name, 'RedHat 6 64-bit 2 CPU')
+        self.assertEqual(images[0].id, 'c14b1a46-2428-44c1-9c1a-b20e6418d08c')
+        self.assertEqual(images[0].extra['location'].id, 'NA9')
+        self.assertEqual(images[0].extra['cpu'].cpu_count, 2)
+        self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
 
     def test_create_node_response(self):
         rootPw = NodeAuthPassword('pass123')
@@ -917,6 +926,11 @@ class DimensionDataMockHttp(MockHttp):
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
