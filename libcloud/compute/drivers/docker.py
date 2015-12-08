@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Docker (http://docker.io) driver.
-Created by Markos Gogoulos (mgogoulos@mist.io)
-"""
-
 import base64
 import datetime
 import shlex
@@ -252,16 +247,6 @@ class DockerNodeDriver(NodeDriver):
                 driver=self)]
         )
 
-    def list_nodes(self):
-        """
-        List running and stopped containers
-        show_all=False will show only running containers
-
-        :return:  list of node objects
-        :rtype: ``list`` of :class:`.Node`
-        """
-        return self.ex_list_nodes(True)
-
     def list_images(self, location=None):
         "Return list of images as NodeImage objects"
 
@@ -285,7 +270,7 @@ class DockerNodeDriver(NodeDriver):
 
         return images
 
-    def ex_list_nodes(self, show_all=True):
+    def list_nodes(self, show_all=True):
         """
         List running and stopped containers
         show_all=False will show only running containers
