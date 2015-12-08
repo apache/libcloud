@@ -24,6 +24,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
@@ -145,11 +146,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images(location=location)[0]
         network_domain = self.driver.ex_list_network_domains(location=location)[0]
         vlan = self.driver.ex_list_vlans(location=location)[0]
+        cpu = DimensionDataServerCpuSpecification(
+            cpu_count=4,
+            cores_per_socket=1,
+            performance='HIGHPERFORMANCE'
+        )
         node = self.driver.create_node(name='test2', image=image, auth=rootPw,
                                        ex_description='test2 node',
                                        ex_network_domain=network_domain,
                                        ex_vlan=vlan,
-                                       ex_is_started=False)
+                                       ex_is_started=False, ex_cpu_specification=cpu,
+                                       ex_memory_gb=4)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
