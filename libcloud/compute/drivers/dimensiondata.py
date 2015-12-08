@@ -301,42 +301,6 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
 
-    def _to_base_images(self, object):
-        images = []
-        locations = self.list_locations()
-
-        for element in object.findall(fixxpath("osImage", TYPES_URN)):
-            images.append(self._to_base_image(element, locations))
-
-        return images
-
-    def _to_base_image(self, element, locations):
-        # Eventually we will probably need multiple _to_image() functions
-        # that parse <ServerImage> differently than <DeployedImage>.
-        # DeployedImages are customer snapshot images, and ServerImages are
-        # 'base' images provided by DimensionData
-        location_id = element.get('datacenterId')
-        location = list(filter(lambda x: x.id == location_id,
-                               locations))[0]
-        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-
-        extra = {
-            'description': findtext(element, 'description', TYPES_URN),
-            'OS_type': findtext(element, 'operatingSystem/type', TYPES_URN),
-            'OS_displayName': findtext(element, 'operatingSystem/displayName',
-                                       TYPES_URN),
-            'cpu': cpu_spec,
-            'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
-            'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
-            'created': findtext(element, 'createTime', TYPES_URN),
-            'location': location,
-        }
-
-        return NodeImage(id=element.get('id'),
-                         name=str(findtext(element, 'name', TYPES_URN)),
-                         extra=extra,
-                         driver=self.connection.driver)
-
     def ex_start_node(self, node):
         """
         Powers on an existing deployed server
@@ -1370,6 +1334,60 @@ class DimensionDataNodeDriver(NodeDriver):
             (node.id, image_name, image_description)).object
         response_code = findtext(result, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_list_customer_images(self, location=None):
+        """
+        Return a list of customer imported images
+
+        :param location: The target location
+        :type  location: :class:`NodeLocation`
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        params = {}
+        if location is not None:
+            params['datacenterId'] = location.id
+
+        return self._to_base_images(
+            self.connection.request_with_orgId_api_2(
+                'image/customerImage',
+                params=params)
+            .object, 'customerImage')
+
+    def _to_base_images(self, object, el_name='osImage'):
+        images = []
+        locations = self.list_locations()
+
+        for element in object.findall(fixxpath(el_name, TYPES_URN)):
+            images.append(self._to_base_image(element, locations))
+
+        return images
+
+    def _to_base_image(self, element, locations):
+        # Eventually we will probably need multiple _to_image() functions
+        # that parse <ServerImage> differently than <DeployedImage>.
+        # DeployedImages are customer snapshot images, and ServerImages are
+        # 'base' images provided by DimensionData
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+        os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+        extra = {
+            'description': findtext(element, 'description', TYPES_URN),
+            'OS_type': os_el.get('type'),
+            'OS_displayName': os_el.get('displayName'),
+            'cpu': cpu_spec,
+            'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
+            'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
+            'created': findtext(element, 'createTime', TYPES_URN),
+            'location': location,
+        }
+
+        return NodeImage(id=element.get('id'),
+                         name=str(findtext(element, 'name', TYPES_URN)),
+                         extra=extra,
+                         driver=self.connection.driver)
 
     def _to_nat_rules(self, object, network_domain):
         rules = []
