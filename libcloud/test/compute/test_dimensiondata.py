@@ -480,9 +480,9 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_reconfigure_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.ex_reconfigure_node(node, 4, 4, 1,'HIGHPERFORMANCE')
+        result = self.driver.ex_reconfigure_node(node, 4, 4, 1, 'HIGHPERFORMANCE')
         self.assertTrue(result)
-    
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -966,8 +966,6 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
