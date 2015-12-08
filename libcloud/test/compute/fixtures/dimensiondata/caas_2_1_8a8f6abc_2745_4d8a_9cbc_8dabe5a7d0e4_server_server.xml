@@ -2,7 +2,7 @@
 <servers
 xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1"
 totalCount="2" pageSize="250">
-<Server id="e75ead52-692f-4314-8725-c8a4f4d13a87" datacenterId="NA9">
+<server id="e75ead52-692f-4314-8725-c8a4f4d13a87" datacenterId="NA9">
 <name>test2</name>
 <description>Test Description</description>
 <operatingSystem id="REDHAT664" displayName="REDHAT6/64"
@@ -30,8 +30,8 @@ state="NORMAL"/>
 <machineStatus name="vmwareToolsVersionStatus" value="CURRENT"/>
 <machineStatus name="vmwareToolsRunningStatus" value="RUNNING"/>
 <machineStatus name="vmwareToolsApiVersion" value="9354"/>
-</Server>
-<Server id="abadbc7e-9e10-46ca-9d4a-194bcc6b6c16" datacenterId="NA9">
+</server>
+<server id="abadbc7e-9e10-46ca-9d4a-194bcc6b6c16" datacenterId="NA9">
 <name>Production Web Server 2</name>
 <description>This server hosts our production web
 applications.</description>
@@ -60,8 +60,8 @@ state="NORMAL"/>
 <machineStatus name="vmwareToolsVersionStatus" value="CURRENT"/>
 <machineStatus name="vmwareToolsRunningStatus" value="RUNNING"/>
 <machineStatus name="vmwareToolsApiVersion" value="9354"/>
-</Server>
-<Server id="f07445f8-8ba3-4066-86c1-d6d0dd5518a1" datacenterId="NA5">
+</server>
+<server id="f07445f8-8ba3-4066-86c1-d6d0dd5518a1" datacenterId="NA5">
         <name>us-dc1.us.aperture.cloud</name>
         <description>Domain Controller 1 for us.aperture.cloud</description>
         <operatingSystem id="WIN2012S64" displayName="WIN2012S/64" family="WINDOWS"/>
@@ -77,5 +77,5 @@ state="NORMAL"/>
         <machineStatus name="vmwareToolsVersionStatus" value="NEED_UPGRADE"/>
         <machineStatus name="vmwareToolsRunningStatus" value="NOT_RUNNING"/>
         <machineStatus name="vmwareToolsApiVersion" value="9221"/>
-    </Server>
+    </server>
 </servers>

@@ -82,6 +82,8 @@ class DimensionDataNodeDriver(NodeDriver):
     def create_node(self, name, image, auth, ex_description,
                     ex_network=None, ex_network_domain=None,
                     ex_vlan=None,
+                    ex_memory_gb=None,
+                    ex_cpu_specification=None,
                     ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
@@ -111,6 +113,13 @@ class DimensionDataNodeDriver(NodeDriver):
                                         (required unless using network)
         :type       ex_vlan: :class:`DimensionDataVlan`
 
+        :keyword    ex_memory_gb:  The amount of memory in GB for the server
+        :type       ex_memory_gb: ``int``
+
+        :keyword    ex_cpu_specification: The spec of CPU to deploy (optional)
+        :type       ex_cpu_specification:
+            :class:`DimensionDataServerCpuSpecification`
+
         :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
         :type       ex_is_started:  ``bool``
@@ -135,6 +144,15 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "imageId").text = image.id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
+
+        if ex_memory_gb is not None:
+            ET.SubElement(server_elm, "memoryGb").text = str(ex_memory_gb)
+
+        if ex_cpu_specification is not None:
+            cpu = ET.SubElement(server_elm, "cpu")
+            cpu.set('speed', ex_cpu_specification.performance)
+            cpu.set('count', ex_cpu_specification.cpu_count)
+            cpu.set('coresPerSocket', ex_cpu_specification.core_per_socket)
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
@@ -1530,7 +1548,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return l
 
     def _to_nodes(self, object):
-        node_elements = object.findall(fixxpath('Server', TYPES_URN))
+        node_elements = object.findall(fixxpath('server', TYPES_URN))
 
         return [self._to_node(el) for el in node_elements]
 
