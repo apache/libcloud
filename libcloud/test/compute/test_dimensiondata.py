@@ -471,6 +471,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_update_node(node, 'my new name', 'a description', 2, 4048)
         self.assertTrue(result)
 
+    def test_ex_reconfigure_node(self):
+        node = self.driver.list_nodes()[0]
+        result = self.driver.ex_reconfigure_node(node, 4, 4, 1,'HIGHPERFORMANCE')
+        self.assertTrue(result)
+    
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -946,6 +951,16 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}reconfigureServer":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
