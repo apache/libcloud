@@ -120,6 +120,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(images[0].extra['cpu'].cpu_count, 2)
         self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
 
+    def test_ex_list_customer_images(self):
+        images = self.driver.ex_list_customer_images()
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0].name, 'ImportedCustomerImage')
+        self.assertEqual(images[0].id, '5234e5c7-01de-4411-8b6e-baeb8d91cf5d')
+        self.assertEqual(images[0].extra['location'].id, 'NA9')
+        self.assertEqual(images[0].extra['cpu'].cpu_count, 4)
+        self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
+
     def test_create_node_response(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
@@ -931,6 +940,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
