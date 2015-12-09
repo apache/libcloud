@@ -35,6 +35,29 @@ DRIVERS = {
     Provider.GOOGLE: ('libcloud.dns.drivers.google', 'GoogleDNSDriver'),
     Provider.SOFTLAYER:
     ('libcloud.dns.drivers.softlayer', 'SoftLayerDNSDriver'),
+    Provider.DIGITAL_OCEAN:
+    ('libcloud.dns.drivers.digitalocean', 'DigitalOceanDNSDriver'),
+    Provider.WORLDWIDEDNS:
+    ('libcloud.dns.drivers.worldwidedns', 'WorldWideDNSDriver'),
+    Provider.DNSIMPLE:
+    ('libcloud.dns.drivers.dnsimple', 'DNSimpleDNSDriver'),
+    Provider.POINTDNS:
+    ('libcloud.dns.drivers.pointdns', 'PointDNSDriver'),
+    Provider.VULTR:
+    ('libcloud.dns.drivers.vultr', 'VultrDNSDriver'),
+    Provider.LIQUIDWEB:
+    ('libcloud.dns.drivers.liquidweb', 'LiquidWebDNSDriver'),
+    Provider.ZONOMI:
+    ('libcloud.dns.drivers.zonomi', 'ZonomiDNSDriver'),
+    Provider.DURABLEDNS:
+    ('libcloud.dns.drivers.durabledns', 'DurableDNSDriver'),
+    Provider.AURORADNS:
+    ('libcloud.dns.drivers.auroradns', 'AuroraDNSDriver'),
+    Provider.GODADDY:
+    ('libcloud.dns.drivers.godaddy', 'GoDaddyDNSDriver'),
+    Provider.CLOUDFLARE:
+    ('libcloud.dns.drivers.cloudflare', 'CloudFlareDNSDriver'),
+
     # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),

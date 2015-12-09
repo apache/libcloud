@@ -1,5 +1,5 @@
-Google Storage Storage Driver Documentation
-===========================================
+Google Storage Driver Documentation
+===================================
 
 Current version of the Google Storage driver in Libcloud uses S3 compatibility
 layer and as such, only supports `XML API v1.0`_.

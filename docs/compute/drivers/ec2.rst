@@ -10,12 +10,13 @@ platform, Amazon Web Services (AWS).
     :width: 300
     :target: https://aws.amazon.com/ec2/
 
-It allows users to rent virtual servers in more than 8 regions such as:
+It allows users to rent virtual servers in more than 9 regions such as:
 
 * US East (Northern Virginia) Region
 * US West (Oregon) Region
 * US West (Northern California) Region
-* EU (Ireland) Region
+* EU West (Ireland) Region
+* EU Central (Frankfurt) Region
 * Asia Pacific (Singapore) Region
 * Asia Pacific (Sydney) Region
 * Asia Pacific (Tokyo) Region

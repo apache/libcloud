@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import with_statement
 
 import os
@@ -43,6 +44,21 @@ from libcloud.dns.base import DNSDriver
 from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
+
+REQUIRED_DEPENDENCIES = [
+    'pysphere'
+]
+
+for dependency in REQUIRED_DEPENDENCIES:
+    try:
+        __import__(dependency)
+    except ImportError:
+        msg = 'Missing required dependency: %s' % (dependency)
+        raise ImportError(msg)
+
+HEADER = ('.. NOTE: This file has been generated automatically using '
+          'generate_provider_feature_matrix_table.py script, don\'t manually '
+          'edit it')
 
 BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
@@ -205,7 +221,6 @@ def generate_providers_table(api):
         # Hack for providers which expose multiple classes and support multiple
         # API versions
         # TODO: Make entry per version
-
         if name.lower() == 'cloudsigma':
             from libcloud.compute.drivers.cloudsigma import \
                 CloudSigma_2_0_NodeDriver
@@ -214,6 +229,10 @@ def generate_providers_table(api):
             from libcloud.compute.drivers.opennebula import \
                 OpenNebula_3_8_NodeDriver
             cls = OpenNebula_3_8_NodeDriver
+        elif name.lower() == 'digital_ocean' and api.startswith('compute'):
+            from libcloud.compute.drivers.digitalocean import \
+                DigitalOcean_v2_NodeDriver
+            cls = DigitalOcean_v2_NodeDriver
 
         if name.lower() in IGNORED_PROVIDERS:
             continue
@@ -379,9 +398,11 @@ def generate_tables():
         supported_methods_path = pjoin(target_dir, file_name_2)
 
         with open(supported_providers_path, 'w') as fp:
+            fp.write(HEADER + '\n\n')
             fp.write(supported_providers)
 
         with open(supported_methods_path, 'w') as fp:
+            fp.write(HEADER + '\n\n')
             fp.write(supported_methods)
 
 generate_tables()

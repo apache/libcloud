@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dnsapi_result>
+   <is_ok>OK:</is_ok>
+   \n
+   <msg>This service is now the master for this zone. It will no longer listen for changes from 1.2.3.4.</msg>
+</dnsapi_result>

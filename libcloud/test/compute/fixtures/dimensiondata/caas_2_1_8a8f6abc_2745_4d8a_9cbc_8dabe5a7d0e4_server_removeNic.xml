@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-08T06:57:51.297-04:00/6857b7e6-e3a9-438c-87fe-ed2248c65c55">
+<operation>REMOVE_NIC</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to Remove NIC 5999db1d-725c-46ba-9d4e-d33991e61ab1 for
+VLAN 'Subsystem VLAN' from Server 'Production Mail Server' has been accepted
+and is being processed.</message>
+</response>

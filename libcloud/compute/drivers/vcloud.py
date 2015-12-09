@@ -335,12 +335,10 @@ class VCloudConnection(ConnectionUserAndKey):
 
     def _get_auth_token(self):
         if not self.token:
-            conn = self.conn_classes[self.secure](self.host,
-                                                  self.port)
-            conn.request(method='POST', url='/api/v0.8/login',
-                         headers=self._get_auth_headers())
+            self.connection.request(method='POST', url='/api/v0.8/login',
+                                    headers=self._get_auth_headers())
 
-            resp = conn.getresponse()
+            resp = self.connection.getresponse()
             headers = dict(resp.getheaders())
             body = ET.XML(resp.read())
 
@@ -581,9 +579,9 @@ class VCloudNodeDriver(NodeDriver):
             )
             vapps = [
                 (i.get('name'), i.get('href'))
-                for i in elms
-                if i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml'
-                and i.get('name')
+                for i in elms if
+                i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml' and
+                i.get('name')
             ]
 
             for vapp_name, vapp_href in vapps:
@@ -829,12 +827,10 @@ class VCloud_1_5_Connection(VCloudConnection):
     def _get_auth_token(self):
         if not self.token:
             # Log In
-            conn = self.conn_classes[self.secure](self.host,
-                                                  self.port)
-            conn.request(method='POST', url='/api/sessions',
-                         headers=self._get_auth_headers())
+            self.connection.request(method='POST', url='/api/sessions',
+                                    headers=self._get_auth_headers())
 
-            resp = conn.getresponse()
+            resp = self.connection.getresponse()
             headers = dict(resp.getheaders())
 
             # Set authorization token
@@ -852,9 +848,10 @@ class VCloud_1_5_Connection(VCloudConnection):
                      'application/vnd.vmware.vcloud.orgList+xml')).get('href')
             )
 
-            conn.request(method='GET', url=org_list_url,
-                         headers=self.add_default_headers({}))
-            body = ET.XML(conn.getresponse().read())
+            self.connection.set_http_proxy(self.proxy_url)
+            self.connection.request(method='GET', url=org_list_url,
+                                    headers=self.add_default_headers({}))
+            body = ET.XML(self.connection.getresponse().read())
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')

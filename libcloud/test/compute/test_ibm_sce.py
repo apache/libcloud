@@ -44,7 +44,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         except InvalidCredsError:
             e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, InvalidCredsError))
-            self.assertEqual(e.value, '401: Unauthorized')
+            self.assertTrue('Unauthorized' in e.value)
         else:
             self.fail('test should have thrown')
 

@@ -1,0 +1,52 @@
+{
+ "kind": "compute#regionList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions",
+ "id": "projects/project_name/regions",
+ "items": [
+  {
+   "kind": "compute#region",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+   "id": "1000",
+   "creationTimestamp": "2014-04-11T13:47:12.495-07:00",
+   "name": "us-central1",
+   "description": "us-central1",
+   "status": "UP",
+   "zones": [
+    "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+    "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b"
+   ],
+   "quotas": [
+    {
+     "metric": "CPUS",
+     "limit": 24.0,
+     "usage": 1.0
+    },
+    {
+     "metric": "DISKS_TOTAL_GB",
+     "limit": 5120.0,
+     "usage": 60.0
+    },
+    {
+     "metric": "STATIC_ADDRESSES",
+     "limit": 7.0,
+     "usage": 1.0
+    },
+    {
+     "metric": "IN_USE_ADDRESSES",
+     "limit": 23.0,
+     "usage": 1.0
+    },
+    {
+     "metric": "SSD_TOTAL_GB",
+     "limit": 1024.0,
+     "usage": 0.0
+    },
+    {
+     "metric": "LOCAL_SSD_TOTAL_GB",
+     "limit": 1500.0,
+     "usage": 0.0
+    }
+   ]
+  }
+ ]
+}

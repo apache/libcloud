@@ -53,7 +53,7 @@ Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Rackspace recently announced new 'performance' flavors of their cloud servers.
-The example bellow shows how to use this new flavors.
+The example below shows how to use this new flavors.
 
 Keep in mind that this new flavors are currently only supported in the following
 regions: ``iad``, ``ord``, ``lon``.

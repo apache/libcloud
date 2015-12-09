@@ -1,0 +1,13 @@
+{
+  "record": {
+    "name": "www",
+    "ttl": 3600,
+    "created_at": "2010-07-01T08:01:18Z",
+    "updated_at": "2010-10-21T15:47:47Z",
+    "domain_id": 1,
+    "id": 123,
+    "content": "example.com",
+    "record_type": "CNAME",
+    "prio": null
+  }
+}

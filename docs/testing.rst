@@ -8,7 +8,7 @@ Prerequisites
 
 .. note::
 
-    If you use the tox method described bellow you don't need to install any
+    If you use the tox method described below you don't need to install any
     dependencies, because tox automatically installs them for you in an virtual
     environment.
 
@@ -77,3 +77,16 @@ To generate the test coverage run the following command:
 
 When it completes you should see a new ``coverage_html_report`` directory which
 contains the test coverage.
+
+Running tests inside a Docker container
+---------------------------------------
+
+To run the tests on all the supported Python versions (minus Python 2.5), run
+the following command:
+
+.. sourcecode:: bash
+
+    contrib/run_tests.sh
+
+This script creates a Docker container with all the supported Python versions
+and runs tests inside the container using ``tox``.

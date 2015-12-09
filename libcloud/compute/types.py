@@ -54,12 +54,12 @@ class Provider(object):
     :cvar ECP: Enomaly
     :cvar IBM: IBM Developer Cloud
     :cvar OPENNEBULA: OpenNebula.org
-    :cvar DREAMHOST: DreamHost Private Server
     :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar CLOUDSIGMA: CloudSigma
     :cvar NIMBUS: Nimbus
     :cvar BLUEBOX: Bluebox
     :cvar OPSOURCE: Opsource Cloud
+    :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar NINEFOLD: Ninefold
     :cvar TERREMARK: Terremark
     :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
@@ -78,7 +78,10 @@ class Provider(object):
     :cvar OUTSCALE_INC: Outscale INC driver.
     :cvar PROFIT_BRICKS: ProfitBricks driver.
     :cvar VULTR: vultr driver.
+    :cvar AZURE: Azure driver.
+    :cvar AURORACOMPUTE: Aurora Compute driver.
     """
+    AZURE = 'azure'
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'
@@ -94,7 +97,6 @@ class Provider(object):
     ECP = 'ecp'
     IBM = 'ibm'
     OPENNEBULA = 'opennebula'
-    DREAMHOST = 'dreamhost'
     ELASTICHOSTS = 'elastichosts'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'
@@ -102,6 +104,7 @@ class Provider(object):
     BLUEBOX = 'bluebox'
     GANDI = 'gandi'
     OPSOURCE = 'opsource'
+    DIMENSIONDATA = 'dimensiondata'
     OPENSTACK = 'openstack'
     SKALICLOUD = 'skalicloud'
     SERVERLOVE = 'serverlove'
@@ -126,10 +129,16 @@ class Provider(object):
     VSPHERE = 'vsphere'
     PROFIT_BRICKS = 'profitbricks'
     VULTR = 'vultr'
+    AURORACOMPUTE = 'aurora_compute'
+    CLOUDWATT = 'cloudwatt'
+    PACKET = 'packet'
+    RUNABOVE = 'runabove'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
+    CLOUDWATT = 'cloudwatt'
     KILI = 'kili'
+    ONAPP = 'onapp'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
@@ -189,7 +198,6 @@ class NodeState(object):
     :cvar TERMINATED: Node is terminated. This node can't be started later on.
     :cvar STOPPED: Node is stopped. This node can be started later on.
     :cvar PENDING: Node is pending.
-    :cvar STOPPED: Node is stopped.
     :cvar SUSPENDED: Node is suspended.
     :cvar ERROR: Node is an error state. Usually no operations can be performed
                  on the node once it ends up in the error state.
@@ -219,6 +227,33 @@ class NodeState(object):
     @classmethod
     def fromstring(cls, value):
         return getattr(cls, value.upper(), None)
+
+
+class StorageVolumeState(object):
+    """
+    Standard states of a StorageVolume
+    """
+    AVAILABLE = "available"
+    ERROR = "error"
+    INUSE = "in_use"
+    CREATING = "creating"
+    DELETING = "deleting"
+    DELETED = "deleted"
+    BACKUP = "backup"
+    ATTACHING = "attaching"
+    UNKNOWN = "unknown"
+
+
+class VolumeSnapshotState(object):
+    """
+    Standard states of VolumeSnapshots
+    """
+    AVAILABLE = 0
+    ERROR = 1
+    CREATING = 2
+    DELETING = 3
+    RESTORING = 4
+    UNKNOWN = 5
 
 
 class Architecture(object):

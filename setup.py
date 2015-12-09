@@ -23,17 +23,26 @@ from glob import glob
 from os.path import splitext, basename, join as pjoin
 
 try:
-    import epydoc
+    import epydoc  # NOQA
     has_epydoc = True
 except ImportError:
     has_epydoc = False
 
-import libcloud.utils.misc
+import libcloud.utils
 from libcloud.utils.dist import get_packages, get_data_files
-from libcloud.utils.py3 import unittest2_required
 
-libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
+libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
+# Different versions of python have different requirements.  We can't use
+# libcloud.utils.py3 here because it relies on backports dependency being
+# installed / available
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+PY2_pre_25 = PY2 and sys.version_info < (2, 5)
+PY2_pre_26 = PY2 and sys.version_info < (2, 6)
+PY2_pre_27 = PY2 and sys.version_info < (2, 7)
+PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
+PY3_pre_32 = PY3 and sys.version_info < (3, 2)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -47,18 +56,22 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
 TEST_REQUIREMENTS = [
-    'backports.ssl_match_hostname',
     'mock'
 ]
 
-if sys.version_info <= (2, 4):
+if PY2_pre_279 or PY3_pre_32:
+    TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
+
+if PY2_pre_27:
+    unittest2_required = True
+else:
+    unittest2_required = False
+
+if PY2_pre_25:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
-
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 
 def read_version_string():
@@ -84,6 +97,8 @@ def forbid_publish():
 class TestCommand(Command):
     description = "run test suite"
     user_options = []
+    unittest_TestLoader = TestLoader
+    unittest_TextTestRunner = TextTestRunner
 
     def initialize_options(self):
         THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
@@ -108,8 +123,9 @@ class TestCommand(Command):
 
         if unittest2_required:
             try:
-                import unittest2
-                unittest2
+                from unittest2 import TextTestRunner, TestLoader
+                self.unittest_TestLoader = TestLoader
+                self.unittest_TextTestRunner = TextTestRunner
             except ImportError:
                 print('Python version: %s' % (sys.version))
                 print('Missing "unittest2" library. unittest2 is library is '
@@ -138,7 +154,7 @@ class TestCommand(Command):
             print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
-        if pre_python26:
+        if PY2_pre_26:
             missing = []
             # test for dependencies
             try:
@@ -163,12 +179,24 @@ class TestCommand(Command):
                 testfiles.append('.'.join(
                     [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
-        tests = TestLoader().loadTestsFromNames(testfiles)
+        # Test loader simply throws "'module' object has no attribute" error
+        # if there is an issue with the test module so we manually try to
+        # import each module so we get a better and more friendly error message
+        for test_file in testfiles:
+            try:
+                __import__(test_file)
+            except Exception:
+                e = sys.exc_info()[1]
+                print('Failed to import test module "%s": %s' % (test_file,
+                                                                 str(e)))
+                raise e
+
+        tests = self.unittest_TestLoader().loadTestsFromNames(testfiles)
 
         for test_module in DOC_TEST_MODULES:
             tests.addTests(doctest.DocTestSuite(test_module))
 
-        t = TextTestRunner(verbosity=2)
+        t = self.unittest_TextTestRunner(verbosity=2)
         res = t.run(tests)
         return not res.wasSuccessful()
 
@@ -222,9 +250,12 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
-install_requires = ['backports.ssl_match_hostname']
-if pre_python26:
+install_requires = []
+if PY2_pre_26:
     install_requires.extend(['ssl', 'simplejson'])
+
+if PY2_pre_279 or PY3_pre_32:
+    install_requires.append('backports.ssl_match_hostname')
 
 setup(
     name='apache-libcloud',
@@ -251,6 +282,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
+        'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
@@ -265,4 +297,7 @@ setup(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: Implementation :: PyPy'])
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: Implementation :: CPython'
+        'Programming Language :: Python :: Implementation :: PyPy']
+    )

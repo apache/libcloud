@@ -27,6 +27,8 @@ __all__ = [
     "get_driver"]
 
 DRIVERS = {
+    Provider.AZURE:
+    ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2_US_EAST:
@@ -99,8 +101,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.ibm_sce', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
     ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
-    Provider.DREAMHOST:
-    ('libcloud.compute.drivers.dreamhost', 'DreamhostNodeDriver'),
     Provider.BRIGHTBOX:
     ('libcloud.compute.drivers.brightbox', 'BrightboxNodeDriver'),
     Provider.NIMBUS:
@@ -111,6 +111,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
     Provider.OPSOURCE:
     ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
+    Provider.DIMENSIONDATA:
+    ('libcloud.compute.drivers.dimensiondata', 'DimensionDataNodeDriver'),
     Provider.OPENSTACK:
     ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
     Provider.NINEFOLD:
@@ -153,6 +155,16 @@ DRIVERS = {
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
+    Provider.AURORACOMPUTE:
+    ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
+    Provider.CLOUDWATT:
+    ('libcloud.compute.drivers.cloudwatt', 'CloudwattNodeDriver'),
+    Provider.PACKET:
+    ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
+    Provider.ONAPP:
+    ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
+    Provider.RUNABOVE:
+    ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

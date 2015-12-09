@@ -14,10 +14,11 @@
 
 """
 libcloud driver for the Host Virtual Inc. (VR) API
-Home page http://www.vr.org/
+Home page https://www.hostvirtual.com/
 """
 
 import time
+import re
 
 try:
     import simplejson as json
@@ -46,7 +47,7 @@ NODE_STATE_MAP = {
     'STOPPED': NodeState.STOPPED
 }
 
-DEFAULT_NODE_LOCATION_ID = 4
+DEFAULT_NODE_LOCATION_ID = 21
 
 
 class HostVirtualComputeResponse(HostVirtualResponse):
@@ -60,7 +61,7 @@ class HostVirtualComputeConnection(HostVirtualConnection):
 class HostVirtualNodeDriver(NodeDriver):
     type = Provider.HOSTVIRTUAL
     name = 'HostVirtual'
-    website = 'http://www.vr.org'
+    website = 'http://www.hostvirtual.com'
     connectionCls = HostVirtualComputeConnection
     features = {'create_node': ['ssh_key', 'password']}
 
@@ -69,25 +70,17 @@ class HostVirtualNodeDriver(NodeDriver):
         super(HostVirtualNodeDriver, self).__init__(key=key, secure=secure,
                                                     host=host, port=port)
 
-    def _to_node(self, data):
-        state = NODE_STATE_MAP[data['status']]
-        public_ips = []
-        private_ips = []
-        extra = {}
-
-        if 'plan_id' in data:
-            extra['size'] = data['plan_id']
-        if 'os_id' in data:
-            extra['image'] = data['os_id']
-        if 'location_id' in data:
-            extra['location'] = data['location_id']
-        if 'ip' in data:
-            public_ips.append(data['ip'])
-
-        node = Node(id=data['mbpkgid'], name=data['fqdn'], state=state,
-                    public_ips=public_ips, private_ips=private_ips,
-                    driver=self.connection.driver, extra=extra)
-        return node
+    def list_nodes(self):
+        try:
+            result = self.connection.request(
+                API_ROOT + '/cloud/servers/').object
+        except HostVirtualException:
+            return []
+        nodes = []
+        for value in result:
+            node = self._to_node(value)
+            nodes.append(node)
+        return nodes
 
     def list_locations(self):
         result = self.connection.request(API_ROOT + '/cloud/locations/').object
@@ -102,11 +95,11 @@ class HostVirtualNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         params = {}
-        if location:
+        if location is not None:
             params = {'location': location.id}
         result = self.connection.request(
             API_ROOT + '/cloud/sizes/',
-            data=json.dumps(params)).object
+            params=params).object
         sizes = []
         for size in result:
             n = NodeSize(id=size['plan_id'],
@@ -132,59 +125,44 @@ class HostVirtualNodeDriver(NodeDriver):
             images.append(i)
         return images
 
-    def list_nodes(self):
-        result = self.connection.request(API_ROOT + '/cloud/servers/').object
-        nodes = []
-        for value in result:
-            node = self._to_node(value)
-            nodes.append(node)
-        return nodes
-
-    def _wait_for_node(self, node_id, timeout=30, interval=5.0):
+    def create_node(self, name, image, size, **kwargs):
+        """Creates a node
+        Example of node creation with ssh key deployed
+        >>> from libcloud.compute.base import NodeAuthSSHKey
+        >>> key = open('/home/user/.ssh/id_rsa.pub').read()
+        >>> auth = NodeAuthSSHKey(pubkey=key)
+        >>> from libcloud.compute.providers import get_driver;
+        >>> driver = get_driver('hostvirtual')
+        >>> conn = driver('API_KEY')
+        >>> image = conn.list_images()[1]
+        >>> size = conn.list_sizes()[0]
+        >>> location = conn.list_locations()[1]
+        >>> name = 'markos-dev'
+        >>> node = conn.create_node(name, image, size, auth=auth,
+                                    location=location)
         """
-        :param node_id: ID of the node to wait for.
-        :type node_id: ``int``
 
-        :param timeout: Timeout (in seconds).
-        :type timeout: ``int``
-
-        :param interval: How long to wait (in seconds) between each attempt.
-        :type interval: ``float``
-        """
-        # poll until we get a node
-        for i in range(0, timeout, int(interval)):
-            try:
-                node = self.ex_get_node(node_id)
-                return node
-            except HostVirtualException:
-                time.sleep(interval)
-
-        raise HostVirtualException(412, 'Timedout on getting node details')
-
-    def create_node(self, **kwargs):
         dc = None
-
-        size = kwargs['size']
-        image = kwargs['image']
 
         auth = self._get_and_check_auth(kwargs.get('auth'))
 
-        params = {'plan': size.name}
-
-        dc = DEFAULT_NODE_LOCATION_ID
-        if 'location' in kwargs:
-            dc = kwargs['location'].id
+        if not self._is_valid_fqdn(name):
+            raise HostVirtualException(
+                500, "Name should be a valid FQDN (e.g, hostname.example.com)")
 
         # simply order a package first
-        result = self.connection.request(API_ROOT + '/cloud/buy/',
-                                         data=json.dumps(params),
-                                         method='POST').object
+        pkg = self.ex_order_package(size)
+
+        if 'location' in kwargs:
+            dc = kwargs['location'].id
+        else:
+            dc = DEFAULT_NODE_LOCATION_ID
 
         # create a stub node
         stub_node = self._to_node({
-            'mbpkgid': result['id'],
+            'mbpkgid': pkg['id'],
             'status': 'PENDING',
-            'fqdn': kwargs['name'],
+            'fqdn': name,
             'plan_id': size.id,
             'os_id': image.id,
             'location_id': dc
@@ -193,7 +171,6 @@ class HostVirtualNodeDriver(NodeDriver):
         # provisioning a server using the stub node
         self.ex_provision_node(node=stub_node, auth=auth)
         node = self._wait_for_node(stub_node.id)
-
         if getattr(auth, 'generated', False):
             node.extra['password'] = auth.password
 
@@ -219,6 +196,73 @@ class HostVirtualNodeDriver(NodeDriver):
             method='POST').object
 
         return bool(result)
+
+    def ex_list_packages(self):
+        """
+        List the server packages.
+
+        """
+
+        try:
+            result = self.connection.request(
+                API_ROOT + '/cloud/packages/').object
+        except HostVirtualException:
+            return []
+        pkgs = []
+        for value in result:
+            pkgs.append(value)
+        return pkgs
+
+    def ex_order_package(self, size):
+        """
+        Order a server package.
+
+        :param      size:
+        :type       node: :class:`NodeSize`
+
+        :rtype: ``str``
+        """
+
+        params = {'plan': size.name}
+        pkg = self.connection.request(API_ROOT + '/cloud/buy/',
+                                      data=json.dumps(params),
+                                      method='POST').object
+
+        return pkg
+
+    def ex_cancel_package(self, node):
+        """
+        Cancel a server package.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``str``
+        """
+
+        params = {'mbpkgid': node.id}
+        result = self.connection.request(API_ROOT + '/cloud/cancel/',
+                                         data=json.dumps(params),
+                                         method='POST').object
+
+        return result
+
+    def ex_unlink_package(self, node):
+        """
+        Unlink a server package from location.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``str``
+        """
+
+        params = {'mbpkgid': node.id}
+        result = self.connection.request(API_ROOT + '/cloud/unlink/',
+                                         data=json.dumps(params),
+                                         method='POST').object
+
+        return result
 
     def ex_get_node(self, node_id):
         """
@@ -316,12 +360,16 @@ class HostVirtualNodeDriver(NodeDriver):
             params['password'] = password
 
         if not ssh_key and not password:
-            raise HostVirtualException(500, "Need SSH key or Root password")
+            raise HostVirtualException(
+                500, "SSH key or Root password is required")
 
-        result = self.connection.request(API_ROOT + '/cloud/server/build',
-                                         data=json.dumps(params),
-                                         method='POST').object
-        return bool(result)
+        try:
+            result = self.connection.request(API_ROOT + '/cloud/server/build',
+                                             data=json.dumps(params),
+                                             method='POST').object
+            return bool(result)
+        except HostVirtualException:
+            self.ex_cancel_package(node)
 
     def ex_delete_node(self, node):
         """
@@ -339,3 +387,60 @@ class HostVirtualNodeDriver(NodeDriver):
             method='POST').object
 
         return bool(result)
+
+    def _to_node(self, data):
+        state = NODE_STATE_MAP[data['status']]
+        public_ips = []
+        private_ips = []
+        extra = {}
+
+        if 'plan_id' in data:
+            extra['size'] = data['plan_id']
+        if 'os_id' in data:
+            extra['image'] = data['os_id']
+        if 'fqdn' in data:
+            extra['fqdn'] = data['fqdn']
+        if 'location_id' in data:
+            extra['location'] = data['location_id']
+        if 'ip' in data:
+            public_ips.append(data['ip'])
+
+        node = Node(id=data['mbpkgid'], name=data['fqdn'], state=state,
+                    public_ips=public_ips, private_ips=private_ips,
+                    driver=self.connection.driver, extra=extra)
+        return node
+
+    def _wait_for_node(self, node_id, timeout=30, interval=5.0):
+        """
+        :param node_id: ID of the node to wait for.
+        :type node_id: ``int``
+
+        :param timeout: Timeout (in seconds).
+        :type timeout: ``int``
+
+        :param interval: How long to wait (in seconds) between each attempt.
+        :type interval: ``float``
+
+        :return: Node representing the newly built server
+        :rtype: :class:`Node`
+        """
+        # poll until we get a node
+        for i in range(0, timeout, int(interval)):
+            try:
+                node = self.ex_get_node(node_id)
+                return node
+            except HostVirtualException:
+                time.sleep(interval)
+
+        raise HostVirtualException(412, 'Timeout on getting node details')
+
+    def _is_valid_fqdn(self, fqdn):
+        if len(fqdn) > 255:
+            return False
+        if fqdn[-1] == ".":
+            fqdn = fqdn[:-1]
+        valid = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+        if len(fqdn.split(".")) > 1:
+            return all(valid.match(x) for x in fqdn.split("."))
+        else:
+            return False

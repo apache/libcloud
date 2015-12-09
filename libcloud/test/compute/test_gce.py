@@ -29,29 +29,24 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           GCETargetHttpProxy, GCEUrlMap,
                                           GCEZone)
 from libcloud.common.google import (GoogleBaseAuthConnection,
-                                    GoogleInstalledAppAuthConnection,
-                                    GoogleBaseConnection,
                                     ResourceNotFoundError, ResourceExistsError)
-from libcloud.test.common.test_google import GoogleAuthMockHttp
+from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttpTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
 
-class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
+class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     """
     Google Compute Engine Test Class.
     """
     # Mock out a few specific calls that interact with the user, system or
     # environment.
-    GoogleBaseConnection._get_token_info_from_file = lambda x: None
-    GoogleBaseConnection._write_token_info_to_file = lambda x: None
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
     GCEZone._now = lambda x: datetime.datetime(2013, 6, 26, 19, 0, 0)
     datacenter = 'us-central1-a'
 
@@ -120,6 +115,45 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         node = self.driver.ex_get_node('node-name', 'us-central1-a')
         self.assertTrue(self.driver.ex_get_serial_output(node),
                         'This is some serial\r\noutput for you.')
+
+    def test_ex_list(self):
+        d = self.driver
+        # Test the default case for all list methods
+        # (except list_volume_snapshots, which requires an arg)
+        for list_fn in (d.ex_list_addresses,
+                        d.ex_list_backendservices,
+                        d.ex_list_disktypes,
+                        d.ex_list_firewalls,
+                        d.ex_list_forwarding_rules,
+                        d.ex_list_healthchecks,
+                        d.ex_list_networks,
+                        d.ex_list_project_images,
+                        d.ex_list_regions,
+                        d.ex_list_routes,
+                        d.ex_list_snapshots,
+                        d.ex_list_targethttpproxies,
+                        d.ex_list_targetinstances,
+                        d.ex_list_targetpools,
+                        d.ex_list_urlmaps,
+                        d.ex_list_zones,
+                        d.list_images,
+                        d.list_locations,
+                        d.list_nodes,
+                        d.list_sizes,
+                        d.list_volumes):
+            full_list = [item.name for item in list_fn()]
+            li = d.ex_list(list_fn)
+            iter_list = [item.name for sublist in li for item in sublist]
+            self.assertEqual(full_list, iter_list)
+
+        # Test paging & filtering with a single list function as they require
+        # additional test fixtures
+        list_fn = d.ex_list_regions
+        for count, sublist in zip((2, 1), d.ex_list(list_fn).page(2)):
+            self.assertTrue(len(sublist) == count)
+        for sublist in d.ex_list(list_fn).filter('name eq us-central1'):
+            self.assertTrue(len(sublist) == 1)
+            self.assertEqual(sublist[0].name, 'us-central1')
 
     def test_ex_list_addresses(self):
         address_list = self.driver.ex_list_addresses()
@@ -190,8 +224,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
-        self.assertEqual(len(locations), 5)
-        self.assertEqual(locations[0].name, 'europe-west1-a')
+        self.assertEqual(len(locations), 6)
+        self.assertEqual(locations[0].name, 'asia-east1-a')
 
     def test_ex_list_routes(self):
         routes = self.driver.ex_list_routes()
@@ -268,7 +302,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_get_license(self):
         license = self.driver.ex_get_license('suse-cloud', 'sles-12')
-        self.assertTrue(license.name, 'sles-12')
+        self.assertEqual(license.name, 'sles-12')
         self.assertTrue(license.charges_use_fee)
 
     def test_list_disktypes(self):
@@ -306,8 +340,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_list_zones(self):
         zones = self.driver.ex_list_zones()
-        self.assertEqual(len(zones), 5)
-        self.assertEqual(zones[0].name, 'europe-west1-a')
+        self.assertEqual(len(zones), 6)
+        self.assertEqual(zones[0].name, 'asia-east1-a')
 
     def test_ex_create_address_global(self):
         address_name = 'lcaddressglobal'
@@ -478,9 +512,51 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(node_data['disks'][0]['boot'])
         self.assertIsInstance(node_data['serviceAccounts'], list)
         self.assertIsInstance(node_data['serviceAccounts'][0], dict)
-        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertEqual(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
-        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 1)
+        self.assertEqual(len(node_data['serviceAccounts'][0]['scopes']), 1)
+
+    def test_create_node_network_opts(self):
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        image = self.driver.ex_get_image('debian-7')
+        zone = self.driver.ex_get_zone('us-central1-a')
+        network = self.driver.ex_get_network('lcnetwork')
+        address = self.driver.ex_get_address('lcaddress')
+        ex_nic_gce_struct = [
+            {
+                "network": "global/networks/lcnetwork",
+                "accessConfigs": [
+                    {
+                        "name": "lcnetwork-test",
+                        "type": "ONE_TO_ONE_NAT"
+                    }
+                ]
+            }
+        ]
+        # Test using default
+        node = self.driver.create_node(node_name, size, image)
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+
+        # Test using just the network
+        node = self.driver.create_node(node_name, size, image, location=zone,
+                                       ex_network=network)
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+
+        # Test using just the struct
+        node = self.driver.create_node(node_name, size, image, location=zone,
+                                       ex_nic_gce_struct=ex_nic_gce_struct)
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+
+        # Test both address and struct, should fail
+        self.assertRaises(ValueError, self.driver.create_node, node_name,
+                          size, image, location=zone, external_ip=address,
+                          ex_nic_gce_struct=ex_nic_gce_struct)
+
+        # Test both ex_network and struct, should fail
+        self.assertRaises(ValueError, self.driver.create_node, node_name,
+                          size, image, location=zone, ex_network=network,
+                          ex_nic_gce_struct=ex_nic_gce_struct)
 
     def test_create_node_disk_opts(self):
         node_name = 'node-name'
@@ -545,9 +621,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                                                ex_service_accounts=ex_sa)
         self.assertIsInstance(node_data['serviceAccounts'], list)
         self.assertIsInstance(node_data['serviceAccounts'][0], dict)
-        self.assertTrue(node_data['serviceAccounts'][0]['email'], 'default')
+        self.assertEqual(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
-        self.assertTrue(len(node_data['serviceAccounts'][0]['scopes']), 3)
+        self.assertEqual(len(node_data['serviceAccounts'][0]['scopes']), 3)
         self.assertTrue('https://www.googleapis.com/auth/devstorage.read_only'
                         in node_data['serviceAccounts'][0]['scopes'])
         self.assertTrue('https://www.googleapis.com/auth/compute.readonly'
@@ -600,8 +676,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         vals = [x['value'] for x in out_md['items']]
         keys.sort()
         vals.sort()
-        self.assertTrue(keys, ['k0', 'k1', 'k2'])
-        self.assertTrue(vals, ['v0', 'v1', 'v2'])
+        self.assertEqual(keys, ['k0', 'k1', 'k2'])
+        self.assertEqual(vals, ['v0', 'v1', 'v2'])
 
         in_md = {'items': [{'key': 'k0', 'value': 'v0'},
                            {'key': 'k1', 'value': 'v1'}]}
@@ -852,8 +928,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_destroy_address_global(self):
         address = self.driver.ex_get_address('lcaddressglobal', 'global')
-        self.assertTrue(address.name, 'lcaddressglobal')
-        self.assertTrue(address.region, 'global')
+        self.assertEqual(address.name, 'lcaddressglobal')
+        self.assertEqual(address.region, 'global')
         destroyed = address.destroy()
         self.assertTrue(destroyed)
 
@@ -892,9 +968,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                      obsolete=obs_ts,
                                      deleted=del_ts)
         self.assertTrue(deprecated)
-        self.assertTrue(image.extra['deprecated']['deprecated'], dep_ts)
-        self.assertTrue(image.extra['deprecated']['obsolete'], obs_ts)
-        self.assertTrue(image.extra['deprecated']['deleted'], del_ts)
+        self.assertEqual(image.extra['deprecated']['deprecated'], dep_ts)
+        self.assertEqual(image.extra['deprecated']['obsolete'], obs_ts)
+        self.assertEqual(image.extra['deprecated']['deleted'], del_ts)
 
     def test_ex_destroy_firewall(self):
         firewall = self.driver.ex_get_firewall('lcfirewall')
@@ -1043,7 +1119,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_get_image_license(self):
         image = self.driver.ex_get_image('sles-12-v20141023')
         self.assertTrue('licenses' in image.extra)
-        self.assertTrue(image.extra['licenses'][0].name, 'sles-12')
+        self.assertEqual(image.extra['licenses'][0].name, 'sles-12')
         self.assertTrue(image.extra['licenses'][0].charges_use_fee)
 
     def test_ex_get_image(self):
@@ -1109,7 +1185,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('items' in project.extra['commonInstanceMetadata'])
         self.assertTrue('usageExportLocation' in project.extra)
         self.assertTrue('bucketName' in project.extra['usageExportLocation'])
-        self.assertTrue(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
+        self.assertEqual(project.extra['usageExportLocation']['bucketName'], 'gs://graphite-usage-reports')
 
     def test_ex_add_access_config(self):
         self.assertRaises(ValueError, self.driver.ex_add_access_config,
@@ -1398,8 +1474,10 @@ class GCEMockHttp(MockHttpTestCase):
         if method == 'POST':
             body = self.fixtures.load('global_backendServices_post.json')
         else:
+            backend_name = getattr(self.test, 'backendservices_mock',
+                                   'web-service')
             body = self.fixtures.load('global_backendServices-%s.json' %
-                                      self.test.backendservices_mock)
+                                      backend_name)
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_backendServices_no_backends(self, method, url, body, headers):
@@ -1987,8 +2065,12 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions(self, method, url, body, headers):
-        body = self.fixtures.load(
-            'regions.json')
+        if 'pageToken' in url or 'filter' in url:
+            body = self.fixtures.load('regions-paged-2.json')
+        elif 'maxResults' in url:
+            body = self.fixtures.load('regions-paged-1.json')
+        else:
+            body = self.fixtures.load('regions.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_addresses(self, method, url, body, headers):
@@ -2147,6 +2229,10 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('zones.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_asia_east_1a(self, method, url, body, headers):
+        body = self.fixtures.load('zones_asia-east1-a.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_diskTypes(self, method, url, body, headers):
         body = self.fixtures.load('zones_us-central1-a_diskTypes.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -2257,6 +2343,10 @@ class GCEMockHttp(MockHttpTestCase):
                 'zones_europe-west1-a_instances_post.json')
         else:
             body = self.fixtures.load('zones_europe-west1-a_instances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_europe_west1_a_diskTypes_pd_standard(self, method, url, body, headers):
+        body = self.fixtures.load('zones_europe-west1-a_diskTypes_pd_standard.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances(self, method, url, body, headers):

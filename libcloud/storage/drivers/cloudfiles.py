@@ -138,8 +138,8 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
             endpoint = self.service_catalog.get_endpoint(
                 name=self._service_name, region=self._service_region)
 
-        if PUBLIC_ENDPOINT_KEY in endpoint:
-            return endpoint[PUBLIC_ENDPOINT_KEY]
+        if endpoint:
+            return endpoint.url
         else:
             raise LibcloudError('Could not find specified endpoint')
 

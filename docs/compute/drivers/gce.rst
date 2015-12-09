@@ -1,7 +1,7 @@
 Google Compute Engine Driver Documentation
 ==========================================
 
-`Google Cloud Platform Compute Engine`_ gives users the ability to run
+`Google Compute Engine`_ gives users the ability to run
 large-scale workloads on virtual machines hosted on Google's infrastructure.
 It is a part of Google Cloud Platform.
 
@@ -41,7 +41,9 @@ Which one should I use?
   authorization is your Project ID.
 
 Once you have set up the authentication as described below, you pass the
-authentication information to the driver as described in `Examples`_
+authentication information to the driver as described in `Examples`_. Also
+bear in mind that large clock drift (difference in time) between authenticating
+host and google will cause authentication to fail.
 
 
 Service Account
@@ -90,7 +92,7 @@ Internal Authentication
 
 To use GCE's internal metadata service to authenticate, simply specify
 your Project ID and let the driver handle the rest. See the
-`5. Using GCE Internal Authorization`_ example bellow.
+`5. Using GCE Internal Authorization`_ example below.
 
 Accessing Google Cloud services from your Libcloud nodes
 --------------------------------------------------------
@@ -138,5 +140,5 @@ API Docs
     :members:
     :inherited-members:
 
-.. _`Google Cloud Platform Compute Engine`: https://cloud.google.com/products/compute-engine/
+.. _`Google Compute Engine`: https://cloud.google.com/products/compute-engine/
 .. _`Google Developers Console`: https://cloud.google.com/console

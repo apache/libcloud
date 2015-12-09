@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<natRule
+xmlns="urn:didata.com:api:cloud:types" id="2187a636-7ebb-49a1-a2ff-5d617f496dce" datacenterId="NA9">
+<networkDomainId>484174a2-ae74-4658-9e56-50fc90e086cf</networkDomainId>
+<internalIp>10.0.0.16</internalIp>
+<externalIp>165.180.12.19</externalIp>
+<createTime>2015-03-06T13:45:10.000Z</createTime>
+<state>NORMAL</state>
+</natRule>

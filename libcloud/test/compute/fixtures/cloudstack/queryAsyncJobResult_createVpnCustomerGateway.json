@@ -1,0 +1,30 @@
+{
+   "queryasyncjobresultresponse" : {
+      "cmd" : "org.apache.cloudstack.api.command.user.vpn.CreateVpnCustomerGatewayCmd",
+      "jobid" : "createVpnCustomerGateway",
+      "userid" : "user_id",
+      "accountid" : "account_id",
+      "jobprocstatus" : 0,
+      "created" : "2015-02-23T08:25:01+0100",
+      "jobstatus" : 1,
+      "jobresult" : {
+         "vpncustomergateway" : {
+            "esplifetime" : 3600,
+            "cidrlist" : "10.0.0.0/24",
+            "account" : "account",
+            "gateway" : "10.0.0.1",
+            "ikelifetime" : 86400,
+            "name" : "VPN-10.0.0.1",
+            "domainid" : "domain_id",
+            "esppolicy" : "3des-md5",
+            "ikepolicy" : "3des-md5",
+            "domain" : "domain",
+            "dpd" : false,
+            "id" : "cef3c766-116a-4e83-9844-7d08ab7d3fd4",
+            "ipsecpsk" : "ipsecpsk"
+         }
+      },
+      "jobresultcode" : 0,
+      "jobresulttype" : "object"
+   }
+}

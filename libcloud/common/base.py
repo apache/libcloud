@@ -44,12 +44,36 @@ from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import b
 
-from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.misc import lowercase_keys, retry
 from libcloud.utils.compression import decompress_data
-from libcloud.common.types import LibcloudError, MalformedResponseError
 
+from libcloud.common.exceptions import exception_from_message
+from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.httplib_ssl import LibcloudHTTPConnection
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+
+__all__ = [
+    'RETRY_FAILED_HTTP_REQUESTS',
+
+    'BaseDriver',
+
+    'Connection',
+    'PollingConnection',
+    'ConnectionKey',
+    'ConnectionUserAndKey',
+    'CertificateConnection',
+    'LoggingHTTPConnection',
+    'LoggingHTTPSConnection',
+
+    'Response',
+    'HTTPResponse',
+    'JsonResponse',
+    'XmlResponse',
+    'RawResponse'
+]
+
+# Module level variable indicates if the failed HTTP requests should be retried
+RETRY_FAILED_HTTP_REQUESTS = False
 
 
 class HTTPResponse(httplib.HTTPResponse):
@@ -114,7 +138,9 @@ class Response(object):
             self.body = b(self.body).decode('utf-8')
 
         if not self.success():
-            raise Exception(self.parse_error())
+            raise exception_from_message(code=self.status,
+                                         message=self.parse_error(),
+                                         headers=self.headers)
 
         self.object = self.parse_body()
 
@@ -287,7 +313,7 @@ class LoggingConnection():
         ht += "\r\n"
 
         # this is evil. laugh with me. ha arharhrhahahaha
-        class fakesock:
+        class fakesock(object):
             def __init__(self, s):
                 self.s = s
 
@@ -376,6 +402,11 @@ class LoggingConnection():
         for h in headers:
             cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
 
+        cert_file = getattr(self, 'cert_file', None)
+
+        if cert_file:
+            cmd.extend(["--cert", pquote(cert_file)])
+
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
@@ -455,11 +486,13 @@ class Connection(object):
     driver = None
     action = None
     cache_busting = False
+    backoff = None
+    retry_delay = None
 
     allow_insecure = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None):
+                 timeout=None, proxy_url=None, retry_delay=None, backoff=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -487,9 +520,9 @@ class Connection(object):
             (self.host, self.port, self.secure,
              self.request_path) = self._tuple_from_url(url)
 
-        if timeout:
-            self.timeout = timeout
-
+        self.timeout = timeout or self.timeout
+        self.retry_delay = retry_delay
+        self.backoff = backoff
         self.proxy_url = proxy_url
 
     def set_http_proxy(self, proxy_url):
@@ -527,7 +560,7 @@ class Connection(object):
 
         if ":" in netloc:
             netloc, port = netloc.rsplit(":")
-            port = port
+            port = int(port)
 
         if not port:
             if scheme == "http":
@@ -536,10 +569,11 @@ class Connection(object):
                 port = 443
 
         host = netloc
+        port = int(port)
 
         return (host, port, secure, request_path)
 
-    def connect(self, host=None, port=None, base_url=None):
+    def connect(self, host=None, port=None, base_url=None, **kwargs):
         """
         Establish a connection with the API server.
 
@@ -565,7 +599,22 @@ class Connection(object):
             host = host or self.host
             port = port or self.port
 
-        kwargs = {'host': host, 'port': int(port)}
+        # Make sure port is an int
+        port = int(port)
+
+        if not hasattr(kwargs, 'host'):
+            kwargs.update({'host': host})
+
+        if not hasattr(kwargs, 'port'):
+            kwargs.update({'port': port})
+
+        if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file'):
+            kwargs.update({'key_file': self.key_file})
+
+        if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
+            kwargs.update({'cert_file': self.cert_file})
+
+        #  kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
@@ -654,6 +703,9 @@ class Connection(object):
         else:
             headers = copy.copy(headers)
 
+        retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
+                                       False) or RETRY_FAILED_HTTP_REQUESTS
+
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
@@ -717,8 +769,17 @@ class Connection(object):
 
                 self.connection.endheaders()
             else:
-                self.connection.request(method=method, url=url, body=data,
-                                        headers=headers)
+                if retry_enabled:
+                    retry_request = retry(timeout=self.timeout,
+                                          retry_delay=self.retry_delay,
+                                          backoff=self.backoff)
+                    retry_request(self.connection.request)(method=method,
+                                                           url=url,
+                                                           body=data,
+                                                           headers=headers)
+                else:
+                    self.connection.request(method=method, url=url, body=data,
+                                            headers=headers)
         except ssl.SSLError:
             e = sys.exc_info()[1]
             self.reset_context()
@@ -925,7 +986,7 @@ class ConnectionKey(Connection):
     Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None):
+                 timeout=None, proxy_url=None, backoff=None, retry_delay=None):
         """
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
@@ -933,8 +994,30 @@ class ConnectionKey(Connection):
         super(ConnectionKey, self).__init__(secure=secure, host=host,
                                             port=port, url=url,
                                             timeout=timeout,
-                                            proxy_url=proxy_url)
+                                            proxy_url=proxy_url,
+                                            backoff=backoff,
+                                            retry_delay=retry_delay)
         self.key = key
+
+
+class CertificateConnection(Connection):
+    """
+    Base connection class which accepts a single ``cert_file`` argument.
+    """
+    def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
+                 proxy_url=None, timeout=None, backoff=None, retry_delay=None):
+        """
+        Initialize `cert_file`; set `secure` to an ``int`` based on
+        passed value.
+        """
+        super(CertificateConnection, self).__init__(secure=secure, host=host,
+                                                    port=port, url=url,
+                                                    timeout=timeout,
+                                                    backoff=backoff,
+                                                    retry_delay=retry_delay,
+                                                    proxy_url=proxy_url)
+
+        self.cert_file = cert_file
 
 
 class ConnectionUserAndKey(ConnectionKey):
@@ -945,10 +1028,13 @@ class ConnectionUserAndKey(ConnectionKey):
     user_id = None
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None):
+                 url=None, timeout=None, proxy_url=None,
+                 backoff=None, retry_delay=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
                                                    host=host, port=port,
                                                    url=url, timeout=timeout,
+                                                   backoff=backoff,
+                                                   retry_delay=retry_delay,
                                                    proxy_url=proxy_url)
         self.user_id = user_id
 
@@ -1010,6 +1096,10 @@ class BaseDriver(object):
         self.region = region
 
         conn_kwargs = self._ex_connection_class_kwargs()
+        conn_kwargs.update({'timeout': kwargs.pop('timeout', None),
+                            'retry_delay': kwargs.pop('retry_delay', None),
+                            'backoff': kwargs.pop('backoff', None),
+                            'proxy_url': kwargs.pop('proxy_url', None)})
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self

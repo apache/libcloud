@@ -16,7 +16,7 @@ id.
 To obtain a reference to this resource, Libcloud providers corresponding get
 and / or list methods.
 
-A couple of examples are shown bellow.
+A couple of examples are shown below.
 
 Example 1 - listing records for a zone with a known id
 ------------------------------------------------------
@@ -46,7 +46,7 @@ There are some cases when you might not want this:
 * You want to avoid holding a reference to the resource object
 
 If that is true for you, you can directly instantiate a resource with a known
-id. You can see how to do this in the examples bellow.
+id. You can see how to do this in the examples below.
 
 Example 1 - listing records for a zone with a known id
 ------------------------------------------------------

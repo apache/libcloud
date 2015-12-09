@@ -122,7 +122,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     _auth_version = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, timeout=None,
+                 host=None, port=None, timeout=None, proxy_url=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
@@ -130,9 +130,11 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,
-                 ex_force_service_region=None):
+                 ex_force_service_region=None,
+                 retry_delay=None, backoff=None):
         super(OpenStackBaseConnection, self).__init__(
-            user_id, key, secure=secure, timeout=timeout)
+            user_id, key, secure=secure, timeout=timeout,
+            retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url)
 
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
@@ -216,6 +218,18 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self._populate_hosts_and_request_paths()
 
         return self.service_catalog
+
+    def get_service_name(self):
+        """
+        Gets the service name used to look up the endpoint in the service
+        catalog.
+
+        :return: name of the service in the catalog
+        """
+        if self._ex_force_service_name:
+            return self._ex_force_service_name
+
+        return self.service_name
 
     def get_endpoint(self):
         """

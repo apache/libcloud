@@ -1,0 +1,19 @@
+# See http://editorconfig.org for more info.
+
+# This is the root-level config file.
+root = true
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.rst]
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_style = space
+indent_size = 4
+
+[Makefile]
+indent_style = tab

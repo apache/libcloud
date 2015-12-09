@@ -28,6 +28,14 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+PY2_pre_25 = PY2 and sys.version_info < (2, 5)
+PY2_pre_26 = PY2 and sys.version_info < (2, 6)
+PY2_pre_27 = PY2 and sys.version_info < (2, 7)
+PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
+PY3_pre_32 = PY3 and sys.version_info < (3, 2)
+
 PY2 = False
 PY25 = False
 PY26 = False
@@ -52,6 +60,12 @@ if sys.version_info >= (3, 0):
 
 if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
     PY32 = True
+
+if PY2_pre_279 or PY3_pre_32:
+    from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
+else:
+    # ssl module in Python >= 3.2 includes match hostname function
+    from ssl import match_hostname, CertificateError  # NOQA
 
 if PY3:
     import http.client as httplib
@@ -101,6 +115,8 @@ if PY3:
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
+
+    _real_unicode = str
     u = str
 
     def bchr(s):

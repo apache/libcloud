@@ -38,7 +38,10 @@ DRIVERS = {
     ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
     Provider.GCE:
     ('libcloud.loadbalancer.drivers.gce', 'GCELBDriver'),
-
+    Provider.SOFTLAYER:
+    ('libcloud.loadbalancer.drivers.softlayer', 'SoftlayerLBDriver'),
+    Provider.DIMENSIONDATA:
+    ('libcloud.loadbalancer.drivers.dimensiondata', 'DimensionDataLBDriver'),
     # Deprecated
     Provider.RACKSPACE_US:
     ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),

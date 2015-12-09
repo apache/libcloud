@@ -22,10 +22,32 @@
       <item>
          <snapshotId>snap-18349159</snapshotId>
          <volumeId>vol-b5a2c1v9</volumeId>
-         <status>pending</status>
+         <status>completed</status>
          <startTime>2013-09-15T16:00:30.000Z</startTime>
          <progress>30%</progress>
          <ownerId>1938218230</ownerId>
+         <volumeSize>15</volumeSize>
+         <description>Weekly backup</description>
+         <tagSet>
+            <item>
+               <key>Name</key>
+               <value>DB Backup 1</value>
+            </item>
+            <item>
+               <key>Key2</key>
+               <value>db_backup</value>
+            </item>
+         </tagSet>
+      </item>
+   </snapshotSet>
+   <snapshotSet>
+      <item>
+         <snapshotId>snap-18349160</snapshotId>
+         <volumeId>vol-10ae5e2b</volumeId>
+         <status>pending</status>
+         <startTime>2014-09-15T16:00:30.000Z</startTime>
+         <progress>30%</progress>
+         <ownerId>1938218231</ownerId>
          <volumeSize>15</volumeSize>
          <description>Weekly backup</description>
          <tagSet>

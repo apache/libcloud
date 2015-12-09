@@ -54,10 +54,18 @@ class HostVirtualTests(unittest.TestCase):
         self.assertEqual(len(records), 3)
 
         record = records[1]
-        self.assertEqual(record.name, 'www.t.com')
+        self.assertEqual(record.name, 'www')
         self.assertEqual(record.id, '300719')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
+
+    def test_list_records_none(self):
+
+        zone = self.driver.list_zones()[0]
+
+        HostVirtualMockHttp.type = 'NO_RECORDS'
+        records = self.driver.list_records(zone=zone)
+        self.assertEqual(len(records), 0)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')
@@ -69,7 +77,7 @@ class HostVirtualTests(unittest.TestCase):
     def test_get_record(self):
         record = self.driver.get_record(zone_id='47234', record_id='300377')
         self.assertEqual(record.id, '300377')
-        self.assertEqual(record.name, '*.t.com')
+        self.assertEqual(record.name, '*')
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 't.com')
 
@@ -131,6 +139,19 @@ class HostVirtualTests(unittest.TestCase):
         self.assertEqual(updated_zone.domain, 'tt.com')
         self.assertEqual(updated_zone.type, zone.type)
         self.assertEqual(updated_zone.ttl, '3600')
+
+    def test_create_record_no_name(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.A, data='127.0.0.1'
+        )
+
+        self.assertEqual(record.id, '300377')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.data, '127.0.0.1')
 
     def test_create_record(self):
         zone = self.driver.list_zones()[0]
@@ -244,6 +265,11 @@ class HostVirtualMockHttp(MockHttp):
     def _dns_records_ZONE_DOES_NOT_EXIST(self, method,
                                          url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
+        return (httplib.NOT_FOUND, body,
+                {}, httplib.responses[httplib.NOT_FOUND])
+
+    def _dns_records_NO_RECORDS(self, method, url, body, headers):
+        body = self.fixtures.load('list_records_none.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 

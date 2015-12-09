@@ -51,10 +51,6 @@ __all__ = [
 ]
 
 
-# Maximum number of bytes to read at once from a socket
-CHUNK_SIZE = 1024
-
-
 class SSHCommandTimeoutError(Exception):
     """
     Exception which is raised when an SSH command times out.
@@ -199,10 +195,15 @@ class BaseSSHClient(object):
 
 
 class ParamikoSSHClient(BaseSSHClient):
-
     """
     A SSH Client powered by Paramiko.
     """
+
+    # Maximum number of bytes to read at once from a socket
+    CHUNK_SIZE = 1024
+    # How long to sleep while waiting for command to finish
+    SLEEP_DELAY = 1.5
+
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, key_files=None, key_material=None, timeout=None):
         """
@@ -351,6 +352,12 @@ class ParamikoSSHClient(BaseSSHClient):
         # which is not ready will block for indefinitely.
         exit_status_ready = chan.exit_status_ready()
 
+        if exit_status_ready:
+            # It's possible that some data is already available when exit
+            # status is ready
+            stdout.write(self._consume_stdout(chan).getvalue())
+            stderr.write(self._consume_stderr(chan).getvalue())
+
         while not exit_status_ready:
             current_time = time.time()
             elapsed_time = (current_time - start_time)
@@ -361,39 +368,18 @@ class ParamikoSSHClient(BaseSSHClient):
 
                 raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
 
-            if chan.recv_ready():
-                data = chan.recv(CHUNK_SIZE)
-
-                while data:
-                    stdout.write(b(data).decode('utf-8'))
-                    ready = chan.recv_ready()
-
-                    if not ready:
-                        break
-
-                    data = chan.recv(CHUNK_SIZE)
-
-            if chan.recv_stderr_ready():
-                data = chan.recv_stderr(CHUNK_SIZE)
-
-                while data:
-                    stderr.write(b(data).decode('utf-8'))
-                    ready = chan.recv_stderr_ready()
-
-                    if not ready:
-                        break
-
-                    data = chan.recv_stderr(CHUNK_SIZE)
+            stdout.write(self._consume_stdout(chan).getvalue())
+            stderr.write(self._consume_stderr(chan).getvalue())
 
             # We need to check the exist status here, because the command could
-            # print some output and exit during this sleep bellow.
+            # print some output and exit during this sleep below.
             exit_status_ready = chan.exit_status_ready()
 
             if exit_status_ready:
                 break
 
             # Short sleep to prevent busy waiting
-            time.sleep(1.5)
+            time.sleep(self.SLEEP_DELAY)
 
         # Receive the exit status code of the command we ran.
         status = chan.recv_exit_status()
@@ -411,6 +397,46 @@ class ParamikoSSHClient(BaseSSHClient):
 
         self.client.close()
         return True
+
+    def _consume_stdout(self, chan):
+        """
+        Try to consume stdout data from chan if it's receive ready.
+        """
+
+        stdout = StringIO()
+        if chan.recv_ready():
+            data = chan.recv(self.CHUNK_SIZE)
+
+            while data:
+                stdout.write(b(data).decode('utf-8'))
+                ready = chan.recv_ready()
+
+                if not ready:
+                    break
+
+                data = chan.recv(self.CHUNK_SIZE)
+
+        return stdout
+
+    def _consume_stderr(self, chan):
+        """
+        Try to consume stderr data from chan if it's receive ready.
+        """
+
+        stderr = StringIO()
+        if chan.recv_stderr_ready():
+            data = chan.recv_stderr(self.CHUNK_SIZE)
+
+            while data:
+                stderr.write(b(data).decode('utf-8'))
+                ready = chan.recv_stderr_ready()
+
+                if not ready:
+                    break
+
+                data = chan.recv_stderr(self.CHUNK_SIZE)
+
+        return stderr
 
     def _get_pkey_object(self, key):
         """

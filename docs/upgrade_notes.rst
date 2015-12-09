@@ -5,6 +5,42 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 0.20.0
+--------------
+
+* New optional ``ttl`` argument has been added to ``libcloud.dns.base.Record``
+  class constructor before the existing ``extra`` argument.
+
+  If you have previously manually instantiated this class and didn't use
+  keyword arguments, you need to update your code to correctly pass arguments
+  to the constructor (you are encouraged to use keyword arguments to avoid such
+  issues in the future).
+
+Libcloud 0.19.0
+---------------
+
+* The base signature of NodeDriver.create_volume has changed. The snapshot
+  argument is now expected to be a VolumeSnapshot instead of a string.
+  The older signature was never correct for built-in drivers, but custom
+  drivers may break. (GCE accepted strings, names or None and still does.
+  Other drivers did not implement creating volumes from snapshots at all
+  until now.)
+
+* VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+
+* The OpenStack compute driver methods ex_create_snapshot and
+  ex_delete_snapshot are now deprecated by the standard methods
+  create_volume_snapshot and destroy_volume_snapshot. You should update your
+  code.
+
+* The compute base driver now considers the name argument to
+  create_volume_snapshot to be optional. All official implementations of this
+  methods already considered it optional. You should update any custom
+  drivers if they rely on the name being mandatory.
+
 Libcloud 0.16.0
 ---------------
 
@@ -13,12 +49,12 @@ Changes in the OpenStack authentication and service catalog classes
 
 .. note::
     If you are only working with the driver classes and have never dorectly
-    touched the classes mentioned bellow, then you aren't affected and those
+    touched the classes mentioned below, then you aren't affected and those
     changes are fully backward compatible.
 
 To make OpenStack authentication and identity related classes more extensible,
 easier to main and easier to use, those classes have been refactored. All of
-the changes are described bellow.
+the changes are described below.
 
 * New ``libcloud.common.openstack_identity`` module has been added. This module
   contains code for working with OpenStack Identity (Keystone) service.
@@ -70,7 +106,7 @@ this version is move away from the old "one class per region" model to a new
 single class plus ``region`` argument model.
 
 More information on how this affects existing drivers and your code can be
-found bellow.
+found below.
 
 Default Content-Type is now provided if none is supplied and none can be guessed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -291,7 +327,7 @@ value:
 * ``RACKSPACE_AU`` -> ``syd``
 
 More examples which show how to update your code to work with a new version can
-be found bellow.
+be found below.
 
 Old code (connecting to a first-gen provider):
 
@@ -350,7 +386,7 @@ CloudStack compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudStack driver received a lot of changes and additions which will make it
-more pleasant to use. Backward incompatible changes are listed bellow:
+more pleasant to use. Backward incompatible changes are listed below:
 
 * ``CloudStackForwardingRule`` class has been renamed to
   ``CloudStackIPForwardingRule``
@@ -749,7 +785,7 @@ Updated code:
   code you need to do it now, otherwise it won't work with 0.7 and future
   releases.
 
-Bellow is a list of old paths and their new locations:
+Below is a list of old paths and their new locations:
 
 * ``libcloud.base`` -> ``libcloud.compute.base``
 * ``libcloud.deployment`` -> ``libcloud.compute.deployment``

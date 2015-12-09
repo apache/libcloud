@@ -24,7 +24,7 @@ General contribution guidelines
   :doc:`Testing page </testing>`.
 * All the functions and methods must contain Sphinx docstrings which are used
   to generate the API documentation. For more information, refer to the
-  :ref:`Docstring conventions <docstring-conventions>` section bellow.
+  :ref:`Docstring conventions <docstring-conventions>` section below.
 * If you are adding a new feature, make sure to add a corresponding
   documentation.
 
@@ -227,7 +227,7 @@ contains.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When checking if a variable is provided or defined, prefer to use
-``is foo is not None`` instead of ``if foo``.
+``if foo is not None`` instead of ``if foo``.
 
 If you use ``if foo`` approach, it's easy to make a mistake when a valid value
 can also be falsy (e.g. a number ``0``).
@@ -249,7 +249,7 @@ Docstring conventions
 ---------------------
 
 For documenting the API we we use Sphinx and reStructuredText syntax. Docstring
-conventions to which you should adhere to are described bellow.
+conventions to which you should adhere to are described below.
 
 * Docstrings should always be used to describe the purpose of methods,
   functions, classes, and modules.
@@ -405,7 +405,7 @@ start working on a new branch and before you generate a final patch. If the
 repository is not in-sync, generated patch will be out of sync and we won't be
 able to cleanly merge it into trunk.
 
-To synchronize it, follow the steps bellow in your git clone:
+To synchronize it, follow the steps below in your git clone:
 
 1. Add upstream remote if you haven't added it yet
 
@@ -459,7 +459,7 @@ Libcloud supports a variety of Python versions so your code also needs to work
 with all the supported versions. This means that in some cases you will need to
 include extra code to make sure it works in all the supported versions.
 
-Some examples which show how to handle those cases are described bellow.
+Some examples which show how to handle those cases are described below.
 
 Context Managers
 ~~~~~~~~~~~~~~~~

@@ -37,10 +37,10 @@ class LibcloudError(Exception):
         return self.__repr__()
 
     def __repr__(self):
-        return ("<LibcloudError in "
-                + repr(self.driver)
-                + " "
-                + repr(self.value) + ">")
+        return ("<LibcloudError in " +
+                repr(self.driver) +
+                " " +
+                repr(self.value) + ">")
 
 
 class MalformedResponseError(LibcloudError):
@@ -57,12 +57,12 @@ class MalformedResponseError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return ("<MalformedResponseException in "
-                + repr(self.driver)
-                + " "
-                + repr(self.value)
-                + ">: "
-                + repr(self.body))
+        return ("<MalformedResponseException in " +
+                repr(self.driver) +
+                " " +
+                repr(self.value) +
+                ">: " +
+                repr(self.body))
 
 
 class ProviderError(LibcloudError):

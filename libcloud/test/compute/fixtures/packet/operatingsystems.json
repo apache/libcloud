@@ -1,0 +1,28 @@
+{
+  "operating_systems": [
+    {
+      "slug": "centos_7",
+      "name": "CentOS 7",
+      "distro": "centos",
+      "version": "7"
+    },
+    {
+      "slug": "coreos_stable",
+      "name": "CoreOS (stable)",
+      "distro": "coreos",
+      "version": "stable"
+    },
+    {
+      "slug": "ubuntu_14_04",
+      "name": "Ubuntu 14.04 LTS",
+      "distro": "ubuntu",
+      "version": "14.04"
+    },
+    {
+      "slug": "debian_7",
+      "name": "Debian 7",
+      "distro": "debian",
+      "version": "7"
+    }
+  ]
+}

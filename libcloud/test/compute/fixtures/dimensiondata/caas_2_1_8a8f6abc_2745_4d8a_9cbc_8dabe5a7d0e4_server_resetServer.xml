@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-08-
+12T11:37:13.823-04:00/7b264a73-d73b-424c-bec8-5debba8b4626">
+<operation>RESET_SERVER</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to reset Server 'Production Server' has been accepted and
+is being processed.</message>
+</response>

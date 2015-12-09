@@ -15,7 +15,7 @@ Requirements
 VMware vSphere driver depends on the `pysphere`_ Python library which needs to
 be installed for the driver to work.
 
-This library can be installed using pip as shown bellow:
+This library can be installed using pip as shown below:
 
 .. sourcecode:: bash
 
@@ -29,7 +29,7 @@ to the driver constructor
 
 * ``host`` - hostname or IP address of your vSphere installation. Note: if your
   installation is using or accessible via a different port, you should use the
-  ``url`` argument which is described bellow instead.
+  ``url`` argument which is described below instead.
 * ``url`` - full URL to your vSphere installation client endpoint - e.g.
   ``https://<host>/sdk/``. Note: This argument is mutually exclusive with
   ``host`` argument which means you need to provide either ``host`` or ``url``

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response requestId="na/2015-04-14T13:37:20/62f06368-c3fb-11e3-b29c-
+001517c4643e" xmlns="urn:didata.com:api:cloud:types">
+<operation>CREATE_POOL</operation>
+<responseCode>OK</responseCode>
+<message>Pool 'myProductionPool.1' has been created.</message>
+<info name="poolId" value="9e6b496d-5261-4542-91aa-b50c7f569c54"/>
+<info name="name" value="myProductionPool.1"/>
+</response>

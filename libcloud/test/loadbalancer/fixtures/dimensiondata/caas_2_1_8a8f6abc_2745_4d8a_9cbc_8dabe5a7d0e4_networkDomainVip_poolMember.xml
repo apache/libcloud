@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<poolMembers
+xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="2"
+totalCount="2" pageSize="250">
+<poolMember id="3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-
+6116f11291d0</networkDomainId>
+<pool id="4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
+name="myDevelopmentPool.1"/>
+<node id="3c207269-e75e-11e4-811f-005056806999" name="10.0.3.13"
+ipAddress="10.0.3.13" status="ENABLED"/>
+<port>9889</port>
+<status>ENABLED</status>
+<state>NORMAL</state>
+<createTime>2015-06-09T11:02:50.000Z</createTime>
+</poolMember>
+<poolMember id="b977578b-a827-4172-b285-030c3ba15daa" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-
+6116f11291d0</networkDomainId>
+<pool id="4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
+name="myDevelopmentPool.1"/>
+<node id="3c207269-e75e-11e4-811f-005056806999" name="10.0.3.13"
+ipAddress="10.0.3.13" status="ENABLED"/>
+<port>9888</port>
+<status>ENABLED</status>
+<state>NORMAL</state>
+<createTime>2015-06-09T10:43:29.000Z</createTime>
+</poolMember>
+</poolMembers>

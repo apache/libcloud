@@ -85,10 +85,21 @@
                     }
                 ]
             },
+            "fault": {
+                "id": 1234,
+                "instance_uuid": "ec53630b-e4fb-442a-a748-c376f5c4345b",
+                "code": "500",
+                "message": "test message",
+                "details": "No valid host was found.",
+                "host": "912566d83a13fbb357ea3f13c629363d9f7e1ba3f925b49f3d2ab725"
+            },
             "config_drive": "",
             "id": 12065,
             "metadata": {},
-            "OS-DCF:diskConfig": "AUTO"
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-STS:task_state": "spawning",
+            "OS-EXT-STS:vm_state": "active",
+            "OS-EXT-STS:power_state": 1
         },
         {
             "status": "ACTIVE",
@@ -156,7 +167,10 @@
             "config_drive": "",
             "id": 12064,
             "metadata": {},
-            "OS-DCF:diskConfig": "AUTO"
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-STS:task_state": "spawning",
+            "OS-EXT-STS:vm_state": "active",
+            "OS-EXT-STS:power_state": 1
         }
     ]
 }

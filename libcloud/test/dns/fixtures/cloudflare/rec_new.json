@@ -1,0 +1,47 @@
+{
+  "request": {
+    "act": "rec_new",
+    "a": "rec_new",
+    "name": "test5",
+    "tkn": "maybeno",
+    "content": "127.0.0.3",
+    "ttl": "120",
+    "z": "example.com",
+    "type": "A",
+    "email": "example@example.com"
+  },
+  "response": {
+    "rec": {
+      "obj": {
+        "rec_id": "412561327",
+        "rec_hash": "ed23e38bca17007e026d2da517adf10a",
+        "zone_name": "example.com",
+        "name": "test5.example.com",
+        "display_name": "test5",
+        "type": "A",
+        "prio": null,
+        "content": "127.0.0.3",
+        "display_content": "127.0.0.3",
+        "ttl": "120",
+        "ttl_ceil": 86400,
+        "ssl_id": "2245194",
+        "ssl_status": "V",
+        "ssl_expires_on": null,
+        "auto_ttl": 0,
+        "service_mode": "0",
+        "props": {
+          "proxiable": 0,
+          "cloud_on": 0,
+          "cf_open": 1,
+          "vanity_lock": 0,
+          "ssl": 1,
+          "expired_ssl": 0,
+          "expiring_ssl": 0,
+          "pending_ssl": 0
+        }
+      }
+    }
+  },
+  "result": "success",
+  "msg": null
+}

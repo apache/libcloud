@@ -1,6 +1,9 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
 ============================= ==================== ================= ===================== ==================
 Provider                      enable container cdn enable object cdn get container cdn URL get object cdn URL
 ============================= ==================== ================= ===================== ==================
+`PCextreme AuroraObjects`_    yes                  yes               yes                   yes               
 `Microsoft Azure (blobs)`_    no                   no                no                    no                
 `CloudFiles`_                 yes                  no                yes                   yes               
 `CloudFiles (UK)`_            yes                  no                yes                   yes               
@@ -14,10 +17,12 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
 `Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
 `Amazon S3 (eu-west-1)`_      no                   no                no                    no                
+`Amazon S3 (sa-east-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-2)`_      no                   no                no                    no                
 ============================= ==================== ================= ===================== ==================
 
+.. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/
@@ -31,5 +36,6 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/

@@ -24,13 +24,15 @@ import time
 import hashlib
 import os
 import socket
+import random
 import binascii
 
 from libcloud.utils.py3 import b
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
-from libcloud.compute.types import NodeState, DeploymentError
+from libcloud.compute.types import NodeState, StorageVolumeState,\
+    DeploymentError
 from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
@@ -68,6 +70,7 @@ __all__ = [
     'NodeDriver',
 
     'StorageVolume',
+    'StorageVolumeState',
     'VolumeSnapshot',
 
     # Deprecated, moved to libcloud.utils.networking
@@ -460,7 +463,8 @@ class StorageVolume(UuidMixin):
     A base StorageVolume class to derive from.
     """
 
-    def __init__(self, id, name, size, driver, extra=None):
+    def __init__(self, id, name, size, driver,
+                 state=None, extra=None):
         """
         :param id: Storage volume ID.
         :type id: ``str``
@@ -474,6 +478,10 @@ class StorageVolume(UuidMixin):
         :param driver: Driver this image belongs to.
         :type driver: :class:`.NodeDriver`
 
+        :param state: Optional state of the StorageVolume. If not
+                      provided, will default to UNKNOWN.
+        :type state: :class:`.StorageVolumeState`
+
         :param extra: Optional provider specific attributes.
         :type extra: ``dict``
         """
@@ -482,6 +490,7 @@ class StorageVolume(UuidMixin):
         self.size = size
         self.driver = driver
         self.extra = extra
+        self.state = state
         UuidMixin.__init__(self)
 
     def list_snapshots(self):
@@ -545,23 +554,38 @@ class VolumeSnapshot(object):
     """
     A base VolumeSnapshot class to derive from.
     """
-    def __init__(self, id, driver, size=None, extra=None):
+    def __init__(self, id, driver, size=None, extra=None, created=None,
+                 state=None):
         """
         VolumeSnapshot constructor.
 
         :param      id: Snapshot ID.
         :type       id: ``str``
 
+        :param      driver: The driver that represents a connection to the
+                            provider
+        :type       driver: `NodeDriver`
+
         :param      size: A snapshot size in GB.
         :type       size: ``int``
 
         :param      extra: Provider depends parameters for snapshot.
         :type       extra: ``dict``
+
+        :param      created: A datetime object that represents when the
+                             snapshot was created
+        :type       created: ``datetime.datetime``
+
+        :param      state: A string representing the state the snapshot is
+                           in. See `libcloud.compute.types.StorageVolumeState`.
+        :type       state: ``str``
         """
         self.id = id
         self.driver = driver
         self.size = size
         self.extra = extra or {}
+        self.created = created
+        self.state = state
 
     def destroy(self):
         """
@@ -572,8 +596,8 @@ class VolumeSnapshot(object):
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
     def __repr__(self):
-        return ('<VolumeSnapshot id=%s size=%s driver=%s>' %
-                (self.id, self.size, self.driver.name))
+        return ('<VolumeSnapshot id=%s size=%s driver=%s state=%s>' %
+                (self.id, self.size, self.driver.name, self.state))
 
 
 class KeyPair(object):
@@ -643,12 +667,6 @@ class NodeDriver(BaseDriver):
     """
 
     NODE_STATE_MAP = {}
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, **kwargs):
-        super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                         host=host, port=port,
-                                         api_version=api_version, **kwargs)
 
     def list_nodes(self):
         """
@@ -997,9 +1015,9 @@ class NodeDriver(BaseDriver):
                                (optional)
         :type location: :class:`.NodeLocation`
 
-        :param snapshot:  Name of snapshot from which to create the new
-                               volume.  (optional)
-        :type snapshot:  ``str``
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot: :class:`.VolumeSnapshot`
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
@@ -1007,9 +1025,15 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_volume not implemented for this driver')
 
-    def create_volume_snapshot(self, volume, name):
+    def create_volume_snapshot(self, volume, name=None):
         """
         Creates a snapshot of the storage volume.
+
+        :param volume: The StorageVolume to create a VolumeSnapshot from
+        :type volume: :class:`.VolumeSnapshot`
+
+        :param name: Name of created snapshot (optional)
+        :type name: `str`
 
         :rtype: :class:`VolumeSnapshot`
         """
@@ -1061,6 +1085,9 @@ class NodeDriver(BaseDriver):
     def destroy_volume_snapshot(self, snapshot):
         """
         Destroys a snapshot.
+
+        :param snapshot: The snapshot to delete
+        :type snapshot: :class:`VolumeSnapshot`
 
         :rtype: :class:`bool`
         """
@@ -1233,8 +1260,9 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
 
-    def wait_until_running(self, nodes, wait_period=3, timeout=600,
-                           ssh_interface='public_ips', force_ipv4=True):
+    def wait_until_running(self, nodes, wait_period=3,
+                           timeout=600, ssh_interface='public_ips',
+                           force_ipv4=True, ex_list_nodes_kwargs=None):
         """
         Block until the provided nodes are considered running.
 
@@ -1260,10 +1288,17 @@ class NodeDriver(BaseDriver):
         :param force_ipv4: Ignore IPv6 addresses (default is True).
         :type force_ipv4: ``bool``
 
+        :param ex_list_nodes_kwargs: Optional driver-specific keyword arguments
+                                     which are passed to the ``list_nodes``
+                                     method.
+        :type ex_list_nodes_kwargs: ``dict``
+
         :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
                  list of ip_address on success.
         :rtype: ``list`` of ``tuple``
         """
+        ex_list_nodes_kwargs = ex_list_nodes_kwargs or {}
+
         def is_supported(address):
             """
             Return True for supported address.
@@ -1289,7 +1324,7 @@ class NodeDriver(BaseDriver):
         uuids = set([node.uuid for node in nodes])
 
         while time.time() < end:
-            all_nodes = self.list_nodes()
+            all_nodes = self.list_nodes(**ex_list_nodes_kwargs)
             matching_nodes = list([node for node in all_nodes
                                    if node.uuid in uuids])
 
@@ -1343,7 +1378,18 @@ class NodeDriver(BaseDriver):
         if 'password' in self.features['create_node']:
             value = os.urandom(16)
             value = binascii.hexlify(value).decode('ascii')
-            return NodeAuthPassword(value, generated=True)
+
+            # Some providers require password to also include uppercase
+            # characters so convert some characters to uppercase
+            password = ''
+            for char in value:
+                if not char.isdigit() and char.islower():
+                    if random.randint(0, 1) == 1:
+                        char = char.upper()
+
+                password += char
+
+            return NodeAuthPassword(password, generated=True)
 
         if auth:
             raise LibcloudError(

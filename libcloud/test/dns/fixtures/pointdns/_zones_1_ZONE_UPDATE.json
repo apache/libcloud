@@ -1,0 +1,9 @@
+{
+    "zone": {
+        "id": 1,
+        "name": "example.com",
+        "group": "Other Group",
+        "user-id": 6,
+        "ttl": 3600
+    }
+}

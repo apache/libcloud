@@ -17,7 +17,7 @@ Proxy support has been tested with the following Python versions;
 * Python 3.4
 
 You can specify which HTTP proxy to use using one of the approaches described
-bellow:
+below:
 
 * By setting ``http_proxy`` environment variable (this setting is system /
   process wide)
@@ -74,7 +74,7 @@ Calling ``set_http_proxy`` method allows you to specify which proxy to use
 for all the outgoing requests which follow ``set_http_proxy`` method call.
 
 This method also allows you to use a different proxy for each request as shown
-in the example bellow.
+in the example below.
 
 .. literalinclude:: /examples/http_proxy/set_http_proxy_method.py
    :language: python

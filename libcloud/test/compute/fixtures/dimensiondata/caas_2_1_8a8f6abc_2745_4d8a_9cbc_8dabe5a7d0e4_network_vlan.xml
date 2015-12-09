@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vlans xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="4" totalCount="4" pageSize="250">
+    <vlan id="55b236ad-9119-4b48-a1bb-cf5c76a7ac0f" datacenterId="NA9">
+        <networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Aurora"/>
+        <name>Primary</name>
+        <description></description>
+        <privateIpv4Range address="10.0.0.0" prefixSize="24"/>
+        <ipv4GatewayAddress>10.0.0.1</ipv4GatewayAddress>
+        <ipv6Range address="2607:f480:111:1336:0:0:0:0" prefixSize="64"/>
+        <ipv6GatewayAddress>2607:f480:111:1336:0:0:0:1</ipv6GatewayAddress>
+        <createTime>2015-07-13T03:52:45.000Z</createTime>
+        <state>NORMAL</state>
+    </vlan>
+    <vlan id="7ede3b25-2222-4285-ab61-21ffb137a763" datacenterId="NA9">
+        <networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Imports"/>
+        <name>Wi-Fi</name>
+        <description>Wi-Fi</description>
+        <privateIpv4Range address="10.230.98.0" prefixSize="24"/>
+        <ipv4GatewayAddress>10.230.98.1</ipv4GatewayAddress>
+        <ipv6Range address="2607:f480:111:1199:0:0:0:0" prefixSize="64"/>
+        <ipv6GatewayAddress>2607:f480:111:1199:0:0:0:1</ipv6GatewayAddress>
+        <createTime>2015-08-18T23:47:04.000Z</createTime>
+        <state>NORMAL</state>
+    </vlan>
+</vlans>

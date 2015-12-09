@@ -12,13 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import wraps
 
 import os
 import sys
 import binascii
+from libcloud.utils.py3 import httplib
 
+import socket
+from datetime import datetime, timedelta
+import time
+
+from libcloud.common.exceptions import RateLimitReachedError
+
+DEFAULT_TIMEOUT = 30
+DEFAULT_SLEEP = 1
+DEFAULT_BACKCOFF = 1
+EXCEPTION_TYPES = (RateLimitReachedError, socket.error, socket.gaierror,
+                   httplib.NotConnected, httplib.ImproperConnectionState)
 
 __all__ = [
+    'find',
     'get_driver',
     'set_driver',
     'merge_valid_keys',
@@ -27,8 +41,16 @@ __all__ = [
     'dict2str',
     'reverse_dict',
     'lowercase_keys',
-    'get_secure_random_string'
+    'get_secure_random_string',
+    'retry',
+
+    'ReprMixin'
 ]
+
+
+def find(l, predicate):
+    results = [x for x in l if predicate(x)]
+    return results[0] if len(results) > 0 else None
 
 
 def get_driver(drivers, provider):
@@ -252,3 +274,68 @@ def get_secure_random_string(size):
     value = binascii.hexlify(value)
     value = value.decode('utf-8')[:size]
     return value
+
+
+class ReprMixin(object):
+    """
+    Mixin class which adds __repr__ and __str__ methods for the attributes
+    specified on the class.
+    """
+
+    _repr_attributes = []
+
+    def __repr__(self):
+        attributes = []
+        for attribute in self._repr_attributes:
+            value = getattr(self, attribute, None)
+            attributes.append('%s=%s' % (attribute, value))
+
+        values = (self.__class__.__name__, ', '.join(attributes))
+        result = '<%s %s>' % values
+        return result
+
+    def __str__(self):
+        return str(self.__repr__())
+
+
+def retry(retry_exceptions=EXCEPTION_TYPES, retry_delay=None,
+          timeout=None, backoff=None):
+    """
+    Retry method that helps to handle common exception.
+
+    :param retry_exceptions: types of exceptions to retry on.
+    :param retry_delay: retry delay between the attempts.
+    :param timeout: maximum time to wait.
+    :param backoff: multiplier added to delay between attempts.
+
+    :Example:
+
+    retry_request = retry(timeout=1, retry_delay=1, backoff=1)
+    retry_request(self.connection.request)()
+    """
+    def deco_retry(func):
+        @wraps(func)
+        def retry_loop(*args, **kwargs):
+            delay = retry_delay
+            end = datetime.now() + timedelta(seconds=timeout)
+            exc_info = None
+            while datetime.now() < end:
+                try:
+                    result = func(*args, **kwargs)
+                    return result
+                except retry_exceptions:
+                    e = sys.exc_info()[1]
+
+                    if isinstance(e, RateLimitReachedError):
+                        time.sleep(e.retry_after)
+                        end = datetime.now() + timedelta(
+                            seconds=e.retry_after + timeout)
+                    else:
+                        exc_info = e
+                        time.sleep(delay)
+                        delay *= backoff
+            if exc_info:
+                raise exc_info
+            return func(*args, **kwargs)
+        return retry_loop
+    return deco_retry

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-06T03:34:21.951-05:00/d7e37b41-ceff-4a8c-992d-a0220b8ebd76">
+<operation>EDIT_FIREWALL_RULE</operation>
+<responseCode>OK</responseCode>
+<message>Firewall Rule with id 1aa3d0ce-d95d-4296-8338-9717e0d37ff9 has
+been edited</message>
+</response>

@@ -7,8 +7,8 @@ IAM_PROFILE = 'your IAM profile arn or IAM profile name'
 
 IMAGE_ID = 'ami-c8052d8d'
 SIZE_ID = 't1.micro'
-cls = get_driver(Provider.EC2_US_WEST)
-driver = cls(ACCESS_ID, SECRET_KEY)
+cls = get_driver(Provider.EC2)
+driver = cls(ACCESS_ID, SECRET_KEY, region="us-west-1")
 
 # Here we select size and image
 sizes = driver.list_sizes()

@@ -1,6 +1,661 @@
 Changelog
 =========
 
+Changes with Apache Libcloud 0.20.0
+-------------------------------------------
+
+General
+~~~~~~~
+
+- Added .editorconfig file for easier editing
+  (GITHUB-625)
+  [Misha Brukman]
+
+- Fix a bug with Libcloud accidentally setting paramiko root logger level to
+  DEBUG (this should only happen if ``LIBCLOUD_DEBUG`` environment variable is
+  provided).
+
+  Reported by John Bresnahan.
+  (LIBCLOUD-765)
+  [Tomaz Muraus, John Bresnahan]
+
+- Simply travis and tox config (.travis.yml, tox.ini).
+  (GITHUB-608)
+  [Anthony Monthe]
+
+- Fixed Python2.6 unit testing (and Google Cloud Storage tests)
+  (GITHUB-648)
+  [Scott Crunkleton]
+
+Compute
+~~~~~~~
+
+- Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
+  API compliant
+  (GITHUB-655)
+  [Stephano Maffulli]
+
+- Added additional kwargs to the create_node method for Dimension Data driver, allowing the user to specify the RAM and
+  CPU upfront. Added a ex_reconfigure_node method and ex_list_customer_images as well as updating the API to 2.1.
+  (LIBCLOUD-783, GITHUB-656)
+  [Anthony Shaw]
+
+- The EC2 Instance Type updated with correct disk sizes (especially the disk size for the m3 instances),
+  conversion errors between GiB an M[i]B, disk count were the cause.
+  Added instance types - g2.8xlarge and t2.large.
+  (GITHUB-646)
+  [Philipp Hahn]
+
+- Add update node, update VMware tools, add storage, change storage size or speed, remove storage to Dimension Data Driver.
+  (LIBCLOUD-775, GITHUB-644)
+  [Anthony Shaw]
+
+- Include 'service_name' support in _parse_service_catalog_auth_v3 for Openstack Drivers
+  (GITHUB-647)
+  [Steve Gregory]
+
+- Outscale inc & sas driver update
+  (GITHUB-645)
+  [@LordShion]
+
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
+
+- [google compute] add pricing data update script
+  (GITHUB-464)
+  [Misha Brukman]
+
+- Fix a bug in the ``list_volumes`` method in the CloudStack driver so it
+  returns an empty list if no volumes are found.
+  (GITHUB-617)
+  [Wido den Hollander]
+
+- Return proper volume state for CloudStack volumes.
+  (GITHUB-615, LIBCLOUD-764)
+  [Wido den Hollander]
+
+- Add support for multiple regions in Aurora compute driver
+  (GITHUB-623)
+  [Wido den Hollander]
+
+- Fix value of ``node.extra['ip_addresses']`` node attribute in the CloudStack
+  driver.
+  (LIBCLOUD-767, GITHUB-627)
+  [Atsushi Sasaki]
+
+- Make sure that ``node.public_ips`` attribute in the CloudStack driver doesn't
+  contain duplicated values..
+  (LIBCLOUD-766, GITHUB-626)
+  [Atsushi Sasaki]
+
+- Allow user to wait for a resource to reach a desired state in the
+  Dimension Data driver by using new ``ex_wait_for_state`` method.
+  (LIBCLOUD-707, GITHUB-631)
+  [Anthony Shaw]
+  
+- Added M4 pricing and instance information to EC2 driver
+  (GITHUB-634)
+  [Benjamin Zaitlen]
+
+- Added C4 instance information to EC2 driver
+  (GITHUB-638)
+  [amitofs]
+  
+- Allow location of the datacenter to be supplied in ProfitBricks driver
+  (LIBCLOUD-771, GITHUB-635)
+  [Joel Reymont]
+
+- Reduce redundant API calls in CloudStack driver
+  (LIBCLOUD-590, GITHUB-641)
+  [Atsushi Sasaki]
+
+- Add an additional argument to libcloud.compute.drivers.GCENodeDriver.create_node
+  to allow for creation of preemptible GCE instances
+  (GITHUB-643)
+  [@blawney]
+
+- GoogleStorageDriver can now use either our S3 authentication or other Google Cloud Platform OAuth2 authentication methods.
+  (GITHUB-633)
+  [Scott Crunkleton]
+
+Storage
+~~~~~~~
+
+Loadbalancer
+~~~~~~~~~~~~
+
+DNS
+~~~
+
+- RackSpace driver - New DNS driver methods:
+    ex_iterate_ptr_records
+    ex_get_ptr_record
+    ex_create_ptr_record
+    ex_update_ptr_record
+    ex_delete_ptr_record
+    This should cover all of the functionality offered by the Rackspace
+    DNS API in regards to RDNS.
+  (LIBCLOUD-780, GITHUB-652)
+  [Greg Hill]
+
+- Update ``create_record`` in the WorldWideDNS driver so it automatically
+  selects a slot if one is not provided by the user via ``extra['entry']``
+  argument.
+  (GITHUB-621)
+  [Alejandro Pereira]
+
+- Introduce GoDaddy DNS Driver with examples and documentation.
+  (LIBCLOUD-772, GITHUB-640, LIBCLOUD-778)
+  [Anthony Shaw]
+
+- Add new driver for CloudFlare DNS (https://www.cloudflare.com/dns/).
+  (GITHUB-637)
+  [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.19.0
+-----------------------------------
+
+General
+~~~~~~~
+
+- Update Rackspace AUTH_URL
+  (LIBCLOUD-738)
+  [Brian Curtin]
+
+- Fix ``LIBCLOUD_DEBUG`` mode so it works on Python 3.x.
+  [Tomaz Muraus]
+
+- Fix Libcloud code so it doesn't throw an exception if simplejson < 2.1.0 is
+  installed.
+  (LIBCLOUD-714, GITHUB-577)
+  [Erik Johnson]
+
+- Fix endpoint URL for DimensionData Asia Pacific region.
+  (GITHUB-585)
+  [Anthony Shaw]
+
+- Document potential time drift issue which could cause authentication in the
+  GCE drivers to fail.
+  (GITHUB-571)
+  [Michal Tekel]
+
+- Update documentation for EC2 - make sure they reflect region changes from
+  0.14 release.
+  (GITHUB-606)
+  [James Guthrie]
+
+Compute
+~~~~~~~
+  
+- Fixed malformed XML requests with Dimension Data driver.
+  (LIBCLOUD-760, GITHUB-610)
+  [Anthony Shaw]
+
+- Update list of scopes for Google Compute Engine driver.
+  (GITHUB-607)
+  [Otto Bretz]
+
+- Allow user to filter VPC by project in the CloudStack driver by passing
+  ``project`` argument to the ``ex_list_vps`` method.
+  (GITHUB-516)
+  [Syed Mushtaq Ahmed]
+
+- Add volume management methods and other various improvements and fixes in the
+  RunAbove driver.
+  (GITHUB-561)
+  [Anthony Monthe]
+
+- Add support and update Dimension Data driver to use API v2.0 by default.
+  (LIBCLOUD-736, GITHUB-564)
+  [Anthony Shaw]
+
+- Add new ``ex_virtual_network_name`` and ``ex_network_config`` argument to the
+  `create_node`` method in the Azure driver. With those arguments user can now
+  specify which virtual network to use.
+  (GITHUB-569)
+  [Jesaja Everling]
+
+- Fix ``create_node`` method in the GCE driver calling inexistent method
+  (ex_get_disk instead of ex_get_volume).
+  (GITHUB-574)
+  [Alex Poms]
+
+- Allow user to pass ``proxy_url`` keyword argument to the VCloud driver
+  constructor.
+  (GITHUB-578)
+  [Daniel Pool]
+
+- Various fixes and improvements in the DimensionData driver (support for
+  creating servers in MCP 1 and 2 data center, performance improvements in the
+  location fetching, etc.).
+  (GITHUB-587, GITHUB-593, LIBCLOUD-750, LIBCLOUD-753)
+  [Anthony Shaw]
+
+- Added ``ex_assign_public_ip`` argument to ``create_node`` in the EC2 driver.
+  (GITHUB-590)
+  [Kyle Long]
+
+- Added ``ex_terminate_on_shutdown`` argument to ``create_node`` in the EC2
+  driver.
+  (GITHUB-595)
+  [Kyle Long]
+
+- Various fixes and improvements in the ``ex_authorize_security_group_ingress``
+  in the CloudStack driver.
+  (LIBCLOUD-749, GITHUB-580)
+  [Lionel Schaub]
+
+- Add pricing information for Softlayer.
+  (LIBCLOUD-759, GITHUB-603)
+  [David Wilson]
+
+- Standardize VolumeSnapshot states into the ``state`` attribute.
+  (LIBCLOUD-758, GITHUB-602)
+  [Allard Hoeve]
+
+Storage
+~~~~~~~
+
+- Add support for ``sa-east-1`` region to the Amazon S3 driver.
+  (GITHUB-562)
+  [Iuri de Silvio]
+
+- Fix handling of binary data in Local storage driver on Python 3. Now the file
+  which is to be written or read from is opened in the binary mode (``b`` flag).
+  (LIBCLOUD-725, GITHUB-568)
+  [Torf]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Add a new driver for DimensionData load-balancing service
+  (http://cloud.dimensiondata.com/).
+  (LIBCLOUD-737, GITHUB-567)
+  [Anthony Shaw]
+
+DNS
+~~~
+
+- Update Google Cloud DNS API from 'v1beta1' to 'v1'
+  (GITHUB-583)
+  [Misha Brukman]
+
+- Add new driver for AuroraDNS service.
+  (GITHUB-562, LIBCLOUD-735)
+  [Wido den Hollander]
+
+- Fix "_to_record" in the Route53 driver - make sure it doesn't throw if the
+  record TTL is not available.
+  [Tomaz Muraus]
+
+- Add new driver for WorldWideDNS service
+  (http://www.worldwidedns.net/home.asp).
+  (GITHUB-566, LIBCLOUD-732)
+  [Alejandro Pereira]
+
+- Add new driver for DNSimple service (https://dnsimple.com/).
+  (GITHUB-575, GITHUB-604, LIBCLOUD-739)
+  [Alejandro Pereira, Patrick Humpal]
+
+- Add new driver for PointDNS service (https://pointhq.com).
+  (GITHUB-576, GITHUB-591, LIBCLOUD-740)
+  [Alejandro Pereira]
+
+- Add new driver for Vultr DNS service (https://www.vultr.com).
+  (GITHUB-579, GITHUB-596, LIBCLOUD-745)
+  [Alejandro Pereira, Janez Troha]
+
+- Add new driver for Liquidweb DNS service (http://www.liquidweb.com/).
+  (GITHUB-581, LIBCLOUD-746)
+  [Oltjano Terpollari, Alejandro Pereira]
+
+- Add new driver for Zonomi DNS hosting service (http://zonomi.com/).
+  (GITHUB-582, LIBCLOUD-747)
+  [Oltjano Terpollari, Alejandro Pereira]
+
+- Add new driver for Durable DNS service (https://durabledns.com/).
+  (GITHUB-588, LIBCLOUD-748)
+  [Oltjano Terpollari, Alejandro Pereira]
+
+Changes with Apache Libcloud 0.18.0
+-----------------------------------
+
+General
+~~~~~~~
+
+- Use native ``ssl.match_hostname`` functionality when running on Python >=
+  3.2 and only require ``backports.ssl_match_hostname`` dependency on Python
+  versions < 3.2.
+  [Tomaz Muraus]
+
+- Add support for AWS Signature version 4.
+
+  Note: Currently only GET HTTP method is supported.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis]
+
+- Fix a bug in the debug mode logging (LIBCLOUD_DEBUG). Logging to the debug
+  file would throw an exception if the text contained non-ascii characters.
+  [Tomaz Muraus]
+
+- Fix a bug with connection code throwing an exception if a port was a unicode
+  type and not a str or int.
+  (GITHUB-533, LIBCLOUD-716)
+  [Avi Weit]
+
+- Update ``is_valid_ip_address`` function so it also works on Windows.
+  (GITHUB-343, GITHUB-498, LIBCLOUD-601, LIBCLOUD-686)
+  [Nicolas Fraison, Samuel Marks]
+
+- Add support for retrying failed HTTP requests.
+
+  Retrying is off by default and can be enabled by setting
+  ``LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS`` environment variable.
+  (GITHUB-515, LIBCLOUD-360, LIBCLOUD-709)
+
+- Fix a bug in consuming stdout and stderr strams in Paramiko SSH client.
+  In some cases (like connecting to localhost via SSH), exit_status_ready
+  gets set immediately even before the while loop to consume the streams
+  kicks in. In those cases, we will not have consumed the streams at all.
+  (GITHUB-558)
+  [Lakshmi Kannan]
+
+Compute
+~~~~~~~
+
+- Google Compute now supports paginated lists including filtering.
+  (GITHUB-491)
+  [Lee Verberne]
+
+- OpenStackNodeSize objects now support optional, additional fields that are
+  supported in OpenStack 2.1: `ephemeral_disk`, `swap`, `extra`.
+  (GITHUB-488, LIBCLOUD-682)
+  [Greg Hill]
+
+- StorageVolume objects now have an attribute `state` that holds a
+  state variable that is standardized state across drivers. Drivers that
+  currently support the `state` attribute are OpenStack and EC2.
+  StorageVolume objects returned by drivers that do not support the
+  attribute will have a `state` of `None`. When a provider returns a state
+  that is unknown to the driver, the state will be `UNKNOWN`. Please report
+  such states. A couple of drivers already put state fields in the `extra`
+  fields of StorageVolumes. These fields were kept for
+  backwards-compatibility and for reference.
+  (GITHUB-476)
+  [Allard Hoeve]
+
+- StorageVolume objects on EC2 and OpenStack now have a key called snapshot_id
+  in their extra dicts containing the snapshot ID the volume was based on.
+  (GITHUB-479)
+  [Allard Hoeve]
+
+- OpenStack driver: deprecated ex_create_snapshot and ex_delete_snapshot in
+  favor of create_volume_snapshot and destroy_volume_snapshot. Updated base
+  driver method create_storage_volume argument name to be optional.
+  (GITHUB-478)
+  [Allard Hoeve]
+
+- Add support for creating volumes based on snapshots to EC2 and OS drivers.
+  Also modify signature of base NodeDriver.create_volume to reflect the fact
+  that all drivers expect a StorageSnapshot object as the snapshot argument.
+  (GITHUB-467, LIBCLOUD-672)
+  [Allard Hoeve]
+
+- VolumeSnapshots now have a `created` attribute that is a `datetime`
+  field showing the creation datetime of the snapshot. The field in
+  VolumeSnapshot.extra containing the original string is maintained, so
+  this is a backwards-compatible change.
+  (GITHUB-473)
+  [Allard Hoeve]
+
+- Improve GCE create_node, make sure ex_get_disktype function
+  (GITHUB-448)
+  [Markos Gogoulos]
+
+- GCE driver fix to handle unknown image projects
+  (GITHUB-447)
+  [Markos Gogoulos]
+
+- Allow user to pass ``ex_blockdevicemappings`` argument to the create_node
+  method in the OpenStack driver.
+  (GITHUB-398, LIBCLOUD-637)
+  [Allard Hoeve]
+
+- Fix ``list_volume_snapshots`` method in the EC2 driver so it comforms to the
+  base API.
+  (LIBCLOUD-664, GITHUB-451)
+  [Allard Hoeve]
+
+- Add ``volumes_attached`` attibute to ``node.extra`` in the OpenStack driver.
+  (LIBCLOUD-668, GITHUB-462)
+  [Allard Hoeve]
+
+- Add the following new methods to the Linode driver: ``ex_list_volumes``,
+  ``ex_create_volume``, ``ex_destroy_volume``.
+  (LIBCLOUD-649, GITHUB-430)
+  [Wojciech Wirkijowski]
+
+- Add ``list_volume_snapshots`` method to the OpenStack driver.
+  (LIBCLOUD-663, GITHUB-450)
+  [Allard Hoeve]
+
+- Add Site to Site VPN functionality to CloudStack driver.
+  (GITHUB-465)
+  [Avi Nanhkoesingh]
+
+- Add affinity group support to CloudStack driver
+  (LIBCLOUD-671, GITHUB-468)
+  [Mateusz Korszun]
+
+- Add a support for a new AWS Frankfurt, Germany region (``eu-central-1``) to
+  the EC2 driver using AWS Signature v4.
+  (GITHUB-444)
+  [Gertjan Oude Lohuis, Tomaz Muraus]
+
+- Allow Filtering in EC2 list_images() driver
+  (GITHUB-456, LIBCLOUD-667)
+  [Katriel Traum]
+
+- Add ex_list_ip_forwarding_rules() to CloudStack driver
+  (GITHUB-483)
+  [Atsushi Sasaki]
+
+- Add AURORA compute driver
+  (LIBCLOUD-641, GITHUB-477)
+  [Wido den Hollander]
+
+- Update ``ex_describe_tags`` method in the EC2 driver and allow user to list
+  tags for any supported resource. Previously you could only list tags for a
+  node or a storage volume.
+  (LIBCLOUD-676, GITHUB-482)
+  [John Kinsella]
+
+- Various improvements in the HostVirual driver (code refactoring, support for
+  managing "packages").
+  (LIBCLOUD-670, GITHUB-472)
+  [Dinesh Bhoopathy]
+
+- Add support for DigitalOcean API v2.0 while maintaining support for the old
+  API v2.0.
+
+  Note: API v2.0 is now used by default. To use the old API v1.0, pass
+  ``api_version='1.0'`` argument to the driver constructor.
+  (GITHUB-442)
+  [Andrew Starr-Bochicchio]
+
+- Add new ``d4.`` instance types to the EC2 driver. Also update EC2 pricing data.
+  (GITHUB-490)
+  [Tomaz Muraus]
+
+- Add new driver for Microsft Azure Virtual Machines service.
+  (LIBCLOUD-556, GITHUB-305, GITHUB-499, GITHUB-538)
+  [Michael Bennett, davidcrossland, Richard Conway, Matt Baldwin, Tomaz Muraus]
+
+- Fix VPC lookup method in CloudStack driver
+  (GITHUB-506)
+  [Avi Nanhkoesingh]
+
+- Add new driver for the Dimension Data provider based on the OpSource driver.
+  (LIBCLOUD-698, GITHUB-507, LIBCLOUD-700, GITHUB-513)
+  [Anthony Shaw]
+
+- Add "virtualmachine_id" attribute to the ``CloudStackAddress`` class in the
+  CloudStack driver.
+  (LIBCLOUD-679, GITHUB-485)
+  [Atsushi Sasaki]
+
+- Allow user to pass filters via arguments to the
+  ``ex_list_port_forwarding_rules`` in the CloudStack driver.
+  (LIBCLOUD-678, GITHUB-484)
+  [Atsushi Sasaki]
+
+- Fix an issue with ``list_nodes`` in the CloudSigma driver throwing an
+  exception if a node in the list had a static IP.
+  (LIBCLOUD-707, GITHUB-514)
+  [Chris O'Brien]
+
+- Don't throw an exception if a limit for a particular CloudStack resource is
+  "Unlimited" and not a number.
+  (GITHUB-512)
+  [Syed Mushtaq Ahmed]
+
+- Allow user to pass ``ex_config_drive`` argument to the ``create_node`` method
+  in the OpenStack driver.
+  (LIBCLOUD-356, GITHUB-330)
+  [Ryan Parrish]
+
+- Add new driver for Cloudwatt (https://www.cloudwatt.com/en/) provider.
+  (GITHUB-338)
+  [Anthony Monthe]
+
+- Add new driver for Packet (https://www.packet.net/) provider.
+  (LIBCLOUD-703, GITHUB-527)
+  [Aaron Welch]
+
+- Update Azure VM pricing information and add information for new D instance
+  types.
+  (GITHUB-528)
+  [Michael Bennett]
+
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to CloudStack driver.
+  (GITHUB-532)
+  [Anthony Monthe]
+
+- Update CloudSigma driver so the "unavailable" and "paused" node state is
+  correctly mapped to "error" and "paused" respectively.
+  (GITHUB-517)
+  [Chris O'Brien]
+
+- Add SSH key pair management methods to the Gandi driver.
+  (GITHUB-534)
+  [Anthony Monthe]
+
+- Add ``ex_get_node`` and ``ex_get_volume`` methods to Gandi driver.
+  (GITHUB-534)
+  [Anthony Monthe]
+
+- Add ``fault`` attribute to the ``extra`` dictionary of the ``Node`` instance
+  returned by the OpenStack driver.
+  (LIBCLOUD-730, GITHUB-557)
+  [Nick Fox]
+
+- Add new driver for Onapp IaaS platform.
+  (LIBCLOUD-691, GITHUB-502)
+  [Matthias Wiesner]
+
+- Allow user to inject custom data / script into the Azure node by passing
+  ``ex_custom_data`` argument to the ``create_node`` method.
+  (LIBCLOUD-726, GITHUB-554)
+  [David Wilson]
+
+- Add ``ex_create_cloud_service`` and ``ex_destroy_cloud_service`` method to the
+  Azure driver.
+  (LIBCLOUD-724, GITHUB-551)
+  [David Wilson]
+
+- Add support for passing user data when creating a DigitalOcean node
+  (``ex_user_data`` argument).
+  (LIBCLOUD-731, GITHUB-559)
+  [David Wilson]
+
+- Allow user to specify which arguments are passed to ``list_nodes`` method
+  which is called inside ``wait_until_running`` by passing
+  ``ex_list_nodes_kwargs`` argument to the ``wait_until_running`` method.
+  (``ex_user_data`` argument).
+  (LIBCLOUD-723, GITHUB-548)
+  [David Wilson]
+
+- Allow user to pass ``ex_volume_type`` argument to the ``create_volume`` method
+  in the OpennStack driver.
+  (GITHUB-553)
+  [Rico Echwald-Tijsen]
+
+- Add new driver for RunAbove (https://www.runabove.com) provider.
+  (GITHUB-550)
+  [Anthony Monthe]
+
+- Fix a bug with exception being throw inside the CloudStack driver when the
+  provider returned no error message in the body.
+  (GITHUB-555)
+  [Konstantin Skaburskas]
+
+- Various improvements in the DigitalOcean driver:
+  - Increase page size to API maximum.
+  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+  - Update all the ``list_*`` methods to use paginated requests
+  - Allow user to specify page size by passing ``ex_per_page`` argument to the
+    constructor.
+  (LIBCLOUD-717, GITHUB-537)
+  [Javier Castillo II]
+
+Storage
+~~~~~~~
+
+- Fix a bug with authentication in the OpenStack Swift driver.
+  (GITHUB-492, LIBCLOUD-635)
+  [Tom Fifield]
+
+- Add AuroraObjects Storage Driver.
+  (GITHUB-540, LIBCLOUD-719)
+  [Wido den Hollander]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Add a new driver for Softlayer load-balancing service
+  (https://www.softlayer.com/load-balancing).
+  (GITHUB-500, LIBCLOUD-688)
+  [Avi Weit]
+
+DNS
+~~~
+
+- Fix a bug when a ZoneDoesntExist exception was thrown when listing records
+  for a zone which has no records in the HostVirtual driver.
+  (GITHUB-460)
+  [Vanč Levstik]
+
+- Correctly handle MX records priority in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Allow user to create an A record which points directly to the domain zone
+  name in the Route53 driver.
+  (GITHUB-469)
+  [Vanč Levstik]
+
+- Fix delete_zone method in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
+- Fix parsing of the record name in the HostVirtual driver.
+  (GITHUB-461)
+  [Vanč Levstik]
+
+- Add new driver for DigitalOcean DNS service.
+  (GITHUB-505)
+  [Javier Castillo II]
+
 Changes with Apache Libcloud 0.17.0
 -----------------------------------
 
@@ -16,9 +671,8 @@ General
 Compute
 ~~~~~~~
 
-- GCE driver fix to handle unknown image projects
-  (GITHUB-447)
-  [Markos Gogoulos]
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
 
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)
@@ -90,7 +744,7 @@ Compute
 
 - Add new `us-east-2` and `us-east-3` region to the Joyent driver.
   (GITHUB-386)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add missing t2. instance types to the us-west-1 region in the EC2 driver.
   (GITHUB-388)
@@ -145,7 +799,7 @@ Compute
 
 - Add ``ex_get_node`` method to the Joyent driver.
   (GITHUB-421)
-  [ZuluPro]
+  [Anthony Monthe]
 
 - Add support for placement group management to the EC2 driver.
   (GITHUB-418)

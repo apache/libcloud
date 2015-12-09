@@ -21,4 +21,4 @@ __all__ = [
     'AUTH_URL'
 ]
 
-AUTH_URL = 'https://auth.api.rackspacecloud.com'
+AUTH_URL = 'https://identity.api.rackspacecloud.com'

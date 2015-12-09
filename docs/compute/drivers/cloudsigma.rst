@@ -29,7 +29,7 @@ Available arguments:
   supported values: ``1.0`` (deprecated), ``2.0``
 
 For information on how to use those arguments, see the `Examples`_ section
-bellow.
+below.
 
 Basics
 ------
@@ -62,7 +62,7 @@ are represented using
 method.
 
 For more information and examples on how to use the installation CD drives, see
-the `Create a server using an installation CD`_ example bellow.
+the `Create a server using an installation CD`_ example below.
 
 Library drives vs user drives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,7 +134,7 @@ If you want to list all the available images and drives, you should use
 :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_library_drives`
 method.
 
-The example bellow shows how to list all the available sizes, images and
+The example below shows how to list all the available sizes, images and
 drives.
 
 .. literalinclude:: /examples/compute/cloudsigma/list_sizes_images_drives.py
@@ -199,7 +199,7 @@ Creating a server using an installation CD means that you can't directly use
 the server after it has been created. Instead, you need to connect to the
 server using VNC and walk-through the installation process.
 
-The example bellow shows how to create a server using FreeBSD 8.2 installation
+The example below shows how to create a server using FreeBSD 8.2 installation
 CD.
 
 .. literalinclude:: /examples/compute/cloudsigma/create_server_using_installation_cd.py
@@ -268,7 +268,7 @@ This helps make your infrastructure more highly available and is useful when
 you want to create a server in a different availability zone than the existing
 server.
 
-The example bellow shows how to create a new server in a different availability
+The example below shows how to create a new server in a different availability
 zone from all the existing servers.
 
 Keep in mind that `as noted in the CloudSigma documentation
@@ -284,7 +284,7 @@ To check which servers and drives share the same physical compute / storage
 host, you can use the
 :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_servers_availability_groups`
 and :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_drives_availability_groups`
-method as displayed bellow.
+method as displayed below.
 
 .. literalinclude:: /examples/compute/cloudsigma/check_avail_groups.py
    :language: python
@@ -309,7 +309,7 @@ When you purchase a subscription you need to supply the following arguments:
   ``cpu``, ``mem``, ``tx``, ``ip``, ``vlan``
 * ``auto_renew`` - ``True`` to auto renew the subscription when it expires.
 
-The example bellow shows how to purchase a single VLAN for a duration of
+The example below shows how to purchase a single VLAN for a duration of
 30 days which will be automatically renewed when it expires.
 
 .. literalinclude:: /examples/compute/cloudsigma/create_vlan_subscription.py

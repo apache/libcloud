@@ -1,0 +1,2475 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:ImagesWithDiskSpeed pageNumber="1" pageCount="208" totalCount="208" pageSize="250" xmlns:ns16="http://oec.api.opsource.net/schemas/reset" xmlns:ns14="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns15="http://oec.api.opsource.net/schemas/support" xmlns:ns9="http://oec.api.opsource.net/schemas/directory" xmlns:ns5="http://oec.api.opsource.net/schemas/vip" xmlns:ns12="http://oec.api.opsource.net/schemas/admin" xmlns:ns13="http://oec.api.opsource.net/schemas/general" xmlns:ns6="http://oec.api.opsource.net/schemas/organization" xmlns:ns7="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns10="http://oec.api.opsource.net/schemas/storage" xmlns:ns8="http://oec.api.opsource.net/schemas/backup" xmlns:ns11="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns2="http://oec.api.opsource.net/schemas/server" xmlns:ns1="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns4="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns3="http://oec.api.opsource.net/schemas/network">
+    <ns2:image id="792b085b-493b-4953-8bc5-68c13f0f1703" location="NA1">
+        <ns2:name>RedHat 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="7c07ff21-25cb-4825-ba01-4df6fbe9f78e" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:34.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="501c1b25-4e1a-4e97-bf9f-4eb7896db0d8" location="NA1">
+        <ns2:name>RedHat 6 64-bit 4 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a4df80b7-e67b-4b78-9953-c5b900f16c50" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:36.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0bf731a8-29c5-4b8b-a460-2a60ab4019cf" location="NA1">
+        <ns2:name>RedHat 6 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT632" displayName="REDHAT6/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="853a3285-1c7b-459f-8ab6-53cb863d6207" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:32.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="64809b14-90bc-4c42-b7e9-00e508e8ff47" location="NA1">
+        <ns2:name>RedHat 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT564" displayName="REDHAT5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="50a6528b-0e93-4556-a921-bfe2c5596782" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:30.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="287f2ff5-3c34-498d-a05a-924cd2aea398" location="NA1">
+        <ns2:name>RedHat 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT532" displayName="REDHAT5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c18a5586-6dcf-43a3-aef4-b721ee6b0fe6" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:28.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="b427d2fa-a1c0-4130-ae72-b5e4dc9943ca" location="NA1">
+        <ns2:name>CentOS 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 6.6 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS664" displayName="CENTOS6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="77a1abc3-3290-4192-9c8b-ed3862a48498" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:42.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2eeda738-d830-43e7-a2f8-9e05f85efe61" location="NA1">
+        <ns2:name>CentOS 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS564" displayName="CENTOS5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d4e972b7-bb3d-4c85-a8b9-9157ce29e8ae" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:40.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="aef48335-10b6-4238-990e-223576010b66" location="NA1">
+        <ns2:name>CentOS 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 32-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS532" displayName="CENTOS5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="47bc4f22-90df-4dac-9409-3be7ef1c0426" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:38.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f82c2bab-3e03-4d76-9640-65821739b1f9" location="NA1">
+        <ns2:name>Ubuntu 14.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 14.04.2 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1464" displayName="UBUNTU14/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a1782c8a-3ee1-4d5e-a4a2-449a66369247" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:50.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="afbd9b3d-637c-4ac7-b97a-d32a786dd630" location="NA1">
+        <ns2:name>Ubuntu 12.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 12.04.5 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1264" displayName="UBUNTU12/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="1c8c2cf2-0552-4532-b321-981e4c25455f" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:48.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0daf26b2-c267-4186-9c67-a1ab4b287a31" location="NA1">
+        <ns2:name>SuSE Linux Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>SuSE Linux Enterprise Server 11 SP3</ns2:description>
+        <ns2:operatingSystem id="SLES1164" displayName="SUSE11/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="dcc2ce24-701a-428a-96f0-2f6663303d92" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0d9df016-bbac-4634-b2c3-563418d6ee40" location="NA1">
+        <ns2:name>Win2012 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="9f75a828-d443-43b8-addb-c2856d8388c7" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:48.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="b3a05334-ddf7-4d01-81d3-996224af8074" location="NA1">
+        <ns2:name>Win2012 R2 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="82ace698-d0b0-45a9-87a3-2b496912dd48" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fd5bf5ce-da47-430a-aa3a-e12f8638b47f" location="NA1">
+        <ns2:name>Win2012 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012S64" displayName="WIN2012S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="7f192a27-70ae-42b0-bd57-49bd30486119" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8e5e7e7f-3aeb-4a35-a233-82ba2aade118" location="NA1">
+        <ns2:name>Win2012 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c267c939-b83d-4fd0-8a2c-38212161bf1d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:33.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d7e0ca50-2d77-494c-9c1e-51438ddf3558" location="NA1">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="061ef3a7-8b79-44ad-9b77-6761304bd657" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:57.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ad632ec6-3f65-4909-b4c7-5c176741bd53" location="NA1">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="9e684a27-0c15-4b2f-9dfa-40cf8f2adc8e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:55.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8bbf7820-ba40-4916-8a3c-4fc235d8bf52" location="NA1">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="f95f3458-94f9-499f-94c8-a4e6c3a96a64" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2d3b4463-ad91-4c72-8d62-8495b1629d41" location="NA1">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="4076ae27-87bf-4c19-9fa1-40da2a492a88" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:52.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3834d65d-0f58-46f4-a78c-0e77c13ca0b0" location="NA1">
+        <ns2:name>Win2012 DC with MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="deb0b088-015c-487a-831f-c30eb08c46c9" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:41.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8753bda3-ca0c-4d69-a42a-37f5022aca75" location="NA1">
+        <ns2:name>Win2012 DC with MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="df8668c9-e5ca-4131-97b2-fd4332e0fba8" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:40.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="40270193-630d-4c03-b5cb-d90aebe58876" location="NA1">
+        <ns2:name>Win2012 DC with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="205d3510-ee63-4e0d-9c7d-3a4930195540" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:37.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="984d1da8-9a52-43d6-b193-17336ae4fa53" location="NA1">
+        <ns2:name>Win2012 DC with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a65afab6-f623-4b78-b4a7-e3c65820e52f" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:35.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="84dc430c-39e7-4d71-a57f-51bcaf983de4" location="NA1">
+        <ns2:name>Win2008 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Standard SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2S64" displayName="WIN2008R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a7c5961a-7a0e-4a40-a2e7-f509169e3e02" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:31.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0036af12-12d1-462d-9b84-24f007a700a2" location="NA1">
+        <ns2:name>Win2008 R2 Ent 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c84c028e-4988-419c-898c-a76316657685" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:19.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2949370a-c5ab-4e46-ad2c-8eeaa5fd2c79" location="NA1">
+        <ns2:name>Win2008 R2 DC 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Datacenter SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2DC64" displayName="WIN2008R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d1b4f5b2-7f92-486f-a8c7-8aae7df9687c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:17.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4f8919c9-3188-42da-9f67-47c0c9f43153" location="NA1">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP3 installed with SQL Server 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="bd8396a3-17a3-44c6-b415-2e30865f740c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:25.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="c5672a7d-7ce2-4062-b287-9a2ad7e79577" location="NA1">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a7fe7f29-15e8-4d61-942f-8e707d2f8caf" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:23.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f6c5fcb2-018e-4f21-b1c8-93f9e8c99279" location="NA1">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Standard SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="924db624-305c-49f5-920b-429503f6604a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:29.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="269a5e79-5d0f-42f3-8f37-3597e2736b0a" location="NA1">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Enterprise SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="bc5aca26-2e2f-4ef4-b147-021352914d74" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:27.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="010f1cd5-dea1-4a85-8a43-e8b8155ddbc7" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-Bit with MS SP Fnd</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise installed with SQL Express &amp; SharePoint Foundation 2010</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="77e14294-b954-4216-bbe1-6de5bdcb61ea" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSPFND2010</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:21.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ce86f943-1d2a-47d4-973b-0acca99192d5" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml00. SID=DD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="58fec584-eda1-4e84-a13d-436843c77e84" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="48981561-2752-492a-921a-cbfe448ba37c" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="560f13bc-3b19-41e2-a06a-5e84f67b6e8e" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="2c4a3225-607a-44ad-9670-62c29fe11bef" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:07.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="07ff6909-0515-4975-ba9c-c39793be65bf" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml01. SID=DD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="87b48ebf-0a6a-468f-b007-cea18dd397cd" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="2d5f4f98-c5b2-4003-ac73-8f68f70049fa" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="aa17bd14-c5b6-443d-8ccb-53b56c8a3fe5" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="a554d8cc-d611-4e54-b99f-db83314a7b41" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:05.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="29e7bf7c-a2f0-41ad-98b5-4e1b7614c2f0" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed00. SID=TD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="7d2fb619-6ae1-4622-8b35-620ab49e1ae6" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d225a43e-3f54-49ed-bb52-251b5bab84c8" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="7393f039-b87d-4e83-a173-31a2820d84b6" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="c1cc34a4-b482-417a-ae52-21742086cf15" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:01.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8c96cabb-ca4c-410b-87b9-b287c77296c2" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed01. SID=TD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="fa3c1f63-4740-496d-872f-1c0a70c6411e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="5ef2365d-4190-45fb-ab7a-d062f29f5f3f" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="5b5cdb2c-e792-4215-bda7-3607e9bc2d82" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d80503cf-47d3-459a-9cc2-c57dc4ee94e0" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:03.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="45306599-2252-4f3d-8295-14df7074aa8c" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg00. SID=PD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="39c972d0-b7df-46a0-bacb-0063f7d1c993" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="04dfd7f2-245d-4e45-915b-b069b8abd548" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="ebc104cd-41c2-4c1f-97c8-dc8213763b41" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e2bfa2ec-78cb-404b-acb8-30948ccaed0a" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b4c9d5e0-2ece-45d2-a360-2602d1d1d9c6" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:58.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="04db71c3-0dde-417c-b136-609f34af6ded" location="NA1">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg01. SID=PD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="26a4b86e-9f92-42fe-954a-5a0045535b48" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d747e5b7-f964-4f02-bc27-a573830aad15" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="c06c1071-e826-4747-8d8b-470664042e92" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e3a5453c-2bed-4536-8e99-da6d4a577586" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="4d3bc00a-1f7b-4c21-9ab7-718a26089a2b" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:11:59.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ed294bb0-d9c0-4dfa-9ce3-330d32b5f8b0" location="NA1">
+        <ns2:name>Win2008 Std 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S64" displayName="WIN2008S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="edaa4d20-f3a5-40ee-80e3-957ad8a942a7" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:15.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="449f903e-d0cc-4440-b4a7-89185aefd427" location="NA1">
+        <ns2:name>Win2008 Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E64" displayName="WIN2008E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="49a625bb-19c2-4707-aae0-8f6b108bfb2c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:11.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3e7ef942-a7d2-4863-aa6c-4e0c422e9784" location="NA1">
+        <ns2:name>Win2008 Std 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S32" displayName="WIN2008S/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="9b1ffc6f-e9bf-4dff-b613-7a74ca8a4bbe" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:13.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7d01d423-d75e-4f5c-8298-11b6a626fe41" location="NA1">
+        <ns2:name>Win2008 Ent 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E32" displayName="WIN2008E/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="266bc799-9e78-4f37-ac58-f48db992f214" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-13T07:12:09.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="dde9458f-b9d1-42e2-8365-66f6bfbda8ed" location="NA1">
+        <ns2:name>CSfM SharePoint 2013 Trial</ns2:name>
+        <ns2:description>Windows 2012 R2 Standard 64-bit installed with SharePoint 2013 and Visual Studio 2013 Pro (Trial Version)</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>12288</ns2:memoryMb>
+        <ns2:disk id="9e933a3e-a32b-41f7-890a-bce2a6e1db15" scsiId="0" sizeGb="100" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-19T18:28:32.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="a4a9e831-1d0d-4d55-a772-9f490e11955e" location="NA12">
+        <ns2:name>RedHat 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="bae32b4a-e80d-4e82-8709-96df4b350b03" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:01.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d71eee26-cbfa-4f5b-b7f8-52067f8787aa" location="NA12">
+        <ns2:name>RedHat 6 64-bit 4 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="1d9c33e0-8170-4e85-8780-b202d2d63442" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:30.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9e51605e-4335-4786-b21d-d6e4362aab8c" location="NA12">
+        <ns2:name>RedHat 6 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT632" displayName="REDHAT6/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f0900d1a-acbe-44f4-9fd6-277e1b6d3f44" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:25.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="44e0e87e-2598-468c-89d3-e64467a68a62" location="NA12">
+        <ns2:name>RedHat 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT564" displayName="REDHAT5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="ffe4a7fa-f9ef-4c11-81cc-2ee45fe2ebbf" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:48.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fc717da7-bba9-47ce-86e5-a2c71d29e431" location="NA12">
+        <ns2:name>RedHat 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT532" displayName="REDHAT5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="efc9c863-feee-4686-bac4-b4efc4657b71" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="5d2fa040-bac3-40b8-9de9-005cf94d5f1c" location="NA12">
+        <ns2:name>CentOS 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 6.6 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS664" displayName="CENTOS6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="af165ccc-302d-43ac-8404-598286927c06" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:28.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e2e22720-33ed-4437-b46f-57de74b6347d" location="NA12">
+        <ns2:name>CentOS 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS564" displayName="CENTOS5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="726367de-2db5-4489-97e0-f7eabfd93be0" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:53.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9c5fbcbf-961a-458e-a7a4-f615057c1e14" location="NA12">
+        <ns2:name>CentOS 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 32-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS532" displayName="CENTOS5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="8cf7eced-67ad-44b4-9726-127774b182be" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:17.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fe94b1ad-99c7-4dd8-9d5a-c4c6441bebf8" location="NA12">
+        <ns2:name>Ubuntu 14.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 14.04.2 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1464" displayName="UBUNTU14/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="5762ffc9-92a6-42c3-8586-936521069acd" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:34.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="58f67195-1b0a-4b79-ae67-550896c2d22b" location="NA12">
+        <ns2:name>Ubuntu 12.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 12.04.5 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1264" displayName="UBUNTU12/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a8c5b236-d9a7-45aa-ae20-0b445e9e88a6" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:32.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7f0a67d7-0767-4f1f-9f26-8c6343352214" location="NA12">
+        <ns2:name>SuSE Linux Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>SuSE Linux Enterprise Server 11 SP3</ns2:description>
+        <ns2:operatingSystem id="SLES1164" displayName="SUSE11/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="8daf5dfd-92c1-4d99-83dc-b23410ef9cf9" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:04.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fa24ce11-1a1a-44a4-b7ce-a61ddc314d54" location="NA12">
+        <ns2:name>Win2012 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f0bc17af-fb64-456d-a4fa-15f34420691c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:40.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4dd440e2-f034-4d00-a6a1-9ca53f97b845" location="NA12">
+        <ns2:name>Win2012 R2 Std 4 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="c247916c-f4f7-47a9-84bd-c1a207253d25" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:16.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e1c644ff-ed99-4d22-81ce-a46fc0a4ac1d" location="NA12">
+        <ns2:name>Win2012 R2 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f25c3f85-f9bb-482d-8cc0-526978ed80ba" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:41.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3a7a9fbe-1c9e-442f-bc58-9a15667ef244" location="NA12">
+        <ns2:name>Win2012 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012S64" displayName="WIN2012S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="b91a1d9e-0852-43d6-8998-c0a9f46b713c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:33.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="838c5d19-40ad-4e25-b7e1-89de8040a123" location="NA12">
+        <ns2:name>Win2012 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d87bf10f-1ddc-4831-ba7d-504aadc6e917" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:19.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e2a7d351-7a4a-4b43-b37b-5deda4c5397c" location="NA12">
+        <ns2:name>Win2012 DC with MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="af83ea6b-02a4-4015-931e-b9910658bf55" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fded7017-c4a6-4812-a8fc-f57729c04430" location="NA12">
+        <ns2:name>Win2012 DC with MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="8be04601-33ee-45fb-978d-29aa2711eec4" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:06.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8e59fb17-b00f-4741-99f5-78907ba3d03d" location="NA12">
+        <ns2:name>Win2012 DC with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="c01a97ec-e14c-4e20-bd48-13e85737ea3c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:50.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9e1a16b1-1842-4cbc-b246-30abbdae170f" location="NA12">
+        <ns2:name>Win2012 DC with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="0b5f1634-013b-4cb7-bc45-1ea9f0eeb1fd" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:37.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e9e68cf1-ff9d-4167-9328-ae2d6d24dd4a" location="NA12">
+        <ns2:name>Win2008 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Standard SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2S64" displayName="WIN2008R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="789170e6-9aeb-4da2-af38-926be613cee2" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:35.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4c0d9ecb-e5d5-4de5-a05a-5ce43e3584bb" location="NA12">
+        <ns2:name>Win2008 R2 Ent 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="490e05ec-f68e-4623-a2c0-906c45b5f5ae" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:59.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="24ca120a-7c25-4f29-acfc-870f4392ffdd" location="NA12">
+        <ns2:name>Win2008 R2 DC 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Datacenter SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2DC64" displayName="WIN2008R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="5a60e4ac-04fb-4102-8dac-f37373eb563b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:23.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="bb1929c1-3ed3-45bb-8b6b-19e3f8732872" location="NA12">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP3 installed with SQL Server 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="b2bf44cb-ecc9-42c3-929e-8778e52a48d3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:21.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3b0b3915-8fce-4bcf-9005-6bc05cb64bc9" location="NA12">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="0ef50daf-8b7f-42ba-9bed-f6b132b8f3ae" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:36.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9fc8122d-987f-4827-aee1-5e8776959ad0" location="NA12">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Standard SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="7d3b8fcc-700d-4ee9-b99e-cde4afdf121b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="25e63f8a-5058-4b02-b988-32dad26bd312" location="NA12">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Enterprise SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a2bfbfb7-b1b6-48c3-8ead-ffd2201c9ff3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:39.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f9aad335-5744-498a-a845-49e1e6050f15" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-Bit with MS SP Fnd</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise installed with SQL Express &amp; SharePoint Foundation 2010</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="90ae3b54-b78a-4dbb-81c4-98e0cc1e4c03" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSPFND2010</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:02.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="31247c70-4e35-4f0f-88bb-252062dc0145" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml00. SID=DD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="98da3c72-3296-4b93-b40e-71f4feaeb9cd" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="54abda14-24eb-4298-835e-3bf6d55612d0" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="7ce3bd4b-5e06-4305-953b-821712052b09" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e9f87f4d-0776-45a0-b1f9-f33968833f93" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="008e5a1c-4fa4-408f-9bba-284c81481fb4" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml01. SID=DD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="edeb9a20-beb3-40fc-be5a-d6687b89d88c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="68ea04b1-6d02-4b22-909f-e21ff66681cb" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b8afc47d-6afb-448d-a55e-fffaad110b00" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="05e6c674-2ab8-4183-8228-65e2b1a47a8a" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:27.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="57e354e9-8a4a-435e-8f8d-955e399cb543" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed00. SID=TD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="5c2ff903-3402-4c01-b3df-7b9b7a897c1d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="dfc80b3f-c9d3-4922-957f-5efdeb5d7419" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="00090e9f-e044-496d-ab90-ea7172d8062e" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="da7301bb-ca89-4806-be83-7fef7f37530f" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="37a76484-3479-47b5-9011-6b5c122defa8" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed01. SID=TD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="642dd9ab-1d3f-4f6f-a49b-11638d832f29" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="000a0124-83d8-468a-878e-64a5aa3e43bb" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="4119ffa3-ec50-48b7-ab67-7b5059d5038a" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="0e4e82d9-9f5d-44d4-b5f3-c02b3e2476ec" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:12.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="18915b58-c288-4826-afe5-80ae0822ae59" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg00. SID=PD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="899d1361-3873-4ab1-910f-08d189d788fc" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="0b5a6e8d-1e08-45be-8cb2-e05f5eaa8cea" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="6667845d-4783-4227-bc3b-7c4574d31cd6" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="26d9d941-9d7a-4dae-94d5-50dda65cc4af" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e9509f54-7a30-4b44-9cdb-723193e3dd5b" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:10.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3b3ddf1c-433b-4f73-b043-4ee1bb8f5494" location="NA12">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg01. SID=PD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="bc908e9d-3ce0-449d-92b1-6f2b510ce13a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e057065a-ab49-4900-9893-065ec99ac18d" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="5787f0ef-1889-40c9-b292-1d271f02cbf9" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="49eaf5d5-cda3-4837-9e56-aea74a917689" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="f1f10bfc-0dc9-4402-ad18-c747da7648c9" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:08.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0b1223fe-445c-4517-baa4-a3c2337923df" location="NA12">
+        <ns2:name>Win2008 Std 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S64" displayName="WIN2008S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c8f1002c-e82d-40c6-8745-2928705d9ad4" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:33.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="923dff45-dd49-47cc-a933-77d634eccec6" location="NA12">
+        <ns2:name>Win2008 Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E64" displayName="WIN2008E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="7bc2d629-0a79-4d94-9a59-48da54c1a1de" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:38.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="cc39fcbd-4b7a-496c-99dc-ef302aafc2ce" location="NA12">
+        <ns2:name>Win2008 Std 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S32" displayName="WIN2008S/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="560904d5-07fd-45b8-9b11-10cbd6a34329" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:03:43.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8f0758e8-f3ab-4fb7-9a04-d4cf2bd48f89" location="NA12">
+        <ns2:name>Win2008 Ent 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E32" displayName="WIN2008E/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="2b7add6d-af3b-48f5-98e9-5ea63015eed0" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-19T06:02:55.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="1e44ab3f-2426-45ec-a1b5-827b2ce58836" location="NA3">
+        <ns2:name>RedHat 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f4b0d5d9-fb78-439d-ba96-c1086b4a83f4" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4f356603-d007-4bef-946b-bd8eecc08be3" location="NA3">
+        <ns2:name>RedHat 6 64-bit 4 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="aa907610-9468-465d-b771-74beca7e5def" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:52.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f2162fca-9055-42d3-8153-5e1485d10e33" location="NA3">
+        <ns2:name>RedHat 6 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT632" displayName="REDHAT6/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="9c38880f-318b-4e47-bb29-b4ef44456d53" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:49.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="c401fdde-4648-4504-935f-b80492c8f69d" location="NA3">
+        <ns2:name>RedHat 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT564" displayName="REDHAT5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="67f26d15-3dab-4296-8446-2407122b293d" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:47.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ab81396e-2ef4-419a-bdc3-855eb077f7dc" location="NA3">
+        <ns2:name>RedHat 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT532" displayName="REDHAT5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="68038af5-69dc-4ae3-9543-e4957b79389f" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:45.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7757af57-377f-4d88-b29b-1c06b559c59c" location="NA3">
+        <ns2:name>CentOS 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 6.6 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS664" displayName="CENTOS6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="7418cdfc-cc32-415e-a5a4-363b9272abcd" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:58.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="1a610e1f-8cad-4adc-9187-4ae68f078a98" location="NA3">
+        <ns2:name>CentOS 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS564" displayName="CENTOS5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="e1c39180-ed5f-4b43-8c96-d5dd23724d38" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:56.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9b0e1d72-ad42-4d57-bc46-9e9e88a91e46" location="NA3">
+        <ns2:name>CentOS 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 32-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS532" displayName="CENTOS5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c42334f7-dc34-4f30-97fb-23c768e053af" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:34:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d19f88bb-eb1d-48cc-9dc9-b6b218f911b7" location="NA3">
+        <ns2:name>Ubuntu 14.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 14.04.2 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1464" displayName="UBUNTU14/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="bf66cc68-27a7-4bcb-b73d-d92194f2edea" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:06.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="bebf8d8f-2789-4943-be1f-b6e789166caa" location="NA3">
+        <ns2:name>Ubuntu 12.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 12.04.5 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1264" displayName="UBUNTU12/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="7b22a12e-8f29-47eb-9a17-2eb2693d1575" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:04.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="723958e3-8b3a-46ec-bcf5-90fa482fbb5f" location="NA3">
+        <ns2:name>SuSE Linux Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>SuSE Linux Enterprise Server 11 SP3</ns2:description>
+        <ns2:operatingSystem id="SLES1164" displayName="SUSE11/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="cf4b4c96-0f92-44f4-a7a3-72a3eba3b69a" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:00.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0c213a97-03ea-4918-beab-dabec2212aff" location="NA3">
+        <ns2:name>Win2012 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f92db07f-aa89-4c2a-82c8-ded92d0e8d5d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:50.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="63830826-f99d-4b86-8374-4702ce14e99d" location="NA3">
+        <ns2:name>Win2012 R2 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="3f74cd14-ff50-4be0-babe-8fa99c00f1d0" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="316db4fa-54b6-44b0-9852-c7362bad65ce" location="NA3">
+        <ns2:name>Win2012 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012S64" displayName="WIN2012S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="2a2f81e0-d99f-43ca-b2ec-8e747a2668f4" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:52.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="1b055735-7f0e-45ef-8a58-fa9dd16c9d79" location="NA3">
+        <ns2:name>Win2012 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a45dd73c-f51d-4c81-8feb-bfcd91475531" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:36.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="6fdd3718-65f5-4aa0-a58b-3cac20ca592f" location="NA3">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="f565f336-b9c2-4315-b52d-ab7a0532a8eb" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:14.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e6702e7d-d2d8-481a-b11e-1a010565c690" location="NA3">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="4a7c1d74-bdea-4916-8e27-22add07144a1" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:12.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="93de685a-e54e-4bbf-95fb-ae3501c4ff3d" location="NA3">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a4ffaa89-0cf2-46c1-8715-f5ef2640a19c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:10.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9b458ebb-f7a4-4fd9-bc1b-8d102c8cf8a2" location="NA3">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a0c5018a-9970-4c22-ba63-3ec4e7efdf6b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:08.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2786f461-c357-4ac4-a97b-53c662d1b83e" location="NA3">
+        <ns2:name>Win2012 DC with MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="48a13354-032d-4363-9678-acac4ef427f3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:48.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="b12c9520-895e-44d5-aec3-bf29a5030200" location="NA3">
+        <ns2:name>Win2012 DC with MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="33ec5c8b-c589-4ced-9806-84072dee0486" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:40.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2739d4c8-4370-4d98-8792-9b5bf58f4a71" location="NA3">
+        <ns2:name>Win2012 DC with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="bb50de4f-0b88-4a9e-8831-597c9fdfa755" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:38.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7de58512-ac6c-4805-b9a4-fb65be48c069" location="NA3">
+        <ns2:name>Win2012 DC with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="799d7880-484a-4acd-a6fa-c9eaf69a1b30" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:42.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="bac4be8b-5540-4c15-b166-cee4176abc0f" location="NA3">
+        <ns2:name>Win2008 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Standard SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2S64" displayName="WIN2008R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a601187c-7c0f-4cde-9ef5-c42574da0c9a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:24.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="80161b48-2ad8-45a7-9c31-9d79b77096ab" location="NA3">
+        <ns2:name>Win2008 R2 Ent 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="03db533a-3a67-4484-8094-c0c0df81bac0" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:26.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4b7963fc-d693-4617-9fc0-f194ee173f9c" location="NA3">
+        <ns2:name>Win2008 R2 DC 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Datacenter SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2DC64" displayName="WIN2008R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="1f42cc02-9f19-4ffb-81e7-9787a4e11263" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:34.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ea1cb47e-1ae1-47b8-a8cc-5509e59102d5" location="NA3">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP3 installed with SQL Server 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="c345fe3c-42fe-40cc-85b6-a2518ec41e9b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:18.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="5be182c9-0897-4f7d-a896-36f75d935a30" location="NA3">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="31f823dd-9ea3-4d25-973e-028147d55ba0" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:30.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d1eb004c-5089-4527-9aa3-3e123460e9c4" location="NA3">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Standard SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="993dc585-9bbb-4087-bf10-ddee776c3779" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:28.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="5d4cc2c4-ed78-4ef9-b33b-8d09be4c57b7" location="NA3">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Enterprise SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="b3d90c72-c4fc-4595-9dd4-26278263b1fb" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:22.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d364519e-0f77-4cd6-9f08-4445d8dddfc7" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-Bit with MS SP Fnd</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise installed with SQL Express &amp; SharePoint Foundation 2010</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="52df7edd-179c-47e2-9284-06ed766200f3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSPFND2010</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:32.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4f684430-fcea-4fe9-9394-b0ca86e4cb75" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml00. SID=DD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="673f7ed9-c5fd-4612-a40a-8f93b984bc1e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="1f1cbc32-49bc-4602-bbd6-63604a1faa94" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="ec749fce-6a07-4305-a240-d402c2e3bcc0" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="99a83ad0-9758-4d34-8c43-f043fd1372d5" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:58.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="c224bedb-7d99-4a9e-a5ea-ab6d9d416c75" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml01. SID=DD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="ac2be95f-2a85-493e-a490-cc60e06e84ba" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="7157934d-368d-47d8-a89e-fb522e15094c" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="0907e3f5-4d80-45a9-b73a-aff273e09772" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="ec2f01fc-b314-43fd-aa10-493294de1805" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:06.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f6c35b09-3f97-402e-a43b-438fff72dcab" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed00. SID=TD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="c6799b39-5339-4433-8523-ad9e0e2872c3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e8027f6b-ee08-464d-87ce-5f2c12a6772a" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="e3978862-54b1-4227-ba1d-b0c08f661991" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b06b99b2-6b10-477f-9f14-5bd46a12b35c" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:04.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7e878331-9f4d-4d39-9eb7-1703b294f571" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed01. SID=TD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="2a539b56-0754-46b1-a5f5-35988a562ec8" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="ee0c3ed4-3301-4026-a0de-0032f74ed899" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="647d83ba-45c9-4708-9061-3aa872b9f96e" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="bd093cc4-a1c9-48cb-b297-2673c279c48c" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:56.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="5f50fd7f-2db4-4701-8cf0-829e81998d91" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg00. SID=PD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="48646c11-2337-4803-b162-685e7808a229" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="1c19db5b-ffe6-4fac-ae4d-0bcee15bf5a4" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="7f3342ea-bd8c-4f18-bd4e-5c710220595c" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="5e1f084b-1326-4719-952a-13afbc5c9dbb" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="15cae11c-c821-40d3-8e09-63035c59b298" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="94a0783e-b8e2-482e-b7ed-1afd2b648bb7" location="NA3">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg01. SID=PD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="c4646520-298f-4f27-8e84-8c488e0ea82c" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d2cfdec6-7f7a-402b-ac3c-9a990eafb84b" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="dbf0fc2b-fffc-423f-803b-3a96869dccf0" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d12b5028-47c4-4205-a992-000fbedadd36" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="a33a768a-3b19-410f-9f8a-1b730c081c5f" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:02.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="736bb857-235b-4dbd-94fe-d5a6d1f7c7f6" location="NA3">
+        <ns2:name>Win2008 Std 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S64" displayName="WIN2008S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="78b7f91e-42f3-4ca5-9ae2-732f5d37c6e4" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:36:00.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="965c19a5-ff35-40bd-b249-a1f9f192fceb" location="NA3">
+        <ns2:name>Win2008 Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E64" displayName="WIN2008E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="8267206c-2b3a-4eb6-b9b1-fa3a5f630eff" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:16.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f0140014-2229-4448-8a9e-ac96a82e6628" location="NA3">
+        <ns2:name>Win2008 Std 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S32" displayName="WIN2008S/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="aaede2db-3328-4d31-b427-6e1b2a1023f8" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:20.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e7c4e34b-40b3-4750-b13c-99540807ab60" location="NA3">
+        <ns2:name>Win2008 Ent 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E32" displayName="WIN2008E/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="6a2a1786-31bb-4d07-b9ca-f565636f5ef9" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:35:14.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="345a94e9-c40e-4322-b6d6-5f775efd2d6a" location="NA3">
+        <ns2:name>CSfM SharePoint 2013 Trial</ns2:name>
+        <ns2:description>Windows 2012 R2 Standard 64-bit installed with SharePoint 2013 and Visual Studio 2013 Pro (Trial Version)</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>12288</ns2:memoryMb>
+        <ns2:disk id="0492e09f-809b-459d-814e-3502962e324d" scsiId="0" sizeGb="100" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-19T18:30:39.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="575b4d83-ba07-49af-ab1a-65c8439d1fe2" location="NA5">
+        <ns2:name>RedHat 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="03b17afc-85ed-491c-8a04-6416c72d9017" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ba663639-16d3-4e74-a29c-cdfd61b6e0f2" location="NA5">
+        <ns2:name>RedHat 6 64-bit 4 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="4cd1a5af-1bc3-4385-91fc-c8439a0fd411" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:53.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="7a128041-081b-4c36-8347-80456e3ed5fe" location="NA5">
+        <ns2:name>RedHat 6 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT632" displayName="REDHAT6/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="1169edb5-72a5-4b00-8b56-5b174c15b038" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:49.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="98222702-48da-4f23-9551-c23405228157" location="NA5">
+        <ns2:name>RedHat 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT564" displayName="REDHAT5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="e0c79c30-d061-4142-85f1-28ba5a5a49d4" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:47.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="30ab0351-6339-4fcb-9e99-85d637f667c0" location="NA5">
+        <ns2:name>RedHat 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT532" displayName="REDHAT5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d544743e-fc96-45e2-b72e-aec5ca48587f" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f5b0e8c3-e520-4a42-a0ef-de2644e4d021" location="NA5">
+        <ns2:name>CentOS 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 6.6 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS664" displayName="CENTOS6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="0c9ae5c3-f64f-40e4-bba4-1dce20f5c96f" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:58.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="a26ecd10-9661-4268-a0f9-b0ac705bed35" location="NA5">
+        <ns2:name>CentOS 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS564" displayName="CENTOS5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="0f6a9dad-7867-4c84-bf66-06d19a57cc7e" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:56.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="53efc18e-2a4d-4d50-93c4-9926c7049475" location="NA5">
+        <ns2:name>CentOS 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 32-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS532" displayName="CENTOS5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f22956c4-70e2-45a1-b331-abd028e2bf00" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:30:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="6eac1844-d30a-46f5-8712-c9b1202a783b" location="NA5">
+        <ns2:name>Ubuntu 14.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 14.04.2 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1464" displayName="UBUNTU14/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="2775f5b8-b497-45bd-bde1-ad71d337d5a7" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:05.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f8a24413-a662-45f1-b022-3042298f65c4" location="NA5">
+        <ns2:name>Ubuntu 12.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 12.04.5 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1264" displayName="UBUNTU12/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="3b2f46cf-0be5-45cb-82ec-488aba0e7d9a" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:03.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ff987434-075f-4e32-9dd2-cf7805f1d085" location="NA5">
+        <ns2:name>SuSE Linux Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>SuSE Linux Enterprise Server 11 SP3</ns2:description>
+        <ns2:operatingSystem id="SLES1164" displayName="SUSE11/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="0e021a17-5d23-4e80-b25e-44ada0f64072" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:00.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="808a8fba-ac45-4765-933f-4e7df24868b4" location="NA5">
+        <ns2:name>Win2012 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="58cbec33-0f2b-4c62-8090-099e761cce98" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d8289e97-aa33-4434-8025-1b4d444db14e" location="NA5">
+        <ns2:name>Win2012 R2 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="a2909e10-9782-43ae-96cc-519091740cab" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:53.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ec91c953-1881-4572-bb05-49ef63db8f9b" location="NA5">
+        <ns2:name>Win2012 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012S64" displayName="WIN2012S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="e1aa94c0-0591-4512-b88e-dd6b6614c350" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4b45e90e-a772-4cd8-af32-a80643cc2757" location="NA5">
+        <ns2:name>Win2012 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="910ddb0f-55b1-46ec-b015-5b9b69b24636" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:42.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="419d0d96-14f9-455a-bd27-053724c15122" location="NA5">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="0665fb87-5dec-4b8c-a876-256efbdff79a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:32:03.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="79662e30-ea32-4ff4-96db-e2e500037c5c" location="NA5">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="d3bb9561-50d7-4ee5-9ce6-83f1fa83a8cb" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:32:01.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="be220212-1a99-4191-97d8-95fd59cf3294" location="NA5">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="51a8e453-4850-43d9-bcc0-467a7aa79d44" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:59.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f07c5e59-b61a-4133-a38f-4660b943f265" location="NA5">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="ad1c225e-9274-4336-aea3-7d776c435607" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:58.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8b611aed-453e-4f8b-bbfc-be922bb30c33" location="NA5">
+        <ns2:name>Win2012 DC with MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="3cb6fd5f-9f62-4098-b4bb-b2f213b9da18" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:49.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d57c505c-e904-432a-9c52-f7be3b0cc5fe" location="NA5">
+        <ns2:name>Win2012 DC with MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="ffe0db8f-cd12-4efe-8c48-178084cfb2c2" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:47.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="30187062-551d-49c9-a75a-b274ef3ac036" location="NA5">
+        <ns2:name>Win2012 DC with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="242e4161-80b3-4697-a533-3c5221b4b3fc" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8e977178-0a56-41dd-b84f-d11b24fe4373" location="NA5">
+        <ns2:name>Win2012 DC with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="7a75bca5-c3f0-494e-95d3-8508b463f2b8" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2ab112ac-4b0e-4ebb-932a-a77554d6c236" location="NA5">
+        <ns2:name>Win2008 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Standard SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2S64" displayName="WIN2008R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="8b23cb1d-813e-4d09-89ad-7b52bd270998" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:41.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="6ecc2b68-c245-4aa3-8bdf-8aed1b14dca9" location="NA5">
+        <ns2:name>Win2008 R2 Ent 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="786d4378-5120-4de7-8c71-022a17e4051e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:29.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="597877ed-a0c3-49f3-b3a9-04daa58bb110" location="NA5">
+        <ns2:name>Win2008 R2 DC 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Datacenter SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2DC64" displayName="WIN2008R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="4c5801a6-aa03-4201-be46-ae78264a9f2d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:27.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d7653078-64bd-44cf-9df6-e12baab8a05f" location="NA5">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP3 installed with SQL Server 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="e85abb9d-17f4-402b-bfe5-affd8fa43092" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:35.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="2943731b-12d1-4b3e-ab51-1364f8172fd2" location="NA5">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="605ff741-00e9-4dda-9642-47b42285aa7b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:34.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="64b03322-3830-478d-8592-84b28bf1980f" location="NA5">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Standard SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="97e83007-f125-49ac-b8b1-9743ef9a6966" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:39.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="882b1db7-6940-40a6-947d-46462042dfda" location="NA5">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Enterprise SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="e3dee674-02c8-4ea3-9c4c-fe2a9cd27535" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2008R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:37.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9bed5e2d-415c-488f-a762-4d32ab7184d0" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-Bit with MS SP Fnd</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise installed with SQL Express &amp; SharePoint Foundation 2010</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="a7b6aa42-1c52-4c91-9683-00b76de2469b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSPFND2010</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:32.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="61af57f5-09c0-44ee-ba1c-5cefe30e5cb4" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml00. SID=DD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="6aa4fecf-0de1-4979-b52f-b52b9f6992e3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="bc823f13-c1c2-4bee-9974-630ee74f15e6" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="43261169-d4e1-4fdc-906c-b4fd74ba2303" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="49925b2b-6460-474f-b246-40f21616b0f7" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:17.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8bfdca30-e644-44eb-94ad-8a00ab5967ae" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml01. SID=DD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="6cef690a-4a26-4059-8e8a-61c53c669b67" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="2329bdbe-b295-46dd-b93f-a0922d58f47b" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b4edf81d-87dc-4007-8a02-30745c05b12f" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="df127864-095f-483d-b9f4-55708ee4f00f" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:19.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="b334c4b3-e5a6-4dcb-93ec-97e81aa13f73" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed00. SID=TD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="30ef02e3-9b0d-4393-9c73-52e0e8562c58" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b3f301ae-8895-4b74-a8c2-17d0b69b8c18" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="3527e05c-9e47-4b41-8f9f-7ee531afa8ad" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="865d30d5-1b68-46f8-8987-91b286c00e1c" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:20.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="73cbb24e-f8f1-4305-89f4-04b1e9bc5571" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed01. SID=TD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="d2862204-3c3f-4870-b44f-94039a100a28" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="00f60fe6-d3ce-481f-859b-d09b106f1897" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="71375c7d-c3c1-4ad1-a0cd-d675e1a3b475" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="71cabf41-5cae-4e11-8b08-c13de18a3858" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:15.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="5b064b9e-d117-45f1-9a87-e0f48a39be95" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg00. SID=PD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="838ab5d0-9eff-4771-98ad-c7877d996e76" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="783c447c-2549-4e8c-939f-ee27c7dc1665" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="017e2b0c-b2c3-4f08-b5ca-b7836e9bd134" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="121946c9-a4a2-414d-8e64-2cc282c786ef" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="54df397d-fa3f-4cca-ac11-585dd08e1eef" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:12.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f4d831b2-51f7-4795-b48c-09118901f75a" location="NA5">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg01. SID=PD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="50907589-15a5-467f-a1d8-6835bc0c32ab" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="ca07cd14-90cf-4475-8965-e8c5693a38cc" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b33bb3cb-c104-4c25-8397-f8b0cb3ba3aa" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="96582c3e-f60c-48a1-9dd0-43b4f8fd750b" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="924364b2-5071-4995-8109-f8c2be34766b" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:14.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="22d1045c-ba6a-453c-bde0-1be25d0bdd8a" location="NA5">
+        <ns2:name>Win2008 Std 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S64" displayName="WIN2008S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="b7078a3c-df44-426e-8937-4071e44c3423" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:31.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="535bca24-fb84-4f9c-9590-e2845b8f2963" location="NA5">
+        <ns2:name>Win2008 Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E64" displayName="WIN2008E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="3cd6ea2f-e22b-49fe-a90e-61b82c1ad2fc" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:24.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="272c24f5-036a-4462-b08b-6e7ba3b7a04b" location="NA5">
+        <ns2:name>Win2008 Std 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S32" displayName="WIN2008S/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="4f05aafe-76a4-41f3-91d9-e400d61aeaf5" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:25.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="bb556be4-fba7-4101-8605-3c78b6350d47" location="NA5">
+        <ns2:name>Win2008 Ent 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E32" displayName="WIN2008E/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="092c97d5-f00d-447c-af0a-29ea7e0ae4ed" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-15T08:31:22.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d94f6ad3-9f34-48f1-a124-f5e94c1d66e1" location="NA5">
+        <ns2:name>CSfM SharePoint 2013 Trial</ns2:name>
+        <ns2:description>Windows 2012 R2 Standard 64-bit installed with SharePoint 2013 and Visual Studio 2013 Pro (Trial Version)</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>12288</ns2:memoryMb>
+        <ns2:disk id="5a89a3bf-0b7c-4080-90c1-bfb08c0fc032" scsiId="0" sizeGb="100" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-19T18:31:00.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f78da8fa-986b-4c98-8f87-dc3c2f9e5987" location="NA9">
+        <ns2:name>RedHat 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d2efa9de-8d3a-4909-b86d-439e0167a6a2" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-04T10:10:53.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="615b403b-8c8e-4f61-9617-cab968728dfb" location="NA9">
+        <ns2:name>RedHat 6 64-bit 4 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT664" displayName="REDHAT6/64" type="UNIX"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="7a0052c7-ab7a-4521-803a-c6d062d99780" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:05:54.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="dc063d79-3ba3-4ba1-9b32-7c93a1ee6e38" location="NA9">
+        <ns2:name>RedHat 6 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 6.6 Enterprise (Santiago) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT632" displayName="REDHAT6/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="663274df-22a4-449b-b36e-f3aab7244d06" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:06:04.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="6cca2576-c87b-4b2c-8a23-b5dcf5a4e35d" location="NA9">
+        <ns2:name>RedHat 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 64-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT564" displayName="REDHAT5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c9a0ecf7-c533-4b01-8393-a1a57a5e4aca" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:06:15.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="d155e242-ac70-4a37-9212-23c9334490eb" location="NA9">
+        <ns2:name>RedHat 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>RedHat 5.11 Enterprise (Tikanga) 32-bit</ns2:description>
+        <ns2:operatingSystem id="REDHAT532" displayName="REDHAT5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="0bfc3966-e768-4390-b0b9-ebdf528947da" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:06:26.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="dc4f5eac-841c-4c51-8185-f15bfaaebf39" location="NA9">
+        <ns2:name>CentOS 6 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 6.6 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS664" displayName="CENTOS6/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="311fd017-18aa-40a6-9759-6f6d7a4e70a9" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:06:37.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="c8e8bbcb-f4ed-41d2-b4f9-37272baa7fca" location="NA9">
+        <ns2:name>CentOS 5 64-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 64-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS564" displayName="CENTOS5/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="5ffb6857-62b1-4967-8dfa-4f2bd73dcd04" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-30T11:27:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="29b8b703-3969-4b53-a732-020a726d9bdb" location="NA9">
+        <ns2:name>CentOS 5 32-bit 2 CPU</ns2:name>
+        <ns2:description>CentOS Release 5.11 32-bit</ns2:description>
+        <ns2:operatingSystem id="CENTOS532" displayName="CENTOS5/32" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="5d4f2702-f7c8-401a-bce9-ac4037322c71" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-06-30T11:25:24.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4c02126c-32fc-4b4c-9466-9824c1b5aa0f" location="NA9">
+        <ns2:name>Ubuntu 14.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 14.04.2 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1464" displayName="UBUNTU14/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="442b7f62-5fe8-485a-833e-fe5c30dd65bb" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-18T12:22:57.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="653afa6a-e47d-4483-8312-53618dc26666" location="NA9">
+        <ns2:name>Ubuntu 12.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 12.04.5 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1264" displayName="UBUNTU12/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="4d510450-e6e9-4ea3-aea4-89edcabfe7bf" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:07:07.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="57b06b87-9f37-41ad-a2a3-258fa7f015c3" location="NA9">
+        <ns2:name>Ubuntu 10.04 2 CPU</ns2:name>
+        <ns2:description>Ubuntu 10.04.4 LTS 64-bit</ns2:description>
+        <ns2:operatingSystem id="UBUNTU1064" displayName="UBUNTU10/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="880c87a2-c392-40a9-8333-3366b0cae66a" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:07:17.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="cd587d41-76ef-476c-858d-03a89eec2184" location="NA9">
+        <ns2:name>SuSE Linux Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>SuSE Linux Enterprise Server 11 SP3</ns2:description>
+        <ns2:operatingSystem id="SLES1164" displayName="SUSE11/64" type="UNIX"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="0ba07531-1c72-45b8-b5b4-8ae7f09717b5" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:07:27.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8bc629a9-8d71-4b1b-8b26-acdc077edab1" location="NA9">
+        <ns2:name>Win2012 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="3b7131d9-c1fb-4bfb-b53c-025e2e49ef69" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T17:02:31.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="888efb5a-2d62-4de5-8136-c5a6479e3958" location="NA9">
+        <ns2:name>Win2012 R2 Std 4 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="d8439731-7c33-4ef1-ac05-bd06f71f3e86" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T17:02:41.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="606321d3-53e3-4a56-a2c5-31144a39bdfa" location="NA9">
+        <ns2:name>Win2012 R2 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 R2 Update Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="6250c0d9-4940-4ec2-bd9e-a529d4856b4e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T17:03:11.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="feecba3f-b3ca-4473-99aa-8396f7d69721" location="NA9">
+        <ns2:name>Win2008 Std 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S64" displayName="WIN2008S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="f922c853-3936-4665-bc4d-8ef6fc04a75d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:46.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="1cdfee63-9e40-40f2-98e5-a46e9bfd742c" location="NA9">
+        <ns2:name>Win2012 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012S64" displayName="WIN2012S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="b5a2bea4-8855-4727-8c23-3869142b76a7" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:03.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="16e862f6-3837-446e-abb8-31f09dcad6f0" location="NA9">
+        <ns2:name>Win2012 DC 2 CPU</ns2:name>
+        <ns2:description>Windows 2012 Datacenter</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="d894ce02-9103-46ad-8f7f-6ae5869896bd" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:11.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9b689943-7b03-4a41-9999-e4ec3129955a" location="NA9">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="3ff38d90-dc11-4449-b239-a3ad4022bfef" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-04T08:29:07.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="ffa7f196-ca2f-41a8-a911-c525aa02ccac" location="NA9">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="2f1b7261-50ba-4dc2-bb38-096749ed204e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-04T08:31:44.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="933663b9-3ffe-4d74-a8a0-ac4ea4884f9f" location="NA9">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="ab247527-0cd1-41d9-9955-12e6fd3b3ced" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-04T08:34:45.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="512e4691-fb5e-4cfb-beb5-435398e915bf" location="NA9">
+        <ns2:name>Win2012 R2 Datacenter 64-bit MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 R2 Datacenter 64-bit installed with SQL 2012 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2DC64" displayName="WIN2012R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="b2b6faf2-e0d7-43f4-bb35-6b8e42a60737" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2012R2E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-04T08:36:36.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="0a4dcf84-8281-4988-b452-97b254173ae8" location="NA9">
+        <ns2:name>Win2012 DC with MS SQL 2014 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Standard</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="5935e475-06f0-4c3a-a92e-8c653db277e4" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014S</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:10:49.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="b901dc13-e5d3-40a9-9920-ce883b3268ed" location="NA9">
+        <ns2:name>Win2012 DC with MS SQL 2014 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2014 Enterprise</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="02e9d3ab-0588-4daa-853e-814937728d9b" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>MSSQL2014E</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:10:59.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e2c07b34-e408-4740-97a5-22f9a957dfe9" location="NA9">
+        <ns2:name>Win2012 DC with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="3179ff6e-ff9c-45ce-95b4-8c64b988b770" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:28:40.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="639e81d5-16d2-46c0-974f-573d728d6356" location="NA9">
+        <ns2:name>Win2012 DC with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2012 Datacenter 64-bit installed with SQL 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="1b98d70a-c5bf-4bdc-b7b5-09e620033cfb" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:28:51.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="8088eaf2-7781-4eeb-a508-0572af8b4352" location="NA9">
+        <ns2:name>Win2008 R2 Std 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Standard SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2S64" displayName="WIN2008R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="c0d7eae8-3bc9-4686-b733-cb5105e8ab91" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:20.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="6fc347e3-3dfa-4f2a-b8ff-559822ef9e6d" location="NA9">
+        <ns2:name>Win2008 R2 Ent 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="ad28d4f0-3cc0-4941-8bef-6d50611ae3f3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:29.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="3c21d3f2-23e4-40e6-9d57-5b43d2f5330f" location="NA9">
+        <ns2:name>Win2008 R2 DC 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 R2 Datacenter SP1</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2DC64" displayName="WIN2008R2DC/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="49dfe36d-3625-4e03-9088-d927db8b7be0" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:19:37.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="9a076d43-6315-45ce-b1c7-3312678604f4" location="NA9">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise SP3 installed with SQL Server 2012 Standard SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="665280f5-e32f-4c50-b5ec-f761bd7f246f" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:29:02.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="fc546f41-41bb-4ccf-85d7-1915259df4b3" location="NA9">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2012 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2012 Enterprise SP2</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="3b159162-cb80-49f3-b121-5ba5efa7bb05" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:29:11.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="592c3a16-046c-49a4-9a86-f36663f6f66b" location="NA9">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Std</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Standard SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="c81d7df8-e7c5-42a7-b42f-4f5d41f16d3e" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:29:20.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="df9d5241-d3ea-48eb-ae51-5fbda9277ccf" location="NA9">
+        <ns2:name>Win2008 R2 Ent with MS SQL 2008 R2 Ent</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise 64-bit installed with SQL Server 2008 R2 Enterprise SP3</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="56352dc0-3336-4feb-b767-183eec808bba" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:29:29.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="93a30421-9b13-45f1-83b3-c0f1d6896f3a" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-Bit with MS SP Fnd</ns2:name>
+        <ns2:description>Windows 2008 R2 Enterprise installed with SQL Express &amp; SharePoint Foundation 2010</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="1e6f3b54-f7c9-405e-9e84-7e9f49814871" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:35:11.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="038be67b-9653-44a5-804c-0b8d5f9504b9" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml00. SID=DD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="94eb2ed3-bb26-4289-8c6f-5d601dc01dd3" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="c8027065-971a-488c-95b4-0fc3f363f1b4" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="a439082b-4fa9-4c03-94c4-536297679127" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="a09b8560-36b2-477b-9656-87046b41f117" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T11:45:48.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e58e8f77-4f93-42be-9f17-9cd8da3c8962" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Small DD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapsml01. SID=DD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>8192</ns2:memoryMb>
+        <ns2:disk id="99046462-5402-428f-b87f-0950f442746a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="0d4423b7-0039-4333-9d10-dddb715086aa" scsiId="1" sizeGb="130" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="871e78cc-7ecc-4884-b158-250105937f3a" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="61ff506c-326b-4af9-8464-d4f753e7a8e0" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T11:56:07.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="c1364ea2-705d-466e-85d0-53bf7c1840fa" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed00. SID=TD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="0a51c1f5-17a3-422a-bf8f-bc15a49652c5" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="a74a2d65-73d9-44ff-bf46-d88946fbedde" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="083bb813-a980-4219-a410-07cf065e859f" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="83f41391-9daa-45ce-83b6-3d68e125be83" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T18:05:03.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="150dc731-4b2f-4f41-9c2a-1d26d33cb827" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Medium TD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=sapmed01. SID=TD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>10240</ns2:memoryMb>
+        <ns2:disk id="a49834a6-1225-41d9-bb10-018c6dec22c2" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b7a03840-3288-4be8-b2fe-45d472219a80" scsiId="1" sizeGb="230" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="54b486c6-2698-4f05-85bc-225717ac7263" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="b937f999-0e2f-4a7a-9be9-86ec34f30b3d" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T18:05:13.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="788480d1-6629-4f7d-8723-a33b64f98b6f" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD0</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg00. SID=PD0 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="9df84de3-bf9d-4532-90be-7f1384305b38" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="d3d03bbf-f65d-4a87-8eb3-70c83197abdc" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="940e3ee6-a6a5-4528-8bfd-cf80a1ea8826" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="28a8ade4-90f5-4cb7-95a8-337a3b6b7d74" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="3d5d5f3c-2454-4139-a202-9134d905b666" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T12:03:15.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f5d60b40-cc06-4d51-b8ce-46b841a3c6ce" location="NA9">
+        <ns2:name>Win2008 R2 Ent 64-bit with SAP Large PD1</ns2:name>
+        <ns2:description>MSSQL 2012 and SAP ECC6_EHP7 (no licensing). Hostname=saplrg01. SID=PD1 NR=00</ns2:description>
+        <ns2:operatingSystem id="WIN2008R2E64" displayName="WIN2008R2E/64" type="WINDOWS"/>
+        <ns2:cpuCount>8</ns2:cpuCount>
+        <ns2:memoryMb>20480</ns2:memoryMb>
+        <ns2:disk id="880fa0ca-c5e8-4397-a2a2-39a5c4da211d" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="8053c06b-eaae-4a77-9c58-c7385e4078c7" scsiId="1" sizeGb="300" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="be5a5fde-4f48-4ac5-84fb-ee652761b48c" scsiId="2" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="2b71fb2b-7d7b-4659-ad40-c4cdab1f457e" scsiId="3" sizeGb="10" speed="STANDARD" state="NORMAL"/>
+        <ns2:disk id="fd049a04-a637-4666-94f4-51fab7367edc" scsiId="4" sizeGb="30" speed="STANDARD" state="NORMAL"/>
+        <ns2:softwareLabel>SAPACCEL</ns2:softwareLabel>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-17T12:05:04.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="e8d71d15-206d-47d2-bf1c-593e6941d572" location="NA9">
+        <ns2:name>Win2008 Ent 64-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 64-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E64" displayName="WIN2008E/64" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="6f6e0f2a-a830-4a9d-b2f8-36ac7f28baaa" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:20:00.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="4cfd844e-7e3b-4252-8dda-1df8f6fa6780" location="NA9">
+        <ns2:name>Win2008 Std 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Standard SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008S32" displayName="WIN2008S/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="9b57df01-63b3-4472-90e2-40cd50acffd9" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:20:09.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="88c82cf5-72bd-43d1-8def-d59a941c306e" location="NA9">
+        <ns2:name>Win2008 Ent 32-bit 2 CPU</ns2:name>
+        <ns2:description>Windows 2008 Enterprise SP2 32-bit</ns2:description>
+        <ns2:operatingSystem id="WIN2008E32" displayName="WIN2008E/32" type="WINDOWS"/>
+        <ns2:cpuCount>2</ns2:cpuCount>
+        <ns2:memoryMb>4096</ns2:memoryMb>
+        <ns2:disk id="be154632-8753-45d7-96bb-1151854f1c80" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-03-03T16:20:18.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+    <ns2:image id="f6f0d8bc-6640-442e-be5e-8299999225c1" location="NA9">
+        <ns2:name>CSfM SharePoint 2013 Trial</ns2:name>
+        <ns2:description>Windows 2012 R2 Standard 64-bit installed with SharePoint 2013 and Visual Studio 2013 Pro (Trial Version)</ns2:description>
+        <ns2:operatingSystem id="WIN2012R2S64" displayName="WIN2012R2S/64" type="WINDOWS"/>
+        <ns2:cpuCount>4</ns2:cpuCount>
+        <ns2:memoryMb>12288</ns2:memoryMb>
+        <ns2:disk id="a41ac835-21a3-4388-b727-6764b3ee1854" scsiId="0" sizeGb="100" speed="STANDARD" state="NORMAL"/>
+        <ns2:source type="BASE"/>
+        <ns2:created>2015-05-21T15:29:21.000Z</ns2:created>
+        <ns2:state>NORMAL</ns2:state>
+    </ns2:image>
+</ns2:ImagesWithDiskSpeed>

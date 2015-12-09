@@ -39,6 +39,8 @@ class Provider(object):
     ELB = 'elb'
     CLOUDSTACK = 'cloudstack'
     GCE = 'gce'
+    SOFTLAYER = 'softlayer'
+    DIMENSIONDATA = 'dimensiondata'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

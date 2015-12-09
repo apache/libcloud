@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pool
+xmlns="urn:didata.com:api:cloud:types" id="4d360b1f-bc2c-4ab7-9884-1f03ba2768f7" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-6116f11291d0</networkDomainId>
+<name>myDevelopmentPool.1</name>
+<description>Pool for load balancing development application
+servers.</description>
+<loadBalanceMethod>ROUND_ROBIN</loadBalanceMethod>
+<healthMonitor id="01683574-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Http"/>
+<healthMonitor id="0168546c-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Https"/>
+<serviceDownAction>RESELECT</serviceDownAction>
+<slowRampTime>10</slowRampTime>
+<state>NORMAL</state>
+<createTime>2015-06-04T09:15:07.000Z</createTime>
+</pool>

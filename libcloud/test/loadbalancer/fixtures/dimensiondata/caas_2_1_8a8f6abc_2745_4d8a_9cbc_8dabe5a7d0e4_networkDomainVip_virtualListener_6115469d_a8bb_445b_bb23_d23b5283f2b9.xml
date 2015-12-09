@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<virtualListener
+xmlns="urn:didata.com:api:cloud:types" id="6115469d-a8bb-445b-bb23-d23b5283f2b9" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-6116f11291d0</networkDomainId>
+<name>myProduction.Virtual.Listener</name>
+<state>NORMAL</state>
+<description>Virtual Listener for load balancing our test
+systems.</description>
+<createTime>2015-05-28T15:59:49.000Z</createTime>
+<type>PERFORMANCE_LAYER_4</type>
+<protocol>HTTP</protocol>
+<listenerIpAddress>165.180.12.22</listenerIpAddress>
+<port>8899</port>
+<enabled>true</enabled>
+<connectionLimit>10000</connectionLimit>
+<connectionRateLimit>400</connectionRateLimit>
+<sourcePortPreservation>PRESERVE</sourcePortPreservation>
+<pool id="afb1fb1a-eab9-43f4-95c2-36a4cdda6cb8" name="myProductionPool.1">
+<loadBalanceMethod>ROUND_ROBIN</loadBalanceMethod>
+<serviceDownAction>NONE</serviceDownAction>
+<slowRampTime>10</slowRampTime>
+<healthMonitor id="01683574-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Http"/>
+<healthMonitor id="0168546c-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Https"/>
+</pool>
+<clientClonePool id="6f2f5d7b-cdd9-4d84-8ad7-999b64a87978"
+name="myDevelopmentPool.1">
+<loadBalanceMethod>ROUND_ROBIN</loadBalanceMethod>
+<serviceDownAction>RESELECT</serviceDownAction>
+<slowRampTime>10</slowRampTime>
+<healthMonitor id="01683574-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Http"/>
+<healthMonitor id="0168546c-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Https"/>
+</clientClonePool>
+<persistenceProfile id="a34ca25c-f3db-11e4-b010-005056806999"
+name="CCDEFAULT.DestinationAddress"/>
+<fallbackPersistenceProfile id="a34ca3f6-f3db-11e4-b010-005056806999"
+name="CCDEFAULT.SourceAddress"/>
+<irule id="2b20abd9-ffdc-11e4-b010-005056806999"
+name="CCDEFAULT.IpProtocolTimers"/>
+<irule id="2b20e790-ffdc-11e4-b010-005056806999" name="CCDEFAULT.Ips"/>
+</virtualListener>

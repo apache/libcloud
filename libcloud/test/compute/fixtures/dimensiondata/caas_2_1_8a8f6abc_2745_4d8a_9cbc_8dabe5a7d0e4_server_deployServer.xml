@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-08T10:43:34.168-04:00/7c4ea967-1723-4a06-80e2-fcdf50f3fa82">
+<operation>DEPLOY</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to deploy Server 'Production FTPS Server' has been
+accepted and is being processed.</message>
+<info name="serverId" value="e75ead52-692f-4314-8725-c8a4f4d13a87"/>
+</response>
