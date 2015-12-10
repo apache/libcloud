@@ -1996,7 +1996,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return isinstance(node_or_image, Node)
 
     def _to_node(self, node_elm):
-        # Parse VMs as extra field
+        # Parse snapshots and VMs as extra fields
+        snapshots = []
+        for snapshot_elem in node_elm.findall(fixxpath(node_elm, 'SnapshotSection/Snapshot')):
+            snapshots.append({
+                "created": snapshot_elem.get("created"),
+                "poweredOn": snapshot_elem.get("poweredOn"),
+                "size": snapshot_elem.get("size"),
+            })
+
         vms = []
         for vm_elem in node_elm.findall(fixxpath(node_elm, 'Children/Vm')):
             public_ips = []
@@ -2053,7 +2061,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                     public_ips=public_ips,
                     private_ips=private_ips,
                     driver=self.connection.driver,
-                    extra={'vdc': vdc.name, 'vms': vms})
+                    extra={'vdc': vdc.name, 'vms': vms, 'snapshots': snapshots})
         return node
 
     def _to_vdc(self, vdc_elm):
@@ -2101,3 +2109,57 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
     Accept headers
     '''
     connectionCls = VCloud_5_5_Connection
+
+    def ex_create_snapshot(self, node):
+        """
+        Creates new snapshot of a virtual machine or of all the virtual machines in a vApp.
+        Prior to creation of the new snapshots, any existing user created snapshots
+        associated with the virtual machines are removed.
+
+        :param  node: node
+        :type   node: :class:`Node`
+
+        :rtype: :class:`Node`
+        """
+        snapshot_xml = ET.Element("CreateSnapshotParams",
+                                  { 'memory': 'true', 'name': 'name', 'quiesce': 'true',
+                                    'xmlns': "http://www.vmware.com/vcloud/v1.5",
+                                    'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+                                  )
+        ET.SubElement(snapshot_xml, 'Description').text = 'Description'
+        headers = {
+            'Content-Type': 'application/vnd.vmware.vcloud.createSnapshotParams+xml'
+        }
+        return self._perform_snapshot_operation(node, "createSnapshot", snapshot_xml, headers)
+
+    def ex_remove_snapshots(self, node):
+        """
+        Removes all user created snapshots for a vApp or virtual machine.
+
+        :param  node: node
+        :type   node: :class:`Node`
+
+        :rtype: :class:`Node`
+        """
+        return self._perform_snapshot_operation(node, "removeAllSnapshots", None, None)
+
+    def ex_revert_to_snapshot(self, node):
+        """
+        Reverts a vApp or virtual machine to the current snapshot, if any.
+
+        :param  node: node
+        :type   node: :class:`Node`
+
+        :rtype: :class:`Node`
+        """
+        return self._perform_snapshot_operation(node, "revertToCurrentSnapshot", None, None)
+
+    def _perform_snapshot_operation(self, node, operation, xml_data, headers):
+        res = self.connection.request(
+            '%s/action/%s' % (get_url_path(node.id), operation),
+            data=ET.tostring(xml_data) if xml_data else None,
+            method='POST',
+            headers=headers)
+        self._wait_for_task_completion(res.object.get('href'))
+        res = self.connection.request(get_url_path(node.id))
+        return self._to_node(res.object)
