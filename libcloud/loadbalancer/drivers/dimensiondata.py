@@ -23,6 +23,11 @@ from libcloud.common.dimensiondata import DimensionDataPool
 from libcloud.common.dimensiondata import DimensionDataPoolMember
 from libcloud.common.dimensiondata import DimensionDataVirtualListener
 from libcloud.common.dimensiondata import DimensionDataVIPNode
+from libcloud.common.dimensiondata import DimensionDataDefaultHealthMonitor
+from libcloud.common.dimensiondata import DimensionDataPersistenceProfile
+from libcloud.common.dimensiondata import \
+    DimensionDataVirtualListenerCompatibility
+from libcloud.common.dimensiondata import DimensionDataDefaultiRule
 from libcloud.common.dimensiondata import API_ENDPOINTS
 from libcloud.common.dimensiondata import DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
@@ -473,6 +478,7 @@ class DimensionDataLBDriver(Driver):
                        name,
                        balancer_method,
                        ex_description,
+                       health_monitors=None,
                        service_down_action='NONE',
                        slow_ramp_time=30):
         """
@@ -489,6 +495,10 @@ class DimensionDataLBDriver(Driver):
 
         :param ex_description: Description of the node
         :type  ex_description: ``str``
+
+        :param health_monitors: A list of health monitors to use for the pool.
+        :type  health_monitors: ``list`` of
+            :class:`DimensionDataDefaultHealthMonitor`
 
         :param service_down_action: What to do when node
                                     is unavailable NONE, DROP or RESELECT
@@ -510,6 +520,12 @@ class DimensionDataLBDriver(Driver):
             = str(ex_description)
         ET.SubElement(create_node_elm, "loadBalanceMethod") \
             .text = str(balancer_method)
+
+        if health_monitors is not None:
+            for monitor in health_monitors:
+                ET.SubElement(create_node_elm, "healthMonitorId") \
+                    .text = str(monitor.id)
+
         ET.SubElement(create_node_elm, "serviceDownAction") \
             .text = service_down_action
         ET.SubElement(create_node_elm, "slowRampTime").text \
@@ -542,6 +558,9 @@ class DimensionDataLBDriver(Driver):
                                    ex_description,
                                    port,
                                    pool,
+                                   persistence_profile=None,
+                                   fallback_persistence_profile=None,
+                                   irule=None,
                                    protocol='TCP',
                                    connection_limit=25000,
                                    connection_rate_limit=2000,
@@ -561,9 +580,18 @@ class DimensionDataLBDriver(Driver):
         :param port: Description of the node
         :type  port: ``str``
 
-        :param listener_type: The type of balancer, one of STANDARD (default)
-                                or PERFORMANCE_LAYER_4
-        :type  listener_type: ``str``
+        :param pool: The pool to use for the listener
+        :type  pool: :class:`DimensionDataPool`
+
+        :param persistence_profile: Persistence profile
+        :type  persistence_profile: :class:`DimensionDataPersistenceProfile`
+
+        :param fallback_persistence_profile: Fallback persistence profile
+        :type  fallback_persistence_profile:
+            :class:`DimensionDataPersistenceProfile`
+
+        :param irule: The iRule to apply
+        :type  irule: :class:`DimensionDataDefaultiRule`
 
         :param protocol: For STANDARD type, ANY, TCP or UDP
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
@@ -609,6 +637,15 @@ class DimensionDataLBDriver(Driver):
             .text = source_port_preservation
         ET.SubElement(create_node_elm, "poolId") \
             .text = pool.id
+        if persistence_profile is not None:
+            ET.SubElement(create_node_elm, "persistenceProfileId") \
+                .text = persistence_profile.id
+        if fallback_persistence_profile is not None:
+            ET.SubElement(create_node_elm, "fallbackPersistenceProfileId") \
+                .text = fallback_persistence_profile.id
+        if irule is not None:
+            ET.SubElement(create_node_elm, "iruleId") \
+                .text = irule.id
 
         response = self.connection.request_with_orgId_api_2(
             action='networkDomainVip/createVirtualListener',
@@ -851,6 +888,118 @@ class DimensionDataLBDriver(Driver):
         """
         return self.connection.wait_for_state(state, func, poll_interval,
                                               timeout, *args, **kwargs)
+
+    def ex_get_default_health_monitors(self, network_domain_id):
+        """
+        Get the default health monitors available for a network domain
+
+        :param network_domain_id: The ID of of a ``DimensionDataNetworkDomain``
+        :type  network_domain_id: ``str``
+
+        :rtype: `list` of :class:`DimensionDataDefaultHealthMonitor`
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/defaultHealthMonitor',
+            params={'networkDomainId': network_domain_id},
+            method='GET').object
+        return self._to_health_monitors(result)
+
+    def ex_get_default_persistence_profiles(self, network_domain_id):
+        """
+        Get the default persistence profiles available for a network domain
+
+        :param network_domain_id: The ID of of a ``DimensionDataNetworkDomain``
+        :type  network_domain_id: ``str``
+
+        :rtype: `list` of :class:`DimensionDataPersistenceProfile`
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/defaultPersistenceProfile',
+            params={'networkDomainId': network_domain_id},
+            method='GET').object
+        return self._to_persistence_profiles(result)
+
+    def ex_get_default_irules(self, network_domain_id):
+        """
+        Get the default iRules available for a network domain
+
+        :param network_domain_id: The ID of of a ``DimensionDataNetworkDomain``
+        :type  network_domain_id: ``str``
+
+        :rtype: `list` of :class:`DimensionDataDefaultiRule`
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action='networkDomainVip/defaultIrule',
+            params={'networkDomainId': network_domain_id},
+            method='GET').object
+        return self._to_irules(result)
+
+    def _to_irules(self, object):
+        irules = []
+        matches = object.findall(
+            fixxpath('defaultIrule', TYPES_URN))
+        for element in matches:
+            irules.append(self._to_irule(element))
+        return irules
+
+    def _to_irule(self, element):
+        compatible = []
+        matches = element.findall(
+            fixxpath('virtualListenerCompatibility', TYPES_URN))
+        for match_element in matches:
+            compatible.append(
+                DimensionDataVirtualListenerCompatibility(
+                    type=match_element.get('type'),
+                    protocol=match_element.get('protocol', None)))
+        irule_element = element.find(fixxpath('irule', TYPES_URN))
+        return DimensionDataDefaultiRule(
+            id=irule_element.get('id'),
+            name=irule_element.get('name'),
+            compatible_listeners=compatible
+        )
+
+    def _to_persistence_profiles(self, object):
+        profiles = []
+        matches = object.findall(
+            fixxpath('defaultPersistenceProfile', TYPES_URN))
+        for element in matches:
+            profiles.append(self._to_persistence_profile(element))
+        return profiles
+
+    def _to_persistence_profile(self, element):
+        compatible = []
+        matches = element.findall(
+            fixxpath('virtualListenerCompatibility', TYPES_URN))
+        for match_element in matches:
+            compatible.append(
+                DimensionDataVirtualListenerCompatibility(
+                    type=match_element.get('type'),
+                    protocol=match_element.get('protocol', None)))
+
+        return DimensionDataPersistenceProfile(
+            id=element.get('id'),
+            fallback_compatible=bool(
+                element.get('fallbackCompatible') == "true"),
+            name=findtext(element, 'name', TYPES_URN),
+            compatible_listeners=compatible
+        )
+
+    def _to_health_monitors(self, object):
+        monitors = []
+        matches = object.findall(fixxpath('defaultHealthMonitor', TYPES_URN))
+        for element in matches:
+            monitors.append(self._to_health_monitor(element))
+        return monitors
+
+    def _to_health_monitor(self, element):
+        return DimensionDataDefaultHealthMonitor(
+            id=element.get('id'),
+            name=findtext(element, 'name', TYPES_URN),
+            node_compatible=bool(
+                findtext(element, 'nodeCompatible', TYPES_URN) == "true"),
+            pool_compatible=bool(
+                findtext(element, 'poolCompatible', TYPES_URN) == "true"),
+        )
 
     def _to_nodes(self, object):
         nodes = []

@@ -5,7 +5,7 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
-In development
+Libcloud 0.20.0
 --------------
 
 * New optional ``ttl`` argument has been added to ``libcloud.dns.base.Record``

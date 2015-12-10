@@ -28,6 +28,7 @@ from libcloud.common.dimensiondata import (DimensionDataConnection,
 from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
@@ -82,6 +83,8 @@ class DimensionDataNodeDriver(NodeDriver):
     def create_node(self, name, image, auth, ex_description,
                     ex_network=None, ex_network_domain=None,
                     ex_vlan=None,
+                    ex_memory_gb=None,
+                    ex_cpu_specification=None,
                     ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
@@ -111,6 +114,13 @@ class DimensionDataNodeDriver(NodeDriver):
                                         (required unless using network)
         :type       ex_vlan: :class:`DimensionDataVlan`
 
+        :keyword    ex_memory_gb:  The amount of memory in GB for the server
+        :type       ex_memory_gb: ``int``
+
+        :keyword    ex_cpu_specification: The spec of CPU to deploy (optional)
+        :type       ex_cpu_specification:
+            :class:`DimensionDataServerCpuSpecification`
+
         :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
         :type       ex_is_started:  ``bool``
@@ -135,6 +145,16 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "imageId").text = image.id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
+
+        if ex_cpu_specification is not None:
+            cpu = ET.SubElement(server_elm, "cpu")
+            cpu.set('speed', ex_cpu_specification.performance)
+            cpu.set('count', str(ex_cpu_specification.cpu_count))
+            cpu.set('coresPerSocket',
+                    str(ex_cpu_specification.cores_per_socket))
+
+        if ex_memory_gb is not None:
+            ET.SubElement(server_elm, "memoryGb").text = str(ex_memory_gb)
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
@@ -224,11 +244,12 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['location'] = location.id
+            params['datacenterId'] = location.id
 
         return self._to_base_images(
-            self.connection.request_api_1('base/imageWithDiskSpeed',
-                                          params=params)
+            self.connection.request_with_orgId_api_2(
+                'image/osImage',
+                params=params)
             .object)
 
     def list_sizes(self, location=None):
@@ -280,44 +301,6 @@ class DimensionDataNodeDriver(NodeDriver):
             self.connection
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
-
-    def _to_base_images(self, object):
-        images = []
-        locations = self.list_locations()
-
-        for element in object.findall(fixxpath("image", SERVER_NS)):
-            images.append(self._to_base_image(element, locations))
-
-        return images
-
-    def _to_base_image(self, element, locations):
-        # Eventually we will probably need multiple _to_image() functions
-        # that parse <ServerImage> differently than <DeployedImage>.
-        # DeployedImages are customer snapshot images, and ServerImages are
-        # 'base' images provided by DimensionData
-        location_id = element.get('location')
-        location = list(filter(lambda x: x.id == location_id,
-                               locations))[0]
-
-        extra = {
-            'description': findtext(element, 'description', SERVER_NS),
-            'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
-            'OS_displayName': findtext(element, 'operatingSystem/displayName',
-                                       SERVER_NS),
-            'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
-            'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
-            'memory': findtext(element, 'memory', SERVER_NS),
-            'osStorage': findtext(element, 'osStorage', SERVER_NS),
-            'additionalStorage': findtext(element, 'additionalStorage',
-                                          SERVER_NS),
-            'created': findtext(element, 'created', SERVER_NS),
-            'location': location,
-        }
-
-        return NodeImage(id=element.get('id'),
-                         name=str(findtext(element, 'name', SERVER_NS)),
-                         extra=extra,
-                         driver=self.connection.driver)
 
     def ex_start_node(self, node):
         """
@@ -768,16 +751,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if info.get('name') == 'vlanId':
                 vlan_id = info.get('value')
 
-        return DimensionDataVlan(
-            id=vlan_id,
-            name=name,
-            description=description,
-            network_domain=network_domain,
-            location=network_domain.location,
-            status=NodeState.RUNNING,
-            private_ipv4_range_address=private_ipv4_base_address,
-            private_ipv4_range_size=private_ipv4_prefix_size
-        )
+        return self.ex_get_vlan(vlan_id)
 
     def ex_get_vlan(self, vlan_id):
         """
@@ -958,8 +932,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             source_ip.set('address', rule.source.ip_address)
             source_ip.set('prefixSize', rule.source.ip_prefix_size)
-            source_port = ET.SubElement(source, 'port')
-            source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', rule.source.port_begin)
             if rule.source.port_end is not None:
                 source_port.set('end', rule.source.port_end)
         # Setup destination port rule
@@ -970,8 +945,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             dest_ip.set('address', rule.destination.ip_address)
             dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
-            dest_port = ET.SubElement(dest, 'port')
-            dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
         ET.SubElement(create_node, "enabled").text = 'true'
@@ -1330,6 +1306,46 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
+    def ex_reconfigure_node(self, node, memory_gb, cpu_count, cores_per_socket,
+                            cpu_performance):
+        """
+        Reconfigure the virtual hardware specification of a node
+
+        :param  node: The server to change
+        :type   node: :class:`Node`
+
+        :param  memory_gb: The amount of memory in GB (optional)
+        :type   memory_gb: ``int``
+
+        :param  cpu_count: The number of CPU (optional)
+        :type   cpu_count: ``int``
+
+        :param  cores_per_socket: Number of CPU cores per socket (optional)
+        :type   cores_per_socket: ``int``
+
+        :param  cpu_performance: CPU Performance type (optional)
+        :type   cpu_performance: ``str``
+
+        :rtype: ``bool``
+        """
+        update = ET.Element('reconfigureServer', {'xmlns': TYPES_URN})
+        update.set('id', node.id)
+        if memory_gb is not None:
+            ET.SubElement(update, 'memoryGb').text = str(memory_gb)
+        if cpu_count is not None:
+            ET.SubElement(update, 'cpuCount').text = str(cpu_count)
+        if cpu_performance is not None:
+            ET.SubElement(update, 'cpuSpeed').text = cpu_performance
+        if cores_per_socket is not None:
+            ET.SubElement(update, 'coresPerSocket').text = \
+                str(cores_per_socket)
+        result = self.connection.request_with_orgId_api_2(
+            'server/reconfigureServer',
+            method='POST',
+            data=ET.tostring(update)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_clone_node_to_image(self, node, image_name, image_description=None):
         """
         Clone a server into a customer image.
@@ -1352,6 +1368,60 @@ class DimensionDataNodeDriver(NodeDriver):
             (node.id, image_name, image_description)).object
         response_code = findtext(result, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_list_customer_images(self, location=None):
+        """
+        Return a list of customer imported images
+
+        :param location: The target location
+        :type  location: :class:`NodeLocation`
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        params = {}
+        if location is not None:
+            params['datacenterId'] = location.id
+
+        return self._to_base_images(
+            self.connection.request_with_orgId_api_2(
+                'image/customerImage',
+                params=params)
+            .object, 'customerImage')
+
+    def _to_base_images(self, object, el_name='osImage'):
+        images = []
+        locations = self.list_locations()
+
+        for element in object.findall(fixxpath(el_name, TYPES_URN)):
+            images.append(self._to_base_image(element, locations))
+
+        return images
+
+    def _to_base_image(self, element, locations):
+        # Eventually we will probably need multiple _to_image() functions
+        # that parse <ServerImage> differently than <DeployedImage>.
+        # DeployedImages are customer snapshot images, and ServerImages are
+        # 'base' images provided by DimensionData
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+        os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+        extra = {
+            'description': findtext(element, 'description', TYPES_URN),
+            'OS_type': os_el.get('type'),
+            'OS_displayName': os_el.get('displayName'),
+            'cpu': cpu_spec,
+            'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
+            'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
+            'created': findtext(element, 'createTime', TYPES_URN),
+            'location': location,
+        }
+
+        return NodeImage(id=element.get('id'),
+                         name=str(findtext(element, 'name', TYPES_URN)),
+                         extra=extra,
+                         driver=self.connection.driver)
 
     def _to_nat_rules(self, object, network_domain):
         rules = []
@@ -1500,6 +1570,7 @@ class DimensionDataNodeDriver(NodeDriver):
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
+        ip6_range = element.find(fixxpath('ipv6Range', TYPES_URN))
         network_domain_el = element.find(
             fixxpath('networkDomain', TYPES_URN))
         network_domain = self.ex_get_network_domain(
@@ -1511,7 +1582,17 @@ class DimensionDataNodeDriver(NodeDriver):
                                  TYPES_URN),
             network_domain=network_domain,
             private_ipv4_range_address=ip_range.get('address'),
-            private_ipv4_range_size=ip_range.get('prefixSize'),
+            private_ipv4_range_size=int(ip_range.get('prefixSize')),
+            ipv6_range_address=ip6_range.get('address'),
+            ipv6_range_size=int(ip6_range.get('prefixSize')),
+            ipv4_gateway=findtext(
+                element,
+                'ipv4GatewayAddress',
+                TYPES_URN),
+            ipv6_gateway=findtext(
+                element,
+                'ipv6GatewayAddress',
+                TYPES_URN),
             location=location,
             status=findtext(element, 'state', TYPES_URN))
 
@@ -1529,8 +1610,14 @@ class DimensionDataNodeDriver(NodeDriver):
                          driver=self)
         return l
 
+    def _to_cpu_spec(self, element):
+        return DimensionDataServerCpuSpecification(
+            cpu_count=int(element.get('count')),
+            cores_per_socket=int(element.get('coresPerSocket')),
+            performance=element.get('speed'))
+
     def _to_nodes(self, object):
-        node_elements = object.findall(fixxpath('Server', TYPES_URN))
+        node_elements = object.findall(fixxpath('server', TYPES_URN))
 
         return [self._to_node(el) for el in node_elements]
 
@@ -1545,6 +1632,8 @@ class DimensionDataNodeDriver(NodeDriver):
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
 
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -1555,10 +1644,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
-            'cpuCount': int(findtext(
-                element,
-                'cpuCount',
-                TYPES_URN)),
+            'cpu': cpu_spec,
             'memoryMb': int(findtext(
                 element,
                 'memoryGb',

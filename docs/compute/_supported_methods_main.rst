@@ -14,7 +14,6 @@ Provider                              list nodes create node reboot node destroy
 `Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
 `DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
 `DimensionData`_                      yes        yes         yes         yes          yes         yes        yes        
-`DreamHost VPS`_                      yes        yes         yes         yes          yes         yes        no         
 `Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-southeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
@@ -87,7 +86,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
-.. _`DreamHost VPS`: http://dreamhost.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

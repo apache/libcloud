@@ -101,8 +101,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.ibm_sce', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
     ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
-    Provider.DREAMHOST:
-    ('libcloud.compute.drivers.dreamhost', 'DreamhostNodeDriver'),
     Provider.BRIGHTBOX:
     ('libcloud.compute.drivers.brightbox', 'BrightboxNodeDriver'),
     Provider.NIMBUS:

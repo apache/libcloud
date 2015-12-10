@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Changes with Apache Libcloud in development
+Changes with Apache Libcloud 0.20.0
 -------------------------------------------
 
 General
@@ -29,6 +29,16 @@ General
 
 Compute
 ~~~~~~~
+
+- Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
+  API compliant
+  (GITHUB-655)
+  [Stephano Maffulli]
+
+- Added additional kwargs to the create_node method for Dimension Data driver, allowing the user to specify the RAM and
+  CPU upfront. Added a ex_reconfigure_node method and ex_list_customer_images as well as updating the API to 2.1.
+  (LIBCLOUD-783, GITHUB-656)
+  [Anthony Shaw]
 
 - The EC2 Instance Type updated with correct disk sizes (especially the disk size for the m3 instances),
   conversion errors between GiB an M[i]B, disk count were the cause.

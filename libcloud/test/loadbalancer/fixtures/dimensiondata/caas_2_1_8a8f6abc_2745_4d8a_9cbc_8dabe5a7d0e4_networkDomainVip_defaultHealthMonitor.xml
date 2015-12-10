@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaultHealthMonitors
+ xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="6"
+totalCount="6" pageSize="250">
+ <defaultHealthMonitor id="01683574-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.Http</name>
+ <nodeCompatible>false</nodeCompatible>
+ <poolCompatible>true</poolCompatible>
+ </defaultHealthMonitor>
+ <defaultHealthMonitor id="0168546c-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.Https</name>
+ <nodeCompatible>false</nodeCompatible>
+ <poolCompatible>true</poolCompatible>
+ </defaultHealthMonitor>
+ <defaultHealthMonitor id="0168b83a-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.Icmp</name>
+ <nodeCompatible>true</nodeCompatible>
+ <poolCompatible>false</poolCompatible>
+ </defaultHealthMonitor>
+ <defaultHealthMonitor id="01686f4b-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.Tcp</name>
+ <nodeCompatible>false</nodeCompatible>
+ <poolCompatible>true</poolCompatible>
+ </defaultHealthMonitor>
+ <defaultHealthMonitor id="0168a2f9-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.TcpHalfOpen</name>
+ <nodeCompatible>false</nodeCompatible>
+ <poolCompatible>true</poolCompatible>
+ </defaultHealthMonitor>
+ <defaultHealthMonitor id="01688878-d487-11e4-811f-005056806999">
+ <name>CCDEFAULT.Udp</name>
+ <nodeCompatible>false</nodeCompatible>
+ <poolCompatible>true</poolCompatible>
+ </defaultHealthMonitor>
+</defaultHealthMonitors>
