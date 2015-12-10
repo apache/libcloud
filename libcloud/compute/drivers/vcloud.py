@@ -387,6 +387,8 @@ class VCloudNodeDriver(NodeDriver):
                 cls = VCloud_1_5_NodeDriver
             elif api_version == '5.1':
                 cls = VCloud_5_1_NodeDriver
+            elif api_version == '5.5':
+                cls = VCloud_5_5_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
@@ -860,6 +862,13 @@ class VCloud_1_5_Connection(VCloudConnection):
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/*+xml;version=1.5'
+        headers['x-vcloud-authorization'] = self.token
+        return headers
+
+
+class VCloud_5_5_Connection(VCloud_1_5_Connection):
+    def add_default_headers(self, headers):
+        headers['Accept'] = 'application/*+xml;version=5.5'
         headers['x-vcloud-authorization'] = self.token
         return headers
 
@@ -2086,3 +2095,10 @@ class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
             # MB
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % (vm_memory))
+
+
+class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
+    '''Use 5.5 Connection class to explicitly set 5.5 for the version in
+    Accept headers
+    '''
+    connectionCls = VCloud_5_5_Connection
