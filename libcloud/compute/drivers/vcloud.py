@@ -848,7 +848,7 @@ class VCloud_1_5_Connection(VCloudConnection):
                      'application/vnd.vmware.vcloud.orgList+xml')).get('href')
             )
 
-            if self.proxy_url:
+            if self.proxy_url is not None:
                 self.connection.set_http_proxy(self.proxy_url)
             self.connection.request(method='GET', url=org_list_url,
                                     headers=self.add_default_headers({}))
