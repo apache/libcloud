@@ -24,6 +24,7 @@ class Provider(object):
     DUMMY = 'dummy'
     EBS = 'ebs'
     GCE = 'gce'
+    DIMENSIONDATA = 'dimensiondata'
 
 
 class BackupTargetType(object):
