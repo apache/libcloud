@@ -1,0 +1,21 @@
+{
+   "request":"{\"recordsList\": {\"records\": [{\"data\": \"127.1.1.1\", \"type\": \"PTR\", \"name\": \"www.foo4.bar.com\"}]}, \"link\": {\"content\": \"\", \"href\": \"https://ord.servers.api.rackspacecloud.com/v2/905546514/servers/370b0ff8-3f57-4e10-ac84-e9145ce00584\", \"rel\": \"cloudServersOpenStack\"}}",
+   "response":{
+      "records":[
+         {
+            "name":"www.foo4.bar.com",
+            "id":"PTR-7423317",
+            "type":"PTR",
+            "data":"127.1.1.1",
+            "updated":"2011-10-29T20:50:41.000+0000",
+            "ttl":3600,
+            "created":"2011-10-29T20:50:41.000+0000"
+         }
+      ]
+   },
+   "status":"COMPLETED",
+   "verb":"POST",
+   "jobId":"12345678-5739-43fb-8939-f3a2c4c0e99c",
+   "callbackUrl":"https://dns.api.rackspacecloud.com/v1.0/546514/status/12345678-5739-43fb-8939-f3a2c4c0e99c",
+   "requestUrl":"http://dns.api.rackspacecloud.com/v1.0/546514/rdns"
+}

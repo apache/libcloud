@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Changes with Apache Libcloud in development
+Changes with Apache Libcloud 0.20.0
 -------------------------------------------
 
 General
@@ -23,8 +23,47 @@ General
   (GITHUB-608)
   [Anthony Monthe]
 
+- Fixed Python2.6 unit testing (and Google Cloud Storage tests)
+  (GITHUB-648)
+  [Scott Crunkleton]
+
 Compute
 ~~~~~~~
+
+- Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
+  API compliant
+  (GITHUB-655)
+  [Stephano Maffulli]
+
+- Added additional kwargs to the create_node method for Dimension Data driver, allowing the user to specify the RAM and
+  CPU upfront. Added a ex_reconfigure_node method and ex_list_customer_images as well as updating the API to 2.1.
+  (LIBCLOUD-783, GITHUB-656)
+  [Anthony Shaw]
+
+- The EC2 Instance Type updated with correct disk sizes (especially the disk size for the m3 instances),
+  conversion errors between GiB an M[i]B, disk count were the cause.
+  Added instance types - g2.8xlarge and t2.large.
+  (GITHUB-646)
+  [Philipp Hahn]
+
+- Add update node, update VMware tools, add storage, change storage size or speed, remove storage to Dimension Data Driver.
+  (LIBCLOUD-775, GITHUB-644)
+  [Anthony Shaw]
+
+- Include 'service_name' support in _parse_service_catalog_auth_v3 for Openstack Drivers
+  (GITHUB-647)
+  [Steve Gregory]
+
+- Outscale inc & sas driver update
+  (GITHUB-645)
+  [@LordShion]
+
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
+
+- [google compute] add pricing data update script
+  (GITHUB-464)
+  [Misha Brukman]
 
 - Fix a bug in the ``list_volumes`` method in the CloudStack driver so it
   returns an empty list if no volumes are found.
@@ -44,6 +83,41 @@ Compute
   (LIBCLOUD-767, GITHUB-627)
   [Atsushi Sasaki]
 
+- Make sure that ``node.public_ips`` attribute in the CloudStack driver doesn't
+  contain duplicated values..
+  (LIBCLOUD-766, GITHUB-626)
+  [Atsushi Sasaki]
+
+- Allow user to wait for a resource to reach a desired state in the
+  Dimension Data driver by using new ``ex_wait_for_state`` method.
+  (LIBCLOUD-707, GITHUB-631)
+  [Anthony Shaw]
+  
+- Added M4 pricing and instance information to EC2 driver
+  (GITHUB-634)
+  [Benjamin Zaitlen]
+
+- Added C4 instance information to EC2 driver
+  (GITHUB-638)
+  [amitofs]
+  
+- Allow location of the datacenter to be supplied in ProfitBricks driver
+  (LIBCLOUD-771, GITHUB-635)
+  [Joel Reymont]
+
+- Reduce redundant API calls in CloudStack driver
+  (LIBCLOUD-590, GITHUB-641)
+  [Atsushi Sasaki]
+
+- Add an additional argument to libcloud.compute.drivers.GCENodeDriver.create_node
+  to allow for creation of preemptible GCE instances
+  (GITHUB-643)
+  [@blawney]
+
+- GoogleStorageDriver can now use either our S3 authentication or other Google Cloud Platform OAuth2 authentication methods.
+  (GITHUB-633)
+  [Scott Crunkleton]
+
 Storage
 ~~~~~~~
 
@@ -53,11 +127,30 @@ Loadbalancer
 DNS
 ~~~
 
+- RackSpace driver - New DNS driver methods:
+    ex_iterate_ptr_records
+    ex_get_ptr_record
+    ex_create_ptr_record
+    ex_update_ptr_record
+    ex_delete_ptr_record
+    This should cover all of the functionality offered by the Rackspace
+    DNS API in regards to RDNS.
+  (LIBCLOUD-780, GITHUB-652)
+  [Greg Hill]
+
 - Update ``create_record`` in the WorldWideDNS driver so it automatically
   selects a slot if one is not provided by the user via ``extra['entry']``
   argument.
   (GITHUB-621)
   [Alejandro Pereira]
+
+- Introduce GoDaddy DNS Driver with examples and documentation.
+  (LIBCLOUD-772, GITHUB-640, LIBCLOUD-778)
+  [Anthony Shaw]
+
+- Add new driver for CloudFlare DNS (https://www.cloudflare.com/dns/).
+  (GITHUB-637)
+  [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.19.0
 -----------------------------------
@@ -93,7 +186,7 @@ General
 
 Compute
 ~~~~~~~
-
+  
 - Fixed malformed XML requests with Dimension Data driver.
   (LIBCLOUD-760, GITHUB-610)
   [Anthony Shaw]
@@ -577,6 +670,9 @@ General
 
 Compute
 ~~~~~~~
+
+- Add new `eu-west-2` & `us-east-2` regions to the OUTSCALE_INC & OUTSCALE_SAS drivers.
+  [Filipe Silva /lordshion]
 
 - GCE driver updated to include ex_stop_node() and ex_start_node() methods.
   (GITHUB-442)

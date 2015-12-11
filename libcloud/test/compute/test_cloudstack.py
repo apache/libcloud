@@ -581,8 +581,19 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(2, len(nodes))
         self.assertEqual('test', nodes[0].name)
         self.assertEqual('2600', nodes[0].id)
+        self.assertEqual(0, len(nodes[0].private_ips))
         self.assertEqual([], nodes[0].extra['security_group'])
         self.assertEqual(None, nodes[0].extra['key_name'])
+        self.assertEqual(1, len(nodes[0].public_ips))
+        self.assertEqual('1.1.1.116', nodes[0].public_ips[0])
+        self.assertEqual(1, len(nodes[0].extra['ip_addresses']))
+        self.assertEqual(34000, nodes[0].extra['ip_addresses'][0].id)
+        self.assertEqual(1, len(nodes[0].extra['ip_forwarding_rules']))
+        self.assertEqual('772fd410-6649-43ed-befa-77be986b8906',
+                         nodes[0].extra['ip_forwarding_rules'][0].id)
+        self.assertEqual(1, len(nodes[0].extra['port_forwarding_rules']))
+        self.assertEqual('bc7ea3ee-a2c3-4b86-a53f-01bdaa1b2e32',
+                         nodes[0].extra['port_forwarding_rules'][0].id)
 
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)
@@ -590,6 +601,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('2600', node.id)
         self.assertEqual([], node.extra['security_group'])
         self.assertEqual(None, node.extra['key_name'])
+        self.assertEqual(1, len(node.public_ips))
+        self.assertEqual('1.1.1.116', node.public_ips[0])
         self.assertEqual(1, len(node.extra['ip_addresses']))
         self.assertEqual(34000, node.extra['ip_addresses'][0].id)
 

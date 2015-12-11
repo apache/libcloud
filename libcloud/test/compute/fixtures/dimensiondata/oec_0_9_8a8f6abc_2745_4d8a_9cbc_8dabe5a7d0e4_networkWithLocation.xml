@@ -12,7 +12,7 @@
         <ns3:id>208e3a8e-9d2f-11e2-b29c-001517c4643e</ns3:id>
         <ns3:name>Test Network</ns3:name>
         <ns3:description>Network description</ns3:description>
-        <ns3:location>NA1</ns3:location>
+        <ns3:location>NA9</ns3:location>
         <ns3:privateNet>10.172.74.0</ns3:privateNet>
         <ns3:multicast>false</ns3:multicast>
     </ns3:network>

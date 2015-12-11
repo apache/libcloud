@@ -945,7 +945,7 @@ class GCENodeDriver(NodeDriver):
     result in additional GCE API calls.
     """
     connectionCls = GCEConnection
-    api_name = 'googleapis'
+    api_name = 'google'
     name = "Google Compute Engine"
     type = Provider.GCE
     website = 'https://cloud.google.com/'
@@ -1047,7 +1047,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            '~/.gce_libcloud_auth' + '.' + self.project
+            GCEConnection.credential_file + '.' + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
@@ -2235,7 +2235,8 @@ class GCENodeDriver(NodeDriver):
                     ex_disk_auto_delete=True, ex_service_accounts=None,
                     description=None, ex_can_ip_forward=None,
                     ex_disks_gce_struct=None, ex_nic_gce_struct=None,
-                    ex_on_host_maintenance=None, ex_automatic_restart=None):
+                    ex_on_host_maintenance=None, ex_automatic_restart=None,
+                    ex_preemptible=None):
         """
         Create a new node and return a node object for the node.
 
@@ -2343,6 +2344,11 @@ class GCENodeDriver(NodeDriver):
                                         default value for the instance type.)
         :type     ex_automatic_restart: ``bool`` or ``None``
 
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                        (If not supplied, the instance will
+                                         not be preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -2396,7 +2402,8 @@ class GCENodeDriver(NodeDriver):
                                                    ex_disks_gce_struct,
                                                    ex_nic_gce_struct,
                                                    ex_on_host_maintenance,
-                                                   ex_automatic_restart)
+                                                   ex_automatic_restart,
+                                                   ex_preemptible)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -3385,6 +3392,8 @@ class GCENodeDriver(NodeDriver):
             volume_data['interface'] = ex_interface
         if ex_type:
             volume_data['type'] = ex_type
+        if ex_auto_delete:
+            volume_data['autoDelete'] = ex_auto_delete
 
         volume_data['source'] = ex_source or volume.extra['selfLink']
         volume_data['mode'] = ex_mode or 'READ_WRITE'
@@ -4528,7 +4537,8 @@ class GCENodeDriver(NodeDriver):
                          description=None, ex_can_ip_forward=None,
                          ex_disks_gce_struct=None, ex_nic_gce_struct=None,
                          ex_on_host_maintenance=None,
-                         ex_automatic_restart=None):
+                         ex_automatic_restart=None,
+                         ex_preemptible=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -4633,6 +4643,11 @@ class GCENodeDriver(NodeDriver):
                                         supplied, value will be set to the GCE
                                         default value for the instance type.)
         :type     ex_automatic_restart: ``bool`` or ``None``
+
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                        (If not supplied, the instance will
+                                         not be preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
 
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
@@ -4764,6 +4779,8 @@ class GCENodeDriver(NodeDriver):
                 scheduling['onHostMaintenance'] = 'MIGRATE'
         if ex_automatic_restart is not None:
             scheduling['automaticRestart'] = ex_automatic_restart
+        if ex_preemptible is not None:
+            scheduling['preemptible'] = ex_preemptible
         if scheduling:
             node_data['scheduling'] = scheduling
 

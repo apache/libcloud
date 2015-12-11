@@ -415,20 +415,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 40)
+                self.assertEqual(len(sizes), 52)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 32)
+                self.assertEqual(len(sizes), 44)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 29)
+                self.assertEqual(len(sizes), 41)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 31)
+                self.assertEqual(len(sizes), 42)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 36)
+                self.assertEqual(len(sizes), 47)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 38)
+                self.assertEqual(len(sizes), 50)
 
         self.driver.region_name = region_old
 

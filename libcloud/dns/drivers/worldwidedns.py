@@ -70,7 +70,7 @@ class WorldWideDNSDriver(DNSDriver):
         :param    reseller_id: Reseller ID for reseller accounts
         :type     reseller_id: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
                           only support HTTPS, and it is on by default.
         :type     secure: ``bool``
 
@@ -532,4 +532,5 @@ class WorldWideDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, _id, subdomain, type, data, zone):
-        return Record(_id, subdomain, type, data, zone, zone.driver)
+        return Record(id=_id, name=subdomain, type=type, data=data, zone=zone,
+                      driver=zone.driver)

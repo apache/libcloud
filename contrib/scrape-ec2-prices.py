@@ -75,6 +75,7 @@ EC2_INSTANCE_TYPES = [
     'd2.8xlarge',
     'cg1.4xlarge',
     'g2.2xlarge',
+    'g2.8xlarge',
     'cr1.8xlarge',
     'hs1.4xlarge',
     'hs1.8xlarge',
@@ -89,7 +90,8 @@ EC2_INSTANCE_TYPES = [
     'r3.8xlarge',
     't2.micro',
     't2.small',
-    't2.medium'
+    't2.medium',
+    't2.large'
 ]
 
 # Maps EC2 region name to region name used in the pricing file
@@ -111,6 +113,18 @@ REGION_NAME_MAP = {
     'sa-east-1': 'ec2_sa_east',
     'us-gov-west-1': 'ec2_us_govwest'
 }
+
+INSTANCE_SIZES = [
+    'micro',
+    'small',
+    'medium',
+    'large',
+    'xlarge',
+    'x-large',
+    'extra-large'
+]
+
+RE_NUMERIC_OTHER = re.compile(r'(?:([0-9]+)|([-A-Z_a-z]+)|([^-0-9A-Z_a-z]+))')
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, '../libcloud/data/pricing.json')
@@ -176,13 +190,24 @@ def sort_nested_dict(value):
     """
     result = OrderedDict()
 
-    for key, value in sorted(value.items()):
+    for key, value in sorted(value.items(), key=sort_key_by_numeric_other):
         if isinstance(value, (dict, OrderedDict)):
             result[key] = sort_nested_dict(value)
         else:
             result[key] = value
 
     return result
+
+
+def sort_key_by_numeric_other(key_value):
+    """
+    Split key into numeric, alpha and other part and sort accordingly.
+    """
+    return tuple((
+        int(numeric) if numeric else None,
+        INSTANCE_SIZES.index(alpha) if alpha in INSTANCE_SIZES else alpha,
+        other
+    ) for (numeric, alpha, other) in RE_NUMERIC_OTHER.findall(key_value[0]))
 
 
 def main():

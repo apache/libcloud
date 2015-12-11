@@ -28,16 +28,16 @@ from libcloud.common.dimensiondata import (DimensionDataConnection,
 from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
-from libcloud.common.dimensiondata import API_ENDPOINTS
-from libcloud.common.dimensiondata import DEFAULT_REGION
+from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import SERVER_NS
-from libcloud.common.dimensiondata import NETWORK_NS
+from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
@@ -83,6 +83,8 @@ class DimensionDataNodeDriver(NodeDriver):
     def create_node(self, name, image, auth, ex_description,
                     ex_network=None, ex_network_domain=None,
                     ex_vlan=None,
+                    ex_memory_gb=None,
+                    ex_cpu_specification=None,
                     ex_is_started=True, **kwargs):
         """
         Create a new DimensionData node
@@ -112,6 +114,13 @@ class DimensionDataNodeDriver(NodeDriver):
                                         (required unless using network)
         :type       ex_vlan: :class:`DimensionDataVlan`
 
+        :keyword    ex_memory_gb:  The amount of memory in GB for the server
+        :type       ex_memory_gb: ``int``
+
+        :keyword    ex_cpu_specification: The spec of CPU to deploy (optional)
+        :type       ex_cpu_specification:
+            :class:`DimensionDataServerCpuSpecification`
+
         :keyword    ex_is_started:  Start server after creation? default
                                    true (required)
         :type       ex_is_started:  ``bool``
@@ -136,6 +145,16 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "imageId").text = image.id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
+
+        if ex_cpu_specification is not None:
+            cpu = ET.SubElement(server_elm, "cpu")
+            cpu.set('speed', ex_cpu_specification.performance)
+            cpu.set('count', str(ex_cpu_specification.cpu_count))
+            cpu.set('coresPerSocket',
+                    str(ex_cpu_specification.cores_per_socket))
+
+        if ex_memory_gb is not None:
+            ET.SubElement(server_elm, "memoryGb").text = str(ex_memory_gb)
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
@@ -165,6 +184,15 @@ class DimensionDataNodeDriver(NodeDriver):
         return node
 
     def destroy_node(self, node):
+        """
+        Deletes a node, node must be stopped before deletion
+
+
+        :keyword node: The node to delete
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         request_elm = ET.Element('deleteServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -175,6 +203,15 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def reboot_node(self, node):
+        """
+        Reboots a node by requesting the OS restart via the hypervisor
+
+
+        :keyword node: The node to reboot
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
         request_elm = ET.Element('rebootServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -185,6 +222,13 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def list_nodes(self):
+        """
+        List nodes deployed across all data center locations for your
+        organization.
+
+        :return: a list of `Node` objects
+        :rtype: ``list`` of :class:`Node`
+        """
         nodes = self._to_nodes(
             self.connection.request_with_orgId_api_2('server/server').object)
 
@@ -200,11 +244,12 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['location'] = location.id
+            params['datacenterId'] = location.id
 
         return self._to_base_images(
-            self.connection.request_api_1('base/imageWithDiskSpeed',
-                                          params=params)
+            self.connection.request_with_orgId_api_2(
+                'image/osImage',
+                params=params)
             .object)
 
     def list_sizes(self, location=None):
@@ -256,44 +301,6 @@ class DimensionDataNodeDriver(NodeDriver):
             self.connection
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
-
-    def _to_base_images(self, object):
-        images = []
-        locations = self.list_locations()
-
-        for element in object.findall(fixxpath("image", SERVER_NS)):
-            images.append(self._to_base_image(element, locations))
-
-        return images
-
-    def _to_base_image(self, element, locations):
-        # Eventually we will probably need multiple _to_image() functions
-        # that parse <ServerImage> differently than <DeployedImage>.
-        # DeployedImages are customer snapshot images, and ServerImages are
-        # 'base' images provided by DimensionData
-        location_id = element.get('location')
-        location = list(filter(lambda x: x.id == location_id,
-                               locations))[0]
-
-        extra = {
-            'description': findtext(element, 'description', SERVER_NS),
-            'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
-            'OS_displayName': findtext(element, 'operatingSystem/displayName',
-                                       SERVER_NS),
-            'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
-            'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
-            'memory': findtext(element, 'memory', SERVER_NS),
-            'osStorage': findtext(element, 'osStorage', SERVER_NS),
-            'additionalStorage': findtext(element, 'additionalStorage',
-                                          SERVER_NS),
-            'created': findtext(element, 'created', SERVER_NS),
-            'location': location,
-        }
-
-        return NodeImage(id=element.get('id'),
-                         name=str(findtext(element, 'name', SERVER_NS)),
-                         extra=extra,
-                         driver=self.connection.driver)
 
     def ex_start_node(self, node):
         """
@@ -376,7 +383,77 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
+    def ex_update_vm_tools(self, node):
+        """
+        This function triggers an update of the VMware Tools
+        software running on the guest OS of a Server.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        request_elm = ET.Element('updateVmwareTools',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/updateVmwareTools',
+            method='POST',
+            data=ET.tostring(request_elm)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_node(self, node, name=None, description=None,
+                       cpu_count=None, ram_mb=None):
+        """
+        Update the node, the name, CPU or RAM
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      name: The new name (optional)
+        :type       name: ``str``
+
+        :param      description: The new description (optional)
+        :type       description: ``str``
+
+        :param      cpu_count: The new CPU count (optional)
+        :type       cpu_count: ``int``
+
+        :param      ram_mb: The new Memory in MB (optional)
+        :type       ram_mb: ``int``
+
+        :rtype: ``bool``
+        """
+        data = {}
+        if name is not None:
+            data['name'] = name
+        if description is not None:
+            data['description'] = description
+        if cpu_count is not None:
+            data['cpuCount'] = str(cpu_count)
+        if ram_mb is not None:
+            data['memory'] = str(ram_mb)
+        body = self.connection.request_with_orgId_api_1(
+            'server/%s' % (node.id),
+            method='POST',
+            data=urlencode(data, True)).object
+        response_code = findtext(body, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
     def ex_attach_node_to_vlan(self, node, vlan):
+        """
+        Attach a node to a VLAN by adding an additional NIC to
+        the node on the target VLAN. The IP will be automatically
+        assigned based on the VLAN IP network space.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      vlan: VLAN to attach the node to
+        :type       vlan: :class:`DimensionDataVlan`
+
+        :rtype: ``bool``
+        """
         request = ET.Element('addNic',
                              {'xmlns': TYPES_URN})
         ET.SubElement(request, 'serverId').text = node.id
@@ -391,6 +468,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_destroy_nic(self, nic_id):
+        """
+        Remove a NIC on a node, removing the node from a VLAN
+
+        :param      nic_id: The identifier of the NIC to remove
+        :type       nic_id: ``str``
+
+        :rtype: ``bool``
+        """
         request = ET.Element('removeNic',
                              {'xmlns': TYPES_URN,
                               'id': nic_id})
@@ -419,7 +504,84 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_networks(response)
 
+    def ex_create_network(self, location, name, description=None):
+        """
+        Create a new network in an MCP 1.0 location
+
+        :param   location: The target location (MCP1)
+        :type    location: :class:`NodeLocation`
+
+        :param   name: The name of the network
+        :type    name: ``str``
+
+        :param   description: Additional description of the network
+        :type    description: ``str``
+
+        :return: A new instance of `DimensionDataNetwork`
+        :rtype:  Instance of :class:`DimensionDataNetwork`
+        """
+        create_node = ET.Element('NewNetworkWithLocation',
+                                 {'xmlns': NETWORK_NS})
+        ET.SubElement(create_node, "name").text = name
+        if description is not None:
+            ET.SubElement(create_node, "description").text = description
+        ET.SubElement(create_node, "location").text = location.id
+
+        self.connection.request_with_orgId_api_1(
+            'networkWithLocation',
+            method='POST',
+            data=ET.tostring(create_node))
+
+        # MCP1 API does not return the ID, but name is unique for location
+        network = list(
+            filter(lambda x: x.name == name,
+                   self.ex_list_networks(location)))[0]
+
+        return network
+
+    def ex_delete_network(self, network):
+        """
+        Delete a network from an MCP 1 data center
+
+        :param  network: The network to delete
+        :type   network: :class:`DimensionDataNetwork`
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s?delete' % network.id,
+            method='GET').object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
+
+    def ex_rename_network(self, network, new_name):
+        """
+        Rename a network in MCP 1 data center
+
+        :param  network: The network to rename
+        :type   network: :class:`DimensionDataNetwork`
+
+        :param  new_name: The new name of the network
+        :type   new_name: ``str``
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'network/%s' % network.id,
+            method='POST',
+            data='name=%s' % new_name).object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code == "SUCCESS"
+
     def ex_get_network_domain(self, network_domain_id):
+        """
+        Get an individual Network Domain, by identifier
+
+        :param      network_domain_id: The identifier of the network domain
+        :type       network_domain_id: ``str``
+
+        :rtype: :class:`DimensionDataNetworkDomain`
+        """
         locations = self.list_locations()
         net = self.connection.request_with_orgId_api_2(
             'network/networkDomain/%s' % network_domain_id).object
@@ -427,10 +589,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_list_network_domains(self, location=None):
         """
-        List networks deployed across all data center locations for your
-        organization.  The response includes the location of each network.
+        List networks domains deployed across all data center locations
+        for your organization.
+        The response includes the location of each network domain.
 
-        :return: a list of DimensionDataNetwork objects
+        :param      location: The data center to list (optional)
+        :type       location: :class:`NodeLocation`
+
+        :return: a list of `DimensionDataNetwork` objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         params = {}
@@ -446,6 +612,23 @@ class DimensionDataNodeDriver(NodeDriver):
                                  description=None):
         """
         Deploy a new network domain to a data center
+
+        :param      location: The data center to list
+        :type       location: :class:`NodeLocation`
+
+        :param      name: The name of the network domain to create
+        :type       name: ``str``
+
+        :param      service_plan: The service plan, either "ESSENTIALS"
+            or "ADVANCED"
+        :type       service_plan: ``str``
+
+        :param      description: An additional description of
+                                 the network domain
+        :type       description: ``str``
+
+        :return: an instance of `DimensionDataNetworkDomain`
+        :rtype: :class:`DimensionDataNetworkDomain`
         """
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "datacenterId").text = location.id
@@ -477,6 +660,12 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_update_network_domain(self, network_domain):
         """
         Update the properties of a network domain
+
+        :param      network_domain: The network domain with updated properties
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataNetworkDomain`
+        :rtype: :class:`DimensionDataNetworkDomain`
         """
         edit_node = ET.Element('editNetworkDomain', {'xmlns': TYPES_URN})
         edit_node.set('id', network_domain.id)
@@ -494,6 +683,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return network_domain
 
     def ex_delete_network_domain(self, network_domain):
+        """
+        Delete a network domain
+
+        :param      network_domain: The network domain to delete
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``bool``
+        """
         delete_node = ET.Element('deleteNetworkDomain', {'xmlns': TYPES_URN})
         delete_node.set('id', network_domain.id)
         result = self.connection.request_with_orgId_api_2(
@@ -509,9 +706,29 @@ class DimensionDataNodeDriver(NodeDriver):
                        name,
                        private_ipv4_base_address,
                        description=None,
-                       private_ipv4_prefix_size='24'):
+                       private_ipv4_prefix_size=24):
         """
         Deploy a new VLAN to a network domain
+
+        :param      network_domain: The network domain to add the VLAN to
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param      name: The name of the VLAN to create
+        :type       name: ``str``
+
+        :param      private_ipv4_base_address: The base IPv4 address
+            e.g. 192.168.1.0
+        :type       private_ipv4_base_address: ``str``
+
+        :param      description: An additional description of the VLAN
+        :type       description: ``str``
+
+        :param      private_ipv4_prefix_size: The size of the IPv4
+            address space, e.g 24
+        :type       private_ipv4_prefix_size: ``int``
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         create_node = ET.Element('deployVlan', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "networkDomainId").text = network_domain.id
@@ -521,7 +738,7 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(create_node, "privateIpv4BaseAddress").text = \
             private_ipv4_base_address
         ET.SubElement(create_node, "privateIpv4PrefixSize").text = \
-            private_ipv4_prefix_size
+            str(private_ipv4_prefix_size)
 
         response = self.connection.request_with_orgId_api_2(
             'network/deployVlan',
@@ -534,17 +751,18 @@ class DimensionDataNodeDriver(NodeDriver):
             if info.get('name') == 'vlanId':
                 vlan_id = info.get('value')
 
-        return DimensionDataVlan(
-            id=vlan_id,
-            name=name,
-            description=description,
-            location=network_domain.location,
-            status=NodeState.RUNNING,
-            private_ipv4_range_address=private_ipv4_base_address,
-            private_ipv4_range_size=private_ipv4_prefix_size
-        )
+        return self.ex_get_vlan(vlan_id)
 
     def ex_get_vlan(self, vlan_id):
+        """
+        Get a single VLAN, by it's identifier
+
+        :param   vlan_id: The identifier of the VLAN
+        :type    vlan_id: ``str``
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
+        """
         locations = self.list_locations()
         vlan = self.connection.request_with_orgId_api_2(
             'network/vlan/%s' % vlan_id).object
@@ -554,6 +772,12 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Updates the properties of the given VLAN
         Only name and description are updated
+
+        :param      vlan: The VLAN to update
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         edit_node = ET.Element('editVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
@@ -575,6 +799,12 @@ class DimensionDataNodeDriver(NodeDriver):
         The expansion will
         not be permitted if the proposed IP space overlaps with an
         already deployed VLANs IP space.
+
+        :param      vlan: The VLAN to update
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :return: an instance of `DimensionDataVlan`
+        :rtype: :class:`DimensionDataVlan`
         """
         edit_node = ET.Element('expandVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
@@ -589,6 +819,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return vlan
 
     def ex_delete_vlan(self, vlan):
+        """
+        Deletes an existing VLAN
+
+        :param      vlan: The VLAN to delete
+        :type       vlan: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``bool``
+        """
         delete_node = ET.Element('deleteVlan', {'xmlns': TYPES_URN})
         delete_node.set('id', vlan.id)
         result = self.connection.request_with_orgId_api_2(
@@ -601,7 +839,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_list_vlans(self, location=None, network_domain=None):
         """
-        List VLANs available in a given networkDomain
+        List VLANs available, can filter by location and/or network domain
+
+        :param      location: Only VLANs in this location (optional)
+        :type       location: :class:`NodeLocation`
+
+        :param      network_domain: Only VLANs in this domain (optional)
+        :type       network_domain: :class:`DimensionDataNetworkDomain`
 
         :return: a list of DimensionDataVlan objects
         :rtype: ``list`` of :class:`DimensionDataVlan`
@@ -688,8 +932,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             source_ip.set('address', rule.source.ip_address)
             source_ip.set('prefixSize', rule.source.ip_prefix_size)
-            source_port = ET.SubElement(source, 'port')
-            source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', rule.source.port_begin)
             if rule.source.port_end is not None:
                 source_port.set('end', rule.source.port_end)
         # Setup destination port rule
@@ -700,8 +945,9 @@ class DimensionDataNodeDriver(NodeDriver):
         else:
             dest_ip.set('address', rule.destination.ip_address)
             dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
-            dest_port = ET.SubElement(dest, 'port')
-            dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
         ET.SubElement(create_node, "enabled").text = 'true'
@@ -729,6 +975,14 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_set_firewall_rule_state(self, rule, state):
         """
         Change the state (enabled or disabled) of a rule
+
+        :param rule: The rule to delete
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :param state: The desired state enabled (True) or disabled (False)
+        :type  state: ``bool``
+
+        :rtype: ``bool``
         """
         update_node = ET.Element('editFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
@@ -742,6 +996,14 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_delete_firewall_rule(self, rule):
+        """
+        Delete a firewall rule
+
+        :param rule: The rule to delete
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :rtype: ``bool``
+        """
         update_node = ET.Element('deleteFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -753,6 +1015,20 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_nat_rule(self, network_domain, internal_ip, external_ip):
+        """
+        Create a NAT rule
+
+        :param  network_domain: The network domain the rule belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param  internal_ip: The IPv4 address internally
+        :type   internal_ip: ``str``
+
+        :param  external_ip: The IPv4 address externally
+        :type   external_ip: ``str``
+
+        :rtype: :class:`DimensionDataNatRule`
+        """
         create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, 'networkDomainId').text = network_domain.id
         ET.SubElement(create_node, 'internalIp').text = internal_ip
@@ -776,6 +1052,14 @@ class DimensionDataNodeDriver(NodeDriver):
         )
 
     def ex_list_nat_rules(self, network_domain):
+        """
+        Get NAT rules for the network domain
+
+        :param  network_domain: The network domain the rules belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :rtype: ``list`` of :class:`DimensionDataNatRule`
+        """
         params = {}
         params['networkDomainId'] = network_domain.id
 
@@ -785,11 +1069,30 @@ class DimensionDataNodeDriver(NodeDriver):
         return self._to_nat_rules(response, network_domain)
 
     def ex_get_nat_rule(self, network_domain, rule_id):
+        """
+        Get a NAT rule by ID
+
+        :param  network_domain: The network domain the rule belongs to
+        :type   network_domain: :class:`DimensionDataNetworkDomain`
+
+        :param  rule_id: The ID of the NAT rule to fetch
+        :type   rule_id: ``str``
+
+        :rtype: :class:`DimensionDataNatRule`
+        """
         rule = self.connection.request_with_orgId_api_2(
             'network/natRule/%s' % rule_id).object
         return self._to_nat_rule(rule, network_domain)
 
     def ex_delete_nat_rule(self, rule):
+        """
+        Delete an existing NAT rule
+
+        :param  rule: The rule to delete
+        :type   rule: :class:`DimensionDataNatRule`
+
+        :rtype: ``bool``
+        """
         update_node = ET.Element('deleteNatRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -815,6 +1118,311 @@ class DimensionDataNodeDriver(NodeDriver):
                 filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
+    def ex_wait_for_state(self, state, func, poll_interval=2,
+                          timeout=60, *args, **kwargs):
+        """
+        Wait for the function which returns a instance
+        with field status to match
+
+        Keep polling func until one of the desired states is matched
+
+        :param state: Either the desired state (`str`) or a `list` of states
+        :type  state: ``str`` or ``list``
+
+        :param  func: The function to call, e.g. ex_get_vlan
+        :type   func: ``function``
+
+        :param  poll_interval: The number of seconds to wait between checks
+        :type   poll_interval: `int`
+
+        :param  timeout: The total number of seconds to wait to reach a state
+        :type   timeout: `int`
+
+        :param  args: The arguments for func
+        :type   args: Positional arguments
+
+        :param  kwargs: The arguments for func
+        :type   kwargs: Keyword arguments
+        """
+        return self.connection.wait_for_state(state, func, poll_interval,
+                                              timeout, *args, **kwargs)
+
+    def ex_enable_monitoring(self, node, service_plan="ESSENTIALS"):
+        """
+        Enables cloud monitoring on a node
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('enableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/enableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_update_monitoring_plan(self, node, service_plan="ESSENTIALS"):
+        """
+        Updates the service plan on a node with monitoring
+
+        :param   node: The node to monitor
+        :type    node: :class:`Node`
+
+        :param   service_plan: The service plan, one of ESSENTIALS or
+                               ADVANCED
+        :type    service_plan: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('changeServerMonitoringPlan',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'servicePlan').text = service_plan
+        result = self.connection.request_with_orgId_api_2(
+            'server/changeServerMonitoringPlan',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_disable_monitoring(self, node):
+        """
+        Disables cloud monitoring for a node
+
+        :param   node: The node to stop monitoring
+        :type    node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('disableServerMonitoring',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/disableServerMonitoring',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_add_storage_to_node(self, node, amount, speed='STANDARD'):
+        """
+        Add storage to the node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  amount: The amount of storage to add, in GB
+        :type   amount: ``int``
+
+        :param  speed: The disk speed type
+        :type   speed: ``str``
+
+        :rtype: ``bool``
+        """
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s?addLocalStorage&amount=%s&speed=%s' %
+            (node.id, amount, speed)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_remove_storage_from_node(self, node, disk_id):
+        """
+        Remove storage from a node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to remove
+        :type   disk_id: ``str``
+
+        :rtype: ``bool``
+        """
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s?delete' %
+            (node.id, disk_id)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_change_storage_speed(self, node, disk_id, speed):
+        """
+        Change the speed (disk tier) of a disk
+
+        :param  node: The server to change the disk speed of
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to change
+        :type   disk_id: ``str``
+
+        :param  speed: The disk speed type e.g. STANDARD
+        :type   speed: ``str``
+
+        :rtype: ``bool``
+        """
+        create_node = ET.Element('ChangeDiskSpeed', {'xmlns': SERVER_NS})
+        ET.SubElement(create_node, 'speed').text = speed
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s/changeSpeed' %
+            (node.id, disk_id),
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_change_storage_size(self, node, disk_id, size):
+        """
+        Change the size of a disk
+
+        :param  node: The server to change the disk of
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to resize
+        :type   disk_id: ``str``
+
+        :param  size: The disk size in GB
+        :type   size: ``int``
+
+        :rtype: ``bool``
+        """
+        create_node = ET.Element('ChangeDiskSize', {'xmlns': SERVER_NS})
+        ET.SubElement(create_node, 'newSizeGb').text = str(size)
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s/disk/%s/changeSize' %
+            (node.id, disk_id),
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_reconfigure_node(self, node, memory_gb, cpu_count, cores_per_socket,
+                            cpu_performance):
+        """
+        Reconfigure the virtual hardware specification of a node
+
+        :param  node: The server to change
+        :type   node: :class:`Node`
+
+        :param  memory_gb: The amount of memory in GB (optional)
+        :type   memory_gb: ``int``
+
+        :param  cpu_count: The number of CPU (optional)
+        :type   cpu_count: ``int``
+
+        :param  cores_per_socket: Number of CPU cores per socket (optional)
+        :type   cores_per_socket: ``int``
+
+        :param  cpu_performance: CPU Performance type (optional)
+        :type   cpu_performance: ``str``
+
+        :rtype: ``bool``
+        """
+        update = ET.Element('reconfigureServer', {'xmlns': TYPES_URN})
+        update.set('id', node.id)
+        if memory_gb is not None:
+            ET.SubElement(update, 'memoryGb').text = str(memory_gb)
+        if cpu_count is not None:
+            ET.SubElement(update, 'cpuCount').text = str(cpu_count)
+        if cpu_performance is not None:
+            ET.SubElement(update, 'cpuSpeed').text = cpu_performance
+        if cores_per_socket is not None:
+            ET.SubElement(update, 'coresPerSocket').text = \
+                str(cores_per_socket)
+        result = self.connection.request_with_orgId_api_2(
+            'server/reconfigureServer',
+            method='POST',
+            data=ET.tostring(update)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_clone_node_to_image(self, node, image_name, image_description=None):
+        """
+        Clone a server into a customer image.
+
+        :param  node: The server to clone
+        :type   node: :class:`Node`
+
+        :param  image_name: The name of the clone image
+        :type   image_name: ``str``
+
+        :param  description: The description of the image
+        :type   description: ``str``
+
+        :rtype: ``bool``
+        """
+        if image_description is None:
+            image_description = ''
+        result = self.connection.request_with_orgId_api_1(
+            'server/%s?clone=%s&desc=%s' %
+            (node.id, image_name, image_description)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_list_customer_images(self, location=None):
+        """
+        Return a list of customer imported images
+
+        :param location: The target location
+        :type  location: :class:`NodeLocation`
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        params = {}
+        if location is not None:
+            params['datacenterId'] = location.id
+
+        return self._to_base_images(
+            self.connection.request_with_orgId_api_2(
+                'image/customerImage',
+                params=params)
+            .object, 'customerImage')
+
+    def _to_base_images(self, object, el_name='osImage'):
+        images = []
+        locations = self.list_locations()
+
+        for element in object.findall(fixxpath(el_name, TYPES_URN)):
+            images.append(self._to_base_image(element, locations))
+
+        return images
+
+    def _to_base_image(self, element, locations):
+        # Eventually we will probably need multiple _to_image() functions
+        # that parse <ServerImage> differently than <DeployedImage>.
+        # DeployedImages are customer snapshot images, and ServerImages are
+        # 'base' images provided by DimensionData
+        location_id = element.get('datacenterId')
+        location = list(filter(lambda x: x.id == location_id,
+                               locations))[0]
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+        os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+        extra = {
+            'description': findtext(element, 'description', TYPES_URN),
+            'OS_type': os_el.get('type'),
+            'OS_displayName': os_el.get('displayName'),
+            'cpu': cpu_spec,
+            'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
+            'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
+            'created': findtext(element, 'createTime', TYPES_URN),
+            'location': location,
+        }
+
+        return NodeImage(id=element.get('id'),
+                         name=str(findtext(element, 'name', TYPES_URN)),
+                         extra=extra,
+                         driver=self.connection.driver)
+
     def _to_nat_rules(self, object, network_domain):
         rules = []
         for element in findall(object, 'natRule', TYPES_URN):
@@ -824,14 +1432,12 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_nat_rule(self, element, network_domain):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-
         return DimensionDataNatRule(
             id=element.get('id'),
             network_domain=network_domain,
             internal_ip=findtext(element, 'internalIp', TYPES_URN),
             external_ip=findtext(element, 'externalIp', TYPES_URN),
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_rules(self, object, network_domain):
         rules = []
@@ -843,8 +1449,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return rules
 
     def _to_firewall_rule(self, element, locations, network_domain):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -862,7 +1466,7 @@ class DimensionDataNodeDriver(NodeDriver):
             destination=self._to_firewall_address(
                 element.find(fixxpath('destination', TYPES_URN))),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_address(self, element):
         ip = element.find(fixxpath('ip', TYPES_URN))
@@ -884,8 +1488,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return blocks
 
     def _to_ip_block(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -898,7 +1500,7 @@ class DimensionDataNodeDriver(NodeDriver):
             base_ip=findtext(element, 'baseIp', TYPES_URN),
             size=findtext(element, 'size', TYPES_URN),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_networks(self, object):
         networks = []
@@ -939,8 +1541,6 @@ class DimensionDataNodeDriver(NodeDriver):
         return network_domains
 
     def _to_network_domain(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
@@ -955,7 +1555,7 @@ class DimensionDataNodeDriver(NodeDriver):
             description=findtext(element, 'description', TYPES_URN),
             plan=plan_type,
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_vlans(self, object):
         vlans = []
@@ -966,21 +1566,35 @@ class DimensionDataNodeDriver(NodeDriver):
         return vlans
 
     def _to_vlan(self, element, locations):
-        status = self._to_status(element.find(fixxpath('state', TYPES_URN)))
-
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         ip_range = element.find(fixxpath('privateIpv4Range', TYPES_URN))
+        ip6_range = element.find(fixxpath('ipv6Range', TYPES_URN))
+        network_domain_el = element.find(
+            fixxpath('networkDomain', TYPES_URN))
+        network_domain = self.ex_get_network_domain(
+            network_domain_el.get('id'))
         return DimensionDataVlan(
             id=element.get('id'),
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description',
                                  TYPES_URN),
+            network_domain=network_domain,
             private_ipv4_range_address=ip_range.get('address'),
-            private_ipv4_range_size=ip_range.get('prefixSize'),
+            private_ipv4_range_size=int(ip_range.get('prefixSize')),
+            ipv6_range_address=ip6_range.get('address'),
+            ipv6_range_size=int(ip6_range.get('prefixSize')),
+            ipv4_gateway=findtext(
+                element,
+                'ipv4GatewayAddress',
+                TYPES_URN),
+            ipv6_gateway=findtext(
+                element,
+                'ipv6GatewayAddress',
+                TYPES_URN),
             location=location,
-            status=status)
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_locations(self, object):
         locations = []
@@ -996,8 +1610,14 @@ class DimensionDataNodeDriver(NodeDriver):
                          driver=self)
         return l
 
+    def _to_cpu_spec(self, element):
+        return DimensionDataServerCpuSpecification(
+            cpu_count=int(element.get('count')),
+            cores_per_socket=int(element.get('coresPerSocket')),
+            performance=element.get('speed'))
+
     def _to_nodes(self, object):
-        node_elements = object.findall(fixxpath('Server', TYPES_URN))
+        node_elements = object.findall(fixxpath('server', TYPES_URN))
 
         return [self._to_node(el) for el in node_elements]
 
@@ -1012,6 +1632,8 @@ class DimensionDataNodeDriver(NodeDriver):
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
 
+        cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
+
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -1022,10 +1644,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
-            'cpuCount': int(findtext(
-                element,
-                'cpuCount',
-                TYPES_URN)),
+            'cpu': cpu_spec,
             'memoryMb': int(findtext(
                 element,
                 'memoryGb',

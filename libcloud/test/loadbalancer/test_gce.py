@@ -18,23 +18,16 @@ Tests for Google Compute Engine Load Balancer Driver
 import sys
 import unittest
 
-from libcloud.common.google import (GoogleBaseAuthConnection,
-                                    GoogleInstalledAppAuthConnection,
-                                    GoogleBaseConnection)
+from libcloud.common.google import GoogleBaseAuthConnection
 from libcloud.compute.drivers.gce import (GCENodeDriver)
 from libcloud.loadbalancer.drivers.gce import (GCELBDriver)
-from libcloud.test.common.test_google import GoogleAuthMockHttp
+from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.test.compute.test_gce import GCEMockHttp
-
-from libcloud.test import LibcloudTestCase
 
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
 
-class GCELoadBalancerTest(LibcloudTestCase):
-    GoogleBaseConnection._get_token_info_from_file = lambda x: None
-    GoogleBaseConnection._write_token_info_to_file = lambda x: None
-    GoogleInstalledAppAuthConnection.get_code = lambda x: '1234'
+class GCELoadBalancerTest(GoogleTestCase):
     datacenter = 'us-central1-a'
 
     def setUp(self):

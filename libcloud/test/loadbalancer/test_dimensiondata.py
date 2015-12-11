@@ -415,6 +415,37 @@ class DimensionDataTests(unittest.TestCase):
             destroy_node=True)
         self.assertTrue(response)
 
+    def test_ex_get_default_health_monitors(self):
+        monitors = self.driver.ex_get_default_health_monitors(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(monitors), 6)
+        self.assertEqual(monitors[0].id, '01683574-d487-11e4-811f-005056806999')
+        self.assertEqual(monitors[0].name, 'CCDEFAULT.Http')
+        self.assertFalse(monitors[0].node_compatible)
+        self.assertTrue(monitors[0].pool_compatible)
+
+    def test_ex_get_default_persistence_profiles(self):
+        profiles = self.driver.ex_get_default_persistence_profiles(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(profiles), 4)
+        self.assertEqual(profiles[0].id, 'a34ca024-f3db-11e4-b010-005056806999')
+        self.assertEqual(profiles[0].name, 'CCDEFAULT.Cookie')
+        self.assertEqual(profiles[0].fallback_compatible, False)
+        self.assertEqual(len(profiles[0].compatible_listeners), 1)
+        self.assertEqual(profiles[0].compatible_listeners[0].type, 'PERFORMANCE_LAYER_4')
+
+    def test_ex_get_default_irules(self):
+        irules = self.driver.ex_get_default_irules(
+            '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7'
+        )
+        self.assertEqual(len(irules), 4)
+        self.assertEqual(irules[0].id, '2b20cb2c-ffdc-11e4-b010-005056806999')
+        self.assertEqual(irules[0].name, 'CCDEFAULT.HttpsRedirect')
+        self.assertEqual(len(irules[0].compatible_listeners), 1)
+        self.assertEqual(irules[0].compatible_listeners[0].type, 'PERFORMANCE_LAYER_4')
+
 
 class DimensionDataMockHttp(MockHttp):
 
@@ -431,99 +462,114 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createPool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createNode.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_addPoolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self, method, url, body, headers):
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_0_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember.xml')
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultIrule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultIrule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

@@ -1,0 +1,10 @@
+{
+  "response": {
+    "result": {
+      "ip": "127.0.0.1",
+      "action": "BAN"
+    }
+  },
+  "result": "success",
+  "msg": null
+}
