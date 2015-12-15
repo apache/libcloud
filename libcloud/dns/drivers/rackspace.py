@@ -667,9 +667,10 @@ def _rackspace_result_has_more(response, result_length, limit):
 
 
 def _check_ptr_extra_fields(device_or_record):
-    if not (getattr(device_or_record, 'extra') and
+    if not (hasattr(device_or_record, 'extra') and
+            isinstance(device_or_record.extra, dict) and
             device_or_record.extra.get('uri') is not None and
             device_or_record.extra.get('service_name') is not None):
         raise LibcloudError("Can't create PTR Record for %s because it "
                             "doesn't have a 'uri' and 'service_name' in "
-                            "'extra'")
+                            "'extra'" % device_or_record)
