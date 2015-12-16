@@ -2132,11 +2132,11 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
         """
         snapshot_xml = ET.Element(
             "CreateSnapshotParams",
-            { 'memory': 'true',
-              'name': 'name',
-              'quiesce': 'true',
-              'xmlns': "http://www.vmware.com/vcloud/v1.5",
-              'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+            {'memory': 'true',
+             'name': 'name',
+             'quiesce': 'true',
+             'xmlns': "http://www.vmware.com/vcloud/v1.5",
+             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
         )
         ET.SubElement(snapshot_xml, 'Description').text = 'Description'
         content_type = 'application/vnd.vmware.vcloud.createSnapshotParams+xml'
