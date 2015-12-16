@@ -16,6 +16,17 @@ Libcloud 0.20.0
   to the constructor (you are encouraged to use keyword arguments to avoid such
   issues in the future).
 
+* All NodeState, StorageVolumeState, VolumeSnapshotState and Provider attributes
+  are now strings instead of integers.
+
+  If you are using the ``tostring`` and ``fromstring`` methods of NodeState,
+  you are fine. If you are using NodeState.RUNNING and the like, you are also fine.
+  
+  However, if you have previously depended on these being integers, 
+  you need to update your code to depend on strings. You should consider starting
+  using the ``tostring`` and ``fromstring`` methods as the output of these functions
+  will not change in future versions, while the implementation might.
+
 Libcloud 0.19.0
 ---------------
 

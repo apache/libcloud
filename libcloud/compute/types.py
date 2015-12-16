@@ -35,7 +35,27 @@ __all__ = [
 ]
 
 
-class Provider(object):
+class Type(object):
+    @classmethod
+    def tostring(cls, value):
+        """Return the string representation of the state object attribute
+        :param str value: the state object to turn into string
+        :return: the uppercase string that represents the state object
+        :rtype: str
+        """
+        return value.upper()
+
+    @classmethod
+    def fromstring(cls, value):
+        """Return the state object attribute that matches the string
+        :param str value: the string to look up
+        :return: the state object attribute that matches the string
+        :rtype: str
+        """
+        return getattr(cls, value.upper(), None)
+
+
+class Provider(Type):
     """
     Defines for each of the supported providers
 
@@ -189,7 +209,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 }
 
 
-class NodeState(object):
+class NodeState(Type):
     """
     Standard states for a node
 
@@ -204,56 +224,42 @@ class NodeState(object):
     :cvar PAUSED: Node is paused.
     :cvar UNKNOWN: Node state is unknown.
     """
-    RUNNING = 0
-    REBOOTING = 1
-    TERMINATED = 2
-    PENDING = 3
-    UNKNOWN = 4
-    STOPPED = 5
-    SUSPENDED = 6
-    ERROR = 7
-    PAUSED = 8
-
-    @classmethod
-    def tostring(cls, value):
-        values = cls.__dict__
-        values = dict([(key, string) for key, string in values.items() if
-                       not key.startswith('__')])
-
-        for item_key, item_value in values.items():
-            if value == item_value:
-                return item_key
-
-    @classmethod
-    def fromstring(cls, value):
-        return getattr(cls, value.upper(), None)
+    RUNNING = 'running'
+    REBOOTING = 'rebooting'
+    TERMINATED = 'terminated'
+    PENDING = 'pending'
+    UNKNOWN = 'unknown'
+    STOPPED = 'stopped'
+    SUSPENDED = 'suspended'
+    ERROR = 'error'
+    PAUSED = 'paused'
 
 
-class StorageVolumeState(object):
+class StorageVolumeState(Type):
     """
     Standard states of a StorageVolume
     """
-    AVAILABLE = "available"
-    ERROR = "error"
-    INUSE = "in_use"
-    CREATING = "creating"
-    DELETING = "deleting"
-    DELETED = "deleted"
-    BACKUP = "backup"
-    ATTACHING = "attaching"
-    UNKNOWN = "unknown"
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    INUSE = 'inuse'
+    CREATING = 'creating'
+    DELETING = 'deleting'
+    DELETED = 'deleted'
+    BACKUP = 'backup'
+    ATTACHING = 'attaching'
+    UNKNOWN = 'unknown'
 
 
-class VolumeSnapshotState(object):
+class VolumeSnapshotState(Type):
     """
     Standard states of VolumeSnapshots
     """
-    AVAILABLE = 0
-    ERROR = 1
-    CREATING = 2
-    DELETING = 3
-    RESTORING = 4
-    UNKNOWN = 5
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    CREATING = 'creating'
+    DELETING = 'deleting'
+    RESTORING = 'restoring'
+    UNKNOWN = 'unknown'
 
 
 class Architecture(object):
