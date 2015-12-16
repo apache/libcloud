@@ -1996,14 +1996,17 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return isinstance(node_or_image, Node)
 
     def _to_node(self, node_elm):
-        # Parse snapshots and VMs as extra fields
-        snapshots = []
-        for snapshot_elem in node_elm.findall(fixxpath(node_elm, 'SnapshotSection/Snapshot')):
-            snapshots.append({
-                "created": snapshot_elem.get("created"),
-                "poweredOn": snapshot_elem.get("poweredOn"),
-                "size": snapshot_elem.get("size"),
-            })
+        # Parse snapshots and VMs as extra
+        if node_elm.find(fixxpath(node_elm, "SnapshotSection")) is None:
+            snapshots = None
+        else:
+            snapshots = []
+            for snapshot_elem in node_elm.findall(fixxpath(node_elm, 'SnapshotSection/Snapshot')):
+                snapshots.append({
+                    "created": snapshot_elem.get("created"),
+                    "poweredOn": snapshot_elem.get("poweredOn"),
+                    "size": snapshot_elem.get("size"),
+                })
 
         vms = []
         for vm_elem in node_elm.findall(fixxpath(node_elm, 'Children/Vm')):
@@ -2055,13 +2058,17 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                       'application/vnd.vmware.vcloud.vdc+xml')
         vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
 
+        extra = {'vdc': vdc.name, 'vms': vms}
+        if snapshots is not None:
+            extra['snapshots'] = snapshots
+
         node = Node(id=node_elm.get('href'),
                     name=node_elm.get('name'),
                     state=self.NODE_STATE_MAP[node_elm.get('status')],
                     public_ips=public_ips,
                     private_ips=private_ips,
                     driver=self.connection.driver,
-                    extra={'vdc': vdc.name, 'vms': vms, 'snapshots': snapshots})
+                    extra=extra)
         return node
 
     def _to_vdc(self, vdc_elm):
