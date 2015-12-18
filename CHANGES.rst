@@ -30,6 +30,10 @@ General
 Compute
 ~~~~~~~
 
+- Minor security improvement for storing cached GCE credentials
+  (LIBCLOUD-718)
+  [Siim Põder]
+
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
   (GITHUB-655)
