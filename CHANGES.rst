@@ -30,6 +30,10 @@ General
 Compute
 ~~~~~~~
 
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
 - Minor security improvement for storing cached GCE credentials
   (LIBCLOUD-718)
   [Siim Põder]
