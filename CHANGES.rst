@@ -30,6 +30,10 @@ General
 Compute
 ~~~~~~~
 
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
   (GITHUB-655)

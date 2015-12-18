@@ -607,7 +607,7 @@ class GoogleAuthType(object):
 
     @staticmethod
     def _is_sa(user_id):
-        return user_id.endswith('@developer.gserviceaccount.com')
+        return user_id.endswith('.gserviceaccount.com')
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
