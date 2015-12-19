@@ -607,7 +607,7 @@ class GoogleAuthType(object):
 
     @staticmethod
     def _is_sa(user_id):
-        return user_id.endswith('@developer.gserviceaccount.com')
+        return user_id.endswith('.gserviceaccount.com')
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
@@ -826,5 +826,5 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
         data = json.dumps(self.oauth2_token)
-        with open(filename, 'w') as f:
-            f.write(data)
+        f = os.open(filename, os.O_CREAT | os.O_WRONLY, 0600)
+        os.write(f, data)

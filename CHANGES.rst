@@ -30,6 +30,14 @@ General
 Compute
 ~~~~~~~
 
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
+- Minor security improvement for storing cached GCE credentials
+  (LIBCLOUD-718)
+  [Siim Põder]
+
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
   (GITHUB-655)
@@ -117,6 +125,11 @@ Compute
 - GoogleStorageDriver can now use either our S3 authentication or other Google Cloud Platform OAuth2 authentication methods.
   (GITHUB-633)
   [Scott Crunkleton]
+
+- All NodeState, StorageVolumeState, VolumeSnapshotState and Provider attributes
+  are now strings instead of integers.
+  (GITHUB-624)
+  [Allard Hoeve]
 
 Storage
 ~~~~~~~
