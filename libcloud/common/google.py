@@ -826,5 +826,6 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
         data = json.dumps(self.oauth2_token)
-        f = os.open(filename, os.O_CREAT | os.O_WRONLY, 0600)
-        os.write(f, data)
+        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY,
+                               int('600', 8)), 'w') as f:
+            f.write(data)
