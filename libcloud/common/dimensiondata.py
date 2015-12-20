@@ -298,7 +298,7 @@ class DimensionDataStatus(object):
         return (('<DimensionDataStatus: action=%s, request_time=%s, '
                  'user_name=%s, number_of_steps=%s, update_time=%s, '
                  'step_name=%s, step_number=%s, '
-                 'step_percent_complete=%s, failure_reason=%s')
+                 'step_percent_complete=%s, failure_reason=%s>')
                 % (self.action, self.request_time, self.user_name,
                    self.number_of_steps, self.update_time, self.step_name,
                    self.step_number, self.step_percent_complete,
