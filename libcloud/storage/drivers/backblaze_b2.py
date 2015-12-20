@@ -27,6 +27,7 @@ except ImportError:
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.files import read_in_chunks
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import JsonResponse
@@ -134,7 +135,8 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         self._auth_conn = BackblazeB2AuthConnection(*args, **kwargs)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, include_account_id=False):
+                method='GET', raw=False, include_account_id=False,
+                download_request=False):
         params = params or {}
         headers = headers or {}
 
@@ -227,9 +229,10 @@ class BackblazeB2StorageDriver(StorageDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        # TODO: Escape name
-        action = obj.container.name + '/' + obj.name
-        response = self.connection.request(action=action, method='GET', raw=True)
+        action = self._get_object_download_path(container=obj.container,
+                                                obj=obj)
+        response = self.connection.request(action=action, method='GET',
+                                           raw=True)
 
         # TODO: Include metadata from response headers
         return self._get_object(obj=obj, callback=self._save_object,
@@ -244,8 +247,10 @@ class BackblazeB2StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
-        action = obj.container.name + '/' + obj.name
-        response = self.connection.request(action=action, method='GET', raw=True)
+        action = self._get_object_download_path(container=obj.container,
+                                                obj=obj)
+        response = self.connection.request(action=action, method='GET',
+                                           raw=True)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
@@ -332,3 +337,12 @@ class BackblazeB2StorageDriver(StorageDriver):
         obj = Object(name=item['fileName'], size=size, hash=hash, extra=extra,
                      meta_data=meta_data, container=container, driver=self)
         return obj
+
+    def _get_object_download_path(self, container, obj):
+        """
+        Return a path used in the download requests.
+
+        :rtype: ``str``
+        """
+        path = container.name + '/' + obj.name
+        return path
