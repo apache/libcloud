@@ -18,6 +18,7 @@ Driver for Backblaze B2 service.
 """
 
 import base64
+import hashlib
 
 try:
     import simplejson as json
@@ -28,10 +29,12 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError
+from libcloud.common.types import LibcloudError
 from libcloud.storage.providers import Provider
 from libcloud.storage.base import Object, Container, StorageDriver
 
@@ -134,9 +137,17 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         # dowload url).
         self._auth_conn = BackblazeB2AuthConnection(*args, **kwargs)
 
+    def download_request(self):
+        # TODO
+        pass
+
+    def upload_request(self):
+        # TODO
+        pass
+
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False, include_account_id=False,
-                download_request=False):
+                download_request=False, upload_host=None, auth_token=None):
         params = params or {}
         headers = headers or {}
 
@@ -145,13 +156,25 @@ class BackblazeB2Connection(ConnectionUserAndKey):
 
         # Set host
         if raw:
+            # TODO: Refactor this mess.
             # File download or upload request:
-            self.host = auth_conn.download_host
+            if method == 'GET':
+                # Download
+                self.host = auth_conn.download_host
+            elif method == 'POST':
+                self.host = upload_host
         else:
             self.host = auth_conn.api_host
 
+        if upload_host:
+            self.host = upload_host
+
         # Provide auth token
-        headers['Authorization'] = '%s' % (auth_conn.auth_token)
+        # TODO: Refactor
+        if not auth_token:
+            auth_token = auth_conn.auth_token
+
+        headers['Authorization'] = '%s' % (auth_token)
 
         # Include Content-Type
         if not raw and data:
@@ -165,12 +188,13 @@ class BackblazeB2Connection(ConnectionUserAndKey):
                 data = data or {}
                 data['accountId'] = auth_conn.account_id
 
-        if not raw:
+        if not raw and not upload_host:
             action = API_PATH + action
-        else:
+        elif method == 'GET':
+            # Download
             action = '/file/' + action
 
-        if data:
+        if data and not upload_host:
             data = json.dumps(data)
 
         response = super(BackblazeB2Connection, self).request(action=action,
@@ -188,6 +212,7 @@ class BackblazeB2StorageDriver(StorageDriver):
     website = 'https://www.backblaze.com/b2/'
     type = Provider.BACKBLAZE_B2
     hash_type = 'sha1'
+    supports_chunked_encoding = False
 
     def iterate_containers(self):
         resp = self.connection.request(action='b2_list_buckets',
@@ -223,10 +248,6 @@ class BackblazeB2StorageDriver(StorageDriver):
                                        include_account_id=True)
         return resp.status == httplib.OK
 
-    def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
-        pass
-
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
         action = self._get_object_download_path(container=obj.container,
@@ -257,6 +278,61 @@ class BackblazeB2StorageDriver(StorageDriver):
                                 callback_kwargs={'iterator': response.response,
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
+
+    def upload_object(self, file_path, container, object_name, extra=None,
+                      verify_hash=True, headers=None):
+        """
+        Upload an object.
+
+        Note: This will override file with a same name if it already exists.
+        """
+        # Note: We don't use any of the base driver functions since Backblaze
+        # API requires you to provide SHA1 has upfront and the base methods
+        # don't support that
+        fh = open(file_path, 'rb')
+        iterator = iter(fh)
+        iterator = read_in_chunks(iterator=iterator)
+        data = exhaust_iterator(iterator=iterator)
+
+        extra = extra or {}
+        content_type = extra.get('content_type', 'b2/x-auto')
+        meta_data = extra.get('meta_data', {})
+
+        # Note: Backblaze API doesn't support chunked encoding and we need to
+        # provide Content-Length up front (this is one inside _upload_object):/
+        headers = headers or {}
+        headers['X-Bz-File-Name'] = object_name
+        headers['Content-Type'] = content_type
+
+        sha1 = hashlib.sha1()
+        sha1.update(data.encode())
+        headers['X-Bz-Content-Sha1'] = sha1.hexdigest()
+
+        # Include optional meta-data (up to 10 items)
+        for key, value in meta_data:
+            # TODO: Encode / escape key
+            headers['X-Bz-Info-%s' % (key)] = value
+
+        upload_data = self.ex_get_upload_data(container_id=container.extra['id'])
+        upload_token = upload_data['authorizationToken']
+        parsed_url = urlparse.urlparse(upload_data['uploadUrl'])
+
+        upload_host = parsed_url.netloc
+        request_path = parsed_url.path
+
+        response = self.connection.request(action=request_path, method='POST',
+                                           headers=headers,
+                                           upload_host=upload_host,
+                                           auth_token=upload_token,
+                                           data=data)
+
+        if response.status == httplib.OK:
+            obj = self._to_object(item=response.object, container=container)
+            return obj
+        else:
+            body = response.read()
+            raise LibcloudError('Upload failed. status_code=%s, body=%s' %
+                                (response.status, body), driver=self)
 
     def delete_object(self, obj):
         data = {}
@@ -302,6 +378,31 @@ class BackblazeB2StorageDriver(StorageDriver):
                                        params=params, method='GET')
         objects = self._to_objects(data=resp.object, container=None)
         return objects
+
+    def ex_get_upload_data(self, container_id):
+        """
+        Retrieve information used for uploading files (upload url, auth token,
+        etc).
+
+        :rype: ``dict``
+        """
+        # TODO: This is static (AFAIK) so it could be cached
+        params = {}
+        params['bucketId'] = container_id
+        response = self.connection.request(action='b2_get_upload_url',
+                                           method='GET',
+                                           params=params)
+        return response.object
+
+    def ex_get_upload_url(self, container_id):
+        """
+        Retrieve URL used for file uploads.
+
+        :rtype: ``str``
+        """
+        result = self.ex_get_upload_data(container_id=container_id)
+        upload_url = result['uploadUrl']
+        return upload_url
 
     def _to_containers(self, data):
         result = []
