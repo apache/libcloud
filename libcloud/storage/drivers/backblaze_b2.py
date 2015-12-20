@@ -243,6 +243,16 @@ class BackblazeB2StorageDriver(StorageDriver):
                                 },
                                 success_status_code=httplib.OK)
 
+    def download_object_as_stream(self, obj, chunk_size=None):
+        action = obj.container.name + '/' + obj.name
+        response = self.connection.request(action=action, method='GET', raw=True)
+
+        return self._get_object(obj=obj, callback=read_in_chunks,
+                                response=response,
+                                callback_kwargs={'iterator': response.response,
+                                                 'chunk_size': chunk_size},
+                                success_status_code=httplib.OK)
+
     def delete_object(self, obj):
         data = {}
         data['fileName'] = obj.name
