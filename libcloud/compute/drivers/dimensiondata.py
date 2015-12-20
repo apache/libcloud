@@ -873,7 +873,7 @@ class DimensionDataNodeDriver(NodeDriver):
         block_id = None
 
         for info in findall(response, 'info', TYPES_URN):
-            if info.get('name') == 'publicIpBlockId':
+            if info.get('name') == 'ipBlockId':
                 block_id = info.get('value')
         return self.ex_get_public_ip_block(block_id)
 
