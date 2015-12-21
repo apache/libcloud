@@ -137,14 +137,14 @@ class DimensionDataNodeDriver(NodeDriver):
             auth_obj = self._get_and_check_auth(auth)
             password = auth_obj.password
 
-        if not isinstance(ex_network, DimensionDataNetwork) \
-            and not isinstance(ex_network, str):
-            if not isinstance(ex_network_domain, DimensionDataNetworkDomain) \
-                and not isinstance(ex_network_domain, str):
-                raise ValueError('ex_network must be of DimensionDataNetwork'
-                                 ' or str '
-                                 'type or ex_network_domain must be of '
-                                 'DimensionDataNetworkDomain type or str')
+        if not isinstance(ex_network, (DimensionDataNetwork, str)):
+            if not isinstance(ex_network_domain,
+                              (DimensionDataNetworkDomain, str)):
+                raise ValueError(
+                    'ex_network must be of DimensionDataNetwork'
+                    ' or str '
+                    'type or ex_network_domain must be of '
+                    'DimensionDataNetworkDomain type or str')
 
         server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
