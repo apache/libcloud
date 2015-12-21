@@ -591,6 +591,16 @@ INSTANCE_TYPES = {
         }
     },
     # Burstable Performance General Purpose
+    't2.nano': {
+        'id': 't2.nano',
+        'name': 'Burstable Performance Nano Instance',
+        'ram': 512,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 1
+        }
+    },
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
