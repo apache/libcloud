@@ -108,7 +108,8 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :keyword    ex_network_domain:  Network Domain to create the node
                                         (required unless using network)
-        :type       ex_network_domain: :class:`DimensionDataNetworkDomain` or ``str``
+        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+                                        or ``str``
 
         :keyword    ex_vlan:  VLAN to create the node within
                                         (required unless using network)
@@ -137,9 +138,9 @@ class DimensionDataNodeDriver(NodeDriver):
             password = auth_obj.password
 
         if not isinstance(ex_network, DimensionDataNetwork) \
-        and not isinstance(ex_network, str):
+            and not isinstance(ex_network, str):
             if not isinstance(ex_network_domain, DimensionDataNetworkDomain) \
-            and not isinstance(ex_network_domain, str):
+                and not isinstance(ex_network_domain, str):
                 raise ValueError('ex_network must be of DimensionDataNetwork'
                                  ' or str '
                                  'type or ex_network_domain must be of '
