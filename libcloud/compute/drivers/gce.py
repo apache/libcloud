@@ -21,6 +21,7 @@ import datetime
 import time
 import sys
 
+from libcloud.common.base import LazyObject
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
@@ -231,15 +232,37 @@ class GCEList(object):
         return self
 
 
-class GCELicense(UuidMixin):
+class GCELicense(UuidMixin, LazyObject):
     """A GCE License used to track software usage in GCE nodes."""
-    def __init__(self, id, name, driver, charges_use_fee, extra=None):
-        self.id = str(id)
-        self.name = name
-        self.driver = driver
-        self.charges_use_fee = charges_use_fee
-        self.extra = extra or {}
+    def __init__(self, name, project, driver):
         UuidMixin.__init__(self)
+        self.id = name
+        self.name = name
+        self.project = project
+        self.driver = driver
+        self.charges_use_fee = None  # init in _request
+        self.extra = None  # init in _request
+
+        self._request()
+
+    def _request(self):
+        # TODO(crunkleton@google.com): create new connection? or make
+        # connection thread-safe? Saving, modifying, and restoring
+        # driver.connection.request_path is really hacky and thread-unsafe.
+        saved_request_path = self.driver.connection.request_path
+        new_request_path = saved_request_path.replace(self.driver.project,
+                                                      self.project)
+        self.driver.connection.request_path = new_request_path
+
+        request = '/global/licenses/%s' % self.name
+        response = self.driver.connection.request(request, method='GET').object
+        self.driver.connection.request_path = saved_request_path
+
+        self.extra = {
+            'selfLink': response.get('selfLink'),
+            'kind': response.get('kind')
+        }
+        self.charges_use_fee = response['chargesUseFee']
 
     def destroy(self):
         raise ProviderError("Can not destroy a License resource.")
@@ -3913,15 +3936,7 @@ class GCENodeDriver(NodeDriver):
         :return:  A DiskType object for the name
         :rtype:   :class:`GCEDiskType`
         """
-        saved_request_path = self.connection.request_path
-        new_request_path = saved_request_path.replace(self.project, project)
-        self.connection.request_path = new_request_path
-
-        request = '/global/licenses/%s' % (name)
-        response = self.connection.request(request, method='GET').object
-        self.connection.request_path = saved_request_path
-
-        return self._to_license(response)
+        return GCELicense.lazy(name, project, self)
 
     def ex_get_disktype(self, name, zone=None):
         """
@@ -5690,24 +5705,6 @@ class GCENodeDriver(NodeDriver):
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
                        maintenance_windows=zone.get('maintenanceWindows'),
                        deprecated=deprecated, driver=self, extra=extra)
-
-    def _to_license(self, license):
-        """
-        Return a License object from the JSON-response dictionary.
-
-        :param  license: The dictionary describing the license.
-        :type   license: ``dict``
-
-        :return: License object
-        :rtype: :class:`GCELicense`
-        """
-        extra = {}
-        extra['selfLink'] = license.get('selfLink')
-        extra['kind'] = license.get('kind')
-
-        return GCELicense(id=license['name'], name=license['name'],
-                          charges_use_fee=license['chargesUseFee'],
-                          driver=self, extra=extra)
 
     def _set_project_metadata(self, metadata=None, force=False,
                               current_keys=""):
