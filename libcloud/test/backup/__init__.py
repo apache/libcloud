@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from libcloud.backup.base import BackupTarget, BackupTargetType
-from libcloud.pricing import get_pricing
 
 
 class TestCaseMixin(object):
