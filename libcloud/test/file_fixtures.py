@@ -28,6 +28,7 @@ FIXTURES_ROOT = {
     'loadbalancer': 'loadbalancer/fixtures',
     'dns': 'dns/fixtures',
     'openstack': 'compute/fixtures/openstack',
+    'container': 'container/fixtures'
 }
 
 
@@ -80,3 +81,9 @@ class OpenStackFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(OpenStackFixtures, self).__init__(fixtures_type='openstack',
                                                 sub_dir=sub_dir)
+
+
+class ContainerFileFixtures(FileFixtures):
+    def __init__(self, sub_dir=''):
+        super(ContainerFileFixtures, self).__init__(fixtures_type='container',
+                                                    sub_dir=sub_dir)

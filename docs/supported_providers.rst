@@ -69,3 +69,17 @@ Supported Methods
 ~~~~~~~~~~~~~~~~~
 
 .. include:: dns/_supported_methods.rst
+
+
+Container
+---------
+
+Provider Matrix
+~~~~~~~~~~~~~~~
+
+.. include:: container/_supported_providers.rst
+
+Supported Methods
+~~~~~~~~~~~~~~~~~
+
+.. include:: container/_supported_methods.rst

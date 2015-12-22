@@ -45,6 +45,11 @@ from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
 
+from libcloud.container.base import ContainerDriver
+from libcloud.container.providers import get_driver as get_container_driver
+from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
+from libcloud.container.types import Provider as ContainerProvider
+
 REQUIRED_DEPENDENCIES = [
     'pysphere'
 ]
@@ -88,7 +93,10 @@ BASE_API_METHODS = {
                     'get_container_cdn_url', 'get_object_cdn_url'],
     'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
             'create_zone', 'update_zone', 'create_record', 'update_record',
-            'delete_zone', 'delete_record']
+            'delete_zone', 'delete_record'],
+    'container': ['install_image', 'list_images', 'deploy_container',
+                  'get_container', 'start_container', 'stop_container',
+                  'restart_container', 'delete_container']
 }
 
 FRIENDLY_METHODS_NAMES = {
@@ -160,6 +168,16 @@ FRIENDLY_METHODS_NAMES = {
         'delete_zone': 'delete zone',
         'delete_record': 'delete record'
     },
+    'container': {
+        'install_image': 'install image',
+        'list_images': 'list images',
+        'deploy_container': 'deploy container',
+        'get_container': 'get container',
+        'start_container': 'start container',
+        'stop_container': 'stop container',
+        'restart_container': 'restart container',
+        'delete_container': 'delete container'
+    }
 }
 
 IGNORED_PROVIDERS = [
@@ -203,6 +221,11 @@ def generate_providers_table(api):
         drivers = DNS_DRIVERS
         provider = DNSProvider
         get_driver_method = get_dns_driver
+    elif api == 'container':
+        driver = ContainerDriver
+        drivers = CONTAINER_DRIVERS
+        provider = ContainerProvider
+        get_driver_method = get_container_driver    
     else:
         raise Exception('Invalid api: %s' % (api))
 
