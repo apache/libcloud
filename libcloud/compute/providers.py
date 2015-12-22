@@ -165,6 +165,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
     Provider.RUNABOVE:
     ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
+    Provider.DOCKER:
+    ('libcloud.compute.drivers.docker', 'DockerNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:

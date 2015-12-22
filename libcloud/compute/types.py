@@ -100,6 +100,7 @@ class Provider(Type):
     :cvar VULTR: vultr driver.
     :cvar AZURE: Azure driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
+    :cvar DOCKER: Docker Node driver.
     """
     AZURE = 'azure'
     DUMMY = 'dummy'
@@ -153,6 +154,7 @@ class Provider(Type):
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
     RUNABOVE = 'runabove'
+    DOCKER = 'docker'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
