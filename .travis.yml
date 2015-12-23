@@ -35,6 +35,6 @@ script:
 
 notifications:
   email:
-    - commits@libcloud.apache.org
+    - notifications@libcloud.apache.org
   irc:
     - "chat.freenode.net#libcloud"
