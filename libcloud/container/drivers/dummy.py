@@ -28,6 +28,7 @@ class DummyContainerDriver(ContainerDriver):
 
     name = 'Dummy Container Provider'
     website = 'http://example.com'
+    supports_clusters = False
 
     def __init__(self, api_key, api_secret):
         """

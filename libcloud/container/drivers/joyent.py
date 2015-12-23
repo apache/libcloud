@@ -34,6 +34,7 @@ class JoyentContainerDriver(DockerContainerDriver):
     name = 'Joyent'
     website = 'http://joyent.com'
     connectionCls = DockerConnection
+    supports_clusters = False
 
     def __init__(self, key=None, secret=None, secure=False, host='localhost',
                  port=2376, key_file=None, cert_file=None):

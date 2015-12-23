@@ -21,6 +21,7 @@ from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 __all__ = [
     'Container',
     'ContainerImage',
+    'ContainerCluster',
     'ContainerDriver'
 ]
 
@@ -30,7 +31,8 @@ class Container(object):
     Container.
     """
 
-    def __init__(self, id, name, image, state, driver, extra=None):
+    def __init__(self, id, name, image, state,
+                 ip_addresses, driver, extra=None):
         """
         :param id: Container id.
         :type id: ``str``
@@ -44,6 +46,9 @@ class Container(object):
         :param state: The state of the container, e.g. running
         :type  state: :class:`libcloud.container.types.ContainerState`
 
+        :param ip_addresses: A list of IP addresses for this container
+        :type  ip_addresses: ``list`` of ``str``
+
         :param driver: ContainerDriver instance.
         :type driver: :class:`ContainerDriver`
 
@@ -54,6 +59,7 @@ class Container(object):
         self.name = name
         self.image = image
         self.state = state
+        self.ip_addresses = ip_addresses
         self.driver = driver
         self.extra = extra or {}
 
@@ -120,6 +126,73 @@ class ContainerImage(object):
                 (self.id, self.name, self.driver.name))
 
 
+class ContainerCluster(object):
+    """
+    A cluster group for containers
+    """
+
+    def __init__(self, id, name, driver, extra=None):
+        """
+        :param id: Container Image id.
+        :type id: ``str``
+
+        :param name: The name of the image.
+        :type  name: ``str``
+
+        :param driver: ContainerDriver instance.
+        :type driver: :class:`ContainerDriver`
+
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
+        """
+        self.id = str(id) if id else None
+        self.name = name
+        self.driver = driver
+        self.extra = extra or {}
+
+    def list_containers(self):
+        return self.driver.list_containers(cluster=self)
+
+    def __repr__(self):
+        return ('<ContainerCluster: id=%s, name=%s, provider=%s ...>' %
+                (self.id, self.name, self.driver.name))
+
+
+class ClusterLocation(object):
+    """
+    A physical location where clusters can be.
+
+    >>> from libcloud.container.drivers.dummy import DummyNodeDriver
+    >>> driver = DummyNodeDriver(0)
+    >>> location = driver.list_locations()[0]
+    >>> location.country
+    'US'
+    """
+
+    def __init__(self, id, name, country, driver):
+        """
+        :param id: Location ID.
+        :type id: ``str``
+
+        :param name: Location name.
+        :type name: ``str``
+
+        :param country: Location country.
+        :type country: ``str``
+
+        :param driver: Driver this location belongs to.
+        :type driver: :class:`.NodeDriver`
+        """
+        self.id = str(id)
+        self.name = name
+        self.country = country
+        self.driver = driver
+
+    def __repr__(self):
+        return (('<ClusterLocation: id=%s, name=%s, country=%s, driver=%s>')
+                % (self.id, self.name, self.country, self.driver.name))
+
+
 class ContainerDriver(BaseDriver):
     """
     A base ContainerDriver class to derive from
@@ -129,6 +202,10 @@ class ContainerDriver(BaseDriver):
     connectionCls = ConnectionUserAndKey
     name = None
     website = None
+    supports_clusters = False
+    """
+    Whether the driver supports containers being deployed into clusters
+    """
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -176,19 +253,23 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'list_images not implemented for this driver')
 
-    def list_containers(self, image=None):
+    def list_containers(self, image=None, cluster=None):
         """
         List the deployed container images
 
         :param image: Filter to containers with a certain image
         :type  image: :class:`ContainerImage`
 
+        :param cluster: Filter to containers in a cluster
+        :type  cluster: :class:`ContainerCluster`
+
         :rtype: ``list`` of :class:`Container`
         """
         raise NotImplementedError(
             'list_containers not implemented for this driver')
 
-    def deploy_container(self, name, image, parameters=None, start=True):
+    def deploy_container(self, name, image, cluster=None,
+                         parameters=None, start=True):
         """
         Deploy an installed container image
 
@@ -197,6 +278,9 @@ class ContainerDriver(BaseDriver):
 
         :param image: The container image to deploy
         :type  image: :class:`ContainerImage`
+
+        :param cluster: The cluster to deploy to, None is default
+        :type  cluster: :class:`ContainerCluster`
 
         :param parameters: Container Image parameters
         :type  parameters: ``str``
@@ -268,3 +352,48 @@ class ContainerDriver(BaseDriver):
         """
         raise NotImplementedError(
             'delete_container not implemented for this driver')
+
+    def list_locations(self):
+        """
+        Get a list of potential locations to deploy clusters into
+
+        :rtype: ``list`` of :class:`ClusterLocation`
+        """
+        raise NotImplementedError(
+            'list_locations not implemented for this driver')
+
+    def create_cluster(self, name, location=None):
+        """
+        Create a container cluster
+
+        :param  name: The name of the cluster
+        :type   name: ``str``
+
+        :param  location: The location to create the cluster in
+        :type   location: :class:`ClusterLocation`
+
+        :rtype: :class:`ContainerCluster`
+        """
+        raise NotImplementedError(
+            'create_cluster not implemented for this driver')
+
+    def delete_cluster(self, cluster):
+        """
+        Delete a cluster
+
+        :rtype: ``list`` of :class:`ClusterLocation`
+        """
+        raise NotImplementedError(
+            'delete_cluster not implemented for this driver')
+
+    def list_clusters(self, location=None):
+        """
+        Get a list of potential locations to deploy clusters into
+
+        :param  location: The location to search in
+        :type   location: :class:`ClusterLocation`
+
+        :rtype: ``list`` of :class:`ContainerCluster`
+        """
+        raise NotImplementedError(
+            'list_clusters not implemented for this driver')

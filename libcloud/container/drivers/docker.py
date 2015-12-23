@@ -128,6 +128,7 @@ class DockerContainerDriver(ContainerDriver):
     name = 'Docker'
     website = 'http://docker.io'
     connectionCls = DockerConnection
+    supports_clusters = False
 
     def __init__(self, key=None, secret=None, secure=False, host='localhost',
                  port=4243, key_file=None, cert_file=None):
@@ -356,35 +357,7 @@ class DockerContainerDriver(ContainerDriver):
         result = self.connection.request("/containers/%s/json" %
                                          id).object
 
-        name = result.get('Name').strip('/')
-        if result['State']['Running']:
-            state = ContainerState.RUNNING
-        else:
-            state = ContainerState.STOPPED
-        image = result.get('Image')
-        extra = {
-            'volumes': result.get('Volumes'),
-            'env': result.get('Config', {}).get('Env'),
-            'ports': result.get('ExposedPorts'),
-            'network_settings': result.get('NetworkSettings', {})
-        }
-        container_id = result.get('Id')
-        if not container_id:
-            container_id = result.get('ID', '')
-        container = (Container(
-            id=container_id,
-            name=name,
-            image=ContainerImage(
-                id=None,
-                path=image,
-                name=image,
-                version=None,
-                driver=self.connection.driver
-            ),
-            state=state,
-            driver=self.connection.driver,
-            extra=extra))
-        return container
+        return self._to_container(result)
 
     def start_container(self, container):
         """
@@ -586,29 +559,43 @@ class DockerContainerDriver(ContainerDriver):
         Convert container in Container instances
         """
         try:
-            name = data.get('Names')[0].strip('/')
+            name = data.get('Name').strip('/')
         except:
-            name = data.get('Id')
-        if 'Exited' in data.get('Status'):
+            try:
+                name = data.get('Names')[0].strip('/')
+            except:
+                name = data.get('Id')
+        state = data.get('State')
+        status = data.get('Status',
+                          state.get('Status')
+                          if state is not None else None)
+        if 'Exited' in status:
             state = ContainerState.STOPPED
-        elif data.get('Status').startswith('Up '):
+        elif status.startswith('Up '):
             state = ContainerState.RUNNING
         else:
             state = ContainerState.STOPPED
         image = data.get('Image')
-        ports = json.dumps(data.get('Ports', {}))
+        ports = data.get('Ports', [])
+        created = data.get('Created')
+        if isinstance(created, float):
+            created = ts_to_str(created)
         extra = {
             'id': data.get('Id'),
             'status': data.get('Status'),
-            'created': ts_to_str(data.get('Created')),
+            'created': created,
             'image': image,
             'ports': ports,
             'command': data.get('Command'),
             'sizerw': data.get('SizeRw'),
             'sizerootfs': data.get('SizeRootFs'),
         }
-
-        node = (Container(
+        ips = []
+        if ports is not None:
+            for port in ports:
+                if port.get('IP') is not None:
+                    ips.append(port.get('IP'))
+        return Container(
             id=data['Id'],
             name=name,
             image=ContainerImage(
@@ -618,10 +605,10 @@ class DockerContainerDriver(ContainerDriver):
                 version=None,
                 driver=self.connection.driver
             ),
+            ip_addresses=ips,
             state=state,
             driver=self.connection.driver,
-            extra=extra))
-        return node
+            extra=extra)
 
     def _get_api_version(self):
         """
