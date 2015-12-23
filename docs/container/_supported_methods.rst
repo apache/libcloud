@@ -4,6 +4,8 @@
 Provider  install image list images deploy container get container start container stop container restart container delete container
 ========= ============= =========== ================ ============= =============== ============== ================= ================
 `Docker`_ yes           yes         yes              yes           yes             yes            yes               yes             
+`Joyent`_ yes           yes         yes              yes           yes             yes            yes               yes             
 ========= ============= =========== ================ ============= =============== ============== ================= ================
 
 .. _`Docker`: http://docker.io
+.. _`Joyent`: http://joyent.com
