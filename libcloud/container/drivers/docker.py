@@ -28,6 +28,7 @@ from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
+
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage)
 
@@ -121,7 +122,7 @@ class DockerContainerDriver(ContainerDriver):
     connect with tls authentication, by providing a hostname, port, a private
     key file (.pem) and certificate (.pem) file
     >>> conn = driver(host='https://198.61.239.128',
-        port=4243, key_file='key.pem', cert_file='cert.pem')
+    >>> port=4243, key_file='key.pem', cert_file='cert.pem')
     """
 
     type = Provider.DOCKER
@@ -132,7 +133,31 @@ class DockerContainerDriver(ContainerDriver):
 
     def __init__(self, key=None, secret=None, secure=False, host='localhost',
                  port=4243, key_file=None, cert_file=None):
+        """
+        :param    key: API key or username to used (required)
+        :type     key: ``str``
 
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
+
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
+                only support HTTPS, and it is on by default.
+        :type     secure: ``bool``
+
+        :param    host: Override hostname used for connections.
+        :type     host: ``str``
+
+        :param    port: Override port used for connections.
+        :type     port: ``int``
+
+        :param    key_file: Path to private key for TLS connection (optional)
+        :type     key_file: ``str``
+
+        :param    cert_file: Path to public key for TLS connection (optional)
+        :type     cert_file: ``str``
+
+        :return: ``None``
+        """
         super(DockerContainerDriver, self).__init__(key=key, secret=secret,
                                                     secure=secure, host=host,
                                                     port=port,
@@ -270,6 +295,8 @@ class DockerContainerDriver(ContainerDriver):
                          memswap_limit=0, port_bindings=None):
         """
         Deploy an installed container image
+
+        For details on the additional parameters see : http://bit.ly/1PjMVKV
 
         :param name: The name of the new container
         :type  name: ``str``
@@ -599,7 +626,7 @@ class DockerContainerDriver(ContainerDriver):
             id=data['Id'],
             name=name,
             image=ContainerImage(
-                id=None,
+                id=data.get('ImageID', None),
                 path=image,
                 name=image,
                 version=None,
