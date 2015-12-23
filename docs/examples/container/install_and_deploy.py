@@ -9,4 +9,4 @@ driver = Cls(*CREDS)
 image = driver.install_image('tomcat:8.0')
 container = driver.deploy_container('tomcat', image)
 
-container.restart
+container.restart()

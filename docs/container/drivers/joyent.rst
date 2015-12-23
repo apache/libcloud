@@ -1,7 +1,7 @@
 Joyent Triton Container Driver Documentation
 ==================================
 
-`Joyent Triton`_ is a Docker hosting service, provided by service provider `Joyent`.
+`Joyent Triton`_ is a Docker hosting service, provided by service provider `Joyent`_.
 Docker-native tools and elastic hosts make deploying on Triton as easy as running Docker on your laptop.
 There is no special software to install or configure.
 Mix Docker containers with container-native Linux to extend the benefits of containerization to legacy applications and stateful services.
@@ -18,11 +18,11 @@ Download the script:
 
     curl -O https://raw.githubusercontent.com/joyent/sdc-docker/master/tools/sdc-docker-setup.sh
     
-Now execute the script, substituting the correct values:
+Now execute the script, substituting the correct values::
 
     bash sdc-docker-setup.sh <CLOUDAPI_URL> <ACCOUNT_USERNAME> ~/.ssh/<PRIVATE_KEY_FILE>
 
-This should output something similar to the following:
+This should output something similar to the following::
 
     Setting up Docker client for SDC using:
         CloudAPI:        https://us-east-1.api.joyent.com
