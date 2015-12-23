@@ -22,6 +22,8 @@ DRIVERS = {
     ('libcloud.container.drivers.dummy', 'DummyContainerDriver'),
     Provider.DOCKER:
     ('libcloud.container.drivers.docker', 'DockerContainerDriver'),
+    Provider.JOYENT:
+    ('libcloud.container.drivers.joyent', 'JoyentContainerDriver'),
 }
 
 
