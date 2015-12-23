@@ -27,10 +27,13 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.container.providers import Provider
-from libcloud.container.types import (ContainerState, InvalidCredsError)
+from libcloud.common.types import InvalidCredsError
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage)
+
+from libcloud.container.providers import Provider
+from libcloud.container.types import ContainerState
+
 
 VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                         httplib.NO_CONTENT]
@@ -48,7 +51,11 @@ class DockerResponse(JsonResponse):
         try:
             # error responses are tricky in Docker. Eg response could be
             # an error, but response status could still be 200
-            body = json.loads(self.body)
+            content_type = self.headers.get('content-type', 'application/json')
+            if content_type == 'application/json' or content_type == '':
+                body = json.loads(self.body)
+            else:
+                body = self.body
         except ValueError:
             m = re.search('Error: (.+?)"', self.body)
             if m:
@@ -174,7 +181,7 @@ class DockerContainerDriver(ContainerDriver):
         result = self.connection.request('/images/create?fromImage=%s' %
                                          (path), data=data, method='POST')
         if "errorDetail" in result.body:
-            raise DockerException(result.code, result.body)
+            raise DockerException(None, result.body)
         try:
             # get image id
             image_id = re.findall(
@@ -210,6 +217,7 @@ class DockerContainerDriver(ContainerDriver):
             images.append(ContainerImage(
                 id=image.get('Id'),
                 name=name,
+                path=name,
                 version=None,
                 driver=self.connection.driver,
                 extra={
@@ -221,18 +229,25 @@ class DockerContainerDriver(ContainerDriver):
 
         return images
 
-    def list_containers(self, image=None):
+    def list_containers(self, image=None, all=True):
         """
         List the deployed container images
 
         :param image: Filter to containers with a certain image
         :type  image: :class:`ContainerImage`
 
+        :param all: Show all container (including stopped ones)
+        :type  all: ``bool``
+
         :rtype: ``list`` of :class:`Container`
         """
+        if all:
+            ex = '?all=1'
+        else:
+            ex = ''
         try:
             result = self.connection.request(
-                "/containers/ps").object
+                "/containers/json%s" % (ex)).object
         except Exception as exc:
             if hasattr(exc, 'errno') and exc.errno == 111:
                 raise DockerException(
@@ -291,7 +306,7 @@ class DockerContainerDriver(ContainerDriver):
             'Env': environment,
             'Cmd': command,
             'Dns': dns,
-            'Image': image,
+            'Image': image.name,
             'Volumes': volumes,
             'VolumesFrom': volumes_from,
             'NetworkDisabled': network_disabled,
@@ -375,11 +390,11 @@ class DockerContainerDriver(ContainerDriver):
         """
         Start a container
 
-        :param node: The node to be started
-        :type node: :class:`.Node`
+        :param container: The container to be started
+        :type  container: :class:`.Container`
 
-        :return: True if the start was successful, False otherwise.
-        :rtype: ``bool``
+        :return: The container refreshed with current data
+        :rtype: :class:`Container`
         """
         payload = {
             'Binds': [],
@@ -400,11 +415,11 @@ class DockerContainerDriver(ContainerDriver):
         """
         Stop a container
 
-        :param node: The node to be stopped
-        :type node: :class:`.Node`
+        :param container: The container to be stopped
+        :type  container: :class:`.Container`
 
-        :return: True if the stop was successful, False otherwise.
-        :rtype: ``bool``
+        :return: The container refreshed with current data
+        :rtype: :class:`Container`
         """
         result = self.connection.request('/containers/%s/stop' %
                                          (container.id),
@@ -419,11 +434,11 @@ class DockerContainerDriver(ContainerDriver):
         """
         Restart a container
 
-        :param node: The node to be rebooted
-        :type node: :class:`.Node`
+        :param container: The container to be stopped
+        :type  container: :class:`.Container`
 
-        :return: True if the reboot was successful, otherwise False
-        :rtype: ``bool``
+        :return: The container refreshed with current data
+        :rtype: :class:`Container`
         """
         data = json.dumps({'t': 10})
         # number of seconds to wait before killing the container
@@ -440,25 +455,27 @@ class DockerContainerDriver(ContainerDriver):
         """
         Remove a container
 
-        :param node: The container to be destroyed
-        :type node: :class:`.Node`
+        :param container: The container to be destroyed
+        :type  container: :class:`.Container`
 
         :return: True if the destroy was successful, False otherwise.
         :rtype: ``bool``
         """
         result = self.connection.request('/containers/%s' % (container.id),
                                          method='DELETE')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise DockerException(result.status,
-                                  'failed to delete container')
+        return result.status in VALID_RESPONSE_CODES
 
-    def ex_list_processes(self, node):
+    def ex_list_processes(self, container):
         """
         List processes running inside a container
+
+        :param container: The container to list processes for.
+        :type  container: :class:`.Container`
+
+        :rtype: ``str``
         """
-        result = self.connection.request("/containers/%s/top" % node.id).object
+        result = self.connection.request("/containers/%s/top" %
+                                         container.id).object
 
         return result
 
@@ -466,8 +483,11 @@ class DockerContainerDriver(ContainerDriver):
         """
         Rename a container
 
-        :param node: The container to be renamed
-        :type node: :class:`.Container`
+        :param container: The container to be renamed
+        :type  container: :class:`.Container`
+
+        :param name: The new name
+        :type  name: ``str``
 
         :rtype: :class:`.Container`
         """
@@ -477,7 +497,7 @@ class DockerContainerDriver(ContainerDriver):
         if result.status in VALID_RESPONSE_CODES:
             return self.get_container(container.id)
 
-    def ex_get_logs(self, node, stream=False):
+    def ex_get_logs(self, container, stream=False):
         """
         Get container logs
 
@@ -485,6 +505,13 @@ class DockerContainerDriver(ContainerDriver):
         From Api Version 1.11 and above we need a GET request to get the logs
         Logs are in different format of those of Version 1.10 and below
 
+        :param container: The container to list logs for
+        :type  container: :class:`.Container`
+
+        :param stream: Stream the output
+        :type  stream: ``bool``
+
+        :rtype: ``bool``
         """
         payload = {}
         data = json.dumps(payload)
@@ -492,12 +519,12 @@ class DockerContainerDriver(ContainerDriver):
         if float(self._get_api_version()) > 1.10:
             result = self.connection.request(
                 "/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
-                (node.id, str(stream))).object
-            logs = json.loads(result)
+                (container.id, str(stream))).object
+            logs = result
         else:
             result = self.connection.request(
                 "/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
-                (node.id, str(stream)), method='POST', data=data)
+                (container.id, str(stream)), method='POST', data=data)
             logs = result.body
 
         return logs
@@ -511,6 +538,11 @@ class DockerContainerDriver(ContainerDriver):
            [<ContainerImage: id=rolikeusch/docker-mistio...>,
             <ContainerImage: id=mist/mistio, name=mist/mistio,
                 driver=Docker  ...>]
+
+            :param term: The search term
+            :type  term: ``str``
+
+            :rtype: ``list`` of :class:`ContainerImage`
         """
 
         term = term.replace(' ', '+')
@@ -537,13 +569,21 @@ class DockerContainerDriver(ContainerDriver):
         return images
 
     def ex_delete_image(self, image):
-        "Remove image from the filesystem"
-        result = self.connection.request('/images/%s' % (image),
+        """
+        Remove image from the filesystem
+
+        :param  image: The image to remove
+        :type   image: :class:`ContainerImage`
+
+        :rtype: ``bool``
+        """
+        result = self.connection.request('/images/%s' % (image.name),
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
 
     def _to_container(self, data):
-        """Convert container in Container instances
+        """
+        Convert container in Container instances
         """
         try:
             name = data.get('Names')[0].strip('/')
@@ -594,7 +634,9 @@ class DockerContainerDriver(ContainerDriver):
 
 
 def ts_to_str(timestamp):
-    """Return a timestamp as a nicely formated datetime string."""
+    """
+    Return a timestamp as a nicely formated datetime string.
+    """
     date = datetime.datetime.fromtimestamp(timestamp)
     date_string = date.strftime("%d/%m/%Y %H:%M %Z")
     return date_string

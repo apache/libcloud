@@ -1,0 +1,50 @@
+[
+  {
+    "Id": "cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0",
+    "ParentId": "3e408cde1b7f6276b9ead7b8111d80a367f9223dfbbd4102ea89a5fc42947960",
+    "RepoTags": [
+      "mongo:latest"
+    ],
+    "RepoDigests": [],
+    "Created": 1449618009,
+    "Size": 0,
+    "VirtualSize": 316957672,
+    "Labels": null
+  },
+  {
+    "Id": "05c5761707b3970a9bf17c00886176add79ac087b4d6a500ac87985bf8ec07b1",
+    "ParentId": "be7965ce1bef5d2e3b27efb3f4fe2253683bc7144d2ebae614e9e7155066c833",
+    "RepoTags": [
+      "stackstorm/hubot:latest"
+    ],
+    "RepoDigests": [],
+    "Created": 1449466772,
+    "Size": 0,
+    "VirtualSize": 550102318,
+    "Labels": {}
+  },
+  {
+    "Id": "448afeda0388b18c6f3be18c7aaece29e0f8dbdfab30364e678c382bab1037c5",
+    "ParentId": "67edbf589f9af9b2c6f87e8481ec0299c50bfce5f9b98b95316c7235494c7bea",
+    "RepoTags": [
+      "rabbitmq:latest"
+    ],
+    "RepoDigests": [],
+    "Created": 1449312753,
+    "Size": 0,
+    "VirtualSize": 304310861,
+    "Labels": null
+  },
+  {
+    "Id": "9da5438fedb2e9a1e11a3361c4a53e0801ed1f8f4c014d83a5a514f0c60892bf",
+    "ParentId": "64ccc5e9d20c638849eadddab4f23204c3fcdd62d497cdbd0ecf44d863b086c8",
+    "RepoTags": [
+      "mongo:2.4.14"
+    ],
+    "RepoDigests": [],
+    "Created": 1449299455,
+    "Size": 0,
+    "VirtualSize": 344445131,
+    "Labels": null
+  }
+]
