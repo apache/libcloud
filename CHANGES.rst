@@ -9,7 +9,7 @@ General
 
 - Introduction of container based drivers for Docker, Rkt and Container-as-a-service
   providers
-  (LIBCLOUD-666)
+  (LIBCLOUD-781, GITHUB-666)
   [Anthony Shaw]
 
 Changes with Apache Libcloud 0.20.0
