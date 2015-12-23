@@ -39,6 +39,7 @@ from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
 
 
@@ -130,16 +131,16 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: :class:`Node`
         """
         password = None
-        if isinstance(auth, str):
+        if isinstance(auth, basestring):
             auth_obj = NodeAuthPassword(password=auth)
             password = auth
         else:
             auth_obj = self._get_and_check_auth(auth)
             password = auth_obj.password
 
-        if not isinstance(ex_network, (DimensionDataNetwork, str)):
+        if not isinstance(ex_network, (DimensionDataNetwork, basestring)):
             if not isinstance(ex_network_domain,
-                              (DimensionDataNetworkDomain, str)):
+                              (DimensionDataNetworkDomain, basestring)):
                 raise ValueError(
                     'ex_network must be of DimensionDataNetwork'
                     ' or str '
