@@ -225,7 +225,7 @@ def generate_providers_table(api):
         driver = ContainerDriver
         drivers = CONTAINER_DRIVERS
         provider = ContainerProvider
-        get_driver_method = get_container_driver    
+        get_driver_method = get_container_driver
     else:
         raise Exception('Invalid api: %s' % (api))
 

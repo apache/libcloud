@@ -176,6 +176,18 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'list_images not implemented for this driver')
 
+    def list_containers(self, image=None):
+        """
+        List the deployed container images
+
+        :param image: Filter to containers with a certain image
+        :type  image: :class:`ContainerImage`
+
+        :rtype: ``list`` of :class:`Container`
+        """
+        raise NotImplementedError(
+            'list_containers not implemented for this driver')
+
     def deploy_container(self, name, image, parameters=None, start=True):
         """
         Deploy an installed container image

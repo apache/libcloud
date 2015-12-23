@@ -20,7 +20,8 @@ from libcloud.container.types import Provider
 DRIVERS = {
     Provider.DUMMY:
     ('libcloud.container.drivers.dummy', 'DummyContainerDriver'),
-
+    Provider.DOCKER:
+    ('libcloud.container.drivers.docker', 'DockerContainerDriver'),
 }
 
 
