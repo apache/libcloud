@@ -14,7 +14,7 @@ Mix Docker containers with container-native Linux to extend the benefits of cont
 Instantiating the driver
 -------------------------------------
 
-Download the script:
+Download the script::
 
     curl -O https://raw.githubusercontent.com/joyent/sdc-docker/master/tools/sdc-docker-setup.sh
     
@@ -53,5 +53,13 @@ This should output something similar to the following::
 .. literalinclude:: /examples/container/joyent/instantiate_driver.py
    :language: python
    
+API Docs
+--------
+
+.. autoclass:: libcloud.container.drivers.joyent.JoyentContainerDriver
+    :members:
+    :inherited-members:
+
+
 .. _`Joyent Triton`: https://www.joyent.com/blog/understanding-triton-containers
 .. _`Joyent`: https://www.joyent.com/
