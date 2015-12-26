@@ -956,7 +956,7 @@ class DimensionDataNodeDriver(NodeDriver):
             source_ip.set('address', 'ANY')
         else:
             source_ip.set('address', rule.source.ip_address)
-            source_ip.set('prefixSize', rule.source.ip_prefix_size)
+            source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
             if rule.source.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
                 source_port.set('begin', rule.source.port_begin)
@@ -969,7 +969,8 @@ class DimensionDataNodeDriver(NodeDriver):
             dest_ip.set('address', 'ANY')
         else:
             dest_ip.set('address', rule.destination.ip_address)
-            dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+            if rule.destination.ip_prefix_size is not None:
+                dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
             if rule.destination.port_begin is not None:
                 dest_port = ET.SubElement(dest, 'port')
                 dest_port.set('begin', rule.destination.port_begin)
