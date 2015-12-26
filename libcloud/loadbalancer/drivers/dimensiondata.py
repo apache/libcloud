@@ -1041,9 +1041,15 @@ class DimensionDataLBDriver(Driver):
         port = findtext(element, 'port', TYPES_URN)
         extra = {}
 
-        extra['pool_id'] = element.find(fixxpath(
+        pool_element = element.find(fixxpath(
             'pool',
-            TYPES_URN)).get('id')
+            TYPES_URN))
+        if pool_element is None:
+            extra['pool_id'] = None
+
+        else:
+            extra['pool_id'] = pool_element.get('id')
+
         extra['network_domain_id'] = findtext(element, 'networkDomainId',
                                               TYPES_URN)
 
