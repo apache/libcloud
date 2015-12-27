@@ -1691,7 +1691,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if has_network_info else \
             element.find(fixxpath('nic', TYPES_URN)).get('privateIpv4')
 
-        node.extra['ipv6'] = element.find(
+        extra['ipv6'] = element.find(
             fixxpath('networkInfo/primaryNic', TYPES_URN)) \
             .get('ipv6') \
             if has_network_info else \
