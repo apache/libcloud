@@ -72,8 +72,8 @@ class Container(object):
     def restart(self):
         return self.driver.restart_container(container=self)
 
-    def delete(self):
-        return self.driver.delete_container(container=self)
+    def destroy(self):
+        return self.driver.destroy_container(container=self)
 
     def __repr__(self):
         return ('<Container: id=%s, name=%s, provider=%s '
@@ -152,6 +152,9 @@ class ContainerCluster(object):
 
     def list_containers(self):
         return self.driver.list_containers(cluster=self)
+
+    def destroy(self):
+        return self.driver.destroy_cluster(cluster=self)
 
     def __repr__(self):
         return ('<ContainerCluster: id=%s, name=%s, provider=%s ...>' %

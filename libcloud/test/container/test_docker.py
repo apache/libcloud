@@ -82,7 +82,7 @@ class DockerContainerDriverTestCase(unittest.TestCase):
 
     def test_delete_container(self):
         container = self.driver.get_container('a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303')
-        container.delete()
+        container.destroy()
 
     def test_ex_rename_container(self):
         container = self.driver.get_container('a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303')
