@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CreateLoadBalancerResponse>
+    <RequestId>365F4154-92F6-4AE4-92F8-7FF34B540710</RequestId>
+    <LoadBalancerId>139a00604ad-cn-east-hangzhou-01</LoadBalancerId>
+    <Address>42.250.6.36</Address>
+    <NetworkType>classic</NetworkType>
+    <MasterZoneId>cn-hangzhou-d</MasterZoneId>
+    <SlaveZoneId>cn-hangzhou-b</SlaveZoneId>
+    <LoadBalancerName>balancer1</LoadBalancerName>
+</CreateLoadBalancerResponse>

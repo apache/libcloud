@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult>
+  <Owner>
+    <ID>ut_test_put_bucket</ID>
+    <DisplayName>ut_test_put_bucket</DisplayName>
+  </Owner>
+  <Buckets>
+    <Bucket>
+      <Location>oss-cn-hangzhou-a</Location>
+      <Name>xz02tphky6fjfiuc0</Name>
+      <CreationDate>2014-05-15T11:18:32.000Z</CreationDate>
+    </Bucket>
+    <Bucket>
+      <Location>oss-cn-hangzhou-a</Location>
+      <Name>xz02tphky6fjfiuc1</Name>
+      <CreationDate>2014-05-15T11:18:32.000Z</CreationDate>
+    </Bucket>
+  </Buckets>
+</ListAllMyBucketsResult>

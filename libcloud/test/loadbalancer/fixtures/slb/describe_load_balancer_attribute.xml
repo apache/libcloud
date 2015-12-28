@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeLoadBalancerAttributeResponse>
+	<CreateTimeStamp>1452403099000</CreateTimeStamp>
+	<RegionIdAlias>cn-hangzhou</RegionIdAlias>
+	<BackendServers>
+		<BackendServer>
+			<ServerId>i-23tshnsdq</ServerId>
+			<Weight>100</Weight>
+		</BackendServer>
+	</BackendServers>
+	<LoadBalancerId>15229f88562-cn-hangzhou-dg-a01</LoadBalancerId>
+	<ListenerPorts>
+		<ListenerPort>80</ListenerPort>
+	</ListenerPorts>
+	<InternetChargeType>paybytraffic</InternetChargeType>
+	<SlaveZoneId>cn-hangzhou-b</SlaveZoneId>
+	<NetworkType>classic</NetworkType>
+	<MasterZoneId>cn-hangzhou-d</MasterZoneId>
+	<ListenerPortsAndProtocal>
+		<ListenerPortAndProtocal>
+			<ListenerProtocal>http</ListenerProtocal>
+			<ListenerPort>80</ListenerPort>
+		</ListenerPortAndProtocal>
+	</ListenerPortsAndProtocal>
+	<CreateTime>2016-01-10 13:18:19</CreateTime>
+	<Address>120.27.186.149</Address>
+	<RegionId>cn-hangzhou-dg-a01</RegionId>
+	<RequestId>D67B80CD-C359-4352-AE3C-4F286CC3782D</RequestId>
+	<AddressType>internet</AddressType>
+	<ListenerPortsAndProtocol>
+		<ListenerPortAndProtocol>
+			<ListenerProtocol>http</ListenerProtocol>
+			<ListenerPort>80</ListenerPort>
+		</ListenerPortAndProtocol>
+	</ListenerPortsAndProtocol>
+	<LoadBalancerStatus>active</LoadBalancerStatus>
+	<Bandwidth>1</Bandwidth>
+</DescribeLoadBalancerAttributeResponse>

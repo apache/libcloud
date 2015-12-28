@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeZonesResponse>
+	<RequestId>CE75D5FB-C343-47DB-882D-E0709D95D61E</RequestId>
+	<Zones>
+		<Zone>
+			<AvailableResourceCreation>
+				<ResourceTypes>IoOptimized</ResourceTypes>
+				<ResourceTypes>Instance</ResourceTypes>
+				<ResourceTypes>Disk</ResourceTypes>
+			</AvailableResourceCreation>
+			<AvailableInstanceTypes>
+				<InstanceTypes>ecs.m2.medium</InstanceTypes>
+				<InstanceTypes>ecs.m1.medium</InstanceTypes>
+				<InstanceTypes>ecs.s2.xlarge</InstanceTypes>
+				<InstanceTypes>ecs.t1.xsmall</InstanceTypes>
+				<InstanceTypes>ecs.s2.large</InstanceTypes>
+				<InstanceTypes>ecs.s2.2xlarge</InstanceTypes>
+				<InstanceTypes>ecs.s3.medium</InstanceTypes>
+				<InstanceTypes>ecs.m1.xlarge</InstanceTypes>
+				<InstanceTypes>ecs.s1.small</InstanceTypes>
+				<InstanceTypes>ecs.s1.large</InstanceTypes>
+				<InstanceTypes>ecs.c2.xlarge</InstanceTypes>
+				<InstanceTypes>ecs.c2.large</InstanceTypes>
+				<InstanceTypes>ecs.s3.large</InstanceTypes>
+				<InstanceTypes>ecs.c1.small</InstanceTypes>
+				<InstanceTypes>ecs.m2.xlarge</InstanceTypes>
+				<InstanceTypes>ecs.c2.medium</InstanceTypes>
+				<InstanceTypes>ecs.t1.small</InstanceTypes>
+				<InstanceTypes>ecs.c1.large</InstanceTypes>
+				<InstanceTypes>ecs.s2.small</InstanceTypes>
+				<InstanceTypes>ecs.s1.medium</InstanceTypes>
+			</AvailableInstanceTypes>
+			<ZoneId>cn-qingdao-b</ZoneId>
+			<LocalName>青岛可用区B</LocalName>
+			<AvailableDiskCategories>
+				<DiskCategories>cloud_ssd</DiskCategories>
+				<DiskCategories>ephemeral</DiskCategories>
+				<DiskCategories>cloud</DiskCategories>
+			</AvailableDiskCategories>
+		</Zone>
+	</Zones>
+</DescribeZonesResponse>
