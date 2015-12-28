@@ -73,7 +73,7 @@ class ElasticContainerDriver(ContainerDriver):
             ROOT,
             params=params,
             headers=self._get_headers(params['Action'])
-            ).object
+        ).object
         return self._to_clusters(data)
 
     def create_cluster(self, name, location=None):
@@ -95,7 +95,7 @@ class ElasticContainerDriver(ContainerDriver):
             params=params,
             data=request,
             headers=self._get_headers(params['Action'])
-            ).object
+        ).object
         return self._to_cluster(response['cluster'])
 
     def destroy_cluster(self, cluster):
@@ -112,7 +112,7 @@ class ElasticContainerDriver(ContainerDriver):
             params=params,
             data=request,
             headers=self._get_headers(params['Action'])
-            ).object
+        ).object
         return data['cluster']['status'] == 'INACTIVE'
 
     def install_image(self, path):
@@ -157,7 +157,7 @@ class ElasticContainerDriver(ContainerDriver):
             params=params,
             data=request,
             headers=self._get_headers(params['Action'])
-            ).object
+        ).object
         containers = []
         for task in response['tasks']:
             containers.extend(self._to_containers(task))
