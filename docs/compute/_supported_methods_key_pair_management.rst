@@ -13,7 +13,6 @@ Provider                              list key pairs get key pair create key pai
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
 `DigitalOcean`_                       yes            yes          yes             no                            no                          yes            
-`DimensionData`_                      no             no           no              no                            no                          no             
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-northeast-1)`_        yes            yes          yes             yes                           no                          yes            
 `Amazon EC2 (ap-southeast-1)`_        yes            yes          yes             yes                           no                          yes            
@@ -85,7 +84,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
-.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

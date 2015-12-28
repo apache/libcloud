@@ -13,7 +13,6 @@ Provider                              list volumes create volume destroy volume 
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
 `Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
 `DigitalOcean`_                       no           no            no             no            no            no             no             
-`DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-southeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
@@ -85,7 +84,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
-.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
