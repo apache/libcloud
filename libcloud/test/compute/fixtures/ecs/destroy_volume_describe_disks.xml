@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeDisksResponse>
+    <Disks>
+        <Disk>
+	    <DiskChargeType>PostPaid</DiskChargeType>
+            <DeleteAutoSnapshot>true</DeleteAutoSnapshot>
+            <DeleteWithInstance>true</DeleteWithInstance>
+            <EnableAutoSnapshot>true</EnableAutoSnapshot>
+            <Category>cloud</Category>
+            <Description>Description</Description>
+            <DiskName>ubuntu1404sys</DiskName>
+            <Size>5</Size>
+            <Type>system</Type>
+            <InstanceId>i-28whl2nj2</InstanceId>
+            <CreationTime>2014-07-23T02:44:06Z</CreationTime>
+            <ImageId>ubuntu1404_64_20G_aliaegis_20150325.vhd</ImageId>
+            <ZoneId>cn-qingdao-b</ZoneId>
+            <AttachedTime>2016-01-04T15:02:17Z</AttachedTime>
+            <DetachedTime></DetachedTime>
+	    <Device>/dev/xvda</Device>
+            <OperationLocks></OperationLocks>
+            <Portable>false</Portable>
+            <ProductCode></ProductCode>
+            <RegionId>cn-qingdao</RegionId>
+            <DiskId>d-28zfrmo13</DiskId>
+            <SourceSnapshotId></SourceSnapshotId>
+            <Status>Available</Status>
+	    <OperationLocks />
+	    <ExpiredTime>2999-09-08T16:00Z</ExpiredTime>
+        </Disk>
+    </Disks>
+    <PageNumber>1</PageNumber>
+    <PageSize>10</PageSize>
+    <TotalCount>1</TotalCount>
+    <RequestId>ED5CF6DD-71CA-462C-9C94-A61A78A01479</RequestId>
+</DescribeDisksResponse>

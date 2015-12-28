@@ -32,6 +32,9 @@ class LibcloudLBImmutableError(LibcloudLBError):
 
 
 class Provider(object):
+    """
+    :cvar SLB: Aliyun SLB loadbalancer driver
+    """
     RACKSPACE = 'rackspace'
     GOGRID = 'gogrid'
     NINEFOLD = 'ninefold'
@@ -41,6 +44,7 @@ class Provider(object):
     GCE = 'gce'
     SOFTLAYER = 'softlayer'
     DIMENSIONDATA = 'dimensiondata'
+    SLB = 'slb'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

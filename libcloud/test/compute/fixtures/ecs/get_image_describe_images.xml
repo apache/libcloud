@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeImagesResponse>
+	<PageNumber>0</PageNumber>
+	<TotalCount>0</TotalCount>
+	<PageSize>10</PageSize>
+	<RegionId>cn-qingdao</RegionId>
+	<RequestId>FAD4D9B9-D75F-4A9E-BC13-991C0F06F50F</RequestId>
+	<Images>
+	</Images>
+</DescribeImagesResponse>
