@@ -244,7 +244,7 @@ class ECPNodeDriver(NodeDriver):
             data=d[1]
         ).parse_body()
 
-        # Ensure there was no applicationl level error
+        # Ensure there was no application level error
         node.state = NodeState.PENDING
         # Wait for the VM to turn off before continuing
         while node.state == NodeState.PENDING:
@@ -271,7 +271,7 @@ class ECPNodeDriver(NodeDriver):
 
     def list_images(self, location=None):
         """
-        Returns a list of all package templates aka appiances aka images.
+        Returns a list of all package templates aka appliances aka images.
 
         @inherits: :class:`NodeDriver.list_images`
         """

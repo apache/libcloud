@@ -1055,7 +1055,7 @@ class BaseDriver(object):
         :param    secret: Secret password to be used (required)
         :type     secret: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
         :type     secure: ``bool``
 

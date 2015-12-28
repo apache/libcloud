@@ -500,10 +500,10 @@ class DimensionDataVlan(object):
                                             as a CIDR range size
         :type  ipv6_range_size: ``int``
 
-        :param ipv4_gateway: The IPv4 default gateway addres
+        :param ipv4_gateway: The IPv4 default gateway address
         :type  ipv4_gateway: ``str``
 
-        :param ipv6_gateway: The IPv6 default gateway addres
+        :param ipv6_gateway: The IPv6 default gateway address
         :type  ipv6_gateway: ``str``
         """
         self.id = str(id)
