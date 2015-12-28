@@ -281,7 +281,7 @@ class ElasticContainerDriver(ContainerDriver):
                 path=None,
                 version=None,
                 driver=self.connection.driver
-                ),
+            ),
             ip_addresses=None,
             state=self.status_map.get(data['lastStatus'], None),
             extra={
