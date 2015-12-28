@@ -532,7 +532,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
 class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for self-authentication when used with a GCE
-    istance that supports serviceAccounts.
+    instance that supports serviceAccounts.
     """
     def get_new_token(self):
         """

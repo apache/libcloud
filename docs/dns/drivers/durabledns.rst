@@ -1,5 +1,5 @@
 Durable DNS Driver Documentation
-=====================================
+================================
 
 `DurableDNS`_ provides DNS hosting solutions for customers of all
 sizes. Works with all hosting arrangements - shared web hosting, virtual
@@ -12,7 +12,7 @@ supplier failures.
 See more at https://durabledns.com/
 
 Instantiating the driver
--------------------------------------
+------------------------
 
 .. literalinclude:: /examples/dns/durabledns/instantiate_driver.py
    :language: python

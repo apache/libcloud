@@ -731,7 +731,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Stops a node.
 
-        This also dealloctes the public IP space.
+        This also deallocates the public IP space.
 
         :param node: The node you wish to halt.
         :type node: :class:`Node`

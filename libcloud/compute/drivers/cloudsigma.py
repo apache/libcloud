@@ -1724,7 +1724,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def ex_get_balance(self):
         """
-        Retrueve account balance information.
+        Retrieve account balance information.
 
         :return: Dictionary with two items ("balance" and "currency").
         :rtype: ``dict``
@@ -1735,7 +1735,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def ex_get_pricing(self):
         """
-        Retrive pricing information that are applicable to the cloud.
+        Retrieve pricing information that are applicable to the cloud.
 
         :return: Dictionary with pricing information.
         :rtype: ``dict``

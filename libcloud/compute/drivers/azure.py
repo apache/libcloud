@@ -501,7 +501,7 @@ class AzureNodeDriver(NodeDriver):
     def list_volumes(self, node=None):
         """
         Lists volumes of the disks in the image repository that are
-        associated with the specificed subscription.
+        associated with the specified subscription.
 
         Pass Node object to scope the list of volumes to a single
         instance.
@@ -574,7 +574,7 @@ class AzureNodeDriver(NodeDriver):
 
         :type        ex_custom_data: ``str``
         :keyword     ex_custom_data: Optional script or other data which is
-                                     injected into the VM when it's begining
+                                     injected into the VM when it's beginning
                                      provisioned.
 
         :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.

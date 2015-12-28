@@ -306,7 +306,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
     def ex_purge_cached_file(self, zone, url):
         """
-        Purgle single file from CloudFlare's cache.
+        Purge single file from CloudFlare's cache.
 
         :param url: URL to the file to purge from cache.
         :type url: ``str``

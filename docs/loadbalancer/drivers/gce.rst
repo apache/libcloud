@@ -1,5 +1,5 @@
 Google Load Balancer Driver Documentation
-==========================================
+=========================================
 
 Loadbalancing in Compute Engine is native to Google Compute Engine.
 
@@ -28,12 +28,12 @@ Additional example code can be found in the "demos" directory of Libcloud here:
 https://github.com/apache/libcloud/blob/trunk/demos/gce_lb_demo.py
 
 1. Getting Driver with GCE Driver
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/loadbalancer/gce/gce_driver.py
 
 2. Getting Driver with Authentication Information
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/loadbalancer/gce/gce_authentication.py
 

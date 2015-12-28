@@ -45,7 +45,7 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '3.x_password'
 ]
 
-# How many seconds to substract from the auth token expiration time before
+# How many seconds to subtract from the auth token expiration time before
 # testing if the token is still valid.
 # The time is subtracted to account for the HTTP request latency and prevent
 # user from getting "InvalidCredsError" if token is about to expire.
@@ -162,7 +162,7 @@ class OpenStackServiceCatalog(object):
     """
     http://docs.openstack.org/api/openstack-identity-service/2.0/content/
 
-    This class should be instanciated with the contents of the
+    This class should be instantiated with the contents of the
     'serviceCatalog' in the auth response. This will do the work of figuring
     out which services actually exist in the catalog as well as split them up
     by type, name, and region if available
@@ -1104,7 +1104,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :param domain_id: ID of domain to retrieve information for.
         :type domain_id: ``str``
 
-        :rtyle: :class:`.OpenStackIdentityDomain`
+        :rtype: :class:`.OpenStackIdentityDomain`
         """
         response = self.authenticated_request('/v3/domains/%s' % (domain_id),
                                               method='GET')
@@ -1139,7 +1139,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         """
         Grant domain role to a user.
 
-        Note: This function appears to be idempodent.
+        Note: This function appears to be idempotent.
 
         :param domain: Domain to grant the role to.
         :type domain: :class:`.OpenStackIdentityDomain`
@@ -1183,7 +1183,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         """
         Grant project role to a user.
 
-        Note: This function appeats to be idempodent.
+        Note: This function appears to be idempotent.
 
         :param project: Project to grant the role to.
         :type project: :class:`.OpenStackIdentityDomain`

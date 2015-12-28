@@ -355,7 +355,7 @@ class VSphereNodeDriver(NodeDriver):
     @wrap_non_libcloud_exceptions
     def ex_get_hosts(self):
         """
-        Retrurn all the available hosts.
+        Return all the available hosts.
 
         :rtype: ``dict``
         """
