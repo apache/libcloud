@@ -1,0 +1,46 @@
+{
+  "failures": [],
+  "tasks": [
+    {
+      "clusterArn": "arn:aws:ecs:us-east-1:012345678910:cluster/default",
+      "containerInstanceArn": "arn:aws:ecs:us-east-1:012345678910:container-instance/84818520-995f-4d94-9d70-7714bacc2953",
+      "containers": [
+        {
+          "containerArn": "arn:aws:ecs:us-east-1:012345678910:container/76c980a8-2454-4a9c-acc4-9eb103117273",
+          "lastStatus": "RUNNING",
+          "name": "mysql",
+          "networkBindings": [],
+          "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/c09f0188-7f87-4b0f-bfc3-16296622b6fe"
+        },
+        {
+          "containerArn": "arn:aws:ecs:us-east-1:012345678910:container/e3c69b8f-f15e-4d33-8093-282c2d2325e9",
+          "lastStatus": "RUNNING",
+          "name": "wordpress",
+          "networkBindings": [
+            {
+              "bindIP": "0.0.0.0",
+              "containerPort": 80,
+              "hostPort": 80
+            }
+          ],
+          "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/c09f0188-7f87-4b0f-bfc3-16296622b6fe"
+        }
+      ],
+      "desiredStatus": "RUNNING",
+      "lastStatus": "RUNNING",
+      "overrides": {
+        "containerOverrides": [
+          {
+            "name": "mysql"
+          },
+          {
+            "name": "wordpress"
+          }
+        ]
+      },
+      "startedBy": "ecs-svc/9223370606521064774",
+      "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/c09f0188-7f87-4b0f-bfc3-16296622b6fe",
+      "taskDefinitionArn": "arn:aws:ecs:us-east-1:012345678910:task-definition/hello_world:10"
+    }
+  ]
+}

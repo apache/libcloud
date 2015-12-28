@@ -451,7 +451,7 @@ class DockerContainerDriver(ContainerDriver):
             raise DockerException(result.status,
                                   'failed to restart container')
 
-    def delete_container(self, container):
+    def destroy_container(self, container):
         """
         Remove a container
 

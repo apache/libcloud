@@ -341,17 +341,17 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'restart_container not implemented for this driver')
 
-    def delete_container(self, container):
+    def destroy_container(self, container):
         """
-        Delete a deployed container
+        Destroy a deployed container
 
-        :param container: The container to delete
+        :param container: The container to destroy
         :type  container: :class:`Container`
 
         :rtype: :class:`Container`
         """
         raise NotImplementedError(
-            'delete_container not implemented for this driver')
+            'destroy_container not implemented for this driver')
 
     def list_locations(self):
         """
@@ -377,14 +377,15 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'create_cluster not implemented for this driver')
 
-    def delete_cluster(self, cluster):
+    def destroy_cluster(self, cluster):
         """
         Delete a cluster
 
-        :rtype: ``list`` of :class:`ClusterLocation`
+        :return: ``True`` if the destroy was successful, otherwise ``False``.
+        :rtype: ``bool``
         """
         raise NotImplementedError(
-            'delete_cluster not implemented for this driver')
+            'destroy_cluster not implemented for this driver')
 
     def list_clusters(self, location=None):
         """
