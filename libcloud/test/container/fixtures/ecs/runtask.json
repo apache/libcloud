@@ -1,0 +1,37 @@
+{
+  "failures": [],
+  "tasks": [
+    {
+      "clusterArn": "arn:aws:ecs:us-east-1:012345678910:cluster/default",
+      "containerInstanceArn": "arn:aws:ecs:us-east-1:012345678910:container-instance/cf447635-790d-477d-be24-58a9cb819d45",
+      "containers": [
+        {
+          "containerArn": "arn:aws:ecs:us-east-1:012345678910:container/e1ed7aac-d9b2-4315-8726-d2432bf11868",
+          "lastStatus": "PENDING",
+          "name": "wordpress",
+          "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/d8c67b3c-ac87-4ffe-a847-4785bc3a8b55"
+        },
+        {
+          "containerArn": "arn:aws:ecs:us-east-1:012345678910:container/4b69fabd-991d-4781-bbf9-7efa03c754aa",
+          "lastStatus": "PENDING",
+          "name": "mysql",
+          "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/d8c67b3c-ac87-4ffe-a847-4785bc3a8b55"
+        }
+      ],
+      "desiredStatus": "RUNNING",
+      "lastStatus": "PENDING",
+      "overrides": {
+        "containerOverrides": [
+          {
+            "name": "wordpress"
+          },
+          {
+            "name": "mysql"
+          }
+        ]
+      },
+      "taskArn": "arn:aws:ecs:us-east-1:012345678910:task/d8c67b3c-ac87-4ffe-a847-4785bc3a8b55",
+      "taskDefinitionArn": "arn:aws:ecs:us-east-1:012345678910:task-definition/hello_world:11"
+    }
+  ]
+}

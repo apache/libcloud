@@ -71,7 +71,6 @@ class ElasticContainerDriver(ContainerDriver):
         params = {'Action': 'DescribeClusters'}
         data = self.connection.request(
             ROOT,
-            params=params,
             headers=self._get_headers(params['Action'])
         ).object
         return self._to_clusters(data)
@@ -92,7 +91,6 @@ class ElasticContainerDriver(ContainerDriver):
         request = {'clusterName': name}
         response = self.connection.request(
             ROOT,
-            params=params,
             data=request,
             headers=self._get_headers(params['Action'])
         ).object
@@ -109,7 +107,6 @@ class ElasticContainerDriver(ContainerDriver):
         request = {'cluster': cluster.id}
         data = self.connection.request(
             ROOT,
-            params=params,
             data=request,
             headers=self._get_headers(params['Action'])
         ).object
@@ -129,7 +126,8 @@ class ElasticContainerDriver(ContainerDriver):
 
     def list_images(self):
         """
-        List the installed container images
+        List the installed container images, in ECS these are
+        equivalent to the containers within task definitions.
 
         :rtype: ``list`` of :class:`ContainerImage`
         """
@@ -148,25 +146,26 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`Container`
         """
-        params = {'Action': 'DescribeTasks'}
         request = None
         if cluster is not None:
             request = {'cluster': cluster.id}
-        response = self.connection.request(
+        if image is not None:
+            request['family'] = image.name
+        list_response = self.connection.request(
             ROOT,
-            params=params,
             data=request,
-            headers=self._get_headers(params['Action'])
+            headers=self._get_headers('ListTasks')
         ).object
-        containers = []
-        for task in response['tasks']:
-            containers.extend(self._to_containers(task))
+        containers = self.ex_list_containers_for_task(
+            list_response['taskArns'])
         return containers
 
     def deploy_container(self, name, image, cluster=None,
-                         parameters=None, start=True):
+                         parameters=None, start=True, ex_cpu=10, ex_memory=500,
+                         ex_container_port=None, ex_host_port=None):
         """
-        Deploy an installed container image
+        Creates a task definition from a container image that can be run
+        in a cluster.
 
         :param name: The name of the new container
         :type  name: ``str``
@@ -185,8 +184,47 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'deploy_container not implemented for this driver')
+        data = {}
+        data['containerDefinitions'] = [
+            {
+                "mountPoints": [],
+                "name": name,
+                "image": image.name,
+                "cpu": ex_cpu,
+                "environment": [],
+                "memory": ex_memory,
+                "portMappings": [
+                    {
+                        "containerPort": ex_container_port,
+                        "hostPort": ex_host_port
+                    }
+                ],
+                "essential": True,
+                "volumesFrom": []
+            }
+        ]
+        data['family'] = name
+        response = self.connection.request(
+            ROOT,
+            data=data,
+            headers=self._get_headers('RegisterTaskDefinition')
+        ).object
+        if start:
+            return self.ex_start_task(
+                response['taskDefinition']['taskDefinitionArn'])[0]
+        else:
+            return Container(
+                id=None,
+                name=name,
+                image=image,
+                state=ContainerState.RUNNING,
+                ip_addresses=[],
+                extra={
+                    'taskDefinitionArn':
+                        response['taskDefinition']['taskDefinitionArn']
+                },
+                driver=self.connection.driver
+            )
 
     def get_container(self, id):
         """
@@ -197,20 +235,22 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'get_container not implemented for this driver')
+        containers = self.ex_list_containers_for_task([id])
+        return containers[0]
 
-    def start_container(self, container):
+    def start_container(self, container, count=1):
         """
-        Start a deployed container
+        Start a deployed task
 
         :param container: The container to start
         :type  container: :class:`Container`
 
+        :param count: Number of containers to start
+        :type  count: ``int``
+
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'start_container not implemented for this driver')
+        return self.ex_start_task(container.extra['taskDefinitionArn'], count)
 
     def stop_container(self, container):
         """
@@ -221,8 +261,17 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'stop_container not implemented for this driver')
+        request = {'task': container.extra['taskArn']}
+        response = self.connection.request(
+            ROOT,
+            data=request,
+            headers=self._get_headers('StopTask')
+        ).object
+        containers = []
+        containers.extend(self._to_containers(
+            response['task'],
+            container.extra['taskDefinitionArn']))
+        return containers
 
     def restart_container(self, container):
         """
@@ -233,8 +282,8 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'restart_container not implemented for this driver')
+        self.stop_container(container)
+        return self.start_container(container)
 
     def destroy_container(self, container):
         """
@@ -245,8 +294,53 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`Container`
         """
-        raise NotImplementedError(
-            'destroy_container not implemented for this driver')
+        return self.stop_container(container)
+
+    def ex_start_task(self, task_arn, count=1):
+        """
+        Run a task definition and get the containers
+
+        :param task_arn: The task ARN to Run
+        :type  task_arn: ``str``
+
+        :param count: The number of containers to start
+        :type  count: ``int``
+
+        :rtype: ``list`` of :class:`Container`
+        """
+        request = None
+        request = {'count': count,
+                   'taskDefinition': task_arn}
+        response = self.connection.request(
+            ROOT,
+            data=request,
+            headers=self._get_headers('RunTask')
+        ).object
+        containers = []
+        for task in response['tasks']:
+            containers.extend(self._to_containers(task, task_arn))
+        return containers
+
+    def ex_list_containers_for_task(self, task_arns):
+        """
+        Get a list of containers by ID collection (ARN)
+
+        :param task_arns: The list of ARNs
+        :type  task_arns: ``list`` of ``str``
+
+        :rtype: ``list`` of :class:`Container`
+        """
+        describe_request = {'tasks': task_arns}
+        descripe_response = self.connection.request(
+            ROOT,
+            data=describe_request,
+            headers=self._get_headers('DescribeTasks')
+        ).object
+        containers = []
+        for task in descripe_response['tasks']:
+            containers.extend(self._to_containers(
+                task, task['taskDefinitionArn']))
+        return containers
 
     def _get_headers(self, action):
         return {'x-amz-target': '%s.%s' %
@@ -265,13 +359,13 @@ class ElasticContainerDriver(ContainerDriver):
             driver=self.connection.driver
         )
 
-    def _to_containers(self, data):
+    def _to_containers(self, data, task_definition_arn):
         clusters = []
         for cluster in data['containers']:
-            clusters.append(self._to_container(cluster))
+            clusters.append(self._to_container(cluster, task_definition_arn))
         return clusters
 
-    def _to_container(self, data):
+    def _to_container(self, data, task_definition_arn):
         return Container(
             id=data['containerArn'],
             name=data['name'],
@@ -285,7 +379,8 @@ class ElasticContainerDriver(ContainerDriver):
             ip_addresses=None,
             state=self.status_map.get(data['lastStatus'], None),
             extra={
-                'taskArn': data['taskArn']
+                'taskArn': data['taskArn'],
+                'taskDefinitionArn': task_definition_arn
             },
             driver=self.connection.driver
         )

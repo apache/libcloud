@@ -22,6 +22,7 @@ __all__ = [
     'Container',
     'ContainerImage',
     'ContainerCluster',
+    'ClusterLocation',
     'ContainerDriver'
 ]
 

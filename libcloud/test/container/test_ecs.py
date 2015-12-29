@@ -17,7 +17,7 @@ import sys
 
 from libcloud.test import unittest
 
-from libcloud.container.base import ContainerCluster
+from libcloud.container.base import ContainerCluster, ContainerImage, Container
 from libcloud.container.drivers.ecs import ElasticContainerDriver
 
 from libcloud.utils.py3 import httplib
@@ -62,6 +62,77 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
         containers = self.driver.list_containers(cluster=cluster)
         self.assertEqual(len(containers), 2)
 
+    def test_deploy_container(self):
+        container = self.driver.deploy_container(
+            name='jim',
+            image=ContainerImage(
+                id=None,
+                name='mysql',
+                path='mysql',
+                version=None,
+                driver=self.driver
+            )
+        )
+        self.assertEqual(container.id, 'arn:aws:ecs:us-east-1:012345678910:container/e1ed7aac-d9b2-4315-8726-d2432bf11868')
+
+    def test_get_container(self):
+        container = self.driver.get_container(
+            'arn:aws:ecs:us-east-1:012345678910:container/76c980a8-2454-4a9c-acc4-9eb103117273'
+        )
+        self.assertEqual(container.id, 'arn:aws:ecs:us-east-1:012345678910:container/76c980a8-2454-4a9c-acc4-9eb103117273')
+        self.assertEqual(container.name, 'mysql')
+        self.assertEqual(container.image.name, 'mysql')
+
+    def test_start_container(self):
+        container = self.driver.start_container(
+            Container(
+                id=None,
+                name=None,
+                image=None,
+                state=None,
+                ip_addresses=None,
+                driver=self.driver,
+                extra={
+                    'taskDefinitionArn': ''
+                }
+            )
+        )
+        self.assertFalse(container is None)
+
+    def test_stop_container(self):
+        container = self.driver.stop_container(
+            Container(
+                id=None,
+                name=None,
+                image=None,
+                state=None,
+                ip_addresses=None,
+                driver=self.driver,
+                extra={
+                    'taskArn': '12345',
+                    'taskDefinitionArn': '123556'
+                }
+            )
+        )
+        self.assertFalse(container is None)
+
+    def test_restart_container(self):
+        container = self.driver.restart_container(
+            Container(
+                id=None,
+                name=None,
+                image=None,
+                state=None,
+                ip_addresses=None,
+                driver=self.driver,
+                extra={
+                    'taskArn': '12345',
+                    'taskDefinitionArn': '123556'
+                }
+            )
+        )
+        self.assertFalse(container is None)
+
 
 class ECSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('ecs')
@@ -69,7 +140,11 @@ class ECSMockHttp(MockHttp):
         'DescribeClusters': 'describeclusters.json',
         'CreateCluster': 'createcluster.json',
         'DeleteCluster': 'deletecluster.json',
-        'DescribeTasks': 'describetasks.json'
+        'DescribeTasks': 'describetasks.json',
+        'ListTasks': 'listtasks.json',
+        'RegisterTaskDefinition': 'registertaskdefinition.json',
+        'RunTask': 'runtask.json',
+        'StopTask': 'stoptask.json'
     }
 
     def _2014_11_13(
