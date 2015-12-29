@@ -96,8 +96,8 @@ BASE_API_METHODS = {
             'delete_zone', 'delete_record'],
     'container': ['install_image', 'list_images', 'deploy_container',
                   'get_container', 'start_container', 'stop_container',
-                  'restart_container', 'delete_container', 'list_containers',
-                  'list_locations', 'create_cluster', 'delete_cluster',
+                  'restart_container', 'destroy_container', 'list_containers',
+                  'list_locations', 'create_cluster', 'destroy_cluster',
                   'list_clusters']
 }
 
@@ -179,10 +179,10 @@ FRIENDLY_METHODS_NAMES = {
         'start_container': 'start container',
         'stop_container': 'stop container',
         'restart_container': 'restart container',
-        'delete_container': 'delete container',
+        'destroy_container': 'destroy container',
         'list_locations': 'list locations',
         'create_cluster': 'create cluster',
-        'delete_cluster': 'delete cluster',
+        'destroy_cluster': 'destroy cluster',
         'list_clusters': 'list clusters'
     }
 }

@@ -43,6 +43,7 @@ class Provider(object):
     DUMMY = 'dummy'
     DOCKER = 'docker'
     JOYENT = 'joyent'
+    ECS = 'ecs'
 
 
 class ContainerState(Type):

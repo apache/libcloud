@@ -24,6 +24,8 @@ DRIVERS = {
     ('libcloud.container.drivers.docker', 'DockerContainerDriver'),
     Provider.JOYENT:
     ('libcloud.container.drivers.joyent', 'JoyentContainerDriver'),
+    Provider.ECS:
+    ('libcloud.container.drivers.ecs', 'ElasticContainerDriver'),
 }
 
 
