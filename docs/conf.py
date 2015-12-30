@@ -80,7 +80,7 @@ release = '0.14.0-dev'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = [
-    'docs/apidocs/modules.rst',  # generated during build (orphan)
+    'apidocs/modules.rst',  # generated during build (orphan)
     '_build',
     '*/_*.rst'
 ]
