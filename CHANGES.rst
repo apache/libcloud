@@ -1,8 +1,23 @@
 Changelog
 =========
 
+Changes with current version of Apache Libcloud
+-----------------------------------------------
+
+Compute
+~~~~~~~
+
+- Added t2.nano instance type to EC2 Compute driver
+  (GITHUB-663)
+  [Anthony Shaw]
+
+- Support for passing the image ID as a string instead of an instance of image when
+  creating nodes in Dimension Data driver.
+  (GITHUB-664)
+  [Anthony Shaw]
+
 Changes with Apache Libcloud 0.20.0
--------------------------------------------
+-----------------------------------
 
 General
 ~~~~~~~

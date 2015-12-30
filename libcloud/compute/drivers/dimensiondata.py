@@ -21,7 +21,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.compute.base import NodeDriver, Node
+from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.dimensiondata import (DimensionDataConnection,
                                            DimensionDataStatus)
@@ -39,6 +39,7 @@ from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
 
 
@@ -97,22 +98,23 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :keyword    auth:   Initial authentication information for the
                             node (required)
-        :type       auth:   :class:`NodeAuthPassword`
+        :type       auth:   :class:`NodeAuthPassword` or ``str``
 
         :keyword    ex_description:  description for this node (required)
         :type       ex_description:  ``str``
 
         :keyword    ex_network:  Network to create the node within (required,
                                 unless using Network Domain)
-        :type       ex_network: :class:`DimensionDataNetwork`
+        :type       ex_network: :class:`DimensionDataNetwork` or ``str``
 
         :keyword    ex_network_domain:  Network Domain to create the node
                                         (required unless using network)
         :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+                                        or ``str``
 
         :keyword    ex_vlan:  VLAN to create the node within
                                         (required unless using network)
-        :type       ex_vlan: :class:`DimensionDataVlan`
+        :type       ex_vlan: :class:`DimensionDataVlan` or ``str``
 
         :keyword    ex_memory_gb:  The amount of memory in GB for the server
         :type       ex_memory_gb: ``int``
@@ -128,16 +130,22 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
         """
-
         password = None
-        auth_obj = self._get_and_check_auth(auth)
-        password = auth_obj.password
+        if isinstance(auth, basestring):
+            auth_obj = NodeAuthPassword(password=auth)
+            password = auth
+        else:
+            auth_obj = self._get_and_check_auth(auth)
+            password = auth_obj.password
 
-        if not isinstance(ex_network, DimensionDataNetwork):
-            if not isinstance(ex_network_domain, DimensionDataNetworkDomain):
-                raise ValueError('ex_network must be of DimensionDataNetwork '
-                                 'type or ex_network_domain must be of '
-                                 'DimensionDataNetworkDomain type')
+        if not isinstance(ex_network, (DimensionDataNetwork, basestring)):
+            if not isinstance(ex_network_domain,
+                              (DimensionDataNetworkDomain, basestring)):
+                raise ValueError(
+                    'ex_network must be of DimensionDataNetwork'
+                    ' or str '
+                    'type or ex_network_domain must be of '
+                    'DimensionDataNetworkDomain type or str')
 
         server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
@@ -158,13 +166,26 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
-            ET.SubElement(network_elm, "networkId").text = ex_network.id
+            if isinstance(ex_network, DimensionDataNetwork):
+                ET.SubElement(network_elm, "networkId").text = ex_network.id
+            else:
+                ET.SubElement(network_elm, "networkId").text = ex_network
         if ex_network_domain is not None:
+            network_domain_id = None
+            if isinstance(ex_network_domain, DimensionDataNetworkDomain):
+                network_domain_id = ex_network_domain.id
+            else:
+                network_domain_id = ex_network_domain
             network_inf_elm = ET.SubElement(server_elm, "networkInfo",
                                             {'networkDomainId':
-                                             ex_network_domain.id})
+                                             network_domain_id})
+            vlan_id = None
+            if isinstance(ex_vlan, DimensionDataVlan):
+                vlan_id = ex_vlan.id
+            else:
+                vlan_id = ex_vlan
             pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
-            ET.SubElement(pri_nic, "vlanId").text = ex_vlan.id
+            ET.SubElement(pri_nic, "vlanId").text = vlan_id
 
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
@@ -873,7 +894,7 @@ class DimensionDataNodeDriver(NodeDriver):
         block_id = None
 
         for info in findall(response, 'info', TYPES_URN):
-            if info.get('name') == 'publicIpBlockId':
+            if info.get('name') == 'ipBlockId':
                 block_id = info.get('value')
         return self.ex_get_public_ip_block(block_id)
 

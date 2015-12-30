@@ -591,6 +591,16 @@ INSTANCE_TYPES = {
         }
     },
     # Burstable Performance General Purpose
+    't2.nano': {
+        'id': 't2.nano',
+        'name': 'Burstable Performance Nano Instance',
+        'ram': 512,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 1
+        }
+    },
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
@@ -690,6 +700,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -743,6 +754,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -802,6 +814,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -861,6 +874,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -957,6 +971,7 @@ REGION_DETAILS = {
             'd2.2xlarge',
             'd2.4xlarge',
             'd2.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1015,6 +1030,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1042,6 +1058,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1147,6 +1164,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
