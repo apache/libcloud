@@ -156,13 +156,14 @@ DNS
 ~~~
 
 - RackSpace driver - New DNS driver methods:
-    ex_iterate_ptr_records
-    ex_get_ptr_record
-    ex_create_ptr_record
-    ex_update_ptr_record
-    ex_delete_ptr_record
-    This should cover all of the functionality offered by the Rackspace
-    DNS API in regards to RDNS.
+   - ex_iterate_ptr_records
+   - ex_get_ptr_record
+   - ex_create_ptr_record
+   - ex_update_ptr_record
+   - ex_delete_ptr_record
+
+  This should cover all of the functionality offered by the Rackspace DNS API
+  in regards to RDNS.
   (LIBCLOUD-780, GITHUB-652)
   [Greg Hill]
 
@@ -628,11 +629,12 @@ Compute
   [Konstantin Skaburskas]
 
 - Various improvements in the DigitalOcean driver:
-  - Increase page size to API maximum.
-  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
-  - Update all the ``list_*`` methods to use paginated requests
-  - Allow user to specify page size by passing ``ex_per_page`` argument to the
-    constructor.
+   - Increase page size to API maximum.
+   - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+   - Update all the ``list_*`` methods to use paginated requests
+   - Allow user to specify page size by passing ``ex_per_page`` argument to the
+     constructor.
+
   (LIBCLOUD-717, GITHUB-537)
   [Javier Castillo II]
 
