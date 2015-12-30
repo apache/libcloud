@@ -929,7 +929,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'server/server/%s' % id).object
         return self._to_node(node)
 
-    def ex_list_firewall_rules(self, network_domain, page_size=50, page_number=1):
+    def ex_list_firewall_rules(self, network_domain, page_size=50,
+                               page_number=1):
         params = {'pageSize': page_size, 'pageNumber': page_number}
         if isinstance(network_domain, str):
             params['networkDomainId'] = network_domain
