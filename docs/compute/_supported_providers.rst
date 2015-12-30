@@ -13,6 +13,7 @@ Provider                              Documentation                             
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`    CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
 `Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`     CLOUDWATT           :mod:`libcloud.compute.drivers.cloudwatt`      :class:`CloudwattNodeDriver`        
 `DigitalOcean`_                       :doc:`Click </compute/drivers/digital_ocean>` DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
+`DimensionData`_                      :doc:`Click </compute/drivers/dimensiondata>` DIMENSIONDATA       :mod:`libcloud.compute.drivers.dimensiondata`  :class:`DimensionDataNodeDriver`    
 `Amazon EC2`_                         :doc:`Click </compute/drivers/ec2>`           EC2                 :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
 `Amazon EC2 (ap-northeast-1)`_                                                      EC2_AP_NORTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APNENodeDriver`          
 `Amazon EC2 (ap-southeast-1)`_                                                      EC2_AP_SOUTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APSENodeDriver`          
@@ -84,6 +85,7 @@ Provider                              Documentation                             
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
+.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
