@@ -21,34 +21,25 @@ __all__ = [
 from libcloud.container.base import (ContainerDriver, Container,
                                      ContainerCluster, ContainerImage)
 from libcloud.container.types import ContainerState
-from libcloud.common.base import JsonResponse
-from libcloud.common.aws import SignedAWSConnection
-
+from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
 
 VERSION = '2014-11-13'
 HOST = 'ecs.%s.amazonaws.com'
-ROOT = '/%s/' % (VERSION)
+ROOT = '/'
 TARGET_BASE = 'AmazonEC2ContainerServiceV%s' % (VERSION.replace('-', ''))
 
 
-class ECSResponse(JsonResponse):
-    """
-    Amazon ECS response class.
-    ECS API uses JSON unlike the s3, elb drivers
-    """
-
-
-class ECSConnection(SignedAWSConnection):
+class ECSJsonConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
-    responseCls = ECSResponse
+    responseCls = AWSJsonResponse
     service_name = 'ecs'
 
 
 class ElasticContainerDriver(ContainerDriver):
     name = 'Amazon Elastic Container Service'
     website = 'https://aws.amazon.com/ecs/details/'
-    connectionCls = ECSConnection
+    connectionCls = ECSJsonConnection
     supports_clusters = False
     status_map = {
         'RUNNING': ContainerState.RUNNING
@@ -57,7 +48,11 @@ class ElasticContainerDriver(ContainerDriver):
     def __init__(self, access_id, secret, region):
         super(ElasticContainerDriver, self).__init__(access_id, secret)
         self.region = region
+        self.region_name = region
         self.connection.host = HOST % (region)
+
+    def _ex_connection_class_kwargs(self):
+        return {'signature_version': '4'}
 
     def list_clusters(self):
         """
@@ -71,6 +66,7 @@ class ElasticContainerDriver(ContainerDriver):
         params = {'Action': 'DescribeClusters'}
         data = self.connection.request(
             ROOT,
+            method='POST',
             headers=self._get_headers(params['Action'])
         ).object
         return self._to_clusters(data)
@@ -91,6 +87,7 @@ class ElasticContainerDriver(ContainerDriver):
         request = {'clusterName': name}
         response = self.connection.request(
             ROOT,
+            method='POST',
             data=request,
             headers=self._get_headers(params['Action'])
         ).object
@@ -107,6 +104,7 @@ class ElasticContainerDriver(ContainerDriver):
         request = {'cluster': cluster.id}
         data = self.connection.request(
             ROOT,
+            method='POST',
             data=request,
             headers=self._get_headers(params['Action'])
         ).object
@@ -153,6 +151,7 @@ class ElasticContainerDriver(ContainerDriver):
             request['family'] = image.name
         list_response = self.connection.request(
             ROOT,
+            method='POST',
             data=request,
             headers=self._get_headers('ListTasks')
         ).object
@@ -206,6 +205,7 @@ class ElasticContainerDriver(ContainerDriver):
         data['family'] = name
         response = self.connection.request(
             ROOT,
+            method='POST',
             data=data,
             headers=self._get_headers('RegisterTaskDefinition')
         ).object
@@ -264,6 +264,7 @@ class ElasticContainerDriver(ContainerDriver):
         request = {'task': container.extra['taskArn']}
         response = self.connection.request(
             ROOT,
+            method='POST',
             data=request,
             headers=self._get_headers('StopTask')
         ).object
@@ -313,6 +314,7 @@ class ElasticContainerDriver(ContainerDriver):
                    'taskDefinition': task_arn}
         response = self.connection.request(
             ROOT,
+            method='POST',
             data=request,
             headers=self._get_headers('RunTask')
         ).object
@@ -333,6 +335,7 @@ class ElasticContainerDriver(ContainerDriver):
         describe_request = {'tasks': task_arns}
         descripe_response = self.connection.request(
             ROOT,
+            method='POST',
             data=describe_request,
             headers=self._get_headers('DescribeTasks')
         ).object
@@ -342,9 +345,113 @@ class ElasticContainerDriver(ContainerDriver):
                 task, task['taskDefinitionArn']))
         return containers
 
+    def ex_create_service(self, name, cluster,
+                          task_definition, desired_count=1):
+        """
+        Runs and maintains a desired number of tasks from a specified
+        task definition. If the number of tasks running in a service
+        drops below desired_count, Amazon ECS spawns another
+        instantiation of the task in the specified cluster.
+
+        :param  name: the name of the service
+        :type   name: ``str``
+
+        :param  cluster: The cluster to run the service on
+        :type   cluster: :class:`ContainerCluster`
+
+        :param  task_definition: The task definition name or ARN for the
+            service
+        :type   task_definition: ``str``
+
+        :param  desired_count: The desired number of tasks to be running
+            at any one time
+        :type   desired_count: ``int``
+
+        :rtype: ``object`` The service object
+        """
+        request = {
+            'serviceName': name,
+            'taskDefinition': task_definition,
+            'desiredCount': desired_count,
+            'cluster': cluster.id}
+        response = self.connection.request(
+            ROOT,
+            method='POST',
+            data=request,
+            headers=self._get_headers('CreateService')
+        ).object
+        return response
+
+    def ex_list_service_arns(self, cluster=None):
+        """
+        List the services
+
+        :param cluster: The cluster hosting the services
+        :type  cluster: :class:`ContainerCluster`
+
+        :rtype: ``list`` of ``str``
+        """
+        request = {}
+        if cluster is not None:
+            request['cluster'] = cluster.id
+        response = self.connection.request(
+            ROOT,
+            method='POST',
+            data=request,
+            headers=self._get_headers('ListServices')
+        ).object
+        return response['serviceArns']
+
+    def ex_describe_service(self, cluster, service_arn):
+        """
+        Get the details of a service
+
+        :param  cluster: The hosting cluster
+        :type   cluster: :class:`ContainerCluster`
+
+        :param  service_arn: The service ARN to describe
+        :type   service_arn: ``str``
+
+        :return: The service object
+        :rtype: ``object``
+        """
+        request = {'services': [service_arn]}
+        if cluster is not None:
+            request['cluster'] = cluster.id
+        response = self.connection.request(
+            ROOT,
+            method='POST',
+            data=request,
+            headers=self._get_headers('DescribeServices')
+        ).object
+        return response['services'][0]
+
+    def ex_destroy_service(self, cluster, service_arn):
+        """
+        Deletes a service
+
+        :param  cluster: The target cluster
+        :type   cluster: :class:`ContainerCluster`
+
+        :param  service_arn: The service ARN to destroy
+        :type   service_arn: ``str``
+        """
+        request = {
+            'service': service_arn,
+            'cluster': cluster.id}
+        response = self.connection.request(
+            ROOT,
+            method='POST',
+            data=request,
+            headers=self._get_headers('DeleteService')
+        ).object
+        return response
+
     def _get_headers(self, action):
         return {'x-amz-target': '%s.%s' %
-                (TARGET_BASE, action)}
+                (TARGET_BASE, action),
+                'Content-Type': 'application/x-amz-json-1.1'
+                }
 
     def _to_clusters(self, data):
         clusters = []

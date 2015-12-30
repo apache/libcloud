@@ -26,6 +26,7 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
+from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
@@ -250,8 +251,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
     def _get_authorization_v4_header(self, params, headers, dt, method='GET',
                                      path='/'):
-        assert method == 'GET', 'AWS Signature V4 not implemented for ' \
-                                'other methods than GET'
+        assert method in ['GET', 'POST'], 'AWS Signature V4 not implemented for ' \
+                                'other methods than GET and POST'
 
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
@@ -367,6 +368,13 @@ class SignedAWSConnection(AWSTokenConnection):
                                                           path=self.action)
         return params, headers
 
+
+class AWSJsonResponse(JsonResponse):
+    """
+    Amazon ECS response class.
+    ECS API uses JSON unlike the s3, elb drivers
+    """
+    
 
 def _sign(key, msg, hex=False):
     if hex:
