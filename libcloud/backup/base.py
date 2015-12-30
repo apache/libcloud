@@ -41,10 +41,10 @@ class BackupTarget(object):
         :type address: ``str``
 
         :param type: Backup target type (Physical, Virtual, ...).
-        :type type: :class:`BackupTargetType`
+        :type type: :class:`.BackupTargetType`
 
         :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
+        :type driver: :class:`.BackupDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -97,10 +97,10 @@ class BackupTargetJob(object):
         :type progress: ``int``
 
         :param target: BackupTarget instance.
-        :type target: :class:`BackupTarget`
+        :type target: :class:`.BackupTarget`
 
         :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
+        :type driver: :class:`.BackupDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -142,10 +142,10 @@ class BackupTargetRecoveryPoint(object):
         :type date: :class:`datetime.datetime`
 
         :param target: BackupTarget instance.
-        :type target: :class:`BackupTarget`
+        :type target: :class:`.BackupTarget`
 
         :param driver: BackupDriver instance.
-        :type driver: :class:`BackupDriver`
+        :type driver: :class:`.BackupDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -163,7 +163,7 @@ class BackupTargetRecoveryPoint(object):
         :param path: The part of the recovery point to recover (optional)
         :type  path: ``str``
 
-        :rtype: Instance of :class:`BackupTargetJob`
+        :rtype: Instance of :class:`.BackupTargetJob`
         """
         return self.driver.recover_target(target=self.target,
                                           recovery_point=self, path=path)
@@ -173,12 +173,12 @@ class BackupTargetRecoveryPoint(object):
         Recover this recovery point out of place
 
         :param recovery_target: Backup target with to recover the data to
-        :type  recovery_target: Instance of :class:`BackupTarget`
+        :type  recovery_target: Instance of :class:`.BackupTarget`
 
         :param path: The part of the recovery point to recover (optional)
         :type  path: ``str``
 
-        :rtype: Instance of :class:`BackupTargetJob`
+        :rtype: Instance of :class:`.BackupTargetJob`
         """
         return self.driver.recover_target_out_of_place(
             target=self.target,
@@ -241,7 +241,7 @@ class BackupDriver(BaseDriver):
         """
         List all backuptargets
 
-        :rtype: ``list`` of :class:`BackupTarget`
+        :rtype: ``list`` of :class:`.BackupTarget`
         """
         raise NotImplementedError(
             'list_targets not implemented for this driver')
@@ -263,7 +263,7 @@ class BackupDriver(BaseDriver):
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
 
-        :rtype: Instance of :class:`BackupTarget`
+        :rtype: Instance of :class:`.BackupTarget`
         """
         raise NotImplementedError(
             'create_target not implemented for this driver')
@@ -271,7 +271,8 @@ class BackupDriver(BaseDriver):
     def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
                                 extra=None):
         """
-        Creates a new backup target from an existing node
+        Creates a new backup target from an existing node.
+        By default, this will use the first public IP of the node
 
         :param node: The Node to backup
         :type  node: ``Node``
@@ -282,14 +283,14 @@ class BackupDriver(BaseDriver):
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
 
-        :rtype: Instance of :class:`BackupTarget`
+        :rtype: Instance of :class:`.BackupTarget`
         """
         return self.create_target(name=node.name,
                                   address=node.public_ips[0],
                                   type=type,
                                   extra=None)
 
-    def create_target_from_container(self, container,
+    def create_target_from_storage_container(self, container,
                                      type=BackupTargetType.OBJECT,
                                      extra=None):
         """
@@ -304,7 +305,7 @@ class BackupDriver(BaseDriver):
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
 
-        :rtype: Instance of :class:`BackupTarget`
+        :rtype: Instance of :class:`.BackupTarget`
         """
         return self.create_target(name=container.name,
                                   address=container.get_cdn_url(),
@@ -316,7 +317,7 @@ class BackupDriver(BaseDriver):
         Update the properties of a backup target
 
         :param target: Backup target to update
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param name: Name of the target
         :type name: ``str``
@@ -327,7 +328,7 @@ class BackupDriver(BaseDriver):
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
 
-        :rtype: Instance of :class:`BackupTarget`
+        :rtype: Instance of :class:`.BackupTarget`
         """
         raise NotImplementedError(
             'update_target not implemented for this driver')
@@ -337,7 +338,7 @@ class BackupDriver(BaseDriver):
         Delete a backup target
 
         :param target: Backup target to delete
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
         """
         raise NotImplementedError(
             'delete_target not implemented for this driver')
@@ -347,7 +348,7 @@ class BackupDriver(BaseDriver):
         List the recovery points available for a target
 
         :param target: Backup target to delete
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param start_date: The start date to show jobs between (optional)
         :type  start_date: :class:`datetime.datetime`
@@ -355,7 +356,7 @@ class BackupDriver(BaseDriver):
         :param end_date: The end date to show jobs between (optional)
         :type  end_date: :class:`datetime.datetime``
 
-        :rtype: ``list`` of :class:`BackupTargetRecoveryPoint`
+        :rtype: ``list`` of :class:`.BackupTargetRecoveryPoint`
         """
         raise NotImplementedError(
             'list_recovery_points not implemented for this driver')
@@ -365,15 +366,15 @@ class BackupDriver(BaseDriver):
         Recover a backup target to a recovery point
 
         :param target: Backup target to delete
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param recovery_point: Backup target with the backup data
-        :type  recovery_point: Instance of :class:`BackupTarget`
+        :type  recovery_point: Instance of :class:`.BackupTarget`
 
         :param path: The part of the recovery point to recover (optional)
         :type  path: ``str``
 
-        :rtype: Instance of :class:`BackupTargetJob`
+        :rtype: Instance of :class:`.BackupTargetJob`
         """
         raise NotImplementedError(
             'recover_target not implemented for this driver')
@@ -384,13 +385,13 @@ class BackupDriver(BaseDriver):
         Recover a backup target to a recovery point out-of-place
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param recovery_point: Backup target with the backup data
-        :type  recovery_point: Instance of :class:`BackupTarget`
+        :type  recovery_point: Instance of :class:`.BackupTarget`
 
         :param recovery_target: Backup target with to recover the data to
-        :type  recovery_target: Instance of :class:`BackupTarget`
+        :type  recovery_target: Instance of :class:`.BackupTarget`
 
         :param path: The part of the recovery point to recover (optional)
         :type  path: ``str``
@@ -405,10 +406,10 @@ class BackupDriver(BaseDriver):
         Get a specific backup job by ID
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param id: Backup target with the backup data
-        :type  id: Instance of :class:`BackupTarget`
+        :type  id: Instance of :class:`.BackupTarget`
 
         :rtype: :class:`BackupTargetJob`
         """
@@ -420,9 +421,9 @@ class BackupDriver(BaseDriver):
         List the backup jobs on a target
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
-        :rtype: ``list`` of :class:`BackupTargetJob`
+        :rtype: ``list`` of :class:`.BackupTargetJob`
         """
         raise NotImplementedError(
             'list_target_jobs not implemented for this driver')
@@ -432,7 +433,7 @@ class BackupDriver(BaseDriver):
         Create a new backup job on a target
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -447,10 +448,10 @@ class BackupDriver(BaseDriver):
         Resume a suspended backup job on a target
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param job: Backup target job to resume
-        :type  job: Instance of :class:`BackupTargetJob`
+        :type  job: Instance of :class:`.BackupTargetJob`
 
         :rtype: ``bool``
         """
@@ -462,10 +463,10 @@ class BackupDriver(BaseDriver):
         Suspend a running backup job on a target
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param job: Backup target job to suspend
-        :type  job: Instance of :class:`BackupTargetJob`
+        :type  job: Instance of :class:`.BackupTargetJob`
 
         :rtype: ``bool``
         """
@@ -477,10 +478,10 @@ class BackupDriver(BaseDriver):
         Cancel a backup job on a target
 
         :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`.BackupTarget`
 
         :param job: Backup target job to cancel
-        :type  job: Instance of :class:`BackupTargetJob`
+        :type  job: Instance of :class:`.BackupTargetJob`
 
         :rtype: ``bool``
         """

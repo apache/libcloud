@@ -1,13 +1,15 @@
 import time
 from pprint import pprint
 
-from libcloud.backup.types import Provider, BackupTargetJobStatusType
+from libcloud.backup.types import BackupTargetJobStatusType
+from libcloud.backup.types import Provider as BackupProvider
 from libcloud.backup.providers import get_driver as get_backup_driver
 
 from libcloud.compute.providers import get_driver as get_compute_driver
+from libcloud.compute.types import Provider as ComputeProvider
 
-backup_driver = get_backup_driver(Provider.AZURE)('username', 'api key')
-compute_driver = get_compute_driver(Provider.AZURE)('username', 'api key')
+backup_driver = get_backup_driver(BackupProvider.AZURE)('username', 'api key')
+compute_driver = get_compute_driver(ComputeProvider.AZURE)('username', 'api key')
 
 nodes = compute_driver.list_nodes()
 
@@ -27,10 +29,10 @@ while True:
     else:
         job = backup_driver.get_target_job(job.id)
 
-    print('Job is now at %s percent complete' % job.progress)
+    print('Job is now at %s percent complete' % (job.progress))
     time.sleep(20)
 
-print('Job is completed with status- %s' % job.status)
+print('Job is completed with status- %s' % (job.status))
 
 print('Getting a list of recovery points')
 recovery_points = backup_driver.list_recovery_points(new_target)
