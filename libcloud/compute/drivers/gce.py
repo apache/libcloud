@@ -2292,7 +2292,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -2345,8 +2345,8 @@ class GCENodeDriver(NodeDriver):
         :type     ex_automatic_restart: ``bool`` or ``None``
 
         :keyword  ex_preemptible: Defines whether the instance is preemptible.
-                                        (If not supplied, the instance will
-                                         not be preemptible)
+                                  (If not supplied, the instance will not be
+                                  preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
         :return:  A Node object for the new node.
@@ -2491,7 +2491,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -3299,7 +3299,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -4592,7 +4592,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a

@@ -284,7 +284,7 @@ def mock_warning(self, *args, **kwargs):
 original_warn_node = BuildEnvironment.warn_node
 
 def ignore_more_than_one_target_found_errors(self, msg, node):
-    if "more than one target found" in msg:
+    if 'more than one target found' in msg:
         return None
 
     return original_warn_node(self, msg, node)

@@ -248,7 +248,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
     These are instance types that match up with what other providers support.
 
-    You can configure disk size, core size, and memory size using the ex_
+    You can configure disk size, core size, and memory size using the ``ex_``
     parameters on the create_node method.
     """
 

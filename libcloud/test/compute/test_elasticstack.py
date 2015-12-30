@@ -34,16 +34,6 @@ class ElasticStackTestCase(object):
 
     def setUp(self):
         # Re-use ElasticHosts fixtures for the base ElasticStack platform tests
-        """ElasticStack.type = Provider.ELASTICHOSTS
-        ElasticStack.api_name = 'elastichosts'
-
-        ElasticStackBaseConnection.host = 'test.com'
-        ElasticStack.connectionCls.conn_classes = (None,
-                                                   ElasticStackMockHttp)
-        ElasticStack._standard_drives = ElasticHosts._standard_drives
-
-        self.driver = ElasticStack('foo', 'bar')
-        """
         self.mockHttp = ElasticStackMockHttp
         self.mockHttp.type = None
 
