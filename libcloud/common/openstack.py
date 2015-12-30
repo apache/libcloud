@@ -74,40 +74,46 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     :type secure: ``bool``
 
     :param ex_force_base_url: Base URL for connection requests.  If
-    not specified, this will be determined by authenticating.
+                              not specified, this will be determined by
+                              authenticating.
     :type ex_force_base_url: ``str``
 
     :param ex_force_auth_url: Base URL for authentication requests.
     :type ex_force_auth_url: ``str``
 
     :param ex_force_auth_version: Authentication version to use.  If
-    not specified, defaults to AUTH_API_VERSION.
+                                  not specified, defaults to AUTH_API_VERSION.
     :type ex_force_auth_version: ``str``
 
-    :param ex_force_auth_token: Authentication token to use for
-    connection requests.  If specified, the connection will not attempt
-    to authenticate, and the value of ex_force_base_url will be used to
-    determine the base request URL.  If ex_force_auth_token is passed in,
-    ex_force_base_url must also be provided.
+    :param ex_force_auth_token: Authentication token to use for connection
+                                requests.  If specified, the connection will
+                                not attempt to authenticate, and the value
+                                of ex_force_base_url will be used to
+                                determine the base request URL.  If
+                                ex_force_auth_token is passed in,
+                                ex_force_base_url must also be provided.
     :type ex_force_auth_token: ``str``
 
-    :param ex_tenant_name: When authenticating, provide this tenant
-    name to the identity service.  A scoped token will be returned.
-    Some cloud providers require the tenant name to be provided at
-    authentication time.  Others will use a default tenant if none
-    is provided.
+    :param ex_tenant_name: When authenticating, provide this tenant name to the
+                           identity service. A scoped token will be returned.
+                           Some cloud providers require the tenant name to be
+                           provided at authentication time. Others will use a
+                           default tenant if none is provided.
     :type ex_tenant_name: ``str``
 
     :param ex_force_service_type: Service type to use when selecting an
-    service.  If not specified, a provider specific default will be used.
+                                  service. If not specified, a provider
+                                  specific default will be used.
     :type ex_force_service_type: ``str``
 
     :param ex_force_service_name: Service name to use when selecting an
-    service.  If not specified, a provider specific default will be used.
+                                  service. If not specified, a provider
+                                  specific default will be used.
     :type ex_force_service_name: ``str``
 
-    :param ex_force_service_region: Region to use when selecting an
-    service.  If not specified, a provider specific default will be used.
+    :param ex_force_service_region: Region to use when selecting an service.
+                                    If not specified, a provider specific
+                                    default will be used.
     :type ex_force_service_region: ``str``
     """
 

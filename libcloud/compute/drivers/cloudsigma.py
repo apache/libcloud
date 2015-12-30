@@ -274,11 +274,11 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         :type       name: ``str``
 
         :keyword    smp: Number of virtual processors or None to calculate
-        based on the cpu speed
+                         based on the cpu speed.
         :type       smp: ``int``
 
         :keyword    nic_model: e1000, rtl8139 or virtio (is not specified,
-        e1000 is used)
+                               e1000 is used)
         :type       nic_model: ``str``
 
         :keyword    vnc_password: If not set, VNC access is disabled.

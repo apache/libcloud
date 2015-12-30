@@ -818,7 +818,7 @@ class CloudStackNetworkACL(object):
         :type       id ``int``
 
         :param      protocol: the protocol for the ACL rule. Valid values are
-                    TCP/UDP/ICMP/ALL or valid protocol number
+                               TCP/UDP/ICMP/ALL or valid protocol number
         :type       protocol: ``string``
 
         :param      acl_id: Name of the network ACL List
@@ -837,7 +837,8 @@ class CloudStackNetworkACL(object):
         :type       end_port: ``str``
 
         :param      traffic_type: the traffic type for the ACL,can be Ingress
-                    or Egress, defaulted to Ingress if not specified
+                                  or Egress, defaulted to Ingress if not
+                                  specified
         :type       traffic_type: ``str``
 
         :rtype: :class:`CloudStackNetworkACL`

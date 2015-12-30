@@ -954,23 +954,25 @@ class AzureNodeDriver(NodeDriver):
 
     def ex_set_instance_endpoints(self, node, endpoints,
                                   ex_deployment_slot="Production"):
-        """
-        endpoint = ConfigurationSetInputEndpoint(
-            name='SSH',
-            protocol='tcp',
-            port=port,
-            local_port='22',
-            load_balanced_endpoint_set_name=None,
-            enable_direct_server_return=False
-        )
-        {
-            'name': 'SSH',
-            'protocol': 'tcp',
-            'port': port,
-            'local_port': '22'
-        }
-        """
 
+        """
+        For example::
+
+            endpoint = ConfigurationSetInputEndpoint(
+                name='SSH',
+                protocol='tcp',
+                port=port,
+                local_port='22',
+                load_balanced_endpoint_set_name=None,
+                enable_direct_server_return=False
+            )
+            {
+                'name': 'SSH',
+                'protocol': 'tcp',
+                'port': port,
+                'local_port': '22'
+            }
+        """
         ex_cloud_service_name = node.extra['ex_cloud_service_name']
         vm_role_name = node.name
 
