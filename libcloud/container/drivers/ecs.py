@@ -83,13 +83,12 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: :class:`ContainerCluster`
         """
-        params = {'Action': 'CreateCluster'}
         request = {'clusterName': name}
         response = self.connection.request(
             ROOT,
             method='POST',
             data=request,
-            headers=self._get_headers(params['Action'])
+            headers=self._get_headers('CreateCluster')
         ).object
         return self._to_cluster(response['cluster'])
 
@@ -100,13 +99,12 @@ class ElasticContainerDriver(ContainerDriver):
         :return: ``True`` if the destroy was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        params = {'Action': 'DeleteCluster'}
         request = {'cluster': cluster.id}
         data = self.connection.request(
             ROOT,
             method='POST',
             data=request,
-            headers=self._get_headers(params['Action'])
+            headers=self._get_headers('DeleteCluster')
         ).object
         return data['cluster']['status'] == 'INACTIVE'
 

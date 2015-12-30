@@ -147,7 +147,7 @@ class ECSMockHttp(MockHttp):
         'StopTask': 'stoptask.json'
     }
 
-    def _2014_11_13(
+    def root(
             self, method, url, body, headers):
         target = headers['x-amz-target']
         if target is not None:
