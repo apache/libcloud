@@ -419,10 +419,14 @@ class DimensionDataFirewallRule(object):
         self.enabled = enabled
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
-                 'action=%s, location=%s, status=%s>')
+        return (('<DimensionDataFirewallRule: id=%s, name=%s, '
+                 'action=%s, location=%s, network_domain=%s, '
+                 'status=%s, ip_version=%s, protocol=%s, source=%s, '
+                 'destination=%s, enabled=%s>')
                 % (self.id, self.name, self.action, self.location,
-                   self.status))
+                   self.network_domain, self.status, self.ip_version,
+                   self.protocol, self.source, self.destination,
+                   self.enabled))
 
 
 class DimensionDataFirewallAddress(object):
@@ -611,7 +615,7 @@ class DimensionDataPoolMember(object):
         self.node_id = node_id
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
+        return (('<DimensionDataPoolMember: id=%s, name=%s, '
                  'ip=%s, status=%s, port=%s, node_id=%s>')
                 % (self.id, self.name,
                    self.ip, self.status, self.port,
@@ -683,7 +687,7 @@ class DimensionDataVirtualListener(object):
         self.ip = ip
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
+        return (('<DimensionDataVirtualListener: id=%s, name=%s, '
                  'status=%s, ip=%s>')
                 % (self.id, self.name,
                    self.status, self.ip))
