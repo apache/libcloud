@@ -291,8 +291,8 @@ class BackupDriver(BaseDriver):
                                   extra=None)
 
     def create_target_from_storage_container(self, container,
-                                     type=BackupTargetType.OBJECT,
-                                     extra=None):
+                                             type=BackupTargetType.OBJECT,
+                                             extra=None):
         """
         Creates a new backup target from an existing storage container
 

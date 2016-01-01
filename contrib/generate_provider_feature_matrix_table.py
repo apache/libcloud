@@ -95,7 +95,7 @@ BASE_API_METHODS = {
             'create_zone', 'update_zone', 'create_record', 'update_record',
             'delete_zone', 'delete_record'],
     'backup': ['get_supported_target_types', 'list_targets', 'create_target', 'create_target_from_node',
-               'create_target_from_container', 'update_target', 'delete_target', 'list_recovery_points',
+               'create_target_from_storage_container', 'update_target', 'delete_target', 'list_recovery_points',
                'recover_target', 'recover_target_out_of_place', 'list_target_jobs', 'create_target_job',
                'resume_target_job', 'suspend_target_job', 'cancel_target_job']
 }
@@ -174,7 +174,7 @@ FRIENDLY_METHODS_NAMES = {
         'list_targets': 'list targets',
         'create_target': 'create target',
         'create_target_from_node': 'create target from node',
-        'create_target_from_container': 'create target from container',
+        'create_target_from_storage_container': 'create target from storage container',
         'update_target': 'update target',
         'delete_target': 'delete target',
         'list_recovery_points': 'list recovery points',
