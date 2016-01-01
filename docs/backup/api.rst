@@ -1,7 +1,7 @@
 :orphan:
 
 Backup Base API
-============
+===============
 
 .. autoclass:: libcloud.backup.base.BackupDriver
     :members:
