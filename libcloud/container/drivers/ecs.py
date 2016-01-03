@@ -68,12 +68,18 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`ContainerCluster`
         """
-        params = {'Action': 'DescribeClusters'}
-        data = self.connection.request(
+        listdata = self.connection.request(
             ROOT,
             method='POST',
             data=json.dumps({}),
-            headers=self._get_headers(params['Action'])
+            headers=self._get_headers('ListClusters')
+        ).object
+        request = {'clusters': listdata['clusterArns']}
+        data = self.connection.request(
+            ROOT,
+            method='POST',
+            data=json.dumps(request),
+            headers=self._get_headers('DescribeClusters')
         ).object
         return self._to_clusters(data)
 
@@ -113,28 +119,6 @@ class ElasticContainerDriver(ContainerDriver):
             headers=self._get_headers('DeleteCluster')
         ).object
         return data['cluster']['status'] == 'INACTIVE'
-
-    def install_image(self, path):
-        """
-        Install a container image from a remote path.
-
-        :param path: Path to the container image
-        :type  path: ``str``
-
-        :rtype: :class:`ContainerImage`
-        """
-        raise NotImplementedError(
-            'install_image not implemented for this driver')
-
-    def list_images(self):
-        """
-        List the installed container images, in ECS these are
-        equivalent to the containers within task definitions.
-
-        :rtype: ``list`` of :class:`ContainerImage`
-        """
-        raise NotImplementedError(
-            'list_images not implemented for this driver')
 
     def list_containers(self, image=None, cluster=None):
         """
@@ -188,6 +172,15 @@ class ElasticContainerDriver(ContainerDriver):
         :rtype: :class:`Container`
         """
         data = {}
+        if ex_container_port is None and ex_host_port is None:
+            port_maps = []
+        else:
+            port_maps = [
+                {
+                    "containerPort": ex_container_port,
+                    "hostPort": ex_host_port
+                }
+            ]
         data['containerDefinitions'] = [
             {
                 "mountPoints": [],
@@ -196,12 +189,7 @@ class ElasticContainerDriver(ContainerDriver):
                 "cpu": ex_cpu,
                 "environment": [],
                 "memory": ex_memory,
-                "portMappings": [
-                    {
-                        "containerPort": ex_container_port,
-                        "hostPort": ex_host_port
-                    }
-                ],
+                "portMappings": port_maps,
                 "essential": True,
                 "volumesFrom": []
             }

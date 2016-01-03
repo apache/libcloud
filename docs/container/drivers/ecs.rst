@@ -17,6 +17,12 @@ Instantiating the driver
         
 .. literalinclude:: /examples/container/ecs/instantiate_driver.py
    :language: python
+
+Deploying a container
+---------------------
+
+.. literalinclude:: /examples/container/ecs/deploy_container.py
+   :language: python
    
 API Docs
 --------

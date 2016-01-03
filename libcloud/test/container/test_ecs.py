@@ -42,8 +42,8 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(clusters[0].name, 'default')
 
     def test_create_cluster(self):
-        cluster = self.driver.create_cluster('jim')
-        self.assertEqual(cluster.name, 'jim')
+        cluster = self.driver.create_cluster('my-cluster')
+        self.assertEqual(cluster.name, 'my-cluster')
 
     def test_destroy_cluster(self):
         self.assertTrue(
@@ -73,7 +73,7 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
                 driver=self.driver
             )
         )
-        self.assertEqual(container.id, 'arn:aws:ecs:us-east-1:012345678910:container/e1ed7aac-d9b2-4315-8726-d2432bf11868')
+        self.assertEqual(container.id, 'arn:aws:ecs:ap-southeast-2:647433528374:container/e443d10f-dea3-481e-8a1e-966b9ad4e498')
 
     def test_get_container(self):
         container = self.driver.get_container(
@@ -142,6 +142,7 @@ class ECSMockHttp(MockHttp):
         'DeleteCluster': 'deletecluster.json',
         'DescribeTasks': 'describetasks.json',
         'ListTasks': 'listtasks.json',
+        'ListClusters': 'listclusters.json',
         'RegisterTaskDefinition': 'registertaskdefinition.json',
         'RunTask': 'runtask.json',
         'StopTask': 'stoptask.json'

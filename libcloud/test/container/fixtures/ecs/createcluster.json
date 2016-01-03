@@ -1,11 +1,11 @@
 {
-  "cluster": {
-    "activeServicesCount": 0,
-    "clusterArn": "arn:aws:ecs:us-east-1:012345678910:cluster/jim",
-    "clusterName": "jim",
-    "pendingTasksCount": 0,
-    "registeredContainerInstancesCount": 0,
-    "runningTasksCount": 0,
-    "status": "ACTIVE"
-  }
+    "cluster": {
+        "activeServicesCount": 0,
+        "clusterArn": "arn:aws:ecs:ap-southeast-2:647433528374:cluster/my-cluster",
+        "clusterName": "my-cluster",
+        "pendingTasksCount": 0,
+        "registeredContainerInstancesCount": 0,
+        "runningTasksCount": 0,
+        "status": "ACTIVE"
+    }
 }
