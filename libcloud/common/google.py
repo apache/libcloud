@@ -21,8 +21,8 @@ Information about setting up your Google OAUTH2 credentials:
 For libcloud, there are two basic methods for authenticating to Google using
 OAUTH2: Service Accounts and Client IDs for Installed Applications.
 
-Both are initially set up from the Cloud Console_
-_Console: https://cloud.google.com/console
+Both are initially set up from the Cloud Console Console -
+https://cloud.google.com/console
 
 Setting up Service Account authentication (note that you need the PyCrypto
 package installed to use this):
@@ -38,9 +38,7 @@ package installed to use this):
 - Optionally, you may choose to Generate a PKCS12 key from the Console.
   It needs to be converted to the PEM format.  Please note, the PKCS12 format
   is deprecated and may be removed in a future release.
-  - Convert the key using OpenSSL (the default password is 'notasecret'):
-    ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-    -passin pass:notasecret | openssl rsa -out PRIV.pem``
+  - Convert the key using OpenSSL (the default password is 'notasecret').
   - Move the .pem file to a safe location.
 - To Authenticate, you will need to pass the Service Account's "Email
   address" in as the user_id and the path to the .pem file as the key.
@@ -66,6 +64,7 @@ Setting up Installed Application authentication:
 
 Please remember to secure your keys and access tokens.
 """
+
 from __future__ import with_statement
 
 try:
@@ -532,7 +531,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
 class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for self-authentication when used with a GCE
-    istance that supports serviceAccounts.
+    instance that supports serviceAccounts.
     """
     def get_new_token(self):
         """

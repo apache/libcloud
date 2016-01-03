@@ -132,8 +132,7 @@ class Address(object):
     """
     A reserved IP address that can be attached to an instance.
     Properties: id, ip, state, options(location, type, created_time, state,
-     hostname, instance_ids, vlan, owner,
-    mode, offering_id)
+    hostname, instance_ids, vlan, owner, mode, offering_id)
     """
     def __init__(self, id, ip, state, options):
         self.id = id

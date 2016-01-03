@@ -110,8 +110,8 @@ class RunAboveNodeDriver(NodeDriver):
         :keyword ex_keyname: Name of SSH key used
         :type    ex_keyname: ``str``
 
-        :retunrs: Created node
-        :rtype  : :class:`Node`
+        :return: Created node
+        :rtype : :class:`Node`
         """
         action = API_ROOT + '/instance'
         data = {

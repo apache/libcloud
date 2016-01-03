@@ -5,7 +5,7 @@ Amazon S3 Storage Driver Documentation
 from Amazon Web Services.
 
 Multipart uploads
-------------------
+-----------------
 
 Amazon S3 driver supports multipart uploads which means you can upload objects
 with a total size of up to 5 TB.

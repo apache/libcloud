@@ -328,8 +328,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Destroy a group.
 
-        Be careful! Destroying a group means destroying all the :class:`Node`s
-        there and the group itself!
+        Be careful! Destroying a group means destroying all the :class:`Node`
+        instances there and the group itself!
 
         If there is currently any action over any :class:`Node` of the
         :class:`NodeGroup`, then the method will raise an exception.

@@ -349,7 +349,7 @@ pull request description contains link to the JIRA ticket.
 Wait for your changes to be reviewed and address any outstanding comments.
 
 10. Squash the commits and generate the patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the changes has been reviewed, all the outstanding issues have been
 addressed and the pull request has been +1'ed, close the pull request, squash

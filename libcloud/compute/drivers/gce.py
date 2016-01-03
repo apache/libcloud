@@ -180,7 +180,7 @@ class GCEList(object):
         Filter results of a list operation.
 
         GCE supports server-side filtering of resources returned by a list
-        operation. Syntax of the filter expression is fully descripted in the
+        operation. Syntax of the filter expression is fully described in the
         GCE API reference doc, but in brief it is::
 
             FIELD_NAME COMPARISON_STRING LITERAL_STRING
@@ -577,9 +577,9 @@ class GCEProject(UuidMixin):
         'startup-script' for all nodes (instances).  Passing in
         ``None`` for the 'metadata' parameter will clear out all common
         instance metadata *except* for 'sshKeys'. If you also want to
-        update 'sshKeys', set the 'force' paramater to ``True``.
+        update 'sshKeys', set the 'force' parameter to ``True``.
 
-        :param  metadata: Dictionay of metadata. Can be either a standard
+        :param  metadata: Dictionary of metadata. Can be either a standard
                           python dictionary, or the format expected by
                           GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
         :type   metadata: ``dict`` or ``None``
@@ -1282,9 +1282,9 @@ class GCENodeDriver(NodeDriver):
         'startup-script' for all nodes (instances).  Passing in
         ``None`` for the 'metadata' parameter will clear out all common
         instance metadata *except* for 'sshKeys'. If you also want to
-        update 'sshKeys', set the 'force' paramater to ``True``.
+        update 'sshKeys', set the 'force' parameter to ``True``.
 
-        :param  metadata: Dictionay of metadata. Can be either a standard
+        :param  metadata: Dictionary of metadata. Can be either a standard
                           python dictionary, or the format expected by
                           GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
         :type   metadata: ``dict`` or ``None``
@@ -2292,7 +2292,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -2345,8 +2345,8 @@ class GCENodeDriver(NodeDriver):
         :type     ex_automatic_restart: ``bool`` or ``None``
 
         :keyword  ex_preemptible: Defines whether the instance is preemptible.
-                                        (If not supplied, the instance will
-                                         not be preemptible)
+                                  (If not supplied, the instance will not be
+                                  preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
         :return:  A Node object for the new node.
@@ -2452,7 +2452,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_network: The network to associate with the nodes.
         :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        :keyword  ex_tags: A list of tags to assiciate with the nodes.
+        :keyword  ex_tags: A list of tags to associate with the nodes.
         :type     ex_tags: ``list`` of ``str`` or ``None``
 
         :keyword  ex_metadata: Metadata dictionary for instances.
@@ -2491,7 +2491,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -3299,7 +3299,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -4592,7 +4592,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a

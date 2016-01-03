@@ -494,7 +494,7 @@ class BaseS3StorageDriver(StorageDriver):
     def _upload_from_iterator(self, iterator, object_path, upload_id,
                               calculate_hash=True):
         """
-        Uploads data from an interator in fixed sized chunks to S3
+        Uploads data from an iterator in fixed sized chunks to S3
 
         :param iterator: The generator for fetching the upload data
         :type iterator: ``generator``

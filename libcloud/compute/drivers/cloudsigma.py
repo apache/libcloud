@@ -274,11 +274,11 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         :type       name: ``str``
 
         :keyword    smp: Number of virtual processors or None to calculate
-        based on the cpu speed
+                         based on the cpu speed.
         :type       smp: ``int``
 
         :keyword    nic_model: e1000, rtl8139 or virtio (is not specified,
-        e1000 is used)
+                               e1000 is used)
         :type       nic_model: ``str``
 
         :keyword    vnc_password: If not set, VNC access is disabled.
@@ -1724,7 +1724,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def ex_get_balance(self):
         """
-        Retrueve account balance information.
+        Retrieve account balance information.
 
         :return: Dictionary with two items ("balance" and "currency").
         :rtype: ``dict``
@@ -1735,7 +1735,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def ex_get_pricing(self):
         """
-        Retrive pricing information that are applicable to the cloud.
+        Retrieve pricing information that are applicable to the cloud.
 
         :return: Dictionary with pricing information.
         :rtype: ``dict``

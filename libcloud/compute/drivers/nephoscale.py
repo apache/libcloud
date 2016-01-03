@@ -351,13 +351,13 @@ get all keys call with no arguments')
         We can also specify the location
         >>> location = conn.list_locations()[0]
         >>> node = conn.create_node(name=name,
-            ...                     size=size,
-            ...                     image=image,
-            ...                     console_key=console_key,
-            ...                     server_key=server_key,
-            ...                     connect_attempts=10,
-            ...                     nowait=True,
-            ...                     zone=location.id)
+        >>> ...                     size=size,
+        >>> ...                     image=image,
+        >>> ...                     console_key=console_key,
+        >>> ...                     server_key=server_key,
+        >>> ...                     connect_attempts=10,
+        >>> ...                     nowait=True,
+        >>> ...                     zone=location.id)
         """
         hostname = kwargs.get('hostname', name)
         service_type = size.id
