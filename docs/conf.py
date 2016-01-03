@@ -13,6 +13,7 @@
 
 import os
 import sys
+import glob
 import subprocess
 
 from sphinx.environment import BuildEnvironment
@@ -20,12 +21,31 @@ from sphinx.environment import BuildEnvironment
 from sphinx.ext.autodoc import AutoDirective
 from sphinx.ext.autodoc import AutodocReporter
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(BASE_DIR)
+
 # Detect if we are running on read the docs
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+api_docs_files = glob.glob(os.path.join(BASE_DIR, 'apidocs/') + '*.rst')
 
 if on_rtd:
     cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
+
+    # Hack, we can't use "exclude_patterns" since then api docs won't
+    # get published on readthedocs
+    api_docs_files = glob.glob(os.path.join(BASE_DIR, 'apidocs/') + '*.rst')
+
+    for file_path in api_docs_files:
+        with open(file_path, 'r') as fp:
+            content = fp.read()
+
+        if ':orphan:' in content:
+            continue
+
+        new_content = ':orphan:\n\n' + content
+        with open(file_path, 'w') as fp:
+            fp.write(new_content)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -80,7 +100,6 @@ release = '0.14.0-dev'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = [
-    'apidocs/*',  # generated during build (orphans)
     '_build',
     '*/_*.rst'
 ]
