@@ -25,13 +25,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(BASE_DIR)
 
 # Detect if we are running on read the docs
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-api_docs_files = glob.glob(os.path.join(BASE_DIR, 'apidocs/') + '*.rst')
+on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'True'
+on_travis = os.environ.get('TRAVIS', '').lower() == 'true'
 
 if on_rtd:
     cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
 
+if on_travis:
     # Hack, we can't use "exclude_patterns" since then api docs won't
     # get published on readthedocs
     api_docs_files = glob.glob(os.path.join(BASE_DIR, 'apidocs/') + '*.rst')
