@@ -6,7 +6,7 @@ Docker-native tools and elastic hosts make deploying on Triton as easy as runnin
 There is no special software to install or configure.
 Mix Docker containers with container-native Linux to extend the benefits of containerization to legacy applications and stateful services.
 
-.. figure:: /_static/images/provider_logos/triton.svg
+.. figure:: /_static/images/provider_logos/triton.png
     :align: center
     :width: 300
     :target: http://joyent.com/

@@ -3,7 +3,7 @@ Amazon Elastic Container Service Documentation
 
 Elastic Container Service is a container-as-a-service feature of `AWS`_.
 
-.. figure:: /_static/images/provider_logos/aws.svg
+.. figure:: /_static/images/provider_logos/aws.png
     :align: center
     :width: 300
     :target: http://aws.amazon.com/
