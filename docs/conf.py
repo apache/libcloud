@@ -13,7 +13,6 @@
 
 import os
 import sys
-import glob
 import subprocess
 
 from sphinx.environment import BuildEnvironment
@@ -31,22 +30,6 @@ on_travis = os.environ.get('TRAVIS', '').lower() == 'true'
 if on_rtd:
     cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
-
-if on_travis:
-    # Hack, we can't use "exclude_patterns" since then api docs won't
-    # get published on readthedocs
-    api_docs_files = glob.glob(os.path.join(BASE_DIR, 'apidocs/') + '*.rst')
-
-    for file_path in api_docs_files:
-        with open(file_path, 'r') as fp:
-            content = fp.read()
-
-        if ':orphan:' in content:
-            continue
-
-        new_content = ':orphan:\n\n' + content
-        with open(file_path, 'w') as fp:
-            fp.write(new_content)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
