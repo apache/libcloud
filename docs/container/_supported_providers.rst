@@ -5,9 +5,9 @@ Provider                            Documentation                            Pro
 =================================== ======================================== ================= ======================================== ===============================
 `Docker`_                           :doc:`Click </container/drivers/docker>` DOCKER            :mod:`libcloud.container.drivers.docker` :class:`DockerContainerDriver` 
 `Amazon Elastic Container Service`_ :doc:`Click </container/drivers/ecs>`    ECS               :mod:`libcloud.container.drivers.ecs`    :class:`ElasticContainerDriver`
-`Joyent`_                           :doc:`Click </container/drivers/joyent>` JOYENT            :mod:`libcloud.container.drivers.joyent` :class:`JoyentContainerDriver` 
+`Joyent Triton`_                    :doc:`Click </container/drivers/joyent>` JOYENT            :mod:`libcloud.container.drivers.joyent` :class:`JoyentContainerDriver` 
 =================================== ======================================== ================= ======================================== ===============================
 
 .. _`Docker`: http://docker.io
 .. _`Amazon Elastic Container Service`: https://aws.amazon.com/ecs/details/
-.. _`Joyent`: http://joyent.com
+.. _`Joyent Triton`: http://joyent.com

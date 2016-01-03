@@ -31,7 +31,7 @@ class JoyentContainerDriver(DockerContainerDriver):
     """
 
     type = Provider.JOYENT
-    name = 'Joyent'
+    name = 'Joyent Triton'
     website = 'http://joyent.com'
     connectionCls = DockerConnection
     supports_clusters = False
