@@ -1,7 +1,7 @@
 Joyent Triton Container Driver Documentation
 ============================================
 
-`Joyent Triton`_ is a Docker hosting service, provided by service provider `Joyent`_.
+`Joyent Triton`_ is a Docker hosting service, provided by service provider Joyent.
 Docker-native tools and elastic hosts make deploying on Triton as easy as running Docker on your laptop.
 There is no special software to install or configure.
 Mix Docker containers with container-native Linux to extend the benefits of containerization to legacy applications and stateful services.
@@ -62,4 +62,3 @@ API Docs
 
 
 .. _`Joyent Triton`: https://www.joyent.com/blog/understanding-triton-containers
-.. _`Joyent`: https://www.joyent.com/
