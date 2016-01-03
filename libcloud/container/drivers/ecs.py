@@ -13,15 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'ElasticContainerDriver'
-]
-
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.container.base import (ContainerDriver, Container,
                                      ContainerCluster, ContainerImage)
 from libcloud.container.types import ContainerState
 from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
+
+__all__ = [
+    'ElasticContainerDriver'
+]
+
 
 VERSION = '2014-11-13'
 HOST = 'ecs.%s.amazonaws.com'
@@ -67,6 +72,7 @@ class ElasticContainerDriver(ContainerDriver):
         data = self.connection.request(
             ROOT,
             method='POST',
+            data=json.dumps({}),
             headers=self._get_headers(params['Action'])
         ).object
         return self._to_clusters(data)
@@ -87,7 +93,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('CreateCluster')
         ).object
         return self._to_cluster(response['cluster'])
@@ -103,7 +109,7 @@ class ElasticContainerDriver(ContainerDriver):
         data = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('DeleteCluster')
         ).object
         return data['cluster']['status'] == 'INACTIVE'
@@ -142,15 +148,15 @@ class ElasticContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`Container`
         """
-        request = None
+        request = {'cluster': 'default'}
         if cluster is not None:
-            request = {'cluster': cluster.id}
+            request['cluster'] = cluster.id
         if image is not None:
             request['family'] = image.name
         list_response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('ListTasks')
         ).object
         containers = self.ex_list_containers_for_task(
@@ -204,7 +210,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=data,
+            data=json.dumps(data),
             headers=self._get_headers('RegisterTaskDefinition')
         ).object
         if start:
@@ -263,7 +269,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('StopTask')
         ).object
         containers = []
@@ -313,7 +319,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('RunTask')
         ).object
         containers = []
@@ -334,7 +340,7 @@ class ElasticContainerDriver(ContainerDriver):
         descripe_response = self.connection.request(
             ROOT,
             method='POST',
-            data=describe_request,
+            data=json.dumps(describe_request),
             headers=self._get_headers('DescribeTasks')
         ).object
         containers = []
@@ -375,7 +381,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('CreateService')
         ).object
         return response
@@ -395,7 +401,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('ListServices')
         ).object
         return response['serviceArns']
@@ -419,7 +425,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('DescribeServices')
         ).object
         return response['services'][0]
@@ -440,7 +446,7 @@ class ElasticContainerDriver(ContainerDriver):
         response = self.connection.request(
             ROOT,
             method='POST',
-            data=request,
+            data=json.dumps(request),
             headers=self._get_headers('DeleteService')
         ).object
         return response

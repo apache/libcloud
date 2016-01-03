@@ -709,6 +709,7 @@ class Connection(object):
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
+        self.data = data
 
         # Extend default parameters
         params = self.add_default_params(params)
