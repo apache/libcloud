@@ -23,8 +23,8 @@ matrix:
       env: ENV=lint
       before_script: TOX_ENV=lint
     - python: 2.7
-      env: ENV=docs-travis
-      before_script: TOX_ENV=docs
+      env: ENV=docs
+      before_script: TOX_ENV=docs-travis
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
