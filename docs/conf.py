@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(BASE_DIR)
 
 # Detect if we are running on read the docs
-on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'True'
+on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'true'
 on_travis = os.environ.get('TRAVIS', '').lower() == 'true'
 
 if on_rtd:
