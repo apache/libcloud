@@ -298,7 +298,7 @@ class DimensionDataStatus(object):
         return (('<DimensionDataStatus: action=%s, request_time=%s, '
                  'user_name=%s, number_of_steps=%s, update_time=%s, '
                  'step_name=%s, step_number=%s, '
-                 'step_percent_complete=%s, failure_reason=%s')
+                 'step_percent_complete=%s, failure_reason=%s>')
                 % (self.action, self.request_time, self.user_name,
                    self.number_of_steps, self.update_time, self.step_name,
                    self.step_number, self.step_percent_complete,
@@ -341,7 +341,7 @@ class DimensionDataNetworkDomain(object):
         self.plan = plan
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
                  'description=%s, location=%s, status=%s>')
                 % (self.id, self.name, self.description, self.location,
                    self.status))
@@ -362,7 +362,7 @@ class DimensionDataPublicIpBlock(object):
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s,'
+        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s, '
                  'size=%s, location=%s, status=%s>')
                 % (self.id, self.base_ip, self.size, self.location,
                    self.status))
@@ -419,10 +419,14 @@ class DimensionDataFirewallRule(object):
         self.enabled = enabled
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
-                 'action=%s, location=%s, status=%s>')
+        return (('<DimensionDataFirewallRule: id=%s, name=%s, '
+                 'action=%s, location=%s, network_domain=%s, '
+                 'status=%s, ip_version=%s, protocol=%s, source=%s, '
+                 'destination=%s, enabled=%s>')
                 % (self.id, self.name, self.action, self.location,
-                   self.status))
+                   self.network_domain, self.status, self.ip_version,
+                   self.protocol, self.source, self.destination,
+                   self.enabled))
 
 
 class DimensionDataFirewallAddress(object):
@@ -500,10 +504,10 @@ class DimensionDataVlan(object):
                                             as a CIDR range size
         :type  ipv6_range_size: ``int``
 
-        :param ipv4_gateway: The IPv4 default gateway addres
+        :param ipv4_gateway: The IPv4 default gateway address
         :type  ipv4_gateway: ``str``
 
-        :param ipv6_gateway: The IPv6 default gateway addres
+        :param ipv6_gateway: The IPv6 default gateway address
         :type  ipv6_gateway: ``str``
         """
         self.id = str(id)
@@ -611,8 +615,8 @@ class DimensionDataPoolMember(object):
         self.node_id = node_id
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
-                 'ip=%s, status=%s, port=%s, node_id=%s')
+        return (('<DimensionDataPoolMember: id=%s, name=%s, '
+                 'ip=%s, status=%s, port=%s, node_id=%s>')
                 % (self.id, self.name,
                    self.ip, self.status, self.port,
                    self.node_id))
@@ -683,7 +687,7 @@ class DimensionDataVirtualListener(object):
         self.ip = ip
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
+        return (('<DimensionDataVirtualListener: id=%s, name=%s, '
                  'status=%s, ip=%s>')
                 % (self.id, self.name,
                    self.status, self.ip))

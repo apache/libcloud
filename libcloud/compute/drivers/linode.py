@@ -55,18 +55,18 @@ class LinodeNodeDriver(NodeDriver):
 
     Rough mapping of which is which:
 
-        list_nodes              linode.list
-        reboot_node             linode.reboot
-        destroy_node            linode.delete
-        create_node             linode.create, linode.update,
-                                linode.disk.createfromdistribution,
-                                linode.disk.create, linode.config.create,
-                                linode.ip.addprivate, linode.boot
-        list_sizes              avail.linodeplans
-        list_images             avail.distributions
-        list_locations          avail.datacenters
-        list_volumes            linode.disk.list
-        destroy_volume          linode.disk.delete
+    - list_nodes              linode.list
+    - reboot_node             linode.reboot
+    - destroy_node            linode.delete
+    - create_node             linode.create, linode.update,
+                              linode.disk.createfromdistribution,
+                              linode.disk.create, linode.config.create,
+                              linode.ip.addprivate, linode.boot
+    - list_sizes              avail.linodeplans
+    - list_images             avail.distributions
+    - list_locations          avail.datacenters
+    - list_volumes            linode.disk.list
+    - destroy_volume          linode.disk.delete
 
     For more information on the Linode API, be sure to read the reference:
 

@@ -122,7 +122,7 @@ Connecting to HP Cloud US West and US East (OpenStack Havana).
 .. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
 
-7. Using Cloud-Init with Openstack
+7. Using Cloud-Init with OpenStack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example shows how to use cloud-init using the ``ex_config_drive`` and

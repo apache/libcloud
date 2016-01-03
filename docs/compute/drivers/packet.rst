@@ -1,5 +1,5 @@
 Packet Compute Driver Documentation
-=========================================
+===================================
 
 `Packet`_ is a dedicated bare metal cloud hosting provider based in New York
 City

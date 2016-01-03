@@ -501,7 +501,7 @@ class AzureNodeDriver(NodeDriver):
     def list_volumes(self, node=None):
         """
         Lists volumes of the disks in the image repository that are
-        associated with the specificed subscription.
+        associated with the specified subscription.
 
         Pass Node object to scope the list of volumes to a single
         instance.
@@ -574,7 +574,7 @@ class AzureNodeDriver(NodeDriver):
 
         :type        ex_custom_data: ``str``
         :keyword     ex_custom_data: Optional script or other data which is
-                                     injected into the VM when it's begining
+                                     injected into the VM when it's beginning
                                      provisioned.
 
         :keyword     ex_admin_user_id: Optional. Defaults to 'azureuser'.
@@ -954,23 +954,25 @@ class AzureNodeDriver(NodeDriver):
 
     def ex_set_instance_endpoints(self, node, endpoints,
                                   ex_deployment_slot="Production"):
-        """
-        endpoint = ConfigurationSetInputEndpoint(
-            name='SSH',
-            protocol='tcp',
-            port=port,
-            local_port='22',
-            load_balanced_endpoint_set_name=None,
-            enable_direct_server_return=False
-        )
-        {
-            'name': 'SSH',
-            'protocol': 'tcp',
-            'port': port,
-            'local_port': '22'
-        }
-        """
 
+        """
+        For example::
+
+            endpoint = ConfigurationSetInputEndpoint(
+                name='SSH',
+                protocol='tcp',
+                port=port,
+                local_port='22',
+                load_balanced_endpoint_set_name=None,
+                enable_direct_server_return=False
+            )
+            {
+                'name': 'SSH',
+                'protocol': 'tcp',
+                'port': port,
+                'local_port': '22'
+            }
+        """
         ex_cloud_service_name = node.extra['ex_cloud_service_name']
         vm_role_name = node.name
 

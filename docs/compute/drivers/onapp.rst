@@ -35,7 +35,7 @@ To authenticate using API key, put your account email as ``key`` and the API key
 to the server as ``secret``.
 
 Example
---------
+-------
 
 .. literalinclude:: /examples/compute/onapp/functionality.py
    :language: python

@@ -32,3 +32,9 @@ install:
 
 script:
   - tox -e $TOX_ENV
+
+notifications:
+  email:
+    - notifications@libcloud.apache.org
+  irc:
+    - "chat.freenode.net#libcloud"

@@ -1,5 +1,5 @@
 AuroraCompute Computer Driver Documentation
-======================================
+===========================================
 
 `PCextreme B.V.`_ is a Dutch cloud provider. It provides a public cloud offering
 under the name AuroraCompute. All cloud services are under the family name Aurora.

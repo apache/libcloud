@@ -35,11 +35,12 @@ class OnAppConnection(ConnectionUserAndKey):
         Add Basic Authentication header to all the requests.
         It injects the "Authorization: Basic Base64String===" header
         in each request
+
         :type  headers: ``dict``
         :param headers: Default input headers
+
         :rtype:         ``dict``
-        :return:        Default input headers with the "Authorization"
-                        header
+        :return:        Default input headers with the "Authorization" header.
         """
         b64string = b("%s:%s" % (self.user_id, self.key))
         encoded = b64encode(b64string).decode("utf-8")

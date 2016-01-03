@@ -11,8 +11,14 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
 import subprocess
+
+from sphinx.environment import BuildEnvironment
+
+from sphinx.ext.autodoc import AutoDirective
+from sphinx.ext.autodoc import AutodocReporter
 
 # Detect if we are running on read the docs
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -74,6 +80,7 @@ release = '0.14.0-dev'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = [
+    'apidocs/*',  # generated during build (orphans)
     '_build',
     '*/_*.rst'
 ]
@@ -263,3 +270,29 @@ texinfo_documents = [
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 autoclass_content = 'both'
+
+
+# Note: For now we ignore sphinx-autodoc warnings since there are too many
+# and we want at least documentation (not docstring) related warnings to be
+# reported, treated as errors and fixed.
+def noop(*args, **kwargs):
+    pass
+
+def mock_warning(self, *args, **kwargs):
+    # We re-write warning as info (level 1)
+    return self.system_message(1, *args, **kwargs)
+
+original_warn_node = BuildEnvironment.warn_node
+
+def ignore_more_than_one_target_found_errors(self, msg, node):
+    if 'more than one target found' in msg:
+        return None
+
+    return original_warn_node(self, msg, node)
+
+
+# Monkey patch the original methods
+AutoDirective.warn = noop
+AutodocReporter.warning = mock_warning
+
+BuildEnvironment.warn_node = ignore_more_than_one_target_found_errors

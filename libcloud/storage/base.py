@@ -714,11 +714,11 @@ class StorageDriver(BaseDriver):
         :type iterator: :class:`object`
 
         :param chunked: True if the chunked transfer encoding should be used
-                        (defauls to False).
+                        (defaults to False).
         :type chunked: ``bool``
 
         :param calculate_hash: True to calculate hash of the transferred data.
-                               (defauls to True).
+                               (defaults to True).
         :type calculate_hash: ``bool``
 
         :param chunk_size: Optional chunk size (defaults to ``CHUNK_SIZE``)

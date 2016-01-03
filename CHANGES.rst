@@ -1,8 +1,23 @@
 Changelog
 =========
 
+Changes with current version of Apache Libcloud
+-----------------------------------------------
+
+Compute
+~~~~~~~
+
+- Added t2.nano instance type to EC2 Compute driver
+  (GITHUB-663)
+  [Anthony Shaw]
+
+- Support for passing the image ID as a string instead of an instance of image when
+  creating nodes in Dimension Data driver.
+  (GITHUB-664)
+  [Anthony Shaw]
+
 Changes with Apache Libcloud 0.20.0
--------------------------------------------
+-----------------------------------
 
 General
 ~~~~~~~
@@ -29,6 +44,14 @@ General
 
 Compute
 ~~~~~~~
+
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
+- Minor security improvement for storing cached GCE credentials
+  (LIBCLOUD-718)
+  [Siim Põder]
 
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
@@ -118,6 +141,11 @@ Compute
   (GITHUB-633)
   [Scott Crunkleton]
 
+- All NodeState, StorageVolumeState, VolumeSnapshotState and Provider attributes
+  are now strings instead of integers.
+  (GITHUB-624)
+  [Allard Hoeve]
+
 Storage
 ~~~~~~~
 
@@ -128,13 +156,14 @@ DNS
 ~~~
 
 - RackSpace driver - New DNS driver methods:
-    ex_iterate_ptr_records
-    ex_get_ptr_record
-    ex_create_ptr_record
-    ex_update_ptr_record
-    ex_delete_ptr_record
-    This should cover all of the functionality offered by the Rackspace
-    DNS API in regards to RDNS.
+   - ex_iterate_ptr_records
+   - ex_get_ptr_record
+   - ex_create_ptr_record
+   - ex_update_ptr_record
+   - ex_delete_ptr_record
+
+  This should cover all of the functionality offered by the Rackspace DNS API
+  in regards to RDNS.
   (LIBCLOUD-780, GITHUB-652)
   [Greg Hill]
 
@@ -600,11 +629,12 @@ Compute
   [Konstantin Skaburskas]
 
 - Various improvements in the DigitalOcean driver:
-  - Increase page size to API maximum.
-  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
-  - Update all the ``list_*`` methods to use paginated requests
-  - Allow user to specify page size by passing ``ex_per_page`` argument to the
-    constructor.
+   - Increase page size to API maximum.
+   - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+   - Update all the ``list_*`` methods to use paginated requests
+   - Allow user to specify page size by passing ``ex_per_page`` argument to the
+     constructor.
+
   (LIBCLOUD-717, GITHUB-537)
   [Javier Castillo II]
 

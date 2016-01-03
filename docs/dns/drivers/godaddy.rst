@@ -1,5 +1,5 @@
 GoDaddy DNS Driver Documentation
-=====================================
+================================
 
 `GoDaddy`_ provide domain name registration and are the worlds largest with over 13 million customers. They also provide nameservers and DNS hosting as
 well as cloud and website hosting.
@@ -20,7 +20,7 @@ Driver features
 * Submit completed agreements to purchase domains
 
 Instantiating the driver
--------------------------------------
+------------------------
 
 Before you instantiate a driver, you will need a GoDaddy account.
 
@@ -37,7 +37,7 @@ You can then use these details to instantiate a driver with the arguments:
    :language: python
 
 Listing zones
----------------
+-------------
 
 .. literalinclude:: /examples/dns/godaddy/listing_zones.py
    :language: python

@@ -1,5 +1,5 @@
 Zonomi DNS Driver Documentation
-===========================
+===============================
 
 `Zonomi`_ name servers are spread around the globe (London, Dallas, New York
 and Auckland). It offers Fully redundant, fault-tolerant, reliable name
@@ -10,7 +10,7 @@ registrar, Integrates with Pingability's DNS fail over, Vanity name servers.
 Read more at: http://zonomi.com/
 
 Instantiating the driver
---------------------------
+------------------------
 
 .. literalinclude:: /examples/dns/zonomi/instantiate_driver.py
    :language: python
