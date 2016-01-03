@@ -55,12 +55,12 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
 
     def test_list_containers(self):
         containers = self.driver.list_containers()
-        self.assertEqual(len(containers), 2)
+        self.assertEqual(len(containers), 1)
 
     def test_list_containers_for_cluster(self):
         cluster = self.driver.list_clusters()[0]
         containers = self.driver.list_containers(cluster=cluster)
-        self.assertEqual(len(containers), 2)
+        self.assertEqual(len(containers), 1)
 
     def test_deploy_container(self):
         container = self.driver.deploy_container(
@@ -79,9 +79,9 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
         container = self.driver.get_container(
             'arn:aws:ecs:us-east-1:012345678910:container/76c980a8-2454-4a9c-acc4-9eb103117273'
         )
-        self.assertEqual(container.id, 'arn:aws:ecs:us-east-1:012345678910:container/76c980a8-2454-4a9c-acc4-9eb103117273')
-        self.assertEqual(container.name, 'mysql')
-        self.assertEqual(container.image.name, 'mysql')
+        self.assertEqual(container.id, 'arn:aws:ecs:ap-southeast-2:647433528374:container/d56d4e2c-9804-42a7-9f2a-6029cb50d4a2')
+        self.assertEqual(container.name, 'simple-app')
+        self.assertEqual(container.image.name, 'simple-app')
 
     def test_start_container(self):
         container = self.driver.start_container(
