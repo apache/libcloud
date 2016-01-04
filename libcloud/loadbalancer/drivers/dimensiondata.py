@@ -635,7 +635,7 @@ class DimensionDataLBDriver(Driver):
             .text = protocol
         if listenerIpAddress is not None:
             ET.SubElement(create_node_elm, "listenerIpAddress").text = \
-                .text = str(listenerIpAddress)
+                str(listenerIpAddress)
         ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
