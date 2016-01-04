@@ -920,7 +920,6 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
-            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1116,7 +1115,6 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
-            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -2734,7 +2732,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Valid values: all|self|aws id
 
         Ex_filters parameter is used to filter the list of
-        images that should be returned. Only images matchind
+        images that should be returned. Only images matching
         the filter will be returned.
 
         :param      ex_image_ids: List of ``NodeImage.id``
@@ -4600,7 +4598,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      new_size: NodeSize intance
+        :param      new_size: NodeSize instance
         :type       new_size: :class:`NodeSize`
 
         :return: True on success, False otherwise.
@@ -4937,7 +4935,7 @@ class BaseEC2NodeDriver(NodeDriver):
         attached to a VPC. These are required for VPC nodes to communicate
         over the Internet.
 
-        :param      gateway_ids: Return only intenet gateways matching the
+        :param      gateway_ids: Return only internet gateways matching the
                                  provided internet gateway IDs. If not
                                  specified, a list of all the internet
                                  gateways in the corresponding region is

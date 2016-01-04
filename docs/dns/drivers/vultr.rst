@@ -1,5 +1,5 @@
 Vultr Driver Documentation
-===========================
+==========================
 
 `Vultr`_ was built by the same team that created Choopa.com and
 GameServers.com, has tackled hosting solutions, delivering industry
@@ -9,7 +9,7 @@ worldwide network.
 Read more at: https://www.vultr.com/about/
 
 Instantiating the driver
---------------------------
+------------------------
 
 .. literalinclude:: /examples/dns/vultr/instantiate_driver.py
    :language: python

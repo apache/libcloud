@@ -126,8 +126,11 @@ class HostVirtualNodeDriver(NodeDriver):
         return images
 
     def create_node(self, name, image, size, **kwargs):
-        """Creates a node
-        Example of node creation with ssh key deployed
+        """
+        Creates a node
+
+        Example of node creation with ssh key deployed:
+
         >>> from libcloud.compute.base import NodeAuthSSHKey
         >>> key = open('/home/user/.ssh/id_rsa.pub').read()
         >>> auth = NodeAuthSSHKey(pubkey=key)
@@ -139,7 +142,7 @@ class HostVirtualNodeDriver(NodeDriver):
         >>> location = conn.list_locations()[1]
         >>> name = 'markos-dev'
         >>> node = conn.create_node(name, image, size, auth=auth,
-                                    location=location)
+        >>>                         location=location)
         """
 
         dc = None

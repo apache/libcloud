@@ -6,7 +6,7 @@ which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
 Libcloud 0.20.0
---------------
+---------------
 
 * New optional ``ttl`` argument has been added to ``libcloud.dns.base.Record``
   class constructor before the existing ``extra`` argument.

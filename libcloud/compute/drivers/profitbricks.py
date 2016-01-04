@@ -248,7 +248,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
     These are instance types that match up with what other providers support.
 
-    You can configure disk size, core size, and memory size using the ex_
+    You can configure disk size, core size, and memory size using the ``ex_``
     parameters on the create_node method.
     """
 
@@ -731,7 +731,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Stops a node.
 
-        This also dealloctes the public IP space.
+        This also deallocates the public IP space.
 
         :param node: The node you wish to halt.
         :type node: :class:`Node`

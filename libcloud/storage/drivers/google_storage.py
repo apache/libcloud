@@ -113,16 +113,24 @@ class GoogleStorageDriver(BaseS3StorageDriver):
     Installed App credentials, and GCE instance service accounts)
 
     Examples:
-    Service Accounts
+
+    Service Accounts::
+
         driver = GoogleStorageDriver(key=client_email, secret=private_key, ...)
-    Installed Application
+
+    Installed Application::
+
         driver = GoogleStorageDriver(key=client_id, secret=client_secret, ...)
-    From GCE instance
+
+    From GCE instance::
+
         driver = GoogleStorageDriver(key=foo , secret=bar, ...)
 
     Can also authenticate via Google Cloud Storage's S3 interoperability API.
-    S3 user keys are 20 alphanumeric characters, starting with GOOG
-    Example:
+    S3 user keys are 20 alphanumeric characters, starting with GOOG.
+
+    Example::
+
         driver = GoogleStorageDriver(key='GOOG0123456789ABCXYZ',
                                      secret=key_secret)
     """
