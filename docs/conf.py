@@ -28,7 +28,7 @@ on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'true'
 on_travis = os.environ.get('TRAVIS', '').lower() == 'true'
 
 if on_rtd:
-    cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
+    cmd = 'sphinx-apidoc -d 4 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
