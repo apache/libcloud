@@ -14,6 +14,10 @@ General
 Compute
 ~~~~~~~
 
+- Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
+  (LIBCLOUD-786, GITHUB-665)
+  [Scott Crunkleton]
+
 - Added t2.nano instance type to EC2 Compute driver
   (GITHUB-663)
   [Anthony Shaw]
