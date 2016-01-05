@@ -64,9 +64,9 @@ class ElasticContainerDriver(ContainerDriver):
         Get a list of potential locations to deploy clusters into
 
         :param  location: The location to search in
-        :type   location: :class:`ClusterLocation`
+        :type   location: :class:`libcloud.container.base.ClusterLocation`
 
-        :rtype: ``list`` of :class:`ContainerCluster`
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
         """
         listdata = self.connection.request(
             ROOT,
@@ -91,9 +91,9 @@ class ElasticContainerDriver(ContainerDriver):
         :type   name: ``str``
 
         :param  location: The location to create the cluster in
-        :type   location: :class:`ClusterLocation`
+        :type   location: :class:`libcloud.container.base.ClusterLocation`
 
-        :rtype: :class:`ContainerCluster`
+        :rtype: :class:`libcloud.container.base.ContainerCluster`
         """
         request = {'clusterName': name}
         response = self.connection.request(
@@ -125,12 +125,12 @@ class ElasticContainerDriver(ContainerDriver):
         List the deployed container images
 
         :param image: Filter to containers with a certain image
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`libcloud.container.base.ContainerImage`
 
         :param cluster: Filter to containers in a cluster
-        :type  cluster: :class:`ContainerCluster`
+        :type  cluster: :class:`libcloud.container.base.ContainerCluster`
 
-        :rtype: ``list`` of :class:`Container`
+        :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         request = {'cluster': 'default'}
         if cluster is not None:
@@ -158,10 +158,10 @@ class ElasticContainerDriver(ContainerDriver):
         :type  name: ``str``
 
         :param image: The container image to deploy
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`libcloud.container.base.ContainerImage`
 
         :param cluster: The cluster to deploy to, None is default
-        :type  cluster: :class:`ContainerCluster`
+        :type  cluster: :class:`libcloud.container.base.ContainerCluster`
 
         :param parameters: Container Image parameters
         :type  parameters: ``str``
@@ -169,7 +169,7 @@ class ElasticContainerDriver(ContainerDriver):
         :param start: Start the container on deployment
         :type  start: ``bool``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         data = {}
         if ex_container_port is None and ex_host_port is None:
@@ -225,7 +225,7 @@ class ElasticContainerDriver(ContainerDriver):
         :param id: The ID of the container to get
         :type  id: ``str``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         containers = self.ex_list_containers_for_task([id])
         return containers[0]
@@ -235,12 +235,12 @@ class ElasticContainerDriver(ContainerDriver):
         Start a deployed task
 
         :param container: The container to start
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :param count: Number of containers to start
         :type  count: ``int``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         return self.ex_start_task(container.extra['taskDefinitionArn'], count)
 
@@ -249,9 +249,9 @@ class ElasticContainerDriver(ContainerDriver):
         Stop a deployed container
 
         :param container: The container to stop
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         request = {'task': container.extra['taskArn']}
         response = self.connection.request(
@@ -271,9 +271,9 @@ class ElasticContainerDriver(ContainerDriver):
         Restart a deployed container
 
         :param container: The container to restart
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         self.stop_container(container)
         return self.start_container(container)
@@ -283,9 +283,9 @@ class ElasticContainerDriver(ContainerDriver):
         Destroy a deployed container
 
         :param container: The container to destroy
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         return self.stop_container(container)
 
@@ -299,7 +299,7 @@ class ElasticContainerDriver(ContainerDriver):
         :param count: The number of containers to start
         :type  count: ``int``
 
-        :rtype: ``list`` of :class:`Container`
+        :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         request = None
         request = {'count': count,
@@ -322,7 +322,7 @@ class ElasticContainerDriver(ContainerDriver):
         :param task_arns: The list of ARNs
         :type  task_arns: ``list`` of ``str``
 
-        :rtype: ``list`` of :class:`Container`
+        :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         describe_request = {'tasks': task_arns}
         descripe_response = self.connection.request(
@@ -349,7 +349,7 @@ class ElasticContainerDriver(ContainerDriver):
         :type   name: ``str``
 
         :param  cluster: The cluster to run the service on
-        :type   cluster: :class:`ContainerCluster`
+        :type   cluster: :class:`libcloud.container.base.ContainerCluster`
 
         :param  task_definition: The task definition name or ARN for the
             service
@@ -379,7 +379,7 @@ class ElasticContainerDriver(ContainerDriver):
         List the services
 
         :param cluster: The cluster hosting the services
-        :type  cluster: :class:`ContainerCluster`
+        :type  cluster: :class:`libcloud.container.base.ContainerCluster`
 
         :rtype: ``list`` of ``str``
         """
@@ -399,7 +399,7 @@ class ElasticContainerDriver(ContainerDriver):
         Get the details of a service
 
         :param  cluster: The hosting cluster
-        :type   cluster: :class:`ContainerCluster`
+        :type   cluster: :class:`libcloud.container.base.ContainerCluster`
 
         :param  service_arn: The service ARN to describe
         :type   service_arn: ``str``
@@ -423,7 +423,7 @@ class ElasticContainerDriver(ContainerDriver):
         Deletes a service
 
         :param  cluster: The target cluster
-        :type   cluster: :class:`ContainerCluster`
+        :type   cluster: :class:`libcloud.container.base.ContainerCluster`
 
         :param  service_arn: The service ARN to destroy
         :type   service_arn: ``str``

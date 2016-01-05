@@ -198,7 +198,7 @@ class DockerContainerDriver(ContainerDriver):
         :param path: Path to the container image
         :type  path: ``str``
 
-        :rtype: :class:`ContainerImage`
+        :rtype: :class:`libcloud.container.base.ContainerImage`
         """
         payload = {
         }
@@ -231,7 +231,7 @@ class DockerContainerDriver(ContainerDriver):
         """
         List the installed container images
 
-        :rtype: ``list`` of :class:`ContainerImage`
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
         result = self.connection.request('/images/json').object
         images = []
@@ -260,12 +260,12 @@ class DockerContainerDriver(ContainerDriver):
         List the deployed container images
 
         :param image: Filter to containers with a certain image
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`libcloud.container.base.ContainerImage`
 
         :param all: Show all container (including stopped ones)
         :type  all: ``bool``
 
-        :rtype: ``list`` of :class:`Container`
+        :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         if all:
             ex = '?all=1'
@@ -302,7 +302,7 @@ class DockerContainerDriver(ContainerDriver):
         :type  name: ``str``
 
         :param image: The container image to deploy
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`libcloud.container.base.ContainerImage`
 
         :param parameters: Container Image parameters
         :type  parameters: ``str``
@@ -379,7 +379,7 @@ class DockerContainerDriver(ContainerDriver):
         :param id: The ID of the container to get
         :type  id: ``str``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request("/containers/%s/json" %
                                          id).object
@@ -391,10 +391,10 @@ class DockerContainerDriver(ContainerDriver):
         Start a container
 
         :param container: The container to be started
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :return: The container refreshed with current data
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         payload = {
             'Binds': [],
@@ -416,10 +416,10 @@ class DockerContainerDriver(ContainerDriver):
         Stop a container
 
         :param container: The container to be stopped
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :return: The container refreshed with current data
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request('/containers/%s/stop' %
                                          (container.id),
@@ -435,10 +435,10 @@ class DockerContainerDriver(ContainerDriver):
         Restart a container
 
         :param container: The container to be stopped
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :return: The container refreshed with current data
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         data = json.dumps({'t': 10})
         # number of seconds to wait before killing the container
@@ -456,7 +456,7 @@ class DockerContainerDriver(ContainerDriver):
         Remove a container
 
         :param container: The container to be destroyed
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :return: True if the destroy was successful, False otherwise.
         :rtype: ``bool``
@@ -470,7 +470,7 @@ class DockerContainerDriver(ContainerDriver):
         List processes running inside a container
 
         :param container: The container to list processes for.
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :rtype: ``str``
         """
@@ -484,12 +484,12 @@ class DockerContainerDriver(ContainerDriver):
         Rename a container
 
         :param container: The container to be renamed
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :param name: The new name
         :type  name: ``str``
 
-        :rtype: :class:`.Container`
+        :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request('/containers/%s/rename?name=%s'
                                          % (container.id, name),
@@ -506,7 +506,7 @@ class DockerContainerDriver(ContainerDriver):
         Logs are in different format of those of Version 1.10 and below
 
         :param container: The container to list logs for
-        :type  container: :class:`.Container`
+        :type  container: :class:`libcloud.container.base.Container`
 
         :param stream: Stream the output
         :type  stream: ``bool``
@@ -542,7 +542,7 @@ class DockerContainerDriver(ContainerDriver):
             :param term: The search term
             :type  term: ``str``
 
-            :rtype: ``list`` of :class:`ContainerImage`
+            :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
 
         term = term.replace(' ', '+')
@@ -573,7 +573,7 @@ class DockerContainerDriver(ContainerDriver):
         Remove image from the filesystem
 
         :param  image: The image to remove
-        :type   image: :class:`ContainerImage`
+        :type   image: :class:`libcloud.container.base.ContainerImage`
 
         :rtype: ``bool``
         """

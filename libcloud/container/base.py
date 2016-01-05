@@ -42,7 +42,7 @@ class Container(object):
         :type  name: ``str``
 
         :param image: The image this container was deployed using.
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`.ContainerImage`
 
         :param state: The state of the container, e.g. running
         :type  state: :class:`libcloud.container.types.ContainerState`
@@ -51,7 +51,7 @@ class Container(object):
         :type  ip_addresses: ``list`` of ``str``
 
         :param driver: ContainerDriver instance.
-        :type driver: :class:`ContainerDriver`
+        :type driver: :class:`.ContainerDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -103,7 +103,7 @@ class ContainerImage(object):
         :type  version: ``str``
 
         :param driver: ContainerDriver instance.
-        :type driver: :class:`ContainerDriver`
+        :type driver: :class:`.ContainerDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -141,7 +141,7 @@ class ContainerCluster(object):
         :type  name: ``str``
 
         :param driver: ContainerDriver instance.
-        :type driver: :class:`ContainerDriver`
+        :type driver: :class:`.ContainerDriver`
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
@@ -166,8 +166,8 @@ class ClusterLocation(object):
     """
     A physical location where clusters can be.
 
-    >>> from libcloud.container.drivers.dummy import DummyNodeDriver
-    >>> driver = DummyNodeDriver(0)
+    >>> from libcloud.container.drivers.dummy import DummyContainerDriver
+    >>> driver = DummyContainerDriver(0)
     >>> location = driver.list_locations()[0]
     >>> location.country
     'US'
@@ -185,7 +185,7 @@ class ClusterLocation(object):
         :type country: ``str``
 
         :param driver: Driver this location belongs to.
-        :type driver: :class:`.NodeDriver`
+        :type driver: :class:`.ContainerDriver`
         """
         self.id = str(id)
         self.name = name
@@ -243,7 +243,7 @@ class ContainerDriver(BaseDriver):
         :param path: Path to the container image
         :type  path: ``str``
 
-        :rtype: :class:`ContainerImage`
+        :rtype: :class:`.ContainerImage`
         """
         raise NotImplementedError(
             'install_image not implemented for this driver')
@@ -252,7 +252,7 @@ class ContainerDriver(BaseDriver):
         """
         List the installed container images
 
-        :rtype: ``list`` of :class:`ContainerImage`
+        :rtype: ``list`` of :class:`.ContainerImage`
         """
         raise NotImplementedError(
             'list_images not implemented for this driver')
@@ -262,12 +262,12 @@ class ContainerDriver(BaseDriver):
         List the deployed container images
 
         :param image: Filter to containers with a certain image
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`.ContainerImage`
 
         :param cluster: Filter to containers in a cluster
-        :type  cluster: :class:`ContainerCluster`
+        :type  cluster: :class:`.ContainerCluster`
 
-        :rtype: ``list`` of :class:`Container`
+        :rtype: ``list`` of :class:`.Container`
         """
         raise NotImplementedError(
             'list_containers not implemented for this driver')
@@ -281,10 +281,10 @@ class ContainerDriver(BaseDriver):
         :type  name: ``str``
 
         :param image: The container image to deploy
-        :type  image: :class:`ContainerImage`
+        :type  image: :class:`.ContainerImage`
 
         :param cluster: The cluster to deploy to, None is default
-        :type  cluster: :class:`ContainerCluster`
+        :type  cluster: :class:`.ContainerCluster`
 
         :param parameters: Container Image parameters
         :type  parameters: ``str``
@@ -292,7 +292,7 @@ class ContainerDriver(BaseDriver):
         :param start: Start the container on deployment
         :type  start: ``bool``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'deploy_container not implemented for this driver')
@@ -304,7 +304,7 @@ class ContainerDriver(BaseDriver):
         :param id: The ID of the container to get
         :type  id: ``str``
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'get_container not implemented for this driver')
@@ -314,9 +314,9 @@ class ContainerDriver(BaseDriver):
         Start a deployed container
 
         :param container: The container to start
-        :type  container: :class:`Container`
+        :type  container: :class:`.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'start_container not implemented for this driver')
@@ -326,9 +326,9 @@ class ContainerDriver(BaseDriver):
         Stop a deployed container
 
         :param container: The container to stop
-        :type  container: :class:`Container`
+        :type  container: :class:`.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'stop_container not implemented for this driver')
@@ -338,9 +338,9 @@ class ContainerDriver(BaseDriver):
         Restart a deployed container
 
         :param container: The container to restart
-        :type  container: :class:`Container`
+        :type  container: :class:`.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'restart_container not implemented for this driver')
@@ -350,9 +350,9 @@ class ContainerDriver(BaseDriver):
         Destroy a deployed container
 
         :param container: The container to destroy
-        :type  container: :class:`Container`
+        :type  container: :class:`.Container`
 
-        :rtype: :class:`Container`
+        :rtype: :class:`.Container`
         """
         raise NotImplementedError(
             'destroy_container not implemented for this driver')
@@ -361,7 +361,7 @@ class ContainerDriver(BaseDriver):
         """
         Get a list of potential locations to deploy clusters into
 
-        :rtype: ``list`` of :class:`ClusterLocation`
+        :rtype: ``list`` of :class:`.ClusterLocation`
         """
         raise NotImplementedError(
             'list_locations not implemented for this driver')
@@ -374,9 +374,9 @@ class ContainerDriver(BaseDriver):
         :type   name: ``str``
 
         :param  location: The location to create the cluster in
-        :type   location: :class:`ClusterLocation`
+        :type   location: :class:`.ClusterLocation`
 
-        :rtype: :class:`ContainerCluster`
+        :rtype: :class:`.ContainerCluster`
         """
         raise NotImplementedError(
             'create_cluster not implemented for this driver')
@@ -396,9 +396,9 @@ class ContainerDriver(BaseDriver):
         Get a list of potential locations to deploy clusters into
 
         :param  location: The location to search in
-        :type   location: :class:`ClusterLocation`
+        :type   location: :class:`.ClusterLocation`
 
-        :rtype: ``list`` of :class:`ContainerCluster`
+        :rtype: ``list`` of :class:`.ContainerCluster`
         """
         raise NotImplementedError(
             'list_clusters not implemented for this driver')
