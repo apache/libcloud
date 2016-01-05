@@ -4,6 +4,13 @@ Changelog
 Changes with current version of Apache Libcloud
 -----------------------------------------------
 
+General
+~~~~~~~
+
+- Introduced a Backup API driver
+  (GITHUB-621)
+  [Anthony Shaw]
+
 Compute
 ~~~~~~~
 

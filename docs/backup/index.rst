@@ -3,10 +3,14 @@ Backup
 
 .. note::
 
-    Backup API is available in Libcloud 0.20.0 and higher.
+    Backup API is available in Libcloud 0.21.0 and higher.
+
+.. note::
+
+    This driver is **experimental** - please use to test functionality and develop new driver instances, not for production use.
 
 Backup API allows you to manage Backup as A Service and services such as EBS Snaps,
-Azure VM Backup and others.
+GCE volume snap and dimension data backup.
 
 Terminology
 -----------
