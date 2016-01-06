@@ -9,6 +9,46 @@ Container API allows users to install and deploy containers onto container based
 on-premise installations of software like Docker as well as interfacing with Cloud Service Providers that offer Container-as-a-Service APIs.
 
 
+.. graphviz::
+
+   digraph G {
+        graph [	fontname = "Roboto Slab",
+		fontsize = 18,
+		label = "Using the driver to deploy containers with or without clusters" ];
+        
+        subgraph noncluster {
+            style=filled;
+            color=lightgrey;
+            node [style=filled,color=white];
+            list_images -> install_image -> deploy_container;
+            label = "Non-Cluster Container Driver";
+        }
+    
+        subgraph cluster {
+            node [style=filled];
+            list_locations -> list_clusters -> create_cluster;
+            label = "Cluster supported Container Driver";
+            color=blue
+        }
+        __init__ -> list_images;
+        __init__ -> list_locations;
+        create_cluster -> list_images;
+        deploy_container -> end;
+    
+        __init__ [shape=square];
+        end [shape=squae];
+    }
+ 
+For a working example of the container driver with cluster support, see the example for Amazon's Elastic Container Service:
+
+.. literalinclude:: /examples/container/ecs/deploy_container.py
+   :language: python
+
+For an example of the simple container support, see the Docker example:
+
+.. literalinclude:: /examples/container/docker/deploy_container.py
+   :language: python
+
 Drivers
 -------
 Container-as-a-Service providers will implement the `ContainerDriver` class to provide functionality for :
@@ -40,7 +80,38 @@ clusters may be listed, created and destroyed. When containers are deployed, the
 * :class:`~libcloud.container.base.ContainerCluster` - Represents a deployed container image running on a container host
 * :class:`~libcloud.container.base.ClusterLocation` - Represents a location for clusters to be deployed
 
+Bootstrapping Docker with Compute Drivers
+-----------------------------------------
 
+The compute and container drivers can be combined using the :doc:`deployment </compute/deployment>` feature of the compute driver to bootstrap an installation of a container virtualization provider like Docker.
+Then using the Container driver, you can connect to that API and install images and deploy containers.
+
+.. graphviz::
+
+   digraph G2 {
+
+        subgraph compute {
+            style=filled;
+            color=lightgrey;
+            node [style=filled,color=white];
+            create_node -> deploy_node;
+            label = "Compute API";
+        }
+    
+        subgraph container {
+            node [style=filled];
+            __init__ -> install_image -> deploy_container;
+            label = "Container API";
+            color=blue
+        }
+        start -> create_node;
+        deploy_node -> __init__;
+        deploy_container -> end;
+    
+        start [shape=Mdiamond];
+        end [shape=Msquare];
+    }
+ 
 
 Supported Providers
 -------------------
