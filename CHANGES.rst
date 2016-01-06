@@ -10,6 +10,25 @@ General
 - Introduction of container based drivers for Docker, Rkt and Container-as-a-service
   providers
   (LIBCLOUD-781, GITHUB-666)
+
+- Introduced a Backup API driver
+  (GITHUB-621)
+  [Anthony Shaw]
+
+Compute
+~~~~~~~
+
+- Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
+  (LIBCLOUD-786, GITHUB-665)
+  [Scott Crunkleton]
+
+- Added t2.nano instance type to EC2 Compute driver
+  (GITHUB-663)
+  [Anthony Shaw]
+
+- Support for passing the image ID as a string instead of an instance of image when
+  creating nodes in Dimension Data driver.
+  (GITHUB-664)
   [Anthony Shaw]
 
 Changes with Apache Libcloud 0.20.0

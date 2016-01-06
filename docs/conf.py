@@ -20,11 +20,15 @@ from sphinx.environment import BuildEnvironment
 from sphinx.ext.autodoc import AutoDirective
 from sphinx.ext.autodoc import AutodocReporter
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(BASE_DIR)
+
 # Detect if we are running on read the docs
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'true'
+on_travis = os.environ.get('TRAVIS', '').lower() == 'true'
 
 if on_rtd:
-    cmd = 'sphinx-apidoc -d 3 -o apidocs/ ../libcloud/'
+    cmd = 'sphinx-apidoc -d 4 -o apidocs/ ../libcloud/'
     subprocess.call(cmd, shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -80,7 +84,6 @@ release = '0.14.0-dev'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = [
-    'apidocs/*',  # generated during build (orphans)
     '_build',
     '*/_*.rst'
 ]
