@@ -45,17 +45,15 @@ from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
 
-<<<<<<< HEAD
 from libcloud.container.base import ContainerDriver
 from libcloud.container.providers import get_driver as get_container_driver
 from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
 from libcloud.container.types import Provider as ContainerProvider
-=======
+
 from libcloud.backup.base import BackupDriver
 from libcloud.backup.providers import get_driver as get_backup_driver
 from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
 from libcloud.backup.types import Provider as BackupProvider
->>>>>>> trunk
 
 REQUIRED_DEPENDENCIES = [
     'pysphere'
