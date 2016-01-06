@@ -233,10 +233,10 @@ class OpenStackServiceCatalog(object):
         endpoints = []
 
         for entry in self._entries:
-            if service_type and entry.service_type != service_type:
+            if entry.service_type != service_type:
                 continue
 
-            if name and entry.service_name != name:
+            if entry.service_name != name:
                 continue
 
             for endpoint in entry.endpoints:
@@ -255,17 +255,17 @@ class OpenStackServiceCatalog(object):
         endpoints = []
 
         for entry in self._entries:
-            if service_type and entry.service_type != service_type:
+            if entry.service_type != service_type:
                 continue
 
-            if name and entry.service_name != name:
+            if entry.service_name != name:
                 continue
 
             for endpoint in entry.endpoints:
-                if region and endpoint.region != region:
+                if endpoint.region != region:
                     continue
 
-                if endpoint_type and endpoint.endpoint_type != endpoint_type:
+                if endpoint.endpoint_type != endpoint_type:
                     continue
 
                 endpoints.append(endpoint)
@@ -290,7 +290,7 @@ class OpenStackServiceCatalog(object):
         regions = set()
 
         for entry in self._entries:
-            if service_type and entry.service_type != service_type:
+            if entry.service_type != service_type:
                 continue
 
             for endpoint in entry.endpoints:
@@ -314,7 +314,7 @@ class OpenStackServiceCatalog(object):
             include = True
 
             for endpoint in entry.endpoints:
-                if region and endpoint.region != region:
+                if endpoint.region != region:
                     include = False
                     break
 
@@ -338,12 +338,12 @@ class OpenStackServiceCatalog(object):
             raise ValueError('Unsupported version: %s' % (self._auth_version))
 
         for entry in self._entries:
-            if service_type and entry.service_type != service_type:
+            if entry.service_type != service_type:
                 continue
 
             include = True
             for endpoint in entry.endpoints:
-                if region and endpoint.region != region:
+                if endpoint.region != region:
                     include = False
                     break
 
