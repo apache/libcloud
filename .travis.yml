@@ -25,6 +25,8 @@ matrix:
     - python: 2.7
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
+      before_install:
+        - sudo apt-get -qq install graphviz > /dev/null
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
