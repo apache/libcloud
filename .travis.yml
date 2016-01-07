@@ -26,7 +26,7 @@ matrix:
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
       before_install:
-        - sudo apt-get -qq install graphviz > /dev/null
+        - easy_install graphviz
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
