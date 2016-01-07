@@ -14,13 +14,12 @@
 # limitations under the License.
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.backup import TestCaseMixin
 from libcloud.test.file_fixtures import BackupFileFixtures
 
@@ -35,19 +34,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        try:
+        with self.assertRaises(ValueError):
             self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
-        except ValueError:
-            pass
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        try:
+        with self.assertRaises(InvalidCredsError):
             self.driver.list_targets()
-            self.assertTrue(
-                False)  # Above command should have thrown an InvalidCredsException
-        except InvalidCredsError:
-            pass
 
     def test_list_targets(self):
         targets = self.driver.list_targets()

@@ -19,7 +19,6 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -28,10 +27,9 @@ from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
@@ -43,14 +41,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        self.assertRaises(ValueError,
-                          DimensionData,
-                          *DIMENSIONDATA_PARAMS,
-                          region='blah')
+        with self.assertRaises(ValueError):
+            DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        self.assertRaises(InvalidCredsError, self.driver.list_nodes)
+        with self.assertRaises(InvalidCredsError):
+            self.driver.list_nodes()
 
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
@@ -83,7 +80,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        self.assertRaises(DimensionDataAPIException, node.reboot)
+        with self.assertRaises(DimensionDataAPIException):
+            node.reboot()
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
@@ -95,7 +93,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        self.assertRaises(DimensionDataAPIException, node.destroy)
+        with self.assertRaises(DimensionDataAPIException):
+            node.destroy()
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -148,15 +147,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        self.assertRaises(
-            ValueError,
-            self.driver.create_node,
-            name='test2',
-            image=image,
-            auth=rootPw,
-            ex_description='test2 node',
-            ex_network=None,
-            ex_isStarted=False)
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network=None,
+                                    ex_isStarted=False)
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -168,9 +165,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        self.assertRaises(DimensionDataAPIException,
-                          self.driver.ex_shutdown_graceful,
-                          node)
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_shutdown_graceful(node)
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
@@ -182,9 +178,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        self.assertRaises(DimensionDataAPIException,
-                          self.driver.ex_start_node,
-                          node)
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_start_node(node)
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
@@ -202,9 +197,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        self.assertRaises(DimensionDataAPIException,
-                          self.driver.ex_power_off,
-                          node)
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_power_off(node)
 
     def test_ex_reset(self):
         node = Node(id='11', name=None, state=None,
