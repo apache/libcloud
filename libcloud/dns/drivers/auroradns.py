@@ -38,7 +38,7 @@ API_HOST = 'api.auroradns.eu'
 DEFAULT_ZONE_TTL = 3600
 DEFAULT_ZONE_TYPE = 'master'
 
-VALID_RECORD_PARAMS_EXTRA = ['ttl' 'prio', 'health_check_id', 'disabled']
+VALID_RECORD_PARAMS_EXTRA = ['ttl', 'prio', 'health_check_id', 'disabled']
 
 
 class AuroraDNSResponse(JsonResponse):
