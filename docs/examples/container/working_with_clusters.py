@@ -5,7 +5,7 @@ from libcloud.container.providers import get_driver
 cls = get_driver(Provider.ECS)
 
 conn = cls(access_id='SDHFISJDIFJSIDFJ',
-           secret='p07jkijhHjb6sdf82yjhunvBtzGwt+I6TVkv68o4H',
+           secret='THIS_IS)+_MY_SECRET_KEY+I6TVkv68o4H',
            region='ap-southeast-2')
 
 for cluster in conn.list_clusters():
