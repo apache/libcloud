@@ -8,10 +8,8 @@ python:
     - 3.4
     - 3.5
     - "pypy"
-sudo: false
 os:
   - linux
-  - osx
 env:
 
 matrix:
@@ -26,7 +24,8 @@ matrix:
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
       before_install:
-        - easy_install graphviz
+        - sudo apt-get update -qq
+        - sudo apt-get install -y graphviz
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
