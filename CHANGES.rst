@@ -7,7 +7,8 @@ Changes with current version of Apache Libcloud
 General
 ~~~~~~~
 
-- Introduced a Backup API driver
+- Introduce a new ``libcloud.backup`` API for Backup as a Service projects and
+  products.
   (GITHUB-621)
   [Anthony Shaw]
 
@@ -26,6 +27,14 @@ Compute
   creating nodes in Dimension Data driver.
   (GITHUB-664)
   [Anthony Shaw]
+
+DNS
+~~~
+
+- Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
+  ``extra`` dictionary.
+  (GITHUB-675)
+  [Wido den Hollander]
 
 Changes with Apache Libcloud 0.20.0
 -----------------------------------
