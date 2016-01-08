@@ -1,0 +1,12 @@
+{
+  "id": "5592f1ff",
+  "content": "127.0.0.1",
+  "disabled": false,
+  "health_check_id": null,
+  "name": "localhost",
+  "prio": null,
+  "ttl": 900,
+  "type": "A",
+  "created": "2015-08-07T13:56:51Z",
+  "modified": "2015-08-07T14:11:40Z"
+}
