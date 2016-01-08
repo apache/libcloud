@@ -140,6 +140,7 @@ class AuroraDNSDriver(DNSDriver):
         return zones
 
     def list_records(self, zone):
+        self.connection.set_context({'resource': 'zone', 'id': zone.id})
         records = []
         res = self.connection.request('/zones/%s/records' % zone.id)
 
@@ -192,13 +193,16 @@ class AuroraDNSDriver(DNSDriver):
         return self.__res_to_record(zone, record)
 
     def delete_zone(self, zone):
+        self.connection.set_context({'resource': 'zone', 'id': zone.id})
         self.connection.request('/zones/%s' % zone.id, method='DELETE')
+        return True
 
     def delete_record(self, record):
         self.connection.set_context({'resource': 'record', 'id': record.id})
         self.connection.request('/zones/%s/records/%s' % (record.zone.id,
                                                           record.id),
                                 method='DELETE')
+        return True
 
     def update_record(self, record, name, type, data, extra):
         rdata = {}
