@@ -19,6 +19,15 @@ similar to the one below:
 
 ``No CA Certificates were found in CA_CERTS_PATH.``
 
+Windows Users
+-------------
+
+The CA loading system does not load the Windows Certificate store, since this is not a directory.
+Windows users should download the following file and place in a directory like %APPDATA%\libcloud or somewhere easily accessible.
+https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
+
+Then configure this file using one of the 2 methods in `Using a custom CA certificate`_
+
 Acquiring CA Certificates
 -------------------------
 
