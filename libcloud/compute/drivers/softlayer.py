@@ -308,7 +308,7 @@ class SoftLayerNodeDriver(NodeDriver):
         if kwargs.get('ex_local_disk') is False:
             local_disk = 'false'
 
-        post_uri=''
+        post_uri = ''
         if kwargs.get('post_uri'):
             post_uri = kwargs.get('post_uri')
 
