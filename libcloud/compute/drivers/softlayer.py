@@ -342,7 +342,7 @@ class SoftLayerNodeDriver(NodeDriver):
             'hourlyBillingFlag': hourly,
             'operatingSystemReferenceCode': os,
             'localDiskFlag': local_disk,
-            'postInstallScriptUri':post_uri,
+            'postInstallScriptUri': post_uri,
             'blockDevices': [
                 {
                     'device': '0',
