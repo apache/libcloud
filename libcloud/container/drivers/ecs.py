@@ -28,23 +28,36 @@ __all__ = [
 ]
 
 
-VERSION = '2014-11-13'
-HOST = 'ecs.%s.amazonaws.com'
+ECS_VERSION = '2014-11-13'
+ECR_VERSION = '2015-09-21'
+ECS_HOST = 'ecs.%s.amazonaws.com'
+ECR_HOST = 'ecr.%s.amazonaws.com'
 ROOT = '/'
-TARGET_BASE = 'AmazonEC2ContainerServiceV%s' % (VERSION.replace('-', ''))
+ECS_TARGET_BASE = 'AmazonEC2ContainerServiceV%s' % \
+                  (ECS_VERSION.replace('-', ''))
+ECR_TARGET_BASE = 'AmazonEC2ContainerRegistry_V%s' % \
+                  (ECR_VERSION.replace('-', ''))
 
 
 class ECSJsonConnection(SignedAWSConnection):
-    version = VERSION
-    host = HOST
+    version = ECS_VERSION
+    host = ECS_HOST
     responseCls = AWSJsonResponse
     service_name = 'ecs'
+
+
+class ECRJsonConnection(SignedAWSConnection):
+    version = ECR_VERSION
+    host = ECR_HOST
+    responseCls = AWSJsonResponse
+    service_name = 'ecr'
 
 
 class ElasticContainerDriver(ContainerDriver):
     name = 'Amazon Elastic Container Service'
     website = 'https://aws.amazon.com/ecs/details/'
     connectionCls = ECSJsonConnection
+    ecrConnectionClass = ECRJsonConnection
     supports_clusters = False
     status_map = {
         'RUNNING': ContainerState.RUNNING
@@ -54,10 +67,38 @@ class ElasticContainerDriver(ContainerDriver):
         super(ElasticContainerDriver, self).__init__(access_id, secret)
         self.region = region
         self.region_name = region
-        self.connection.host = HOST % (region)
+        self.connection.host = ECS_HOST % (region)
+
+        # Setup another connection class for ECR
+        conn_kwargs = self._ex_connection_class_kwargs()
+        self.ecr_connection = self.ecrConnectionClass(
+            access_id, secret, **conn_kwargs)
+        self.ecr_connection.host = ECR_HOST % (region)
+        self.ecr_connection.driver = self
+        self.ecr_connection.connect()
 
     def _ex_connection_class_kwargs(self):
         return {'signature_version': '4'}
+
+    def list_images(self, ex_repository_name=None):
+        """
+        List the images in an ECR repository
+
+        :param  ex_repository_name: The name of the repository to check
+            defaults to the default repository.
+        :type   ex_repository_name: ``str``
+
+        :return: a list of images
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
+        """
+        request = {'repositoryName': 'default'}
+        list_response = self.ecr_connection.request(
+            ROOT,
+            method='POST',
+            data=json.dumps(request),
+            headers=self._get_ecr_headers('ListImages')
+        ).object
+        return self._to_images(list_response)
 
     def list_clusters(self):
         """
@@ -143,6 +184,8 @@ class ElasticContainerDriver(ContainerDriver):
             data=json.dumps(request),
             headers=self._get_headers('ListTasks')
         ).object
+        if len(list_response['taskArns']) == 0:
+            return []
         containers = self.ex_list_containers_for_task(
             list_response['taskArns'])
         return containers
@@ -441,9 +484,24 @@ class ElasticContainerDriver(ContainerDriver):
 
     def _get_headers(self, action):
         return {'x-amz-target': '%s.%s' %
-                (TARGET_BASE, action),
+                (ECS_TARGET_BASE, action),
                 'Content-Type': 'application/x-amz-json-1.1'
                 }
+
+    def _get_ecr_headers(self, action):
+        return {'x-amz-target': '%s.%s' %
+                (ECR_TARGET_BASE, action),
+                'Content-Type': 'application/x-amz-json-1.1'
+                }
+
+    def ex_docker_hub_image(self, name):
+        return ContainerImage(
+            id=None,
+            name=name,
+            path=None,
+            version=None,
+            driver=self.connection.driver
+        )
 
     def _to_clusters(self, data):
         clusters = []
@@ -481,5 +539,20 @@ class ElasticContainerDriver(ContainerDriver):
                 'taskArn': data['taskArn'],
                 'taskDefinitionArn': task_definition_arn
             },
+            driver=self.connection.driver
+        )
+
+    def _to_images(self, data):
+        images = []
+        for image in data['images']:
+            images.append(self._to_image(image))
+        return images
+
+    def _to_image(self, data):
+        return ContainerImage(
+            id=None,
+            name=data['name'],
+            path=None,
+            version=None,
             driver=self.connection.driver
         )
