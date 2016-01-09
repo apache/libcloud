@@ -278,7 +278,7 @@ class SoftLayerNodeDriver(NodeDriver):
         :type       ex_os: ``str``
         :keyword    ex_keyname: The name of the key pair
         :type       ex_keyname: ``str``
-        :keyword    post_uri: The URI of the post-install script to run after reload
+        :keyword    post_uri: Post-install script to run after reload
         :type       post_uri:``str``
         """
         name = kwargs['name']
