@@ -12,6 +12,11 @@ General
   (GITHUB-621)
   [Anthony Shaw]
 
+- Also retry failed HTTP(s) requests upon transient "read operation timed out"
+  SSL error.
+  (GITHUB-556)
+  [Scott Kruger]
+
 Compute
 ~~~~~~~
 
