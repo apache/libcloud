@@ -133,21 +133,42 @@ class BackblazeB2Connection(ConnectionUserAndKey):
     def __init__(self, *args, **kwargs):
         super(BackblazeB2Connection, self).__init__(*args, **kwargs)
 
-        # Stores info retrieved after authnetication (auth token, api url,
+        # Stores info retrieved after authentication (auth token, api url,
         # dowload url).
         self._auth_conn = BackblazeB2AuthConnection(*args, **kwargs)
 
-    def download_request(self):
-        # TODO
-        pass
+    def download_request(self, action, params=None):
+        # Lazily perform authentication
+        auth_conn = self._auth_conn.authenticate()
 
-    def upload_request(self):
-        # TODO
-        pass
+        # Set host to the download server
+        self.host = auth_conn.download_host
+
+        action = '/file/' + action
+        method = 'GET'
+        raw = True
+        response = self._request(auth_conn=auth_conn, action=action,
+                                 params=params, method=method,
+                                 raw=raw)
+        return response
+
+    def upload_request(self, action, headers, upload_host, auth_token, data):
+        # Lazily perform authentication
+        auth_conn = self._auth_conn.authenticate()
+
+        # Upload host is dynamically retrieved for each upload request
+        self.host = upload_host
+
+        method = 'POST'
+        raw = True
+        response = self._request(auth_conn=auth_conn, action=action,
+                                 params=None, data=data,
+                                 headers=headers, method=method,
+                                 raw=raw, auth_token=auth_token)
+        return response
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, include_account_id=False,
-                download_request=False, upload_host=None, auth_token=None):
+                method='GET', raw=False, include_account_id=False):
         params = params or {}
         headers = headers or {}
 
@@ -155,26 +176,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         auth_conn = self._auth_conn.authenticate()
 
         # Set host
-        if raw:
-            # TODO: Refactor this mess.
-            # File download or upload request:
-            if method == 'GET':
-                # Download
-                self.host = auth_conn.download_host
-            elif method == 'POST':
-                self.host = upload_host
-        else:
-            self.host = auth_conn.api_host
-
-        if upload_host:
-            self.host = upload_host
-
-        # Provide auth token
-        # TODO: Refactor
-        if not auth_token:
-            auth_token = auth_conn.auth_token
-
-        headers['Authorization'] = '%s' % (auth_token)
+        self.host = auth_conn.api_host
 
         # Include Content-Type
         if not raw and data:
@@ -188,15 +190,26 @@ class BackblazeB2Connection(ConnectionUserAndKey):
                 data = data or {}
                 data['accountId'] = auth_conn.account_id
 
-        if not raw and not upload_host:
-            action = API_PATH + action
-        elif method == 'GET':
-            # Download
-            action = '/file/' + action
-
-        if data and not upload_host:
+        action = API_PATH + action
+        if data:
             data = json.dumps(data)
 
+        response = self._request(auth_conn=self._auth_conn, action=action,
+                                 params=params, data=data,
+                                 method=method, headers=headers, raw=raw)
+        return response
+
+    def _request(self, auth_conn, action, params=None, data=None, headers=None,
+                 method='GET', raw=False, auth_token=None):
+        params = params or {}
+        headers = headers or {}
+
+        if not auth_token:
+            # If auth token is not explicitly provided, use the default one
+            auth_token = self._auth_conn.auth_token
+
+        # Include auth token
+        headers['Authorization'] = '%s' % (auth_token)
         response = super(BackblazeB2Connection, self).request(action=action,
                                                               params=params,
                                                               data=data,
@@ -252,8 +265,7 @@ class BackblazeB2StorageDriver(StorageDriver):
                         delete_on_failure=True):
         action = self._get_object_download_path(container=obj.container,
                                                 obj=obj)
-        response = self.connection.request(action=action, method='GET',
-                                           raw=True)
+        response = self.connection.download_request(action=action)
 
         # TODO: Include metadata from response headers
         return self._get_object(obj=obj, callback=self._save_object,
@@ -270,8 +282,7 @@ class BackblazeB2StorageDriver(StorageDriver):
     def download_object_as_stream(self, obj, chunk_size=None):
         action = self._get_object_download_path(container=obj.container,
                                                 obj=obj)
-        response = self.connection.request(action=action, method='GET',
-                                           raw=True)
+        response = self.connection.download_request(action=action)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
@@ -289,10 +300,10 @@ class BackblazeB2StorageDriver(StorageDriver):
         # Note: We don't use any of the base driver functions since Backblaze
         # API requires you to provide SHA1 has upfront and the base methods
         # don't support that
-        fh = open(file_path, 'rb')
-        iterator = iter(fh)
-        iterator = read_in_chunks(iterator=iterator)
-        data = exhaust_iterator(iterator=iterator)
+        with open(file_path, 'rb') as fp:
+            iterator = iter(fp)
+            iterator = read_in_chunks(iterator=iterator)
+            data = exhaust_iterator(iterator=iterator)
 
         extra = extra or {}
         content_type = extra.get('content_type', 'b2/x-auto')
@@ -313,24 +324,25 @@ class BackblazeB2StorageDriver(StorageDriver):
             # TODO: Encode / escape key
             headers['X-Bz-Info-%s' % (key)] = value
 
-        upload_data = self.ex_get_upload_data(container_id=container.extra['id'])
+        upload_data = self.ex_get_upload_data(
+            container_id=container.extra['id'])
         upload_token = upload_data['authorizationToken']
         parsed_url = urlparse.urlparse(upload_data['uploadUrl'])
 
         upload_host = parsed_url.netloc
         request_path = parsed_url.path
 
-        response = self.connection.request(action=request_path, method='POST',
-                                           headers=headers,
-                                           upload_host=upload_host,
-                                           auth_token=upload_token,
-                                           data=data)
+        response = self.connection.upload_request(action=request_path,
+                                                  headers=headers,
+                                                  upload_host=upload_host,
+                                                  auth_token=upload_token,
+                                                  data=data)
 
         if response.status == httplib.OK:
             obj = self._to_object(item=response.object, container=container)
             return obj
         else:
-            body = response.read()
+            body = response.response.read()
             raise LibcloudError('Upload failed. status_code=%s, body=%s' %
                                 (response.status, body), driver=self)
 
