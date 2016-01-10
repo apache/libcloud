@@ -51,9 +51,10 @@ class TransientSSLError(ssl.SSLError):
     pass
 
 
-DEFAULT_TIMEOUT = 30
-DEFAULT_DELAY = 1
-DEFAULT_BACKOFF = 1
+# Constants used by the ``retry`` decorator
+DEFAULT_TIMEOUT = 30  # default retry timeout
+DEFAULT_DELAY = 1  # default sleep delay used in each iterator
+DEFAULT_BACKOFF = 1  # retry backup multiplier
 RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
                     httplib.NotConnected, httplib.ImproperConnectionState,
                     TransientSSLError)
