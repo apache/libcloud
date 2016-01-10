@@ -12,35 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import wraps
 
 import os
 import sys
 import binascii
-from libcloud.utils.py3 import httplib
-
 import socket
-from datetime import datetime, timedelta
 import time
 import ssl
+from datetime import datetime, timedelta
+from functools import wraps
 
+from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
-
-
-TRANSIENT_SSL_ERROR = 'The read operation timed out'
-
-
-class TransientSSLError(ssl.SSLError):
-    """Represent transient SSL errors, e.g. timeouts"""
-    pass
-
-
-DEFAULT_TIMEOUT = 30
-DEFAULT_DELAY = 1
-DEFAULT_BACKOFF = 1
-RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
-                    httplib.NotConnected, httplib.ImproperConnectionState,
-                    TransientSSLError)
 
 __all__ = [
     'find',
@@ -57,6 +40,23 @@ __all__ = [
 
     'ReprMixin'
 ]
+
+# Error message which indicates a transient SSL error upon which request
+# can be retried
+TRANSIENT_SSL_ERROR = 'The read operation timed out'
+
+
+class TransientSSLError(ssl.SSLError):
+    """Represent transient SSL errors, e.g. timeouts"""
+    pass
+
+
+DEFAULT_TIMEOUT = 30
+DEFAULT_DELAY = 1
+DEFAULT_BACKOFF = 1
+RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
+                    httplib.NotConnected, httplib.ImproperConnectionState,
+                    TransientSSLError)
 
 
 def find(l, predicate):
@@ -309,8 +309,8 @@ class ReprMixin(object):
         return str(self.__repr__())
 
 
-def retry(retry_exceptions=None, retry_delay=None, timeout=None,
-          backoff=None):
+def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
+          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
     """
     Retry decorator that helps to handle common transient exceptions.
 
