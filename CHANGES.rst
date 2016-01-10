@@ -14,7 +14,7 @@ General
 
 - Also retry failed HTTP(s) requests upon transient "read operation timed out"
   SSL error.
-  (GITHUB-556)
+  (GITHUB-556, LIBCLOUD-728)
   [Scott Kruger]
 
 Compute
