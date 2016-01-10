@@ -129,3 +129,9 @@ API Reference
 
 For a full reference of all the classes and methods exposed by the Container
 API, see :doc:`this page </container/api>`.
+
+Utility Classes
+---------------
+
+There are some utility classes for example, a Docker Hub API client for fetching images
+and iterating through repositories see :doc:`this page </container/utilities>`.
