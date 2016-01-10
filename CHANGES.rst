@@ -10,10 +10,17 @@ General
 - Introduction of container based drivers for Docker, Rkt and Container-as-a-service
   providers
   (LIBCLOUD-781, GITHUB-666)
+  [Anthony Shaw]
 
-- Introduced a Backup API driver
+- Introduce a new ``libcloud.backup`` API for Backup as a Service projects and
+  products.
   (GITHUB-621)
   [Anthony Shaw]
+
+- Also retry failed HTTP(s) requests upon transient "read operation timed out"
+  SSL error.
+  (GITHUB-556, LIBCLOUD-728)
+  [Scott Kruger]
 
 Compute
 ~~~~~~~
@@ -30,6 +37,14 @@ Compute
   creating nodes in Dimension Data driver.
   (GITHUB-664)
   [Anthony Shaw]
+
+DNS
+~~~
+
+- Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
+  ``extra`` dictionary.
+  (GITHUB-675)
+  [Wido den Hollander]
 
 Changes with Apache Libcloud 0.20.0
 -------------------------------------------

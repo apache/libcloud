@@ -19,7 +19,6 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -28,10 +27,9 @@ from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
@@ -43,19 +41,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        try:
-            self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        try:
+        with self.assertRaises(InvalidCredsError):
             self.driver.list_nodes()
-            self.assertTrue(
-                False)  # Above command should have thrown an InvalidCredsException
-        except InvalidCredsError:
-            pass
 
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
@@ -88,12 +80,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.reboot()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
@@ -105,12 +93,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.destroy()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -163,12 +147,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        try:
-            self.driver.create_node(name='test2', image=image, auth=rootPw,
-                                    ex_description='test2 node', ex_network=None,
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network=None,
                                     ex_isStarted=False)
-        except ValueError:
-            pass
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -180,12 +165,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_shutdown_graceful(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
@@ -197,12 +178,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_start_node(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
@@ -220,12 +197,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_power_off(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_reset(self):
         node = Node(id='11', name=None, state=None,
@@ -237,7 +210,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         ret = self.driver.ex_attach_node_to_vlan(node, vlan)
-        self.assertTrue(ret)
+        self.assertTrue(ret is True)
 
     def test_ex_destroy_nic(self):
         node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
