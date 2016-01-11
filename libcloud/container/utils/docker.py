@@ -63,7 +63,10 @@ class RegistryClient(object):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        self.connection = DockerHubConnection(host, username, password, **kwargs)
+        self.connection = DockerHubConnection(host,
+                                              username,
+                                              password,
+                                              **kwargs)
 
     def list_images(self, repository_name, namespace='library', max_count=100):
         """
@@ -161,4 +164,5 @@ class HubClient(RegistryClient):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        self.connection = DockerHubConnection(self.host, username, password, **kwargs)
+        self.connection = DockerHubConnection(self.host, username,
+                                              password, **kwargs)

@@ -1,0 +1,9 @@
+{
+  "authorizationData": [
+    {
+      "authorizationToken": "QVdTOkNpQzErSHF1ZXZPcUR...",
+      "expiresAt": 1448878779.809,
+      "proxyEndpoint": "https://012345678910.dkr.ecr.us-east-1.amazonaws.com"
+    }
+  ]
+}

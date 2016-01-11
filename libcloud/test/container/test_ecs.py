@@ -19,6 +19,7 @@ from libcloud.test import unittest
 
 from libcloud.container.base import ContainerCluster, ContainerImage, Container
 from libcloud.container.drivers.ecs import ElasticContainerDriver
+from libcloud.container.utils.docker import RegistryClient
 
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import CONTAINER_PARAMS_ECS
@@ -136,6 +137,37 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
         )
         self.assertFalse(container is None)
 
+    def test_list_images(self):
+        images = self.driver.list_images('my-images')
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0].name, '647433528374.dkr.ecr.region.amazonaws.com/my-images:latest')
+
+    def test_ex_create_service(self):
+        cluster = self.driver.list_clusters()[0]
+        task_definition = self.driver.list_containers()[0].extra['taskDefinitionArn']
+        service = self.driver.ex_create_service(cluster=cluster,
+                                                name='jim',
+                                                task_definition=task_definition)
+        self.assertEqual(service['serviceName'], 'test')
+
+    def test_ex_list_service_arns(self):
+        arns = self.driver.ex_list_service_arns()
+        self.assertEqual(len(arns), 2)
+
+    def test_ex_describe_service(self):
+        arn = self.driver.ex_list_service_arns()[0]
+        service = self.driver.ex_describe_service(arn)
+        self.assertEqual(service['serviceName'], 'test')
+
+    def test_ex_destroy_service(self):
+        arn = self.driver.ex_list_service_arns()[0]
+        service = self.driver.ex_destroy_service(arn)
+        self.assertEqual(service['status'], 'DRAINING')
+
+    def test_ex_get_registry_client(self):
+        client = self.driver.ex_get_registry_client('my-images')
+        self.assertIsInstance(client, RegistryClient)
+
 
 class ECSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('ecs')
@@ -148,7 +180,14 @@ class ECSMockHttp(MockHttp):
         'ListClusters': 'listclusters.json',
         'RegisterTaskDefinition': 'registertaskdefinition.json',
         'RunTask': 'runtask.json',
-        'StopTask': 'stoptask.json'
+        'StopTask': 'stoptask.json',
+        'ListImages': 'listimages.json',
+        'DescribeRepositories': 'describerepositories.json',
+        'CreateService': 'createservice.json',
+        'ListServices': 'listservices.json',
+        'DescribeServices': 'describeservices.json',
+        'DeleteService': 'deleteservice.json',
+        'GetAuthorizationToken': 'getauthorizationtoken.json'
     }
 
     def root(

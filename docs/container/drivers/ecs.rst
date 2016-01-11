@@ -34,6 +34,19 @@ You can use this class for fetching images to deploy to services like ECS
 .. literalinclude:: /examples/container/docker_hub.py
    :language: python
 
+Deploying a container from Amazon Elastic Container Registry (ECR)
+------------------------------------------------------------------
+
+Amazon ECR is a combination of the Docker Registry V2 API and a proprietary API. The ECS driver includes methods for talking to both APIs.
+
+Docker Registry API Client :class:`~libcloud.container.utils.docker.RegistryClient` is a shared utility class for interfacing to the public Docker Hub Service.
+
+You can use a factory method to generate an instance of RegsitryClient from the ECS driver. This will request a 12 hour token from the Amazon API and instantiate a :class:`~libcloud.container.utils.docker.RegistryClient`
+object with those credentials.
+
+.. literalinclude:: /examples/container/container_registry.py
+   :language: python
+
 API Docs
 --------
 

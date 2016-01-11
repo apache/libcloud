@@ -21,6 +21,7 @@ except ImportError:
 from libcloud.container.base import (ContainerDriver, Container,
                                      ContainerCluster, ContainerImage)
 from libcloud.container.types import ContainerState
+from libcloud.container.utils.docker import RegistryClient
 from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
 
 __all__ = [
@@ -56,6 +57,7 @@ class ECRJsonConnection(SignedAWSConnection):
 class ElasticContainerDriver(ContainerDriver):
     name = 'Amazon Elastic Container Service'
     website = 'https://aws.amazon.com/ecs/details/'
+    ecr_repository_host = '%s.dkr.ecr.%s.amazonaws.com'
     connectionCls = ECSJsonConnection
     ecrConnectionClass = ECRJsonConnection
     supports_clusters = False
@@ -80,7 +82,7 @@ class ElasticContainerDriver(ContainerDriver):
     def _ex_connection_class_kwargs(self):
         return {'signature_version': '4'}
 
-    def list_images(self, ex_repository_name=None):
+    def list_images(self, ex_repository_name):
         """
         List the images in an ECR repository
 
@@ -91,14 +93,19 @@ class ElasticContainerDriver(ContainerDriver):
         :return: a list of images
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
-        request = {'repositoryName': 'default'}
+        request = {}
+        request['repositoryName'] = ex_repository_name
         list_response = self.ecr_connection.request(
             ROOT,
             method='POST',
             data=json.dumps(request),
             headers=self._get_ecr_headers('ListImages')
         ).object
-        return self._to_images(list_response)
+        repository_id = self.ex_get_repository_id(ex_repository_name)
+        host = self._get_ecr_host(repository_id)
+        return self._to_images(list_response['imageIds'],
+                               host,
+                               ex_repository_name)
 
     def list_clusters(self):
         """
@@ -415,7 +422,7 @@ class ElasticContainerDriver(ContainerDriver):
             data=json.dumps(request),
             headers=self._get_headers('CreateService')
         ).object
-        return response
+        return response['service']
 
     def ex_list_service_arns(self, cluster=None):
         """
@@ -437,7 +444,7 @@ class ElasticContainerDriver(ContainerDriver):
         ).object
         return response['serviceArns']
 
-    def ex_describe_service(self, cluster, service_arn):
+    def ex_describe_service(self, service_arn):
         """
         Get the details of a service
 
@@ -451,8 +458,6 @@ class ElasticContainerDriver(ContainerDriver):
         :rtype: ``object``
         """
         request = {'services': [service_arn]}
-        if cluster is not None:
-            request['cluster'] = cluster.id
         response = self.connection.request(
             ROOT,
             method='POST',
@@ -461,7 +466,7 @@ class ElasticContainerDriver(ContainerDriver):
         ).object
         return response['services'][0]
 
-    def ex_destroy_service(self, cluster, service_arn):
+    def ex_destroy_service(self, service_arn):
         """
         Deletes a service
 
@@ -472,36 +477,95 @@ class ElasticContainerDriver(ContainerDriver):
         :type   service_arn: ``str``
         """
         request = {
-            'service': service_arn,
-            'cluster': cluster.id}
+            'service': service_arn}
         response = self.connection.request(
             ROOT,
             method='POST',
             data=json.dumps(request),
             headers=self._get_headers('DeleteService')
         ).object
-        return response
+        return response['service']
+
+    def ex_get_registry_client(self, repository_name):
+        """
+        Get a client for an ECR repository
+
+        :param  repository_name: The unique name of the repository
+        :type   repository_name: ``str``
+
+        :return: a docker registry API client
+        :rtype: :class:`libcloud.container.utils.docker.RegistryClient`
+        """
+        repository_id = self.ex_get_repository_id(repository_name)
+        token = self.ex_get_repository_token(repository_id)
+        host = self._get_ecr_host(repository_id)
+        return RegistryClient(
+            host=host,
+            username='AWS',
+            password=token
+        )
+
+    def ex_get_repository_token(self, repository_id):
+        """
+        Get the authorization token (12 hour expiry) for a repository
+
+        :param  repository_id: The ID of the repository
+        :type   repository_id: ``str``
+
+        :return: A token for login
+        :rtype: ``str``
+        """
+        request = {'RegistryIds': [repository_id]}
+        response = self.ecr_connection.request(
+            ROOT,
+            method='POST',
+            data=json.dumps(request),
+            headers=self._get_ecr_headers('GetAuthorizationToken')
+        ).object
+        return response['authorizationData'][0]['authorizationToken']
+
+    def ex_get_repository_id(self, repository_name):
+        """
+        Get the ID of a repository
+
+        :param  repository_name: The unique name of the repository
+        :type   repository_name: ``str``
+
+        :return: The repository ID
+        :rtype: ``str``
+        """
+        request = {'repositoryNames': [repository_name]}
+        list_response = self.ecr_connection.request(
+            ROOT,
+            method='POST',
+            data=json.dumps(request),
+            headers=self._get_ecr_headers('DescribeRepositories')
+        ).object
+        repository_id = list_response['repositories'][0]['registryId']
+        return repository_id
+
+    def _get_ecr_host(self, repository_id):
+        return self.ecr_repository_host % (
+            repository_id,
+            self.region)
 
     def _get_headers(self, action):
+        """
+        Get the default headers for a request to the ECS API
+        """
         return {'x-amz-target': '%s.%s' %
                 (ECS_TARGET_BASE, action),
                 'Content-Type': 'application/x-amz-json-1.1'
                 }
 
     def _get_ecr_headers(self, action):
+        """
+        Get the default headers for a request to the ECR API
+        """
         return {'x-amz-target': '%s.%s' %
                 (ECR_TARGET_BASE, action),
                 'Content-Type': 'application/x-amz-json-1.1'
                 }
-
-    def ex_docker_hub_image(self, name):
-        return ContainerImage(
-            id=None,
-            name=name,
-            path=None,
-            version=None,
-            driver=self.connection.driver
-        )
 
     def _to_clusters(self, data):
         clusters = []
@@ -542,17 +606,22 @@ class ElasticContainerDriver(ContainerDriver):
             driver=self.connection.driver
         )
 
-    def _to_images(self, data):
+    def _to_images(self, data, host, repository_name):
         images = []
-        for image in data['images']:
-            images.append(self._to_image(image))
+        for image in data:
+            images.append(self._to_image(image, host, repository_name))
         return images
 
-    def _to_image(self, data):
+    def _to_image(self, data, host, repository_name):
+        path = '%s/%s:%s' % (
+            host,
+            repository_name,
+            data['imageTag']
+        )
         return ContainerImage(
             id=None,
-            name=data['name'],
-            path=None,
-            version=None,
+            name=path,
+            path=path,
+            version=data['imageTag'],
             driver=self.connection.driver
         )
