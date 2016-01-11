@@ -123,8 +123,8 @@ class ContainerImage(object):
                                             **kwargs)
 
     def __repr__(self):
-        return ('<ContainerImage: id=%s, name=%s, provider=%s ...>' %
-                (self.id, self.name, self.driver.name))
+        return ('<ContainerImage: id=%s, name=%s, path=%s ...>' %
+                (self.id, self.name, self.path))
 
 
 class ContainerCluster(object):

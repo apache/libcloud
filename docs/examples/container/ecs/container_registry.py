@@ -19,7 +19,7 @@ for image in client.list_images('my-image'):
 image = client.get_image('my-image', '14.04')
 
 print(image.path)
-# >> 647433528374.dkr.ecr.region.amazonaws.com/my-images:14.04
+# >> 647433528374.dkr.ecr.region.amazonaws.com/my-image:14.04
 
 # Deploy that image
 cluster = conn.list_clusters()[0]
