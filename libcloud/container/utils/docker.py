@@ -15,26 +15,45 @@
 
 from __future__ import with_statement
 
-from requests.auth import HTTPBasicAuth
-import requests
+from base64 import b64encode
 
+from libcloud.common.base import Connection, JsonResponse
 from libcloud.container.base import ContainerImage
 
 __all__ = [
+    'RegistryClient',
     'HubClient'
 ]
 
 
-class HubClient(object):
-    """
-    A client for the Docker Hub API
+class DockerHubConnection(Connection):
+    responseCls = JsonResponse
 
-    The hub is based on the v1 registry API
-    """
-    host = 'registry.hub.docker.com'
-    base_url = 'https://%s/' % (host)
+    def __init__(self, host, username=None, password=None, **kwargs):
+        super(DockerHubConnection, self).__init__(host=host, **kwargs)
+        self.username = username
+        self.password = password
 
-    def __init__(self, username=None, password=None):
+    def add_default_headers(self, headers):
+        if self.username is not None:
+            authstr = 'Basic ' + str(
+                b64encode(
+                    ('%s:%s' % (self.username,
+                                self.password))
+                    .encode('latin1'))
+                .strip()
+            )
+            headers['Authorization'] = authstr
+        return headers
+
+
+class RegistryClient(object):
+    """
+    A client for the Docker v2 registry API
+    """
+    connectionCls = DockerHubConnection
+
+    def __init__(self, host, username=None, password=None, **kwargs):
         """
         Construct a Docker hub client
 
@@ -44,12 +63,9 @@ class HubClient(object):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        if username is not None:
-            self.auth = HTTPBasicAuth(username, password)
-        else:
-            self.auth = None
+        self.connection = DockerHubConnection(host, username, password, **kwargs)
 
-    def list_tags(self, repository_name, namespace='library', max_count=100):
+    def list_images(self, repository_name, namespace='library', max_count=100):
         """
         List the tags (versions) in a repository
 
@@ -62,30 +78,16 @@ class HubClient(object):
         :param  max_count: The maximum number of records to return
         :type   max_count: ``int``
 
-        :return: A list of tags
-        :rtype: ``list`` of ``object``
+        :return: A list of images
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
         path = 'v2/repositories/%s/%s/tags/?page=1&page_size=%s' \
                % (namespace, repository_name, max_count)
-        response = requests.get(self.base_url + path, auth=self.auth)
-        return response.json().results
-
-    def list_image_ids(self, repository_name, namespace='library'):
-        """
-        List the image IDs (versions) in a repository
-
-        :param  repository_name: The name of the repository e.g. 'ubuntu'
-        :type   repository_name: ``str``
-
-        :param  namespace: (optional) The docker namespace
-        :type   namespace: ``str``
-
-        :return: A list of ids
-        :rtype: ``list`` of ``object``
-        """
-        path = 'v1/repositories/%s/%s/images' % (namespace, repository_name)
-        response = requests.get(self.base_url + path, auth=self.auth)
-        return response.json()
+        response = self.connection.request(path)
+        images = []
+        for image in response.object['results']:
+            images.append(self._to_image(repository_name, image))
+        return images
 
     def get_repository(self, repository_name, namespace='library'):
         """
@@ -101,8 +103,8 @@ class HubClient(object):
         :rtype: ``object``
         """
         path = 'v2/repositories/%s/%s' % (namespace, repository_name)
-        response = requests.get(self.base_url + path, auth=self.auth)
-        return response.json()
+        response = self.connection.request(path)
+        return response.object
 
     def get_image(self, repository_name, tag='latest', namespace='library'):
         """
@@ -122,16 +124,41 @@ class HubClient(object):
         """
         path = 'v2/repositories/%s/%s/tags/%s' \
                % (namespace, repository_name, tag)
-        response = requests.get(self.base_url + path, auth=self.auth)
-        obj = response.json()
-        path = '%s/%s:%s' % (self.host, repository_name, tag)
+        response = self.connection.request(path)
+        return self._to_image(repository_name, response.object)
+
+    def _to_image(self, repository_name, obj):
+        path = '%s/%s:%s' % (self.connection.host,
+                             repository_name,
+                             obj['name'])
         return ContainerImage(
             id=obj['id'],
             path=path,
             name=path,
-            version=tag,
+            version=obj['name'],
             extra={
                 'full_size': obj['full_size']
             },
             driver=None
         )
+
+
+class HubClient(RegistryClient):
+    """
+    A client for the Docker Hub API
+
+    The hub is based on the v2 registry API
+    """
+    host = 'registry.hub.docker.com'
+
+    def __init__(self, username=None, password=None, **kwargs):
+        """
+        Construct a Docker hub client
+
+        :param username: (optional) Your Hub account username
+        :type  username: ``str``
+
+        :param password: (optional) Your hub account password
+        :type  password: ``str``
+        """
+        self.connection = DockerHubConnection(self.host, username, password, **kwargs)

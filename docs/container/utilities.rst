@@ -3,5 +3,5 @@
 Container Utility API
 =====================
 
-.. autoclass:: libcloud.container.util.HubClient
+.. autoclass:: libcloud.container.utils.docker.HubClient
     :members:

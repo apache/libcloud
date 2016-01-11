@@ -23,7 +23,17 @@ Deploying a container
 
 .. literalinclude:: /examples/container/ecs/deploy_container.py
    :language: python
-   
+
+Deploying a container from Docker Hub
+-------------------------------------
+
+Docker Hub Client :class:`~libcloud.container.utils.docker.HubClient` is a shared utility class for interfacing to the public Docker Hub Service.
+
+You can use this class for fetching images to deploy to services like ECS
+
+.. literalinclude:: /examples/container/docker_hub.py
+   :language: python
+
 API Docs
 --------
 

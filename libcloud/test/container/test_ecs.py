@@ -35,7 +35,7 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
         ECSMockHttp.use_param = 'a'
         ElasticContainerDriver.ecrConnectionClass.conn_classes = (
             ECSMockHttp, ECSMockHttp)
-        
+
         self.driver = ElasticContainerDriver(*CONTAINER_PARAMS_ECS)
 
     def test_list_clusters(self):
