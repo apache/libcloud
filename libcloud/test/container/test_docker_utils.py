@@ -50,15 +50,7 @@ class DockerUtilitiesTestCase(unittest.TestCase):
 class DockerMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('docker_utils')
 
-    def _version(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('version.json')
-        else:
-            raise AssertionError('Unsupported method')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def v2_repositories_library_ubuntu_tags_latest(
+    def _v2_repositories_library_ubuntu_tags_latest(
             self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v2_repositories_library_ubuntu_tags_latest.json')
@@ -66,7 +58,7 @@ class DockerMockHttp(MockHttp):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def v2_repositories_library_ubuntu_tags(
+    def _v2_repositories_library_ubuntu_tags(
             self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v2_repositories_library_ubuntu_tags.json')
@@ -74,7 +66,7 @@ class DockerMockHttp(MockHttp):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def v2_repositories_library_ubuntu(
+    def _v2_repositories_library_ubuntu(
             self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v2_repositories_library_ubuntu.json')

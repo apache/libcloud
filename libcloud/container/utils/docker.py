@@ -29,12 +29,23 @@ __all__ = [
 class DockerHubConnection(Connection):
     responseCls = JsonResponse
 
-    def __init__(self, host, username=None, password=None, **kwargs):
-        super(DockerHubConnection, self).__init__(host=host, **kwargs)
+    def __init__(self, host, username=None, password=None,
+                 secure=True,
+                 port=None, url=None, timeout=None,
+                 proxy_url=None, backoff=None, retry_delay=None):
+        super(DockerHubConnection, self).__init__(
+            secure=secure, host=host,
+            port=port, url=url,
+            timeout=timeout,
+            proxy_url=proxy_url,
+            backoff=backoff,
+            retry_delay=retry_delay
+            )
         self.username = username
         self.password = password
 
     def add_default_headers(self, headers):
+        headers['Content-Type'] = 'application/json'
         if self.username is not None:
             authstr = 'Basic ' + str(
                 b64encode(
@@ -63,10 +74,10 @@ class RegistryClient(object):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        self.connection = DockerHubConnection(host,
-                                              username,
-                                              password,
-                                              **kwargs)
+        self.connection = self.connectionCls(host,
+                                             username,
+                                             password,
+                                             **kwargs)
 
     def list_images(self, repository_name, namespace='library', max_count=100):
         """
@@ -84,7 +95,7 @@ class RegistryClient(object):
         :return: A list of images
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
-        path = 'v2/repositories/%s/%s/tags/?page=1&page_size=%s' \
+        path = '/v2/repositories/%s/%s/tags/?page=1&page_size=%s' \
                % (namespace, repository_name, max_count)
         response = self.connection.request(path)
         images = []
@@ -105,7 +116,7 @@ class RegistryClient(object):
         :return: The details of the repository
         :rtype: ``object``
         """
-        path = 'v2/repositories/%s/%s' % (namespace, repository_name)
+        path = '/v2/repositories/%s/%s' % (namespace, repository_name)
         response = self.connection.request(path)
         return response.object
 
@@ -125,7 +136,7 @@ class RegistryClient(object):
         :return: A container image
         :rtype: :class:`libcloud.container.base.ContainerImage`
         """
-        path = 'v2/repositories/%s/%s/tags/%s' \
+        path = '/v2/repositories/%s/%s/tags/%s' \
                % (namespace, repository_name, tag)
         response = self.connection.request(path)
         return self._to_image(repository_name, response.object)
@@ -164,5 +175,5 @@ class HubClient(RegistryClient):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        self.connection = DockerHubConnection(self.host, username,
-                                              password, **kwargs)
+        super(HubClient, self).__init__(self.host, username,
+                                        password, **kwargs)
