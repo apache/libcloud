@@ -160,7 +160,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         self.host = upload_host
 
         method = 'POST'
-        raw = True
+        raw = False
         response = self._request(auth_conn=auth_conn, action=action,
                                  params=None, data=data,
                                  headers=headers, method=method,
