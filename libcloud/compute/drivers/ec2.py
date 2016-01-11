@@ -2238,6 +2238,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'delete': {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
+        },
+        'type': {
+            'xpath': 'volumeType',
+            'transform_func': str
         }
     },
     'route_table': {
