@@ -2319,7 +2319,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
-                                       data={})
+                                       data='')
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']
