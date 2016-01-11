@@ -44,7 +44,7 @@ Docker Registry API Client :class:`~libcloud.container.utils.docker.RegistryClie
 You can use a factory method to generate an instance of RegsitryClient from the ECS driver. This will request a 12 hour token from the Amazon API and instantiate a :class:`~libcloud.container.utils.docker.RegistryClient`
 object with those credentials.
 
-.. literalinclude:: /examples/container/container_registry.py
+.. literalinclude:: /examples/container/ecs/container_registry.py
    :language: python
 
 API Docs
