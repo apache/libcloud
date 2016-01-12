@@ -10,6 +10,7 @@ python:
     - "pypy"
 os:
   - linux
+  - osx
 env:
 
 matrix:
@@ -17,10 +18,12 @@ matrix:
   allow_failures:
     - os: osx
   include:
-    - python: 2.7
+    - sudo: required
+      python: 2.7
       env: ENV=lint
       before_script: TOX_ENV=lint
-    - python: 2.7
+    - sudo: required
+      python: 2.7
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
       before_install:
