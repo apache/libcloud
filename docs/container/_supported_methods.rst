@@ -4,10 +4,12 @@
 Provider                            install image list images deploy container get container start container stop container restart container destroy container list containers list locations create cluster destroy cluster list clusters
 =================================== ============= =========== ================ ============= =============== ============== ================= ================= =============== ============== ============== =============== =============
 `Docker`_                           yes           yes         yes              yes           yes             yes            yes               yes               yes             no             no             no              no           
-`Amazon Elastic Container Service`_ no            no          yes              yes           yes             yes            yes               yes               yes             no             yes            yes             yes          
+`Amazon Elastic Container Service`_ no            yes         yes              yes           yes             yes            yes               yes               yes             no             yes            yes             yes          
 `Joyent Triton`_                    yes           yes         yes              yes           yes             yes            yes               yes               yes             no             no             no              no           
+`Kubernetes`_                       no            no          yes              yes           no              no             no                yes               yes             no             yes            yes             yes          
 =================================== ============= =========== ================ ============= =============== ============== ================= ================= =============== ============== ============== =============== =============
 
 .. _`Docker`: http://docker.io
 .. _`Amazon Elastic Container Service`: https://aws.amazon.com/ecs/details/
 .. _`Joyent Triton`: http://joyent.com
+.. _`Kubernetes`: http://kubernetes.io

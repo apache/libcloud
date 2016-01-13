@@ -27,7 +27,7 @@ DRIVERS = {
     Provider.ECS:
     ('libcloud.container.drivers.ecs', 'ElasticContainerDriver'),
     Provider.KUBERNETES:
-    ('libcloud.container.drivers.kubernetes', 'KubenetesContainerDriver'),
+    ('libcloud.container.drivers.kubernetes', 'KubernetesContainerDriver'),
 }
 
 

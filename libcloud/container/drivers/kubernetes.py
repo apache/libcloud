@@ -103,7 +103,7 @@ class KubernetesContainerDriver(ContainerDriver):
     supports_clusters = True
 
     def __init__(self, key=None, secret=None, secure=False, host='localhost',
-                 port=4243, key_file=None, cert_file=None):
+                 port=4243):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -121,20 +121,12 @@ class KubernetesContainerDriver(ContainerDriver):
         :param    port: Override port used for connections.
         :type     port: ``int``
 
-        :param    key_file: Path to private key for TLS connection (optional)
-        :type     key_file: ``str``
-
-        :param    cert_file: Path to public key for TLS connection (optional)
-        :type     cert_file: ``str``
-
         :return: ``None``
         """
         super(KubernetesContainerDriver, self).__init__(key=key, secret=secret,
                                                         secure=secure,
                                                         host=host,
-                                                        port=port,
-                                                        key_file=key_file,
-                                                        cert_file=cert_file)
+                                                        port=port)
         if host.startswith('https://'):
             secure = True
 
@@ -144,23 +136,9 @@ class KubernetesContainerDriver(ContainerDriver):
             if host.startswith(prefix):
                 host = host.strip(prefix)
 
-        if key_file or cert_file:
-            # docker tls authentication-
-            # https://docs.docker.com/articles/https/
-            # We pass two files, a key_file with the
-            # private key and cert_file with the certificate
-            # libcloud will handle them through LibcloudHTTPSConnection
-            if not (key_file and cert_file):
-                raise Exception(
-                    'Needs both private key file and '
-                    'certificate file for tls authentication')
-            self.connection.key_file = key_file
-            self.connection.cert_file = cert_file
-            self.connection.secure = True
-        else:
-            self.connection.secure = secure
-            self.connection.key = key
-            self.connection.secret = secret
+        self.connection.secure = secure
+        self.connection.key = key
+        self.connection.secret = secret
 
         self.connection.host = host
         self.connection.port = port
