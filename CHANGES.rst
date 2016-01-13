@@ -20,6 +20,10 @@ General
 Compute
 ~~~~~~~
 
+- Add ap-northeast-2 region to EC2 driver (South Korea)
+  (GITHUB-681)
+  [Anthony Shaw]
+
 - Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
   (LIBCLOUD-786, GITHUB-665)
   [Scott Crunkleton]
