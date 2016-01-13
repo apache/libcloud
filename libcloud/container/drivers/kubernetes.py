@@ -28,7 +28,7 @@ from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.container.base import (Container, ContainerDriver,
-                                     ContainerCluster)
+                                     ContainerImage, ContainerCluster)
 
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
@@ -83,6 +83,16 @@ class KubernetesConnection(ConnectionUserAndKey):
             user_b64 = base64.b64encode(b('%s:%s' % (self.key, self.secret)))
             headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
+
+
+class KubernetesPod(object):
+    def __init__(self, name, containers, namespace):
+        """
+        A Kubernetes pod
+        """
+        self.name = name
+        self.containers = containers
+        self.namespace = namespace
 
 
 class KubernetesContainerDriver(ContainerDriver):
@@ -169,7 +179,7 @@ class KubernetesContainerDriver(ContainerDriver):
         """
         try:
             result = self.connection.request(
-                ROOT_URL + "v1/nodes/").object
+                ROOT_URL + "v1/pods").object
         except Exception as exc:
             if hasattr(exc, 'errno') and exc.errno == 111:
                 raise KubernetesException(
@@ -178,7 +188,10 @@ class KubernetesContainerDriver(ContainerDriver):
                     'and the API port is correct')
             raise
 
-        containers = [self._to_container(value) for value in result['items']]
+        pods = [self._to_pod(value) for value in result['items']]
+        containers = []
+        for pod in pods:
+            containers.extend(pod.containers)
         return containers
 
     def get_container(self, id):
@@ -265,19 +278,124 @@ class KubernetesContainerDriver(ContainerDriver):
                                          data=json.dumps(request)).object
         return self._to_cluster(result)
 
-    def _to_container(self, data):
+    def deploy_container(self, name, image, cluster=None,
+                         parameters=None, start=True):
+        """
+        Deploy an installed container image.
+        In kubernetes this deploys a single container Pod.
+        https://cloud.google.com/container-engine/docs/pods/single-container
+
+        :param name: The name of the new container
+        :type  name: ``str``
+
+        :param image: The container image to deploy
+        :type  image: :class:`.ContainerImage`
+
+        :param cluster: The cluster to deploy to, None is default
+        :type  cluster: :class:`.ContainerCluster`
+
+        :param parameters: Container Image parameters
+        :type  parameters: ``str``
+
+        :param start: Start the container on deployment
+        :type  start: ``bool``
+
+        :rtype: :class:`.Container`
+        """
+        if cluster is None:
+            namespace = 'default'
+        else:
+            namespace = cluster.id
+        request = {
+            "metadata": {
+                "name": name
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": name,
+                        "image": image.name
+                    }
+                ]
+            }
+        }
+        result = self.connection.request(ROOT_URL + "v1/namespaces/%s/pods"
+                                         % namespace,
+                                         method='POST',
+                                         data=json.dumps(request)).object
+        return self._to_cluster(result)
+
+    def destroy_container(self, container):
+        """
+        Destroy a deployed container. Because the containers are single
+        container pods, this will delete the pod.
+
+        :param container: The container to destroy
+        :type  container: :class:`.Container`
+
+        :rtype: ``bool``
+        """
+        return self.ex_delete_pod(container.extra['namespace'],
+                                  container.extra['pod'])
+
+    def ex_list_pods(self):
+        """
+        List available Pods
+
+        :rtype: ``list`` of :class:`.KubernetesPod`
+        """
+        result = self.connection.request(ROOT_URL + "v1/pods").object
+        return [self._to_pod(value) for value in result['items']]
+
+    def ex_destroy_pod(self, namespace, pod_name):
+        """
+        Delete a pod and the containers within it.
+        """
+        self.connection.request(
+            ROOT_URL + "v1/namespaces/%s/pods/%s" % (
+                namespace, pod_name),
+            method='DELETE').object
+        return True
+
+    def _to_pod(self, data):
+        """
+        Convert an API response to a Pod object
+        """
+        container_statuses = data['status']['containerStatuses']
+        containers = []
+        # response contains the status of the containers in a separate field
+        for container in data['spec']['containers']:
+            spec = list(filter(lambda i: i['name'] == container['name'],
+                               container_statuses))[0]
+            containers.append(
+                self._to_container(container, spec, data)
+            )
+        return KubernetesPod(
+            name=data['metadata']['name'],
+            namespace=data['metadata']['namespace'],
+            containers=containers)
+
+    def _to_container(self, data, container_status, pod_data):
         """
         Convert container in Container instances
         """
-        metadata = data['metadata']
         return Container(
-            id=data['spec']['externalID'],
-            name=metadata['name'],
-            image=None,
-            ip_addresses="ips",
+            id=container_status['containerID'],
+            name=data['name'],
+            image=ContainerImage(
+                id=container_status['imageID'],
+                name=data['image'],
+                path=None,
+                version=None,
+                driver=self.connection.driver
+                ),
+            ip_addresses=None,
             state=ContainerState.RUNNING,
             driver=self.connection.driver,
-            extra=None)
+            extra={
+                'pod': pod_data['metadata']['name'],
+                'namespace': pod_data['metadata']['namespace']
+            })
 
     def _to_cluster(self, data):
         """

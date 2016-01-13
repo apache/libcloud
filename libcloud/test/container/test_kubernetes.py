@@ -17,6 +17,8 @@ import sys
 
 from libcloud.test import unittest
 
+from libcloud.container.base import ContainerImage
+
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 
 from libcloud.utils.py3 import httplib
@@ -38,14 +40,8 @@ class KubernetesContainerDriverTestCase(unittest.TestCase):
         containers = self.driver.list_containers()
         self.assertEqual(len(containers), 1)
         self.assertEqual(containers[0].id,
-                         '127.0.0.1')
-        self.assertEqual(containers[0].name, '127.0.0.1')
-
-    def test_get_container(self):
-        container = self.driver.get_container('127.0.0.1')
-        self.assertEqual(container.id,
-                         '127.0.0.1')
-        self.assertEqual(container.name, '127.0.0.1')
+                         'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
+        self.assertEqual(containers[0].name, 'hello-world')
 
     def test_list_clusters(self):
         clusters = self.driver.list_clusters()
@@ -71,6 +67,17 @@ class KubernetesContainerDriverTestCase(unittest.TestCase):
         result = self.driver.destroy_cluster(cluster)
         self.assertTrue(result)
 
+    def test_deploy_container(self):
+        image = ContainerImage(
+            id=None,
+            name='hello-world',
+            path=None,
+            driver=self.driver,
+            version=None
+        )
+        container = self.driver.deploy_container('hello-world', image=image)
+        self.assertEqual(container.name, 'hello-world')
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -79,6 +86,14 @@ class KubernetesMockHttp(MockHttp):
             self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('version.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_pods(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_api_v1_pods.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -117,6 +132,16 @@ class KubernetesMockHttp(MockHttp):
             body = self.fixtures.load('_api_v1_namespaces_default.json')
         elif method == 'DELETE':
             body = self.fixtures.load('_api_v1_namespaces_default_DELETE.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_namespaces_default_pods(
+            self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_api_v1_namespaces_default_pods.json')
+        elif method == 'POST':
+            body = self.fixtures.load('_api_v1_namespaces_default_pods_POST.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
