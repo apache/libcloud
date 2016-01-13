@@ -1,0 +1,73 @@
+{
+  "kind": "Node",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "127.0.0.1",
+    "selfLink": "/api/v1/nodes/127.0.0.1",
+    "uid": "45949cbb-b99d-11e5-8d53-0050568157ec",
+    "resourceVersion": "184",
+    "creationTimestamp": "2016-01-13T02:28:03Z",
+    "labels": {
+      "kubernetes.io/hostname": "127.0.0.1"
+    }
+  },
+  "spec": {
+    "externalID": "127.0.0.1"
+  },
+  "status": {
+    "capacity": {
+      "cpu": "2",
+      "memory": "4048236Ki",
+      "pods": "40"
+    },
+    "allocatable": {
+      "cpu": "2",
+      "memory": "4048236Ki",
+      "pods": "40"
+    },
+    "conditions": [
+      {
+        "type": "OutOfDisk",
+        "status": "False",
+        "lastHeartbeatTime": "2016-01-13T02:55:34Z",
+        "lastTransitionTime": "2016-01-13T02:28:03Z",
+        "reason": "KubeletHasSufficientDisk",
+        "message": "kubelet has sufficient disk space available"
+      },
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastHeartbeatTime": "2016-01-13T02:55:34Z",
+        "lastTransitionTime": "2016-01-13T02:28:03Z",
+        "reason": "KubeletReady",
+        "message": "kubelet is posting ready status"
+      }
+    ],
+    "addresses": [
+      {
+        "type": "LegacyHostIP",
+        "address": "127.0.0.1"
+      },
+      {
+        "type": "InternalIP",
+        "address": "127.0.0.1"
+      }
+    ],
+    "daemonEndpoints": {
+      "kubeletEndpoint": {
+        "Port": 10250
+      }
+    },
+    "nodeInfo": {
+      "machineID": "1d9faaba9168d4b4a3416e99000002a2",
+      "systemUUID": "42015AA3-9AF2-D089-9105-63CEF89EFE35",
+      "bootID": "c31fdd67-f995-4be5-942d-10df26b40501",
+      "kernelVersion": "3.13.0-46-generic",
+      "osImage": "Ubuntu 14.04.2 LTS",
+      "containerRuntimeVersion": "docker://1.9.1",
+      "kubeletVersion": "v1.2.0-alpha.5.848+3f2e99b7e7d6d8",
+      "kubeProxyVersion": "v1.2.0-alpha.5.848+3f2e99b7e7d6d8"
+    },
+    "images": null
+  }
+}

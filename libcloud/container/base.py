@@ -402,3 +402,15 @@ class ContainerDriver(BaseDriver):
         """
         raise NotImplementedError(
             'list_clusters not implemented for this driver')
+
+    def get_cluster(self, id):
+        """
+        Get a cluster by ID
+
+        :param id: The ID of the cluster to get
+        :type  id: ``str``
+
+        :rtype: :class:`.ContainerCluster`
+        """
+        raise NotImplementedError(
+            'list_clusters not implemented for this driver')

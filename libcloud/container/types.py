@@ -44,6 +44,7 @@ class Provider(object):
     DOCKER = 'docker'
     JOYENT = 'joyent'
     ECS = 'ecs'
+    KUBERNETES = 'kubernetes'
 
 
 class ContainerState(Type):
