@@ -24,6 +24,10 @@ Compute
   (GITHUB-681)
   [Anthony Shaw]
 
+- Added Added volume type to EC2 volume extra to EC2 driver.
+  (GITHUB-680)
+  [Gennadiy Stas]
+
 - Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
   (LIBCLOUD-786, GITHUB-665)
   [Scott Crunkleton]
