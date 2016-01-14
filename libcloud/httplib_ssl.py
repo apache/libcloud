@@ -298,8 +298,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 cert_reqs=ssl.CERT_REQUIRED,
                 ca_certs=self.ca_cert,
                 ssl_version=libcloud.security.SSL_VERSION)
-        except Exception:
-            exc_cls = sys.exc_info()[0]
+        except socket.error:
             e = sys.exc_info()[1]
             exc_msg = str(e)
 
@@ -310,7 +309,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
                        (exc_msg, ssl_version))
 
-                new_e = exc_cls(msg)
+                new_e = socket.error(msg)
                 new_e.original_exc = e
                 raise new_e
 
