@@ -299,8 +299,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 ca_certs=self.ca_cert,
                 ssl_version=libcloud.security.SSL_VERSION)
         except socket.error:
-            e = sys.exc_info()[1]
-            exc_msg = str(e)
+            exc = sys.exc_info()[1]
+            exc_msg = str(exc)
 
             # Re-throw an exception with a more friendly error message
             if 'connection reset by peer' in exc_msg.lower():
@@ -309,11 +309,21 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
                        (exc_msg, ssl_version))
 
-                new_e = socket.error(msg)
-                new_e.original_exc = e
-                raise new_e
+                # Note: In some cases arguments are (errno, message) and in
+                # other it's just (message,)
+                exc_args = getattr(exc, 'args', [])
 
-            raise e
+                if len(exc_args) == 2:
+                    new_exc_args = [exc.args[0], msg]
+                else:
+                    new_exc_args = [msg]
+
+                new_exc = socket.error(*new_exc_args)
+                new_exc.original_exc = exc
+                raise new_exc
+
+            raise exc
+
         cert = self.sock.getpeercert()
         try:
             match_hostname(cert, self.host)

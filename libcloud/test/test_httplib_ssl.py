@@ -128,8 +128,17 @@ class TestHttpLibSSLTests(unittest.TestCase):
         mock_wrap_socket.side_effect = socket.error('Connection reset by peer')
 
         expected_msg = 'Failed to establish SSL / TLS connection'
-        self.assertRaisesRegexp(Exception, expected_msg,
+        self.assertRaisesRegexp(socket.error, expected_msg,
                                 self.httplib_object.connect)
+
+        # Same error but including errno
+        with self.assertRaises(socket.error) as cm:
+            mock_wrap_socket.side_effect = socket.error(104, 'Connection reset by peer')
+            self.httplib_object.connect()
+
+        e = cm.exception
+        self.assertEqual(e.errno, 104)
+        self.assertTrue(expected_msg in str(e))
 
 
 if __name__ == '__main__':
