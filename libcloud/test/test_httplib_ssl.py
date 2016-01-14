@@ -16,7 +16,9 @@
 import os
 import sys
 import os.path
+import socket
 
+import mock
 from mock import patch
 
 import libcloud.security
@@ -104,6 +106,30 @@ class TestHttpLibSSLTests(unittest.TestCase):
         expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
         self.assertRaisesRegexp(RuntimeError, expected_msg,
                                 self.httplib_object._setup_ca_cert)
+
+    @mock.patch('socket.create_connection', mock.MagicMock())
+    @mock.patch('ssl.wrap_socket')
+    def test_connect_throws_friendly_error_message_on_ssl_wrap_connection_reset_by_peer(self, mock_wrap_socket):
+        # Test that we re-throw a more friendly error message in case
+        # "connection reset by peer" error occurs when trying to establish a
+        # SSL connection
+        libcloud.security.VERIFY_SSL_CERT = True
+        self.httplib_object.verify = True
+
+        # No connection reset by peer, original exception should be thrown
+        mock_wrap_socket.side_effect = Exception('foo bar fail')
+
+        expected_msg = 'foo bar fail'
+        self.assertRaisesRegexp(Exception, expected_msg,
+                                self.httplib_object.connect)
+
+        # Connection reset by peer, wrapped exception with friendly error
+        # message should be thrown
+        mock_wrap_socket.side_effect = socket.error('Connection reset by peer')
+
+        expected_msg = 'Failed to establish SSL / TLS connection'
+        self.assertRaisesRegexp(Exception, expected_msg,
+                                self.httplib_object.connect)
 
 
 if __name__ == '__main__':
