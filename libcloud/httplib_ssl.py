@@ -40,6 +40,24 @@ __all__ = [
 
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
 
+# Error message which is thrown when establishing SSL / TLS connection fails
+UNSUPPORTED_TLS_VERSION_ERROR_MSG = """
+Failed to establish SSL / TLS connection (%s). It is possible that the server \
+doesn't support requested SSL / TLS version (%s).
+For information on how to work around this issue, please see \
+https://libcloud.readthedocs.org/en/latest/other/\
+ssl-certificate-validation.html#changing-used-ssl-tls-version
+""".strip()
+
+# Maps ssl.PROTOCOL_* constant to the actual SSL / TLS version name
+SSL_CONSTANT_TO_TLS_VERSION_MAP = {
+    0: 'SSL v2',
+    2: 'SSLv3, TLS v1.0, TLS v1.1, TLS v1.2',
+    3: 'TLS v1.0',
+    4: 'TLS v1.1',
+    5: 'TLS v1.2'
+}
+
 
 class LibcloudBaseConnection(object):
     """
@@ -272,12 +290,28 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         if self.http_proxy_used:
             self._activate_http_proxy(sock=sock)
 
-        self.sock = ssl.wrap_socket(sock,
-                                    self.key_file,
-                                    self.cert_file,
-                                    cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=self.ca_cert,
-                                    ssl_version=libcloud.security.SSL_VERSION)
+        try:
+            self.sock = ssl.wrap_socket(sock,
+                                        self.key_file,
+                                        self.cert_file,
+                                        cert_reqs=ssl.CERT_REQUIRED,
+                                        ca_certs=self.ca_cert,
+                                        ssl_version=libcloud.security.SSL_VERSION)
+        except Exception:
+            exc_cls = sys.exc_info()[0]
+            e = sys.exc_info()[1]
+
+            exc_msg = str(e)
+            # Re-throw an exception with a more friendly error message
+            if 'connection reset by peer' in exc_msg.lower():
+                ssl_version = libcloud.security.SSL_VERSION
+                ssl_version = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
+                msg = UNSUPPORTED_TLS_VERSION_ERROR_MSG % (exc_msg, ssl_version)
+                new_e = exc_cls(msg)
+                new_e.original_exc = e
+                raise new_e
+
+            raise e
         cert = self.sock.getpeercert()
         try:
             match_hostname(cert, self.host)
