@@ -94,3 +94,35 @@ For example:
     libcloud.security.VERIFY_SSL_CERT = False
 
     # Instantiate and work with the driver here...
+
+Changing used SSL / TLS version
+-------------------------------
+
+.. note::
+
+    Linode recently dropped support for TLS v1.0 and it only supports TLS v1.1.
+    If you are using Linode you need to update your code to use TLS v1.1 as
+    shown below.
+
+For compatibility reasons (we also support older Python versions), Libcloud
+uses TLS v1.0 by default.
+
+If the provier doesn't support this version or if you want to use a different
+version because of security reasons (you should always use the highest version
+which is supported by your system and your provider) you can tell Libcloud to
+use a different version as shown below.
+
+.. sourcecode:: python
+
+    import ssl
+
+    import libcloud.security
+    libcloud.security.SSL_VERSION = ssl.PROTOCOL_TLSv1_1
+    # or
+    libcloud.security.SSL_VERSION = ssl.PROTOCOL_TLSv1_2
+
+    # Instantiate and work with the driver here...
+
+Keep in mind that TLS v1.1 and v1.2 is right now only supported in Python >=
+3.4 and Python 2.7.9. In addition to that, your system also needs to have a
+recent version of OpenSSL available.
