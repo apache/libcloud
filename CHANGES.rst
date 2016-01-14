@@ -49,6 +49,10 @@ DNS
   (GITHUB-675)
   [Wido den Hollander]
 
+- Improve unit tests of Aurora DNS driver
+  (GITHUB-679)
+  [Wido den Hollander]
+
 Changes with Apache Libcloud 0.20.0
 -----------------------------------
 
