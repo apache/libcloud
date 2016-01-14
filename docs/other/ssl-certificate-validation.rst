@@ -100,9 +100,10 @@ Changing used SSL / TLS version
 
 .. note::
 
-    Linode recently dropped support for TLS v1.0 and it only supports TLS v1.1.
-    If you are using Linode you need to update your code to use TLS v1.1 as
-    shown below.
+    Linode recently dropped support for TLS v1.0 and it only supports TLS v1.1
+    and higher.
+    If you are using Linode driver you need to update your code to use TLS v1.1
+    or TLS v1.2 as shown below.
 
 For compatibility reasons (we also support older Python versions), Libcloud
 uses TLS v1.0 by default.
