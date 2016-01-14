@@ -291,22 +291,25 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
             self._activate_http_proxy(sock=sock)
 
         try:
-            self.sock = ssl.wrap_socket(sock,
-                                        self.key_file,
-                                        self.cert_file,
-                                        cert_reqs=ssl.CERT_REQUIRED,
-                                        ca_certs=self.ca_cert,
-                                        ssl_version=libcloud.security.SSL_VERSION)
+            self.sock = ssl.wrap_socket(
+                sock,
+                self.key_file,
+                self.cert_file,
+                cert_reqs=ssl.CERT_REQUIRED,
+                ca_certs=self.ca_cert,
+                ssl_version=libcloud.security.SSL_VERSION)
         except Exception:
             exc_cls = sys.exc_info()[0]
             e = sys.exc_info()[1]
-
             exc_msg = str(e)
+
             # Re-throw an exception with a more friendly error message
             if 'connection reset by peer' in exc_msg.lower():
                 ssl_version = libcloud.security.SSL_VERSION
                 ssl_version = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
-                msg = UNSUPPORTED_TLS_VERSION_ERROR_MSG % (exc_msg, ssl_version)
+                msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
+                       (exc_msg, ssl_version))
+
                 new_e = exc_cls(msg)
                 new_e.original_exc = e
                 raise new_e
