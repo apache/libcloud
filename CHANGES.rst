@@ -17,6 +17,11 @@ General
   (GITHUB-556, LIBCLOUD-728)
   [Scott Kruger]
 
+- Throw a more user-friendly exception if a client fails to establish SSL / TLS
+  connection with a server because of an unsupported SSL / TLS version.
+  (GITHUB-682)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
