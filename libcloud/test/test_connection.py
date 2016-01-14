@@ -31,6 +31,7 @@ from libcloud.utils.misc import retry
 
 class BaseConnectionClassTestCase(unittest.TestCase):
     def test_parse_proxy_url(self):
+        self.assertTrue(False)
         conn = LibcloudBaseConnection()
 
         proxy_url = 'http://127.0.0.1:3128'
