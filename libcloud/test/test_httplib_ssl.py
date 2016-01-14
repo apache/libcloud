@@ -116,6 +116,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # SSL connection
         libcloud.security.VERIFY_SSL_CERT = True
         self.httplib_object.verify = True
+        self.httplib_object.http_proxy_used = False
 
         # No connection reset by peer, original exception should be thrown
         mock_wrap_socket.side_effect = Exception('foo bar fail')
