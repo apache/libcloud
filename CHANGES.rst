@@ -1,8 +1,18 @@
 Changelog
 =========
 
+Changes with Apache Libcloud 0.20.1
+-----------------------------------
+
+Compute
+~~~~~~~
+
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
 Changes with Apache Libcloud 0.20.0
--------------------------------------------
+-----------------------------------
 
 General
 ~~~~~~~
@@ -29,10 +39,6 @@ General
 
 Compute
 ~~~~~~~
-
-- [google] Allow for old and new style service account client email address
-  (LIBCLOUD-785)
-  [Hoang Phan]
 
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
