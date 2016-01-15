@@ -575,13 +575,13 @@ class AuroraDNSDriver(DNSDriver):
         return Record(id=record['id'], name=name,
                       type=record['type'],
                       data=record['content'], zone=zone,
-                      driver=self, ttl=record['ttl'],
+                      driver=self.connection.driver, ttl=record['ttl'],
                       extra=extra)
 
     def __res_to_zone(self, zone):
         return Zone(id=zone['id'], domain=zone['name'],
                     type=DEFAULT_ZONE_TYPE,
-                    ttl=DEFAULT_ZONE_TTL, driver=self,
+                    ttl=DEFAULT_ZONE_TTL, driver=self.connection.driver,
                     extra={'created': zone['created'],
                            'servers': zone['servers'],
                            'account_id': zone['account_id'],
@@ -598,7 +598,7 @@ class AuroraDNSDriver(DNSDriver):
                                     interval=healthcheck['interval'],
                                     port=healthcheck['port'],
                                     enabled=healthcheck['enabled'],
-                                    zone=zone, driver=self)
+                                    zone=zone, driver=self.connection.driver)
 
     def __merge_extra_data(self, rdata, extra):
         if extra is not None:
