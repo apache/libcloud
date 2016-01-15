@@ -61,6 +61,7 @@ class Provider(object):
     AZURE_BLOBS = 'azure_blobs'
     KTUCLOUD = 'ktucloud'
     AURORAOBJECTS = 'auroraobjects'
+    RUNABOVE = 'runabove'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
