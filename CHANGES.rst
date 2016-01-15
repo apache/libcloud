@@ -49,6 +49,10 @@ Compute
 DNS
 ~~~
 
+- Add support for 'health checks' in Aurora DNS driver
+  (GITHUB-672)
+  [Wido den Hollander]
+
 - Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
   ``extra`` dictionary.
   (GITHUB-675)
