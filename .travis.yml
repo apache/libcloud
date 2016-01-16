@@ -30,6 +30,10 @@ install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
   - pip install tox
 
+after_success:
+  # Trigger ReadTheDocs build
+  - ./contrib/trigger_rtd_build.py 8284
+
 script:
   - tox -e $TOX_ENV
 
