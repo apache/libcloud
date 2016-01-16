@@ -30,11 +30,13 @@ except ImportError:
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
+PY2_post_279 = PY2 and sys.version_info >= (2, 7, 0)
 PY2_pre_25 = PY2 and sys.version_info < (2, 5)
 PY2_pre_26 = PY2 and sys.version_info < (2, 6)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
 PY3_pre_32 = PY3 and sys.version_info < (3, 2)
+PY3_post_34 = PY3 and sys.version_info >= (3, 4, 0)
 
 PY2 = False
 PY25 = False
