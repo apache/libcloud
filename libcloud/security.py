@@ -19,22 +19,35 @@ Usage:
     import libcloud.security
     libcloud.security.VERIFY_SSL_CERT = True
 
-    # Optional.
+    # Optional
     libcloud.security.CA_CERTS_PATH.append('/path/to/cacert.txt')
+
+    # Use a custom SSL / TLS version
+    libcloud.security.SSL_VERSION = ssl.PROTOCOL_TLSv1_2
 """
 
 import os
 import ssl
 
+from libcloud.utils.py3 import PY2_post_279
+from libcloud.utils.py3 import PY3_post_34
+
 __all__ = [
     'VERIFY_SSL_CERT',
     'SSL_VERSION',
-    'CA_CERTS_PATH'
+    'CA_CERTS_PATH',
+
+    'get_ssl_version'
 ]
 
 VERIFY_SSL_CERT = True
 
-SSL_VERSION = ssl.PROTOCOL_TLSv1
+# Default SSL version which is used if one is not explicitli specified
+DEFAULT_SSL_VERSION = ssl.PROTOCOL_TLSv1
+
+# SSL version to be used as specified by the user
+SSL_VERSION = None
+
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together.
@@ -87,3 +100,28 @@ VERIFY_SSL_DISABLED_MSG = (
     'certificate verification, please visit the libcloud '
     'documentation.'
 )
+
+
+def get_ssl_version():
+    """
+    Return SSL / TLS version which is to be used when establishing SSL / TLS
+    connection.
+
+    The return value depends on the Python version and
+    libcloud.security.SSL_VERSION setting value.
+
+    :rtype: ``int``
+    """
+    ssl_version = DEFAULT_SSL_VERSION
+
+    # In Python >= 2.7.9 and >= 3.4 unsecure SSL v3.0 is disabled by default
+    # so it's safe to use PROTOCOL_SSLv23.
+    if PY2_post_279 or PY3_post_34:
+        ssl_version = ssl.PROTOCOL_SSLv23
+
+    # libcloud.security.SSL_VERSION has precedence over dynamicaly obtained
+    # values
+    if SSL_VERSION:
+        ssl_version = SSL_VERSION
+
+    return ssl_version
