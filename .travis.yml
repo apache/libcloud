@@ -25,6 +25,8 @@ matrix:
     - python: 2.7
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
+      # Trigger ReadTheDocs build
+      after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
@@ -32,10 +34,6 @@ install:
 
 script:
   - tox -e $TOX_ENV
-
-after_success:
-  # Trigger ReadTheDocs build
-  - ./contrib/trigger_rtd_build.py 8284
 
 notifications:
   # Disabled until ASF switches to new mailing list software
