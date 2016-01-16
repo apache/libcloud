@@ -11,7 +11,8 @@ python:
 sudo: false
 os:
   - linux
-  - osx
+  # Note: OS X has been broken on Travis for a long time
+  #- osx
 env:
 
 matrix:
