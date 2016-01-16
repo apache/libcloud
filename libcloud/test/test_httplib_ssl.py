@@ -15,6 +15,7 @@
 
 import os
 import sys
+import ssl
 import os.path
 import socket
 
@@ -22,7 +23,7 @@ import mock
 from mock import patch
 
 import libcloud.security
-
+from libcloud.security import get_ssl_version
 from libcloud.utils.py3 import reload
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
@@ -141,6 +142,44 @@ class TestHttpLibSSLTests(unittest.TestCase):
         e = cm.exception
         self.assertEqual(e.errno, 104)
         self.assertTrue(expected_msg in str(e))
+
+    def test_get_ssl_version(self):
+        # User provided value should always have precedence over dynamicaly
+        # retrieved values
+        libcloud.security.SSL_VERSION = 10
+
+        libcloud.security.PY2_post_279 = True
+        result = get_ssl_version()
+        self.assertEqual(result, 10)
+
+        libcloud.security.PY3_post_34 = True
+        result = get_ssl_version()
+        self.assertEqual(result, 10)
+
+        libcloud.security.PY2_post_279 = False
+        libcloud.security.PY3_post_34 = False
+        libcloud.security.SSL_VERSION = None
+
+        # Python >= 2.7.9 should use PROTOCOL_SSLv23
+        libcloud.security.PY2_post_279 = True
+        result = get_ssl_version()
+        self.assertEqual(result, ssl.PROTOCOL_SSLv23)
+
+        libcloud.security.PY2_post_279 = False
+        libcloud.security.PY3_post_34 = False
+
+        # Python >= 3.4 should use PROTOCOL_SSLv23
+        libcloud.security.PY3_post_34 = True
+        result = get_ssl_version()
+        self.assertEqual(result, ssl.PROTOCOL_SSLv23)
+
+        # Python < 2.7.9 and Python < 3.4, should use TLS_v1
+        libcloud.security.PY2_post_279 = False
+        libcloud.security.PY3_post_34 = False
+
+        # Python >= 3.4 should use PROTOCOL_SSLv23
+        result = get_ssl_version()
+        self.assertEqual(result, ssl.PROTOCOL_TLSv1)
 
 
 if __name__ == '__main__':
