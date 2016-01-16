@@ -33,6 +33,8 @@ from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlunquote
 from libcloud.utils.py3 import match_hostname
 from libcloud.utils.py3 import CertificateError
+from libcloud.utils.py3 import PY2_post_279
+from libcloud.utils.py3 import PY3_post_34
 
 
 __all__ = [
@@ -296,14 +298,21 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         # Dynamically retrieve SSL version which is to be used
         ssl_version = get_ssl_version()
 
+        if PY2_post_279 or PY3_post_34:
+            context = ssl.create_default_context(cafile=self.ca_cert)
+            wrap_method = context.wrap_socket
+            wrap_args = [self.sock]
+            wrap_kwargs = {}
+        else:
+            wrap_method = ssl.wrap_socket
+            wrap_args = [self.sock]
+            wrap_kwargs = {
+                'ca_certs': self.ca_cert,
+                'ssl_version': ssl_version
+            }
+
         try:
-            self.sock = ssl.wrap_socket(
-                sock,
-                self.key_file,
-                self.cert_file,
-                cert_reqs=ssl.CERT_REQUIRED,
-                ca_certs=self.ca_cert,
-                ssl_version=ssl_version)
+            self.sock = wrap_method(*wrap_args, **wrap_kwargs)
         except socket.error:
             exc = sys.exc_info()[1]
             exc = get_socket_error_exception(ssl_version=ssl_version, exc=exc)
