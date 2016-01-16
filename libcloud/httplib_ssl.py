@@ -290,6 +290,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         if self.http_proxy_used:
             self._activate_http_proxy(sock=sock)
 
+        ssl_version = libcloud.security.SSL_VERSION
+
         try:
             self.sock = ssl.wrap_socket(
                 sock,
@@ -297,31 +299,11 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 self.cert_file,
                 cert_reqs=ssl.CERT_REQUIRED,
                 ca_certs=self.ca_cert,
-                ssl_version=libcloud.security.SSL_VERSION)
+                ssl_version=ssl_version)
         except socket.error:
             exc = sys.exc_info()[1]
-            exc_msg = str(exc)
-
             # Re-throw an exception with a more friendly error message
-            if 'connection reset by peer' in exc_msg.lower():
-                ssl_version = libcloud.security.SSL_VERSION
-                ssl_version = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
-                msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
-                       (exc_msg, ssl_version))
-
-                # Note: In some cases arguments are (errno, message) and in
-                # other it's just (message,)
-                exc_args = getattr(exc, 'args', [])
-
-                if len(exc_args) == 2:
-                    new_exc_args = [exc.args[0], msg]
-                else:
-                    new_exc_args = [msg]
-
-                new_exc = socket.error(*new_exc_args)
-                new_exc.original_exc = exc
-                raise new_exc
-
+            exc = get_socket_error_exception(ssl_version=ssl_version, exc=exc)
             raise exc
 
         cert = self.sock.getpeercert()
@@ -330,3 +312,31 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         except CertificateError:
             e = sys.exc_info()[1]
             raise ssl.SSLError('Failed to verify hostname: %s' % (str(e)))
+
+
+def get_socket_error_exception(ssl_version, exc):
+    """
+    Function which intercepts socket.error exceptions and re-throws an
+    exception with a more user-friendly message in case server doesn't support
+    requested SSL version.
+    """
+    exc_msg = str(exc)
+
+    # Re-throw an exception with a more friendly error message
+    if 'connection reset by peer' in exc_msg.lower():
+        ssl_version_name = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
+        msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
+               (exc_msg, ssl_version_name))
+
+        # Note: In some cases arguments are (errno, message) and in
+        # other it's just (message,)
+        exc_args = getattr(exc, 'args', [])
+
+        if len(exc_args) == 2:
+            new_exc_args = [exc.args[0], msg]
+        else:
+            new_exc_args = [msg]
+
+        new_exc = socket.error(*new_exc_args)
+        new_exc.original_exc = exc
+        return new_exc
