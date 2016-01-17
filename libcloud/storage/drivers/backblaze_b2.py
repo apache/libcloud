@@ -129,13 +129,14 @@ class BackblazeB2Connection(ConnectionUserAndKey):
     host = None  # Note: host is set after authentication
     secure = True
     responseCls = BackblazeB2Response
+    authCls = BackblazeB2AuthConnection
 
     def __init__(self, *args, **kwargs):
         super(BackblazeB2Connection, self).__init__(*args, **kwargs)
 
         # Stores info retrieved after authentication (auth token, api url,
         # dowload url).
-        self._auth_conn = BackblazeB2AuthConnection(*args, **kwargs)
+        self._auth_conn = self.authCls(*args, **kwargs)
 
     def download_request(self, action, params=None):
         # Lazily perform authentication
