@@ -317,7 +317,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         headers['Content-Type'] = content_type
 
         sha1 = hashlib.sha1()
-        sha1.update(data.encode())
+        sha1.update(b(data))
         headers['X-Bz-Content-Sha1'] = sha1.hexdigest()
 
         # Include optional meta-data (up to 10 items)
