@@ -1,0 +1,22 @@
+{
+  "buckets": [
+    {
+      "accountId": "8c7eea3fe570",
+      "bucketId": "481c37de2e1ab3bf5e150710",
+      "bucketName": "test00001",
+      "bucketType": "allPrivate"
+    },
+    {
+      "accountId": "8c7eea3fe570",
+      "bucketId": "886c573e2e1ab3bf5e150710",
+      "bucketName": "test00002",
+      "bucketType": "allPublic"
+    },
+    {
+      "accountId": "8c7eea3fe570",
+      "bucketId": "c85c97ee2eeab3bf5e150710",
+      "bucketName": "test00003",
+      "bucketType": "allPrivate"
+    }
+  ]
+}
