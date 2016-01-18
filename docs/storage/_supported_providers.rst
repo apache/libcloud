@@ -5,6 +5,7 @@ Provider                      Documentation                                   Pr
 ============================= =============================================== ================= ============================================== ====================================
 `PCextreme AuroraObjects`_    :doc:`Click </storage/drivers/auroraobjects>`   AURORAOBJECTS     :mod:`libcloud.storage.drivers.auroraobjects`  :class:`AuroraObjectsStorageDriver` 
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
+`Backblaze B2`_               :doc:`Click </storage/drivers/backblaze_b2>`    BACKBLAZE_B2      :mod:`libcloud.storage.drivers.backblaze_b2`   :class:`BackblazeB2StorageDriver`   
 `CloudFiles`_                                                                 CLOUDFILES        :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
 `CloudFiles (UK)`_                                                            CLOUDFILES_UK     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUKStorageDriver`  
 `CloudFiles (US)`_                                                            CLOUDFILES_US     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUSStorageDriver`  
@@ -24,6 +25,7 @@ Provider                      Documentation                                   Pr
 
 .. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
+.. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/
 .. _`CloudFiles (US)`: http://www.rackspace.com/
