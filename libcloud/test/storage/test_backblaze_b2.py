@@ -103,6 +103,33 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
+    def test_ex_hide_object(self):
+        container = self.driver.list_containers()[0]
+        container_id = container.extra['id']
+        obj = self.driver.ex_hide_object(container_id=container_id,
+                                         object_name='2.txt')
+        self.assertEqual(obj.name, '2.txt')
+
+    def test_ex_list_object_versions(self):
+        container = self.driver.list_containers()[0]
+        container_id = container.extra['id']
+        objects = self.driver.ex_list_object_versions(container_id=container_id)
+        self.assertEqual(len(objects), 9)
+
+    def test_ex_get_upload_data(self):
+        container = self.driver.list_containers()[0]
+        container_id = container.extra['id']
+        data = self.driver.ex_get_upload_data(container_id=container_id)
+        self.assertEqual(data['authorizationToken'], 'nope')
+        self.assertEqual(data['bucketId'], '481c37de2e1ab3bf5e150710')
+        self.assertEqual(data['uploadUrl'], 'https://podxxx.backblaze.com/b2api/v1/b2_upload_file/abcd/defg')
+
+    def test_ex_get_upload_url(self):
+        container = self.driver.list_containers()[0]
+        container_id = container.extra['id']
+        url = self.driver.ex_get_upload_url(container_id=container_id)
+        self.assertEqual(url, 'https://podxxx.backblaze.com/b2api/v1/b2_upload_file/abcd/defg')
+
 
 class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
     fixtures = StorageFileFixtures('backblaze_b2')
@@ -154,6 +181,20 @@ class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
         # test_upload_object
         if method == 'POST':
             body = self.fixtures.load('b2_upload_file.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _b2api_v1_b2_list_file_versions(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('b2_list_file_versions.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _b2api_v1_b2_hide_file(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('b2_hide_file.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
