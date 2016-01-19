@@ -3,7 +3,11 @@ Container
 
 .. note::
 
-    Container API is available in Libcloud 0.21.0 and higher.
+    Container API is available in Libcloud 1.0.0RC and higher.
+
+.. note::
+
+    Container API is currently in an EXPERIMENTAL state.
 
 Container API allows users to install and deploy containers onto container based virtualization platforms. This is designed to target both
 on-premise installations of software like Docker as well as interfacing with Cloud Service Providers that offer Container-as-a-Service APIs.
