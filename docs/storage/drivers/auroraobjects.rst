@@ -22,7 +22,6 @@ a LibcloudError.
 
 As a backend AuroraObjects uses `Ceph`_ for storage.
 
-
 Instantiating a driver
 ----------------------
 
@@ -33,7 +32,6 @@ With these credentials you can instantiate the driver:
 
 .. literalinclude:: /examples/storage/auroraobjects/instantiate.py
    :language: python
-
 
 Multipart uploads
 -----------------
@@ -57,7 +55,6 @@ Examples
 --------
 
 Please refer to the Amazon S3 storage driver documentation for examples.
-
 
 API Docs
 --------

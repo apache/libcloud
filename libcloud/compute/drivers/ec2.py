@@ -1037,6 +1037,44 @@ REGION_DETAILS = {
             't2.large'
         ]
     },
+    # Asia Pacific (Seoul) Region
+    'ap-northeast-2': {
+        'endpoint': 'ec2.ap-northeast-2.amazonaws.com',
+        'api_name': 'ec2_ap_northeast',
+        'country': 'South Korea',
+        'signature_version': '2',
+        'instance_types': [
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large'
+        ]
+    },
     # South America (Sao Paulo) Region
     'sa-east-1': {
         'endpoint': 'ec2.sa-east-1.amazonaws.com',
@@ -2237,6 +2275,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'delete': {
             'xpath': 'attachmentSet/item/deleteOnTermination',
+            'transform_func': str
+        },
+        'type': {
+            'xpath': 'volumeType',
             'transform_func': str
         }
     },

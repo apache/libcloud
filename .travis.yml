@@ -10,13 +10,12 @@ python:
     - "pypy"
 os:
   - linux
-  - osx
+  # Note: OS X has been broken on Travis for a long time
+  #- osx
 env:
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - os: osx
   include:
     - sudo: required
       python: 2.7
@@ -29,6 +28,8 @@ matrix:
       before_install:
         - sudo apt-get update -qq
         - sudo apt-get install -y graphviz
+      # Trigger ReadTheDocs build
+      after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
@@ -38,7 +39,9 @@ script:
   - tox -e $TOX_ENV
 
 notifications:
-  email:
-    - notifications@libcloud.apache.org
+  # Disabled until ASF switches to new mailing list software
+  # when we can whitelist addresses
+  #email:
+  #  - "notifications@libcloud.apache.org"
   irc:
     - "chat.freenode.net#libcloud"

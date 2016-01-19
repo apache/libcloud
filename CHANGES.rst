@@ -22,8 +22,21 @@ General
   (GITHUB-556, LIBCLOUD-728)
   [Scott Kruger]
 
+- Throw a more user-friendly exception if a client fails to establish SSL / TLS
+  connection with a server because of an unsupported SSL / TLS version.
+  (GITHUB-682)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
+
+- Add ap-northeast-2 region to EC2 driver (South Korea)
+  (GITHUB-681)
+  [Anthony Shaw]
+
+- Added Added volume type to EC2 volume extra to EC2 driver.
+  (GITHUB-680)
+  [Gennadiy Stas]
 
 - Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
   (LIBCLOUD-786, GITHUB-665)
@@ -41,9 +54,17 @@ Compute
 DNS
 ~~~
 
+- Add support for 'health checks' in Aurora DNS driver
+  (GITHUB-672)
+  [Wido den Hollander]
+
 - Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
   ``extra`` dictionary.
   (GITHUB-675)
+  [Wido den Hollander]
+
+- Improve unit tests of Aurora DNS driver
+  (GITHUB-679)
   [Wido den Hollander]
 
 Changes with Apache Libcloud 0.20.0
