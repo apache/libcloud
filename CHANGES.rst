@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Changes with Apache Libcloud 1.0.0RC0
+Changes with Apache Libcloud 1.0-pre1
 -------------------------------------
 
 General
