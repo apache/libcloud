@@ -32,6 +32,7 @@ matrix:
       after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
+  - pip install --upgrade "pip<8.0.0"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
   - pip install tox
 
