@@ -9,7 +9,8 @@ python:
     - 3.3
     - 3.4
     - 3.5
-    - "pypy"
+    - pypy
+    - pypy3
 os:
   - linux
   # Note: OS X has been broken on Travis for a long time
