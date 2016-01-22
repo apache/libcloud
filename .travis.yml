@@ -3,8 +3,6 @@ language: python
 python:
     - 2.6
     - 2.7
-    # Note: 3.2 support on Travis is currently broken because of
-    # https://github.com/travis-ci/travis-ci/issues/5485
     - 3.2
     - 3.3
     - 3.4
@@ -13,8 +11,6 @@ python:
     - pypy3
 os:
   - linux
-  # Note: OS X has been broken on Travis for a long time
-  #- osx
 env:
 
 matrix:
