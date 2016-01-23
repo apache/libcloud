@@ -14,12 +14,6 @@ os:
   - linux
 env:
 
-# Note: graphviz is needed for grapgs embedded in the docs
-addons:
-  apt:
-    packages:
-      - graphviz
-
 matrix:
   fast_finish: true
   include:
@@ -28,6 +22,8 @@ matrix:
       before_script: TOX_ENV=lint
     - python: 2.7
       env: ENV=docs
+      # Note: graphviz is needed for grapgs embedded in the docs
+      addons: {apt: {packages: [graphviz]}}
       before_script: TOX_ENV=docs-travis
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
