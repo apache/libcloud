@@ -12,18 +12,20 @@ python:
     - pypy3
 os:
   - linux
-env:
 
 matrix:
   fast_finish: true
   include:
-    - python: 2.7
-      env: ENV=lint
+    - env: ENV=lint
+      python: 2.7
       before_script: TOX_ENV=lint
-    - python: 2.7
-      env: ENV=docs
+    - env: ENV=docs
+      python: 2.7
       # Note: graphviz is needed for grapgs embedded in the docs
-      addons: {apt: {packages: [graphviz]}}
+      addons:
+        apt:
+          packages:
+            - graphviz
       before_script: TOX_ENV=docs-travis
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
@@ -36,6 +38,11 @@ install:
 
 script:
   - tox -e $TOX_ENV
+
+cache:
+  apt: true
+  directories:
+    - $HOME/.cache/pip # pip cache
 
 notifications:
   # Disabled until ASF switches to new mailing list software
