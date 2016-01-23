@@ -21,8 +21,12 @@ matrix:
       env: ENV=lint
       before_script: TOX_ENV=lint
     - python: 2.7
+      sudo: true
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
+      before_install:
+        - sudo apt-get update -qq
+        - sudo apt-get install -y graphviz
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
 
