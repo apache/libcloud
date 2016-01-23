@@ -13,6 +13,12 @@ python:
 os:
   - linux
 
+# Note: graphviz is needed for grapgs embedded in the docs
+addons:
+  apt:
+    packages:
+      - graphviz
+
 matrix:
   fast_finish: true
   include:
