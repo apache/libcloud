@@ -1,4 +1,5 @@
 language: python
+sudo: false
 # Add or remove version for match with Travis support
 python:
     - 2.6
@@ -16,19 +17,19 @@ env:
 matrix:
   fast_finish: true
   include:
-    - sudo: required
-      python: 2.7
+    - python: 2.7
       env: ENV=lint
       before_script: TOX_ENV=lint
-    - sudo: required
-      python: 2.7
+    - python: 2.7
       env: ENV=docs
       before_script: TOX_ENV=docs-travis
-      before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install -y graphviz
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
+
+addons:
+  apt:
+    packages:
+      - graphviz  # needed for embedded graphs in the docs
 
 install:
   - pip install --upgrade "pip<8.0.0"
