@@ -22,15 +22,16 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - env: ENV=lint  TOX_ENV=lint
+    - env: ENV=lint TOX_ENV=lint
       python: 2.7
-    - env: ENV=docs  TOX_ENV=docs-travis
+    - env: ENV=docs TOX_ENV=docs-travis
       python: 2.7
       # Note: graphviz is needed for grapgs embedded in the docs
       addons:
         apt:
           packages:
             - graphviz
+            - gcc
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
 
