@@ -7,10 +7,14 @@ Changes with Apache Libcloud in development
 General
 ~~~~~~~
 
-- Fix a bug with consuming stdout and stderr in the Paramiko SSH client which
-  would manifest itself under very rare scenario when a consumed chunk only
-  contained single byte or part of a multi byte UTF-8 character.
+- Fix a bug with consuming stdout and stderr in the paramiko SSH client which
+  would manifest itself under very rare condition when a consumed chunk only
+  contained a single byte or part of a multi byte UTF-8 character.
   [Lakshmi Kannan, Tomaz Muraus]
+
+- Increase default chunk size from ``1024`` to ``4096`` bytes in the paramiko
+  SSH client. This results in smaller number of receive calls on the average.
+  [Tomaz Muraus]
 
 Changes with Apache Libcloud 1.0-pre1
 -------------------------------------
