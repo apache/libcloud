@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+General
+~~~~~~~
+
+- Fix a bug with consuming stdout and stderr in the Paramiko SSH client which
+  would manifest itself under very rare scenario when a consumed chunk only
+  contained single byte or part of a multi byte UTF-8 character.
+  [Lakshmi Kannan, Tomaz Muraus]
+
 Changes with Apache Libcloud 1.0-pre1
 -------------------------------------
 
