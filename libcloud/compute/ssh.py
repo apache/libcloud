@@ -200,7 +200,7 @@ class ParamikoSSHClient(BaseSSHClient):
     """
 
     # Maximum number of bytes to read at once from a socket
-    CHUNK_SIZE = 1024
+    CHUNK_SIZE = 4096
 
     # How long to sleep while waiting for command to finish
     SLEEP_DELAY = 1.5
