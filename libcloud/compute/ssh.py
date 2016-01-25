@@ -452,7 +452,8 @@ class ParamikoSSHClient(BaseSSHClient):
             else:
                 return key
 
-        msg = 'Invalid or unsupported key type'
+        msg = ('Invalid or unsupported key type (only RSA, DSS and ECDSA keys'
+               ' are supported)')
         raise paramiko.ssh_exception.SSHException(msg)
 
 

@@ -33,14 +33,12 @@ class DockerHubConnection(Connection):
                  secure=True,
                  port=None, url=None, timeout=None,
                  proxy_url=None, backoff=None, retry_delay=None):
-        super(DockerHubConnection, self).__init__(
-            secure=secure, host=host,
-            port=port, url=url,
-            timeout=timeout,
-            proxy_url=proxy_url,
-            backoff=backoff,
-            retry_delay=retry_delay
-            )
+        super(DockerHubConnection, self).__init__(secure=secure, host=host,
+                                                  port=port, url=url,
+                                                  timeout=timeout,
+                                                  proxy_url=proxy_url,
+                                                  backoff=backoff,
+                                                  retry_delay=retry_delay)
         self.username = username
         self.password = password
 

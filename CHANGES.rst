@@ -67,8 +67,18 @@ DNS
   (GITHUB-679)
   [Wido den Hollander]
 
+Changes with Apache Libcloud 0.20.1
+-----------------------------------
+
+Compute
+~~~~~~~
+
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
 Changes with Apache Libcloud 0.20.0
--------------------------------------------
+-----------------------------------
 
 General
 ~~~~~~~

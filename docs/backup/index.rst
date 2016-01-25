@@ -3,7 +3,7 @@ Backup
 
 .. note::
 
-    Backup API is available in Libcloud 0.21.0 and higher.
+    Backup API is available in Libcloud 1.0.0-pre1 and higher.
 
 .. note::
 

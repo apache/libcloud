@@ -3,7 +3,7 @@ Container
 
 .. note::
 
-    Container API is available in Libcloud 1.0.0RC and higher.
+    Container API is available in Libcloud 1.0.0-pre1 and higher.
 
 .. note::
 
@@ -16,10 +16,10 @@ on-premise installations of software like Docker as well as interfacing with Clo
 .. graphviz::
 
    digraph G {
-        graph [	fontname = "Roboto Slab",
-		fontsize = 18,
-		label = "Using the driver to deploy containers with or without clusters" ];
-        
+        graph [ fontname = "Roboto Slab",
+        fontsize = 18,
+        label = "Using the driver to deploy containers with or without clusters" ];
+
         subgraph noncluster {
             style=filled;
             color=lightgrey;
@@ -27,7 +27,7 @@ on-premise installations of software like Docker as well as interfacing with Clo
             list_images -> install_image -> deploy_container;
             label = "Non-Cluster Container Driver";
         }
-    
+
         subgraph cluster {
             node [style=filled];
             list_locations -> list_clusters -> create_cluster;
@@ -38,11 +38,11 @@ on-premise installations of software like Docker as well as interfacing with Clo
         __init__ -> list_locations;
         create_cluster -> list_images;
         deploy_container -> end;
-    
+
         __init__ [shape=square];
         end [shape=squae];
     }
- 
+
 For a working example of the container driver with cluster support, see the example for Amazon's Elastic Container Service:
 
 .. literalinclude:: /examples/container/ecs/deploy_container.py
@@ -101,7 +101,7 @@ Then using the Container driver, you can connect to that API and install images 
             create_node -> deploy_node;
             label = "Compute API";
         }
-    
+
         subgraph container {
             node [style=filled];
             __init__ -> install_image -> deploy_container;
@@ -111,11 +111,11 @@ Then using the Container driver, you can connect to that API and install images 
         start -> create_node;
         deploy_node -> __init__;
         deploy_container -> end;
-    
+
         start [shape=Mdiamond];
         end [shape=Msquare];
     }
- 
+
 
 Supported Providers
 -------------------

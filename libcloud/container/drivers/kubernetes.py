@@ -365,8 +365,7 @@ class KubernetesContainerDriver(ContainerDriver):
                 name=data['image'],
                 path=None,
                 version=None,
-                driver=self.connection.driver
-                ),
+                driver=self.connection.driver),
             ip_addresses=None,
             state=ContainerState.RUNNING,
             driver=self.connection.driver,
