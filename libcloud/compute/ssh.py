@@ -440,6 +440,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     break
 
                 data = recv_method(self.CHUNK_SIZE)
+                result_bytes += b(data)
 
         # We only decode data at the end because a single chunk could contain
         # a part of multi byte UTF-8 character (whole multi bytes character

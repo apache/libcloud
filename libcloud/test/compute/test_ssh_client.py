@@ -320,6 +320,88 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         self.assertEqual(cmd3, ['ssh', '-i', '/home/my.key',
                                 '-oConnectTimeout=5', 'root@localhost'])
 
+    def test_consume_stdout(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, False]
+        chan.recv.side_effect = ['123', '456']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual(u'123456', stdout)
+        self.assertEqual(len(stdout), 6)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, False]
+        chan.recv.side_effect = ['987', '6543210']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual(u'9876543210', stdout)
+        self.assertEqual(len(stdout), 10)
+
+    def test_consume_stderr(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, False]
+        chan.recv_stderr.side_effect = ['123', '456']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual(u'123456', stderr)
+        self.assertEqual(len(stderr), 6)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, False]
+        chan.recv_stderr.side_effect = ['987', '6543210']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual(u'9876543210', stderr)
+        self.assertEqual(len(stderr), 10)
+
+    def test_consume_stdout_chunk_contains_part_of_multi_byte_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, True, True, False]
+        chan.recv.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual(u'\U00010348', stdout)
+        self.assertEqual(len(stdout), 1)
+
+    def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, True, True, False]
+        chan.recv_stderr.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual(u'\U00010348', stderr)
+        self.assertEqual(len(stderr), 1)
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
