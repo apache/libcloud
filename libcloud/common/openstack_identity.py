@@ -233,6 +233,12 @@ class OpenStackServiceCatalog(object):
         endpoints = []
 
         for entry in self._entries:
+            """
+                if XXX and YYYY != XXX 
+                provides support for partials lookups
+                i.e. This lets you pass in only one of them, neither, or both,
+                and it does the right thing in all cases.
+            """
             if service_type and entry.service_type != service_type:
                 continue
 
