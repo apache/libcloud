@@ -38,6 +38,7 @@ else:
     import paramiko
 
 
+@unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
 class ParamikoSSHClientTests(LibcloudTestCase):
 
     @patch('paramiko.SSHClient', Mock)
@@ -256,70 +257,6 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         self.assertTrue(content.find(expected_msg) != -1)
 
-
-if not ParamikoSSHClient:
-    class ParamikoSSHClientTests(LibcloudTestCase):  # NOQA
-        pass
-
-
-class ShellOutSSHClientTests(LibcloudTestCase):
-
-    def test_password_auth_not_supported(self):
-        try:
-            ShellOutSSHClient(hostname='localhost', username='foo',
-                              password='bar')
-        except ValueError:
-            e = sys.exc_info()[1]
-            msg = str(e)
-            self.assertTrue('ShellOutSSHClient only supports key auth' in msg)
-        else:
-            self.fail('Exception was not thrown')
-
-    def test_ssh_executable_not_available(self):
-        class MockChild(object):
-            returncode = 127
-
-            def communicate(*args, **kwargs):
-                pass
-
-        def mock_popen(*args, **kwargs):
-            return MockChild()
-
-        with patch('subprocess.Popen', mock_popen):
-            try:
-                ShellOutSSHClient(hostname='localhost', username='foo')
-            except ValueError:
-                e = sys.exc_info()[1]
-                msg = str(e)
-                self.assertTrue('ssh client is not available' in msg)
-            else:
-                self.fail('Exception was not thrown')
-
-    def test_connect_success(self):
-        client = ShellOutSSHClient(hostname='localhost', username='root')
-        self.assertTrue(client.connect())
-
-    def test_close_success(self):
-        client = ShellOutSSHClient(hostname='localhost', username='root')
-        self.assertTrue(client.close())
-
-    def test_get_base_ssh_command(self):
-        client1 = ShellOutSSHClient(hostname='localhost', username='root')
-        client2 = ShellOutSSHClient(hostname='localhost', username='root',
-                                    key='/home/my.key')
-        client3 = ShellOutSSHClient(hostname='localhost', username='root',
-                                    key='/home/my.key', timeout=5)
-
-        cmd1 = client1._get_base_ssh_command()
-        cmd2 = client2._get_base_ssh_command()
-        cmd3 = client3._get_base_ssh_command()
-
-        self.assertEqual(cmd1, ['ssh', 'root@localhost'])
-        self.assertEqual(cmd2, ['ssh', '-i', '/home/my.key',
-                                'root@localhost'])
-        self.assertEqual(cmd3, ['ssh', '-i', '/home/my.key',
-                                '-oConnectTimeout=5', 'root@localhost'])
-
     def test_consume_stdout(self):
         conn_params = {'hostname': 'dummy.host.org',
                        'username': 'ubuntu'}
@@ -401,6 +338,65 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         stderr = client._consume_stderr(chan).getvalue()
         self.assertEqual(u'\U00010348', stderr)
         self.assertEqual(len(stderr), 1)
+
+
+class ShellOutSSHClientTests(LibcloudTestCase):
+
+    def test_password_auth_not_supported(self):
+        try:
+            ShellOutSSHClient(hostname='localhost', username='foo',
+                              password='bar')
+        except ValueError:
+            e = sys.exc_info()[1]
+            msg = str(e)
+            self.assertTrue('ShellOutSSHClient only supports key auth' in msg)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ssh_executable_not_available(self):
+        class MockChild(object):
+            returncode = 127
+
+            def communicate(*args, **kwargs):
+                pass
+
+        def mock_popen(*args, **kwargs):
+            return MockChild()
+
+        with patch('subprocess.Popen', mock_popen):
+            try:
+                ShellOutSSHClient(hostname='localhost', username='foo')
+            except ValueError:
+                e = sys.exc_info()[1]
+                msg = str(e)
+                self.assertTrue('ssh client is not available' in msg)
+            else:
+                self.fail('Exception was not thrown')
+
+    def test_connect_success(self):
+        client = ShellOutSSHClient(hostname='localhost', username='root')
+        self.assertTrue(client.connect())
+
+    def test_close_success(self):
+        client = ShellOutSSHClient(hostname='localhost', username='root')
+        self.assertTrue(client.close())
+
+    def test_get_base_ssh_command(self):
+        client1 = ShellOutSSHClient(hostname='localhost', username='root')
+        client2 = ShellOutSSHClient(hostname='localhost', username='root',
+                                    key='/home/my.key')
+        client3 = ShellOutSSHClient(hostname='localhost', username='root',
+                                    key='/home/my.key', timeout=5)
+
+        cmd1 = client1._get_base_ssh_command()
+        cmd2 = client2._get_base_ssh_command()
+        cmd3 = client3._get_base_ssh_command()
+
+        self.assertEqual(cmd1, ['ssh', 'root@localhost'])
+        self.assertEqual(cmd2, ['ssh', '-i', '/home/my.key',
+                                'root@localhost'])
+        self.assertEqual(cmd3, ['ssh', '-i', '/home/my.key',
+                                '-oConnectTimeout=5', 'root@localhost'])
 
 
 if __name__ == '__main__':
