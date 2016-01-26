@@ -6359,12 +6359,23 @@ class EC2APSENodeDriver(EC2NodeDriver):
     _region = 'ap-southeast-1'
 
 
-class EC2APNENodeDriver(EC2NodeDriver):
+class EC2APNE1NodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region.
+    Driver class for EC2 in the Northeast Asia Pacific 1(Tokyo) Region.
     """
     name = 'Amazon EC2 (ap-northeast-1)'
     _region = 'ap-northeast-1'
+
+
+EC2APNENodeDriver = EC2APNE1NodeDriver  # fallback
+
+
+class EC2APNE2NodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Northeast Asia Pacific 2(Seoul) Region.
+    """
+    name = 'Amazon EC2 (ap-northeast-2)'
+    _region = 'ap-northeast-2'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
