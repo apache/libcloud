@@ -1042,7 +1042,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-northeast-2.amazonaws.com',
         'api_name': 'ec2_ap_northeast',
         'country': 'South Korea',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             'c4.large',
             'c4.xlarge',
