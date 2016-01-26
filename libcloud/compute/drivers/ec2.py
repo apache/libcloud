@@ -1054,7 +1054,6 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
-            'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
