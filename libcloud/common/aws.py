@@ -50,6 +50,7 @@ __all__ = [
 ]
 
 DEFAULT_SIGNATURE_VERSION = '2'
+UNSIGNED_PAYLOAD = 'UNSIGNED-PAYLOAD'
 
 
 class AWSBaseResponse(XmlResponse):
@@ -260,10 +261,6 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
     def _get_authorization_v4_header(self, params, headers, dt, method='GET',
                                      path='/', data=None):
-        assert method in ['GET', 'POST'], 'AWS Signature V4 ' \
-                                          'not implemented for ' \
-                                          'other methods than GET and POST'
-
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(params=params, headers=headers,
@@ -322,10 +319,14 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                           for k, v in sorted(headers.items())]) + '\n'
 
     def _get_payload_hash(self, method, data=None):
-        if method == 'GET':
+        if method in ('POST', 'PUT'):
+            if data:
+                return _hash(data)
+            else:
+                # When upload file, we can't know payload here even if given
+                return UNSIGNED_PAYLOAD
+        else:
             return _hash('')
-        elif method == 'POST':
-            return _hash(data)
 
     def _get_request_params(self, params):
         # For self.method == GET
