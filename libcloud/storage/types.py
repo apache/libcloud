@@ -50,6 +50,8 @@ class Provider(object):
     S3_EU_WEST = 's3_eu_west'
     S3_AP_SOUTHEAST = 's3_ap_southeast'
     S3_AP_NORTHEAST = 's3_ap_northeast'
+    S3_AP_NORTHEAST1 = 's3_ap_northeast_1'
+    S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
     S3_SA_EAST = 's3_sa_east'
     NINEFOLD = 'ninefold'
     GOOGLE_STORAGE = 'google_storage'
