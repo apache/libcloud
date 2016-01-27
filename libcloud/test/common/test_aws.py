@@ -5,6 +5,8 @@ from datetime import datetime
 import mock
 
 from libcloud.common.aws import SignedAWSConnection
+from libcloud.common.aws import UNSIGNED_PAYLOAD
+from libcloud.common.aws import AWSRequestSignerAlgorithmV2
 from libcloud.common.aws import AWSRequestSignerAlgorithmV4
 from libcloud.test import LibcloudTestCase
 
@@ -52,11 +54,6 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
                               'Credential=my_key/20150304/my_region/my_service/aws4_request, '
                               'SignedHeaders=accept-encoding;host;user-agent;x-amz-date, '
                               'Signature=f9868f8414b3c3f856c7955019cc1691265541f5162b9b772d26044280d39bd3')
-
-    def test_v4_signature_raises_error_if_request_method_not_GET_OR_POST(self):
-        with self.assertRaises(Exception):
-            self.signer._get_authorization_v4_header(params={}, headers={},
-                                                     dt=self.now, method='PUT')
 
     def test_v4_signature_contains_user_id(self):
         sig = self.signer._get_authorization_v4_header(params={}, headers={},
@@ -218,6 +215,16 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         SignedAWSConnection.method = 'GET'
         self.assertEqual(self.signer._get_payload_hash(method='GET'),
                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    def test_get_payload_hash_with_data_for_PUT_requests(self):
+        SignedAWSConnection.method = 'PUT'
+        self.assertEqual(self.signer._get_payload_hash(method='POST', data='DUMMY'),
+                         'ceec12762e66397b56dad64fd270bb3d694c78fb9cd665354383c0626dbab013')
+
+    def test_get_payload_hash_with_empty_data_for_POST_requests(self):
+        SignedAWSConnection.method = 'POST'
+        self.assertEqual(self.signer._get_payload_hash(method='POST'),
+                         UNSIGNED_PAYLOAD)
 
     def test_get_canonical_request(self):
         req = self.signer._get_canonical_request(
