@@ -1,8 +1,19 @@
 Changelog
 =========
 
-Changes with Apache Libcloud 1.0-pre1
--------------------------------------
+Change with current version of Apache Libcloud
+----------------------------------------------
+
+Compute
+~~~~~~~
+
+- Fix to set default signature version for AWS Seoul region to v4, removed non-supported size (hs1.xlarge)
+  (GITHUB-684)
+  [Geunwoo Shin]
+
+
+Changes with Apache Libcloud 1.0.0-pre1
+---------------------------------------
 
 General
 ~~~~~~~
@@ -176,7 +187,7 @@ Compute
   Dimension Data driver by using new ``ex_wait_for_state`` method.
   (LIBCLOUD-707, GITHUB-631)
   [Anthony Shaw]
-  
+
 - Added M4 pricing and instance information to EC2 driver
   (GITHUB-634)
   [Benjamin Zaitlen]
@@ -184,7 +195,7 @@ Compute
 - Added C4 instance information to EC2 driver
   (GITHUB-638)
   [amitofs]
-  
+
 - Allow location of the datacenter to be supplied in ProfitBricks driver
   (LIBCLOUD-771, GITHUB-635)
   [Joel Reymont]
@@ -276,7 +287,7 @@ General
 
 Compute
 ~~~~~~~
-  
+
 - Fixed malformed XML requests with Dimension Data driver.
   (LIBCLOUD-760, GITHUB-610)
   [Anthony Shaw]
