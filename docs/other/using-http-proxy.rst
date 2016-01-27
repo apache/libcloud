@@ -47,13 +47,13 @@ or a script.
 
 Without authentication:
 
-.. highlight:: none
+.. sourcecode:: none
 
     http_proxy=http://<proxy hostname>:<proxy port> python my_script.py
 
 With basic auth authentication:
 
-.. highlight:: none
+.. sourcecode:: none
 
     http_proxy=http://<username>:<password>@<proxy hostname>:<proxy port> python my_script.py
 
