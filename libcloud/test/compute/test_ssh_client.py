@@ -323,7 +323,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stdout = client._consume_stdout(chan).getvalue()
-        self.assertEqual(u('\U00010348'), stdout)
+        self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
         self.assertEqual(len(stdout), 1)
 
     def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
@@ -337,7 +337,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv_stderr.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stderr = client._consume_stderr(chan).getvalue()
-        self.assertEqual(u('\U00010348'), stderr)
+        self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
         self.assertEqual(len(stderr), 1)
 
 
