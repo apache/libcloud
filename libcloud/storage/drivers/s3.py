@@ -35,7 +35,8 @@ from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection
+from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection, \
+    SignedAWSConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
@@ -54,7 +55,9 @@ S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
-S3_AP_NORTHEAST_HOST = 's3-ap-northeast-1.amazonaws.com'
+S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
+S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
+S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
 
 API_VERSION = '2006-03-01'
@@ -958,14 +961,39 @@ class S3APSEStorageDriver(S3StorageDriver):
     ex_location_name = 'ap-southeast-1'
 
 
-class S3APNEConnection(S3Connection):
-    host = S3_AP_NORTHEAST_HOST
+class S3APNE1Connection(S3Connection):
+    host = S3_AP_NORTHEAST1_HOST
+
+S3APNEConnection = S3APNE1Connection
 
 
-class S3APNEStorageDriver(S3StorageDriver):
+class S3APNE1StorageDriver(S3StorageDriver):
     name = 'Amazon S3 (ap-northeast-1)'
     connectionCls = S3APNEConnection
     ex_location_name = 'ap-northeast-1'
+
+S3APNEStorageDriver = S3APNE1StorageDriver
+
+
+class S3APNE2Connection(SignedAWSConnection, BaseS3Connection):
+    host = S3_AP_NORTHEAST2_HOST
+    service_name = 's3'
+    version = API_VERSION
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, token=None,
+                 retry_delay=None, backoff=None):
+        super(S3APNE2Connection, self).__init__(user_id, key, secure, host,
+                                                port, url, timeout, proxy_url,
+                                                token, retry_delay, backoff,
+                                                4)  # force version 4
+
+
+class S3APNE2StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (ap-northeast-2)'
+    connectionCls = S3APNE2Connection
+    ex_location_name = 'ap-northeast-2'
+    region_name = 'ap-northeast-2'
 
 
 class S3SAEastConnection(S3Connection):
