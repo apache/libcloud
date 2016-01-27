@@ -191,6 +191,15 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         }),
             'Action=DescribeInstances&Filter.1.Name=state&Version=2013-10-15')
 
+    def test_get_canonical_headers_allow_numeric_header_value(self):
+        headers = {
+            'Accept-Encoding': 'gzip,deflate',
+            'Content-Length': 314
+        }
+        self.assertEqual(self.signer._get_canonical_headers(headers),
+                         'accept-encoding:gzip,deflate\n'
+                         'content-length:314\n')
+
     def test_get_request_params_allows_integers_as_value(self):
         self.assertEqual(self.signer._get_request_params({'Action': 'DescribeInstances', 'Port': 22}),
                          'Action=DescribeInstances&Port=22')

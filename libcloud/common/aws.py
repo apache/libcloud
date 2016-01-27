@@ -315,7 +315,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         return ';'.join([k.lower() for k in sorted(headers.keys())])
 
     def _get_canonical_headers(self, headers):
-        return '\n'.join([':'.join([k.lower(), v.strip()])
+        return '\n'.join([':'.join([k.lower(), str(v).strip()])
                           for k, v in sorted(headers.items())]) + '\n'
 
     def _get_payload_hash(self, method, data=None):
