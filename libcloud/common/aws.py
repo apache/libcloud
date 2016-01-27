@@ -252,6 +252,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                             data=None):
         now = datetime.utcnow()
         headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+        headers['X-AMZ-Content-SHA256'] = self._get_payload_hash(method, data)
         headers['Authorization'] = \
             self._get_authorization_v4_header(params=params, headers=headers,
                                               dt=now, method=method, path=path,
@@ -361,7 +362,7 @@ class SignedAWSConnection(AWSTokenConnection):
 
         if self.signature_version == '2':
             signer_cls = AWSRequestSignerAlgorithmV2
-        elif signature_version == '4':
+        elif self.signature_version == '4':
             signer_cls = AWSRequestSignerAlgorithmV4
         else:
             raise ValueError('Unsupported signature_version: %s' %
