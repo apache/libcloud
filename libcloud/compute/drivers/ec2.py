@@ -1042,7 +1042,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ap-northeast-2.amazonaws.com',
         'api_name': 'ec2_ap_northeast',
         'country': 'South Korea',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             'c4.large',
             'c4.xlarge',
@@ -1054,7 +1054,6 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
-            'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
@@ -6359,12 +6358,23 @@ class EC2APSENodeDriver(EC2NodeDriver):
     _region = 'ap-southeast-1'
 
 
-class EC2APNENodeDriver(EC2NodeDriver):
+class EC2APNE1NodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region.
+    Driver class for EC2 in the Northeast Asia Pacific 1(Tokyo) Region.
     """
     name = 'Amazon EC2 (ap-northeast-1)'
     _region = 'ap-northeast-1'
+
+
+EC2APNENodeDriver = EC2APNE1NodeDriver  # fallback
+
+
+class EC2APNE2NodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Northeast Asia Pacific 2(Seoul) Region.
+    """
+    name = 'Amazon EC2 (ap-northeast-2)'
+    _region = 'ap-northeast-2'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):

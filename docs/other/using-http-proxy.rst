@@ -5,7 +5,7 @@ Using an HTTP proxy
 
     Support for HTTP proxies is only available in Libcloud trunk and higher.
 
-Libcloud supports using an HTTP proxy for outgoing HTTP and HTTPS requests. 
+Libcloud supports using an HTTP proxy for outgoing HTTP and HTTPS requests.
 
 Proxy support has been tested with the following Python versions;
 
@@ -47,13 +47,13 @@ or a script.
 
 Without authentication:
 
-.. sourcecode:: python
+.. sourcecode:: none
 
     http_proxy=http://<proxy hostname>:<proxy port> python my_script.py
 
 With basic auth authentication:
 
-.. sourcecode:: python
+.. sourcecode:: none
 
     http_proxy=http://<username>:<password>@<proxy hostname>:<proxy port> python my_script.py
 
