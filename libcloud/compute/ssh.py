@@ -200,7 +200,8 @@ class ParamikoSSHClient(BaseSSHClient):
     """
 
     # Maximum number of bytes to read at once from a socket
-    CHUNK_SIZE = 1024
+    CHUNK_SIZE = 4096
+
     # How long to sleep while waiting for command to finish
     SLEEP_DELAY = 1.5
 
@@ -402,41 +403,50 @@ class ParamikoSSHClient(BaseSSHClient):
         """
         Try to consume stdout data from chan if it's receive ready.
         """
-
-        stdout = StringIO()
-        if chan.recv_ready():
-            data = chan.recv(self.CHUNK_SIZE)
-
-            while data:
-                stdout.write(b(data).decode('utf-8'))
-                ready = chan.recv_ready()
-
-                if not ready:
-                    break
-
-                data = chan.recv(self.CHUNK_SIZE)
-
+        stdout = self._consume_data_from_channel(
+            chan=chan,
+            recv_method=chan.recv,
+            recv_ready_method=chan.recv_ready)
         return stdout
 
     def _consume_stderr(self, chan):
         """
         Try to consume stderr data from chan if it's receive ready.
         """
+        stderr = self._consume_data_from_channel(
+            chan=chan,
+            recv_method=chan.recv_stderr,
+            recv_ready_method=chan.recv_stderr_ready)
+        return stderr
 
-        stderr = StringIO()
-        if chan.recv_stderr_ready():
-            data = chan.recv_stderr(self.CHUNK_SIZE)
+    def _consume_data_from_channel(self, chan, recv_method, recv_ready_method):
+        """
+        Try to consume data from the provided channel.
+
+        Keep in mind that data is only consumed if the channel is receive
+        ready.
+        """
+        result = StringIO()
+        result_bytes = bytearray()
+
+        if recv_ready_method():
+            data = recv_method(self.CHUNK_SIZE)
+            result_bytes += b(data)
 
             while data:
-                stderr.write(b(data).decode('utf-8'))
-                ready = chan.recv_stderr_ready()
+                ready = recv_ready_method()
 
                 if not ready:
                     break
 
-                data = chan.recv_stderr(self.CHUNK_SIZE)
+                data = recv_method(self.CHUNK_SIZE)
+                result_bytes += b(data)
 
-        return stderr
+        # We only decode data at the end because a single chunk could contain
+        # a part of multi byte UTF-8 character (whole multi bytes character
+        # could be split over two chunks)
+        result.write(result_bytes.decode('utf-8'))
+        return result
 
     def _get_pkey_object(self, key):
         """
