@@ -234,7 +234,7 @@ class OpenStackServiceCatalog(object):
 
         for entry in self._entries:
             """
-                if XXX and YYYY != XXX 
+                if XXX and YYYY != XXX
                 provides support for partials lookups
                 i.e. This lets you pass in only one of them, neither, or both,
                 and it does the right thing in all cases.
