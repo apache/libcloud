@@ -263,7 +263,7 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 
 
 class StorageMockHttp(MockHttp):
-    def putrequest(self, method, action):
+    def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
         pass
 
     def putheader(self, key, value):
