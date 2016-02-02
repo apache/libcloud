@@ -29,6 +29,14 @@ Compute
   (GITHUB-691)
   [Jeff Dunham]
 
+Storage
+~~~~~~~
+
+- Improvements to Google Auth for Storage and Compute and MIME bug fix
+  (LIBCLOUD-800, GITHUB-689)
+  [Scott Crunkleton]
+
+
 Changes with Apache Libcloud 1.0.0-pre1
 ---------------------------------------
 

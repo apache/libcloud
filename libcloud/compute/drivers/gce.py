@@ -22,6 +22,7 @@ import time
 import sys
 
 from libcloud.common.base import LazyObject
+from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
@@ -1070,7 +1071,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            GCEConnection.credential_file + '.' + self.project
+            GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
