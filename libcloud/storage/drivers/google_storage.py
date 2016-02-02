@@ -17,8 +17,9 @@ import copy
 
 import email.utils
 
+from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.google import GoogleAuthType
-from libcloud.common.google import GoogleBaseConnection
+from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.storage.drivers.s3 import BaseS3Connection
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 from libcloud.storage.drivers.s3 import S3RawResponse
@@ -31,12 +32,12 @@ API_VERSION = '2006-03-01'
 NAMESPACE = 'http://doc.s3.amazonaws.com/%s' % (API_VERSION)
 
 
-class GoogleStorageConnection(GoogleBaseConnection):
+class GoogleStorageConnection(ConnectionUserAndKey):
     """
     Represents a single connection to the Google storage API endpoint.
 
     This can either authenticate via the Google OAuth2 methods or via
-    the S3 interoperability method.
+    the S3 HMAC interoperability method.
     """
 
     host = 'storage.googleapis.com'
@@ -46,26 +47,22 @@ class GoogleStorageConnection(GoogleBaseConnection):
 
     def __init__(self, user_id, key, secure, auth_type=None,
                  credential_file=None, **kwargs):
-        super(GoogleStorageConnection, self).__init__(
-            user_id, key, secure=secure, auth_type=auth_type,
-            credential_file=credential_file, **kwargs)
+        self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
+        if GoogleAuthType.is_oauth2(self.auth_type):
+            self.oauth2_credential = GoogleOAuth2Credential(
+                user_id, key, self.auth_type, credential_file, **kwargs)
+        else:
+            self.oauth2_credential = None
+        super(GoogleStorageConnection, self).__init__(user_id, key, secure,
+                                                      **kwargs)
 
     def add_default_headers(self, headers):
-        if self.auth_type == GoogleAuthType.GCS_S3:
-            date = email.utils.formatdate(usegmt=True)
-            headers['Date'] = date
-        else:
-            headers = super(GoogleStorageConnection,
-                            self).add_default_headers(headers)
+        date = email.utils.formatdate(usegmt=True)
+        headers['Date'] = date
         project = self.get_project()
         if project:
             headers[self.PROJECT_ID_HEADER] = project
         return headers
-
-    def encode_data(self, data):
-        if self.auth_type == GoogleAuthType.GCS_S3:
-            return data
-        return super(GoogleStorageConnection, self).encode_data(data)
 
     def get_project(self):
         return getattr(self.driver, 'project')
@@ -76,8 +73,8 @@ class GoogleStorageConnection(GoogleBaseConnection):
             headers['Authorization'] = '%s %s:%s' % (SIGNATURE_IDENTIFIER,
                                                      self.user_id, signature)
         else:
-            params, headers = super(GoogleStorageConnection,
-                                    self).pre_connect_hook(params, headers)
+            headers['Authorization'] = ('Bearer ' +
+                                        self.oauth2_credential.access_token)
         return params, headers
 
     def _get_s3_auth_signature(self, params, headers):
@@ -126,8 +123,8 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         driver = GoogleStorageDriver(key=foo , secret=bar, ...)
 
-    Can also authenticate via Google Cloud Storage's S3 interoperability API.
-    S3 user keys are 20 alphanumeric characters, starting with GOOG.
+    Can also authenticate via Google Cloud Storage's S3 HMAC interoperability
+    API. S3 user keys are 20 alphanumeric characters, starting with GOOG.
 
     Example::
 
