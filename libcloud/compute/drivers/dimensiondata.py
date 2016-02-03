@@ -23,6 +23,7 @@ except ImportError:
 
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.common.dimensiondata import dd_object_to_id
 from libcloud.common.dimensiondata import (DimensionDataConnection,
                                            DimensionDataStatus)
 from libcloud.common.dimensiondata import DimensionDataNetwork
@@ -2026,30 +2027,22 @@ class DimensionDataNodeDriver(NodeDriver):
             else:
                 return NodeState.TERMINATED
 
-    def _location_to_location_id(self, location):
-        return self._dd_object_to_id(location, NodeLocation)
-
-    def _vlan_to_vlan_id(self, vlan):
-        return self._dd_object_to_id(vlan, DimensionDataVlan)
-
-    def _image_to_image_id(self, image):
-        return self._dd_object_to_id(image, NodeImage)
-
-    def _network_to_network_id(self, network):
-        return self._dd_object_to_id(network, DimensionDataNetwork)
-
-    def _network_domain_to_network_domain_id(self, network_domain):
-        return self._dd_object_to_id(network_domain,
-                                     DimensionDataNetworkDomain)
+    @staticmethod
+    def _location_to_location_id(location):
+        return dd_object_to_id(location, NodeLocation)
 
     @staticmethod
-    def _dd_object_to_id(obj, obj_type):
-        if isinstance(obj, obj_type):
-            return obj.id
-        elif isinstance(obj, basestring):
-            return obj
-        else:
-            raise TypeError(
-                "Invalid type looking for basestring or Object Type %s"
-                % obj_type.__name__
-            )
+    def _vlan_to_vlan_id(vlan):
+        return dd_object_to_id(vlan, DimensionDataVlan)
+
+    @staticmethod
+    def _image_to_image_id(image):
+        return dd_object_to_id(image, NodeImage)
+
+    @staticmethod
+    def _network_to_network_id(network):
+        return dd_object_to_id(network, DimensionDataNetwork)
+
+    @staticmethod
+    def _network_domain_to_network_domain_id(network_domain):
+        return dd_object_to_id(network_domain, DimensionDataNetworkDomain)
