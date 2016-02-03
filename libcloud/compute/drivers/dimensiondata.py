@@ -134,13 +134,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :keyword    ex_network:  Network to create the node within
                                  (required unless using ex_network_domain
-                                  or ex_primary_ipv4)
+                                 or ex_primary_ipv4)
 
         :type       ex_network: :class:`DimensionDataNetwork` or ``str``
 
         :keyword    ex_network_domain:  Network Domain to create the node
                                         (required unless using network
-                                         or ex_primary_ipv4)
+                                        or ex_primary_ipv4)
         :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
                                         or ``str``
 
@@ -150,7 +150,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :type       ex_primary_ipv4: ``str``
 
         :keyword    ex_vlan:  VLAN to create the node within
-                                        (required unless using network)
+                              (required unless using network)
         :type       ex_vlan: :class:`DimensionDataVlan` or ``str``
 
         :keyword    ex_memory_gb:  The amount of memory in GB for the server
