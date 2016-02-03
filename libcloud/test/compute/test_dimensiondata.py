@@ -236,7 +236,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     auth=rootPw,
                                     ex_description='test2 node',
                                     ex_network=None,
-                                    ex_isStarted=False)
+                                    ex_is_started=False)
 
     def test_create_node_mcp1_ipv4(self):
         rootPw = NodeAuthPassword('pass123')
@@ -246,7 +246,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        auth=rootPw,
                                        ex_description='test2 node',
                                        ex_primary_ipv4='10.0.0.1',
-                                       ex_isStarted=False)
+                                       ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
@@ -258,7 +258,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        auth=rootPw,
                                        ex_description='test2 node',
                                        ex_network='fakenetwork',
-                                       ex_isStarted=False)
+                                       ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
@@ -271,7 +271,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        ex_description='test2 node',
                                        ex_network_domain='fakenetworkdomain',
                                        ex_vlan='fakevlan',
-                                       ex_isStarted=False)
+                                       ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
@@ -284,7 +284,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        ex_description='test2 node',
                                        ex_network_domain='fakenetworkdomain',
                                        ex_primary_ipv4='10.0.0.1',
-                                       ex_isStarted=False)
+                                       ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
@@ -297,7 +297,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     auth=rootPw,
                                     ex_description='test2 node',
                                     ex_network_domain='fake_network_domain',
-                                    ex_isStarted=False)
+                                    ex_is_started=False)
 
     def test_create_node_mcp2_additional_nics(self):
         rootPw = NodeAuthPassword('pass123')
@@ -312,7 +312,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        ex_primary_ipv4='10.0.0.1',
                                        ex_additional_nics_vlan=additional_vlans,
                                        ex_additional_nics_ipv4=additional_ipv4,
-                                       ex_isStarted=False)
+                                       ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
@@ -327,7 +327,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_network_domain='fake_network_domain',
                                     ex_vlan='fake_vlan',
                                     ex_additional_nics_ipv4='badstring',
-                                    ex_isStarted=False)
+                                    ex_is_started=False)
 
     def test_create_node_bad_additional_nics_vlan(self):
         rootPw = NodeAuthPassword('pass123')
@@ -340,7 +340,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_network_domain='fake_network_domain',
                                     ex_vlan='fake_vlan',
                                     ex_additional_nics_vlan='badstring',
-                                    ex_isStarted=False)
+                                    ex_is_started=False)
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
