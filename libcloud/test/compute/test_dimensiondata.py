@@ -729,7 +729,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         )
 
     def test_priv_location_to_location_id_UNICODE(self):
-        datacenter = unicode('NA9')
+        datacenter = u'NA9'
         self.assertEqual(
             self.driver._location_to_location_id(datacenter),
             'NA9'
