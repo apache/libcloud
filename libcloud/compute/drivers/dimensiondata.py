@@ -221,18 +221,22 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_nodes(self):
+    def list_nodes(self, ex_location=None):
         """
-        List nodes deployed across all data center locations for your
-        organization.
+        List nodes deployed for your organization.
+
+        :keyword ex_location: The location filter
+        :type    location: :class:`NodeLocation` or ``str``
 
         :return: a list of `Node` objects
         :rtype: ``list`` of :class:`Node`
         """
-        nodes = self._to_nodes(
-            self.connection.request_with_orgId_api_2('server/server').object)
 
-        return nodes
+        node_list = []
+        for nodes in self.ex_list_nodes_paginated(location=ex_location):
+            node_list.extend(nodes)
+
+        return node_list
 
     def list_images(self, location=None):
         """
@@ -301,6 +305,31 @@ class DimensionDataNodeDriver(NodeDriver):
             self.connection
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
+
+    def ex_list_nodes_paginated(self, location=None):
+        """
+        Return a generator which yields node lists in pages
+
+        :keyword ex_location: The location filter
+        :type    location: :class:`NodeLocation` or ``str``
+
+        :return: a list of `Node` objects
+        :rtype: ``generator`` of `list` of :class:`Node`
+        """
+
+        params = {}
+        if location is not None:
+            if isinstance(location, NodeLocation):
+                params['datacenterId'] = location.id
+            else:
+                params['datacenterId'] = location
+
+        nodes_obj = self._list_nodes_single_page(params)
+        yield self._to_nodes(nodes_obj)
+        while nodes_obj.get('pageCount') >= nodes_obj.get('pageSize'):
+            params['pageNumber'] = int(nodes_obj.get('pageNumber')) + 1
+            nodes_obj = self._list_nodes_single_page(params)
+            yield self._to_nodes(nodes_obj)
 
     def ex_start_node(self, node):
         """
@@ -1387,6 +1416,10 @@ class DimensionDataNodeDriver(NodeDriver):
                 'image/customerImage',
                 params=params)
             .object, 'customerImage')
+
+    def _list_nodes_single_page(self, params={}):
+        return self.connection.request_with_orgId_api_2(
+            'server/server', params=params).object
 
     def _to_base_images(self, object, el_name='osImage'):
         images = []
