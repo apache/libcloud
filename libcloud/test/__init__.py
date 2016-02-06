@@ -123,6 +123,9 @@ class BaseMockHttpObject(object):
             param = qs[use_param][0].replace('.', '_').replace('-', '_')
             meth_name = '%s_%s' % (meth_name, param)
 
+        if meth_name == '':
+            meth_name = 'root'
+
         return meth_name
 
 
@@ -260,7 +263,7 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 
 
 class StorageMockHttp(MockHttp):
-    def putrequest(self, method, action):
+    def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
         pass
 
     def putheader(self, key, value):

@@ -1,5 +1,5 @@
 AuroraObjects Storage Driver Documentation
-======================================
+==========================================
 
 `PCextreme B.V.`_ is a Dutch cloud provider. It provides a public cloud offering
 under the name AuroraCompute. All cloud services are under the family name Aurora.
@@ -12,7 +12,7 @@ All data is stored on servers in the European Union.
     :target: https://www.pcextreme.com/aurora/objects
 
 Protocol
-------------------
+--------
 
 AuroraObjects talks the Amazon S3 protocol and thus supports almost all functions
 which the Amazon S3 storage driver supports.
@@ -21,7 +21,6 @@ It however does not support CDN support. Calling any of the CDN functions will r
 a LibcloudError.
 
 As a backend AuroraObjects uses `Ceph`_ for storage.
-
 
 Instantiating a driver
 ----------------------
@@ -34,9 +33,8 @@ With these credentials you can instantiate the driver:
 .. literalinclude:: /examples/storage/auroraobjects/instantiate.py
    :language: python
 
-
 Multipart uploads
-------------------
+-----------------
 
 AuroraObjects storage driver supports multipart uploads which means you can
 upload objects with a total size of up to 5 TB.
@@ -57,7 +55,6 @@ Examples
 --------
 
 Please refer to the Amazon S3 storage driver documentation for examples.
-
 
 API Docs
 --------

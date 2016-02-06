@@ -18,7 +18,7 @@ Elastic Load Balancing, so your servers can focus on their main task.
 
 
 Ok Now Tell me some advantages of using Elastic Load Balancing
----------------------------------------------------------------
+--------------------------------------------------------------
 
 * Distribution of requests to Amazon EC2 instances (servers)in multiple
   vailability Zones so that the risk of overloading one single instance
@@ -61,7 +61,7 @@ Now lets dive into the tutorial which will focus on libcloud Elastic
 Load Balancing interface for AWS.
 
 1. Creating a Connection
--------------------------
+------------------------
 
 The first step in accessing ELB is to create a connection to the service.
 
@@ -91,7 +91,7 @@ The base `libcloud` ELB API allows you to:
 * list protocols related to load balancer
 
 Non-standard functionality and extension methods
--------------------------------------------------
+------------------------------------------------
 
 The AWS ELB driver exposes a lot of `libcloud` non-standard
 functionalities through extension methods and arguments.
@@ -105,7 +105,7 @@ These functionalities include:
 * enable/disable policies on backend server & listeners
 
 2. Getting Existing Load Balancers
------------------------------------
+----------------------------------
 
 To retrieve any exiting load balancers available
 
@@ -116,7 +116,7 @@ this will return you a list of load balancers
 ``[<LoadBalancer: id=balancer_id, name=balancer_name, state=balancer_state>]``
 
 3. Creating New Load Balancers
--------------------------------
+------------------------------
 
 To create new load balancer initialise some members for the load balancer
 first
@@ -166,7 +166,7 @@ To delete a policy associated with the load balancer
 Will return ``True`` if it deletes the policy successfully.
 
 5. Enable/Disable Policy on Backend server
--------------------------------------------
+------------------------------------------
 
 Wait! first tell me about Policies
 ----------------------------------
@@ -194,7 +194,7 @@ To disable the policy you just need to pass the policies parameter as empty
 list
 
 6. Enable/Diable Policy on Listeners
--------------------------------------
+------------------------------------
 
 I don't have any idea about ``listeners``?
 ------------------------------------------

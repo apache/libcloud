@@ -76,6 +76,41 @@ __all__ = [
 RETRY_FAILED_HTTP_REQUESTS = False
 
 
+class LazyObject(object):
+    """An object that doesn't get initialized until accessed."""
+
+    @classmethod
+    def _proxy(cls, *lazy_init_args, **lazy_init_kwargs):
+        class Proxy(cls, object):
+            _lazy_obj = None
+
+            def __init__(self):
+                # Must override the lazy_cls __init__
+                pass
+
+            def __getattribute__(self, attr):
+                lazy_obj = object.__getattribute__(self, '_get_lazy_obj')()
+                return getattr(lazy_obj, attr)
+
+            def __setattr__(self, attr, value):
+                lazy_obj = object.__getattribute__(self, '_get_lazy_obj')()
+                setattr(lazy_obj, attr, value)
+
+            def _get_lazy_obj(self):
+                lazy_obj = object.__getattribute__(self, '_lazy_obj')
+                if lazy_obj is None:
+                    lazy_obj = cls(*lazy_init_args, **lazy_init_kwargs)
+                    object.__setattr__(self, '_lazy_obj', lazy_obj)
+                return lazy_obj
+
+        return Proxy()
+
+    @classmethod
+    def lazy(cls, *lazy_init_args, **lazy_init_kwargs):
+        """Create a lazily instantiated instance of the subclass, cls."""
+        return cls._proxy(*lazy_init_args, **lazy_init_kwargs)
+
+
 class HTTPResponse(httplib.HTTPResponse):
     # On python 2.6 some calls can hang because HEAD isn't quite properly
     # supported.
@@ -709,6 +744,7 @@ class Connection(object):
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
+        self.data = data
 
         # Extend default parameters
         params = self.add_default_params(params)
@@ -762,7 +798,9 @@ class Connection(object):
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
-                self.connection.putrequest(method, url)
+                self.connection.putrequest(method, url,
+                                           skip_host=1,
+                                           skip_accept_encoding=1)
 
                 for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
@@ -1055,7 +1093,7 @@ class BaseDriver(object):
         :param    secret: Secret password to be used (required)
         :type     secret: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
         :type     secure: ``bool``
 

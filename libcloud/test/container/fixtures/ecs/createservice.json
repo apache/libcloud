@@ -1,0 +1,30 @@
+{
+  "service": {
+    "clusterArn": "arn:aws:ecs:us-east-1:012345678910:cluster/default",
+    "deploymentConfiguration": {
+        "maximumPercent": 200,
+        "minimumHealthyPercent": 100
+    },
+    "deployments": [
+      {
+        "createdAt": 1430326887.362,
+        "desiredCount": 10,
+        "id": "ecs-svc/9223370606527888445",
+        "pendingCount": 0,
+        "runningCount": 0,
+        "status": "PRIMARY",
+        "taskDefinition": "arn:aws:ecs:us-east-1:012345678910:task-definition/ecs-demo:1",
+        "updatedAt": 1430326887.362
+      }
+    ],
+    "desiredCount": 10,
+    "events": [],
+    "loadBalancers": [],
+    "pendingCount": 0,
+    "runningCount": 0,
+    "serviceArn": "arn:aws:ecs:us-east-1:012345678910:service/test",
+    "serviceName": "test",
+    "status": "ACTIVE",
+    "taskDefinition": "arn:aws:ecs:us-east-1:012345678910:task-definition/ecs-demo:1"
+  }
+}

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datacenters xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="1" pageSize="250">
+    <datacenter id="NA9" type="MCP 2.0">
+        <displayName>US - East 3 - MCP 2.0</displayName>
+        <city>Ashburn</city>
+        <state>Virginia</state>
+        <country>US</country>
+        <vpnUrl>https://na9.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="2" maintenanceStatus="NORMAL">
+            <property name="MAX_NODE_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_NODE_CONNECTION_RATE_LIMIT" value="4000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_RATE_LIMIT" value="4000"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <diskSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <abbreviation>HPF</abbreviation>
+                <description>Faster than Standard. Uses 15000 RPM disk with Fast Cache.</description>
+            </diskSpeed>
+            <diskSpeed id="ECONOMY" default="false" available="true">
+                <displayName>Economy</displayName>
+                <abbreviation>ECN</abbreviation>
+                <description>Slower than Standard. Uses 7200 RPM disk without Fast Cache.</description>
+            </diskSpeed>
+            <cpuSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <description>Standard CPU Speed</description>
+            </cpuSpeed>
+                <cpuSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <description>Faster and more consistent than Standard. Suitable for applications that are more CPU intensive.</description>
+            </cpuSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="14000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="32"/>
+            <property name="MIN_MEMORY_GB" value="1"/>
+            <property name="MAX_MEMORY_GB" value="256"/>
+            <property name="VMWARE_HARDWARE_VERSION" value="vmx-10"/>
+            <property name="VLAN_SECURITY_GROUPS_ENABLED" value="false"/>
+        </hypervisor>
+        <backup type="COMMVAULT" maintenanceStatus="NORMAL"/>
+        <consoleAccess maintenanceStatius="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+</datacenters>

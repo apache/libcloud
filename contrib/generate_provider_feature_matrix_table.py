@@ -45,6 +45,16 @@ from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
 
+from libcloud.container.base import ContainerDriver
+from libcloud.container.providers import get_driver as get_container_driver
+from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
+from libcloud.container.types import Provider as ContainerProvider
+
+from libcloud.backup.base import BackupDriver
+from libcloud.backup.providers import get_driver as get_backup_driver
+from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
+from libcloud.backup.types import Provider as BackupProvider
+
 REQUIRED_DEPENDENCIES = [
     'pysphere'
 ]
@@ -88,7 +98,16 @@ BASE_API_METHODS = {
                     'get_container_cdn_url', 'get_object_cdn_url'],
     'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
             'create_zone', 'update_zone', 'create_record', 'update_record',
-            'delete_zone', 'delete_record']
+            'delete_zone', 'delete_record'],
+    'container': ['install_image', 'list_images', 'deploy_container',
+                  'get_container', 'start_container', 'stop_container',
+                  'restart_container', 'destroy_container', 'list_containers',
+                  'list_locations', 'create_cluster', 'destroy_cluster',
+                  'list_clusters'],
+    'backup': ['get_supported_target_types', 'list_targets', 'create_target', 'create_target_from_node',
+               'create_target_from_storage_container', 'update_target', 'delete_target', 'list_recovery_points',
+               'recover_target', 'recover_target_out_of_place', 'list_target_jobs', 'create_target_job',
+               'resume_target_job', 'suspend_target_job', 'cancel_target_job']
 }
 
 FRIENDLY_METHODS_NAMES = {
@@ -160,6 +179,38 @@ FRIENDLY_METHODS_NAMES = {
         'delete_zone': 'delete zone',
         'delete_record': 'delete record'
     },
+    'container': {
+        'install_image': 'install image',
+        'list_images': 'list images',
+        'deploy_container': 'deploy container',
+        'get_container': 'get container',
+        'list_containers': 'list containers',
+        'start_container': 'start container',
+        'stop_container': 'stop container',
+        'restart_container': 'restart container',
+        'destroy_container': 'destroy container',
+        'list_locations': 'list locations',
+        'create_cluster': 'create cluster',
+        'destroy_cluster': 'destroy cluster',
+        'list_clusters': 'list clusters'
+    },
+    'backup': {
+        'get_supported_target_types': 'get supported target types',
+        'list_targets': 'list targets',
+        'create_target': 'create target',
+        'create_target_from_node': 'create target from node',
+        'create_target_from_storage_container': 'create target from storage container',
+        'update_target': 'update target',
+        'delete_target': 'delete target',
+        'list_recovery_points': 'list recovery points',
+        'recover_target': 'recover target',
+        'recover_target_out_of_place': 'recover target out of place',
+        'list_target_jobs': 'list target jobs',
+        'create_target_job': 'create target job',
+        'resume_target_job': 'resume target job',
+        'suspend_target_job': 'suspend target job',
+        'cancel_target_job': 'cancel target job'
+    }
 }
 
 IGNORED_PROVIDERS = [
@@ -203,6 +254,16 @@ def generate_providers_table(api):
         drivers = DNS_DRIVERS
         provider = DNSProvider
         get_driver_method = get_dns_driver
+    elif api == 'container':
+        driver = ContainerDriver
+        drivers = CONTAINER_DRIVERS
+        provider = ContainerProvider
+        get_driver_method = get_container_driver
+    elif api == 'backup':
+        driver = BackupDriver
+        drivers = BACKUP_DRIVERS
+        provider = BackupProvider
+        get_driver_method = get_backup_driver
     else:
         raise Exception('Invalid api: %s' % (api))
 

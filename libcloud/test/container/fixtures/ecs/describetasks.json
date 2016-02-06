@@ -1,0 +1,35 @@
+{
+    "failures": [],
+    "tasks": [{
+            "clusterArn": "arn:aws:ecs:ap-southeast-2:647433528374:cluster/default",
+            "containerInstanceArn": "arn:aws:ecs:ap-southeast-2:647433528374:container-instance/13b83f4b-d557-48a6-a4d7-2b0e8068e62b",
+            "containers": [{
+                    "containerArn": "arn:aws:ecs:ap-southeast-2:647433528374:container/d56d4e2c-9804-42a7-9f2a-6029cb50d4a2",
+                    "lastStatus": "RUNNING",
+                    "name": "simple-app",
+                    "networkBindings": [{
+                            "bindIP": "0.0.0.0",
+                            "containerPort": 80,
+                            "hostPort": 80,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "taskArn": "arn:aws:ecs:ap-southeast-2:647433528374:task/c15bcab8-39e6-4c28-a47d-27b433269e5c"
+                }
+            ],
+            "createdAt": 1.451468104403E9,
+            "desiredStatus": "RUNNING",
+            "lastStatus": "RUNNING",
+            "overrides": {
+                "containerOverrides": [{
+                        "name": "simple-app"
+                    }
+                ]
+            },
+            "startedAt": 1.45146812139E9,
+            "startedBy": "ecs-svc/9223370585386692588",
+            "taskArn": "arn:aws:ecs:ap-southeast-2:647433528374:task/c15bcab8-39e6-4c28-a47d-27b433269e5c",
+            "taskDefinitionArn": "arn:aws:ecs:ap-southeast-2:647433528374:task-definition/console-sample-app-static:1"
+        }
+    ]
+}

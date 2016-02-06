@@ -1,0 +1,34 @@
+
+{
+  "files": [
+    {
+      "action": "upload",
+      "fileId": "abcd",
+      "fileName": "2.txt",
+      "size": 2,
+      "uploadTimestamp": 1450545966000
+    },
+    {
+      "action": "upload",
+      "fileId": "4_z481c37de2e1ab3bf5e150710_f108012807a71d788_d20160110_m155541_c001_v0001001_t0016",
+      "fileName": "test5.txt",
+      "size": 24,
+      "uploadTimestamp": 1452441341000
+    },
+    {
+      "action": "upload",
+      "fileId": "4_z481c37de2e1ab3bf5e150710_f1071961a62d3426d_d20160110_m155708_c001_v0001013_t0042",
+      "fileName": "test6.txt",
+      "size": 24,
+      "uploadTimestamp": 1452441428000
+    },
+    {
+      "action": "upload",
+      "fileId": "4_z481c37de2e1ab3bf5e150710_f1060bc60382f42a2_d20160111_m063042_c001_v0001012_t0008",
+      "fileName": "test8.txt",
+      "size": 24,
+      "uploadTimestamp": 1452493842000
+    }
+  ],
+  "nextFileName": null
+}

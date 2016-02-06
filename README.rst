@@ -34,6 +34,8 @@ Resources you can manage with Libcloud are divided into the following categories
   CloudFiles (``libcloud.storage.*``)
 * **Load Balancers** - Load Balancers as a Service, LBaaS (``libcloud.loadbalancer.*``)
 * **DNS** - DNS as a Service, DNSaaS (``libcloud.dns.*``)
+* **Container** - Container virtualization services (``libcloud.container.*``)
+
 
 Apache Libcloud is an Apache project, see <http://libcloud.apache.org> for
 more information.

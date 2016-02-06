@@ -32,6 +32,7 @@ from libcloud.common.google import (GoogleAuthError,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
                                     GoogleGCEServiceAcctAuthConnection,
+                                    GoogleOAuth2Credential,
                                     GoogleBaseConnection,
                                     _utcnow,
                                     _utc_timestamp)
@@ -47,8 +48,8 @@ except ImportError:
 
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-PEM_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.pem")
-JSON_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.json")
+PEM_KEY = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.pem')
+JSON_KEY = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.json')
 with open(JSON_KEY, 'r') as f:
     KEY_STR = json.loads(f.read())['private_key']
 
@@ -120,12 +121,12 @@ class GoogleTestCase(LibcloudTestCase):
         'libcloud.common.google.GoogleAuthType._is_gce', return_value=False)
 
     _read_token_file_patcher = mock.patch(
-        'libcloud.common.google.GoogleBaseConnection._get_token_from_file',
+        'libcloud.common.google.GoogleOAuth2Credential._get_token_from_file',
         return_value=STUB_TOKEN_FROM_FILE
     )
 
     _write_token_file_patcher = mock.patch(
-        'libcloud.common.google.GoogleBaseConnection._write_token_to_file')
+        'libcloud.common.google.GoogleOAuth2Credential._write_token_to_file')
 
     _ia_get_code_patcher = mock.patch(
         'libcloud.common.google.GoogleInstalledAppAuthConnection.get_code',
@@ -222,19 +223,89 @@ class GoogleInstalledAppAuthConnectionTest(GoogleTestCase):
 class GoogleAuthTypeTest(GoogleTestCase):
 
     def test_guess(self):
-        self.assertEqual(
-            GoogleAuthType.guess_type(GCE_PARAMS[0]),
-            GoogleAuthType.SA)
-        self.assertEqual(
-            GoogleAuthType.guess_type(GCE_PARAMS_IA[0]),
-            GoogleAuthType.IA)
+        self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS[0]),
+                         GoogleAuthType.SA)
+        self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_IA[0]),
+                         GoogleAuthType.IA)
         with mock.patch.object(GoogleAuthType, '_is_gce', return_value=True):
-            self.assertEqual(
-                GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
-                GoogleAuthType.GCE)
+            self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
+                             GoogleAuthType.GCE)
         self.assertEqual(
             GoogleAuthType.guess_type(GCS_S3_PARAMS[0]),
             GoogleAuthType.GCS_S3)
+
+
+class GoogleOAuth2CredentialTest(GoogleTestCase):
+
+    def test_init_oauth2(self):
+        kwargs = {'auth_type': GoogleAuthType.IA}
+        cred = GoogleOAuth2Credential(*GCE_PARAMS, **kwargs)
+
+        # If there is a viable token file, this gets used first
+        self.assertEqual(cred.token, STUB_TOKEN_FROM_FILE)
+
+        # No token file, get a new token. Check that it gets written to file.
+        with mock.patch.object(GoogleOAuth2Credential, '_get_token_from_file',
+                               return_value=None):
+            cred = GoogleOAuth2Credential(*GCE_PARAMS, **kwargs)
+            expected = STUB_IA_TOKEN
+            expected['expire_time'] = cred.token['expire_time']
+            self.assertEqual(cred.token, expected)
+            cred._write_token_to_file.assert_called_once_with()
+
+    def test_refresh(self):
+        args = list(GCE_PARAMS) + [GoogleAuthType.GCE]
+        cred = GoogleOAuth2Credential(*args)
+        cred._refresh_token = mock.Mock()
+
+        # Test getting an unexpired access token.
+        tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
+        cred.token = {'access_token': 'Access Token!',
+                      'expire_time': _utc_timestamp(tomorrow)}
+        cred.access_token
+        self.assertFalse(cred._refresh_token.called)
+
+        # Test getting an expired access token.
+        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+        cred.token = {'access_token': 'Access Token!',
+                      'expire_time': _utc_timestamp(yesterday)}
+        cred.access_token
+        self.assertTrue(cred._refresh_token.called)
+
+    def test_auth_connection(self):
+        # Test a bogus auth type
+        self.assertRaises(GoogleAuthError, GoogleOAuth2Credential, *GCE_PARAMS,
+                          **{'auth_type': 'XX'})
+        # Try to create an OAuth2 credential when dealing with a GCS S3
+        # interoperability auth type.
+        self.assertRaises(GoogleAuthError, GoogleOAuth2Credential, *GCE_PARAMS,
+                          **{'auth_type': GoogleAuthType.GCS_S3})
+
+        kwargs = {}
+
+        if SHA256:
+            kwargs['auth_type'] = GoogleAuthType.SA
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_PEM_KEY, **kwargs)
+            self.assertTrue(isinstance(cred1.oauth2_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_JSON_KEY, **kwargs)
+            self.assertTrue(isinstance(cred1.oauth2_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_KEY, **kwargs)
+            self.assertTrue(isinstance(cred1.oauth2_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+        kwargs['auth_type'] = GoogleAuthType.IA
+        cred2 = GoogleOAuth2Credential(*GCE_PARAMS_IA, **kwargs)
+        self.assertTrue(isinstance(cred2.oauth2_conn,
+                                   GoogleInstalledAppAuthConnection))
+
+        kwargs['auth_type'] = GoogleAuthType.GCE
+        cred3 = GoogleOAuth2Credential(*GCE_PARAMS_GCE, **kwargs)
+        self.assertTrue(isinstance(cred3.oauth2_conn,
+                                   GoogleGCEServiceAcctAuthConnection))
 
 
 class GoogleBaseConnectionTest(GoogleTestCase):
@@ -249,40 +320,6 @@ class GoogleBaseConnectionTest(GoogleTestCase):
         kwargs = {'scopes': self.mock_scopes,
                   'auth_type': GoogleAuthType.IA}
         self.conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
-
-    def test_auth_type(self):
-        self.assertRaises(GoogleAuthError, GoogleBaseConnection, *GCE_PARAMS,
-                          **{'auth_type': 'XX'})
-
-        kwargs = {'scopes': self.mock_scopes}
-
-        if SHA256:
-            kwargs['auth_type'] = GoogleAuthType.SA
-            conn1 = GoogleBaseConnection(*GCE_PARAMS_PEM_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.oauth2_conn,
-                                       GoogleServiceAcctAuthConnection))
-
-            conn1 = GoogleBaseConnection(*GCE_PARAMS_JSON_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.oauth2_conn,
-                                       GoogleServiceAcctAuthConnection))
-
-            conn1 = GoogleBaseConnection(*GCE_PARAMS_KEY, **kwargs)
-            self.assertTrue(isinstance(conn1.oauth2_conn,
-                                       GoogleServiceAcctAuthConnection))
-
-        kwargs['auth_type'] = GoogleAuthType.IA
-        conn2 = GoogleBaseConnection(*GCE_PARAMS_IA, **kwargs)
-        self.assertTrue(isinstance(conn2.oauth2_conn,
-                                   GoogleInstalledAppAuthConnection))
-
-        kwargs['auth_type'] = GoogleAuthType.GCE
-        conn3 = GoogleBaseConnection(*GCE_PARAMS_GCE, **kwargs)
-        self.assertTrue(isinstance(conn3.oauth2_conn,
-                                   GoogleGCEServiceAcctAuthConnection))
-
-        kwargs['auth_type'] = GoogleAuthType.GCS_S3
-        conn4 = GoogleBaseConnection(*GCS_S3_PARAMS, **kwargs)
-        self.assertIsNone(conn4.oauth2_conn)
 
     def test_add_default_headers(self):
         old_headers = {}
@@ -346,24 +383,6 @@ class GoogleBaseConnectionTest(GoogleTestCase):
         request2 = self.conn.morph_action_hook(action2)
         self.assertEqual(request1, expected_request)
         self.assertEqual(request2, expected_request)
-
-    def test_init_oauth2(self):
-        mock_scopes = ['https://www.googleapis.com/auth/foo']
-        kwargs = {'scopes': mock_scopes,
-                  'auth_type': GoogleAuthType.IA}
-        conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
-
-        # If there is a viable token file, this gets used first
-        self.assertEqual(conn.oauth2_token, STUB_TOKEN_FROM_FILE)
-
-        # No token file, get a new token. Check that it gets written to file.
-        with mock.patch.object(GoogleBaseConnection,
-                               '_get_token_from_file', return_value=None):
-            conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
-            expected = STUB_IA_TOKEN
-            expected['expire_time'] = conn.oauth2_token['expire_time']
-            self.assertEqual(conn.oauth2_token, expected)
-            conn._write_token_to_file.assert_called_once_with()
 
 
 class GoogleAuthMockHttp(MockHttp):

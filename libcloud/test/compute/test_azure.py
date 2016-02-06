@@ -113,7 +113,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertListEqual(img0.public_ips, ["191.235.135.62"])
         self.assertListEqual(img0.private_ips, ["100.92.66.69"])
         self.assertEqual(img0.size, None)
-        self.assertEqual(img0.state, 0)
+        self.assertEqual(img0.state, NodeState.RUNNING)
         self.assertTrue(isinstance(img0.extra, dict))
         extra = img0.extra
         self.assertEqual(extra["instance_size"], 'Small')

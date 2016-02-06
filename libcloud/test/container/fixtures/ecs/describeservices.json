@@ -1,0 +1,33 @@
+{
+  "failures": [],
+  "services": [
+    {
+      "clusterArn": "arn:aws:ecs:us-west-2:012345678910:cluster/telemetry",
+      "deploymentConfiguration": {
+          "maximumPercent": 200,
+          "minimumHealthyPercent": 100
+      },
+      "deployments": [
+        {
+          "createdAt": 1432829320.611,
+          "desiredCount": 4,
+          "id": "ecs-svc/9223370604025455196",
+          "pendingCount": 0,
+          "runningCount": 4,
+          "status": "PRIMARY",
+          "taskDefinition": "arn:aws:ecs:us-west-2:012345678910:task-definition/hpcc-t2-medium:1",
+          "updatedAt": 1432829320.611
+        }
+      ],
+      "desiredCount": 4,
+      "events": [],
+      "loadBalancers": [],
+      "pendingCount": 0,
+      "runningCount": 4,
+      "serviceArn": "arn:aws:ecs:us-west-2:012345678910:service/bunker-buster",
+      "serviceName": "test",
+      "status": "ACTIVE",
+      "taskDefinition": "arn:aws:ecs:us-west-2:012345678910:task-definition/hpcc-t2-medium:1"
+    }
+  ]
+}

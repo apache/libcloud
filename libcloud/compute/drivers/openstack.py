@@ -2096,6 +2096,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         image_id = image.get('id', None) if image else None
         config_drive = api_node.get("config_drive", False)
         volumes_attached = api_node.get('os-extended-volumes:volumes_attached')
+        created = parse_date(api_node["created"])
 
         return Node(
             id=api_node['id'],
@@ -2104,6 +2105,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                           NodeState.UNKNOWN),
             public_ips=public_ips,
             private_ips=private_ips,
+            created_at=created,
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],

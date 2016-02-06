@@ -17,7 +17,7 @@ DigitalOcean dns driver only supports the v2.0 API requiring a Personal Access
 Token to initialize as the key.
 
 Instantiating the driver
--------------------------------------
+------------------------
 
 .. literalinclude:: /examples/dns/digitalocean/instantiate_driver.py
    :language: python

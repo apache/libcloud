@@ -775,6 +775,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(
             'fec0:4801:7808:52:16:3eff:fe60:187d' in node.private_ips)
 
+        # test creation date
+        self.assertEqual(node.created_at, datetime.datetime(2011, 10, 11, 0, 51, 39, tzinfo=UTC))
+
         self.assertEqual(node.extra.get('flavorId'), '2')
         self.assertEqual(node.extra.get('imageId'), '7')
         self.assertEqual(node.extra.get('metadata'), {})

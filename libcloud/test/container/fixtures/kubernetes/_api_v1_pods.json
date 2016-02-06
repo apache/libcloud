@@ -1,0 +1,94 @@
+{
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/pods",
+    "resourceVersion": "63"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "hello-world",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/pods/hello-world",
+        "uid": "1fad5411-b9af-11e5-8701-0050568157ec",
+        "resourceVersion": "62",
+        "creationTimestamp": "2016-01-13T04:35:50Z"
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "default-token-dpyh0",
+            "secret": {
+              "secretName": "default-token-dpyh0"
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "hello-world",
+            "image": "ubuntu:14.04",
+            "resources": {},
+            "volumeMounts": [
+              {
+                "name": "default-token-dpyh0",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "terminationMessagePath": "/dev/termination-log",
+            "imagePullPolicy": "IfNotPresent"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "default",
+        "serviceAccount": "default",
+        "nodeName": "127.0.0.1",
+        "securityContext": {}
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "False",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2016-01-13T04:37:09Z",
+            "reason": "ContainersNotReady",
+            "message": "containers with unready status: [hello-world]"
+          }
+        ],
+        "hostIP": "127.0.0.1",
+        "podIP": "172.17.0.2",
+        "startTime": "2016-01-13T04:35:50Z",
+        "containerStatuses": [
+          {
+            "name": "hello-world",
+            "state": {
+              "waiting": {
+                "reason": "CrashLoopBackOff",
+                "message": "Back-off 20s restarting failed container=hello-world pod=hello-world_default(1fad5411-b9af-11e5-8701-0050568157ec)"
+              }
+            },
+            "lastState": {
+              "terminated": {
+                "exitCode": 0,
+                "reason": "Completed",
+                "startedAt": "2016-01-13T04:37:07Z",
+                "finishedAt": "2016-01-13T04:37:07Z",
+                "containerID": "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+              }
+            },
+            "ready": false,
+            "restartCount": 2,
+            "image": "ubuntu:14.04",
+            "imageID": "docker://c4bea91afef3764163fd506f5c1090be1d34a9b63ece81867cb863455937048e",
+            "containerID": "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -4,6 +4,7 @@
 Provider              list zones list records create zone update zone create record update record delete zone delete record
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 `AuroraDNS`_          yes        yes          yes         no          yes           yes           yes         yes          
+`CloudFlare DNS`_     yes        yes          no          no          yes           yes           no          yes          
 `DigitalOcean`_       yes        yes          yes         no          yes           yes           yes         yes          
 `DNSimple`_           yes        yes          yes         no          yes           yes           yes         yes          
 `DurableDNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
@@ -26,6 +27,7 @@ Provider              list zones list records create zone update zone create rec
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
+.. _`CloudFlare DNS`: https://www.cloudflare.com
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
 .. _`DurableDNS`: https://durabledns.com

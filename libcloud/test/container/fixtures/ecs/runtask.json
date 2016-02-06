@@ -1,0 +1,26 @@
+{
+    "failures": [],
+    "tasks": [{
+            "clusterArn": "arn:aws:ecs:ap-southeast-2:647433528374:cluster/default",
+            "containerInstanceArn": "arn:aws:ecs:ap-southeast-2:647433528374:container-instance/13b83f4b-d557-48a6-a4d7-2b0e8068e62b",
+            "containers": [{
+                    "containerArn": "arn:aws:ecs:ap-southeast-2:647433528374:container/e443d10f-dea3-481e-8a1e-966b9ad4e498",
+                    "lastStatus": "PENDING",
+                    "name": "my-simple-app",
+                    "taskArn": "arn:aws:ecs:ap-southeast-2:647433528374:task/b7c76236-b96f-4de1-93c8-9da3c30ccc23"
+                }
+            ],
+            "createdAt": 1.45181726008E9,
+            "desiredStatus": "RUNNING",
+            "lastStatus": "PENDING",
+            "overrides": {
+                "containerOverrides": [{
+                        "name": "my-simple-app"
+                    }
+                ]
+            },
+            "taskArn": "arn:aws:ecs:ap-southeast-2:647433528374:task/b7c76236-b96f-4de1-93c8-9da3c30ccc23",
+            "taskDefinitionArn": "arn:aws:ecs:ap-southeast-2:647433528374:task-definition/my-simple-app:1"
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "test",
+    "selfLink": "/api/v1/namespaces/test",
+    "uid": "7cb89199-b9a6-11e5-8d53-0050568157ec",
+    "resourceVersion": "419",
+    "creationTimestamp": "2016-01-13T03:34:01Z"
+  },
+  "spec": {
+    "finalizers": [
+      "kubernetes"
+    ]
+  },
+  "status": {
+    "phase": "Active"
+  }
+}

@@ -19,7 +19,6 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -28,10 +27,9 @@ from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
@@ -43,33 +41,57 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        try:
-            self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        try:
+        with self.assertRaises(InvalidCredsError):
             self.driver.list_nodes()
-            self.assertTrue(
-                False)  # Above command should have thrown an InvalidCredsException
-        except InvalidCredsError:
-            pass
 
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
         self.assertEqual(len(ret), 5)
-        first_node = ret[0]
-        self.assertEqual(first_node.id, 'NA3')
-        self.assertEqual(first_node.name, 'US - West')
-        self.assertEqual(first_node.country, 'US')
+        first_loc = ret[0]
+        self.assertEqual(first_loc.id, 'NA3')
+        self.assertEqual(first_loc.name, 'US - West')
+        self.assertEqual(first_loc.country, 'US')
 
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 2)
+
+    def test_list_nodes_response_PAGINATED(self):
+        DimensionDataMockHttp.type = 'PAGINATED'
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 4)
+
+    # We're making sure here the filters make it to the URL
+    # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
+    def test_list_nodes_response_strings_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        ret = self.driver.list_nodes(ex_location='fake_loc', ex_name='fake_name',
+                                     ex_ipv6='fake_ipv6', ex_ipv4='fake_ipv4', ex_vlan='fake_vlan',
+                                     ex_image='fake_image', ex_deployed=True,
+                                     ex_started=True, ex_state='fake_state',
+                                     ex_network='fake_network', ex_network_domain='fake_network_domain')
+        self.assertTrue(isinstance(ret, list))
+
+    def test_list_nodes_response_LOCATION(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_locations()
+        first_loc = ret[0]
+        ret = self.driver.list_nodes(ex_location=first_loc)
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
+
+    def test_list_nodes_response_LOCATION_STR(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes(ex_location='NA3')
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
@@ -88,12 +110,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.reboot()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
@@ -105,12 +123,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.destroy()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -140,6 +154,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_STR(self):
+        rootPw = 'pass123'
+        image = self.driver.list_images()[0].id
+        network = self.driver.ex_list_networks()[0].id
+        node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_create_node_response_network_domain(self):
         rootPw = NodeAuthPassword('pass123')
         location = self.driver.ex_get_location_by_id('NA9')
@@ -160,15 +184,36 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_network_domain_STR(self):
+        rootPw = NodeAuthPassword('pass123')
+        location = self.driver.ex_get_location_by_id('NA9')
+        image = self.driver.list_images(location=location)[0]
+        network_domain = self.driver.ex_list_network_domains(location=location)[0].id
+        vlan = self.driver.ex_list_vlans(location=location)[0].id
+        cpu = DimensionDataServerCpuSpecification(
+            cpu_count=4,
+            cores_per_socket=1,
+            performance='HIGHPERFORMANCE'
+        )
+        node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain=network_domain,
+                                       ex_vlan=vlan,
+                                       ex_is_started=False, ex_cpu_specification=cpu,
+                                       ex_memory_gb=4)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        try:
-            self.driver.create_node(name='test2', image=image, auth=rootPw,
-                                    ex_description='test2 node', ex_network=None,
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network=None,
                                     ex_isStarted=False)
-        except ValueError:
-            pass
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -180,12 +225,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_shutdown_graceful(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
@@ -197,12 +238,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_start_node(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
@@ -220,12 +257,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_power_off(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_reset(self):
         node = Node(id='11', name=None, state=None,
@@ -237,7 +270,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         ret = self.driver.ex_attach_node_to_vlan(node, vlan)
-        self.assertTrue(ret)
+        self.assertTrue(ret is True)
 
     def test_ex_destroy_nic(self):
         node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
@@ -251,6 +284,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_create_network(self):
         location = self.driver.ex_get_location_by_id('NA9')
         net = self.driver.ex_create_network(location, "Test Network", "test")
+        self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
+        self.assertEqual(net.name, "Test Network")
+
+    def test_ex_create_network_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_create_network(location, "Test Network")
         self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
         self.assertEqual(net.name, "Test Network")
 
@@ -270,6 +309,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         net = self.driver.ex_create_network_domain(location=location,
                                                    name='test',
                                                    description='test',
+                                                   service_plan=plan)
+        self.assertEqual(net.name, 'test')
+        self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
+
+    def test_ex_create_network_domain_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        plan = NetworkDomainServicePlan.ADVANCED
+        net = self.driver.ex_create_network_domain(location=location,
+                                                   name='test',
                                                    service_plan=plan)
         self.assertEqual(net.name, 'test')
         self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
@@ -306,6 +354,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vlans[0].name, "Primary")
 
     def test_ex_create_vlan(self,):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        vlan = self.driver.ex_create_vlan(network_domain=net,
+                                          name='test',
+                                          private_ipv4_base_address='10.3.4.0',
+                                          private_ipv4_prefix_size='24',
+                                          description='test vlan')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
+
+    def test_ex_create_vlan_NO_DESCRIPTION(self,):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         vlan = self.driver.ex_create_vlan(network_domain=net,
                                           name='test',
@@ -487,6 +544,31 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_reconfigure_node(node, 4, 4, 1, 'HIGHPERFORMANCE')
         self.assertTrue(result)
 
+    def test_ex_get_location_by_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertTrue(location.id, 'NA9')
+
+    def test_ex_get_location_by_id_NO_LOCATION(self):
+        location = self.driver.ex_get_location_by_id(None)
+        self.assertIsNone(location)
+
+    def test_priv_location_to_location_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertEqual(
+            self.driver._location_to_location_id(location),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_STR(self):
+        self.assertEqual(
+            self.driver._location_to_location_id('NA9'),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_TYPEERROR(self):
+        with self.assertRaises(TypeError):
+            self.driver._location_to_location_id([1, 2, 3])
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -505,6 +587,14 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_PAGINATED(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -589,6 +679,11 @@ class DimensionDataMockHttp(MockHttp):
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation_NA9(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_4bba37be_506f_11e3_b29c_001517c4643e(self, method,
                                                                                                    url, body, headers):
         body = self.fixtures.load(
@@ -660,11 +755,64 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+        if url.endswith('datacenterId=NA3'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_NA3.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
+        if url.endswith('pageNumber=2'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_paginated.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_loc'
+            elif key == 'networkId':
+                assert value == 'fake_network'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'vlanId':
+                assert value == 'fake_vlan'
+            elif key == 'ipv6':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            elif key == 'started':
+                assert value == 'True'
+            elif key == 'deployed':
+                assert value == 'True'
+            elif key == 'sourceImageId':
+                assert value == 'fake_image'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
