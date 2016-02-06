@@ -16,6 +16,7 @@
 import sys
 from libcloud.utils.py3 import httplib
 
+from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.types import InvalidCredsError
 from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
 
@@ -57,6 +58,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(target.id, 'ee7c4b64-f7af-4a4f-8384-be362273530f')
         self.assertEqual(target.address, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(target.extra['servicePlan'], 'Enterprise')
+
+    def test_create_target_EXISTS(self):
+        DimensionDataMockHttp.type = 'EXISTS'
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.create_target(
+                'name',
+                'e75ead52-692f-4314-8725-c8a4f4d13a87',
+                extra={'servicePlan': 'Enterprise'})
+        self.assertEqual(context.exception.code, 'ERROR')
+        self.assertEqual(context.exception.msg, 'Cloud backup for this server is already enabled or being enabled (state: NORMAL).')
 
     def test_update_target(self):
         target = self.driver.list_targets()[0]
@@ -109,6 +120,10 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_myaccount_EXISTS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -140,6 +155,12 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify(
             self, method, url, body, headers):
