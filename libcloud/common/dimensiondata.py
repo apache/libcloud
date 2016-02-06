@@ -81,6 +81,18 @@ API_ENDPOINTS = {
 # Default API end-point for the base connection class.
 DEFAULT_REGION = 'dd-na'
 
+BAD_CODE_XML_ELEMENTS = (
+    ('responseCode', SERVER_NS),
+    ('reponseCode', TYPES_URN),
+    ('result', GENERAL_NS)
+)
+
+BAD_MESSAGE_XML_ELEMENTS = (
+    ('message', SERVER_NS),
+    ('message', TYPES_URN),
+    ('resultDetail', GENERAL_NS)
+)
+
 
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
@@ -97,12 +109,14 @@ class DimensionDataResponse(XmlResponse):
         body = self.parse_body()
 
         if self.status == httplib.BAD_REQUEST:
-            code = findtext(body, 'responseCode', SERVER_NS)
-            if code is None:
-                code = findtext(body, 'responseCode', TYPES_URN)
-            message = findtext(body, 'message', SERVER_NS)
-            if message is None:
-                message = findtext(body, 'message', TYPES_URN)
+            for response_code in BAD_CODE_XML_ELEMENTS:
+                code = findtext(body, response_code[0], response_code[1])
+                if code is not None:
+                    break
+            for message in BAD_MESSAGE_XML_ELEMENTS:
+                message = findtext(body, message[0], message[1])
+                if message is not None:
+                    break
             raise DimensionDataAPIException(code=code,
                                             msg=message,
                                             driver=self.connection.driver)
