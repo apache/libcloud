@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<servers xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="2" totalCount="2" pageSize="2">
+    <!-- MCP 1.0 Server -->
+    <server id="e75ead52-692f-4314-8725-c8a4f4d13a87" datacenterId="NA1">
+        <name>Production Web Server MCP 1</name>
+        <description>nopassword0</description>
+        <operatingSystem id="REDHAT632" displayName="REDHAT6/32" family="UNIX" />
+        <cpu count="4" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>2</memoryGb>
+        <disk id="74f81c56-96cc-4cca-b4d7-a88f641a6ea2" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL" />
+        <nic id="43b24e9e-c1c9-4d53-965b-89bcaa725103" privateIpv4="10.160.117.25" networkId="c550be0e-65c1-11e4-811f-005056806999" networkName="Test1" state="NORMAL" />
+        <backup assetId="5579f3a7-4c32-4cf5-8a7e-b45c36a35c10" servicePlan="Enterprise" state="NORMAL" />
+        <monitoring monitoringId="11049" servicePlan="ESSENTIALS" state="NORMAL" />
+        <sourceImageId>e9ec6eb4-4634-49de-b914-01eb74da5fb9</sourceImageId>
+        <createTime>2015-08-11T16:51:05.000Z</createTime>
+        <deployed>true</deployed>
+        <started>true</started>
+        <state>NORMAL</state>
+        <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="RUNNING" apiVersion="8389" />
+        <virtualHardware version="vmx-08" upToDate="false" />
+    </server>
+    <!-- MCP 2.0 Server -->
+    <server id="5a32d6e4-9707-4813-a269-56ab4d989f4d" datacenterId="NA9">
+        <name>Production Web Server MCP 2</name>
+        <description>Server to host our main web application.</description>
+        <operatingSystem id="WIN2008S32" displayName="WIN2008S/32" family="WINDOWS" />
+        <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>4</memoryGb>
+        <disk id="c2e1f199-116e-4dbc-9960-68720b832b0a" scsiId="0" sizeGb="50" speed="STANDARD" state="NORMAL" />
+        <networkInfo networkDomainId="553f26b6-2a73-42c3-a78b-6116f11291d0">
+            <primaryNic id="5e869800-df7b-4626-bcbf-8643b8be11fd" privateIpv4="10.0.4.8" ipv6="2607:f480:1111:1282:2960:fb72:7154:6160" vlanId="bc529e20-dc6f-42ba-be20-0ffe44d1993f" vlanName="Production VLAN" state="NORMAL" />
+        </networkInfo>
+        <backup assetId="91002e08-8dc1-47a1-ad33-04f501c06f87" servicePlan="Advanced" state="NORMAL" />
+        <monitoring monitoringId="11039" servicePlan="ESSENTIALS" state="NORMAL" />
+        <softwareLabel>MSSQL2008R2S</softwareLabel>
+        <sourceImageId>3ebf3c0f-90fe-4a8b-8585-6e65b316592c</sourceImageId>
+        <createTime>2015-12-02T10:31:33.000Z</createTime>
+        <deployed>true</deployed>
+        <started>true</started>
+        <state>PENDING_CHANGE</state>
+        <progress>
+            <action>SHUTDOWN_SERVER</action>
+            <requestTime>2015-12-02T11:07:40.000Z</requestTime>
+            <userName>devuser1</userName>
+        </progress>
+        <vmwareTools versionStatus="CURRENT" runningStatus="RUNNING" apiVersion="9354" />
+        <virtualHardware version="vmx-08" upToDate="false" />
+    </server>
+</servers>
+

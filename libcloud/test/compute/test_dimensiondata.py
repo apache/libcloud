@@ -53,15 +53,34 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
         self.assertEqual(len(ret), 5)
-        first_node = ret[0]
-        self.assertEqual(first_node.id, 'NA3')
-        self.assertEqual(first_node.name, 'US - West')
-        self.assertEqual(first_node.country, 'US')
+        first_loc = ret[0]
+        self.assertEqual(first_loc.id, 'NA3')
+        self.assertEqual(first_loc.name, 'US - West')
+        self.assertEqual(first_loc.country, 'US')
 
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 2)
+
+    def test_list_nodes_response_PAGINATED(self):
+        DimensionDataMockHttp.type = 'PAGINATED'
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 4)
+
+    def test_list_nodes_response_LOCATION(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_locations()
+        first_loc = ret[0]
+        ret = self.driver.list_nodes(ex_location=first_loc)
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
+
+    def test_list_nodes_response_LOCATION_STR(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes(ex_location='NA3')
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
@@ -481,6 +500,10 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_myaccount_PAGINATED(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_base_image(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_base_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -633,9 +656,24 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+        if url.endswith('datacenterId=NA3'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_NA3.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
+        if url.endswith('pageNumber=2'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_paginated.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
         body = self.fixtures.load(
