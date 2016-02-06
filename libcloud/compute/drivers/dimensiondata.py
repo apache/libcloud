@@ -94,7 +94,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :type       name:   ``str``
 
         :keyword    image:  OS Image to boot on node. (required)
-        :type       image:  :class:`NodeImage`
+        :type       image:  :class:`NodeImage` or ``str``
 
         :keyword    auth:   Initial authentication information for the
                             node (required)
@@ -150,9 +150,13 @@ class DimensionDataNodeDriver(NodeDriver):
         server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
         ET.SubElement(server_elm, "description").text = ex_description
-        ET.SubElement(server_elm, "imageId").text = image.id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
+
+        if isinstance(image, NodeImage):
+            ET.SubElement(server_elm, "imageId").text = image.id
+        else:
+            ET.SubElement(server_elm, "imageId").text = image
 
         if ex_cpu_specification is not None:
             cpu = ET.SubElement(server_elm, "cpu")
