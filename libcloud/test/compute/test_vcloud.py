@@ -423,6 +423,10 @@ class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
             'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_revert_to_snapshot(node)
 
+    def test_ex_acquire_mks_ticket(self):
+        node = self.driver.ex_find_node('testNode')
+        self.driver.ex_acquire_mks_ticket(node.id)
+
 
 class TerremarkMockHttp(MockHttp):
 
