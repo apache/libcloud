@@ -83,7 +83,7 @@ DEFAULT_REGION = 'dd-na'
 
 BAD_CODE_XML_ELEMENTS = (
     ('responseCode', SERVER_NS),
-    ('reponseCode', TYPES_URN),
+    ('responseCode', TYPES_URN),
     ('result', GENERAL_NS)
 )
 
