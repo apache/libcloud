@@ -1,4 +1,4 @@
-Changelog
+﻿Changelog
 =========
 
 Changes with Apache Libcloud in development
@@ -23,6 +23,11 @@ Compute
   non-supported size (hs1.xlarge)
   (GITHUB-684)
   [Geunwoo Shin]
+
+- Support filtering by location in list_nodes for dimension data compute driver
+  fix lack of paging support
+  (GITHUB-691)
+  [Jeff Dunham]
 
 Changes with Apache Libcloud 1.0.0-pre1
 ---------------------------------------
