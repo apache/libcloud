@@ -162,6 +162,7 @@ class MockHttp(BaseMockHttpObject):
     responseCls = MockResponse
     host = None
     port = None
+    proxy_scheme = None
     response = None
 
     type = None

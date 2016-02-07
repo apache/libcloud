@@ -29,6 +29,11 @@ from libcloud.httplib_ssl import LibcloudHTTPConnection
 from libcloud.utils.misc import retry
 
 
+class FakeResponse(object):
+    def __init__(self, **kwargs):
+        """nothing."""
+
+
 class BaseConnectionClassTestCase(unittest.TestCase):
     def test_parse_proxy_url(self):
         conn = LibcloudBaseConnection()
@@ -99,6 +104,40 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.5')
         self.assertEqual(conn.proxy_port, 3128)
+        del os.environ['http_proxy']
+
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.putheader')
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.endheaders')
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.putrequest')
+    def test_raw_request_with_proxy(self, patched_putrequest, *unused_args):
+        proxy_url = 'http://127.0.0.1:3128'
+        host = '1.2.3.4'
+        port = '31337'
+        method = 'FAKEMETHOD'
+        action = '/fakeendpoint'
+
+        conn = Connection(secure=True, host=host, port=port)
+        conn.set_http_proxy(proxy_url)
+        conn.responseCls = FakeResponse
+        conn.request(action, params={}, data=None, headers=None, method=method,
+                     raw=True)
+
+        proxied_action = "https://%s:%s%s" % (host, port, action)
+        patched_putrequest.assert_called_once_with(method, proxied_action)
+
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.endheaders')
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.putheader')
+    @patch('libcloud.httplib_ssl.LibcloudHTTPSConnection.putrequest')
+    def test_raw_request_without_proxy(self, patched_putrequest, *unused_args):
+        host = '1.2.3.4'
+        port = '31337'
+        method = 'FAKEMETHOD'
+        action = '/fakeendpoint'
+
+        conn = Connection(secure=True, host=host, port=port)
+        conn.request(action, params={}, data=None, headers=None, method=method,
+                     raw=True)
+        patched_putrequest.assert_called_once_with(method, action)
 
 
 class ConnectionClassTestCase(unittest.TestCase):

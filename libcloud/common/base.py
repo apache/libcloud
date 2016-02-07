@@ -798,7 +798,15 @@ class Connection(object):
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
-                self.connection.putrequest(method, url)
+                if self.connection.proxy_scheme == 'http':
+                    requesturl = "http%s://%s:%s%s" % (
+                        ('s' if self.secure else ''),
+                        self.host,
+                        self.port,
+                        url)
+                    self.connection.putrequest(method, requesturl)
+                else:
+                    self.connection.putrequest(method, url)
 
                 for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
