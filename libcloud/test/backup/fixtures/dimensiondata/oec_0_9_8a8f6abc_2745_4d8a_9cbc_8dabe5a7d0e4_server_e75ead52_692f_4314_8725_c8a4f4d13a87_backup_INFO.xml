@@ -1,0 +1,11 @@
+<ns5:BackupDetails assetId="fbf90c74-a6de-459e-942c-b75b5176ed72" servicePlan="Enterprise" state="NORMAL" xmlns:ns16="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns15="http://oec.api.opsource.net/schemas/reset" xmlns:ns9="http://oec.api.opsource.net/schemas/storage" xmlns:ns5="http://oec.api.opsource.net/schemas/backup" xmlns:ns12="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns13="http://oec.api.opsource.net/schemas/general" xmlns:ns6="http://oec.api.opsource.net/schemas/support" xmlns:ns7="http://oec.api.opsource.net/schemas/organization" xmlns:ns10="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns8="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns11="http://oec.api.opsource.net/schemas/vip" xmlns:ns2="http://oec.api.opsource.net/schemas/network" xmlns:ns4="http://oec.api.opsource.net/schemas/directory" xmlns:ns3="http://oec.api.opsource.net/schemas/admin">
+    <ns5:backupClient id="5fe7502e-f8d7-4547-93b5-f54ac6e58281" type="FA.Linux" isFileSystem="true" status="Offline">
+        <ns5:description>Linux File Agent</ns5:description>
+        <ns5:schedulePolicyName>12AM - 6AM</ns5:schedulePolicyName>
+        <ns5:storagePolicyName>30 Day Storage Policy + Secondary Copy</ns5:storagePolicyName>
+        <ns5:times nextBackup="2016-02-09T00:00:00" lastOnline="2016-02-08T06:10:25"/>
+        <ns5:totalBackupSizeGb>0</ns5:totalBackupSizeGb>
+        <ns5:downloadUrl>https://backups-na.cloud-vpn.net/PCS/BackupClientInstallerDownload/27645708a713cf406b47ccf73895cc8d27d4172c</ns5:downloadUrl>
+        <ns5:runningJob id="106130" name="Backup" percentageComplete="5" status="Waiting"/>
+    </ns5:backupClient>
+</ns5:BackupDetails>

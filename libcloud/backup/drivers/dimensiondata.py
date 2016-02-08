@@ -38,6 +38,41 @@ class DimensionDataBackupClientType(object):
         self.description = description
 
 
+class DimensionDataBackupDetails(object):
+    def __init__(self, asset_id, service_plan, state, clients=[]):
+        self.asset_id = asset_id
+        self.service_plan = service_plan
+        self.state = state
+        self.clients = clients
+
+
+class DimensionDataBackupClient(object):
+    def __init__(self, type, is_file_system, status, description,
+                 schedule_pol, storage_pol, trigger=None, email=None,
+                 last_backup_time=None, next_backup=None, download_url=None,
+                 total_backup_size=None, running_job=None):
+        self.type = type
+        self.is_file_system = is_file_system
+        self.status = status
+        self.description = description
+        self.schedule_policy = schedule_pol
+        self.storage_policy = storage_pol
+        self.trigger = trigger
+        self.email = email
+        self.last_backup_time = last_backup_time
+        self.next_backup = next_backup
+        self.total_backup_size = total_backup_size
+        self.download_url = download_url
+        self.running_job = running_job
+
+
+class DimensionDataBackupRunningJob(object):
+    def __init__(self, id, status, percentage=0):
+        self.id = id
+        self.percentage = percentage
+        self.status = status
+
+
 class DimensionDataBackupStoragePolicy(object):
     def __init__(self, name, retention_period, secondary_location):
         self.name = name
@@ -232,6 +267,8 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :param target: Backup target to delete
         :type  target: Instance of :class:`BackupTarget`
+
+        :rtype: ``bool``
         """
         response = self.connection.request_with_orgId_api_1(
             'server/%s/backup?disable' % (target.address),
@@ -384,6 +421,73 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
 
+    def ex_add_client_to_target(self, target, client, storage_policy,
+                                schedule_policy, trigger, email):
+        """
+        Add a client to a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget` or ``str``
+
+        :param client: Client to add to the target
+        :type  client: ``str``
+
+        :param storage_policy: The storage policy for the client
+        :type  storage_policy: ``str``
+
+        :param schedule_policy: The storage policy for the client
+        :type  schedule_policy: ``str``
+
+        :param trigger: The notify trigger for the client
+        :type  trigger: ``str``
+
+        :param email: The notify email for the client
+        :type  email: ``str``
+
+        :rtype: ``bool``
+        """
+
+        if isinstance(target, BackupTarget):
+            server_id = target.address
+        else:
+            server_id = target
+
+        backup_elm = ET.Element('NewBackupClient',
+                                {'xmlns': BACKUP_NS})
+        ET.SubElement(backup_elm, "type").text = client
+        ET.SubElement(backup_elm, "storagePolicyName").text = storage_policy
+        ET.SubElement(backup_elm, "schedulePolicyName").text = schedule_policy
+        alerting_elm = ET.SubElement(backup_elm, "alerting")
+        ET.SubElement(alerting_elm, "trigger").text = trigger
+        ET.SubElement(alerting_elm, "emailAddress").text = email
+
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup/client' % (server_id),
+            method='POST',
+            data=ET.tostring(backup_elm)).object
+
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_get_backup_details_for_target(self, target):
+        """
+        Returns a list of available backup client types
+
+        :param  target: The backup target to list available types for
+        :type   target: :class:`BackupTarget` or ``str``
+
+        :rtype: ``list`` of :class:`DimensionDataBackupDetails`
+        """
+
+        if isinstance(target, BackupTarget):
+            server_id = target.address
+        else:
+            server_id = target
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup' % (server_id),
+            method='GET').object
+        return self._to_backup_details(response)
+
     def ex_list_available_client_types(self, target):
         """
         Returns a list of available backup client types
@@ -459,6 +563,40 @@ class DimensionDataBackupDriver(BackupDriver):
             type=element.get('type'),
             description=element.get('description'),
             is_file_system=bool(element.get('isFileSystem') == 'true')
+        )
+
+    def _to_backup_details(self, object):
+        return DimensionDataBackupDetails(
+            asset_id=object.get('asset_id'),
+            service_plan=object.get('servicePlan'),
+            state=object.get('state'),
+            clients=self._to_clients(object)
+        )
+
+    def _to_clients(self, object):
+        elements = object.findall(fixxpath('backupClient', BACKUP_NS))
+
+        return [self._to_client(el) for el in elements]
+
+    def _to_client(self, element):
+        job = element.find(fixxpath('runningJob', BACKUP_NS))
+        running_job = None
+        if job is not None:
+            running_job = DimensionDataBackupRunningJob(
+                id=job.get('id'),
+                status=job.get('status'),
+                percentage=int(job.get('percentageComplete'))
+            )
+
+        return DimensionDataBackupClient(
+            type=element.get('type'),
+            is_file_system=bool(element.get('isFileSystem') == 'true'),
+            status=element.get('status'),
+            description=findtext(element, 'description', BACKUP_NS),
+            schedule_pol=findtext(element, 'schedulePolicyName', BACKUP_NS),
+            storage_pol=findtext(element, 'storagePolicyName', BACKUP_NS),
+            download_url=findtext(element, 'downloadUrl', BACKUP_NS),
+            running_job=running_job
         )
 
     def _to_targets(self, object):
