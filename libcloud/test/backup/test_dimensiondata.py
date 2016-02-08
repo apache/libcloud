@@ -79,6 +79,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         target = self.driver.list_targets()[0]
         self.assertTrue(self.driver.delete_target(target))
 
+    def test_ex_add_client_to_target(self):
+        target = self.driver.list_targets()[0]
+        self.assertTrue(
+            self.driver.ex_add_client_to_target(target, 'FA.Linux', '14 Day Storage Policy',
+                                                '12AM - 6AM', 'ON_FAILURE', 'nobody@example.com')
+        )
+
+    def test_ex_get_backup_details_for_target(self):
+        target = self.driver.list_targets()[0]
+        response = self.driver.ex_get_backup_details_for_target(target)
+        self.assertEqual(response.service_plan, 'Enterprise')
+        client = response.clients[0]
+        self.assertEqual(client.type, 'FA.Linux')
+        self.assertEqual(client.running_job.percentage, 5)
+
     def test_ex_list_available_client_types(self):
         target = self.driver.list_targets()[0]
         answer = self.driver.ex_list_available_client_types(target)
@@ -150,11 +165,32 @@ class DimensionDataMockHttp(MockHttp):
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_schedulePolicy.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client(
+            self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_SUCCESS_PUT.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            raise ValueError("Unknown Method {0}".format(method))
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'POST':
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_ENABLE.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == 'GET':
+            if url.endswith('disable'):
+                body = self.fixtures.load(
+                    'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DISABLE.xml')
+                return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+            body = self.fixtures.load(
+                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        else:
+            raise ValueError("Unknown Method {0}".format(method))
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS(
             self, method, url, body, headers):
