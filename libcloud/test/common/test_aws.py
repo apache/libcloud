@@ -227,7 +227,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
 
     def test_get_payload_hash_with_data_for_PUT_requests(self):
         SignedAWSConnection.method = 'PUT'
-        self.assertEqual(self.signer._get_payload_hash(method='POST', data='DUMMY'),
+        self.assertEqual(self.signer._get_payload_hash(method='PUT', data='DUMMY'),
                          'ceec12762e66397b56dad64fd270bb3d694c78fb9cd665354383c0626dbab013')
 
     def test_get_payload_hash_with_empty_data_for_POST_requests(self):
