@@ -35,8 +35,8 @@ from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection, \
-    SignedAWSConnection
+from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
+    AWSTokenConnection, SignedAWSConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
