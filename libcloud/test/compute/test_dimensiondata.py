@@ -68,6 +68,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 4)
 
+    # We're making sure here the filters make it to the URL
+    # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
+    def test_list_nodes_response_strings_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        ret = self.driver.list_nodes(ex_location='fake_loc', ex_name='fake_name',
+                                     ex_ipv6='fake_ipv6', ex_ipv4='fake_ipv4', ex_vlan='fake_vlan',
+                                     ex_image='fake_image', ex_deployed=True,
+                                     ex_started=True, ex_state='fake_state',
+                                     ex_network='fake_network', ex_network_domain='fake_network_domain')
+        self.assertTrue(isinstance(ret, list))
+
     def test_list_nodes_response_LOCATION(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
@@ -534,6 +545,10 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_base_image(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_base_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -704,6 +719,39 @@ class DimensionDataMockHttp(MockHttp):
             body = self.fixtures.load(
                 'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_paginated.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_loc'
+            elif key == 'networkId':
+                assert value == 'fake_network'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'vlanId':
+                assert value == 'fake_vlan'
+            elif key == 'ipv6':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            elif key == 'started':
+                assert value == 'True'
+            elif key == 'deployed':
+                assert value == 'True'
+            elif key == 'sourceImageId':
+                assert value == 'fake_image'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
         body = self.fixtures.load(
