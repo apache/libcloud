@@ -4,10 +4,9 @@ from datetime import datetime
 
 import mock
 
+from libcloud.common.aws import AWSRequestSignerAlgorithmV4
 from libcloud.common.aws import SignedAWSConnection
 from libcloud.common.aws import UNSIGNED_PAYLOAD
-from libcloud.common.aws import AWSRequestSignerAlgorithmV2
-from libcloud.common.aws import AWSRequestSignerAlgorithmV4
 from libcloud.test import LibcloudTestCase
 
 
