@@ -427,7 +427,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword network_domain: Filters the node list to nodes in this
                                  network domain
         :type    network_domain: :class:`DimensionDataNetworkDomain`
-                                    or ``str``
+                                 or ``str``
 
         :return: a list of `Node` objects
         :rtype: ``generator`` of `list` of :class:`Node`
