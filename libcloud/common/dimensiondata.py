@@ -815,32 +815,6 @@ class DimensionDataVirtualListenerCompatibility(object):
                 % (self.type, self.protocol))
 
 
-class DimensionDataBackupClientType(object):
-    """
-    A client type object for backups
-    """
-    def __init__(self, type, is_file_system, description):
-        """
-        Initialize an instance of :class:`DimensionDataBackupClientType`
-
-        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
-        :type  type: ``str``
-
-        :param is_file_system: The name of the iRule
-        :type  is_file_system: ``bool``
-
-        :param description: Description of the client
-        :type  description: ``str``
-        """
-        self.type = type
-        self.is_file_system = is_file_system
-        self.description = description
-
-    def __repr__(self):
-        return (('<DimensionDataBackupClientType: type=%s>')
-                % (self.type))
-
-
 class DimensionDataBackupDetails(object):
     """
     Dimension Data Backup Details represents information about
@@ -945,7 +919,7 @@ class DimensionDataBackupClientAlert(object):
         self.notify_list = notify_list
 
     def __repr__(self):
-        return (('<DimensionDataBackupClient: id=%s>')
+        return (('<DimensionDataBackupClientAlert: id=%s>')
                 % (self.asset_id))
 
 
@@ -975,6 +949,32 @@ class DimensionDataBackupClientRunningJob(object):
                 % (self.id))
 
 
+class DimensionDataBackupClientType(object):
+    """
+    A client type object for backups
+    """
+    def __init__(self, type, is_file_system, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientType`
+
+        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
+        :type  type: ``str``
+
+        :param is_file_system: The name of the iRule
+        :type  is_file_system: ``bool``
+
+        :param description: Description of the client
+        :type  description: ``str``
+        """
+        self.type = type
+        self.is_file_system = is_file_system
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientType: type=%s>')
+                % (self.type))
+
+
 class DimensionDataBackupStoragePolicy(object):
     """
     A representation of a storage policy
@@ -997,7 +997,7 @@ class DimensionDataBackupStoragePolicy(object):
         self.secondary_location = secondary_location
 
     def __repr__(self):
-        return (('<DimensionDataBackupClientStoragePolicy: name=%s>')
+        return (('<DimensionDataBackupStoragePolicy: name=%s>')
                 % (self.name))
 
 
@@ -1019,5 +1019,5 @@ class DimensionDataBackupSchedulePolicy(object):
         self.description = description
 
     def __repr__(self):
-        return (('<DimensionDataBackupClientSchedulePolicy: name=%s>')
+        return (('<DimensionDataBackupSchedulePolicy: name=%s>')
                 % (self.name))
