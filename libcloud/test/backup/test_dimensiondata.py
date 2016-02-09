@@ -100,8 +100,39 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         response = self.driver.ex_get_backup_details_for_target(target)
         self.assertEqual(response.service_plan, 'Enterprise')
         client = response.clients[0]
-        self.assertEqual(client.type, 'FA.Linux')
+        self.assertEqual(client.id, '30b1ff76-c76d-4d7c-b39d-3b72be0384c8')
+        self.assertEqual(client.type.type, 'FA.Linux')
         self.assertEqual(client.running_job.percentage, 5)
+        self.assertEqual(len(client.alert.notify_list), 2)
+        self.assertTrue(isinstance(client.alert.notify_list, list))
+
+    """Test a backup info for a target that does not have a client"""
+    def test_ex_get_backup_details_for_target_NO_CLIENT(self):
+        DimensionDataMockHttp.type = 'NOCLIENT'
+        response = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314_8725-c8a4f4d13a87')
+        self.assertEqual(response.service_plan, 'Essentials')
+        self.assertEqual(len(response.clients), 0)
+
+    """Test a backup details that has a client, but no alerting or running jobs"""
+    def test_ex_get_backup_details_for_target_NO_JOB_OR_ALERT(self):
+        DimensionDataMockHttp.type = 'NOJOB'
+        response = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314_8725-c8a4f4d13a87')
+        self.assertEqual(response.service_plan, 'Enterprise')
+        self.assertTrue(isinstance(response.clients, list))
+        self.assertEqual(len(response.clients), 1)
+        client = response.clients[0]
+        self.assertEqual(client.id, '30b1ff76-c76d-4d7c-b39d-3b72be0384c8')
+        self.assertEqual(client.type.type, 'FA.Linux')
+        self.assertIsNone(client.running_job)
+        self.assertIsNone(client.alert)
+
+    """Test getting backup info for a server that doesn't exist"""
+    def test_ex_get_backup_details_for_target_DISABLED(self):
+        DimensionDataMockHttp.type = 'DISABLED'
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314_8725-c8a4f4d13a87')
+        self.assertEqual(context.exception.code, 'ERROR')
+        self.assertEqual(context.exception.msg, 'Server e75ead52-692f-4314_8725-c8a4f4d13a87 has not been provisioned for backup')
 
     def test_ex_list_available_client_types(self):
         target = self.driver.list_targets()[0]
@@ -152,6 +183,18 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_myaccount_NOCLIENT(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_DISABLED(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_NOJOB(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
@@ -183,6 +226,33 @@ class DimensionDataMockHttp(MockHttp):
         else:
             raise ValueError("Unknown Method {0}".format(method))
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_NOCLIENT(
+            self, method, url, body, headers):
+        # only gets here are implemented
+        # If we get any other method something has gone wrong
+        assert(method == 'GET')
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_NOCLIENT.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DISABLED(
+            self, method, url, body, headers):
+        # only gets here are implemented
+        # If we get any other method something has gone wrong
+        assert(method == 'GET')
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_DISABLED.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_NOJOB(
+            self, method, url, body, headers):
+        # only gets here are implemented
+        # If we get any other method something has gone wrong
+        assert(method == 'GET')
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_NOJOB.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup(
             self, method, url, body, headers):
         if method == 'POST':
@@ -203,6 +273,9 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS(
             self, method, url, body, headers):
+        # only POSTs are implemented
+        # If we get any other method something has gone wrong
+        assert(method == 'POST')
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
