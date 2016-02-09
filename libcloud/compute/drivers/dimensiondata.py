@@ -255,38 +255,45 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         List nodes deployed for your organization.
 
-        :keyword ex_location: The location filter
+        :keyword ex_location: Filters the node list to nodes that are
+                              located in this location
         :type    ex_location: :class:`NodeLocation` or ``str``
 
-        :keyword ex_name: The name filter
+        :keyword ex_name: Filters the node list to nodes that have this name
         :type    ex_name ``str``
 
-        :keyword ex_ipv6: The ipv6 filter
+        :keyword ex_ipv6: Filters the node list to nodes that have this
+                          ipv6 address
         :type    ex_ipv6: ``str``
 
-        :keyword ex_ipv4: The ipv4 filter
+        :keyword ex_ipv4: Filters the node list to nodes that have this
+                          ipv4 address
         :type    ex_ipv4: ``str``
 
-        :keyword ex_vlan: The vlan filter
+        :keyword ex_vlan: Filters the node list to nodes that are in this VLAN
         :type    ex_vlan: :class:`DimensionDataVlan` or ``str``
 
-        :keyword ex_image: The image filter
+        :keyword ex_image: Filters the node list to nodes that have this image
         :type    ex_image: :class:`NodeImage` or ``str``
 
-        :keyword ex_deployed: The deployed filter
+        :keyword ex_deployed: Filters the node list to nodes that are
+                              deployed or not
         :type    ex_deployed: ``bool``
 
-        :keyword ex_started: The started filter
+        :keyword ex_started: Filters the node list to nodes that are
+                             started or not
         :type    ex_started: ``bool``
 
-        :keyword ex_state: The state filter
+        :keyword ex_state: Filters the node list by nodes that are in
+                           this state
         :type    ex_state: ``str``
 
-        :keyword ex_network: The network filter
-        :type    ex_notwork: :class:`DimensionDataNetwork` or ``str``
+        :keyword ex_network: Filters the node list to nodes in this network
+        :type    ex_network: :class:`DimensionDataNetwork` or ``str``
 
-        :keyword ex_network_domain: The network domain filter
-        :type    ex_notwork_domain: :class:`DimensionDataNetworkDomain`
+        :keyword ex_network_domain: Filters the node list to nodes in this
+                                    network domain
+        :type    ex_network_domain: :class:`DimensionDataNetworkDomain`
                                     or ``str``
 
         :return: a list of `Node` objects
@@ -381,38 +388,46 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Return a generator which yields node lists in pages
 
-        :keyword location: The location filter
+        :keyword location: Filters the node list to nodes that are
+                           located in this location
         :type    location: :class:`NodeLocation` or ``str``
 
-        :keyword name: The name filter
+        :keyword name: Filters the node list to nodes that have this name
         :type    name ``str``
 
-        :keyword ipv6: The ipv6 filter
+        :keyword ipv6: Filters the node list to nodes that have this
+                       ipv6 address
         :type    ipv6: ``str``
 
-        :keyword ipv4: The ipv4 filter
+        :keyword ipv4: Filters the node list to nodes that have this
+                       ipv4 address
         :type    ipv4: ``str``
 
-        :keyword vlan: The vlan filter
+        :keyword vlan: Filters the node list to nodes that are in this VLAN
         :type    vlan: :class:`DimensionDataVlan` or ``str``
 
-        :keyword image: The image filter
+        :keyword image: Filters the node list to nodes that have this image
         :type    image: :class:`NodeImage` or ``str``
 
-        :keyword deployed: The deployed filter
+        :keyword deployed: Filters the node list to nodes that are
+                           deployed or not
         :type    deployed: ``bool``
 
-        :keyword started: The started filter
+        :keyword started: Filters the node list to nodes that are
+                          started or not
         :type    started: ``bool``
 
-        :keyword state: The state filter
+        :keyword state: Filters the node list to nodes that are in
+                        this state
         :type    state: ``str``
 
-        :keyword network: The network filter
-        :type    notwork: :class:`DimensionDataNetwork` or ``str``
+        :keyword network: Filters the node list to nodes in this network
+        :type    network: :class:`DimensionDataNetwork` or ``str``
 
-        :keyword network_domain: The network domain filter
-        :type    notwork_domain: :class:`DimensionDataNetworkDomain` or ``str``
+        :keyword network_domain: Filters the node list to nodes in this
+                                 network domain
+        :type    network_domain: :class:`DimensionDataNetworkDomain`
+                                    or ``str``
 
         :return: a list of `Node` objects
         :rtype: ``generator`` of `list` of :class:`Node`
