@@ -22,68 +22,17 @@ from libcloud.backup.base import BackupDriver, BackupTarget
 from libcloud.backup.types import BackupTargetType
 from libcloud.backup.types import Provider
 from libcloud.common.dimensiondata import DimensionDataConnection
-from libcloud.common.dimensiondata import API_ENDPOINTS
-from libcloud.common.dimensiondata import DEFAULT_REGION
+from libcloud.common.dimensiondata import DimensionDataBackupClientType
+from libcloud.common.dimensiondata import DimensionDataBackupDetails
+from libcloud.common.dimensiondata import DimensionDataBackupClient
+from libcloud.common.dimensiondata import DimensionDataBackupClientAlert
+from libcloud.common.dimensiondata import DimensionDataBackupClientRunningJob
+from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
+from libcloud.common.dimensiondata import DimensionDataBackupSchedulePolicy
+from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import GENERAL_NS
+from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
 from libcloud.utils.xml import fixxpath, findtext, findall
-
-BACKUP_NS = 'http://oec.api.opsource.net/schemas/backup'
-
-
-class DimensionDataBackupClientType(object):
-    def __init__(self, type, is_file_system, description):
-        self.type = type
-        self.is_file_system = is_file_system
-        self.description = description
-
-
-class DimensionDataBackupDetails(object):
-    def __init__(self, asset_id, service_plan, state, clients=[]):
-        self.asset_id = asset_id
-        self.service_plan = service_plan
-        self.state = state
-        self.clients = clients
-
-
-class DimensionDataBackupClient(object):
-    def __init__(self, type, is_file_system, status, description,
-                 schedule_pol, storage_pol, trigger=None, email=None,
-                 last_backup_time=None, next_backup=None, download_url=None,
-                 total_backup_size=None, running_job=None):
-        self.type = type
-        self.is_file_system = is_file_system
-        self.status = status
-        self.description = description
-        self.schedule_policy = schedule_pol
-        self.storage_policy = storage_pol
-        self.trigger = trigger
-        self.email = email
-        self.last_backup_time = last_backup_time
-        self.next_backup = next_backup
-        self.total_backup_size = total_backup_size
-        self.download_url = download_url
-        self.running_job = running_job
-
-
-class DimensionDataBackupRunningJob(object):
-    def __init__(self, id, status, percentage=0):
-        self.id = id
-        self.percentage = percentage
-        self.status = status
-
-
-class DimensionDataBackupStoragePolicy(object):
-    def __init__(self, name, retention_period, secondary_location):
-        self.name = name
-        self.retention_period = retention_period
-        self.secondary_location = secondary_location
-
-
-class DimensionDataBackupSchedulePolicy(object):
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
 
 
 class DimensionDataBackupDriver(BackupDriver):
@@ -579,9 +528,12 @@ class DimensionDataBackupDriver(BackupDriver):
         return [self._to_client_type(el) for el in elements]
 
     def _to_client_type(self, element):
+        description = element.get('description')
+        if description is None:
+            description = findtext(element, 'description', BACKUP_NS)
         return DimensionDataBackupClientType(
             type=element.get('type'),
-            description=element.get('description'),
+            description=description,
             is_file_system=bool(element.get('isFileSystem') == 'true')
         )
 
@@ -599,25 +551,39 @@ class DimensionDataBackupDriver(BackupDriver):
         return [self._to_client(el) for el in elements]
 
     def _to_client(self, element):
-        job = element.find(fixxpath('runningJob', BACKUP_NS))
-        running_job = None
-        if job is not None:
-            running_job = DimensionDataBackupRunningJob(
-                id=job.get('id'),
-                status=job.get('status'),
-                percentage=int(job.get('percentageComplete'))
-            )
-
         return DimensionDataBackupClient(
-            type=element.get('type'),
-            is_file_system=bool(element.get('isFileSystem') == 'true'),
+            id=element.get('id'),
+            type=self._to_client_type(element, ),
             status=element.get('status'),
-            description=findtext(element, 'description', BACKUP_NS),
-            schedule_pol=findtext(element, 'schedulePolicyName', BACKUP_NS),
-            storage_pol=findtext(element, 'storagePolicyName', BACKUP_NS),
+            schedule_policy=findtext(element, 'schedulePolicyName', BACKUP_NS),
+            storage_policy=findtext(element, 'storagePolicyName', BACKUP_NS),
             download_url=findtext(element, 'downloadUrl', BACKUP_NS),
-            running_job=running_job
+            running_job=self._to_running_job(element),
+            alert=self._to_alert(element)
         )
+
+    def _to_alert(self, element):
+        alert = element.find(fixxpath('alerting', BACKUP_NS))
+        if alert is not None:
+            notify_list = [
+                email_addr.text for email_addr
+                in alert.findall(fixxpath('emailAddress', BACKUP_NS))
+            ]
+            return DimensionDataBackupClientAlert(
+                trigger=element.get('trigger'),
+                notify_list=notify_list
+            )
+        return None
+
+    def _to_running_job(self, element):
+        running_job = element.find(fixxpath('runningJob', BACKUP_NS))
+        if running_job is not None:
+            return DimensionDataBackupClientRunningJob(
+                id=running_job.get('id'),
+                status=running_job.get('status'),
+                percentage=int(running_job.get('percentageComplete'))
+            )
+        return None
 
     def _to_targets(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))

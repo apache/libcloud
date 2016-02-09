@@ -35,6 +35,7 @@ SERVER_NS = NAMESPACE_BASE + "/server"
 NETWORK_NS = NAMESPACE_BASE + "/network"
 DIRECTORY_NS = NAMESPACE_BASE + "/directory"
 GENERAL_NS = NAMESPACE_BASE + "/general"
+BACKUP_NS = NAMESPACE_BASE + "/backup"
 
 # API 2.0 Namespaces and URNs
 TYPES_URN = "urn:didata.com:api:cloud:types"
@@ -812,3 +813,211 @@ class DimensionDataVirtualListenerCompatibility(object):
         return (('<DimensionDataVirtualListenerCompatibility: '
                  'type=%s, protocol=%s>')
                 % (self.type, self.protocol))
+
+
+class DimensionDataBackupClientType(object):
+    """
+    A client type object for backups
+    """
+    def __init__(self, type, is_file_system, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientType`
+
+        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
+        :type  type: ``str``
+
+        :param is_file_system: The name of the iRule
+        :type  is_file_system: ``bool``
+
+        :param description: Description of the client
+        :type  description: ``str``
+        """
+        self.type = type
+        self.is_file_system = is_file_system
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientType: type=%s>')
+                % (self.type))
+
+
+class DimensionDataBackupDetails(object):
+    """
+    Dimension Data Backup Details represents information about
+    a targets backups configuration
+    """
+
+    def __init__(self, asset_id, service_plan, state, clients=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupDetails`
+
+        :param asset_id: Asset identification for backups
+        :type  asset_id: ``str``
+
+        :param service_plan: The service plan for backups. i.e (Essentials)
+        :type  service_plan: ``str``
+
+        :param state: The overall state this backup target. i.e. (unregistered)
+        :type  state: ``str``
+
+        :param clients: Backup clients attached to this target
+        :type  clients: ``list`` of :class:`DimensionDataBackupClient`
+        """
+        self.asset_id = asset_id
+        self.service_plan = service_plan
+        self.state = state
+        self.clients = clients
+
+    def __repr__(self):
+        return (('<DimensionDataBackupDetails: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClient(object):
+    """
+    An object that represents a backup client
+    """
+    def __init__(self, id, type, status,
+                 schedule_policy, storage_policy, download_url,
+                 alert=None, running_job=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClient`
+
+        :param id: Unique ID for the client
+        :type  id: ``str``
+
+        :param type: The type of client that this client is
+        :type  type: :class:`DimensionDataBackupClientType`
+
+        :param status: The states of this particular backup client.
+                       i.e. (Unregistered)
+        :type  status: ``str``
+
+        :param schedule_policy: The schedule policy for this client
+                                NOTE: Dimension Data only sends back the name
+                                of the schedule policy, no further details
+        :type  schedule_policy: ``str``
+
+        :param storage_policy: The storage policy for this client
+                               NOTE: Dimension Data only sends back the name
+                               of the storage policy, no further details
+        :type  storage_policy: ``str``
+
+        :param download_url: The download url for this client
+        :type  download_url: ``str``
+
+        :param alert: The alert configured for this backup client (optional)
+        :type  alert: :class:`DimensionDataBackupClientAlert`
+
+        :param alert: The running job for the client (optional)
+        :type  alert: :class:`DimensionDataBackupClientRunningJob`
+        """
+        self.id = id
+        self.type = type
+        self.status = status
+        self.schedule_policy = schedule_policy
+        self.storage_policy = storage_policy
+        self.download_url = download_url
+        self.alert = alert
+        self.running_job = running_job
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClient: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClientAlert(object):
+    """
+    An alert for a backup client
+    """
+    def __init__(self, trigger, notify_list=[]):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientAlert`
+
+        :param trigger: Trigger type for the client i.e. ON_FAILURE
+        :type  trigger: ``str``
+
+        :param notify_list: List of email addresses that are notified
+                            when the alert is fired
+        :type  notify_list: ``list`` of ``str``
+        """
+        self.trigger = trigger
+        self.notify_list = notify_list
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClient: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClientRunningJob(object):
+    """
+    A running job for a given backup client
+    """
+    def __init__(self, id, status, percentage=0):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientRunningJob`
+
+        :param id: The unqiue ID of the job
+        :type  id: ``str``
+
+        :param status: The status of the job i.e. Waiting
+        :type  status: ``str``
+
+        :param percentage: The percentage completion of the job
+        :type  percentage: ``int``
+        """
+        self.id = id
+        self.percentage = percentage
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientRunningJob: id=%s>')
+                % (self.id))
+
+
+class DimensionDataBackupStoragePolicy(object):
+    """
+    A representation of a storage policy
+    """
+    def __init__(self, name, retention_period, secondary_location):
+        """
+        Initialize an instance of :class:`DimensionDataBackupStoragePolicy`
+
+        :param name: The name of the storage policy i.e. 14 Day Storage Policy
+        :type  name: ``str``
+
+        :param retention_period: How long to keep the backup in days
+        :type  retention_period: ``int``
+
+        :param secondary_location: The secondary location i.e. Primary
+        :type  secondary_location: ``str``
+        """
+        self.name = name
+        self.retention_period = retention_period
+        self.secondary_location = secondary_location
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientStoragePolicy: name=%s>')
+                % (self.name))
+
+
+class DimensionDataBackupSchedulePolicy(object):
+    """
+    A representation of a schedule policy
+    """
+    def __init__(self, name, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupSchedulePolicy`
+
+        :param name: The name of the policy i.e 12AM - 6AM
+        :type  name: ``str``
+
+        :param description: Short summary of the details of the policy
+        :type  description: ``str``
+        """
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientSchedulePolicy: name=%s>')
+                % (self.name))
