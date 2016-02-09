@@ -22,13 +22,13 @@ from libcloud.backup.base import BackupDriver, BackupTarget
 from libcloud.backup.types import BackupTargetType
 from libcloud.backup.types import Provider
 from libcloud.common.dimensiondata import DimensionDataConnection
-from libcloud.common.dimensiondata import DimensionDataBackupClientType
-from libcloud.common.dimensiondata import DimensionDataBackupDetails
 from libcloud.common.dimensiondata import DimensionDataBackupClient
 from libcloud.common.dimensiondata import DimensionDataBackupClientAlert
 from libcloud.common.dimensiondata import DimensionDataBackupClientRunningJob
-from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
+from libcloud.common.dimensiondata import DimensionDataBackupClientType
+from libcloud.common.dimensiondata import DimensionDataBackupDetails
 from libcloud.common.dimensiondata import DimensionDataBackupSchedulePolicy
+from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
@@ -428,7 +428,7 @@ class DimensionDataBackupDriver(BackupDriver):
                           "schedulePolicyName").text = schedule_policy
 
         alerting_elm = ET.SubElement(backup_elm, "alerting")
-        ET.SubElement(alerting_elm, "trigger").text = trigger
+        alerting_elm.set('trigger', trigger)
         ET.SubElement(alerting_elm, "emailAddress").text = email
 
         response = self.connection.request_with_orgId_api_1(
