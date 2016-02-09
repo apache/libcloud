@@ -37,6 +37,8 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 from libcloud.storage.providers import Provider
 from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ObjectDoesNotExistError
 
 __all__ = [
     'BackblazeB2StorageDriver',
@@ -244,6 +246,28 @@ class BackblazeB2StorageDriver(StorageDriver):
         objects = self._to_objects(data=resp.object, container=container)
         return objects
 
+    def get_container(self, container_name):
+        containers = self.iterate_containers()
+        container = next((c for c in containers if c.name == container_name),
+                         None)
+        if container:
+            return container
+        else:
+            raise ContainerDoesNotExistError(value=None, driver=self,
+                                             container_name=container_name)
+
+    def get_object(self, container_name, object_name):
+        container = self.get_container(container_name=container_name)
+        objects = self.iterate_container_objects(container)
+
+        obj = next((obj for obj in objects if obj.name == object_name), None)
+
+        if obj is not None:
+            return obj
+        else:
+            raise ObjectDoesNotExistError(value=None, driver=self,
+                                          object_name=object_name)
+
     def create_container(self, container_name, ex_type='allPrivate'):
         data = {}
         data['bucketName'] = container_name
@@ -292,7 +316,7 @@ class BackblazeB2StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, headers=None):
+                      verify_hash=True, headers=None, iterator=None):
         """
         Upload an object.
 
@@ -301,8 +325,13 @@ class BackblazeB2StorageDriver(StorageDriver):
         # Note: We don't use any of the base driver functions since Backblaze
         # API requires you to provide SHA1 has upfront and the base methods
         # don't support that
-        with open(file_path, 'rb') as fp:
-            iterator = iter(fp)
+        object_name = object_name.replace('\\', '/')
+        if iterator is None:
+            with open(file_path, 'rb') as fp:
+                iterator = iter(fp)
+                iterator = read_in_chunks(iterator=iterator)
+                data = exhaust_iterator(iterator=iterator)
+        else:
             iterator = read_in_chunks(iterator=iterator)
             data = exhaust_iterator(iterator=iterator)
 
@@ -346,6 +375,15 @@ class BackblazeB2StorageDriver(StorageDriver):
             body = response.response.read()
             raise LibcloudError('Upload failed. status_code=%s, body=%s' %
                                 (response.status, body), driver=self)
+
+    def upload_object_via_stream(self, iterator, container, object_name,
+                                 extra=None, headers=None):
+
+        obj = self.upload_object(file_path=None, container=container,
+                                 object_name=object_name, extra=None,
+                                 verify_hash=True, headers=headers,
+                                 iterator=iterator)
+        return obj
 
     def delete_object(self, obj):
         data = {}
