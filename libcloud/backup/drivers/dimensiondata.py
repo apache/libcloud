@@ -421,7 +421,7 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
 
-    def ex_add_client_to_target(self, target, client, storage_policy,
+    def ex_add_client_to_target(self, target, client_type, storage_policy,
                                 schedule_policy, trigger, email):
         """
         Add a client to a target
@@ -430,13 +430,18 @@ class DimensionDataBackupDriver(BackupDriver):
         :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :param client: Client to add to the target
-        :type  client: ``str``
+        :type  client: Instance of :class:`DimensionDataBackupClientType`
+                       or ``str``
 
         :param storage_policy: The storage policy for the client
-        :type  storage_policy: ``str``
+        :type  storage_policy: Instance of
+                               :class:`DimensionDataBackupStoragePolicy`
+                               or ``str``
 
-        :param schedule_policy: The storage policy for the client
-        :type  schedule_policy: ``str``
+        :param schedule_policy: The schedule policy for the client
+        :type  schedule_policy: Instance of
+                                :class:`DimensionDataBackupSchedulePolicy`
+                                or ``str``
 
         :param trigger: The notify trigger for the client
         :type  trigger: ``str``
@@ -454,9 +459,25 @@ class DimensionDataBackupDriver(BackupDriver):
 
         backup_elm = ET.Element('NewBackupClient',
                                 {'xmlns': BACKUP_NS})
-        ET.SubElement(backup_elm, "type").text = client
-        ET.SubElement(backup_elm, "storagePolicyName").text = storage_policy
-        ET.SubElement(backup_elm, "schedulePolicyName").text = schedule_policy
+        if isinstance(client_type, DimensionDataBackupClientType):
+            ET.SubElement(backup_elm, "type").text = client_type.type
+        else:
+            ET.SubElement(backup_elm, "type").text = client_type
+
+        if isinstance(storage_policy, DimensionDataBackupStoragePolicy):
+            ET.SubElement(backup_elm,
+                          "storagePolicyName").text = storage_policy.name
+        else:
+            ET.SubElement(backup_elm,
+                          "storagePolicyName").text = storage_policy
+
+        if isinstance(schedule_policy, DimensionDataBackupSchedulePolicy):
+            ET.SubElement(backup_elm,
+                          "schedulePolicyName").text = schedule_policy.name
+        else:
+            ET.SubElement(backup_elm,
+                          "schedulePolicyName").text = schedule_policy
+
         alerting_elm = ET.SubElement(backup_elm, "alerting")
         ET.SubElement(alerting_elm, "trigger").text = trigger
         ET.SubElement(alerting_elm, "emailAddress").text = email
@@ -465,7 +486,6 @@ class DimensionDataBackupDriver(BackupDriver):
             'server/%s/backup/client' % (server_id),
             method='POST',
             data=ET.tostring(backup_elm)).object
-
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 

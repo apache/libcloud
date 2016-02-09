@@ -81,8 +81,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_add_client_to_target(self):
         target = self.driver.list_targets()[0]
+        client = self.driver.ex_list_available_client_types(target)[0]
+        storage_policy = self.driver.ex_list_available_storage_policies(target)[0]
+        schedule_policy = self.driver.ex_list_available_schedule_policies(target)[0]
         self.assertTrue(
-            self.driver.ex_add_client_to_target(target, 'FA.Linux', '14 Day Storage Policy',
+            self.driver.ex_add_client_to_target(target, client, storage_policy,
+                                                schedule_policy, 'ON_FAILURE', 'nobody@example.com')
+        )
+
+    def test_ex_add_client_to_target_STR(self):
+        self.assertTrue(
+            self.driver.ex_add_client_to_target('e75ead52-692f-4314_8725-c8a4f4d13a87', 'FA.Linux', '14 Day Storage Policy',
                                                 '12AM - 6AM', 'ON_FAILURE', 'nobody@example.com')
         )
 
