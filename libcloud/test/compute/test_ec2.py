@@ -971,6 +971,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(metadata['Num'], '42')
         self.assertEqual(len(metadata), 3)
 
+    def test_ex_get_creation_time(self):
+        image = NodeImage(id='ami-be3adfd8',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo',
+                                       image=image,
+                                       size=size)
+
+        creation_time = self.driver.ex_get_creation_time(node)
+        self.assertEqual(creation_time, '2007-08-07T11:51:50.000Z')
+
     def test_ex_get_limits(self):
         limits = self.driver.ex_get_limits()
 
