@@ -18,8 +18,8 @@ Dimension Data Common Components
 from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
+from libcloud.utils.py3 import b, basestring
+from libcloud.compute.base import NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.utils.xml import findtext
@@ -94,6 +94,14 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('resultDetail', GENERAL_NS)
 )
 
+def location_to_location_id(location):
+    if location is not None:
+        if isinstance(location, NodeLocation):
+            return location.id
+        elif isinstance(location, basestring):
+            return location
+        else:
+            raise TypeError("Invalid location type for location_to_location_id()")
 
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
