@@ -37,6 +37,7 @@ from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
+from libcloud.common.dimensiondata import location_to_location_id
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
@@ -323,7 +324,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location.id
+            params['datacenterId'] = location_to_location_id(location)
 
         return self._to_base_images(
             self.connection.request_with_orgId_api_2(
@@ -349,16 +350,25 @@ class DimensionDataNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
-    def list_locations(self):
+    def list_locations(self, id=None):
         """
         list locations (datacenters) available for instantiating servers and
         networks.
 
         @inherits: :class:`NodeDriver.list_locations`
         """
+
+        params = {}
+        if id is not None:
+            params['id'] = id
+
         return self._to_locations(
             self.connection
-            .request_with_orgId_api_2('infrastructure/datacenter').object)
+            .request_with_orgId_api_2(
+                'infrastructure/datacenter',
+                params=params
+            ).object
+        )
 
     def list_networks(self, location=None):
         """
@@ -367,14 +377,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
 
         :keyword location: The location
-        :type    location: :class:`NodeLocation`
+        :type    location: :class:`NodeLocation` or ``str``
 
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         url_ext = ''
         if location is not None:
-            url_ext = '/' + location.id
+            url_ext = '/' + location_to_location_id(location)
 
         return self._to_networks(
             self.connection
@@ -435,10 +445,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         params = {}
         if location is not None:
-            if isinstance(location, NodeLocation):
-                params['datacenterId'] = location.id
-            else:
-                params['datacenterId'] = location
+            params['datacenterId'] = location_to_location_id(location)
 
         if ipv6 is not None:
             params['ipv6'] = ipv6
@@ -676,11 +683,11 @@ class DimensionDataNodeDriver(NodeDriver):
         organization.  The response includes the location of each network.
 
         :return: a list of DimensionDataNetwork objects
-        :rtype: ``list`` of :class:`DimensionDataNetwork`
+        :rtype: ``list`` of :class:`DimensionDataNetwork` or ``str``
         """
         params = {}
         if location is not None:
-            params['location'] = location.id
+            params['location'] = location_to_location_id(location)
 
         response = self.connection \
             .request_with_orgId_api_1('networkWithLocation',
@@ -692,7 +699,7 @@ class DimensionDataNodeDriver(NodeDriver):
         Create a new network in an MCP 1.0 location
 
         :param   location: The target location (MCP1)
-        :type    location: :class:`NodeLocation`
+        :type    location: :class:`NodeLocation` or ``str``
 
         :param   name: The name of the network
         :type    name: ``str``
@@ -703,12 +710,15 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: A new instance of `DimensionDataNetwork`
         :rtype:  Instance of :class:`DimensionDataNetwork`
         """
+        if location is not None:
+            network_location = location_to_location_id(location)
+
         create_node = ET.Element('NewNetworkWithLocation',
                                  {'xmlns': NETWORK_NS})
         ET.SubElement(create_node, "name").text = name
         if description is not None:
             ET.SubElement(create_node, "description").text = description
-        ET.SubElement(create_node, "location").text = location.id
+        ET.SubElement(create_node, "location").text = network_location
 
         self.connection.request_with_orgId_api_1(
             'networkWithLocation',
@@ -777,14 +787,14 @@ class DimensionDataNodeDriver(NodeDriver):
         The response includes the location of each network domain.
 
         :param      location: The data center to list (optional)
-        :type       location: :class:`NodeLocation`
+        :type       location: :class:`NodeLocation` or ``str``
 
         :return: a list of `DimensionDataNetwork` objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location.id
+            params['datacenterId'] = location_to_location_id(location)
 
         response = self.connection \
             .request_with_orgId_api_2('network/networkDomain',
@@ -814,7 +824,8 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: :class:`DimensionDataNetworkDomain`
         """
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node, "datacenterId").text = location.id
+        ET.SubElement(create_node,
+                      "datacenterId").text = location_to_location_id(location)
         ET.SubElement(create_node, "name").text = name
         if description is not None:
             ET.SubElement(create_node, "description").text = description
@@ -1035,7 +1046,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location.id
+            params['datacenterId'] = location_to_location_id(location)
         if network_domain is not None:
             params['networkDomainId'] = network_domain.id
         response = self.connection.request_with_orgId_api_2('network/vlan',
@@ -1302,8 +1313,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         location = None
         if id is not None:
-            location = list(
-                filter(lambda x: x.id == id, self.list_locations()))[0]
+            location = self.list_locations(id=id)[0]
         return location
 
     def ex_wait_for_state(self, state, func, poll_interval=2,
@@ -1568,7 +1578,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location.id
+            params['datacenterId'] = location_to_location_id(location)
 
         return self._to_base_images(
             self.connection.request_with_orgId_api_2(
