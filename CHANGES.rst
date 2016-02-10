@@ -29,6 +29,15 @@ Compute
   (GITHUB-691)
   [Jeff Dunham]
 
+- Support for filtering by IPv4, IPv6, network, network domain, VLAN in Dimension
+  data driver.
+  (GITHUB-694)
+  [Jeff Dunham]
+
+- Support for creation time (`ex_created_time`) in EC2 and digitalocean drivers
+  (GITHUB-697)
+  [Rick van de Loo]
+
 Storage
 ~~~~~~~
 
@@ -36,6 +45,13 @@ Storage
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
 
+Backup
+~~~~~~
+
+- Dimension Data - added additional testing, fixed bug on client response naming,
+  added support for adding backup clients to a backup enabled node.
+  (GITHUB-692, GITHUB-693, GITHUB-695)
+  [Jeff Dunham]
 
 Changes with Apache Libcloud 1.0.0-pre1
 ---------------------------------------
