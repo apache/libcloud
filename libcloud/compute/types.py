@@ -100,6 +100,7 @@ class Provider(Type):
     :cvar VULTR: vultr driver.
     :cvar AZURE: Azure driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
+    :cvar VERIZON: Verizon Compute driver.
     """
     AZURE = 'azure'
     DUMMY = 'dummy'
@@ -153,6 +154,7 @@ class Provider(Type):
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
     RUNABOVE = 'runabove'
+    VERIZON = 'verizon'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
