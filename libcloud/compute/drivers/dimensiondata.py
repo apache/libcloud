@@ -300,7 +300,6 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of `Node` objects
         :rtype: ``list`` of :class:`Node`
         """
-
         node_list = []
         for nodes in self.ex_list_nodes_paginated(
                 location=ex_location,
@@ -316,11 +315,18 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def list_images(self, location=None):
         """
-        return a list of available images
-            Currently only returns the default 'base OS images' provided by
-            DimensionData. Customer images (snapshots) are not yet supported.
+        List images available
 
-        @inherits: :class:`NodeDriver.list_images`
+        Note:  Currently only returns the default 'base OS images'
+               provided by DimensionData. Customer images (snapshots)
+               are not yet supported.
+
+        :keyword ex_location: Filters the node list to nodes that are
+                              located in this location
+        :type    ex_location: :class:`NodeLocation` or ``str``
+
+        :return: List of images available
+        :rtype: ``list`` of :class:`NodeImage`
         """
         params = {}
         if location is not None:
@@ -350,17 +356,20 @@ class DimensionDataNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
-    def list_locations(self, id=None):
+    def list_locations(self, ex_id=None):
         """
-        list locations (datacenters) available for instantiating servers and
+        List locations (datacenters) available for instantiating servers and
         networks.
 
-        @inherits: :class:`NodeDriver.list_locations`
-        """
+        :keyword ex_id: Filters the location list to this id
+        :type    ex_id: ``str``
 
+        :return:  List of locations
+        :rtype:  ``list`` of :class:`NodeLocation`
+        """
         params = {}
-        if id is not None:
-            params['id'] = id
+        if ex_id is not None:
+            params['id'] = ex_id
 
         return self._to_locations(
             self.connection
@@ -685,14 +694,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: a list of DimensionDataNetwork objects
         :rtype: ``list`` of :class:`DimensionDataNetwork` or ``str``
         """
-        params = {}
-        if location is not None:
-            params['location'] = location_to_location_id(location)
-
-        response = self.connection \
-            .request_with_orgId_api_1('networkWithLocation',
-                                      params=params).object
-        return self._to_networks(response)
+        return self.list_networks(location)
 
     def ex_create_network(self, location, name, description=None):
         """
@@ -710,8 +712,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: A new instance of `DimensionDataNetwork`
         :rtype:  Instance of :class:`DimensionDataNetwork`
         """
-        if location is not None:
-            network_location = location_to_location_id(location)
+        network_location = location_to_location_id(location)
 
         create_node = ET.Element('NewNetworkWithLocation',
                                  {'xmlns': NETWORK_NS})
@@ -807,7 +808,7 @@ class DimensionDataNodeDriver(NodeDriver):
         Deploy a new network domain to a data center
 
         :param      location: The data center to list
-        :type       location: :class:`NodeLocation`
+        :type       location: :class:`NodeLocation` or ``str``
 
         :param      name: The name of the network domain to create
         :type       name: ``str``
@@ -1036,7 +1037,7 @@ class DimensionDataNodeDriver(NodeDriver):
         List VLANs available, can filter by location and/or network domain
 
         :param      location: Only VLANs in this location (optional)
-        :type       location: :class:`NodeLocation`
+        :type       location: :class:`NodeLocation` or ``str``
 
         :param      network_domain: Only VLANs in this domain (optional)
         :type       network_domain: :class:`DimensionDataNetworkDomain`
@@ -1313,7 +1314,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         location = None
         if id is not None:
-            location = self.list_locations(id=id)[0]
+            location = self.list_locations(ex_id=id)[0]
         return location
 
     def ex_wait_for_state(self, state, func, poll_interval=2,
@@ -1572,7 +1573,7 @@ class DimensionDataNodeDriver(NodeDriver):
         Return a list of customer imported images
 
         :param location: The target location
-        :type  location: :class:`NodeLocation`
+        :type  location: :class:`NodeLocation` or ``str``
 
         :rtype: ``list`` of :class:`NodeImage`
         """
