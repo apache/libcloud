@@ -77,8 +77,8 @@ class Container(object):
         return self.driver.destroy_container(container=self)
 
     def __repr__(self):
-        return ('<Container: id=%s, name=%s, provider=%s '
-                'state=%...>' %
+        return ('<Container: id=%s, name=%s,'
+                'state=%s, provider=%s ...>' %
                 (self.id, self.name, self.state,
                  self.driver.name))
 
