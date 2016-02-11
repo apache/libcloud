@@ -16,6 +16,8 @@ Provider                      list containers list objects create container dele
 `OpenStack Swift`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (standard)`_       yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (ap-northeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
+`Amazon S3 (ap-northeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
+`Amazon S3 (ap-northeast-2)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (ap-southeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (eu-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (sa-east-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
@@ -36,6 +38,8 @@ Provider                      list containers list objects create container dele
 .. _`OpenStack Swift`: http://www.rackspace.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/

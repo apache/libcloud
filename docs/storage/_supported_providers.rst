@@ -15,7 +15,9 @@ Provider                      Documentation                                   Pr
 `Ninefold`_                                                                   NINEFOLD          :mod:`libcloud.storage.drivers.ninefold`       :class:`NinefoldStorageDriver`      
 `OpenStack Swift`_            :doc:`Click </storage/drivers/openstack_swift>` OPENSTACK_SWIFT   :mod:`libcloud.storage.drivers.cloudfiles`     :class:`OpenStackSwiftStorageDriver`
 `Amazon S3 (standard)`_       :doc:`Click </storage/drivers/s3>`              S3                :mod:`libcloud.storage.drivers.s3`             :class:`S3StorageDriver`            
-`Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APNEStorageDriver`        
+`Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE1StorageDriver`       
+`Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST1  :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE1StorageDriver`       
+`Amazon S3 (ap-northeast-2)`_                                                 S3_AP_NORTHEAST2  :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE2StorageDriver`       
 `Amazon S3 (ap-southeast-1)`_                                                 S3_AP_SOUTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APSEStorageDriver`        
 `Amazon S3 (eu-west-1)`_                                                      S3_EU_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3EUWestStorageDriver`      
 `Amazon S3 (sa-east-1)`_                                                      S3_SA_EAST        :mod:`libcloud.storage.drivers.s3`             :class:`S3SAEastStorageDriver`      
@@ -36,6 +38,8 @@ Provider                      Documentation                                   Pr
 .. _`OpenStack Swift`: http://www.rackspace.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/

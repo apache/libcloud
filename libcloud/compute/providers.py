@@ -169,6 +169,18 @@ DRIVERS = {
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
     Provider.RUNABOVE:
     ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
+    Provider.INTERNETSOLUTIONS:
+    ('libcloud.compute.drivers.internetsolutions', 'InternetSolutionsNodeDriver'),
+    Provider.INDOSAT:
+    ('libcloud.compute.drivers.indosat', 'IndosatNodeDriver'),
+    Provider.MEDONE:
+    ('libcloud.compute.drivers.medone', 'MedOneNodeDriver'),
+    Provider.BSNL:
+    ('libcloud.compute.drivers.bsnl', 'BSNLNodeDriver'),
+    Provider.CISCOCCS:
+    ('libcloud.compute.drivers.ciscoccs', 'CiscoCCSNodeDriver'),
+    Provider.NTTA:
+    ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
