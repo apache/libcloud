@@ -1,0 +1,21 @@
+{
+    "taskDefinition": {
+        "containerDefinitions": [{
+                "cpu": 10,
+                "environment": [],
+                "essential": true,
+                "image": "simple-app",
+                "memory": 500,
+                "mountPoints": [],
+                "name": "my-simple-app",
+                "portMappings": [],
+                "volumesFrom": []
+            }
+        ],
+        "family": "my-simple-app",
+        "revision": 1,
+        "status": "ACTIVE",
+        "taskDefinitionArn": "arn:aws:ecs:ap-southeast-2:647433528374:task-definition/my-simple-app:1",
+        "volumes": []
+    }
+}

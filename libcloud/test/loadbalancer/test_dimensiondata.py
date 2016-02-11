@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -24,7 +23,7 @@ from libcloud.loadbalancer.drivers.dimensiondata \
     import DimensionDataLBDriver as DimensionData
 from libcloud.loadbalancer.types import State
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
@@ -38,19 +37,13 @@ class DimensionDataTests(unittest.TestCase):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        try:
+        with self.assertRaises(ValueError):
             self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
-        except ValueError:
-            pass
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        try:
+        with self.assertRaises(InvalidCredsError):
             self.driver.list_balancers()
-            self.assertTrue(False)
-            # Above command should have thrown an InvalidCredsException
-        except InvalidCredsError:
-            pass
 
     def test_create_balancer(self):
         self.driver.ex_set_current_network_domain('1234')

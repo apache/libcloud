@@ -4,6 +4,7 @@
 Provider              Documentation                             Provider constant Module                                   Class Name                    
 ===================== ========================================= ================= ======================================== ==============================
 `AuroraDNS`_          :doc:`Click </dns/drivers/auroradns>`     AURORADNS         :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
+`CloudFlare DNS`_     :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
 `DigitalOcean`_       :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
 `DNSimple`_           :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
 `DurableDNS`_         :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
@@ -26,6 +27,7 @@ Provider              Documentation                             Provider constan
 ===================== ========================================= ================= ======================================== ==============================
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
+.. _`CloudFlare DNS`: https://www.cloudflare.com
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
 .. _`DurableDNS`: https://durabledns.com

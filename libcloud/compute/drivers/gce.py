@@ -21,6 +21,8 @@ import datetime
 import time
 import sys
 
+from libcloud.common.base import LazyObject
+from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
@@ -180,7 +182,7 @@ class GCEList(object):
         Filter results of a list operation.
 
         GCE supports server-side filtering of resources returned by a list
-        operation. Syntax of the filter expression is fully descripted in the
+        operation. Syntax of the filter expression is fully described in the
         GCE API reference doc, but in brief it is::
 
             FIELD_NAME COMPARISON_STRING LITERAL_STRING
@@ -231,15 +233,37 @@ class GCEList(object):
         return self
 
 
-class GCELicense(UuidMixin):
+class GCELicense(UuidMixin, LazyObject):
     """A GCE License used to track software usage in GCE nodes."""
-    def __init__(self, id, name, driver, charges_use_fee, extra=None):
-        self.id = str(id)
-        self.name = name
-        self.driver = driver
-        self.charges_use_fee = charges_use_fee
-        self.extra = extra or {}
+    def __init__(self, name, project, driver):
         UuidMixin.__init__(self)
+        self.id = name
+        self.name = name
+        self.project = project
+        self.driver = driver
+        self.charges_use_fee = None  # init in _request
+        self.extra = None  # init in _request
+
+        self._request()
+
+    def _request(self):
+        # TODO(crunkleton@google.com): create new connection? or make
+        # connection thread-safe? Saving, modifying, and restoring
+        # driver.connection.request_path is really hacky and thread-unsafe.
+        saved_request_path = self.driver.connection.request_path
+        new_request_path = saved_request_path.replace(self.driver.project,
+                                                      self.project)
+        self.driver.connection.request_path = new_request_path
+
+        request = '/global/licenses/%s' % self.name
+        response = self.driver.connection.request(request, method='GET').object
+        self.driver.connection.request_path = saved_request_path
+
+        self.extra = {
+            'selfLink': response.get('selfLink'),
+            'kind': response.get('kind')
+        }
+        self.charges_use_fee = response['chargesUseFee']
 
     def destroy(self):
         raise ProviderError("Can not destroy a License resource.")
@@ -577,9 +601,9 @@ class GCEProject(UuidMixin):
         'startup-script' for all nodes (instances).  Passing in
         ``None`` for the 'metadata' parameter will clear out all common
         instance metadata *except* for 'sshKeys'. If you also want to
-        update 'sshKeys', set the 'force' paramater to ``True``.
+        update 'sshKeys', set the 'force' parameter to ``True``.
 
-        :param  metadata: Dictionay of metadata. Can be either a standard
+        :param  metadata: Dictionary of metadata. Can be either a standard
                           python dictionary, or the format expected by
                           GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
         :type   metadata: ``dict`` or ``None``
@@ -1047,7 +1071,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            GCEConnection.credential_file + '.' + self.project
+            GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
@@ -1282,9 +1306,9 @@ class GCENodeDriver(NodeDriver):
         'startup-script' for all nodes (instances).  Passing in
         ``None`` for the 'metadata' parameter will clear out all common
         instance metadata *except* for 'sshKeys'. If you also want to
-        update 'sshKeys', set the 'force' paramater to ``True``.
+        update 'sshKeys', set the 'force' parameter to ``True``.
 
-        :param  metadata: Dictionay of metadata. Can be either a standard
+        :param  metadata: Dictionary of metadata. Can be either a standard
                           python dictionary, or the format expected by
                           GCE (e.g. {'items': [{'key': k1, 'value': v1}, ...}]
         :type   metadata: ``dict`` or ``None``
@@ -2292,7 +2316,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -2345,8 +2369,8 @@ class GCENodeDriver(NodeDriver):
         :type     ex_automatic_restart: ``bool`` or ``None``
 
         :keyword  ex_preemptible: Defines whether the instance is preemptible.
-                                        (If not supplied, the instance will
-                                         not be preemptible)
+                                  (If not supplied, the instance will not be
+                                  preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
         :return:  A Node object for the new node.
@@ -2452,7 +2476,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_network: The network to associate with the nodes.
         :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        :keyword  ex_tags: A list of tags to assiciate with the nodes.
+        :keyword  ex_tags: A list of tags to associate with the nodes.
         :type     ex_tags: ``list`` of ``str`` or ``None``
 
         :keyword  ex_metadata: Metadata dictionary for instances.
@@ -2491,7 +2515,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -3299,7 +3323,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -3913,15 +3937,7 @@ class GCENodeDriver(NodeDriver):
         :return:  A DiskType object for the name
         :rtype:   :class:`GCEDiskType`
         """
-        saved_request_path = self.connection.request_path
-        new_request_path = saved_request_path.replace(self.project, project)
-        self.connection.request_path = new_request_path
-
-        request = '/global/licenses/%s' % (name)
-        response = self.connection.request(request, method='GET').object
-        self.connection.request_path = saved_request_path
-
-        return self._to_license(response)
+        return GCELicense.lazy(name, project, self)
 
     def ex_get_disktype(self, name, zone=None):
         """
@@ -4592,7 +4608,7 @@ class GCENodeDriver(NodeDriver):
                                        list of dictionaries containing email
                                        and list of scopes, e.g.
                                        [{'email':'default',
-                                         'scopes':['compute', ...]}, ...]
+                                       'scopes':['compute', ...]}, ...]
                                        Scopes can either be full URLs or short
                                        names. If not provided, use the
                                        'default' service account email and a
@@ -5690,24 +5706,6 @@ class GCENodeDriver(NodeDriver):
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
                        maintenance_windows=zone.get('maintenanceWindows'),
                        deprecated=deprecated, driver=self, extra=extra)
-
-    def _to_license(self, license):
-        """
-        Return a License object from the JSON-response dictionary.
-
-        :param  license: The dictionary describing the license.
-        :type   license: ``dict``
-
-        :return: License object
-        :rtype: :class:`GCELicense`
-        """
-        extra = {}
-        extra['selfLink'] = license.get('selfLink')
-        extra['kind'] = license.get('kind')
-
-        return GCELicense(id=license['name'], name=license['name'],
-                          charges_use_fee=license['chargesUseFee'],
-                          driver=self, extra=extra)
 
     def _set_project_metadata(self, metadata=None, force=False,
                               current_keys=""):

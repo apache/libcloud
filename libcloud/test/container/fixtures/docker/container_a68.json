@@ -1,0 +1,163 @@
+{
+  "Id": "a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303",
+  "Created": "2015-12-23T01:05:40.56937184Z",
+  "Path": "/entrypoint.sh",
+  "Args": [
+    "None"
+  ],
+  "State": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 127,
+    "Error": "",
+    "StartedAt": "2015-12-23T01:06:29.018395755Z",
+    "FinishedAt": "2015-12-23T01:06:30.144487212Z"
+  },
+  "Image": "cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0",
+  "ResolvConfPath": "/var/lib/docker/containers/a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303/resolv.conf",
+  "HostnamePath": "/var/lib/docker/containers/a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303/hostname",
+  "HostsPath": "/var/lib/docker/containers/a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303/hosts",
+  "LogPath": "/var/lib/docker/containers/a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303/a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303-json.log",
+  "Name": "/gigantic_goldberg",
+  "RestartCount": 0,
+  "Driver": "aufs",
+  "ExecDriver": "native-0.2",
+  "MountLabel": "",
+  "ProcessLabel": "",
+  "AppArmorProfile": "",
+  "ExecIDs": null,
+  "HostConfig": {
+    "Binds": null,
+    "ContainerIDFile": "",
+    "LxcConf": null,
+    "Memory": 0,
+    "MemoryReservation": 0,
+    "MemorySwap": 0,
+    "KernelMemory": 0,
+    "CpuShares": 0,
+    "CpuPeriod": 0,
+    "CpusetCpus": "",
+    "CpusetMems": "",
+    "CpuQuota": 0,
+    "BlkioWeight": 0,
+    "OomKillDisable": false,
+    "MemorySwappiness": null,
+    "Privileged": false,
+    "PortBindings": {},
+    "Links": null,
+    "PublishAllPorts": true,
+    "Dns": null,
+    "DnsOptions": null,
+    "DnsSearch": null,
+    "ExtraHosts": null,
+    "VolumesFrom": null,
+    "Devices": null,
+    "NetworkMode": "default",
+    "IpcMode": "",
+    "PidMode": "",
+    "UTSMode": "",
+    "CapAdd": null,
+    "CapDrop": null,
+    "GroupAdd": null,
+    "RestartPolicy": {
+      "Name": "",
+      "MaximumRetryCount": 0
+    },
+    "SecurityOpt": null,
+    "ReadonlyRootfs": false,
+    "Ulimits": null,
+    "LogConfig": {
+      "Type": "json-file",
+      "Config": {}
+    },
+    "CgroupParent": "",
+    "ConsoleSize": [
+      0,
+      0
+    ],
+    "VolumeDriver": ""
+  },
+  "GraphDriver": {
+    "Name": "aufs",
+    "Data": null
+  },
+  "Mounts": [
+    {
+      "Name": "b1a70d8e1ebd7d5865e59ff91cf06357e3ef4d829af44c31675c2d0a24894444",
+      "Source": "/var/lib/docker/volumes/b1a70d8e1ebd7d5865e59ff91cf06357e3ef4d829af44c31675c2d0a24894444/_data",
+      "Destination": "/data/db",
+      "Driver": "local",
+      "Mode": "",
+      "RW": true
+    }
+  ],
+  "Config": {
+    "Hostname": "a68c1872c746",
+    "Domainname": "",
+    "User": "",
+    "AttachStdin": true,
+    "AttachStdout": true,
+    "AttachStderr": true,
+    "ExposedPorts": {
+      "27017/tcp": {}
+    },
+    "Tty": true,
+    "OpenStdin": true,
+    "StdinOnce": false,
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "GPG_KEYS=DFFA3DCF326E302C4787673A01C4E7FAAAB2461C \t42F3E95A2C4F08279C4960ADD68FA50FEA312927",
+      "MONGO_MAJOR=3.2",
+      "MONGO_VERSION=3.2.0"
+    ],
+    "Cmd": [
+      "None"
+    ],
+    "Image": "mongo:latest",
+    "Volumes": {
+      "/data/db": {}
+    },
+    "WorkingDir": "",
+    "Entrypoint": [
+      "/entrypoint.sh"
+    ],
+    "OnBuild": null,
+    "Labels": {}
+  },
+  "NetworkSettings": {
+    "Bridge": "",
+    "SandboxID": "",
+    "HairpinMode": false,
+    "LinkLocalIPv6Address": "",
+    "LinkLocalIPv6PrefixLen": 0,
+    "Ports": null,
+    "SandboxKey": "",
+    "SecondaryIPAddresses": null,
+    "SecondaryIPv6Addresses": null,
+    "EndpointID": "",
+    "Gateway": "",
+    "GlobalIPv6Address": "",
+    "GlobalIPv6PrefixLen": 0,
+    "IPAddress": "",
+    "IPPrefixLen": 0,
+    "IPv6Gateway": "",
+    "MacAddress": "",
+    "Networks": {
+      "bridge": {
+        "EndpointID": "",
+        "Gateway": "",
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "MacAddress": ""
+      }
+    }
+  }
+}

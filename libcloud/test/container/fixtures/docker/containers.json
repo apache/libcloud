@@ -1,0 +1,143 @@
+[
+  {
+    "Id": "160936dc54fe8c332095676d9379003534b8cddd7565fa63018996e06dae1b6b",
+    "Names": [
+      "/hubot"
+    ],
+    "Image": "stackstorm/hubot",
+    "ImageID": "05c5761707b3970a9bf17c00886176add79ac087b4d6a500ac87985bf8ec07b1",
+    "Command": "/app/bin/hubot",
+    "Created": 1450130345,
+    "Ports": [],
+    "Labels": {},
+    "Status": "Exited (137) 11 minutes ago",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    }
+  },
+  {
+    "Id": "f159072147ee7d253e21ec8fd2778a27ac29d7fc5f865641900d16665b46215a",
+    "Names": [
+      "/mongo"
+    ],
+    "Image": "mongo",
+    "ImageID": "cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0",
+    "Command": "/entrypoint.sh mongod",
+    "Created": 1450130332,
+    "Ports": [],
+    "Labels": {},
+    "Status": "Exited (14) 2 hours ago",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    }
+  },
+  {
+    "Id": "e687b33f9ced0153104308e6ff7a2138b8cc026fa4085d31da831a02ed0dc03d",
+    "Names": [
+      "/rabbitmq"
+    ],
+    "Image": "rabbitmq",
+    "ImageID": "448afeda0388b18c6f3be18c7aaece29e0f8dbdfab30364e678c382bab1037c5",
+    "Command": "/docker-entrypoint.sh rabbitmq-server",
+    "Created": 1450130331,
+    "Ports": [
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 5672,
+        "PublicPort": 5672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 25672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 4369,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 5671,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {},
+    "Status": "Exited (137) 11 minutes ago",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    }
+  },
+  {
+    "Id": "b82c16423c6dbb7cd1564f8fc413c822df45cc0c7aa35c24683a1329af6ec102",
+    "Names": [
+      "/fervent_bhabha"
+    ],
+    "Image": "rabbitmq",
+    "ImageID": "448afeda0388b18c6f3be18c7aaece29e0f8dbdfab30364e678c382bab1037c5",
+    "Command": "/docker-entrypoint.sh rabbitmq-server",
+    "Created": 1450059506,
+    "Ports": [
+      {
+        "PrivatePort": 4369,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 5671,
+        "Type": "tcp"
+      },
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 5672,
+        "PublicPort": 5672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 25672,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {},
+    "Status": "Dead",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    }
+  },
+  {
+    "Id": "8cc5481aa4621578f8dd2c942d74e27e75170c6899ea012db7a44ea5f1ba2069",
+    "Names": [
+      "/suspicious_swirles"
+    ],
+    "Image": "mongo",
+    "ImageID": "cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0",
+    "Command": "/entrypoint.sh mongod",
+    "Created": 1450059505,
+    "Ports": [
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 27017,
+        "PublicPort": 27017,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {},
+    "Status": "Dead",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    }
+  },
+  {
+    "Id": "598b3e4d15a406390baaa2947f910e7b52b810a4120028692ed309247f2e8346",
+    "Names": [
+      "/mongodata"
+    ],
+    "Image": "mongo",
+    "ImageID": "cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0",
+    "Command": "/entrypoint.sh /bin/true",
+    "Created": 1449637213,
+    "Ports": [],
+    "Labels": {},
+    "Status": "Created",
+    "HostConfig": {
+      "NetworkMode": "default"
+    }
+  }
+]

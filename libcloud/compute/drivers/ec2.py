@@ -591,6 +591,16 @@ INSTANCE_TYPES = {
         }
     },
     # Burstable Performance General Purpose
+    't2.nano': {
+        'id': 't2.nano',
+        'name': 'Burstable Performance Nano Instance',
+        'ram': 512,
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 1
+        }
+    },
     't2.micro': {
         'id': 't2.micro',
         'name': 'Burstable Performance Micro Instance',
@@ -690,6 +700,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -743,6 +754,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -802,6 +814,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -861,6 +874,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -957,6 +971,7 @@ REGION_DETAILS = {
             'd2.2xlarge',
             'd2.4xlarge',
             'd2.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1015,6 +1030,44 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large'
+        ]
+    },
+    # Asia Pacific (Seoul) Region
+    'ap-northeast-2': {
+        'endpoint': 'ec2.ap-northeast-2.amazonaws.com',
+        'api_name': 'ec2_ap_northeast',
+        'country': 'South Korea',
+        'signature_version': '4',
+        'instance_types': [
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1042,6 +1095,7 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1147,6 +1201,7 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -2220,6 +2275,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'delete': {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
+        },
+        'type': {
+            'xpath': 'volumeType',
+            'transform_func': str
         }
     },
     'route_table': {
@@ -2714,7 +2773,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Valid values: all|self|aws id
 
         Ex_filters parameter is used to filter the list of
-        images that should be returned. Only images matchind
+        images that should be returned. Only images matching
         the filter will be returned.
 
         :param      ex_image_ids: List of ``NodeImage.id``
@@ -4197,6 +4256,18 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         return node.extra['tags']
 
+    def ex_get_creation_time(self, node):
+        """
+        Return the date and time that represent when the Instance was created.
+        :param      node: Node instance
+        :type       node: :class:`Node
+
+        :return: ISO8601 combined date and time format string for when the
+                 Instance was created.
+        :rtype: ``str``
+        """
+        return node.extra['launch_time']
+
     def ex_allocate_address(self, domain='standard'):
         """
         Allocate a new Elastic IP address for EC2 classic or VPC
@@ -4580,7 +4651,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      new_size: NodeSize intance
+        :param      new_size: NodeSize instance
         :type       new_size: :class:`NodeSize`
 
         :return: True on success, False otherwise.
@@ -4917,7 +4988,7 @@ class BaseEC2NodeDriver(NodeDriver):
         attached to a VPC. These are required for VPC nodes to communicate
         over the Internet.
 
-        :param      gateway_ids: Return only intenet gateways matching the
+        :param      gateway_ids: Return only internet gateways matching the
                                  provided internet gateway IDs. If not
                                  specified, a list of all the internet
                                  gateways in the corresponding region is
@@ -6299,12 +6370,23 @@ class EC2APSENodeDriver(EC2NodeDriver):
     _region = 'ap-southeast-1'
 
 
-class EC2APNENodeDriver(EC2NodeDriver):
+class EC2APNE1NodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region.
+    Driver class for EC2 in the Northeast Asia Pacific 1(Tokyo) Region.
     """
     name = 'Amazon EC2 (ap-northeast-1)'
     _region = 'ap-northeast-1'
+
+
+EC2APNENodeDriver = EC2APNE1NodeDriver  # fallback
+
+
+class EC2APNE2NodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Northeast Asia Pacific 2(Seoul) Region.
+    """
+    name = 'Amazon EC2 (ap-northeast-2)'
+    _region = 'ap-northeast-2'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):

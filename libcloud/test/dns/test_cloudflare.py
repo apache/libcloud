@@ -337,7 +337,8 @@ class CloudFlareMockHttp(MockHttp):
     def _api_json_html_nul(
             self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('nul.json')
+            # Note: "nul" is a reserved filename on Window
+            body = self.fixtures.load('nul_.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

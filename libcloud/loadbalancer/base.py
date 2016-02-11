@@ -83,7 +83,7 @@ class LoadBalancer(object):
         :param driver: Driver this loadbalancer belongs to.
         :type driver: :class:`.Driver`
 
-        :param extra: Provier specific attributes. (optional)
+        :param extra: Provider specific attributes. (optional)
         :type extra: ``dict``
         """
         self.id = str(id) if id else None

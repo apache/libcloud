@@ -246,7 +246,7 @@ class MultiStepDeployment(Deployment):
         :type add: Single :class:`Deployment` or a ``list`` of
                    :class:`Deployment`
         :keyword add: Adds this deployment to the others already in this
-        object.
+                      object.
         """
         if add is not None:
             add = add if isinstance(add, (list, tuple)) else [add]

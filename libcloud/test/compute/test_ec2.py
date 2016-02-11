@@ -415,20 +415,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 52)
+                self.assertEqual(len(sizes), 53)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 44)
+                self.assertEqual(len(sizes), 45)
             if region_name == 'us-west-2':
                 self.assertEqual(len(sizes), 41)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 42)
+                self.assertEqual(len(sizes), 43)
             elif region_name == 'ap-southeast-2':
                 self.assertEqual(len(sizes), 47)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 50)
+                self.assertEqual(len(sizes), 51)
 
         self.driver.region_name = region_old
 
@@ -970,6 +970,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(metadata['Bar'], 'baz')
         self.assertEqual(metadata['Num'], '42')
         self.assertEqual(len(metadata), 3)
+
+    def test_ex_get_creation_time(self):
+        image = NodeImage(id='ami-be3adfd8',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo',
+                                       image=image,
+                                       size=size)
+
+        creation_time = self.driver.ex_get_creation_time(node)
+        self.assertEqual(creation_time, '2007-08-07T11:51:50.000Z')
 
     def test_ex_get_limits(self):
         limits = self.driver.ex_get_limits()

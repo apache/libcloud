@@ -96,7 +96,7 @@ docstrings below. You can also use an interactive shell for exploration as
 shown in the examples.
 
 Basic Zone Examples
---------------------
+-------------------
 
 To start experimenting with libcloud, starting an ipython interactive shell can
 be very handy. Tab completion and shell history are available. Below is an
@@ -151,7 +151,7 @@ ssh key are passed as arguments as well as a list of scripts.
    :language: python
 
 Advanced Zone examples
------------------------
+----------------------
 
 Advanced zones in CloudStack provide tenant isolation via VLANs or SDN
 technologies like GRE/STT meshes. In a typical advanced zones, users will
@@ -160,7 +160,7 @@ Therefore one needs to specify the network a node needs to be deployed on,
 and needs to setup port forwarding or IP forwarding rules.
 
 1. Start an interactive shell on Ikoula public cloud
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Instantiation of driver for an advanced zone is the same as with a basic zone,
 for example on the `ikoula`_ cloud:

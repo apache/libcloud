@@ -35,7 +35,11 @@ DRIVERS = {
     Provider.S3_AP_SOUTHEAST:
     ('libcloud.storage.drivers.s3', 'S3APSEStorageDriver'),
     Provider.S3_AP_NORTHEAST:
-    ('libcloud.storage.drivers.s3', 'S3APNEStorageDriver'),
+    ('libcloud.storage.drivers.s3', 'S3APNE1StorageDriver'),
+    Provider.S3_AP_NORTHEAST1:
+    ('libcloud.storage.drivers.s3', 'S3APNE1StorageDriver'),
+    Provider.S3_AP_NORTHEAST2:
+    ('libcloud.storage.drivers.s3', 'S3APNE2StorageDriver'),
     Provider.S3_SA_EAST:
     ('libcloud.storage.drivers.s3', 'S3SAEastStorageDriver'),
     Provider.NINEFOLD:
@@ -52,6 +56,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.ktucloud', 'KTUCloudStorageDriver'),
     Provider.AURORAOBJECTS:
     ('libcloud.storage.drivers.auroraobjects', 'AuroraObjectsStorageDriver'),
+    Provider.BACKBLAZE_B2:
+    ('libcloud.storage.drivers.backblaze_b2', 'BackblazeB2StorageDriver'),
 
     # Deprecated
     Provider.CLOUDFILES_US:
