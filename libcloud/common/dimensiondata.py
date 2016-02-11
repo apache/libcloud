@@ -95,29 +95,6 @@ BAD_MESSAGE_XML_ELEMENTS = (
 )
 
 
-def location_to_location_id(location):
-    """
-    Helper function to get a location id from a location whether
-    it be a NodeLocation or a string
-
-    :param location: The location to get an id from
-    :type  location: :class:`NodeLocation` or ``str``
-
-    :return: The location id
-    :rtype: ``str`` or None (if no location passed in)
-    """
-    if location is not None:
-        if isinstance(location, NodeLocation):
-            return location.id
-        elif isinstance(location, basestring):
-            return location
-        else:
-            raise TypeError(
-                "Invalid location type for location_to_location_id()"
-            )
-    return None
-
-
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
     ADVANCED = "ADVANCED"
