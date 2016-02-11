@@ -43,6 +43,9 @@ Possible regions:
 * ``ntta-au`` : NTT America Australia
 * ``ntta-ap`` : NTT America Asia Pacific
 
+.. literalinclude:: /examples/compute/ntta/instantiate_driver.py
+   :language: python
+
 The base `libcloud` API allows you to:
 
 * list nodes, images, instance types, locations

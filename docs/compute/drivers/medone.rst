@@ -40,6 +40,9 @@ Possible regions:
 * ``med1-latam`` : Med-1 Latin America
 * ``med1-canada`` : Med-1 Canada
 
+.. literalinclude:: /examples/compute/medone/instantiate_driver.py
+   :language: python
+
 The base `libcloud` API allows you to:
 
 * list nodes, images, instance types, locations
