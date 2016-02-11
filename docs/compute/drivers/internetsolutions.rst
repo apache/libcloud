@@ -35,6 +35,9 @@ Possible regions:
 * ``is-ap`` : Internet Solutions Asia Pacific
 * ``is-canada`` : Internet Solutions Canada region
 
+.. literalinclude:: /examples/compute/internetsolutions/instantiate_driver.py
+   :language: python
+
 The base `libcloud` API allows you to:
 
 * list nodes, images, instance types, locations

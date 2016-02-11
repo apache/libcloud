@@ -38,6 +38,9 @@ Possible regions:
 * ``indosat-af`` : Indosat Africa
 * ``indosat-au`` : Indosat Australia
 
+.. literalinclude:: /examples/compute/indosat/instantiate_driver.py
+   :language: python
+
 The base `libcloud` API allows you to:
 
 * list nodes, images, instance types, locations

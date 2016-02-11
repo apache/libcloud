@@ -14,7 +14,7 @@ technologies to offer you unprecedented bandwidth and latency.
 
 IaaS has its own non-standard `API`_ , `libcloud` provides a Python
 wrapper on top of this `API`_ with common methods with other IaaS solutions and
-Public cloud providers. Therefore, you can use use the Indosat libcloud
+Public cloud providers. Therefore, you can use use the BSNL libcloud
 driver to communicate with both the public and private clouds.
 
 Instantiating a driver
@@ -34,6 +34,9 @@ Possible regions:
 * ``bsnl-eu`` : BSNL Europe
 * ``bsnl-af`` : BSNL Africa
 * ``bsnl-au`` : BSNL Australia
+
+.. literalinclude:: /examples/compute/bsnl/instantiate_driver.py
+   :language: python
 
 The base `libcloud` API allows you to:
 
