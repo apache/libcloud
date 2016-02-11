@@ -8,6 +8,8 @@ Provider                              list volumes create volume destroy volume 
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
+`BSNL`_                               no           no            no             no            no            no             no             
+`CiscoCCS`_                           no           no            no             no            no            no             no             
 `CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
@@ -16,6 +18,8 @@ Provider                              list volumes create volume destroy volume 
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
+`Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
+`Amazon EC2 (ap-northeast-2)`_        yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-southeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-southeast-2)`_        yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (eu-west-1)`_             yes          yes           yes            yes           yes           yes            yes            
@@ -43,14 +47,18 @@ Provider                              list volumes create volume destroy volume 
 `HP Public Cloud (Helion)`_           yes          yes           yes            yes           yes           yes            yes            
 `IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
 `Ikoula`_                             yes          yes           yes            yes           yes           no             yes            
+`Indosat`_                            no           no            no             no            no            no             no             
+`InternetSolutions`_                  no           no            no             no            no            no             no             
 `Joyent`_                             no           no            no             no            no            no             no             
 `Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            yes            no            no            no             no             
+`MedOne`_                             no           no            no             no            no            no             no             
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
 `Ninefold`_                           yes          yes           yes            yes           yes           no             yes            
+`NTTAmerica`_                         no           no            no             no            no            no             no             
 `OnApp`_                              no           no            no             no            no            no             no             
 `OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
@@ -80,6 +88,8 @@ Provider                              list volumes create volume destroy volume 
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
+.. _`BSNL`: http://www.bsnlcloud.com/
+.. _`CiscoCCS`: http://www.cisco.com/
 .. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
@@ -88,6 +98,8 @@ Provider                              list volumes create volume destroy volume 
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
+.. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
+.. _`Amazon EC2 (ap-northeast-2)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-2)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (eu-west-1)`: http://aws.amazon.com/ec2/
@@ -115,14 +127,18 @@ Provider                              list volumes create volume destroy volume 
 .. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
+.. _`Indosat`: http://www.indosat.com/
+.. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
+.. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/

@@ -153,6 +153,12 @@ class Provider(Type):
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
     RUNABOVE = 'runabove'
+    INTERNETSOLUTIONS = 'internetsolutions'
+    INDOSAT = 'indosat'
+    BSNL = 'bsnl'
+    NTTA = 'ntta'
+    MEDONE = 'medone'
+    CISCOCCS = 'ciscoccs'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'

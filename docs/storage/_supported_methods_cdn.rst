@@ -16,6 +16,8 @@ Provider                      enable container cdn enable object cdn get contain
 `OpenStack Swift`_            yes                  no                yes                   yes               
 `Amazon S3 (standard)`_       no                   no                no                    no                
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
+`Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
+`Amazon S3 (ap-northeast-2)`_ no                   no                no                    no                
 `Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
 `Amazon S3 (eu-west-1)`_      no                   no                no                    no                
 `Amazon S3 (sa-east-1)`_      no                   no                no                    no                
@@ -36,6 +38,8 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`OpenStack Swift`: http://www.rackspace.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
