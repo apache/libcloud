@@ -19,9 +19,9 @@ from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b, basestring
-from libcloud.compute.base import NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import NodeLocation
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:

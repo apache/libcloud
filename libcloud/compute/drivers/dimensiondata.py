@@ -691,10 +691,13 @@ class DimensionDataNodeDriver(NodeDriver):
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
+        :param location: The target location
+        :type  location: :class:`NodeLocation` or ``str``
+
         :return: a list of DimensionDataNetwork objects
-        :rtype: ``list`` of :class:`DimensionDataNetwork` or ``str``
+        :rtype: ``list`` of :class:`DimensionDataNetwork`
         """
-        return self.list_networks(location)
+        return self.list_networks(location=location)
 
     def ex_create_network(self, location, name, description=None):
         """
