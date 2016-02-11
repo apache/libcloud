@@ -170,7 +170,8 @@ DRIVERS = {
     Provider.RUNABOVE:
     ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
     Provider.INTERNETSOLUTIONS:
-    ('libcloud.compute.drivers.internetsolutions', 'InternetSolutionsNodeDriver'),
+    ('libcloud.compute.drivers.internetsolutions',
+     'InternetSolutionsNodeDriver'),
     Provider.INDOSAT:
     ('libcloud.compute.drivers.indosat', 'IndosatNodeDriver'),
     Provider.MEDONE:
