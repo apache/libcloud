@@ -287,6 +287,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
         self.assertEqual(net.name, "Test Network")
 
+    def test_ex_create_network_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_create_network(location, "Test Network")
+        self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
+        self.assertEqual(net.name, "Test Network")
+
     def test_ex_delete_network(self):
         net = self.driver.ex_list_networks()[0]
         result = self.driver.ex_delete_network(net)
@@ -303,6 +309,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         net = self.driver.ex_create_network_domain(location=location,
                                                    name='test',
                                                    description='test',
+                                                   service_plan=plan)
+        self.assertEqual(net.name, 'test')
+        self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
+
+    def test_ex_create_network_domain_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        plan = NetworkDomainServicePlan.ADVANCED
+        net = self.driver.ex_create_network_domain(location=location,
+                                                   name='test',
                                                    service_plan=plan)
         self.assertEqual(net.name, 'test')
         self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
@@ -339,6 +354,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vlans[0].name, "Primary")
 
     def test_ex_create_vlan(self,):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        vlan = self.driver.ex_create_vlan(network_domain=net,
+                                          name='test',
+                                          private_ipv4_base_address='10.3.4.0',
+                                          private_ipv4_prefix_size='24',
+                                          description='test vlan')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
+
+    def test_ex_create_vlan_NO_DESCRIPTION(self,):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         vlan = self.driver.ex_create_vlan(network_domain=net,
                                           name='test',
@@ -520,6 +544,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_reconfigure_node(node, 4, 4, 1, 'HIGHPERFORMANCE')
         self.assertTrue(result)
 
+    def test_ex_get_location_by_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertTrue(location.id, 'NA9')
+
+    def test_ex_get_location_by_id_NO_LOCATION(self):
+        location = self.driver.ex_get_location_by_id(None)
+        self.assertIsNone(location)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -626,6 +658,11 @@ class DimensionDataMockHttp(MockHttp):
             request = ET.fromstring(body)
             if request.tag != "{http://oec.api.opsource.net/schemas/network}NewNetworkWithLocation":
                 raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation_NA9(self, method, url, body, headers):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -754,6 +791,11 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
