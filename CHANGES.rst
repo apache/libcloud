@@ -28,6 +28,15 @@ General
 Compute
 ~~~~~~~
 
+- Deprecated IBM SCE, HP Helion, OpSource, Ninefold and CloudFrames drivers, removed
+  driver code and tests.
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- Introduced error messages (`libcloud.compute.deprecated`) for deprecated drivers
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
 - New Compute drivers- BSNL, Indosat, Med-1, NTT-America, Internet Solutions
   (GITHUB-700)
   [Anthony Shaw]
