@@ -10,7 +10,6 @@ Provider                              list key pairs get key pair create key pai
 `Brightbox`_                          no             no           no              no                            no                          no             
 `BSNL`_                               no             no           no              no                            no                          no             
 `CiscoCCS`_                           no             no           no              no                            no                          no             
-`CloudFrames`_                        no             no           no              no                            no                          no             
 `CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
@@ -44,8 +43,6 @@ Provider                              list key pairs get key pair create key pai
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
-`HP Public Cloud (Helion)`_           yes            yes          yes             yes                           no                          yes            
-`IBM SmartCloud Enterprise`_          no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Indosat`_                            no             no           no              no                            no                          no             
 `InternetSolutions`_                  no             no           no              no                            no                          no             
@@ -57,12 +54,10 @@ Provider                              list key pairs get key pair create key pai
 `MedOne`_                             no             no           no              no                            no                          no             
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
-`Ninefold`_                           yes            yes          yes             yes                           no                          yes            
 `NTTAmerica`_                         no             no           no              no                            no                          no             
 `OnApp`_                              no             no           no              no                            no                          no             
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
-`Opsource`_                           no             no           no              no                            no                          no             
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
 `Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
 `Packet`_                             yes            no           yes             no                            no                          yes            
@@ -90,7 +85,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
 .. _`CiscoCCS`: http://www.cisco.com/
-.. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -124,8 +118,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.hostvirtual.com
-.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
-.. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
@@ -137,12 +129,10 @@ Provider                              list key pairs get key pair create key pai
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
-.. _`Ninefold`: http://ninefold.com/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
-.. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Packet`: http://www.packet.net/

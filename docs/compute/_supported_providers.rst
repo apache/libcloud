@@ -10,7 +10,6 @@ Provider                              Documentation                             
 `Brightbox`_                                                                            BRIGHTBOX           :mod:`libcloud.compute.drivers.brightbox`         :class:`BrightboxNodeDriver`        
 `BSNL`_                               :doc:`Click </compute/drivers/bsnl>`              BSNL                :mod:`libcloud.compute.drivers.bsnl`              :class:`BSNLNodeDriver`             
 `CiscoCCS`_                                                                             CISCOCCS            :mod:`libcloud.compute.drivers.ciscoccs`          :class:`CiscoCCSNodeDriver`         
-`CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>`       CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`       :class:`CloudFramesNodeDriver`      
 `CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`        CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`        :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`        CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`        :class:`CloudStackNodeDriver`       
 `Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`         CLOUDWATT           :mod:`libcloud.compute.drivers.cloudwatt`         :class:`CloudwattNodeDriver`        
@@ -44,8 +43,6 @@ Provider                              Documentation                             
 `Google Compute Engine`_              :doc:`Click </compute/drivers/gce>`               GCE                 :mod:`libcloud.compute.drivers.gce`               :class:`GCENodeDriver`              
 `GoGrid`_                                                                               GOGRID              :mod:`libcloud.compute.drivers.gogrid`            :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                          HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`       :class:`HostVirtualNodeDriver`      
-`HP Public Cloud (Helion)`_           :doc:`Click </compute/drivers/hpcloud>`           HPCLOUD             :mod:`libcloud.compute.drivers.hpcloud`           :class:`HPCloudNodeDriver`          
-`IBM SmartCloud Enterprise`_                                                            IBM                 :mod:`libcloud.compute.drivers.ibm_sce`           :class:`IBMNodeDriver`              
 `Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`            IKOULA              :mod:`libcloud.compute.drivers.ikoula`            :class:`IkoulaNodeDriver`           
 `Indosat`_                            :doc:`Click </compute/drivers/indosat>`           INDOSAT             :mod:`libcloud.compute.drivers.indosat`           :class:`IndosatNodeDriver`          
 `InternetSolutions`_                  :doc:`Click </compute/drivers/internetsolutions>` INTERNETSOLUTIONS   :mod:`libcloud.compute.drivers.internetsolutions` :class:`InternetSolutionsNodeDriver`
@@ -57,12 +54,10 @@ Provider                              Documentation                             
 `MedOne`_                             :doc:`Click </compute/drivers/medone>`            MEDONE              :mod:`libcloud.compute.drivers.medone`            :class:`MedOneNodeDriver`           
 `NephoScale`_                                                                           NEPHOSCALE          :mod:`libcloud.compute.drivers.nephoscale`        :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`            NIMBUS              :mod:`libcloud.compute.drivers.ec2`               :class:`NimbusNodeDriver`           
-`Ninefold`_                                                                             NINEFOLD            :mod:`libcloud.compute.drivers.ninefold`          :class:`NinefoldNodeDriver`         
 `NTTAmerica`_                         :doc:`Click </compute/drivers/ntta>`              NTTA                :mod:`libcloud.compute.drivers.ntta`              :class:`NTTAmericaNodeDriver`       
 `OnApp`_                              :doc:`Click </compute/drivers/onapp>`             ONAPP               :mod:`libcloud.compute.drivers.onapp`             :class:`OnAppNodeDriver`            
 `OpenNebula (v3.8)`_                                                                    OPENNEBULA          :mod:`libcloud.compute.drivers.opennebula`        :class:`OpenNebulaNodeDriver`       
 `OpenStack`_                          :doc:`Click </compute/drivers/openstack>`         OPENSTACK           :mod:`libcloud.compute.drivers.openstack`         :class:`OpenStackNodeDriver`        
-`Opsource`_                                                                             OPSOURCE            :mod:`libcloud.compute.drivers.opsource`          :class:`OpsourceNodeDriver`         
 `Outscale INC`_                       :doc:`Click </compute/drivers/outscale_inc>`      OUTSCALE_INC        :mod:`libcloud.compute.drivers.ec2`               :class:`OutscaleINCNodeDriver`      
 `Outscale SAS`_                       :doc:`Click </compute/drivers/outscale_sas>`      OUTSCALE_SAS        :mod:`libcloud.compute.drivers.ec2`               :class:`OutscaleSASNodeDriver`      
 `Packet`_                             :doc:`Click </compute/drivers/packet>`            PACKET              :mod:`libcloud.compute.drivers.packet`            :class:`PacketNodeDriver`           
@@ -90,7 +85,6 @@ Provider                              Documentation                             
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
 .. _`CiscoCCS`: http://www.cisco.com/
-.. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -124,8 +118,6 @@ Provider                              Documentation                             
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.hostvirtual.com
-.. _`HP Public Cloud (Helion)`: http://www.hpcloud.com/
-.. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
@@ -137,12 +129,10 @@ Provider                              Documentation                             
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
-.. _`Ninefold`: http://ninefold.com/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
-.. _`Opsource`: http://www.opsource.net/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Packet`: http://www.packet.net/
