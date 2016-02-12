@@ -97,8 +97,7 @@ class GCEConnection(GoogleBaseConnection):
                                             auth_type=auth_type,
                                             credential_file=credential_file,
                                             **kwargs)
-        self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
-                                                         project)
+        self.request_path = '/compute/%s/projects/%s' % (API_VERSION, project)
         self.gce_params = None
 
     def pre_connect_hook(self, params, headers):
@@ -2100,7 +2099,7 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_forwarding_rule(name, global_rule=global_rule)
 
-    def ex_create_image(self, name, volume, description=None,
+    def ex_create_image(self, name, volume, description=None, family=None,
                         use_existing=True, wait_for_completion=True):
         """
         Create an image from the provided volume.
@@ -2114,6 +2113,13 @@ class GCENodeDriver(NodeDriver):
 
         :keyword    description: Description of the new Image
         :type       description: ``str``
+
+        :keyword    family: The name of the image family to which this image
+                            belongs. If you create resources by specifying an
+                            image family instead of a specific image name, the
+                            resource uses the latest non-deprecated image that
+                            is set with that family name.
+        :type       family: ``str``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -2135,11 +2141,13 @@ class GCENodeDriver(NodeDriver):
         image_data = {}
         image_data['name'] = name
         image_data['description'] = description
+        image_data['family'] = family
         if isinstance(volume, StorageVolume):
             image_data['sourceDisk'] = volume.extra['selfLink']
             image_data['zone'] = volume.extra['zone'].name
-        elif isinstance(volume, str) and \
-                volume.startswith('https://') and volume.endswith('tar.gz'):
+        elif (isinstance(volume, str) and
+              volume.startswith('https://') and
+              volume.endswith('tar.gz')):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
@@ -5240,6 +5248,7 @@ class GCENodeDriver(NodeDriver):
         if 'preferredKernel' in image:
             extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
+        extra['family'] = image.get('family', None)
         extra['creationTimestamp'] = image.get('creationTimestamp')
         extra['selfLink'] = image.get('selfLink')
         if 'deprecated' in image:
