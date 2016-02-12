@@ -16,8 +16,21 @@ General
   SSH client. This results in smaller number of receive calls on the average.
   [Tomaz Muraus]
 
+- Fix to Dimension Data API address for Middle-East and Africa
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Addition of Dimension Data Australia federal government region to dimension data
+  drivers.
+  (GITHUB-700)
+  [Anthony Shaw]
+
 Compute
 ~~~~~~~
+
+- New Compute drivers- BSNL, Indosat, Med-1, NTT-America, Internet Solutions
+  (GITHUB-700)
+  [Anthony Shaw]
 
 - Fix to set default signature version for AWS Seoul region to v4, removed
   non-supported size (hs1.xlarge)
