@@ -18,10 +18,9 @@ Dimension Data Common Components
 from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b, basestring
+from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.compute.base import NodeLocation
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -897,7 +896,7 @@ class DimensionDataBackupClient(object):
 
     def __repr__(self):
         return (('<DimensionDataBackupClient: id=%s>')
-                % (self.asset_id))
+                % (self.id))
 
 
 class DimensionDataBackupClientAlert(object):
@@ -919,8 +918,8 @@ class DimensionDataBackupClientAlert(object):
         self.notify_list = notify_list
 
     def __repr__(self):
-        return (('<DimensionDataBackupClientAlert: id=%s>')
-                % (self.asset_id))
+        return (('<DimensionDataBackupClientAlert: trigger=%s>')
+                % (self.trigger))
 
 
 class DimensionDataBackupClientRunningJob(object):
