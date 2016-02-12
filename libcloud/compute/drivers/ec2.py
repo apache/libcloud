@@ -4256,18 +4256,6 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         return node.extra['tags']
 
-    def ex_get_creation_time(self, node):
-        """
-        Return the date and time that represent when the Instance was created.
-        :param      node: Node instance
-        :type       node: :class:`Node
-
-        :return: ISO8601 combined date and time format string for when the
-                 Instance was created.
-        :rtype: ``str``
-        """
-        return node.extra['launch_time']
-
     def ex_allocate_address(self, domain='standard'):
         """
         Allocate a new Elastic IP address for EC2 classic or VPC

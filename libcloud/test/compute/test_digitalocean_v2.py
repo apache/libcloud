@@ -149,11 +149,6 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.destroy_node(node)
         self.assertTrue(result)
 
-    def test_ex_get_creation_time(self):
-        node = self.driver.list_nodes()[0]
-        creation_time = self.driver.ex_get_creation_time(node)
-        self.assertEqual(creation_time, "2014-11-14T16:29:21Z")
-
     def test_ex_rename_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'RENAME'

@@ -47,14 +47,10 @@ Compute
   (GITHUB-694)
   [Jeff Dunham]
 
-- Support for creation time (`ex_created_time`) in EC2 and digitalocean drivers
-  (GITHUB-697)
-  [Rick van de Loo]
-
-- Added `Node.create_at` which, on supported drivers, contains the datetime the
+- Added `Node.created_at` which, on supported drivers, contains the datetime the
   node was first started.
   (GITHUB-698)
-  [Allard Hoeve]
+  [Allard Hoeve] [Rick van de Loo]
 
 Storage
 ~~~~~~~

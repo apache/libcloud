@@ -454,18 +454,6 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
-    def ex_get_creation_time(self, node):
-        """
-        Return the date and time that represent when the Instance was created.
-        :param      node: Node instance
-        :type       node: :class:`Node`
-
-        :return: ISO8601 combined date and time format string for when the
-         Droplet was created.
-        :rtype: ``str``
-        """
-        return node.extra['created_at']
-
     def get_image(self, image_id):
         """
         Get an image based on an image_id
