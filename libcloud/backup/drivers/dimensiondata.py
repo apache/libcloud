@@ -186,7 +186,7 @@ class DimensionDataBackupDriver(BackupDriver):
         is supported.
 
         :param target: Backup target to update
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :param name: Name of the target
         :type name: ``str``
@@ -203,9 +203,9 @@ class DimensionDataBackupDriver(BackupDriver):
         request = ET.Element('ModifyBackup',
                              {'xmlns': BACKUP_NS})
         request.set('servicePlan', service_plan)
-
+        server_id = self._target_to_target_address(target)
         self.connection.request_with_orgId_api_1(
-            'server/%s/backup/modify' % (target.address),
+            'server/%s/backup/modify' % (server_id),
             method='POST',
             data=ET.tostring(request)).object
         target.extra = extra
@@ -220,9 +220,9 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-        address = self._target_to_target_address(target)
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup?disable' % (address),
+            'server/%s/backup?disable' % (server_id),
             method='GET').object
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
@@ -402,7 +402,6 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-
         server_id = self._target_to_target_address(target)
 
         backup_elm = ET.Element('NewBackupClient',
@@ -466,11 +465,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: :class:`DimensionDataBackupDetails`
         """
-
-        if isinstance(target, BackupTarget):
-            server_id = target.address
-        else:
-            server_id = target
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
             'server/%s/backup' % (server_id),
             method='GET').object
@@ -481,12 +476,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup client types
 
         :param  target: The backup target to list available types for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupClientType`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/type' % (target.address),
+            'server/%s/backup/client/type' % (server_id),
             method='GET').object
         return self._to_client_types(response)
 
@@ -495,12 +491,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup storage policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupStoragePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/storagePolicy' % (target.address),
+            'server/%s/backup/client/storagePolicy' % (server_id),
             method='GET').object
         return self._to_storage_policies(response)
 
@@ -509,12 +506,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup schedule policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupSchedulePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/schedulePolicy' % (target.address),
+            'server/%s/backup/client/schedulePolicy' % (server_id),
             method='GET').object
         return self._to_schedule_policies(response)
 
