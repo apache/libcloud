@@ -32,6 +32,7 @@ from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import fixxpath, findtext, findall
 
 

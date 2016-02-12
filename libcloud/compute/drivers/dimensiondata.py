@@ -827,9 +827,11 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: :class:`DimensionDataNetworkDomain`
         """
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node,
-                      "datacenterId"
-                     ).text = self._location_to_location_id(location)
+        ET.SubElement(
+            create_node,
+            "datacenterId"
+        ).text = self._location_to_location_id(location)
+
         ET.SubElement(create_node, "name").text = name
         if description is not None:
             ET.SubElement(create_node, "description").text = description

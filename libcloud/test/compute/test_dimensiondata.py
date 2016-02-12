@@ -552,6 +552,23 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         location = self.driver.ex_get_location_by_id(None)
         self.assertIsNone(location)
 
+    def test_priv_location_to_location_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertEqual(
+            self.driver._location_to_location_id(location),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_STR(self):
+        self.assertEqual(
+            self.driver._location_to_location_id('NA9'),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_TYPEERROR(self):
+        with self.assertRaises(TypeError):
+            self.driver._location_to_location_id([1, 2, 3])
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):

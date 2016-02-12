@@ -91,7 +91,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_add_client_to_target_STR(self):
         self.assertTrue(
-            self.driver.ex_add_client_to_target('e75ead52-692f-4314_8725-c8a4f4d13a87', 'FA.Linux', '14 Day Storage Policy',
+            self.driver.ex_add_client_to_target('e75ead52-692f-4314-8725-c8a4f4d13a87', 'FA.Linux', '14 Day Storage Policy',
                                                 '12AM - 6AM', 'ON_FAILURE', 'nobody@example.com')
         )
 
@@ -109,7 +109,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     """Test a backup info for a target that does not have a client"""
     def test_ex_get_backup_details_for_target_NO_CLIENT(self):
         DimensionDataMockHttp.type = 'NOCLIENT'
-        response = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314_8725-c8a4f4d13a87')
+        response = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(response.service_plan, 'Essentials')
         self.assertEqual(len(response.clients), 0)
 
@@ -130,9 +130,9 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_get_backup_details_for_target_DISABLED(self):
         DimensionDataMockHttp.type = 'DISABLED'
         with self.assertRaises(DimensionDataAPIException) as context:
-            self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314_8725-c8a4f4d13a87')
+            self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(context.exception.code, 'ERROR')
-        self.assertEqual(context.exception.msg, 'Server e75ead52-692f-4314_8725-c8a4f4d13a87 has not been provisioned for backup')
+        self.assertEqual(context.exception.msg, 'Server e75ead52-692f-4314-8725-c8a4f4d13a87 has not been provisioned for backup')
 
     def test_ex_list_available_client_types(self):
         target = self.driver.list_targets()[0]
@@ -158,6 +158,63 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(answer[0].name, '12AM - 6AM')
         self.assertEqual(answer[0].description, 'Daily backup will start between 12AM - 6AM')
 
+    def test_ex_remove_client_from_target(self):
+        target = self.driver.list_targets()[0]
+        client = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314-8725-c8a4f4d13a87').clients[0]
+        self.assertTrue(self.driver.ex_remove_client_from_target(target, client))
+
+    def test_ex_remove_client_from_target_STR(self):
+        self.assertTrue(
+            self.driver.ex_remove_client_from_target(
+                'e75ead52-692f-4314-8725-c8a4f4d13a87',
+                '30b1ff76-c76d-4d7c-b39d-3b72be0384c8'
+            )
+        )
+
+    def test_ex_remove_client_from_target_BUSY(self):
+        DimensionDataMockHttp.type = 'BUSY'
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_remove_client_from_target(
+                'e75ead52-692f-4314-8725-c8a4f4d13a87',
+                '30b1ff76-c76d-4d7c-b39d-3b72be0384c8'
+            )
+        self.assertEqual(context.exception.code, 'ERROR')
+        self.assertTrue('Backup Client is currently performing another operation' in context.exception.msg)
+
+    def test_priv_target_to_target_address(self):
+        target = self.driver.list_targets()[0]
+        self.assertEqual(
+            self.driver._target_to_target_address(target),
+            'e75ead52-692f-4314-8725-c8a4f4d13a87'
+        )
+
+    def test_priv_target_to_target_address_STR(self):
+        self.assertEqual(
+            self.driver._target_to_target_address('e75ead52-692f-4314-8725-c8a4f4d13a87'),
+            'e75ead52-692f-4314-8725-c8a4f4d13a87'
+        )
+
+    def test_priv_target_to_target_address_TYPEERROR(self):
+        with self.assertRaises(TypeError):
+            self.driver._target_to_target_address([1, 2, 3])
+
+    def test_priv_client_to_client_id(self):
+        client = self.driver.ex_get_backup_details_for_target('e75ead52-692f-4314-8725-c8a4f4d13a87').clients[0]
+        self.assertEqual(
+            self.driver._client_to_client_id(client),
+            '30b1ff76-c76d-4d7c-b39d-3b72be0384c8'
+        )
+
+    def test_priv_client_to_client_id_STR(self):
+        self.assertEqual(
+            self.driver._client_to_client_id('30b1ff76-c76d-4d7c-b39d-3b72be0384c8'),
+            '30b1ff76-c76d-4d7c-b39d-3b72be0384c8'
+        )
+
+    def test_priv_client_to_client_id_TYPEERROR(self):
+        with self.assertRaises(TypeError):
+            self.driver._client_to_client_id([1, 2, 3])
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -180,6 +237,10 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_BUSY(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -285,6 +346,22 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+             '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_remove_backup_client.xml')
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_BUSY(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+             '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_remove_backup_client_BUSY.xml')
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
