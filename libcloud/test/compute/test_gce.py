@@ -389,6 +389,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(image, GCENodeImage))
         self.assertTrue(image.name.startswith('coreos'))
         self.assertEqual(image.extra['description'], 'CoreOS beta 522.3.0')
+        self.assertEqual(image.extra['family'], 'coreos')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
