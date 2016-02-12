@@ -5390,6 +5390,8 @@ class BaseEC2NodeDriver(NodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
+        created = parse_date(findtext(element=element, xpath='launchTime',
+                             namespace=NAMESPACE))
         instance_id = findtext(element=element, xpath='instanceId',
                                namespace=NAMESPACE)
         public_ip = findtext(element=element, xpath='ipAddress',
@@ -5421,7 +5423,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return Node(id=instance_id, name=name, state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self.connection.driver, extra=extra)
+                    driver=self.connection.driver, created_at=created,
+                    extra=extra)
 
     def _to_images(self, object):
         return [self._to_image(el) for el in object.findall(

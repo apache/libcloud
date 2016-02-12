@@ -51,6 +51,11 @@ Compute
   (GITHUB-697)
   [Rick van de Loo]
 
+- Added `Node.create_at` which, on supported drivers, contains the datetime the
+  node was first started.
+  (GITHUB-698)
+  [Allard Hoeve]
+
 Storage
 ~~~~~~~
 

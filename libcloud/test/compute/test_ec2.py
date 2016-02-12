@@ -217,8 +217,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ips), 2)
-        self.assertEqual(node.extra['launch_time'],
-                         '2013-12-02T11:58:11.000Z')
+
+        self.assertEqual(node.extra['launch_time'], '2013-12-02T11:58:11.000Z')
+        self.assertEqual(node.created_at, datetime(2013, 12, 2, 11, 58, 11, tzinfo=UTC))
+
         self.assertTrue('instance_type' in node.extra)
         self.assertEqual(node.extra['availability'], 'us-east-1d')
         self.assertEqual(node.extra['key_name'], 'fauxkey')
@@ -243,12 +245,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(ret_node2.extra['subnet_id'], 'subnet-5fd9d412')
         self.assertEqual(ret_node2.extra['vpc_id'], 'vpc-61dcd30e')
         self.assertEqual(ret_node2.extra['tags']['Group'], 'VPC Test')
-        self.assertEqual(ret_node1.extra['launch_time'],
-                         '2013-12-02T11:58:11.000Z')
-        self.assertTrue('instance_type' in ret_node1.extra)
-        self.assertEqual(ret_node2.extra['launch_time'],
-                         '2013-12-02T15:58:29.000Z')
-        self.assertTrue('instance_type' in ret_node2.extra)
+
+        self.assertEqual(ret_node1.extra['launch_time'], '2013-12-02T11:58:11.000Z')
+        self.assertEqual(ret_node1.created_at, datetime(2013, 12, 2, 11, 58, 11, tzinfo=UTC))
+        self.assertEqual(ret_node2.extra['launch_time'], '2013-12-02T15:58:29.000Z')
+        self.assertEqual(ret_node2.created_at, datetime(2013, 12, 2, 15, 58, 29, tzinfo=UTC))
+
+        self.assertIn('instance_type', ret_node1.extra)
+        self.assertIn('instance_type', ret_node2.extra)
 
     def test_ex_list_reserved_nodes(self):
         node = self.driver.ex_list_reserved_nodes()[0]
