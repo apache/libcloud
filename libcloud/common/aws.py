@@ -21,11 +21,17 @@ import time
 from hashlib import sha256
 
 try:
+    import simplejson as json
+except ImportError:
+    import json
+
+try:
     from lxml import etree as ET
 except ImportError:
     from xml.etree import ElementTree as ET
 
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
+from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
@@ -44,6 +50,7 @@ __all__ = [
 ]
 
 DEFAULT_SIGNATURE_VERSION = '2'
+UNSIGNED_PAYLOAD = 'UNSIGNED-PAYLOAD'
 
 
 class AWSBaseResponse(XmlResponse):
@@ -179,7 +186,8 @@ class AWSRequestSigner(object):
     def get_request_params(self, params, method='GET', path='/'):
         return params
 
-    def get_request_headers(self, params, headers, method='GET', path='/'):
+    def get_request_headers(self, params, headers, method='GET', path='/',
+                            data=None):
         return params, headers
 
 
@@ -236,27 +244,29 @@ class AWSRequestSignerAlgorithmV2(AWSRequestSigner):
 
 class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
     def get_request_params(self, params, method='GET', path='/'):
-        params['Version'] = self.version
+        if method == 'GET':
+            params['Version'] = self.version
         return params
 
-    def get_request_headers(self, params, headers, method='GET', path='/'):
+    def get_request_headers(self, params, headers, method='GET', path='/',
+                            data=None):
         now = datetime.utcnow()
         headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+        headers['X-AMZ-Content-SHA256'] = self._get_payload_hash(method, data)
         headers['Authorization'] = \
             self._get_authorization_v4_header(params=params, headers=headers,
-                                              dt=now, method=method, path=path)
+                                              dt=now, method=method, path=path,
+                                              data=data)
 
         return params, headers
 
     def _get_authorization_v4_header(self, params, headers, dt, method='GET',
-                                     path='/'):
-        assert method == 'GET', 'AWS Signature V4 not implemented for ' \
-                                'other methods than GET'
-
+                                     path='/', data=None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(params=params, headers=headers,
-                                        dt=dt, method=method, path=path)
+                                        dt=dt, method=method, path=path,
+                                        data=data)
 
         return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
                'SignedHeaders=%(sh)s, Signature=%(s)s' % {
@@ -266,11 +276,12 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                    's': signature
                }
 
-    def _get_signature(self, params, headers, dt, method, path):
+    def _get_signature(self, params, headers, dt, method, path, data):
         key = self._get_key_to_sign_with(dt)
         string_to_sign = self._get_string_to_sign(params=params,
                                                   headers=headers, dt=dt,
-                                                  method=method, path=path)
+                                                  method=method, path=path,
+                                                  data=data)
         return _sign(key=key, msg=string_to_sign, hex=True)
 
     def _get_key_to_sign_with(self, dt):
@@ -283,11 +294,12 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                 self.connection.service_name),
             'aws4_request')
 
-    def _get_string_to_sign(self, params, headers, dt, method, path):
+    def _get_string_to_sign(self, params, headers, dt, method, path, data):
         canonical_request = self._get_canonical_request(params=params,
                                                         headers=headers,
                                                         method=method,
-                                                        path=path)
+                                                        path=path,
+                                                        data=data)
 
         return '\n'.join(['AWS4-HMAC-SHA256',
                           dt.strftime('%Y%m%dT%H%M%SZ'),
@@ -304,11 +316,18 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         return ';'.join([k.lower() for k in sorted(headers.keys())])
 
     def _get_canonical_headers(self, headers):
-        return '\n'.join([':'.join([k.lower(), v.strip()])
+        return '\n'.join([':'.join([k.lower(), str(v).strip()])
                           for k, v in sorted(headers.items())]) + '\n'
 
-    def _get_payload_hash(self):
-        return _hash('')
+    def _get_payload_hash(self, method, data=None):
+        if method in ('POST', 'PUT'):
+            if data:
+                return _hash(data)
+            else:
+                # When upload file, we can't know payload here even if given
+                return UNSIGNED_PAYLOAD
+        else:
+            return _hash('')
 
     def _get_request_params(self, params):
         # For self.method == GET
@@ -316,14 +335,14 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                          (urlquote(k, safe=''), urlquote(str(v), safe='~'))
                          for k, v in sorted(params.items())])
 
-    def _get_canonical_request(self, params, headers, method, path):
+    def _get_canonical_request(self, params, headers, method, path, data):
         return '\n'.join([
             method,
             path,
             self._get_request_params(params),
             self._get_canonical_headers(headers),
             self._get_signed_headers(headers),
-            self._get_payload_hash()
+            self._get_payload_hash(method, data)
         ])
 
 
@@ -343,7 +362,7 @@ class SignedAWSConnection(AWSTokenConnection):
 
         if self.signature_version == '2':
             signer_cls = AWSRequestSignerAlgorithmV2
-        elif signature_version == '4':
+        elif self.signature_version == '4':
             signer_cls = AWSRequestSignerAlgorithmV4
         else:
             raise ValueError('Unsupported signature_version: %s' %
@@ -364,8 +383,21 @@ class SignedAWSConnection(AWSTokenConnection):
         params, headers = self.signer.get_request_headers(params=params,
                                                           headers=headers,
                                                           method=self.method,
-                                                          path=self.action)
+                                                          path=self.action,
+                                                          data=self.data)
         return params, headers
+
+
+class AWSJsonResponse(JsonResponse):
+    """
+    Amazon ECS response class.
+    ECS API uses JSON unlike the s3, elb drivers
+    """
+    def parse_error(self):
+        response = json.loads(self.body)
+        code = response['__type']
+        message = response.get('Message', response['message'])
+        return ('%s: %s' % (code, message))
 
 
 def _sign(key, msg, hex=False):

@@ -1,0 +1,13 @@
+.. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
+
+====================================== ========================== ============ ============= ======================= ==================================== ============= ============= ==================== ============== =========================== ================ ================= ================= ================== =================
+Provider                               get supported target types list targets create target create target from node create target from storage container update target delete target list recovery points recover target recover target out of place list target jobs create target job resume target job suspend target job cancel target job
+====================================== ========================== ============ ============= ======================= ==================================== ============= ============= ==================== ============== =========================== ================ ================= ================= ================== =================
+`Dimension Data Backup`_               yes                        yes          yes           yes                     no                                   yes           yes           yes                  yes            yes                         yes              yes               yes               yes                yes              
+`Amazon EBS Backup Driver`_            yes                        yes          yes           yes                     no                                   yes           yes           yes                  yes            yes                         yes              yes               yes               yes                yes              
+`Google Compute Engine Backup Driver`_ yes                        yes          yes           yes                     no                                   yes           yes           yes                  yes            yes                         yes              yes               yes               yes                yes              
+====================================== ========================== ============ ============= ======================= ==================================== ============= ============= ==================== ============== =========================== ================ ================= ================= ================== =================
+
+.. _`Dimension Data Backup`: https://cloud.dimensiondata.com/
+.. _`Amazon EBS Backup Driver`: http://aws.amazon.com/ebs/
+.. _`Google Compute Engine Backup Driver`: http://cloud.google.com/

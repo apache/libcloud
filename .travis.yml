@@ -1,4 +1,5 @@
 language: python
+sudo: false
 # Add or remove version for match with Travis support
 python:
     - 2.6
@@ -7,34 +8,53 @@ python:
     - 3.3
     - 3.4
     - 3.5
-    - "pypy"
-sudo: false
+    - pypy
+    - pypy3
 os:
   - linux
-  - osx
-env:
+
+# Note: graphviz is needed for grapgs embedded in the docs
+addons:
+  apt:
+    packages:
+      - graphviz
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - os: osx
   include:
-    - python: 2.7
-      env: ENV=lint
+    - env: ENV=lint
+      python: 2.7
       before_script: TOX_ENV=lint
-    - python: 2.7
-      env: ENV=docs
+    - env: ENV=docs
+      python: 2.7
       before_script: TOX_ENV=docs-travis
+      # Note: graphviz is needed for grapgs embedded in the docs
+      addons:
+        apt:
+          packages:
+            - graphviz
+            - gcc
+      # Trigger ReadTheDocs build
+      after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
+  - pip install --upgrade "pip<8.0.0"
+  - pip install "virtualenv<14.0.0"
+  - pip install "tox>=2.3.0,<2.4"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
-  - pip install tox
 
 script:
   - tox -e $TOX_ENV
 
+cache:
+  apt: true
+  directories:
+    - $HOME/.cache/pip # pip cache
+
 notifications:
-  email:
-    - notifications@libcloud.apache.org
+  # Disabled until ASF switches to new mailing list software
+  # when we can whitelist addresses
+  #email:
+  #  - "notifications@libcloud.apache.org"
   irc:
     - "chat.freenode.net#libcloud"

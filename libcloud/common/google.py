@@ -609,6 +609,94 @@ class GoogleAuthType(object):
         return user_id.endswith('.gserviceaccount.com')
 
 
+class GoogleOAuth2Credential(object):
+    default_credential_file = '~/.google_libcloud_auth'
+
+    def __init__(self, user_id, key, auth_type=None, credential_file=None,
+                 scopes=None, **kwargs):
+        self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
+        if self.auth_type not in GoogleAuthType.ALL_TYPES:
+            raise GoogleAuthError('Invalid auth type: %s' % self.auth_type)
+        if not GoogleAuthType.is_oauth2(self.auth_type):
+            raise GoogleAuthError(('Auth type %s cannot be used with OAuth2' %
+                                   self.auth_type))
+        self.user_id = user_id
+        self.key = key
+
+        default_credential_file = '.'.join([self.default_credential_file,
+                                            user_id])
+        self.credential_file = credential_file or default_credential_file
+        # Default scopes to read/write for compute, storage, and dns.
+        self.scopes = scopes or [
+            'https://www.googleapis.com/auth/compute',
+            'https://www.googleapis.com/auth/devstorage.full_control',
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+        ]
+
+        self.token = self._get_token_from_file()
+
+        if self.auth_type == GoogleAuthType.GCE:
+            self.oauth2_conn = GoogleGCEServiceAcctAuthConnection(
+                self.user_id, self.scopes, **kwargs)
+        elif self.auth_type == GoogleAuthType.SA:
+            self.oauth2_conn = GoogleServiceAcctAuthConnection(
+                self.user_id, self.key, self.scopes, **kwargs)
+        elif self.auth_type == GoogleAuthType.IA:
+            self.oauth2_conn = GoogleInstalledAppAuthConnection(
+                self.user_id, self.key, self.scopes, **kwargs)
+        else:
+            raise GoogleAuthError('Invalid auth_type: %s' %
+                                  str(self.auth_type))
+
+        if self.token is None:
+            self.token = self.oauth2_conn.get_new_token()
+            self._write_token_to_file()
+
+    @property
+    def access_token(self):
+        if self.token_expire_utc_datetime < _utcnow():
+            self._refresh_token()
+        return self.token['access_token']
+
+    @property
+    def token_expire_utc_datetime(self):
+        return _from_utc_timestamp(self.token['expire_time'])
+
+    def _refresh_token(self):
+        self.token = self.oauth2_conn.refresh_token(self.token)
+        self._write_token_to_file()
+
+    def _get_token_from_file(self):
+        """
+        Read credential file and return token information.
+        Mocked in libcloud.test.common.google.GoogleTestCase.
+
+        :return:  Token information dictionary, or None
+        :rtype:   ``dict`` or ``None``
+        """
+        token = None
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+
+        try:
+            with open(filename, 'r') as f:
+                data = f.read()
+            token = json.loads(data)
+        except IOError:
+            pass
+        return token
+
+    def _write_token_to_file(self):
+        """
+        Write token to credential file.
+        Mocked in libcloud.test.common.google.GoogleTestCase.
+        """
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+        data = json.dumps(self.token)
+        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY,
+                               int('600', 8)), 'w') as f:
+            f.write(data)
+
+
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     """Base connection class for interacting with Google APIs."""
     driver = GoogleBaseDriver
@@ -616,7 +704,6 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     host = 'www.googleapis.com'
     poll_interval = 2.0
     timeout = 180
-    credential_file = '~/.google_libcloud_auth'
 
     def __init__(self, user_id, key=None, auth_type=None,
                  credential_file=None, scopes=None, **kwargs):
@@ -648,34 +735,15 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                           read/write access to Compute, Storage, and DNS.
         :type     scopes: ``list``
         """
-        self.user_id = user_id
-        self.key = key
-        if auth_type and auth_type not in GoogleAuthType.ALL_TYPES:
-            raise GoogleAuthError('Invalid auth type: %s' % auth_type)
-        self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
-
-        # OAuth2 stuff and placeholders
-        self.scopes = scopes
-        self.oauth2_conn = None
-        self.oauth2_token = None
-        if credential_file:
-            self.credential_file = credential_file
-        elif self.auth_type == GoogleAuthType.SA:
-            self.credential_file += '.' + user_id
-
-        if GoogleAuthType.is_oauth2(self.auth_type):
-            self._init_oauth2(**kwargs)
-
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
+
+        self.oauth2_credential = GoogleOAuth2Credential(
+            user_id, key, auth_type, credential_file, scopes, **kwargs)
 
         python_ver = '%s.%s.%s' % (sys.version_info[0], sys.version_info[1],
                                    sys.version_info[2])
         ver_platform = 'Python %s/%s' % (python_ver, sys.platform)
         self.user_agent_append(ver_platform)
-
-    @property
-    def token_expire_utc_datetime(self):
-        return _from_utc_timestamp(self.oauth2_token['expire_time'])
 
     def add_default_headers(self, headers):
         """
@@ -692,11 +760,8 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         @inherits: :class:`Connection.pre_connect_hook`
         """
-        if self.token_expire_utc_datetime < _utcnow():
-            self._refresh_oauth2_token()
-        headers['Authorization'] = 'Bearer %s' % (
-            self.oauth2_token['access_token'])
-
+        headers['Authorization'] = ('Bearer ' +
+                                    self.oauth2_credential.access_token)
         return params, headers
 
     def encode_data(self, data):
@@ -766,65 +831,3 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         else:
             request = self.request_path + action
         return request
-
-    def _refresh_oauth2_token(self):
-        self.oauth2_token = self.oauth2_conn.refresh_token(self.oauth2_token)
-        self._write_token_to_file()
-
-    def _init_oauth2(self, **kwargs):
-        # Default scopes to read/write for compute, storage, and dns.  Can
-        # override this when calling get_driver() or setting in secrets.py
-        if not self.scopes:
-            self.scopes = [
-                'https://www.googleapis.com/auth/compute',
-                'https://www.googleapis.com/auth/devstorage.full_control',
-                'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            ]
-        self.oauth2_token = self._get_token_from_file()
-
-        if self.auth_type == GoogleAuthType.GCE:
-            self.oauth2_conn = GoogleGCEServiceAcctAuthConnection(
-                self.user_id, self.scopes, **kwargs)
-        elif self.auth_type == GoogleAuthType.SA:
-            self.oauth2_conn = GoogleServiceAcctAuthConnection(
-                self.user_id, self.key, self.scopes, **kwargs)
-        elif self.auth_type == GoogleAuthType.IA:
-            self.oauth2_conn = GoogleInstalledAppAuthConnection(
-                self.user_id, self.key, self.scopes, **kwargs)
-        else:
-            raise GoogleAuthError('Invalid auth_type: %s' %
-                                  str(self.auth_type))
-
-        if self.oauth2_token is None:
-            self.oauth2_token = self.oauth2_conn.get_new_token()
-            self._write_token_to_file()
-
-    def _get_token_from_file(self):
-        """
-        Read credential file and return token information.
-        Mocked in libcloud.test.common.google.GoogleTestCase.
-
-        :return:  Token information dictionary, or None
-        :rtype:   ``dict`` or ``None``
-        """
-        token = None
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-
-        try:
-            with open(filename, 'r') as f:
-                data = f.read()
-            token = json.loads(data)
-        except IOError:
-            pass
-        return token
-
-    def _write_token_to_file(self):
-        """
-        Write token to credential file.
-        Mocked in libcloud.test.common.google.GoogleTestCase.
-        """
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        data = json.dumps(self.oauth2_token)
-        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY,
-                               int('600', 8)), 'w') as f:
-            f.write(data)

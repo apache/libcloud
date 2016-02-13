@@ -18,10 +18,10 @@ Dimension Data Common Components
 from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
+from libcloud.utils.py3 import b, basestring
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import NodeLocation
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -35,6 +35,7 @@ SERVER_NS = NAMESPACE_BASE + "/server"
 NETWORK_NS = NAMESPACE_BASE + "/network"
 DIRECTORY_NS = NAMESPACE_BASE + "/directory"
 GENERAL_NS = NAMESPACE_BASE + "/general"
+BACKUP_NS = NAMESPACE_BASE + "/backup"
 
 # API 2.0 Namespaces and URNs
 TYPES_URN = "urn:didata.com:api:cloud:types"
@@ -56,9 +57,14 @@ API_ENDPOINTS = {
         'host': 'api-au.dimensiondata.com',
         'vendor': 'DimensionData'
     },
+    'dd-au-gov': {
+        'name': 'Australia Canberra ACT (AU)',
+        'host': 'api-canberra.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
     'dd-af': {
         'name': 'Africa (AF)',
-        'host': 'api-af.dimensiondata.com',
+        'host': 'api-mea.dimensiondata.com',
         'vendor': 'DimensionData'
     },
     'dd-ap': {
@@ -75,11 +81,231 @@ API_ENDPOINTS = {
         'name': 'Canada (CA)',
         'host': 'api-canada.dimensiondata.com',
         'vendor': 'DimensionData'
-    }
+    },
+    'is-na': {
+        'name': 'North America (NA)',
+        'host': 'usapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-eu': {
+        'name': 'Europe (EU)',
+        'host': 'euapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-au': {
+        'name': 'Australia (AU)',
+        'host': 'auapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-af': {
+        'name': 'Africa (AF)',
+        'host': 'meaapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'apapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'latamapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-canada': {
+        'name': 'Canada (CA)',
+        'host': 'canadaapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'ntta-na': {
+        'name': 'North America (NA)',
+        'host': 'cloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-eu': {
+        'name': 'Europe (EU)',
+        'host': 'eucloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-au': {
+        'name': 'Australia (AU)',
+        'host': 'aucloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-af': {
+        'name': 'Africa (AF)',
+        'host': 'sacloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'hkcloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'cisco-na': {
+        'name': 'North America (NA)',
+        'host': 'iaas-api-na.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-eu': {
+        'name': 'Europe (EU)',
+        'host': 'iaas-api-eu.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-au': {
+        'name': 'Australia (AU)',
+        'host': 'iaas-api-au.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-af': {
+        'name': 'Africa (AF)',
+        'host': 'iaas-api-mea.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'iaas-api-ap.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'iaas-api-sa.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-canada': {
+        'name': 'Canada (CA)',
+        'host': 'iaas-api-ca.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'med1-il': {
+        'name': 'Israel (IL)',
+        'host': 'api.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-na': {
+        'name': 'North America (NA)',
+        'host': 'api-na.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-eu': {
+        'name': 'Europe (EU)',
+        'host': 'api-eu.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-au': {
+        'name': 'Australia (AU)',
+        'host': 'api-au.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-af': {
+        'name': 'Africa (AF)',
+        'host': 'api-af.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'api-ap.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'api-sa.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-canada': {
+        'name': 'Canada (CA)',
+        'host': 'api-ca.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'indosat-id': {
+        'name': 'Indonesia (ID)',
+        'host': 'iaas-api.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-na': {
+        'name': 'North America (NA)',
+        'host': 'iaas-usapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-eu': {
+        'name': 'Europe (EU)',
+        'host': 'iaas-euapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-au': {
+        'name': 'Australia (AU)',
+        'host': 'iaas-auapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-af': {
+        'name': 'Africa (AF)',
+        'host': 'iaas-afapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'bsnl-in': {
+        'name': 'India (IN)',
+        'host': 'api.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-na': {
+        'name': 'North America (NA)',
+        'host': 'usapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-eu': {
+        'name': 'Europe (EU)',
+        'host': 'euapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-au': {
+        'name': 'Australia (AU)',
+        'host': 'auapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-af': {
+        'name': 'Africa (AF)',
+        'host': 'afapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
 }
 
 # Default API end-point for the base connection class.
 DEFAULT_REGION = 'dd-na'
+
+BAD_CODE_XML_ELEMENTS = (
+    ('responseCode', SERVER_NS),
+    ('responseCode', TYPES_URN),
+    ('result', GENERAL_NS)
+)
+
+BAD_MESSAGE_XML_ELEMENTS = (
+    ('message', SERVER_NS),
+    ('message', TYPES_URN),
+    ('resultDetail', GENERAL_NS)
+)
+
+
+def location_to_location_id(location):
+    """
+    Helper function to get a location id from a location whether
+    it be a NodeLocation or a string
+
+    :param location: The location to get an id from
+    :type  location: :class:`NodeLocation` or ``str``
+
+    :return: The location id
+    :rtype: ``str`` or None (if no location passed in)
+    """
+    if location is not None:
+        if isinstance(location, NodeLocation):
+            return location.id
+        elif isinstance(location, basestring):
+            return location
+        else:
+            raise TypeError(
+                "Invalid location type for location_to_location_id()"
+            )
+    return None
 
 
 class NetworkDomainServicePlan(object):
@@ -97,12 +323,14 @@ class DimensionDataResponse(XmlResponse):
         body = self.parse_body()
 
         if self.status == httplib.BAD_REQUEST:
-            code = findtext(body, 'responseCode', SERVER_NS)
-            if code is None:
-                code = findtext(body, 'responseCode', TYPES_URN)
-            message = findtext(body, 'message', SERVER_NS)
-            if message is None:
-                message = findtext(body, 'message', TYPES_URN)
+            for response_code in BAD_CODE_XML_ELEMENTS:
+                code = findtext(body, response_code[0], response_code[1])
+                if code is not None:
+                    break
+            for message in BAD_MESSAGE_XML_ELEMENTS:
+                message = findtext(body, message[0], message[1])
+                if message is not None:
+                    break
             raise DimensionDataAPIException(code=code,
                                             msg=message,
                                             driver=self.connection.driver)
@@ -798,3 +1026,211 @@ class DimensionDataVirtualListenerCompatibility(object):
         return (('<DimensionDataVirtualListenerCompatibility: '
                  'type=%s, protocol=%s>')
                 % (self.type, self.protocol))
+
+
+class DimensionDataBackupDetails(object):
+    """
+    Dimension Data Backup Details represents information about
+    a targets backups configuration
+    """
+
+    def __init__(self, asset_id, service_plan, state, clients=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupDetails`
+
+        :param asset_id: Asset identification for backups
+        :type  asset_id: ``str``
+
+        :param service_plan: The service plan for backups. i.e (Essentials)
+        :type  service_plan: ``str``
+
+        :param state: The overall state this backup target. i.e. (unregistered)
+        :type  state: ``str``
+
+        :param clients: Backup clients attached to this target
+        :type  clients: ``list`` of :class:`DimensionDataBackupClient`
+        """
+        self.asset_id = asset_id
+        self.service_plan = service_plan
+        self.state = state
+        self.clients = clients
+
+    def __repr__(self):
+        return (('<DimensionDataBackupDetails: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClient(object):
+    """
+    An object that represents a backup client
+    """
+    def __init__(self, id, type, status,
+                 schedule_policy, storage_policy, download_url,
+                 alert=None, running_job=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClient`
+
+        :param id: Unique ID for the client
+        :type  id: ``str``
+
+        :param type: The type of client that this client is
+        :type  type: :class:`DimensionDataBackupClientType`
+
+        :param status: The states of this particular backup client.
+                       i.e. (Unregistered)
+        :type  status: ``str``
+
+        :param schedule_policy: The schedule policy for this client
+                                NOTE: Dimension Data only sends back the name
+                                of the schedule policy, no further details
+        :type  schedule_policy: ``str``
+
+        :param storage_policy: The storage policy for this client
+                               NOTE: Dimension Data only sends back the name
+                               of the storage policy, no further details
+        :type  storage_policy: ``str``
+
+        :param download_url: The download url for this client
+        :type  download_url: ``str``
+
+        :param alert: The alert configured for this backup client (optional)
+        :type  alert: :class:`DimensionDataBackupClientAlert`
+
+        :param alert: The running job for the client (optional)
+        :type  alert: :class:`DimensionDataBackupClientRunningJob`
+        """
+        self.id = id
+        self.type = type
+        self.status = status
+        self.schedule_policy = schedule_policy
+        self.storage_policy = storage_policy
+        self.download_url = download_url
+        self.alert = alert
+        self.running_job = running_job
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClient: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClientAlert(object):
+    """
+    An alert for a backup client
+    """
+    def __init__(self, trigger, notify_list=[]):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientAlert`
+
+        :param trigger: Trigger type for the client i.e. ON_FAILURE
+        :type  trigger: ``str``
+
+        :param notify_list: List of email addresses that are notified
+                            when the alert is fired
+        :type  notify_list: ``list`` of ``str``
+        """
+        self.trigger = trigger
+        self.notify_list = notify_list
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientAlert: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClientRunningJob(object):
+    """
+    A running job for a given backup client
+    """
+    def __init__(self, id, status, percentage=0):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientRunningJob`
+
+        :param id: The unqiue ID of the job
+        :type  id: ``str``
+
+        :param status: The status of the job i.e. Waiting
+        :type  status: ``str``
+
+        :param percentage: The percentage completion of the job
+        :type  percentage: ``int``
+        """
+        self.id = id
+        self.percentage = percentage
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientRunningJob: id=%s>')
+                % (self.id))
+
+
+class DimensionDataBackupClientType(object):
+    """
+    A client type object for backups
+    """
+    def __init__(self, type, is_file_system, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientType`
+
+        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
+        :type  type: ``str``
+
+        :param is_file_system: The name of the iRule
+        :type  is_file_system: ``bool``
+
+        :param description: Description of the client
+        :type  description: ``str``
+        """
+        self.type = type
+        self.is_file_system = is_file_system
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientType: type=%s>')
+                % (self.type))
+
+
+class DimensionDataBackupStoragePolicy(object):
+    """
+    A representation of a storage policy
+    """
+    def __init__(self, name, retention_period, secondary_location):
+        """
+        Initialize an instance of :class:`DimensionDataBackupStoragePolicy`
+
+        :param name: The name of the storage policy i.e. 14 Day Storage Policy
+        :type  name: ``str``
+
+        :param retention_period: How long to keep the backup in days
+        :type  retention_period: ``int``
+
+        :param secondary_location: The secondary location i.e. Primary
+        :type  secondary_location: ``str``
+        """
+        self.name = name
+        self.retention_period = retention_period
+        self.secondary_location = secondary_location
+
+    def __repr__(self):
+        return (('<DimensionDataBackupStoragePolicy: name=%s>')
+                % (self.name))
+
+
+class DimensionDataBackupSchedulePolicy(object):
+    """
+    A representation of a schedule policy
+    """
+    def __init__(self, name, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupSchedulePolicy`
+
+        :param name: The name of the policy i.e 12AM - 6AM
+        :type  name: ``str``
+
+        :param description: Short summary of the details of the policy
+        :type  description: ``str``
+        """
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupSchedulePolicy: name=%s>')
+                % (self.name))

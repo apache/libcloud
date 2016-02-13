@@ -4,8 +4,9 @@ from datetime import datetime
 
 import mock
 
-from libcloud.common.aws import SignedAWSConnection
 from libcloud.common.aws import AWSRequestSignerAlgorithmV4
+from libcloud.common.aws import SignedAWSConnection
+from libcloud.common.aws import UNSIGNED_PAYLOAD
 from libcloud.test import LibcloudTestCase
 
 
@@ -53,11 +54,6 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
                               'SignedHeaders=accept-encoding;host;user-agent;x-amz-date, '
                               'Signature=f9868f8414b3c3f856c7955019cc1691265541f5162b9b772d26044280d39bd3')
 
-    def test_v4_signature_raises_error_if_request_method_not_GET(self):
-        with self.assertRaises(Exception):
-            self.signer._get_authorization_v4_header(params={}, headers={},
-                                                     dt=self.now, method='POST')
-
     def test_v4_signature_contains_user_id(self):
         sig = self.signer._get_authorization_v4_header(params={}, headers={},
                                                        dt=self.now)
@@ -97,7 +93,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
                     mock_get_key.return_value = 'my_signing_key'
                     mock_get_string.return_value = 'my_string_to_sign'
                     sig = self.signer._get_signature({}, {}, self.now,
-                                                     method='GET', path='/')
+                                                     method='GET', path='/', data=None)
 
         self.assertEqual(sig, 'H|my_signing_key|my_string_to_sign')
 
@@ -105,7 +101,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         with mock.patch('hashlib.sha256') as mock_sha256:
             mock_sha256.return_value.hexdigest.return_value = 'chksum_of_canonical_request'
             to_sign = self.signer._get_string_to_sign({}, {}, self.now,
-                                                      method='GET', path='/')
+                                                      method='GET', path='/', data=None)
 
         self.assertEqual(to_sign,
                          'AWS4-HMAC-SHA256\n'
@@ -194,6 +190,15 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         }),
             'Action=DescribeInstances&Filter.1.Name=state&Version=2013-10-15')
 
+    def test_get_canonical_headers_allow_numeric_header_value(self):
+        headers = {
+            'Accept-Encoding': 'gzip,deflate',
+            'Content-Length': 314
+        }
+        self.assertEqual(self.signer._get_canonical_headers(headers),
+                         'accept-encoding:gzip,deflate\n'
+                         'content-length:314\n')
+
     def test_get_request_params_allows_integers_as_value(self):
         self.assertEqual(self.signer._get_request_params({'Action': 'DescribeInstances', 'Port': 22}),
                          'Action=DescribeInstances&Port=22')
@@ -216,15 +221,26 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
 
     def test_get_payload_hash_returns_digest_of_empty_string_for_GET_requests(self):
         SignedAWSConnection.method = 'GET'
-        self.assertEqual(self.signer._get_payload_hash(),
+        self.assertEqual(self.signer._get_payload_hash(method='GET'),
                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    def test_get_payload_hash_with_data_for_PUT_requests(self):
+        SignedAWSConnection.method = 'PUT'
+        self.assertEqual(self.signer._get_payload_hash(method='PUT', data='DUMMY'),
+                         'ceec12762e66397b56dad64fd270bb3d694c78fb9cd665354383c0626dbab013')
+
+    def test_get_payload_hash_with_empty_data_for_POST_requests(self):
+        SignedAWSConnection.method = 'POST'
+        self.assertEqual(self.signer._get_payload_hash(method='POST'),
+                         UNSIGNED_PAYLOAD)
 
     def test_get_canonical_request(self):
         req = self.signer._get_canonical_request(
             {'Action': 'DescribeInstances', 'Version': '2013-10-15'},
             {'Accept-Encoding': 'gzip,deflate', 'User-Agent': 'My-UA'},
             method='GET',
-            path='/my_action/'
+            path='/my_action/',
+            data=None
         )
         self.assertEqual(req, 'GET\n'
                               '/my_action/\n'
@@ -234,6 +250,23 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
                               '\n'
                               'accept-encoding;user-agent\n'
                               'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    def test_post_canonical_request(self):
+        req = self.signer._get_canonical_request(
+            {'Action': 'DescribeInstances', 'Version': '2013-10-15'},
+            {'Accept-Encoding': 'gzip,deflate', 'User-Agent': 'My-UA'},
+            method='POST',
+            path='/my_action/',
+            data='{}'
+        )
+        self.assertEqual(req, 'POST\n'
+                              '/my_action/\n'
+                              'Action=DescribeInstances&Version=2013-10-15\n'
+                              'accept-encoding:gzip,deflate\n'
+                              'user-agent:My-UA\n'
+                              '\n'
+                              'accept-encoding;user-agent\n'
+                              '44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

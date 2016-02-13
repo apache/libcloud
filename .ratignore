@@ -10,12 +10,14 @@ test/storage/fixtures/
 test/compute/fixtures/
 test/loadbalancer/fixtures/
 test/dns/fixtures/
+test/container/fixtures/
 coverage_html_report/
 .coverage
 .coveragerc
 libcloud/data/pricing.json
 libcloud/common/__init__.py
 libcloud/compute/__init__.py
+libcloud/container/__init__.py
 libcloud/storage/__init__.py
 libcloud/loadbalancer/__init__.py
 libcloud/dns/__init__.py

@@ -233,6 +233,10 @@ class OpenStackServiceCatalog(object):
         endpoints = []
 
         for entry in self._entries:
+            # Note: "if XXX and YYY != XXX" comparison is used to support
+            # partial lookups.
+            # This allows user to pass in only one argument to the method (only
+            # service_type or name), both of them or neither.
             if service_type and entry.service_type != service_type:
                 continue
 

@@ -1,11 +1,121 @@
-Changelog
+﻿Changelog
 =========
 
-Changes with current version of Apache Libcloud
------------------------------------------------
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+General
+~~~~~~~
+
+- Fix a bug with consuming stdout and stderr in the paramiko SSH client which
+  would manifest itself under very rare condition when a consumed chunk only
+  contained a single byte or part of a multi byte UTF-8 character.
+  [Lakshmi Kannan, Tomaz Muraus]
+
+- Increase default chunk size from ``1024`` to ``4096`` bytes in the paramiko
+  SSH client. This results in smaller number of receive calls on the average.
+  [Tomaz Muraus]
+
+- Fix to Dimension Data API address for Middle-East and Africa
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Addition of Dimension Data Australia federal government region to dimension data
+  drivers.
+  (GITHUB-700)
+  [Anthony Shaw]
 
 Compute
 ~~~~~~~
+
+- Deprecated IBM SCE, HP Helion, OpSource, Ninefold and CloudFrames drivers, removed
+  driver code and tests.
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- Introduced error messages (`libcloud.compute.deprecated`) for deprecated drivers
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- New Compute drivers- BSNL, Indosat, Med-1, NTT-America, Internet Solutions
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Fix to set default signature version for AWS Seoul region to v4, removed
+  non-supported size (hs1.xlarge)
+  (GITHUB-684)
+  [Geunwoo Shin]
+
+- Support filtering by location in list_nodes for dimension data compute driver
+  fix lack of paging support
+  (GITHUB-691)
+  [Jeff Dunham]
+
+- Support for filtering by IPv4, IPv6, network, network domain, VLAN in Dimension
+  data driver.
+  (GITHUB-694)
+  [Jeff Dunham]
+
+- Added `Node.created_at` which, on supported drivers, contains the datetime the
+  node was first started.
+  (GITHUB-698)
+  [Allard Hoeve] [Rick van de Loo]
+
+Storage
+~~~~~~~
+
+- Improvements to Google Auth for Storage and Compute and MIME bug fix
+  (LIBCLOUD-800, GITHUB-689)
+  [Scott Crunkleton]
+
+Backup
+~~~~~~
+
+- Dimension Data - added additional testing, fixed bug on client response naming,
+  added support for adding backup clients to a backup enabled node.
+  (GITHUB-692, GITHUB-693, GITHUB-695)
+  [Jeff Dunham]
+
+Changes with Apache Libcloud 1.0.0-pre1
+---------------------------------------
+
+General
+~~~~~~~
+
+- Introduction of container based drivers for Docker, Rkt and Container-as-a-service
+  providers
+  (LIBCLOUD-781, GITHUB-666)
+  [Anthony Shaw]
+
+- Introduce a new ``libcloud.backup`` API for Backup as a Service projects and
+  products.
+  (GITHUB-621)
+  [Anthony Shaw]
+
+- Also retry failed HTTP(s) requests upon transient "read operation timed out"
+  SSL error.
+  (GITHUB-556, LIBCLOUD-728)
+  [Scott Kruger]
+
+- Throw a more user-friendly exception if a client fails to establish SSL / TLS
+  connection with a server because of an unsupported SSL / TLS version.
+  (GITHUB-682)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- Add ap-northeast-2 region to EC2 driver (South Korea)
+  (GITHUB-681)
+  [Anthony Shaw]
+
+- Added Added volume type to EC2 volume extra to EC2 driver.
+  (GITHUB-680)
+  [Gennadiy Stas]
+
+- Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
+  (LIBCLOUD-786, GITHUB-665)
+  [Scott Crunkleton]
 
 - Added t2.nano instance type to EC2 Compute driver
   (GITHUB-663)
@@ -15,6 +125,32 @@ Compute
   creating nodes in Dimension Data driver.
   (GITHUB-664)
   [Anthony Shaw]
+
+DNS
+~~~
+
+- Add support for 'health checks' in Aurora DNS driver
+  (GITHUB-672)
+  [Wido den Hollander]
+
+- Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
+  ``extra`` dictionary.
+  (GITHUB-675)
+  [Wido den Hollander]
+
+- Improve unit tests of Aurora DNS driver
+  (GITHUB-679)
+  [Wido den Hollander]
+
+Changes with Apache Libcloud 0.20.1
+-----------------------------------
+
+Compute
+~~~~~~~
+
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
 
 Changes with Apache Libcloud 0.20.0
 -----------------------------------
@@ -115,7 +251,7 @@ Compute
   Dimension Data driver by using new ``ex_wait_for_state`` method.
   (LIBCLOUD-707, GITHUB-631)
   [Anthony Shaw]
-  
+
 - Added M4 pricing and instance information to EC2 driver
   (GITHUB-634)
   [Benjamin Zaitlen]
@@ -123,7 +259,7 @@ Compute
 - Added C4 instance information to EC2 driver
   (GITHUB-638)
   [amitofs]
-  
+
 - Allow location of the datacenter to be supplied in ProfitBricks driver
   (LIBCLOUD-771, GITHUB-635)
   [Joel Reymont]
@@ -215,7 +351,7 @@ General
 
 Compute
 ~~~~~~~
-  
+
 - Fixed malformed XML requests with Dimension Data driver.
   (LIBCLOUD-760, GITHUB-610)
   [Anthony Shaw]

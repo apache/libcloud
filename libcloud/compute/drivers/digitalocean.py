@@ -18,6 +18,7 @@ DigitalOcean Driver
 import json
 import warnings
 
+from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.digitalocean import DigitalOcean_v1_BaseDriver
@@ -539,6 +540,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         else:
             state = NodeState.UNKNOWN
 
+        created = parse_date(data['created_at'])
         networks = data['networks']
         private_ips = []
         public_ips = []
@@ -556,7 +558,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, extra=extra)
+                    created_at=created, driver=self, extra=extra)
         return node
 
     def _to_image(self, data):

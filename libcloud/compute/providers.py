@@ -20,6 +20,7 @@ from libcloud.utils.misc import get_driver as _get_provider_driver
 from libcloud.utils.misc import set_driver as _set_provider_driver
 from libcloud.compute.types import Provider, DEPRECATED_RACKSPACE_PROVIDERS
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
+from libcloud.compute.deprecated import DEPRECATED_DRIVERS
 
 __all__ = [
     "Provider",
@@ -43,6 +44,10 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'EC2APSENodeDriver'),
     Provider.EC2_AP_NORTHEAST:
     ('libcloud.compute.drivers.ec2', 'EC2APNENodeDriver'),
+    Provider.EC2_AP_NORTHEAST1:
+    ('libcloud.compute.drivers.ec2', 'EC2APNE1NodeDriver'),
+    Provider.EC2_AP_NORTHEAST2:
+    ('libcloud.compute.drivers.ec2', 'EC2APNE2NodeDriver'),
     Provider.EC2_SA_EAST:
     ('libcloud.compute.drivers.ec2', 'EC2SAEastNodeDriver'),
     Provider.EC2_AP_SOUTHEAST2:
@@ -81,8 +86,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_FIRST_GEN:
     ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
-    Provider.HPCLOUD:
-    ('libcloud.compute.drivers.hpcloud', 'HPCloudNodeDriver'),
     Provider.KILI:
     ('libcloud.compute.drivers.kili', 'KiliCloudNodeDriver'),
     Provider.VPSNET:
@@ -97,8 +100,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.softlayer', 'SoftLayerNodeDriver'),
     Provider.EUCALYPTUS:
     ('libcloud.compute.drivers.ec2', 'EucNodeDriver'),
-    Provider.IBM:
-    ('libcloud.compute.drivers.ibm_sce', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
     ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
     Provider.BRIGHTBOX:
@@ -109,14 +110,10 @@ DRIVERS = {
     ('libcloud.compute.drivers.bluebox', 'BlueboxNodeDriver'),
     Provider.GANDI:
     ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
-    Provider.OPSOURCE:
-    ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
     Provider.DIMENSIONDATA:
     ('libcloud.compute.drivers.dimensiondata', 'DimensionDataNodeDriver'),
     Provider.OPENSTACK:
     ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
-    Provider.NINEFOLD:
-    ('libcloud.compute.drivers.ninefold', 'NinefoldNodeDriver'),
     Provider.VCLOUD:
     ('libcloud.compute.drivers.vcloud', 'VCloudNodeDriver'),
     Provider.TERREMARK:
@@ -139,8 +136,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.digitalocean', 'DigitalOceanNodeDriver'),
     Provider.NEPHOSCALE:
     ('libcloud.compute.drivers.nephoscale', 'NephoscaleNodeDriver'),
-    Provider.CLOUDFRAMES:
-    ('libcloud.compute.drivers.cloudframes', 'CloudFramesNodeDriver'),
     Provider.EXOSCALE:
     ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
     Provider.IKOULA:
@@ -165,6 +160,19 @@ DRIVERS = {
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
     Provider.RUNABOVE:
     ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
+    Provider.INTERNETSOLUTIONS:
+    ('libcloud.compute.drivers.internetsolutions',
+     'InternetSolutionsNodeDriver'),
+    Provider.INDOSAT:
+    ('libcloud.compute.drivers.indosat', 'IndosatNodeDriver'),
+    Provider.MEDONE:
+    ('libcloud.compute.drivers.medone', 'MedOneNodeDriver'),
+    Provider.BSNL:
+    ('libcloud.compute.drivers.bsnl', 'BSNLNodeDriver'),
+    Provider.CISCOCCS:
+    ('libcloud.compute.drivers.ciscoccs', 'CiscoCCSNodeDriver'),
+    Provider.NTTA:
+    ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
@@ -173,6 +181,12 @@ DRIVERS = {
 
 
 def get_driver(provider):
+    if provider in DEPRECATED_DRIVERS:
+        url = DEPRECATED_DRIVERS[provider]['url']
+        reason = DEPRECATED_DRIVERS[provider]['reason']
+        msg = ('Provider no longer supported: %s, please visit: %s' %
+               (url, reason))
+        raise Exception(msg)
     if provider in DEPRECATED_RACKSPACE_PROVIDERS:
         id_to_name_map = dict([(v, k) for k, v in Provider.__dict__.items()])
         old_name = id_to_name_map[provider]

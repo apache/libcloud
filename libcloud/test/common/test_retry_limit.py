@@ -15,10 +15,12 @@
 
 import socket
 import tempfile
+import ssl
 
 from mock import Mock, patch, MagicMock
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.misc import TRANSIENT_SSL_ERROR
 from libcloud.common.base import Connection
 from libcloud.common.base import Response
 from libcloud.common.exceptions import RateLimitReachedError
@@ -31,6 +33,7 @@ CONFLICT_RESPONSE_STATUS = [
 SIMPLE_RESPONSE_STATUS = ('HTTP/1.1', 429, 'CONFLICT')
 
 
+@patch('os.environ', {'LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS': True})
 class FailedRequestRetryTestCase(unittest.TestCase):
 
     def _raise_socket_error(self):
@@ -49,6 +52,18 @@ class FailedRequestRetryTestCase(unittest.TestCase):
                 pass
             except Exception:
                 self.fail('Failed to raise socket exception')
+
+    def test_retry_connection_ssl_error(self):
+        conn = Connection(timeout=1, retry_delay=0.1)
+
+        with patch.object(conn, 'connect', Mock()):
+            with patch.object(conn, 'connection') as connection:
+                connection.request = MagicMock(
+                    __name__='request',
+                    side_effect=ssl.SSLError(TRANSIENT_SSL_ERROR))
+
+                self.assertRaises(ssl.SSLError, conn.request, '/')
+                self.assertGreater(connection.request.call_count, 1)
 
     def test_rate_limit_error(self):
         sock = Mock()

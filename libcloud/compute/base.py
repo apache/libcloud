@@ -167,7 +167,7 @@ class Node(UuidMixin):
     """
 
     def __init__(self, id, name, state, public_ips, private_ips,
-                 driver, size=None, image=None, extra=None):
+                 driver, size=None, image=None, extra=None, created_at=None):
         """
         :param id: Node ID.
         :type id: ``str``
@@ -193,6 +193,9 @@ class Node(UuidMixin):
         :param image: Image of this node. (optional)
         :type size: :class:`.NodeImage`
 
+        :param created_at: The datetime this node was created (optional)
+        :type created_at: :class: `datetime.datetime`
+
         :param extra: Optional provider specific attributes associated with
                       this node.
         :type extra: ``dict``
@@ -205,6 +208,7 @@ class Node(UuidMixin):
         self.private_ips = private_ips if private_ips else []
         self.driver = driver
         self.size = size
+        self.created_at = created_at
         self.image = image
         self.extra = extra or {}
         UuidMixin.__init__(self)
