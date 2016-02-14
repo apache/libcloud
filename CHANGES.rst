@@ -28,6 +28,10 @@ General
 Compute
 ~~~~~~~
 
+- Added support for adding a family to an image on Google Compute Driver
+  (GITHUB-704)
+  [Max Illfelder]
+
 - Deprecated IBM SCE, HP Helion, OpSource, Ninefold and CloudFrames drivers, removed
   driver code and tests.
   (GITHUB-701, LIBCLOUD-801)
