@@ -28,6 +28,10 @@ General
 Compute
 ~~~~~~~
 
+- Add support in VMware vCloud driver for v5.5 API, with snapshot support
+  (GITHUB-658)
+  [Juan Font Alonso]
+
 - Added support for adding a family to an image on Google Compute Driver
   (GITHUB-704)
   [Max Illfelder]
