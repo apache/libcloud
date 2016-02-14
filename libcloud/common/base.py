@@ -1140,6 +1140,11 @@ class BaseDriver(object):
                             'proxy_url': kwargs.pop('proxy_url', None)})
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
+        # Note: We store this attributes on the class so we can re-create
+        # connection when unpickling driver instance
+        self._connection_cls_args = args
+        self._connection_cls_kwargs = conn_kwargs
+
         self.connection.driver = self
         self.connection.connect()
 
@@ -1149,3 +1154,21 @@ class BaseDriver(object):
         Connection class constructor.
         """
         return {}
+
+    def __getstate__(self):
+        # Note: "connection" attribute contains many unpicklable objects which
+        # is why we only store attributes which can be used to re-create the
+        # instance later when unpickling.
+        state = self.__dict__.copy()
+        del state['connection']
+        return state
+
+    def __setstate__(self, state):
+        for key, value in state.items():
+            setattr(self, key, value)
+
+        # Re-create connection class instance
+        args = self._connection_cls_args
+        kwargs = self._connection_cls_kwargs
+        self.connection = self.connectionCls(*args, **kwargs)
+        self.connection.connect()
