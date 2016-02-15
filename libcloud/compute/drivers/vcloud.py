@@ -2190,18 +2190,23 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
     def ex_acquire_mks_ticket(self, vapp_or_vm_id, vm_num=0):
         """
         Retrieve a mks ticket that you can use to gain access to the console
-        of a running VM.
-        :param vapp_or_vm_id: vApp or VM ID you want to connect to.
-        :param vm_num: If a vApp ID is provided, vm_num is position in the vApp
-                    VM list of the VM you want to get a screen ticket.
-                    Default is 0.
-        :return: If successful, a dict with the following keys:
-                - host: host (or proxy) through which the console connection
-                        is made
-                - vmx: a reference to the VMX file of the VM for which this
-                       ticket was issued
-                - ticket: screen ticket to use to authenticate the client
-                - port: host port to be used for console access
+        of a running VM. If successful, returns a dict with the following keys:
+        - host: host (or proxy) through which the console connection
+                is made
+        - vmx: a reference to the VMX file of the VM for which this
+               ticket was issued
+        - ticket: screen ticket to use to authenticate the client
+        - port: host port to be used for console access
+
+        :param  vapp_or_vm_id: vApp or VM ID you want to connect to.
+        :type   vapp_or_vm_id: ``str``
+
+        :param  vm_num: If a vApp ID is provided, vm_num is position in the vApp
+                VM list of the VM you want to get a screen ticket.
+                Default is 0.
+        :type   vm_num: ``int``
+
+        :rtype: ``dict``
         """
         vm = self._get_vm_elements(vapp_or_vm_id)[vm_num]
         try:
