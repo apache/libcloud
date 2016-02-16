@@ -28,6 +28,11 @@ General
 Compute
 ~~~~~~~
 
+- Add support for requesting a MKS token for accessing the remote console in VMware
+  vCloud driver
+  (GITHUB-706)
+  [Juan Font Alonso]
+
 - Add support in VMware vCloud driver for v5.5 API, with snapshot support
   (GITHUB-658)
   [Juan Font Alonso]
