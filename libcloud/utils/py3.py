@@ -89,7 +89,7 @@ if PY3:
     parse_qs = urlparse.parse_qs
     parse_qsl = urlparse.parse_qsl
 
-    basestring = str
+    basestring = (str, unicode)
 
     def method_type(callable, instance, klass):
         return types.MethodType(callable, instance or klass())
