@@ -161,7 +161,7 @@ else:
     # Save the real value of unicode because urlquote needs it to tell the
     # difference between a unicode string and a byte string.
     _real_unicode = unicode
-    basestring = (unicode, str)
+    basestring = unicode = str
 
     method_type = types.MethodType
 
