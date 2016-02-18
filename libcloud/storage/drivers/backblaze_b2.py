@@ -30,6 +30,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.files import read_in_chunks
 from libcloud.utils.files import exhaust_iterator
+from libcloud.utils.escape import sanitize_object_name
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import JsonResponse
@@ -316,7 +317,7 @@ class BackblazeB2StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, headers=None, iterator=None):
+                      verify_hash=True, headers=None):
         """
         Upload an object.
 
@@ -325,66 +326,33 @@ class BackblazeB2StorageDriver(StorageDriver):
         # Note: We don't use any of the base driver functions since Backblaze
         # API requires you to provide SHA1 has upfront and the base methods
         # don't support that
-        object_name = object_name.replace('\\', '/')
-        if iterator is None:
-            with open(file_path, 'rb') as fp:
-                iterator = iter(fp)
-                iterator = read_in_chunks(iterator=iterator)
-                data = exhaust_iterator(iterator=iterator)
-        else:
+
+        with open(file_path, 'rb') as fp:
+            iterator = iter(fp)
             iterator = read_in_chunks(iterator=iterator)
             data = exhaust_iterator(iterator=iterator)
 
-        extra = extra or {}
-        content_type = extra.get('content_type', 'b2/x-auto')
-        meta_data = extra.get('meta_data', {})
+        obj = self._perform_upload(data, container, object_name,
+                                   extra, verify_hash, headers)
 
-        # Note: Backblaze API doesn't support chunked encoding and we need to
-        # provide Content-Length up front (this is one inside _upload_object):/
-        headers = headers or {}
-        headers['X-Bz-File-Name'] = object_name
-        headers['Content-Type'] = content_type
-
-        sha1 = hashlib.sha1()
-        sha1.update(b(data))
-        headers['X-Bz-Content-Sha1'] = sha1.hexdigest()
-
-        # Include optional meta-data (up to 10 items)
-        for key, value in meta_data:
-            # TODO: Encode / escape key
-            headers['X-Bz-Info-%s' % (key)] = value
-
-        upload_data = self.ex_get_upload_data(
-            container_id=container.extra['id'])
-        upload_token = upload_data['authorizationToken']
-        parsed_url = urlparse.urlparse(upload_data['uploadUrl'])
-
-        upload_host = parsed_url.netloc
-        request_path = parsed_url.path
-
-        if isinstance(data, str):
-            data = bytearray(data)
-        response = self.connection.upload_request(action=request_path,
-                                                  headers=headers,
-                                                  upload_host=upload_host,
-                                                  auth_token=upload_token,
-                                                  data=data)
-
-        if response.status == httplib.OK:
-            obj = self._to_object(item=response.object, container=container)
-            return obj
-        else:
-            body = response.response.read()
-            raise LibcloudError('Upload failed. status_code=%s, body=%s' %
-                                (response.status, body), driver=self)
+        return obj
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None, headers=None):
+        """
+        Upload an object.
 
-        obj = self.upload_object(file_path=None, container=container,
-                                 object_name=object_name, extra=None,
-                                 verify_hash=True, headers=headers,
-                                 iterator=iterator)
+        Note: Backblaze does not yet support uploading via stream,
+        so this calls upload_object internally requiring the object data
+        to be loaded into memory at once
+        """
+
+        iterator = read_in_chunks(iterator=iterator)
+        data = exhaust_iterator(iterator=iterator)
+
+        obj = self._perform_upload(data, container,
+                                   object_name, extra, headers)
+
         return obj
 
     def delete_object(self, obj):
@@ -500,3 +468,52 @@ class BackblazeB2StorageDriver(StorageDriver):
         """
         path = container.name + '/' + obj.name
         return path
+
+    def _perform_upload(self, data, container, object_name, extra=None,
+                        verify_hash=True, headers=None):
+
+        if isinstance(data, str):
+            data = bytearray(data)
+
+        object_name = sanitize_object_name(object_name)
+
+        extra = extra or {}
+        content_type = extra.get('content_type', 'b2/x-auto')
+        meta_data = extra.get('meta_data', {})
+
+        # Note: Backblaze API doesn't support chunked encoding and we need to
+        # provide Content-Length up front (this is one inside _upload_object):/
+        headers = headers or {}
+        headers['X-Bz-File-Name'] = object_name
+        headers['Content-Type'] = content_type
+
+        sha1 = hashlib.sha1()
+        sha1.update(b(data))
+        headers['X-Bz-Content-Sha1'] = sha1.hexdigest()
+
+        # Include optional meta-data (up to 10 items)
+        for key, value in meta_data:
+            # TODO: Encode / escape key
+            headers['X-Bz-Info-%s' % (key)] = value
+
+        upload_data = self.ex_get_upload_data(
+            container_id=container.extra['id'])
+        upload_token = upload_data['authorizationToken']
+        parsed_url = urlparse.urlparse(upload_data['uploadUrl'])
+
+        upload_host = parsed_url.netloc
+        request_path = parsed_url.path
+
+        response = self.connection.upload_request(action=request_path,
+                                                  headers=headers,
+                                                  upload_host=upload_host,
+                                                  auth_token=upload_token,
+                                                  data=data)
+
+        if response.status == httplib.OK:
+            obj = self._to_object(item=response.object, container=container)
+            return obj
+        else:
+            body = response.response.read()
+            raise LibcloudError('Upload failed. status_code=%s, body=%s' %
+                                (response.status, body), driver=self)
