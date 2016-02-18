@@ -1933,6 +1933,4 @@ class DimensionDataNodeDriver(NodeDriver):
         elif isinstance(location, basestring):
             return location
         else:
-            raise TypeError(
-                "Invalid location type for _location_to_location_id()"
-            )
+            return str(location)
