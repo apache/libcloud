@@ -362,6 +362,8 @@ class BackblazeB2StorageDriver(StorageDriver):
         upload_host = parsed_url.netloc
         request_path = parsed_url.path
 
+        if isinstance(data, str):
+            data = bytearray(data)
         response = self.connection.upload_request(action=request_path,
                                                   headers=headers,
                                                   upload_host=upload_host,
