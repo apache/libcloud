@@ -560,7 +560,7 @@ class DimensionDataLBDriver(Driver):
                                    ex_description,
                                    port,
                                    pool,
-                                   listenerIpAddress=None,
+                                   listener_ip_address=None,
                                    persistence_profile=None,
                                    fallback_persistence_profile=None,
                                    irule=None,
@@ -586,8 +586,8 @@ class DimensionDataLBDriver(Driver):
         :param pool: The pool to use for the listener
         :type  pool: :class:`DimensionDataPool`
 
-        :param listenerIpAddress: The IPv4 Address of the virtual listener
-        :type listenerIpaddress: ``str``
+        :param listener_ip_address: The IPv4 Address of the virtual listener
+        :type  listener_ip_address: ``str``
 
         :param persistence_profile: Persistence profile
         :type  persistence_profile: :class:`DimensionDataPersistenceProfile`
@@ -633,9 +633,9 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "type").text = listener_type
         ET.SubElement(create_node_elm, "protocol") \
             .text = protocol
-        if listenerIpAddress is not None:
+        if listener_ip_address is not None:
             ET.SubElement(create_node_elm, "listenerIpAddress").text = \
-                str(listenerIpAddress)
+                str(listener_ip_address)
         ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
