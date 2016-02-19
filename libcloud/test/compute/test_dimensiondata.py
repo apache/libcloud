@@ -23,7 +23,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
@@ -67,13 +67,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertTrue(ret[0].state == 'running')
-        print(ret[1].state)
         self.assertTrue(ret[1].state == 'starting')
         self.assertTrue(ret[2].state == 'stopping')
         self.assertTrue(ret[3].state == 'reconfiguring')
         self.assertTrue(ret[4].state == 'running')
         self.assertTrue(ret[5].state == 'terminated')
         self.assertTrue(ret[6].state == 'stopped')
+        self.assertEqual(len(ret), 7)
+        node = ret[0]
+        self.assertTrue(isinstance(node.extra['disks'], list))
+        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'

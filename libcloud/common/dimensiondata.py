@@ -608,6 +608,41 @@ class DimensionDataServerCpuSpecification(object):
                 % (self.cpu_count, self.cores_per_socket, self.performance))
 
 
+class DimensionDataServerDisk(object):
+    """
+    A class that represents the disk on a server
+    """
+    def __init__(self, id, scsiId, sizeGb, speed, state):
+        """
+        Instantiate a new :class:`DimensionDataServerDisk`
+
+        :param id: The id of the disk
+        :type  id: ``str``
+
+        :param scsiId: Representation for scsi
+        :type  scsiId: ``int``
+
+        :param sizeGb: Size of the disk
+        :type  sizeGb: ``int``
+
+        :param speed: Speed of the disk (i.e. STANDARD)
+        :type  speed: ``str``
+
+        :param state: State of the disk (i.e. PENDING)
+        :type  state: ``str``
+        """
+        self.id = id
+        self.scsiId = scsiId
+        self.sizeGb = sizeGb
+        self.speed = speed
+        self.state = state
+
+    def __repr__(self):
+        return (('<DimensionDataServerDisk: '
+                 'id=%s, sizeGb=%s')
+                % (self.id, self.sizeGb))
+
+
 class DimensionDataFirewallRule(object):
     """
     DimensionData Firewall Rule for a network domain

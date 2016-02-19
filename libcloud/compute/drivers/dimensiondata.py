@@ -29,6 +29,7 @@ from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerDisk
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
@@ -1851,6 +1852,19 @@ class DimensionDataNodeDriver(NodeDriver):
             cores_per_socket=int(element.get('coresPerSocket')),
             performance=element.get('speed'))
 
+    def _to_disks(self, object):
+        disk_elements = object.findall(fixxpath('disk', TYPES_URN))
+        return [self._to_disk(el) for el in disk_elements]
+
+    def _to_disk(self, element):
+        return DimensionDataServerDisk(
+            id=element.get('id'),
+            scsiId=element.get('scsiId'),
+            sizeGb=element.get('sizeGb'),
+            speed=element.get('speed'),
+            state=element.get('state')
+        )
+
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
         return [self._to_node(el) for el in node_elements]
@@ -1866,7 +1880,7 @@ class DimensionDataNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
 
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-
+        disks = self._to_disks(element)
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -1891,7 +1905,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'OS_displayName': element.find(fixxpath(
                 'operatingSystem',
                 TYPES_URN)).get('displayName'),
-            'status': status
+            'status': status,
+            'disks': disks
         }
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
