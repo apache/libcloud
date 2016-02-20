@@ -398,6 +398,11 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                       self.driver.ex_get_vlan,
                                       vlan_id='0e56433f-d808-4669-821d-812769517ff8')
 
+    def test_ex_wait_for_state_node(self):
+        self.driver.ex_wait_for_state('running',
+                                      self.driver.ex_get_node_by_id,
+                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+
     def test_ex_update_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         vlan.name = 'new name'

@@ -21,6 +21,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -426,8 +427,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
                        **kwargs):
         """
-        Wait for the function which returns a instance with field status to
-        match.
+        Wait for the function which returns a instance with field status/state
+        to match.
 
         Keep polling func until one of the desired states is matched
 
@@ -456,7 +457,10 @@ class DimensionDataConnection(ConnectionUserAndKey):
         cnt = 0
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
-            if result.status is state or result.status in state:
+            if isinstance(result, Node):
+                if result.state is state:
+                    return result
+            elif result.status is state or result.status in state:
                 return result
             sleep(poll_interval)
             cnt += 1
