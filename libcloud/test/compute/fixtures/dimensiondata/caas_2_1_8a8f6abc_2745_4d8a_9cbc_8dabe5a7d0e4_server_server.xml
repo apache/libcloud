@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <servers xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="2" totalCount="2" pageSize="250">
-    <!-- MCP 1.0 Server -->
+    <!-- MCP 1.0 Server State: RUNNING-->
     <server id="e75ead52-692f-4314-8725-c8a4f4d13a87" datacenterId="NA1">
         <name>Production Web Server MCP 1</name>
         <description>nopassword0</description>
@@ -16,6 +16,30 @@
         <deployed>true</deployed>
         <started>true</started>
         <state>NORMAL</state>
+        <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="RUNNING" apiVersion="8389" />
+        <virtualHardware version="vmx-08" upToDate="false" />
+    </server>
+    <!-- MCP 1.0 Server State: STARTING-->
+    <server id="e75ead52-692f-4314-8725-c8a4f4d13a88" datacenterId="NA1">
+        <name>Production Web Server MCP 1</name>
+        <description>nopassword0</description>
+        <operatingSystem id="REDHAT632" displayName="REDHAT6/32" family="UNIX" />
+        <cpu count="4" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>2</memoryGb>
+        <disk id="74f81c56-96cc-4cca-b4d7-a88f641a6ea2" scsiId="0" sizeGb="10" speed="STANDARD" state="NORMAL" />
+        <nic id="43b24e9e-c1c9-4d53-965b-89bcaa725103" privateIpv4="10.160.117.25" networkId="c550be0e-65c1-11e4-811f-005056806999" networkName="Test1" state="NORMAL" />
+        <backup assetId="5579f3a7-4c32-4cf5-8a7e-b45c36a35c10" servicePlan="Enterprise" state="NORMAL" />
+        <monitoring monitoringId="11049" servicePlan="ESSENTIALS" state="NORMAL" />
+        <sourceImageId>e9ec6eb4-4634-49de-b914-01eb74da5fb9</sourceImageId>
+        <createTime>2015-08-11T16:51:05.000Z</createTime>
+        <deployed>true</deployed>
+        <started>true</started>
+        <state>PENDING_ADD</state>
+        <progress>
+            <action>DEPLOY_SERVER_WITH_DISK_SPEED</action>
+            <requestTime>2015-12-02T11:07:40.000Z</requestTime>
+            <userName>devuser1</userName>
+        </progress>
         <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="RUNNING" apiVersion="8389" />
         <virtualHardware version="vmx-08" upToDate="false" />
     </server>
