@@ -61,12 +61,22 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 2)
+        self.assertEqual(len(ret), 6)
+
+    def test_server_states(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(ret[0].state == 'running')
+        self.assertTrue(ret[1].state == 'stopping')
+        self.assertTrue(ret[2].state == 'reconfiguring')
+        self.assertTrue(ret[3].state == 'running')
+        self.assertTrue(ret[4].state == 'terminated')
+        self.assertTrue(ret[5].state == 'stopped')
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 4)
+        self.assertEqual(len(ret), 8)
 
     # We're making sure here the filters make it to the URL
     # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts

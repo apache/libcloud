@@ -42,6 +42,21 @@ from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
 
+# Node state map is a dictionary with the keys as tuples
+# These tuples represent:
+# (<state_of_node_from_didata>, <is node started?>, <action happening>)
+NODE_STATE_MAP = {
+    ('NORMAL', 'true', None): NodeState.RUNNING,
+    ('NORMAL', 'false', None): NodeState.STOPPED,
+    ('PENDING_CHANGE', 'true', 'START_SERVER'): NodeState.STARTING,
+    ('PENDING_ADD', 'true', 'DEPLOY_SERVER'): NodeState.STARTING,
+    ('PENDING_CHANGE', 'true', 'SHUTDOWN_SERVER'): NodeState.STOPPING,
+    ('PENDING_CHANGE', 'true', 'REBOOT_SERVER'): NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RESET_SERVER'): NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RECONFIGURE_SERVER'): NodeState.RECONFIGURING,
+    ('PENDING_CHANGE', 'true', 'POWER_OFF_SERVER'): NodeState.STOPPING,
+}
+
 
 class DimensionDataNodeDriver(NodeDriver):
     """
@@ -1826,16 +1841,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
-
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
-        if findtext(element, 'started', TYPES_URN) == 'true':
-            state = NodeState.RUNNING
-        else:
-            state = NodeState.TERMINATED
-
+        started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
+        dd_state = findtext(element, 'state', TYPES_URN)
+
+        node_state = self._get_node_state(dd_state, started, status.action)
 
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
@@ -1885,7 +1898,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         n = Node(id=element.get('id'),
                  name=findtext(element, 'name', TYPES_URN),
-                 state=state,
+                 state=node_state,
                  public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=[private_ip] if private_ip is not None else [],
                  driver=self.connection.driver,
@@ -1925,6 +1938,16 @@ class DimensionDataNodeDriver(NodeDriver):
                                     'failureReason',
                                     TYPES_URN))
         return s
+
+    @staticmethod
+    def _get_node_state(state, started, action):
+        try:
+            return NODE_STATE_MAP[(state, started, action)]
+        except KeyError:
+            if started == 'true':
+                return NodeState.RUNNING
+            else:
+                return NodeState.TERMINATED
 
     @staticmethod
     def _location_to_location_id(location):
