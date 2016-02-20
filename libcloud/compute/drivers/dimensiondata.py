@@ -46,15 +46,26 @@ from libcloud.compute.types import NodeState, Provider
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
 NODE_STATE_MAP = {
-    ('NORMAL', 'true', None): NodeState.RUNNING,
-    ('NORMAL', 'false', None): NodeState.STOPPED,
-    ('PENDING_CHANGE', 'true', 'START_SERVER'): NodeState.STARTING,
-    ('PENDING_ADD', 'true', 'DEPLOY_SERVER'): NodeState.STARTING,
-    ('PENDING_CHANGE', 'true', 'SHUTDOWN_SERVER'): NodeState.STOPPING,
-    ('PENDING_CHANGE', 'true', 'REBOOT_SERVER'): NodeState.REBOOTING,
-    ('PENDING_CHANGE', 'true', 'RESET_SERVER'): NodeState.REBOOTING,
-    ('PENDING_CHANGE', 'true', 'RECONFIGURE_SERVER'): NodeState.RECONFIGURING,
-    ('PENDING_CHANGE', 'true', 'POWER_OFF_SERVER'): NodeState.STOPPING,
+    ('NORMAL', 'true', None):
+        NodeState.RUNNING,
+    ('NORMAL', 'false', None):
+        NodeState.STOPPED,
+    ('PENDING_CHANGE', 'true', 'START_SERVER'):
+        NodeState.STARTING,
+    ('PENDING_ADD', 'true', 'DEPLOY_SERVER'):
+        NodeState.STARTING,
+    ('PENDING_ADD', 'true', 'DEPLOY_SERVER_WITH_DISK_SPEED'):
+        NodeState.STARTING,
+    ('PENDING_CHANGE', 'true', 'SHUTDOWN_SERVER'):
+        NodeState.STOPPING,
+    ('PENDING_CHANGE', 'true', 'POWER_OFF_SERVER'):
+        NodeState.STOPPING,
+    ('PENDING_CHANGE', 'true', 'REBOOT_SERVER'):
+        NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RESET_SERVER'):
+        NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RECONFIGURE_SERVER'):
+        NodeState.RECONFIGURING,
 }
 
 

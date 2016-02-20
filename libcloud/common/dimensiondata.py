@@ -458,17 +458,19 @@ class DimensionDataConnection(ConnectionUserAndKey):
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
             if isinstance(result, Node):
-                if result.state is state:
-                    return result
-            elif result.status is state or result.status in state:
+                object_state = result.state
+            else:
+                object_state = result.status
+
+            if object_state is state or object_state in state:
                 return result
             sleep(poll_interval)
             cnt += 1
 
         msg = 'Status check for object %s timed out' % (result)
-        raise DimensionDataAPIException(code=result.status,
+        raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
-                                        driver=self.connection.driver)
+                                        driver=self.driver)
 
     def _get_orgId(self):
         """

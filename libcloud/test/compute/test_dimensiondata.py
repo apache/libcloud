@@ -61,22 +61,24 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 6)
+        self.assertEqual(len(ret), 7)
 
     def test_server_states(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertTrue(ret[0].state == 'running')
-        self.assertTrue(ret[1].state == 'stopping')
-        self.assertTrue(ret[2].state == 'reconfiguring')
-        self.assertTrue(ret[3].state == 'running')
-        self.assertTrue(ret[4].state == 'terminated')
-        self.assertTrue(ret[5].state == 'stopped')
+        print(ret[1].state)
+        self.assertTrue(ret[1].state == 'starting')
+        self.assertTrue(ret[2].state == 'stopping')
+        self.assertTrue(ret[3].state == 'reconfiguring')
+        self.assertTrue(ret[4].state == 'running')
+        self.assertTrue(ret[5].state == 'terminated')
+        self.assertTrue(ret[6].state == 'stopped')
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 8)
+        self.assertEqual(len(ret), 9)
 
     # We're making sure here the filters make it to the URL
     # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
@@ -398,10 +400,20 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                       self.driver.ex_get_vlan,
                                       vlan_id='0e56433f-d808-4669-821d-812769517ff8')
 
-    def test_ex_wait_for_state_node(self):
+    def test_ex_wait_for_state_NODE(self):
         self.driver.ex_wait_for_state('running',
                                       self.driver.ex_get_node_by_id,
                                       id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+
+    def test_ex_wait_for_state_FAIL(self):
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_wait_for_state('starting',
+                                          self.driver.ex_get_node_by_id,
+                                          id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                                          timeout=2
+                                          )
+        self.assertEqual(context.exception.code, 'running')
+        self.assertTrue('timed out' in context.exception.msg)
 
     def test_ex_update_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
