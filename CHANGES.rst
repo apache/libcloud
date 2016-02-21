@@ -81,6 +81,14 @@ Storage
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
 
+- Implement ``get_container``, ``get_object`` and ``upload_object_via_stream``
+  methods in the Backblaze B2 storage driver.
+
+  Note: Backblaze API doesn't upload streaming uploads so when using
+  ``upload_object_via_stream`` whole file is read and buffered in memory.
+  (GITHUB-696)
+  [Jay jshridha]
+
 Backup
 ~~~~~~
 
