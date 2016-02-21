@@ -28,6 +28,7 @@ except ImportError:
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import next
 from libcloud.utils.files import read_in_chunks
 from libcloud.utils.files import exhaust_iterator
 from libcloud.utils.escape import sanitize_object_name
