@@ -260,7 +260,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
-        objects = self.iterate_container_objects(container)
+        objects = self.iterate_container_objects(container=container)
 
         obj = next((obj for obj in objects if obj.name == object_name), None)
 
