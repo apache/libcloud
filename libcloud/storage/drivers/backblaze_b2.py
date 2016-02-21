@@ -333,8 +333,11 @@ class BackblazeB2StorageDriver(StorageDriver):
             iterator = read_in_chunks(iterator=iterator)
             data = exhaust_iterator(iterator=iterator)
 
-        obj = self._perform_upload(data, container, object_name,
-                                   extra, verify_hash, headers)
+        obj = self._perform_upload(data=data, container=container,
+                                   object_name=object_name,
+                                   extra=extra,
+                                   verify_hash=verify_hash,
+                                   headers=headers)
 
         return obj
 
@@ -351,8 +354,10 @@ class BackblazeB2StorageDriver(StorageDriver):
         iterator = read_in_chunks(iterator=iterator)
         data = exhaust_iterator(iterator=iterator)
 
-        obj = self._perform_upload(data, container,
-                                   object_name, extra, headers)
+        obj = self._perform_upload(data=data, container=container,
+                                   object_name=object_name,
+                                   extra=extra,
+                                   headers=headers)
 
         return obj
 
