@@ -1,0 +1,229 @@
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
+from libcloud.utils.py3 import httplib
+from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
+from libcloud.common.nsone import NsOneConnection, NsOneResponse, NsOneException
+from libcloud.dns.types import Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError, RecordDoesNotExistError, \
+    RecordAlreadyExistsError
+
+
+__all__ = [
+    'NsOneDNSDriver'
+]
+
+
+class NsOneDNSResponse(NsOneResponse):
+    pass
+
+
+class NsOneDNSConnection(NsOneConnection):
+    responseCls = NsOneDNSResponse
+
+
+class NsOneDNSDriver(DNSDriver):
+    name = 'NS1 DNS'
+    website = 'https://ns1.com'
+    type = Provider.NSONE
+    connectionCls = NsOneDNSConnection
+
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.NS: 'NS',
+        RecordType.PTR: 'PTR',
+        RecordType.SOA: 'SOA',
+        RecordType.SRV: 'SRV',
+        RecordType.TXT: 'TXT'
+    }
+
+    def list_zones(self):
+        action = '/v1/zones'
+        response = self.connection.request(action=action, method='GET')
+        zones = self._to_zones(items=response.parse_body())
+
+        return zones
+
+    def get_zone(self, zone_id):
+        action = '/v1/zones/%s' % zone_id
+        try:
+            response = self.connection.request(action=action, method='GET')
+        except NsOneException, e:
+            if e.message == 'zone not found':
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone_id)
+            else:
+                raise e
+        zone = self._to_zone(response.objects[0])
+
+        return zone
+
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
+        """
+        :param domain: Zone domain name (e.g. example.com)
+        :type domain: ``str``
+
+        :param type: Zone type (This is not really used. See API docs for extra
+          parameters)
+        :type type: ``str``
+
+        :param ttl: TTL for new records (This is used through the extra param)
+        :type ttl: ``int``
+
+        :param extra: Extra attributes that are specific to the driver such as ttl, nx_ttl. Read API docs for more.
+        :type extra: ``dict``
+
+        :rtype: :class:`Zone`
+        """
+        action = '/v1/zones/%s' % domain
+        raw_data = {'zone': domain}
+        if extra is not None:
+            raw_data.update(extra)
+        data = json.dumps(raw_data)
+        try:
+            response = self.connection.request(action=action, method='PUT', data=data)
+        except NsOneException, e:
+            if e.message == 'zone already exists':
+                raise ZoneAlreadyExistsError(value=e.message, driver=self, zone_id=domain)
+            else:
+                raise e
+
+        zone = self._to_zone(response.objects[0])
+
+        return zone
+
+    def delete_zone(self, zone):
+        action = '/v1/zones/%s' % zone.domain
+        zones_list = self.list_zones()
+        if not self.ex_zone_exists(zone_id=zone.id, zones_list=zones_list):
+            raise ZoneDoesNotExistError(value='', driver=self, zone_id=zone.id)
+
+        response = self.connection.request(action=action, method='DELETE')
+
+        return response.status == httplib.OK
+
+    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
+        pass
+
+    def list_records(self, zone):
+        """
+        :param zone: Zone to list records for.
+        :type zone: :class:`Zone`
+
+        :return: ``list`` of :class:`Record`
+        """
+        action = '/v1/zones/%s' % zone.domain
+        try:
+            response = self.connection.request(action=action, method='GET')
+        except NsOneException, e:
+            if e.message == 'zone not found':
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone.id)
+            else:
+                raise e
+        records = self._to_records(items=response.parse_body()['records'], zone=zone)
+
+        return records
+
+    def get_record(self, zone_id, record_id):
+        action = '/v1/zones/%s/%s/%s' % (zone_id, zone_id, record_id)
+        try:
+            response = self.connection.request(action=action, method='GET')
+        except NsOneException, e:
+            if e.message == 'record not found':
+                raise RecordDoesNotExistError(value=e.message, driver=self, record_id=record_id)
+            else:
+                raise e
+        zone = self.get_zone(zone_id=zone_id)
+        record = self._to_record(item=response.objects[0], zone=zone)
+
+        return record
+
+    def delete_record(self, record):
+        pass
+
+    def create_record(self, name, zone, type, data, extra=None):
+        action = '/v1/zones/%s/%s/%s' % (zone.domain, zone.domain, type)
+        raw_data = {
+            "answers": [
+                {
+                    "answer": [
+                        10,
+                        data
+                    ], }
+            ],
+            "type": type,
+            "domain": zone.domain,
+            "zone": zone
+        }
+
+        if extra is not None:
+            raw_data.update(extra)
+        data = json.dumps(raw_data)
+        try:
+            response = self.connection.request(action=action, method='PUT', data=data)
+        except NsOneException, e:
+            if e.message == 'record already exists':
+                raise RecordAlreadyExistsError(value=e.message, driver=self, record_id='')
+
+        return response
+
+    def update_record(self, record, name, type, data, extra=None):
+        pass
+
+    def ex_zone_exists(self, zone_id, zones_list):
+        """
+        Function to check if a `Zone` object exists.
+        :param zone_id: ID of the `Zone` object.
+        :type zone_id: ``str``
+
+        :param zones_list: A list containing `Zone` objects.
+        :type zones_list: ``list``.
+
+        :rtype: Returns `True` or `False`.
+        """
+        zone_ids = []
+        for zone in zones_list:
+            zone_ids.append(zone.id)
+
+        return zone_id in zone_ids
+
+    def _to_zone(self, item):
+        common_attr = ['zone', 'id', 'type']
+        extra = {}
+        for key in item:
+            if key not in common_attr:
+                extra[key] = item.get(key)
+
+        zone = Zone(domain=item['zone'], id=item['id'], type=item.get('type'), extra=extra, ttl=extra.get('ttl'),
+                    driver=self)
+
+        return zone
+
+    def _to_zones(self, items):
+        zones = []
+        for item in items:
+            zones.append(self._to_zone(item))
+
+        return zones
+
+    def _to_record(self, item, zone):
+        common_attr = ['id', 'short_answers', 'domain', 'type']
+        extra = {}
+        for key in item:
+            if key not in common_attr:
+                extra[key] = item.get(key)
+        record = Record(id=item['id'], name=item['domain'], type=item['type'],
+                        data=item['short_answers'], zone=zone, driver=self,
+                        extra=extra)
+
+        return record
+
+    def _to_records(self, items, zone):
+        records = []
+        for item in items:
+            records.append(self._to_record(item, zone))
+
+        return records
