@@ -27,7 +27,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.dns.types import Provider, RecordType, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
-API_ROOT = 'https://api.godaddy.com/'
+API_HOST = 'api.godaddy.com'
 VALID_RECORD_EXTRA_PARAMS = ['prio', 'ttl']
 
 
@@ -68,7 +68,7 @@ class GoDaddyDNSResponse(JsonResponse):
 
 class GoDaddyDNSConnection(ConnectionKey):
     responseCls = GoDaddyDNSResponse
-    host = API_ROOT
+    host = API_HOST
 
     allow_insecure = False
 
