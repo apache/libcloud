@@ -41,7 +41,7 @@ class GoDaddyDNSException(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return '<GoDaddyDNSException in %d: %s>' % (self.code, self.message)
+        return ('<GoDaddyDNSException in %s: %s>' % (self.code, self.message))
 
 
 class GoDaddyDNSResponse(JsonResponse):
@@ -59,8 +59,7 @@ class GoDaddyDNSResponse(JsonResponse):
 
     def parse_error(self):
         data = self.parse_body()
-        raise GoDaddyDNSException(
-            data['code'], data['message'])
+        raise GoDaddyDNSException(code=data['code'], message=data['message'])
 
     def success(self):
         return self.status in self.valid_response_codes
