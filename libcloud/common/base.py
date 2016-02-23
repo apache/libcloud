@@ -829,9 +829,11 @@ class Connection(object):
                 # with hostname" error. This error could simpli indicate that
                 # "host" Connection class attribute is set to an incorrect
                 # value
-                msg = ('%s. Perhaphs "host" Connection class attribute (%s) '
-                       'is set to an invalid, non-hostname value?' %
-                       (message, self.host))
+                class_name = self.__class__.__name__
+                msg = ('%s. Perhaphs "host" Connection class attribute '
+                       '(%s.connection) is set to an invalid, non-hostname '
+                       'value (%s)?' %
+                       (message, class_name, self.host))
                 raise socket.gaierror(msg)
             self.reset_context()
             raise e
