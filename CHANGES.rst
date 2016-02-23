@@ -89,6 +89,13 @@ Storage
   (GITHUB-696)
   [Jay jshridha]
 
+DNS
+~~~~
+
+- Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
+  connection class is correctly set to the hostname.
+  [Tomaz Muraus]
+
 Backup
 ~~~~~~
 
