@@ -25,6 +25,9 @@ General
   (GITHUB-700)
   [Anthony Shaw]
 
+- Throw a more user-friendly exception on "No address associated with hostname".
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
