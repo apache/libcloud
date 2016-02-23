@@ -4060,13 +4060,22 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
 
-    def ex_get_image(self, partial_name, ex_project_list=None):
+    def ex_get_image(self, partial_name, ex_project_list=None,
+                     ex_standard_projects=True):
         """
         Return an GCENodeImage object based on the name or link provided.
 
         :param  partial_name: The name, partial name, or full path of a GCE
                               image.
         :type   partial_name: ``str``
+
+        :param  ex_project_list: The name of the project to list for images.
+                                 Examples include: 'debian-cloud'.
+        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+
+        :param  ex_standard_projects: If true, check in standard projects if
+                                      the image is not found.
+        :type   ex_standard_projects: ``bool``
 
         :return:  GCENodeImage object based on provided information or None if
                   an image with that name is not found.
@@ -4076,7 +4085,7 @@ class GCENodeDriver(NodeDriver):
             response = self.connection.request(partial_name, method='GET')
             return self._to_node_image(response.object)
         image = self._match_images(ex_project_list, partial_name)
-        if not image:
+        if not image and ex_standard_projects:
             for img_proj, short_list in self.IMAGE_PROJECTS.items():
                 for short_name in short_list:
                     if partial_name.startswith(short_name):
@@ -4319,7 +4328,7 @@ class GCENodeDriver(NodeDriver):
             return None
         return self._to_zone(response)
 
-    def ex_copy_image(self, name, url, description=None):
+    def ex_copy_image(self, name, url, description=None, family=None):
         """
         Copy an image to your image collection.
 
@@ -4331,6 +4340,9 @@ class GCENodeDriver(NodeDriver):
 
         :param  description: The description of the image
         :type   description: ``str``
+
+        :param  family: The family of the image
+        :type   family: ``str``
 
         :return:  NodeImage object based on provided information or None if an
                   image with that name is not found.
@@ -4344,6 +4356,7 @@ class GCENodeDriver(NodeDriver):
         image_data = {
             'name': name,
             'description': description,
+            'family': family,
             'sourceType': 'RAW',
             'rawDisk': {
                 'source': url,
@@ -4490,9 +4503,9 @@ class GCENodeDriver(NodeDriver):
         supplied project.  If no project is given, it will search your own
         project.
 
-        :param  project:  The name of the project to search for images.
-                          Examples include: 'debian-cloud' and 'centos-cloud'.
-        :type   project:  ``str`` or ``None``
+        :param  project: The name of the project to search for images.
+                         Examples include: 'debian-cloud' and 'centos-cloud'.
+        :type   project: ``str``, ``list`` of ``str``, or ``None``
 
         :param  partial_name: The full name or beginning of a name for an
                               image.

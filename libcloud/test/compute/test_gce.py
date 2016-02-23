@@ -1139,13 +1139,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = self.driver.ex_get_image(partial_name, ['debian-cloud'])
         self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
 
+        partial_name = 'debian-7'
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image,
+                          partial_name, 'suse-cloud',
+                          ex_standard_projects=False)
+
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
         description = 'CoreOS beta 522.3.0'
-        image = self.driver.ex_copy_image(name, url, description)
+        family = 'coreos'
+        image = self.driver.ex_copy_image(name, url, description=description,
+                                          family=family)
         self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
 
     def test_ex_get_route(self):
         route_name = 'lcdemoroute'
