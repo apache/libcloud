@@ -31,6 +31,10 @@ General
 Compute
 ~~~~~~~
 
+- [google compute] allow bypassing image search in standard project list
+  (GITHUB-713)
+  [Max Illfelder]
+
 - Add support for requesting a MKS token for accessing the remote console in VMware
   vCloud driver
   (GITHUB-706)
