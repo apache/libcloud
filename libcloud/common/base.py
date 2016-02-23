@@ -16,6 +16,7 @@
 import os
 import sys
 import ssl
+import socket
 import copy
 import binascii
 import time
@@ -818,6 +819,22 @@ class Connection(object):
                 else:
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers)
+        except socket.gaierror:
+            e = sys.exc_info()[1]
+            message = str(e)
+            errno = getattr(e, 'errno', None)
+
+            if errno == -5:
+                # Throw a more-friendly exception on "no address associated
+                # with hostname" error. This error could simpli indicate that
+                # "host" Connection class attribute is set to an incorrect
+                # value
+                msg = ('%s. Perhaphs "host" Connection class attribute (%s) '
+                       'is set to an invalid, non-hostname value?' %
+                       (message, self.host))
+                raise socket.gaierror(msg)
+            self.reset_context()
+            raise e
         except ssl.SSLError:
             e = sys.exc_info()[1]
             self.reset_context()
