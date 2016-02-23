@@ -830,7 +830,7 @@ class Connection(object):
                 # "host" Connection class attribute is set to an incorrect
                 # value
                 class_name = self.__class__.__name__
-                msg = ('%s. Perhaphs "host" Connection class attribute '
+                msg = ('%s. Perhaps "host" Connection class attribute '
                        '(%s.connection) is set to an invalid, non-hostname '
                        'value (%s)?' %
                        (message, class_name, self.host))
