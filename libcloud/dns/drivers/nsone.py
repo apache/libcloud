@@ -142,7 +142,16 @@ class NsOneDNSDriver(DNSDriver):
         return record
 
     def delete_record(self, record):
-        pass
+        action = '/v1/zones/%s/%s/%s' % (record.zone.domain, record.name, record.type)
+        try:
+            response = self.connection.request(action=action, method='DELETE')
+        except NsOneException, e:
+            if e.message == 'record not found':
+                raise RecordDoesNotExistError(value=e.message, driver=self, record_id=record.id)
+            else:
+                raise e
+
+        return response.status == httplib.OK
 
     def create_record(self, name, zone, type, data, extra=None):
         action = '/v1/zones/%s/%s/%s' % (zone.domain, zone.domain, type)
@@ -150,13 +159,12 @@ class NsOneDNSDriver(DNSDriver):
             "answers": [
                 {
                     "answer": [
-                        10,
                         data
                     ], }
             ],
             "type": type,
             "domain": zone.domain,
-            "zone": zone
+            "zone": zone.domain
         }
 
         if extra is not None:
