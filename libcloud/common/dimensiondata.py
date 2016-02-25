@@ -606,18 +606,18 @@ class DimensionDataServerDisk(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id, scsiId, sizeGb, speed, state):
+    def __init__(self, id, scsi_id, size_gb, speed, state):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
 
         :param id: The id of the disk
         :type  id: ``str``
 
-        :param scsiId: Representation for scsi
-        :type  scsiId: ``int``
+        :param scsi_id: Representation for scsi
+        :type  scsi_id: ``int``
 
-        :param sizeGb: Size of the disk
-        :type  sizeGb: ``int``
+        :param size_gb: Size of the disk
+        :type  size_gb: ``int``
 
         :param speed: Speed of the disk (i.e. STANDARD)
         :type  speed: ``str``
@@ -626,15 +626,15 @@ class DimensionDataServerDisk(object):
         :type  state: ``str``
         """
         self.id = id
-        self.scsiId = scsiId
-        self.sizeGb = sizeGb
+        self.scsi_id = scsi_id
+        self.size_gb = size_gb
         self.speed = speed
         self.state = state
 
     def __repr__(self):
         return (('<DimensionDataServerDisk: '
-                 'id=%s, sizeGb=%s')
-                % (self.id, self.sizeGb))
+                 'id=%s, size_gb=%s')
+                % (self.id, self.size_gb))
 
 
 class DimensionDataFirewallRule(object):
