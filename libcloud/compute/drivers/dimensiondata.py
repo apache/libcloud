@@ -1859,8 +1859,8 @@ class DimensionDataNodeDriver(NodeDriver):
     def _to_disk(self, element):
         return DimensionDataServerDisk(
             id=element.get('id'),
-            scsiId=element.get('scsiId'),
-            sizeGb=element.get('sizeGb'),
+            scsi_id=int(element.get('scsiId')),
+            size_gb=int(element.get('sizeGb')),
             speed=element.get('speed'),
             state=element.get('state')
         )

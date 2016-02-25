@@ -80,8 +80,10 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
         self.assertTrue(isinstance(ret[0].extra['disks'], list))
         self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
         self.assertTrue(isinstance(ret[1].extra['disks'], list))
         self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 50)
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
