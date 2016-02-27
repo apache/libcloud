@@ -26,7 +26,8 @@ General
   [Anthony Shaw]
 
 - Throw a more user-friendly exception on "No address associated with hostname".
-  [Tomaz Muraus]
+  (GITHUB-711, GITHUB-714, LIBCLOUD-803)
+  [Tomaz Muraus, Scott Crunkleton]
 
 Compute
 ~~~~~~~
