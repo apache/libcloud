@@ -1883,6 +1883,15 @@ class DimensionDataNodeDriver(NodeDriver):
             if has_network_info else \
             element.find(fixxpath('nic', TYPES_URN)).get('ipv6')
 
+        extra['disks'] = []
+        for disk in findall(element, 'disk', TYPES_URN):
+            extra['disks'].append({
+                'scsiId': int(disk.get('scsiId')),
+                'speed': disk.get('speed'),
+                'id': disk.get('id'),
+                'size': int(disk.get('sizeGb'))
+                })
+
         n = Node(id=element.get('id'),
                  name=findtext(element, 'name', TYPES_URN),
                  state=state,
