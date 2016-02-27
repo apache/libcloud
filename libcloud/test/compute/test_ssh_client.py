@@ -324,7 +324,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         stdout = client._consume_stdout(chan).getvalue()
         self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
-        self.assertEqual(len(stdout), 1)
+        self.assertTrue(len(stdout) in [1, 2])
 
     def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
         conn_params = {'hostname': 'dummy.host.org',
@@ -338,7 +338,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         stderr = client._consume_stderr(chan).getvalue()
         self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
-        self.assertEqual(len(stderr), 1)
+        self.assertTrue(len(stderr) in [1, 2])
 
 
 class ShellOutSSHClientTests(LibcloudTestCase):

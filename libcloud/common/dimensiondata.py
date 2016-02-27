@@ -18,10 +18,9 @@ Dimension Data Common Components
 from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b, basestring
+from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.compute.base import NodeLocation
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -283,29 +282,6 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('message', TYPES_URN),
     ('resultDetail', GENERAL_NS)
 )
-
-
-def location_to_location_id(location):
-    """
-    Helper function to get a location id from a location whether
-    it be a NodeLocation or a string
-
-    :param location: The location to get an id from
-    :type  location: :class:`NodeLocation` or ``str``
-
-    :return: The location id
-    :rtype: ``str`` or None (if no location passed in)
-    """
-    if location is not None:
-        if isinstance(location, NodeLocation):
-            return location.id
-        elif isinstance(location, basestring):
-            return location
-        else:
-            raise TypeError(
-                "Invalid location type for location_to_location_id()"
-            )
-    return None
 
 
 class NetworkDomainServicePlan(object):
@@ -1110,7 +1086,7 @@ class DimensionDataBackupClient(object):
 
     def __repr__(self):
         return (('<DimensionDataBackupClient: id=%s>')
-                % (self.asset_id))
+                % (self.id))
 
 
 class DimensionDataBackupClientAlert(object):
@@ -1132,8 +1108,8 @@ class DimensionDataBackupClientAlert(object):
         self.notify_list = notify_list
 
     def __repr__(self):
-        return (('<DimensionDataBackupClientAlert: id=%s>')
-                % (self.asset_id))
+        return (('<DimensionDataBackupClientAlert: trigger=%s>')
+                % (self.trigger))
 
 
 class DimensionDataBackupClientRunningJob(object):

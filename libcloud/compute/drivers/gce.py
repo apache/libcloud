@@ -97,8 +97,7 @@ class GCEConnection(GoogleBaseConnection):
                                             auth_type=auth_type,
                                             credential_file=credential_file,
                                             **kwargs)
-        self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
-                                                         project)
+        self.request_path = '/compute/%s/projects/%s' % (API_VERSION, project)
         self.gce_params = None
 
     def pre_connect_hook(self, params, headers):
@@ -2100,7 +2099,7 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_forwarding_rule(name, global_rule=global_rule)
 
-    def ex_create_image(self, name, volume, description=None,
+    def ex_create_image(self, name, volume, description=None, family=None,
                         use_existing=True, wait_for_completion=True):
         """
         Create an image from the provided volume.
@@ -2114,6 +2113,13 @@ class GCENodeDriver(NodeDriver):
 
         :keyword    description: Description of the new Image
         :type       description: ``str``
+
+        :keyword    family: The name of the image family to which this image
+                            belongs. If you create resources by specifying an
+                            image family instead of a specific image name, the
+                            resource uses the latest non-deprecated image that
+                            is set with that family name.
+        :type       family: ``str``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -2135,11 +2141,13 @@ class GCENodeDriver(NodeDriver):
         image_data = {}
         image_data['name'] = name
         image_data['description'] = description
+        image_data['family'] = family
         if isinstance(volume, StorageVolume):
             image_data['sourceDisk'] = volume.extra['selfLink']
             image_data['zone'] = volume.extra['zone'].name
-        elif isinstance(volume, str) and \
-                volume.startswith('https://') and volume.endswith('tar.gz'):
+        elif (isinstance(volume, str) and
+              volume.startswith('https://') and
+              volume.endswith('tar.gz')):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
@@ -4052,13 +4060,22 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
 
-    def ex_get_image(self, partial_name, ex_project_list=None):
+    def ex_get_image(self, partial_name, ex_project_list=None,
+                     ex_standard_projects=True):
         """
         Return an GCENodeImage object based on the name or link provided.
 
         :param  partial_name: The name, partial name, or full path of a GCE
                               image.
         :type   partial_name: ``str``
+
+        :param  ex_project_list: The name of the project to list for images.
+                                 Examples include: 'debian-cloud'.
+        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+
+        :param  ex_standard_projects: If true, check in standard projects if
+                                      the image is not found.
+        :type   ex_standard_projects: ``bool``
 
         :return:  GCENodeImage object based on provided information or None if
                   an image with that name is not found.
@@ -4068,7 +4085,7 @@ class GCENodeDriver(NodeDriver):
             response = self.connection.request(partial_name, method='GET')
             return self._to_node_image(response.object)
         image = self._match_images(ex_project_list, partial_name)
-        if not image:
+        if not image and ex_standard_projects:
             for img_proj, short_list in self.IMAGE_PROJECTS.items():
                 for short_name in short_list:
                     if partial_name.startswith(short_name):
@@ -4311,7 +4328,7 @@ class GCENodeDriver(NodeDriver):
             return None
         return self._to_zone(response)
 
-    def ex_copy_image(self, name, url, description=None):
+    def ex_copy_image(self, name, url, description=None, family=None):
         """
         Copy an image to your image collection.
 
@@ -4323,6 +4340,9 @@ class GCENodeDriver(NodeDriver):
 
         :param  description: The description of the image
         :type   description: ``str``
+
+        :param  family: The family of the image
+        :type   family: ``str``
 
         :return:  NodeImage object based on provided information or None if an
                   image with that name is not found.
@@ -4336,6 +4356,7 @@ class GCENodeDriver(NodeDriver):
         image_data = {
             'name': name,
             'description': description,
+            'family': family,
             'sourceType': 'RAW',
             'rawDisk': {
                 'source': url,
@@ -4482,9 +4503,9 @@ class GCENodeDriver(NodeDriver):
         supplied project.  If no project is given, it will search your own
         project.
 
-        :param  project:  The name of the project to search for images.
-                          Examples include: 'debian-cloud' and 'centos-cloud'.
-        :type   project:  ``str`` or ``None``
+        :param  project: The name of the project to search for images.
+                         Examples include: 'debian-cloud' and 'centos-cloud'.
+        :type   project: ``str``, ``list`` of ``str``, or ``None``
 
         :param  partial_name: The full name or beginning of a name for an
                               image.
@@ -5240,6 +5261,7 @@ class GCENodeDriver(NodeDriver):
         if 'preferredKernel' in image:
             extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
+        extra['family'] = image.get('family', None)
         extra['creationTimestamp'] = image.get('creationTimestamp')
         extra['selfLink'] = image.get('selfLink')
         if 'deprecated' in image:

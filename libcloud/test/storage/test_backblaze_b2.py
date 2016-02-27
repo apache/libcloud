@@ -62,6 +62,19 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         self.assertEqual(objects[0].extra['fileId'], 'abcd')
         self.assertEqual(objects[0].extra['uploadTimestamp'], 1450545966000)
 
+    def test_get_container(self):
+        container = self.driver.get_container('test00001')
+        self.assertEqual(container.name, 'test00001')
+        self.assertEqual(container.extra['id'], '481c37de2e1ab3bf5e150710')
+        self.assertEqual(container.extra['bucketType'], 'allPrivate')
+
+    def test_get_object(self):
+        obj = self.driver.get_object('test00001', '2.txt')
+        self.assertEqual(obj.name, '2.txt')
+        self.assertEqual(obj.size, 2)
+        self.assertEqual(obj.extra['fileId'], 'abcd')
+        self.assertEqual(obj.extra['uploadTimestamp'], 1450545966000)
+
     def test_create_container(self):
         container = self.driver.create_container(container_name='test0005')
         self.assertEqual(container.name, 'test0005')
@@ -93,6 +106,18 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         container = self.driver.list_containers()[0]
         obj = self.driver.upload_object(file_path=file_path, container=container,
                                         object_name='test0007.txt')
+        self.assertEqual(obj.name, 'test0007.txt')
+        self.assertEqual(obj.size, 24)
+        self.assertEqual(obj.extra['fileId'], 'abcde')
+
+    def test_upload_object_via_stream(self):
+        container = self.driver.list_containers()[0]
+        file_path = os.path.abspath(__file__)
+        file = open(file_path, 'rb')
+        iterator = iter(file)
+        obj = self.driver.upload_object_via_stream(iterator=iterator,
+                                                   container=container,
+                                                   object_name='test0007.txt')
         self.assertEqual(obj.name, 'test0007.txt')
         self.assertEqual(obj.size, 24)
         self.assertEqual(obj.extra['fileId'], 'abcde')

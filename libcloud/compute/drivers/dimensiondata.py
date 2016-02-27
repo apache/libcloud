@@ -37,7 +37,6 @@ from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
-from libcloud.common.dimensiondata import location_to_location_id
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
@@ -330,7 +329,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location_to_location_id(location)
+            params['datacenterId'] = self._location_to_location_id(location)
 
         return self._to_base_images(
             self.connection.request_with_orgId_api_2(
@@ -393,7 +392,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         url_ext = ''
         if location is not None:
-            url_ext = '/' + location_to_location_id(location)
+            url_ext = '/' + self._location_to_location_id(location)
 
         return self._to_networks(
             self.connection
@@ -454,7 +453,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         params = {}
         if location is not None:
-            params['datacenterId'] = location_to_location_id(location)
+            params['datacenterId'] = self._location_to_location_id(location)
 
         if ipv6 is not None:
             params['ipv6'] = ipv6
@@ -715,7 +714,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :return: A new instance of `DimensionDataNetwork`
         :rtype:  Instance of :class:`DimensionDataNetwork`
         """
-        network_location = location_to_location_id(location)
+        network_location = self._location_to_location_id(location)
 
         create_node = ET.Element('NewNetworkWithLocation',
                                  {'xmlns': NETWORK_NS})
@@ -798,7 +797,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location_to_location_id(location)
+            params['datacenterId'] = self._location_to_location_id(location)
 
         response = self.connection \
             .request_with_orgId_api_2('network/networkDomain',
@@ -828,8 +827,11 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: :class:`DimensionDataNetworkDomain`
         """
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node,
-                      "datacenterId").text = location_to_location_id(location)
+        ET.SubElement(
+            create_node,
+            "datacenterId"
+        ).text = self._location_to_location_id(location)
+
         ET.SubElement(create_node, "name").text = name
         if description is not None:
             ET.SubElement(create_node, "description").text = description
@@ -1050,7 +1052,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location_to_location_id(location)
+            params['datacenterId'] = self._location_to_location_id(location)
         if network_domain is not None:
             params['networkDomainId'] = network_domain.id
         response = self.connection.request_with_orgId_api_2('network/vlan',
@@ -1582,7 +1584,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         params = {}
         if location is not None:
-            params['datacenterId'] = location_to_location_id(location)
+            params['datacenterId'] = self._location_to_location_id(location)
 
         return self._to_base_images(
             self.connection.request_with_orgId_api_2(
@@ -1923,3 +1925,14 @@ class DimensionDataNodeDriver(NodeDriver):
                                     'failureReason',
                                     TYPES_URN))
         return s
+
+    @staticmethod
+    def _location_to_location_id(location):
+        if isinstance(location, NodeLocation):
+            return location.id
+        elif isinstance(location, basestring):
+            return location
+        else:
+            raise TypeError(
+                "Invalid location type for _location_to_location_id()"
+            )

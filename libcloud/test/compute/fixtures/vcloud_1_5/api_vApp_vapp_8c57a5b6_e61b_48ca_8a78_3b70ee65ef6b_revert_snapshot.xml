@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><Task
+    xmlns="http://www.vmware.com/vcloud/v1.5"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    cancelRequested="false"
+    expiryTime="2013-05-15T13:10:20.999+03:00"
+    href="https://vcloud.example.com/api/task/fe75d3af-f5a3-44a5-b016-ae0bdadfc32b"
+    id="urn:vcloud:task:fe75d3af-f5a3-44a5-b016-ae0bdadfc32b"
+    name="task"
+    operation="Reverting to Snapshot Virtual Machine (ec94079b-3071-4a72-b95c-4154acb12c38)"
+    operationName="vappRevertToCurrentSnapshot"
+    serviceNamespace="com.vmware.vcloud"
+    startTime="2013-02-14T13:10:20.999+02:00"
+    status="success"
+    type="application/vnd.vmware.vcloud.task+xml"
+    xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://https://vcloud.example.com/api/v1.5/schema/master.xsd">
+    <Link
+        href="https://vcloud.example.com/api/task/fe75d3af-f5a3-44a5-b016-ae0bdadfc32b/action/cancel"
+        rel="task:cancel"/>
+    <Owner
+        href="https://vcloud.example.com/api/vApp/vm-ec94079b-3071-4a72-b95c-4154acb12c38"
+        name=""
+        type="application/vnd.vmware.vcloud.vm+xml"/>
+    <User
+        href="https://vcloud.example.com/api/admin/user/1260efee-6915-494c-8afa-84e7e6d8a310"
+        name="system"
+        type="application/vnd.vmware.admin.user+xml"/>
+    <Organization
+        href="https://vcloud.example.com/api/org/7b832bc5-3d65-45a2-8d35-da28388ab80a"
+        name="Default"
+        type="application/vnd.vmware.vcloud.org+xml"/>
+    <Details/>
+</Task>

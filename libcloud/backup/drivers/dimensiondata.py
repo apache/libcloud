@@ -32,6 +32,7 @@ from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import fixxpath, findtext, findall
 
 
@@ -185,7 +186,7 @@ class DimensionDataBackupDriver(BackupDriver):
         is supported.
 
         :param target: Backup target to update
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :param name: Name of the target
         :type name: ``str``
@@ -202,9 +203,9 @@ class DimensionDataBackupDriver(BackupDriver):
         request = ET.Element('ModifyBackup',
                              {'xmlns': BACKUP_NS})
         request.set('servicePlan', service_plan)
-
+        server_id = self._target_to_target_address(target)
         self.connection.request_with_orgId_api_1(
-            'server/%s/backup/modify' % (target.address),
+            'server/%s/backup/modify' % (server_id),
             method='POST',
             data=ET.tostring(request)).object
         target.extra = extra
@@ -215,12 +216,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Delete a backup target
 
         :param target: Backup target to delete
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :rtype: ``bool``
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup?disable' % (target.address),
+            'server/%s/backup?disable' % (server_id),
             method='GET').object
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
@@ -400,11 +402,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-
-        if isinstance(target, BackupTarget):
-            server_id = target.address
-        else:
-            server_id = target
+        server_id = self._target_to_target_address(target)
 
         backup_elm = ET.Element('NewBackupClient',
                                 {'xmlns': BACKUP_NS})
@@ -438,20 +436,36 @@ class DimensionDataBackupDriver(BackupDriver):
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_get_backup_details_for_target(self, target):
+    def ex_remove_client_from_target(self, target, backup_client):
         """
-        Returns a list of available backup client types
+        Removes a client from a backup target
 
-        :param  target: The backup target to list available types for
+        :param  target: The backup target to remove the client from
         :type   target: :class:`BackupTarget` or ``str``
 
-        :rtype: ``list`` of :class:`DimensionDataBackupDetails`
-        """
+        :param  backup_client: The backup client to remove
+        :type   backup_client: :class:`DimensionDataBackupClient` or ``str``
 
-        if isinstance(target, BackupTarget):
-            server_id = target.address
-        else:
-            server_id = target
+        :rtype: ``bool``
+        """
+        server_id = self._target_to_target_address(target)
+        client_id = self._client_to_client_id(backup_client)
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup/client/%s?disable' % (server_id, client_id),
+            method='GET').object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_get_backup_details_for_target(self, target):
+        """
+        Returns a backup details object for a target
+
+        :param  target: The backup target to get details for
+        :type   target: :class:`BackupTarget` or ``str``
+
+        :rtype: :class:`DimensionDataBackupDetails`
+        """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
             'server/%s/backup' % (server_id),
             method='GET').object
@@ -462,12 +476,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup client types
 
         :param  target: The backup target to list available types for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupClientType`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/type' % (target.address),
+            'server/%s/backup/client/type' % (server_id),
             method='GET').object
         return self._to_client_types(response)
 
@@ -476,12 +491,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup storage policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupStoragePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/storagePolicy' % (target.address),
+            'server/%s/backup/client/storagePolicy' % (server_id),
             method='GET').object
         return self._to_storage_policies(response)
 
@@ -490,12 +506,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup schedule policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupSchedulePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/schedulePolicy' % (target.address),
+            'server/%s/backup/client/schedulePolicy' % (server_id),
             method='GET').object
         return self._to_schedule_policies(response)
 
@@ -609,3 +626,25 @@ class DimensionDataBackupDriver(BackupDriver):
                          type=BackupTargetType.VIRTUAL,
                          extra=extra)
         return n
+
+    @staticmethod
+    def _client_to_client_id(backup_client):
+        if isinstance(backup_client, DimensionDataBackupClient):
+            return backup_client.id
+        elif isinstance(backup_client, basestring):
+            return backup_client
+        else:
+            raise TypeError(
+                "Invalid backup_client type for _client_to_client_id()"
+            )
+
+    @staticmethod
+    def _target_to_target_address(target):
+        if isinstance(target, BackupTarget):
+            return target.address
+        elif isinstance(target, basestring):
+            return target
+        else:
+            raise TypeError(
+                "Invalid target type for _target_to_target_address()"
+            )
