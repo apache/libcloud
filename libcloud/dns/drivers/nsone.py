@@ -2,12 +2,13 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
+from libcloud.dns.types import Provider, ZoneDoesNotExistError, \
+    ZoneAlreadyExistsError, RecordDoesNotExistError, RecordAlreadyExistsError
 from libcloud.utils.py3 import httplib
 from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
-from libcloud.common.nsone import NsOneConnection, NsOneResponse, NsOneException
-from libcloud.dns.types import Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError, RecordDoesNotExistError, \
-    RecordAlreadyExistsError
-
+from libcloud.common.nsone import NsOneConnection, NsOneResponse, \
+    NsOneException
 
 __all__ = [
     'NsOneDNSDriver'
@@ -57,7 +58,8 @@ class NsOneDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method='GET')
         except NsOneException, e:
             if e.message == 'zone not found':
-                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone_id)
+                raise ZoneDoesNotExistError(value=e.message, driver=self,
+                                            zone_id=zone_id)
             else:
                 raise e
         zone = self._to_zone(response.objects[0])
@@ -76,7 +78,8 @@ class NsOneDNSDriver(DNSDriver):
         :param ttl: TTL for new records (This is used through the extra param)
         :type ttl: ``int``
 
-        :param extra: Extra attributes that are specific to the driver such as ttl, nx_ttl. Read API docs for more.
+        :param extra: Extra attributes that are specific to the driver
+        such as ttl.
         :type extra: ``dict``
 
         :rtype: :class:`Zone`
@@ -87,10 +90,12 @@ class NsOneDNSDriver(DNSDriver):
             raw_data.update(extra)
         post_data = json.dumps(raw_data)
         try:
-            response = self.connection.request(action=action, method='PUT', data=post_data)
+            response = self.connection.request(action=action, method='PUT',
+                                               data=post_data)
         except NsOneException, e:
             if e.message == 'zone already exists':
-                raise ZoneAlreadyExistsError(value=e.message, driver=self, zone_id=domain)
+                raise ZoneAlreadyExistsError(value=e.message, driver=self,
+                                             zone_id=domain)
             else:
                 raise e
 
@@ -126,18 +131,22 @@ class NsOneDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method='GET')
         except NsOneException, e:
             if e.message == 'zone not found':
-                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone.id)
+                raise ZoneDoesNotExistError(value=e.message, driver=self,
+                                            zone_id=zone.id)
             else:
                 raise e
-        records = self._to_records(items=response.parse_body()['records'], zone=zone)
+        records = self._to_records(items=response.parse_body()['records'],
+                                   zone=zone)
 
         return records
 
     def get_record(self, zone_id, record_id):
         """
-        :param zone_id: The id of the zone where to search for the record (e.g. example.com)
+        :param zone_id: The id of the zone where to search for
+        the record (e.g. example.com)
         :type zone_id: ``str``
-        :param record_id: The type of record to search for (e.g. A, AAA, MX etc)
+        :param record_id: The type of record to search for
+        (e.g. A, AAA, MX etc)
 
         :return: :class:`Record`
         """
@@ -146,7 +155,8 @@ class NsOneDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method='GET')
         except NsOneException, e:
             if e.message == 'record not found':
-                raise RecordDoesNotExistError(value=e.message, driver=self, record_id=record_id)
+                raise RecordDoesNotExistError(value=e.message, driver=self,
+                                              record_id=record_id)
             else:
                 raise e
         zone = self.get_zone(zone_id=zone_id)
@@ -161,12 +171,14 @@ class NsOneDNSDriver(DNSDriver):
 
         :return: Boolean
         """
-        action = '/v1/zones/%s/%s/%s' % (record.zone.domain, record.name, record.type)
+        action = '/v1/zones/%s/%s/%s' % (record.zone.domain, record.name,
+                                         record.type)
         try:
             response = self.connection.request(action=action, method='DELETE')
         except NsOneException, e:
             if e.message == 'record not found':
-                raise RecordDoesNotExistError(value=e.message, driver=self, record_id=record.id)
+                raise RecordDoesNotExistError(value=e.message, driver=self,
+                                              record_id=record.id)
             else:
                 raise e
 
@@ -186,7 +198,8 @@ class NsOneDNSDriver(DNSDriver):
         :type extra: ``dict``
         :return: :class:`Record`
         """
-        action = '/v1/zones/%s/%s/%s' % (zone.domain, '%s.%s' % (name, zone.domain), type)
+        action = '/v1/zones/%s/%s/%s' % (zone.domain, '%s.%s' %
+                                         (name, zone.domain), type)
         raw_data = {
             "answers": [
                 {
@@ -202,10 +215,12 @@ class NsOneDNSDriver(DNSDriver):
             raw_data['answers'] = extra.get('answers')
         post_data = json.dumps(raw_data)
         try:
-            response = self.connection.request(action=action, method='PUT', data=post_data)
+            response = self.connection.request(action=action, method='PUT',
+                                               data=post_data)
         except NsOneException, e:
             if e.message == 'record already exists':
-                raise RecordAlreadyExistsError(value=e.message, driver=self, record_id='')
+                raise RecordAlreadyExistsError(value=e.message, driver=self,
+                                               record_id='')
             else:
                 raise e
         record = self._to_record(item=response.parse_body(), zone=zone)
@@ -227,7 +242,8 @@ class NsOneDNSDriver(DNSDriver):
         :return: :class:`Record`
         """
         zone = record.zone
-        action = '/v1/zones/%s/%s/%s' % (zone.domain, '%s.%s' % (name, zone.domain), type)
+        action = '/v1/zones/%s/%s/%s' % (zone.domain, '%s.%s' %
+                                         (name, zone.domain), type)
         raw_data = {
             "answers": [
                 {
@@ -240,10 +256,12 @@ class NsOneDNSDriver(DNSDriver):
             raw_data['answers'] = extra.get('answers')
         post_data = json.dumps(raw_data)
         try:
-            response = self.connection.request(action=action, data=post_data, method='POST')
+            response = self.connection.request(action=action, data=post_data,
+                                               method='POST')
         except NsOneException, e:
             if e.message == 'record does not exist':
-                raise RecordDoesNotExistError(value=e.message, driver=self, id=record.id)
+                raise RecordDoesNotExistError(value=e.message, driver=self,
+                                              id=record.id)
             else:
                 raise e
         record = self._to_record(item=response.parse_body(), zone=zone)
@@ -274,8 +292,8 @@ class NsOneDNSDriver(DNSDriver):
             if key not in common_attr:
                 extra[key] = item.get(key)
 
-        zone = Zone(domain=item['zone'], id=item['id'], type=item.get('type'), extra=extra, ttl=extra.get('ttl'),
-                    driver=self)
+        zone = Zone(domain=item['zone'], id=item['id'], type=item.get('type'),
+                    extra=extra, ttl=extra.get('ttl'), driver=self)
 
         return zone
 
