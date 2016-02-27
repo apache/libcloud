@@ -17,10 +17,12 @@ class NsOneResponse(JsonResponse):
     objects = []
 
     def __init__(self, response, connection):
-        super(NsOneResponse, self).__init__(response=response, connection=connection)
+        super(NsOneResponse, self).__init__(response=response,
+                                            connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise NsOneException(code=self.status, message=self.errors.pop()['message'])
+            raise NsOneException(code=self.status,
+                                 message=self.errors.pop()['message'])
 
     def parse_body_and_errors(self):
         js = super(NsOneResponse, self).parse_body()
