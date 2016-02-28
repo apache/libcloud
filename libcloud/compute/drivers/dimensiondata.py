@@ -1890,7 +1890,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 'speed': disk.get('speed'),
                 'id': disk.get('id'),
                 'size': int(disk.get('sizeGb'))
-                })
+            })
 
         n = Node(id=element.get('id'),
                  name=findtext(element, 'name', TYPES_URN),
