@@ -21,6 +21,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -426,8 +427,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
                        **kwargs):
         """
-        Wait for the function which returns a instance with field status to
-        match.
+        Wait for the function which returns a instance with field status/state
+        to match.
 
         Keep polling func until one of the desired states is matched
 
@@ -456,15 +457,20 @@ class DimensionDataConnection(ConnectionUserAndKey):
         cnt = 0
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
-            if result.status is state or result.status in state:
+            if isinstance(result, Node):
+                object_state = result.state
+            else:
+                object_state = result.status
+
+            if object_state is state or object_state in state:
                 return result
             sleep(poll_interval)
             cnt += 1
 
         msg = 'Status check for object %s timed out' % (result)
-        raise DimensionDataAPIException(code=result.status,
+        raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
-                                        driver=self.connection.driver)
+                                        driver=self.driver)
 
     def _get_orgId(self):
         """
@@ -600,6 +606,41 @@ class DimensionDataServerCpuSpecification(object):
                  'cpu_count=%s, cores_per_socket=%s, '
                  'performance=%s>')
                 % (self.cpu_count, self.cores_per_socket, self.performance))
+
+
+class DimensionDataServerDisk(object):
+    """
+    A class that represents the disk on a server
+    """
+    def __init__(self, id, scsi_id, size_gb, speed, state):
+        """
+        Instantiate a new :class:`DimensionDataServerDisk`
+
+        :param id: The id of the disk
+        :type  id: ``str``
+
+        :param scsi_id: Representation for scsi
+        :type  scsi_id: ``int``
+
+        :param size_gb: Size of the disk
+        :type  size_gb: ``int``
+
+        :param speed: Speed of the disk (i.e. STANDARD)
+        :type  speed: ``str``
+
+        :param state: State of the disk (i.e. PENDING)
+        :type  state: ``str``
+        """
+        self.id = id
+        self.scsi_id = scsi_id
+        self.size_gb = size_gb
+        self.speed = speed
+        self.state = state
+
+    def __repr__(self):
+        return (('<DimensionDataServerDisk: '
+                 'id=%s, size_gb=%s')
+                % (self.id, self.size_gb))
 
 
 class DimensionDataFirewallRule(object):

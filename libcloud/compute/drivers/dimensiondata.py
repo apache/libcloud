@@ -29,6 +29,7 @@ from libcloud.common.dimensiondata import DimensionDataNetwork
 from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerDisk
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
@@ -41,6 +42,32 @@ from libcloud.utils.py3 import urlencode
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
+
+# Node state map is a dictionary with the keys as tuples
+# These tuples represent:
+# (<state_of_node_from_didata>, <is node started?>, <action happening>)
+NODE_STATE_MAP = {
+    ('NORMAL', 'true', None):
+        NodeState.RUNNING,
+    ('NORMAL', 'false', None):
+        NodeState.STOPPED,
+    ('PENDING_CHANGE', 'true', 'START_SERVER'):
+        NodeState.STARTING,
+    ('PENDING_ADD', 'true', 'DEPLOY_SERVER'):
+        NodeState.STARTING,
+    ('PENDING_ADD', 'true', 'DEPLOY_SERVER_WITH_DISK_SPEED'):
+        NodeState.STARTING,
+    ('PENDING_CHANGE', 'true', 'SHUTDOWN_SERVER'):
+        NodeState.STOPPING,
+    ('PENDING_CHANGE', 'true', 'POWER_OFF_SERVER'):
+        NodeState.STOPPING,
+    ('PENDING_CHANGE', 'true', 'REBOOT_SERVER'):
+        NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RESET_SERVER'):
+        NodeState.REBOOTING,
+    ('PENDING_CHANGE', 'true', 'RECONFIGURE_SERVER'):
+        NodeState.RECONFIGURING,
+}
 
 
 class DimensionDataNodeDriver(NodeDriver):
@@ -1135,7 +1162,8 @@ class DimensionDataNodeDriver(NodeDriver):
             source_ip.set('address', 'ANY')
         else:
             source_ip.set('address', rule.source.ip_address)
-            source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
+            if rule.source.ip_prefix_size is not None:
+                source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
             if rule.source.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
                 source_port.set('begin', rule.source.port_begin)
@@ -1824,24 +1852,35 @@ class DimensionDataNodeDriver(NodeDriver):
             cores_per_socket=int(element.get('coresPerSocket')),
             performance=element.get('speed'))
 
+    def _to_disks(self, object):
+        disk_elements = object.findall(fixxpath('disk', TYPES_URN))
+        return [self._to_disk(el) for el in disk_elements]
+
+    def _to_disk(self, element):
+        return DimensionDataServerDisk(
+            id=element.get('id'),
+            scsi_id=int(element.get('scsiId')),
+            size_gb=int(element.get('sizeGb')),
+            speed=element.get('speed'),
+            state=element.get('state')
+        )
+
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
-
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
-        if findtext(element, 'started', TYPES_URN) == 'true':
-            state = NodeState.RUNNING
-        else:
-            state = NodeState.TERMINATED
-
+        started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
+        dd_state = findtext(element, 'state', TYPES_URN)
+
+        node_state = self._get_node_state(dd_state, started, status.action)
 
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
 
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-
+        disks = self._to_disks(element)
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -1866,7 +1905,8 @@ class DimensionDataNodeDriver(NodeDriver):
             'OS_displayName': element.find(fixxpath(
                 'operatingSystem',
                 TYPES_URN)).get('displayName'),
-            'status': status
+            'status': status,
+            'disks': disks
         }
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
@@ -1894,7 +1934,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         n = Node(id=element.get('id'),
                  name=findtext(element, 'name', TYPES_URN),
-                 state=state,
+                 state=node_state,
                  public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=[private_ip] if private_ip is not None else [],
                  driver=self.connection.driver,
@@ -1934,6 +1974,16 @@ class DimensionDataNodeDriver(NodeDriver):
                                     'failureReason',
                                     TYPES_URN))
         return s
+
+    @staticmethod
+    def _get_node_state(state, started, action):
+        try:
+            return NODE_STATE_MAP[(state, started, action)]
+        except KeyError:
+            if started == 'true':
+                return NodeState.RUNNING
+            else:
+                return NodeState.TERMINATED
 
     @staticmethod
     def _location_to_location_id(location):

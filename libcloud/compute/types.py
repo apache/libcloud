@@ -222,25 +222,31 @@ class NodeState(Type):
     Standard states for a node
 
     :cvar RUNNING: Node is running.
+    :cvar STARTING: Node is starting up.
     :cvar REBOOTING: Node is rebooting.
     :cvar TERMINATED: Node is terminated. This node can't be started later on.
+    :cvar STOPPING: Node is currently trying to stop.
     :cvar STOPPED: Node is stopped. This node can be started later on.
     :cvar PENDING: Node is pending.
     :cvar SUSPENDED: Node is suspended.
     :cvar ERROR: Node is an error state. Usually no operations can be performed
                  on the node once it ends up in the error state.
     :cvar PAUSED: Node is paused.
+    :cvar RECONFIGURING: Node is being reconfigured.
     :cvar UNKNOWN: Node state is unknown.
     """
     RUNNING = 'running'
+    STARTING = 'starting'
     REBOOTING = 'rebooting'
     TERMINATED = 'terminated'
     PENDING = 'pending'
     UNKNOWN = 'unknown'
+    STOPPING = 'stopping'
     STOPPED = 'stopped'
     SUSPENDED = 'suspended'
     ERROR = 'error'
     PAUSED = 'paused'
+    RECONFIGURING = 'reconfiguring'
 
 
 class StorageVolumeState(Type):
