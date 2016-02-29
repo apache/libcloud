@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<firewallRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="13" totalCount="13" pageSize="50">
+<firewallRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="13" totalCount="13" pageSize="50">     
     <firewallRule id="756cba02-b0bc-48f4-aea5-9445870b6148" datacenterId="NA9" ruleType="DEFAULT_RULE">
         <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
         <name>CCDEFAULT.BlockOutboundMailIPv4</name>
@@ -203,6 +203,21 @@
         <destination>
             <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
             <port begin="9443"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="b976e0e6-4fb2-4f3e-a016-652e02d211b4" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>SpecificSourceIP</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>            
+        </source>
+        <destination>
+            <ip address="ANY"/>
         </destination>
         <enabled>true</enabled>
         <state>NORMAL</state>

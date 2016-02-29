@@ -142,6 +142,16 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertEqual(e.errno, 104)
         self.assertTrue(expected_msg in str(e))
 
+        # Test original exception is propagated correctly on non reset by peer
+        # error
+        with self.assertRaises(socket.error) as cm:
+            mock_wrap_socket.side_effect = socket.error(105, 'Some random error')
+            self.httplib_object.connect()
+
+        e = cm.exception
+        self.assertEqual(e.errno, 105)
+        self.assertTrue('Some random error' in str(e))
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

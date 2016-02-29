@@ -23,7 +23,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
@@ -61,12 +61,34 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 2)
+        self.assertEqual(len(ret), 7)
+
+    def test_server_states(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(ret[0].state == 'running')
+        self.assertTrue(ret[1].state == 'starting')
+        self.assertTrue(ret[2].state == 'stopping')
+        self.assertTrue(ret[3].state == 'reconfiguring')
+        self.assertTrue(ret[4].state == 'running')
+        self.assertTrue(ret[5].state == 'terminated')
+        self.assertTrue(ret[6].state == 'stopped')
+        self.assertEqual(len(ret), 7)
+        node = ret[0]
+        self.assertTrue(isinstance(node.extra['disks'], list))
+        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
+
+        self.assertTrue(isinstance(ret[0].extra['disks'], list))
+        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
+        self.assertTrue(isinstance(ret[1].extra['disks'], list))
+        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 4)
+        self.assertEqual(len(ret), 9)
 
     # We're making sure here the filters make it to the URL
     # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
@@ -388,6 +410,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                       self.driver.ex_get_vlan,
                                       vlan_id='0e56433f-d808-4669-821d-812769517ff8')
 
+    def test_ex_wait_for_state_NODE(self):
+        self.driver.ex_wait_for_state('running',
+                                      self.driver.ex_get_node_by_id,
+                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+
+    def test_ex_wait_for_state_FAIL(self):
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_wait_for_state('starting',
+                                          self.driver.ex_get_node_by_id,
+                                          id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                                          timeout=2
+                                          )
+        self.assertEqual(context.exception.code, 'running')
+        self.assertTrue('timed out' in context.exception.msg)
+
     def test_ex_update_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         vlan.name = 'new name'
@@ -450,6 +487,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rules = self.driver.ex_list_firewall_rules(net)
         rule = self.driver.ex_create_firewall_rule(net, rules[0], 'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_with_specific_source_ip(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = list(filter(lambda x: x.name == 'SpecificSourceIP',
+                                              rules))[0]
+        rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
     def test_ex_get_firewall_rule(self):
