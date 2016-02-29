@@ -288,7 +288,7 @@ class NsOneDNSDriver(DNSDriver):
     def _to_zone(self, item):
         common_attr = ['zone', 'id', 'type']
         extra = {}
-        for key in item:
+        for key in item.keys():
             if key not in common_attr:
                 extra[key] = item.get(key)
 
@@ -307,7 +307,7 @@ class NsOneDNSDriver(DNSDriver):
     def _to_record(self, item, zone):
         common_attr = ['id', 'short_answers', 'answers', 'domain', 'type']
         extra = {}
-        for key in item:
+        for key in item.keys():
             if key not in common_attr:
                 extra[key] = item.get(key)
         if item.get('answers') is not None:
