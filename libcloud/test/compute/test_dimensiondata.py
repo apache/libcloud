@@ -111,6 +111,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                      ex_started=True, ex_state='fake_state',
                                      ex_network='fake_network', ex_network_domain='fake_network_domain')
         self.assertTrue(isinstance(ret, list))
+        self.assertEqual(len(ret), 7)
+
+        node = ret[3]
+        self.assertTrue(isinstance(node.extra['disks'], list))
+        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
+        disk = node.extra['disks'][0]
+        self.assertEqual(disk.id, "c2e1f199-116e-4dbc-9960-68720b832b0a")
+        self.assertEqual(disk.scsi_id, 0)
+        self.assertEqual(disk.size_gb, 50)
+        self.assertEqual(disk.speed, "STANDARD")
+        self.assertEqual(disk.state, "NORMAL")
 
     def test_list_nodes_response_LOCATION(self):
         DimensionDataMockHttp.type = None
