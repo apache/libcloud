@@ -33,6 +33,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
+
 class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
@@ -475,8 +476,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_create_firewall_rule(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
-        rules = self.driver.ex_list_firewall_rules(net)
+        rules = self.driver.ex_list_firewall_rules(net)        
         rule = self.driver.ex_create_firewall_rule(net, rules[0], 'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        
+    def test_ex_create_firewall_rule_with_specific_source_ip(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = list(filter(lambda x: x.name == 'SpecificSourceIP', 
+                                              rules))[0]        
+        rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
     def test_ex_get_firewall_rule(self):
