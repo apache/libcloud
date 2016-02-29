@@ -25,8 +25,16 @@ General
   (GITHUB-700)
   [Anthony Shaw]
 
+- Throw a more user-friendly exception on "No address associated with hostname".
+  (GITHUB-711, GITHUB-714, LIBCLOUD-803)
+  [Tomaz Muraus, Scott Crunkleton]
+
 Compute
 ~~~~~~~
+
+- [google compute] allow bypassing image search in standard project list
+  (GITHUB-713)
+  [Max Illfelder]
 
 - Add support for requesting a MKS token for accessing the remote console in VMware
   vCloud driver
@@ -80,6 +88,21 @@ Storage
 - Improvements to Google Auth for Storage and Compute and MIME bug fix
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
+
+- Implement ``get_container``, ``get_object`` and ``upload_object_via_stream``
+  methods in the Backblaze B2 storage driver.
+
+  Note: Backblaze API doesn't upload streaming uploads so when using
+  ``upload_object_via_stream`` whole file is read and buffered in memory.
+  (GITHUB-696)
+  [Jay jshridha]
+
+DNS
+~~~~
+
+- Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
+  connection class is correctly set to the hostname.
+  [Tomaz Muraus]
 
 Backup
 ~~~~~~

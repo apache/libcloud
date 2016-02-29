@@ -340,3 +340,5 @@ def get_socket_error_exception(ssl_version, exc):
         new_exc = socket.error(*new_exc_args)
         new_exc.original_exc = exc
         return new_exc
+    else:
+        return exc
