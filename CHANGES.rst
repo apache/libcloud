@@ -104,6 +104,10 @@ DNS
   connection class is correctly set to the hostname.
   [Tomaz Muraus]
 
+- Fix handling of ``MX`` records in the Gandi driver.
+  (GITHUB-718)
+  [Ryan Lee]
+
 Backup
 ~~~~~~
 
