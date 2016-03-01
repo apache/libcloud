@@ -24,13 +24,14 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk
+from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-
 from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.utils.xml import fixxpath, findtext
 
 
 class DimensionDataTests(unittest.TestCase, TestCaseMixin):
@@ -237,6 +238,110 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_network=None,
                                     ex_isStarted=False)
 
+    def test_create_node_mcp1_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp1_network(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network='fakenetwork',
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_vlan='fakevlan',
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_network_domain_no_vlan_or_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_isStarted=False)
+
+    def test_create_node_mcp2_additional_nics(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        additional_vlans = ['fakevlan1', 'fakevlan2']
+        additional_ipv4 = ['10.0.0.2', '10.0.0.3']
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_additional_nics_vlan=additional_vlans,
+                                       ex_additional_nics_ipv4=additional_ipv4,
+                                       ex_isStarted=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_bad_additional_nics_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_ipv4='badstring',
+                                    ex_isStarted=False)
+
+    def test_create_node_bad_additional_nics_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_vlan='badstring',
+                                    ex_isStarted=False)
+
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
@@ -371,8 +476,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'Aurora')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_ex_list_network_domains_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        nets = self.driver.ex_list_network_domains(location='fake_location', name='fake_name',
+                                                   service_plan='fake_plan', state='fake_state')
+        self.assertEqual(nets[0].name, 'Aurora')
+        self.assertTrue(isinstance(nets[0].location, NodeLocation))
+
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
+        self.assertEqual(vlans[0].name, "Primary")
+
+    def test_ex_list_vlans_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        vlans = self.driver.ex_list_vlans(location='fake_location', network_domain='fake_network_domain',
+                                          name='fake_name', ipv4_address='fake_ipv4', ipv6_address='fake_ipv6', state='fake_state')
         self.assertEqual(vlans[0].name, "Primary")
 
     def test_ex_create_vlan(self,):
@@ -862,6 +980,16 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_ALLFILTERS(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}updateVmwareTools":
@@ -931,7 +1059,49 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'type':
+                assert value == 'fake_plan'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'ipv6Address':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4Address':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -940,6 +1110,29 @@ class DimensionDataMockHttp(MockHttp):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deployServer":
             raise InvalidRequestError(request.tag)
+
+        # Make sure the we either have a network tag with an IP or networkId
+        # Or Network info with a primary nic that has privateip or vlanid
+        network = request.find(fixxpath('network', TYPES_URN))
+        network_info = request.find(fixxpath('networkInfo', TYPES_URN))
+        if network is not None:
+            if network_info is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            ipv4 = findtext(network, 'privateIpv4', TYPES_URN)
+            networkId = findtext(network, 'networkId', TYPES_URN)
+            if ipv4 is None and networkId is None:
+                raise InvalidRequestError('Invalid request MCP1 requests need privateIpv4 or networkId')
+        elif network_info is not None:
+            if network is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            primary_nic = network_info.find(fixxpath('primaryNic', TYPES_URN))
+            ipv4 = findtext(primary_nic, 'privateIpv4', TYPES_URN)
+            vlanId = findtext(primary_nic, 'vlanId', TYPES_URN)
+            if ipv4 is None and vlanId is None:
+                raise InvalidRequestError('Invalid request MCP2 requests need privateIpv4 or vlanId')
+        else:
+            raise InvalidRequestError('Invalid request, does not have network or network_info in XML')
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -958,6 +1151,11 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
