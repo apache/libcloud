@@ -78,7 +78,33 @@
                            <value><string>208.111.35.173</string></value>
                         </member>
                      </struct>
+                 </value>
+
+                  <value>
+                     <struct>
+                        <member>
+                           <name>id</name>
+                           <value><int>47234</int></value>
+                        </member>
+                        <member>
+                           <name>name</name>
+                           <value><string></string></value>
+                        </member>
+                        <member>
+                           <name>ttl</name>
+                           <value><int>86400</int></value>
+                        </member>
+                        <member>
+                           <name>type</name>
+                           <value><string>MX</string></value>
+                        </member>
+                        <member>
+                           <name>value</name>
+                           <value><string>15 aspmx.l.google.com</string></value>
+                        </member>
+                     </struct>
                   </value>
+
                </data>
             </array>
          </value>
