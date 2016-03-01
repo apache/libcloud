@@ -147,14 +147,15 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return res.object
 
     def _to_record(self, record, zone):
-        extra = {'ttl': record['ttl']}
+        extra = {'ttl': int(record['ttl'])}
         value = record['value']
         if record['type'] == 'MX':
             # Record is in the following form:
             # <priority> <value>
             # e.g. 15 aspmx.l.google.com
-            extra['priority'] = record['value'].split(' ')[0]
-            value = record['value'].split(' ')[1]
+            split = record['value'].split(' ')
+            extra['priority'] = int(split[0])
+            value = split[1]
         return Record(
             id='%s:%s' % (record['type'], record['name']),
             name=record['name'],
