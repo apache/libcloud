@@ -110,10 +110,11 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def create_node(self, name, image, auth, ex_description,
                     ex_network=None, ex_network_domain=None,
-                    ex_vlan=None,
+                    ex_vlan=None, ex_primary_ipv4=None,
                     ex_memory_gb=None,
                     ex_cpu_specification=None,
-                    ex_is_started=True, **kwargs):
+                    ex_is_started=True, ex_additional_nics_vlan=None,
+                    ex_additional_nics_ipv4=None, **kwargs):
         """
         Create a new DimensionData node
 
@@ -130,14 +131,22 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_description:  description for this node (required)
         :type       ex_description:  ``str``
 
-        :keyword    ex_network:  Network to create the node within (required,
-                                unless using Network Domain)
+        :keyword    ex_network:  Network to create the node within
+                                 (required unless using ex_network_domain
+                                  or ex_primary_ipv4)
+
         :type       ex_network: :class:`DimensionDataNetwork` or ``str``
 
         :keyword    ex_network_domain:  Network Domain to create the node
-                                        (required unless using network)
+                                        (required unless using network
+                                         or ex_primary_ipv4)
         :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
                                         or ``str``
+
+        :keyword    ex_primary_ipv4: Primary nics IPv4 Address
+                                     MCP1: (required unless ex_network)
+                                     MCP2: (required unless ex_vlan)
+        :type       ex_primary_ipv4: ``str``
 
         :keyword    ex_vlan:  VLAN to create the node within
                                         (required unless using network)
@@ -154,6 +163,15 @@ class DimensionDataNodeDriver(NodeDriver):
                                    true (required)
         :type       ex_is_started:  ``bool``
 
+        :keyword    ex_additional_nics_vlan: (MCP2 Only) List of additional
+                                              nics to add by vlan
+        :type       ex_additional_nics_vlan: ``list`` of
+            :class:`DimensionDataVlan` or ``list`` of ``str``
+
+        :keyword    ex_additional_nics_ipv4: (MCP2 Only) List of additional
+                                              nics to add by ipv4 address
+        :type       ex_additional_nics_ipv4: ``list`` of ``str``
+
         :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
         """
@@ -165,24 +183,17 @@ class DimensionDataNodeDriver(NodeDriver):
             auth_obj = self._get_and_check_auth(auth)
             password = auth_obj.password
 
-        if not isinstance(ex_network, (DimensionDataNetwork, basestring)):
-            if not isinstance(ex_network_domain,
-                              (DimensionDataNetworkDomain, basestring)):
-                raise ValueError(
-                    'ex_network must be of DimensionDataNetwork'
-                    ' or str '
-                    'type or ex_network_domain must be of '
-                    'DimensionDataNetworkDomain type or str')
+        if (ex_network_domain is None and
+                ex_network is None and
+                ex_primary_ipv4 is None):
+            raise ValueError("One of ex_network_domain, ex_network, "
+                             "or ex_ipv6_primary must be specified")
 
         server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
         ET.SubElement(server_elm, "description").text = ex_description
-
-        if isinstance(image, NodeImage):
-            ET.SubElement(server_elm, "imageId").text = image.id
-        else:
-            ET.SubElement(server_elm, "imageId").text = image
-
+        image_id = self._image_to_image_id(image)
+        ET.SubElement(server_elm, "imageId").text = image_id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
         ET.SubElement(server_elm, "administratorPassword").text = password
 
@@ -198,27 +209,47 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if ex_network is not None:
             network_elm = ET.SubElement(server_elm, "network")
-            if isinstance(ex_network, DimensionDataNetwork):
-                ET.SubElement(network_elm, "networkId").text = ex_network.id
-            else:
-                ET.SubElement(network_elm, "networkId").text = ex_network
-        if ex_network_domain is not None:
-            network_domain_id = None
-            if isinstance(ex_network_domain, DimensionDataNetworkDomain):
-                network_domain_id = ex_network_domain.id
-            else:
-                network_domain_id = ex_network_domain
-            network_inf_elm = ET.SubElement(server_elm, "networkInfo",
-                                            {'networkDomainId':
-                                             network_domain_id})
-            vlan_id = None
-            if isinstance(ex_vlan, DimensionDataVlan):
-                vlan_id = ex_vlan.id
-            else:
-                vlan_id = ex_vlan
-            pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
-            ET.SubElement(pri_nic, "vlanId").text = vlan_id
+            network_id = self._network_to_network_id(ex_network)
+            ET.SubElement(network_elm, "networkId").text = network_id
+        elif ex_network_domain is None and ex_primary_ipv4 is not None:
+            network_elm = ET.SubElement(server_elm, "network")
+            ET.SubElement(network_elm, "privateIpv4").text = ex_primary_ipv4
+        elif ex_network_domain is not None:
+            net_domain_id = self._network_domain_to_network_domain_id(
+                ex_network_domain)
+            network_inf_elm = ET.SubElement(
+                server_elm, "networkInfo",
+                {'networkDomainId': net_domain_id}
+            )
 
+            if ex_vlan is not None:
+                vlan_id = self._vlan_to_vlan_id(ex_vlan)
+                pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
+                ET.SubElement(pri_nic, "vlanId").text = vlan_id
+            elif ex_primary_ipv4 is not None:
+                pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
+                ET.SubElement(pri_nic, "privateIpv4").text = ex_primary_ipv4
+            else:
+                raise ValueError("One of ex_vlan or ex_primary_ipv4 "
+                                 "must be specified")
+
+            if isinstance(ex_additional_nics_ipv4, list):
+                for ipv4_nic in ex_additional_nics_ipv4:
+                    add_nic = ET.SubElement(network_inf_elm, "additionalNic")
+                    ET.SubElement(add_nic, "privateIpv4").text = ipv4_nic
+            elif ex_additional_nics_ipv4 is not None:
+                raise TypeError("ex_additional_nics_ipv4 must "
+                                "be None or a list")
+
+            if isinstance(ex_additional_nics_vlan, list):
+                for vlan_nic in ex_additional_nics_vlan:
+                    print("vlan nic {}".format(vlan_nic))
+                    add_nic = ET.SubElement(network_inf_elm, "additionalNic")
+                    ET.SubElement(add_nic, "vlanId").text = vlan_nic
+            elif ex_additional_nics_vlan is not None:
+                raise TypeError("ex_additional_nics_vlan"
+                                "must be None or a list")
+        print(ET.tostring(server_elm))
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
             method='POST',
@@ -481,7 +512,6 @@ class DimensionDataNodeDriver(NodeDriver):
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
-
         if ipv6 is not None:
             params['ipv6'] = ipv6
         if ipv4 is not None:
@@ -494,30 +524,15 @@ class DimensionDataNodeDriver(NodeDriver):
             params['deployed'] = deployed
         if name is not None:
             params['name'] = name
-
         if network_domain is not None:
-            if isinstance(network_domain, DimensionDataNetworkDomain):
-                params['networkDomainId'] = network_domain.id
-            else:
-                params['networkDomainId'] = network_domain
-
+            params['networkDomainId'] = \
+                self._network_domain_to_network_domain_id(network_domain)
         if network is not None:
-            if isinstance(network, DimensionDataNetwork):
-                params['networkId'] = network.id
-            else:
-                params['networkId'] = network
-
+            params['networkId'] = self._network_to_network_id(network)
         if vlan is not None:
-            if isinstance(vlan, DimensionDataVlan):
-                params['vlanId'] = vlan.id
-            else:
-                params['vlanId'] = vlan
-
+            params['vlanId'] = self._vlan_to_vlan_id(vlan)
         if image is not None:
-            if isinstance(image, NodeImage):
-                params['sourceImageId'] = image.id
-            else:
-                params['sourceImageId'] = image
+            params['sourceImageId'] = self._image_to_image_id(image)
 
         nodes_obj = self._list_nodes_single_page(params)
         yield self._to_nodes(nodes_obj)
@@ -810,14 +825,24 @@ class DimensionDataNodeDriver(NodeDriver):
             'network/networkDomain/%s' % network_domain_id).object
         return self._to_network_domain(net, locations)
 
-    def ex_list_network_domains(self, location=None):
+    def ex_list_network_domains(self, location=None, name=None,
+                                service_plan=None, state=None):
         """
         List networks domains deployed across all data center locations
         for your organization.
         The response includes the location of each network domain.
 
-        :param      location: The data center to list (optional)
+        :param      location: Only network domains in the location (optional)
         :type       location: :class:`NodeLocation` or ``str``
+
+        :param      name: Only network domains of this name (optional)
+        :type       name: ``str``
+
+        :param      service_plan: Only network domains of this type (optional)
+        :type       service_plan: ``str``
+
+        :param      state: Only network domains in this state (optional)
+        :type       state: ``str``
 
         :return: a list of `DimensionDataNetwork` objects
         :rtype: ``list`` of :class:`DimensionDataNetwork`
@@ -825,6 +850,12 @@ class DimensionDataNodeDriver(NodeDriver):
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
+        if name is not None:
+            params['name'] = name
+        if service_plan is not None:
+            params['type'] = service_plan
+        if state is not None:
+            params['state'] = state
 
         response = self.connection \
             .request_with_orgId_api_2('network/networkDomain',
@@ -1064,7 +1095,8 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_list_vlans(self, location=None, network_domain=None):
+    def ex_list_vlans(self, location=None, network_domain=None, name=None,
+                      ipv4_address=None, ipv6_address=None, state=None):
         """
         List VLANs available, can filter by location and/or network domain
 
@@ -1074,6 +1106,18 @@ class DimensionDataNodeDriver(NodeDriver):
         :param      network_domain: Only VLANs in this domain (optional)
         :type       network_domain: :class:`DimensionDataNetworkDomain`
 
+        :param      name: Only VLANs with this name (optional)
+        :type       name: ``str``
+
+        :param      ipv4_address: Only VLANs with this ipv4 address (optional)
+        :type       ipv4_address: ``str``
+
+        :param      ipv6_address: Only VLANs with this ipv6 address  (optional)
+        :type       ipv6_address: ``str``
+
+        :param      state: Only VLANs with this state (optional)
+        :type       state: ``str``
+
         :return: a list of DimensionDataVlan objects
         :rtype: ``list`` of :class:`DimensionDataVlan`
         """
@@ -1081,7 +1125,16 @@ class DimensionDataNodeDriver(NodeDriver):
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
         if network_domain is not None:
-            params['networkDomainId'] = network_domain.id
+            params['networkDomainId'] = \
+                self._network_domain_to_network_domain_id(network_domain)
+        if name is not None:
+            params['name'] = name
+        if ipv4_address is not None:
+            params['privateIpv4Address'] = ipv4_address
+        if ipv6_address is not None:
+            params['ipv6Address'] = ipv6_address
+        if state is not None:
+            params['state'] = state
         response = self.connection.request_with_orgId_api_2('network/vlan',
                                                             params=params) \
                                   .object
@@ -1138,10 +1191,8 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_list_firewall_rules(self, network_domain, page_size=50,
                                page_number=1):
         params = {'pageSize': page_size, 'pageNumber': page_number}
-        if isinstance(network_domain, str):
-            params['networkDomainId'] = network_domain
-        else:
-            params['networkDomainId'] = network_domain.id
+        params['networkDomainId'] = self._network_domain_to_network_domain_id(
+            network_domain)
 
         response = self.connection \
             .request_with_orgId_api_2('network/firewallRule',
@@ -1976,13 +2027,30 @@ class DimensionDataNodeDriver(NodeDriver):
             else:
                 return NodeState.TERMINATED
 
+    def _location_to_location_id(self, location):
+        return self._dd_object_to_id(location, NodeLocation)
+
+    def _vlan_to_vlan_id(self, vlan):
+        return self._dd_object_to_id(vlan, DimensionDataVlan)
+
+    def _image_to_image_id(self, image):
+        return self._dd_object_to_id(image, NodeImage)
+
+    def _network_to_network_id(self, network):
+        return self._dd_object_to_id(network, DimensionDataNetwork)
+
+    def _network_domain_to_network_domain_id(self, network_domain):
+        return self._dd_object_to_id(network_domain,
+                                     DimensionDataNetworkDomain)
+
     @staticmethod
-    def _location_to_location_id(location):
-        if isinstance(location, NodeLocation):
-            return location.id
-        elif isinstance(location, basestring):
-            return location
+    def _dd_object_to_id(obj, obj_type):
+        if isinstance(obj, obj_type):
+            return obj.id
+        elif isinstance(obj, basestring):
+            return obj
         else:
             raise TypeError(
-                "Invalid location type for _location_to_location_id()"
+                "Invalid type for %s looking for basestring or Object Type %s"
+                % obj_type.__name__
             )
