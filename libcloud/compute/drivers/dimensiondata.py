@@ -233,21 +233,21 @@ class DimensionDataNodeDriver(NodeDriver):
                 raise ValueError("One of ex_vlan or ex_primary_ipv4 "
                                  "must be specified")
 
-            if isinstance(ex_additional_nics_ipv4, list):
+            if isinstance(ex_additional_nics_ipv4, (list, tuple)):
                 for ipv4_nic in ex_additional_nics_ipv4:
                     add_nic = ET.SubElement(network_inf_elm, "additionalNic")
                     ET.SubElement(add_nic, "privateIpv4").text = ipv4_nic
             elif ex_additional_nics_ipv4 is not None:
                 raise TypeError("ex_additional_nics_ipv4 must "
-                                "be None or a list")
+                                "be None or a tuple/list")
 
-            if isinstance(ex_additional_nics_vlan, list):
+            if isinstance(ex_additional_nics_vlan, (list, tuple)):
                 for vlan_nic in ex_additional_nics_vlan:
                     add_nic = ET.SubElement(network_inf_elm, "additionalNic")
                     ET.SubElement(add_nic, "vlanId").text = vlan_nic
             elif ex_additional_nics_vlan is not None:
                 raise TypeError("ex_additional_nics_vlan"
-                                "must be None or a list")
+                                "must be None or tuple/list")
 
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
