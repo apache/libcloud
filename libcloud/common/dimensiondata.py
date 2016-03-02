@@ -304,11 +304,11 @@ def dd_object_to_id(obj, obj_type):
     """
     if isinstance(obj, obj_type):
         return obj.id
-    elif isinstance(obj, (basestring, unicode)):
+    elif isinstance(obj, (basestring)):
         return obj
     else:
         raise TypeError(
-            "Invalid type %s looking for basestring/unicode or %s"
+            "Invalid type %s looking for basestring or %s"
             % (type(obj).__name__, obj_type.__name__)
         )
 
