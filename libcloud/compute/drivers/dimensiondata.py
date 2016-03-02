@@ -243,13 +243,12 @@ class DimensionDataNodeDriver(NodeDriver):
 
             if isinstance(ex_additional_nics_vlan, list):
                 for vlan_nic in ex_additional_nics_vlan:
-                    print("vlan nic {}".format(vlan_nic))
                     add_nic = ET.SubElement(network_inf_elm, "additionalNic")
                     ET.SubElement(add_nic, "vlanId").text = vlan_nic
             elif ex_additional_nics_vlan is not None:
                 raise TypeError("ex_additional_nics_vlan"
                                 "must be None or a list")
-        print(ET.tostring(server_elm))
+
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
             method='POST',
@@ -2051,6 +2050,6 @@ class DimensionDataNodeDriver(NodeDriver):
             return obj
         else:
             raise TypeError(
-                "Invalid type for %s looking for basestring or Object Type %s"
+                "Invalid type looking for basestring or Object Type %s"
                 % obj_type.__name__
             )
