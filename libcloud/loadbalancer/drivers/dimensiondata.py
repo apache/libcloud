@@ -340,9 +340,9 @@ class DimensionDataLBDriver(Driver):
         create_pool_m = ET.Element('addPoolMember', {'xmlns': TYPES_URN})
         ET.SubElement(create_pool_m, "poolId").text = pool.id
         ET.SubElement(create_pool_m, "nodeId").text = node.id
-        ET.SubElement(create_pool_m, "status").text = 'ENABLED'
         if port is not None:
             ET.SubElement(create_pool_m, "port").text = str(port)
+        ET.SubElement(create_pool_m, "status").text = 'ENABLED'
 
         response = self.connection.request_with_orgId_api_2(
             'networkDomainVip/addPoolMember',
