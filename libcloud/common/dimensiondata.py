@@ -22,6 +22,7 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import Node
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -283,6 +284,33 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('message', TYPES_URN),
     ('resultDetail', GENERAL_NS)
 )
+
+
+def dd_object_to_id(obj, obj_type):
+    """
+    Takes in a DD object or string and prints out it's id
+    This is a helper method, as many of our functions can take either an object
+    or a string, and we need an easy way of converting them
+
+    :param obj: The object to get the id for
+    :type  obj: ``object``
+
+    :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                  function needs to return an object which has ``status``
+                  attribute.
+    :type   func: ``function``
+
+    :rtype: ``str``
+    """
+    if isinstance(obj, obj_type):
+        return obj.id
+    elif isinstance(obj, (basestring, unicode)):
+        return obj
+    else:
+        raise TypeError(
+            "Invalid type %s looking for basestring/unicode or %s"
+            % (type(obj).__name__, obj_type.__name__)
+        )
 
 
 class NetworkDomainServicePlan(object):
