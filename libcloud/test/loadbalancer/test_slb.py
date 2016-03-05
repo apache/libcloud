@@ -114,11 +114,11 @@ class SLBDriverTestCases(unittest.TestCase):
         self.protocol = 'http'
         self.algorithm = Algorithm.WEIGHTED_ROUND_ROBIN
         self.extra = {
-            'AddressType': 'internet',
-            'InternetChargeType': 'paybytraffic',
-            'Bandwidth': 1,
-            'MasterZoneId': 'cn-hangzhou-d',
-            'SlaveZoneId': 'cn-hangzhou-b',
+            'ex_address_type': 'internet',
+            'ex_internet_charge_type': 'paybytraffic',
+            'ex_bandwidth': 1,
+            'ex_master_zone_id': 'cn-hangzhou-d',
+            'ex_slave_zone_id': 'cn-hangzhou-b',
             'StickySession': 'on',
             'HealthCheck': 'on'}
         self.members = [Member('node1', None, None)]
@@ -153,12 +153,12 @@ class SLBDriverTestCases(unittest.TestCase):
     def test_create_balancer_bandwidth_value_error(self):
         self.assertRaises(AttributeError, self.driver.create_balancer,
                           None, 80, 'http', Algorithm.WEIGHTED_ROUND_ROBIN,
-                          None, Bandwidth='NAN')
+                          None, ex_bandwidth='NAN')
 
     def test_create_balancer_paybybandwidth_without_bandwidth_exception(self):
         self.assertRaises(AttributeError, self.driver.create_balancer,
                           None, 80, 'http', Algorithm.WEIGHTED_ROUND_ROBIN,
-                          None, InternetChargeType='paybybandwidth')
+                          None, ex_internet_charge_type='paybybandwidth')
 
     def test_balancer_list_members(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
@@ -312,15 +312,15 @@ class SLBMockHttp(MockHttpTestCase):
     def _CreateLoadBalancer(self, method, url, body, headers):
         params = {'RegionId': self.test.region,
                   'LoadBalancerName': self.test.name}
-        balancer_keys = [
-            'AddressType',
-            'InternetChargeType',
-            'Bandwidth',
-            'MasterZoneId',
-            'SlaveZoneId'
-        ]
+        balancer_keys = {
+            'AddressType': 'ex_address_type',
+            'InternetChargeType': 'ex_internet_charge_type',
+            'Bandwidth': 'ex_bandwidth',
+            'MasterZoneId': 'ex_master_zone_id',
+            'SlaveZoneId': 'ex_slave_zone_id'
+        }
         for key in balancer_keys:
-            params[key] = str(self.test.extra[key])
+            params[key] = str(self.test.extra[balancer_keys[key]])
 
         self.assertUrlContainsQueryParams(url, params)
         body = self.fixtures.load('create_load_balancer.xml')

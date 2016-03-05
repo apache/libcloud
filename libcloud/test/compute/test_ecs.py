@@ -160,7 +160,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         node = self.driver.create_node(name=self.name, image=self.fake_image,
                                        size=self.fake_size,
                                        ex_security_group_id='sg-28ou0f3xa',
-                                       ex_data_disk=self.data_disk)
+                                       ex_data_disks=self.data_disk)
         self.assertIsNotNone(node)
 
     def test_list_sizes(self):
