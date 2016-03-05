@@ -16,7 +16,7 @@
 from libcloud.storage.types import Provider
 from libcloud.storage.providers import get_driver
 
-OSSDriver = get_driver(Provider.OSS)
+OSSDriver = get_driver(Provider.ALIYUN_OSS)
 
 your_access_key_id = ''
 your_access_key_secret = ''

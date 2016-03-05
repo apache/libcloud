@@ -19,8 +19,8 @@ from libcloud.loadbalancer.providers import get_driver
 from libcloud.loadbalancer.base import Algorithm, Member
 from libcloud.loadbalancer.types import Provider
 
-SLBDriver = get_driver(Provider.SLB)
-ECSDriver = get_node_driver(NodeProvider.ECS)
+SLBDriver = get_driver(Provider.ALIYUN_SLB)
+ECSDriver = get_node_driver(NodeProvider.ALIYUN_ECS)
 
 region = 'cn-hangzhou'
 

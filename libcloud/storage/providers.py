@@ -58,7 +58,7 @@ DRIVERS = {
     ('libcloud.storage.drivers.auroraobjects', 'AuroraObjectsStorageDriver'),
     Provider.BACKBLAZE_B2:
     ('libcloud.storage.drivers.backblaze_b2', 'BackblazeB2StorageDriver'),
-    Provider.OSS:
+    Provider.ALIYUN_OSS:
     ('libcloud.storage.drivers.oss', 'OSSStorageDriver'),
 
     # Deprecated

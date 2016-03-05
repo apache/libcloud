@@ -42,7 +42,7 @@ DRIVERS = {
     ('libcloud.loadbalancer.drivers.softlayer', 'SoftlayerLBDriver'),
     Provider.DIMENSIONDATA:
     ('libcloud.loadbalancer.drivers.dimensiondata', 'DimensionDataLBDriver'),
-    Provider.SLB:
+    Provider.ALIYUN_SLB:
     ('libcloud.loadbalancer.drivers.slb', 'SLBDriver'),
 
     # Deprecated
