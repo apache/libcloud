@@ -1051,7 +1051,7 @@ class DimensionDataBackupDetails(object):
     a targets backups configuration
     """
 
-    def __init__(self, asset_id, service_plan, state, clients=None):
+    def __init__(self, asset_id, service_plan, status, clients=None):
         """
         Initialize an instance of :class:`DimensionDataBackupDetails`
 
@@ -1061,15 +1061,15 @@ class DimensionDataBackupDetails(object):
         :param service_plan: The service plan for backups. i.e (Essentials)
         :type  service_plan: ``str``
 
-        :param state: The overall state this backup target. i.e. (unregistered)
-        :type  state: ``str``
+        :param status: The overall status this backup target. i.e. (unregistered)
+        :type  status: ``str``
 
         :param clients: Backup clients attached to this target
         :type  clients: ``list`` of :class:`DimensionDataBackupClient`
         """
         self.asset_id = asset_id
         self.service_plan = service_plan
-        self.state = state
+        self.status = status
         self.clients = clients
 
     def __repr__(self):

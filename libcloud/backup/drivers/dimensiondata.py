@@ -180,7 +180,8 @@ class DimensionDataBackupDriver(BackupDriver):
         return NotImplementedError(
             'create_target_from_container not supported for this driver')
 
-    def update_target(self, target, name=None, address=None, extra=None):
+    def update_target(self, target, name=None, address=None, extra=None,
+                      type=BackupTargetType.VIRTUAL):
         """
         Update the properties of a backup target, only changing the serviceplan
         is supported.
@@ -208,8 +209,14 @@ class DimensionDataBackupDriver(BackupDriver):
             'server/%s/backup/modify' % (server_id),
             method='POST',
             data=ET.tostring(request)).object
-        target.extra = extra
-        return target
+        return BackupTarget(
+            id=server_id,
+            name=name,
+            address=address,
+            type=type,
+            extra=extra,
+            driver=self
+        )
 
     def delete_target(self, target):
         """
@@ -558,7 +565,7 @@ class DimensionDataBackupDriver(BackupDriver):
         return DimensionDataBackupDetails(
             asset_id=object.get('asset_id'),
             service_plan=object.get('servicePlan'),
-            state=object.get('state'),
+            status=object.get('state'),
             clients=self._to_clients(object)
         )
 
