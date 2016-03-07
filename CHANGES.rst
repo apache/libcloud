@@ -32,6 +32,10 @@ General
 Compute
 ~~~~~~~
 
+- [google compute] Added setMachineType method to allow for changing sizes of instances
+  (GITHUB-721)
+  [Eric Johnson]
+
 - [google compute] allow bypassing image search in standard project list
   (GITHUB-713)
   [Max Illfelder]

@@ -3685,6 +3685,30 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_set_machine_type(self, node, machine_type='n1-standard-1'):
+        """
+        Set the machine type of the stopped instance. Can be the short-name,
+        a full, or partial URL.
+
+        :param  node: Target node object to change
+        :type   node: :class:`Node`
+
+        :param  machine_type: Desired machine type
+        :type   machine_type: ``str``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = mt_url = '/zones/%s' % node.extra['zone'].name
+
+        mt = machine_type.split('/')[-1]
+        mt_url = '%s/machineTypes/%s' % (mt_url, mt)
+
+        request = '%s/instances/%s/setMachineType' % (request, node.name)
+        body = {"machineType": mt_url}
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_start_node(self, node):
         """
         Start a node that is stopped and in TERMINATED state.
