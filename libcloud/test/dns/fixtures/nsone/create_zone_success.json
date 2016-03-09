@@ -1,0 +1,38 @@
+{
+  "id": "52051b2c9f782d58bb4df41b",
+  "hostmaster": "hostmaster@nsone.net",
+  "ttl": 3600,
+  "nx_ttl": 60,
+  "retry": 7200,
+  "zone": "newzone.com",
+  "refresh": 43200,
+  "expiry": 1209600,
+  "dns_servers": [
+    "dns1.p06.nsone.net",
+    "dns2.p06.nsone.net",
+    "dns3.p06.nsone.net",
+    "dns4.p06.nsone.net"
+  ],
+  "networks": [0],
+  "network_pools": ["p06"],
+  "primary": {
+    "enabled": false,
+    "secondaries": []
+  },
+  "records": [
+    {
+      "id": "52051b2c9f782d58bb4df420",
+      "type": "NS",
+      "tier": 1,
+      "ttl": 3600,
+      "short_answers": [
+        "dns1.p06.nsone.net",
+        "dns2.p06.nsone.net",
+        "dns3.p06.nsone.net",
+        "dns4.p06.nsone.net"
+      ],
+      "domain": "newzone.com"
+    }
+  ],
+  "meta": {}
+}

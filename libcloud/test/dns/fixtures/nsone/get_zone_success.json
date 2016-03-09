@@ -1,0 +1,48 @@
+{
+  "id": "520422af9f782d37dffb588b",
+  "hostmaster": "hostmaster@nsone.net",
+  "ttl": 3600,
+  "nx_ttl": 3600,
+  "retry": 7200,
+  "zone": "example.com",
+  "refresh": 43200,
+  "expiry": 1209600,
+  "dns_servers": [
+    "dns1.p03.nsone.net",
+    "dns2.p03.nsone.net",
+    "dns3.p03.nsone.net",
+    "dns4.p03.nsone.net"
+  ],
+  "networks": [0],
+  "network_pools": ["p03"],
+  "primary": {
+    "enabled": false,
+    "secondaries": []
+  },
+  "records": [
+    {
+      "id": "520422af9f782d37dffb5890",
+      "type": "NS",
+      "tier": 1,
+      "ttl": 3600,
+      "short_answers": [
+        "dns1.p03.nsone.net",
+        "dns2.p03.nsone.net",
+        "dns3.p03.nsone.net",
+        "dns4.p03.nsone.net"
+      ],
+      "domain": "example.com"
+    },
+    {
+      "id": "520519509f782d58bb4df419",
+      "type": "A",
+      "tier": 1,
+      "ttl": 3600,
+      "short_answers": [
+        "1.2.3.4"
+      ],
+      "domain": "www.example.com"
+    }
+  ],
+  "meta": {}
+}

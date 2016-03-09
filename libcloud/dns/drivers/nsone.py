@@ -111,11 +111,18 @@ class NsOneDNSDriver(DNSDriver):
         :return: Boolean
         """
         action = '/v1/zones/%s' % zone.domain
-        zones_list = self.list_zones()
+        """zones_list = self.list_zones()
         if not self.ex_zone_exists(zone_id=zone.id, zones_list=zones_list):
             raise ZoneDoesNotExistError(value='', driver=self, zone_id=zone.id)
-
-        response = self.connection.request(action=action, method='DELETE')
+        """
+        try:
+            response = self.connection.request(action=action, method='DELETE')
+        except NsOneException, e:
+            if e.message == 'zone not found':
+                raise ZoneDoesNotExistError(value=e.message, driver=self,
+                                            zone_id=zone.id)
+            else:
+                raise e
 
         return response.status == httplib.OK
 
@@ -160,7 +167,7 @@ class NsOneDNSDriver(DNSDriver):
             else:
                 raise e
         zone = self.get_zone(zone_id=zone_id)
-        record = self._to_record(item=response.objects[0], zone=zone)
+        record = self._to_record(item=response.parse_body(), zone=zone)
 
         return record
 
