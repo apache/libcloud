@@ -75,6 +75,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         new_target = self.driver.update_target(target, extra=extra)
         self.assertEqual(new_target.extra['servicePlan'], 'Enterprise')
 
+    def test_update_target_STR(self):
+        target = 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+        extra = {'servicePlan': 'Advanced'}
+        new_target = self.driver.update_target(target, extra=extra)
+        self.assertEqual(new_target.extra['servicePlan'], 'Advanced')
+
     def test_delete_target(self):
         target = self.driver.list_targets()[0]
         self.assertTrue(self.driver.delete_target(target))
@@ -254,6 +260,11 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_myaccount_NOJOB(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):

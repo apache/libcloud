@@ -209,14 +209,11 @@ class DimensionDataBackupDriver(BackupDriver):
             'server/%s/backup/modify' % (server_id),
             method='POST',
             data=ET.tostring(request)).object
-        return BackupTarget(
-            id=server_id,
-            name=name,
-            address=address,
-            type=type,
-            extra=extra,
-            driver=self
-        )
+        if isinstance(target, BackupTarget):
+            target.extra = extra
+        else:
+            target = self.ex_get_target_by_id(server_id)
+        return target
 
     def delete_target(self, target):
         """
@@ -378,6 +375,19 @@ class DimensionDataBackupDriver(BackupDriver):
         """
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
+
+    def ex_get_target_by_id(self, id):
+        """
+        Get a target by server id
+
+        :param id: The id of the target you want to get
+        :type  id: ``str``
+
+        :rtype: :class:`BackupTarget`
+        """
+        node = self.connection.request_with_orgId_api_2(
+            'server/server/%s' % id).object
+        return self._to_target(node)
 
     def ex_add_client_to_target(self, target, client_type, storage_policy,
                                 schedule_policy, trigger, email):
