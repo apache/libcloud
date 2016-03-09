@@ -1061,7 +1061,8 @@ class DimensionDataBackupDetails(object):
         :param service_plan: The service plan for backups. i.e (Essentials)
         :type  service_plan: ``str``
 
-        :param status: The overall status this backup target. i.e. (unregistered)
+        :param status: The overall status this backup target.
+                       i.e. (unregistered)
         :type  status: ``str``
 
         :param clients: Backup clients attached to this target
