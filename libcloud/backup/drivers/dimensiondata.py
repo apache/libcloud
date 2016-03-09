@@ -113,7 +113,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        service_plan = extra.get('service_plan', 'Advanced')
+        service_plan = extra.get('servicePlan', 'Advanced')
         create_node = ET.Element('NewBackup',
                                  {'xmlns': BACKUP_NS})
         create_node.set('servicePlan', service_plan)
