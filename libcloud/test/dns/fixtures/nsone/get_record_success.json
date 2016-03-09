@@ -1,0 +1,117 @@
+{
+  "id": "520519509f782d58bb4df419",
+  "networks": [0],
+  "type": "A",
+  "tier": 3,
+  "domain": "www.example.com",
+  "zone": "example.com",
+  "answers": [
+    {
+      "id": "520519509f782d58bb4df418",
+      "feeds": [
+        {
+          "source": "a53252f9e583c6708331a1daeb172e12",
+          "feed": "520533b89f782d5b1a10a851"
+        }
+      ],
+      "answer": [
+        "1.1.1.1"
+      ],
+      "meta": {
+        "up": { "feed": "520533b89f782d5b1a10a851" },
+        "priority": 1
+      },
+      "region": "us-east"
+    },
+    {
+      "id": "5205338e9f782d5b1a10a84e",
+      "feeds": [
+        {
+          "source": "a53252f9e583c6708331a1daeb172e12",
+          "feed": "520533c09f782d5b1a10a852"
+        }
+      ],
+      "answer": [
+        "2.2.2.2"
+      ],
+      "meta": {
+        "up": { "feed": "520533b89f782d5b1a10a852" },
+        "priority": 2
+      },
+      "region": "us-east"
+    },
+    {
+      "id": "5205338e9f782d5b1a10a84f",
+      "feeds": [
+        {
+          "source": "a53252f9e583c6708331a1daeb172e12",
+          "feed": "520533dc9f782d5b1a10a854"
+        }
+      ],
+      "answer": [
+        "8.8.8.8"
+      ],
+      "meta": {
+        "up": { "feed": "520533b89f782d5b1a10a854" },
+        "priority": 3
+      },
+      "region": "us-west"
+    },
+    {
+      "id": "5205338e9f782d5b1a10a850",
+      "feeds": [
+        {
+          "source": "a53252f9e583c6708331a1daeb172e12",
+          "feed": "520533e49f782d5b1a10a855"
+        }
+      ],
+      "answer": [
+        "9.9.9.9"
+      ],
+      "meta": {
+        "up": { "feed": "520533b89f782d5b1a10a855" },
+        "priority": 3
+      },
+      "region": "us-west"
+    }
+  ],
+  "regions": {
+    "us-east": {
+      "meta": {
+        "georegion": ["US-EAST"]
+      }
+    },
+    "us-west": {
+      "meta": {
+        "georegion": ["US-WEST"]
+      }
+    }
+  },
+  "meta": {},
+  "filters": [
+    {
+      "config": {},
+      "filter": "up"
+    },
+    {
+      "config": {},
+      "filter": "geotarget_regional"
+    },
+    {
+      "config": {},
+      "filter": "select_first_region"
+    },
+    {
+      "config": {},
+      "filter": "weighted_shuffle"
+    },
+    {
+      "config": {
+        "N": 1
+      },
+      "filter": "select_first_n"
+    }
+  ],
+  "ttl": 60,
+  "use_client_subnet": true
+}
