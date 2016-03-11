@@ -457,6 +457,12 @@ class ECSDriver(NodeDriver):
     Aliyun ECS node driver.
 
     Used for Aliyun ECS service.
+
+    TODO:
+    Create public IP address
+    Get guest OS root password
+    Adjust internet bandwidth settings
+    Manage security groups and rules
     """
 
     name = 'Aliyun ECS'
@@ -693,7 +699,10 @@ class ECSDriver(NodeDriver):
 
     def reboot_node(self, node, ex_force_stop=False):
         """
+        Reboot the given node
+
         @inherits :class:`NodeDriver.reboot_node`
+
         :keyword ex_force_stop: if ``True``, stop node force (maybe lose data)
                                 otherwise, stop node normally,
                                 default to ``False``
@@ -725,7 +734,9 @@ class ECSDriver(NodeDriver):
         """
         Start node to running state.
 
-        :param node: ``Node`` object
+        :param node: the ``Node`` object to start
+        :type node: ``Node``
+
         :return: starting operation result.
         :rtype: ``bool``
         """
@@ -741,10 +752,12 @@ class ECSDriver(NodeDriver):
 
         :param node: The node to stop
         :type node: :class:`Node`
+
         :keyword ex_force_stop: if ``True``, stop node force (maybe lose data)
                                 otherwise, stop node normally,
                                 default to ``False``
         :type ex_force_stop: ``bool``
+
         :return: stopping operation result.
         :rtype: ``bool``
         """
@@ -761,6 +774,7 @@ class ECSDriver(NodeDriver):
 
         :keyword ex_filters: security group attributes to filter results.
         :type ex_filters: ``dict``
+
         :return: a list of defined security groups
         :rtype: ``list`` of ``ECSSecurityGroup``
         """
@@ -782,8 +796,10 @@ class ECSDriver(NodeDriver):
     def ex_list_zones(self, region_id=None):
         """
         List availability zones in the given region or the current region.
+
         :keyword region_id: the id of the region to query zones from
         :type region_id: ``str``
+
         :return: list of zones
         :rtype: ``list`` of ``ECSZone``
         """
@@ -808,16 +824,17 @@ class ECSDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_volumes`
 
-        :keyword  ex_volume_ids: a list of volume's ids used to filter volumes.
-                                 Only the volumes which's id in this list
-                                 will be returned.
-        :type   ex_volume_ids: ``list`` of ``str``
-        :keyword  ex_filters: volume attribute and value pairs to filter
-                              volumes. Only the volumes which matchs all will
-                              be returned.
-                              If the filter attribute need a json array value,
-                              use ``list`` object, the driver will convert it.
-        :type   ex_filters: ``dict``
+        :keyword ex_volume_ids: a list of volume's ids used to filter volumes.
+                                Only the volumes which's id in this list
+                                will be returned.
+        :type ex_volume_ids: ``list`` of ``str``
+
+        :keyword ex_filters: volume attribute and value pairs to filter
+                             volumes. Only the volumes which matchs all will
+                             be returned.
+                             If the filter attribute need a json array value,
+                             use ``list`` object, the driver will convert it.
+        :type ex_filters: ``dict``
         """
         params = {'Action': 'DescribeDisks',
                   'RegionId': self.region}
@@ -851,15 +868,17 @@ class ECSDriver(NodeDriver):
         List snapshots for a storage volume.
 
         @inherites :class:`NodeDriver.list_volume_snapshots`
+
         :keyword ex_snapshot_ids: a list of snapshot ids to filter the
                                   snapshots returned.
         :type ex_snapshot_ids: ``list`` of ``str``
+
         :keyword ex_filters: snapshot attribute and value pairs to filter
                              snapshots. Only the snapshot which matchs all
                              the pairs will be returned.
                              If the filter attribute need a json array value,
                              use ``list`` object, the driver will convert it.
-        :type   ex_filters: ``dict``
+        :type ex_filters: ``dict``
         """
         params = {'Action': 'DescribeSnapshots',
                   'RegionId': self.region}
@@ -888,14 +907,18 @@ class ECSDriver(NodeDriver):
         Create a new volume.
 
         @inherites :class:`NodeDriver.create_volume`
+
         :keyword ex_zone_id: the availability zone id (required)
         :type ex_zone_id: ``str``
+
         :keyword ex_description: volume description
         :type ex_description: ``unicode``
+
         :keyword ex_disk_category: disk category for data disk
         :type ex_disk_category: ``str``
+
         :keyword ex_client_token: a token generated by client to identify
-                                each request.
+                                  each request.
         :type ex_client_token: ``str``
         """
         params = {'Action': 'CreateDisk',
@@ -927,11 +950,14 @@ class ECSDriver(NodeDriver):
                                ex_client_token=None):
         """
         Creates a snapshot of the storage volume.
+
         @inherits :class:`NodeDriver.create_volume_snapshot`
+
         :keyword ex_description: description of the snapshot.
         :type ex_description: ``unicode``
+
         :keyword ex_client_token: a token generated by client to identify
-                                each request.
+                                  each request.
         :type ex_client_token: ``str``
         """
         params = {'Action': 'CreateSnapshot',
@@ -960,8 +986,11 @@ class ECSDriver(NodeDriver):
 
         @inherits :class:`NodeDriver.attach_volume`
 
+        :keyword device: device path allocated for this attached volume
+        :type device: ``str`` between /dev/xvdb to xvdz,
+                      if empty, allocated by the system
         :keyword ex_delete_with_instance: if to delete this volume when the
-                                        instance is deleted.
+                                          instance is deleted.
         :type ex_delete_with_instance: ``bool``
         """
         params = {'Action': 'AttachDisk',
@@ -1035,16 +1064,19 @@ class ECSDriver(NodeDriver):
     def list_images(self, location=None, ex_image_ids=None, ex_filters=None):
         """
         List images on a provider.
+
         @inherits :class:`NodeDriver.list_images`
+
         :keyword ex_image_ids: a list of image ids to filter the images to
                                be returned.
         :type ex_image_ids: ``list`` of ``str``
+
         :keyword ex_filters: image attribute and value pairs to filter
                              images. Only the image which matchs all
                              the pairs will be returned.
                              If the filter attribute need a json array value,
                              use ``list`` object, the driver will convert it.
-        :type   ex_filters: ``dict``
+        :type ex_filters: ``dict``
         """
 
         if location and isinstance(location, NodeLocation):
@@ -1075,14 +1107,18 @@ class ECSDriver(NodeDriver):
                      ex_image_version=None, ex_client_token=None):
         """
         Creates an image from a system disk snapshot.
+
         @inherits :class:`NodeDriver.create_image`
+
         :keyword ex_snapshot_id: the id of the snapshot to create the image.
                                  (required)
         :type ex_snapshot_id: ``str``
+
         :keyword ex_image_version: the version number of the image
         :type ex_image_version: ``str``
+
         :keyword ex_client_token: a token generated by client to identify
-                                each request.
+                                  each request.
         :type ex_client_token: ``str``
         """
         params = {'Action': 'CreateImage',
@@ -1130,11 +1166,14 @@ class ECSDriver(NodeDriver):
         """
         Copies an image from a source region to the destination region.
         If not provide a destination region, default to the current region.
+
         @inherits :class:`NodeDriver.copy_image`
+
         :keyword ex_destination_region_id: id of the destination region
         :type ex_destination_region_id: ``str``
+
         :keyword ex_client_token: a token generated by client to identify
-                                each request.
+                                  each request.
         :type ex_client_token: ``str``
         """
         params = {'Action': 'CopyImage',
