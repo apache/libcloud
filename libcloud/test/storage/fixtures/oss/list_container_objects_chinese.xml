@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+    <Name>test_container</Name>
+    <Prefix></Prefix>
+    <Marker></Marker>
+    <MaxKeys>100</MaxKeys>
+    <Delimiter></Delimiter>
+    <IsTruncated>false</IsTruncated>
+    <Contents>
+        <Key>WEB\xe6\x8e\xa7\xe5\x88\xb6\xe5\x8f\xb0.odp</Key>
+        <LastModified>2016-01-15T14:43:06.000Z</LastModified>
+        <ETag>"281371EA1618CF0E645D6BB90A158276"</ETag>
+	<Type>Normal</Type>
+        <Size>1234567</Size>
+	<StorageClass>Standard</StorageClass>
+        <Owner>
+            <ID>1751306716098727</ID>
+        </Owner>
+    </Contents>
+    <Contents>
+      <Key>\xe4\xb8\xad\xe6\x96\x87/</Key>
+      <LastModified>2016-01-15T14:43:34.000Z</LastModified>
+      <ETag>"D41D8CD98F00B204E9800998ECF8427E"</ETag>
+      <Type>Normal</Type>
+      <Size>0</Size>
+      <StorageClass>Standard</StorageClass>
+      <Owner>
+        <ID>1751306716098727</ID>
+        <DisplayName>1751306716098727</DisplayName>
+      </Owner>
+    </Contents>
+</ListBucketResult>

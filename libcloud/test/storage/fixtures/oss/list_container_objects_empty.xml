@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+  <Name>20160116</Name>
+  <Prefix></Prefix>
+  <Marker></Marker>
+  <MaxKeys>100</MaxKeys>
+  <Delimiter></Delimiter>
+  <IsTruncated>false</IsTruncated>
+</ListBucketResult>

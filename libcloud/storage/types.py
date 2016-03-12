@@ -43,6 +43,7 @@ class Provider(object):
     :cvar NIMBUS: Nimbus.io driver
     :cvar LOCAL: Local storage driver
     :cvar AURORAOBJECTS: AuroraObjects storage driver
+    :cvar ALIYUN_OSS: Aliyun OSS storage driver
     """
     DUMMY = 'dummy'
     S3 = 's3'
@@ -64,6 +65,7 @@ class Provider(object):
     KTUCLOUD = 'ktucloud'
     AURORAOBJECTS = 'auroraobjects'
     BACKBLAZE_B2 = 'backblaze_b2'
+    ALIYUN_OSS = 'oss'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'

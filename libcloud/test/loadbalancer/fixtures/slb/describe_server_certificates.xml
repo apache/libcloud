@@ -1,0 +1,15 @@
+<DescribeServerCertificateResponse>
+  <RequestId>365F4154-92F6-4AE4-92F8-7FF34B540710</RequestId>
+    <ServerCertificates>
+          <ServerCertificate>
+              <ServerCertificateId>139a00604ad-cn-east-hangzhou-01</ServerCertificateId>
+              <ServerCertificateName>abe</ServerCertificateName>
+              <Fingerprint>A:B:E</Fingerprint>
+          </ServerCertificate>
+          <ServerCertificate>
+              <ServerCertificateId>139a00604ad-cn-east-hangzhou-02</ServerCertificateId>
+              <ServerCertificateName>abf</ServerCertificateName>
+              <Fingerprint>A:B:F</Fingerprint>
+          </ServerCertificate>
+    </ServerCertificates>
+</DescribeServerCertificateResponse>

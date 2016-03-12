@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompleteMultipartUploadResult>
+    <Location>http://oss-example.oss-cn-hangzhou.aliyuncs.com/multipart.data</Location>
+    <Bucket>oss-example</Bucket>
+    <Key>multipart.data</Key>
+    <ETag>B864DB6A936D376F9F8D3ED3BBE540DD-3</ETag>
+</CompleteMultipartUploadResult>

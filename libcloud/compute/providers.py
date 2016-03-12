@@ -173,6 +173,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.ciscoccs', 'CiscoCCSNodeDriver'),
     Provider.NTTA:
     ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
+    Provider.ALIYUN_ECS:
+    ('libcloud.compute.drivers.ecs', 'ECSDriver'),
 
     # Deprecated
     Provider.CLOUDSIGMA_US:
