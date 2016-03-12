@@ -86,6 +86,10 @@ Compute
   (GITHUB-698)
   [Allard Hoeve] [Rick van de Loo]
 
+- New driver for Aliyun Elastic Compute Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
 Storage
 ~~~~~~~
 
@@ -100,6 +104,17 @@ Storage
   ``upload_object_via_stream`` whole file is read and buffered in memory.
   (GITHUB-696)
   [Jay jshridha]
+
+- New driver for Aliyun OSS Storage Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- New driver for Aliyun SLB Loadbalancer Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
 
 DNS
 ~~~~
