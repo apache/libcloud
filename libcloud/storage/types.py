@@ -65,7 +65,7 @@ class Provider(object):
     KTUCLOUD = 'ktucloud'
     AURORAOBJECTS = 'auroraobjects'
     BACKBLAZE_B2 = 'backblaze_b2'
-    ALIYUN_OSS = 'oss'
+    ALIYUN_OSS = 'aliyun_oss'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'

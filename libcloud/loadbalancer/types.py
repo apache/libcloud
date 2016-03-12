@@ -44,7 +44,7 @@ class Provider(object):
     GCE = 'gce'
     SOFTLAYER = 'softlayer'
     DIMENSIONDATA = 'dimensiondata'
-    ALIYUN_SLB = 'slb'
+    ALIYUN_SLB = 'aliyun_slb'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

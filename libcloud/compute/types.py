@@ -160,7 +160,7 @@ class Provider(Type):
     NTTA = 'ntta'
     MEDONE = 'medone'
     CISCOCCS = 'ciscoccs'
-    ALIYUN_ECS = 'ecs'
+    ALIYUN_ECS = 'aliyun_ecs'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
