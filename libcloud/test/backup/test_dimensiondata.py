@@ -350,16 +350,14 @@ class DimensionDataMockHttp(MockHttp):
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8(
             self, method, url, body, headers):
         body = self.fixtures.load(
-            ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
-             '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_remove_backup_client.xml')
+            ('_remove_backup_client.xml')
         )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_BUSY(
             self, method, url, body, headers):
         body = self.fixtures.load(
-            ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
-             '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_remove_backup_client_BUSY.xml')
+            ('_remove_backup_client_BUSY.xml')
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
