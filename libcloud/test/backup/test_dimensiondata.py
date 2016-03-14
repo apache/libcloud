@@ -13,12 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
+
 import sys
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.types import InvalidCredsError
 from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
+from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
 
 from libcloud.test import MockHttp, unittest
 from libcloud.test.backup import TestCaseMixin
@@ -59,6 +65,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(target.address, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(target.extra['servicePlan'], 'Enterprise')
 
+    def test_create_target_DEFAULT(self):
+        DimensionDataMockHttp.type = 'DEFAULT'
+        target = self.driver.create_target(
+            'name',
+            'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(target.id, 'ee7c4b64-f7af-4a4f-8384-be362273530f')
+        self.assertEqual(target.address, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+
     def test_create_target_EXISTS(self):
         DimensionDataMockHttp.type = 'EXISTS'
         with self.assertRaises(DimensionDataAPIException) as context:
@@ -71,15 +85,20 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_update_target(self):
         target = self.driver.list_targets()[0]
-        extra = {'servicePlan': 'Enterprise'}
+        extra = {'servicePlan': 'Essentials'}
         new_target = self.driver.update_target(target, extra=extra)
-        self.assertEqual(new_target.extra['servicePlan'], 'Enterprise')
+        self.assertEqual(new_target.extra['servicePlan'], 'Essentials')
+
+    def test_update_target_DEFAULT(self):
+        DimensionDataMockHttp.type = 'DEFAULT'
+        target = 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+        self.driver.update_target(target)
 
     def test_update_target_STR(self):
         target = 'e75ead52-692f-4314-8725-c8a4f4d13a87'
-        extra = {'servicePlan': 'Advanced'}
+        extra = {'servicePlan': 'Essentials'}
         new_target = self.driver.update_target(target, extra=extra)
-        self.assertEqual(new_target.extra['servicePlan'], 'Advanced')
+        self.assertEqual(new_target.extra['servicePlan'], 'Essentials')
 
     def test_delete_target(self):
         target = self.driver.list_targets()[0]
@@ -242,6 +261,10 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_myaccount_DEFAULT(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -265,6 +288,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
@@ -325,6 +353,18 @@ class DimensionDataMockHttp(MockHttp):
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_NOJOB.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DEFAULT(
+            self, method, url, body, headers):
+        if method != 'POST':
+            raise InvalidRequestError('Only POST is accepted for this test')
+        request = ET.fromstring(body)
+        service_plan = request.get('servicePlan')
+        if service_plan != DEFAULT_BACKUP_PLAN:
+            raise InvalidRequestError('The default plan %s should have been passed in.  Not %s' % (DEFAULT_BACKUP_PLAN, service_plan))
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_ENABLE.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup(
             self, method, url, body, headers):
         if method == 'POST':
@@ -354,8 +394,22 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
+        request = ET.fromstring(body)
+        service_plan = request.get('servicePlan')
+        if service_plan != 'Essentials':
+            raise InvalidRequestError("Expected Essentials backup plan in request")
+        body = self.fixtures.load('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify_DEFAULT(
+            self, method, url, body, headers):
+        request = ET.fromstring(body)
+        service_plan = request.get('servicePlan')
+        if service_plan != DEFAULT_BACKUP_PLAN:
+            raise InvalidRequestError("Expected % backup plan in test" % DEFAULT_BACKUP_PLAN)
+        body = self.fixtures.load('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
+
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8(

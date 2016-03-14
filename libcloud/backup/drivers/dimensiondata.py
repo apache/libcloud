@@ -35,6 +35,8 @@ from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import fixxpath, findtext, findall
 
+DEFAULT_BACKUP_PLAN = 'Advanced'
+
 
 class DimensionDataBackupDriver(BackupDriver):
     """
@@ -113,7 +115,11 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        service_plan = extra.get('servicePlan', 'Advanced')
+        if extra is not None:
+            service_plan = extra.get('servicePlan', DEFAULT_BACKUP_PLAN)
+        else:
+            service_plan = DEFAULT_BACKUP_PLAN
+
         create_node = ET.Element('NewBackup',
                                  {'xmlns': BACKUP_NS})
         create_node.set('servicePlan', service_plan)
@@ -180,8 +186,7 @@ class DimensionDataBackupDriver(BackupDriver):
         return NotImplementedError(
             'create_target_from_container not supported for this driver')
 
-    def update_target(self, target, name=None, address=None, extra=None,
-                      type=BackupTargetType.VIRTUAL):
+    def update_target(self, target, name=None, address=None, extra=None):
         """
         Update the properties of a backup target, only changing the serviceplan
         is supported.
@@ -200,7 +205,10 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        service_plan = extra.get('servicePlan', 'Advanced')
+        if extra is not None:
+            service_plan = extra.get('servicePlan', DEFAULT_BACKUP_PLAN)
+        else:
+            service_plan = DEFAULT_BACKUP_PLAN
         request = ET.Element('ModifyBackup',
                              {'xmlns': BACKUP_NS})
         request.set('servicePlan', service_plan)
