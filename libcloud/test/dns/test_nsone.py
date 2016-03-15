@@ -62,15 +62,6 @@ class NsOneTests(unittest.TestCase):
 
         self.assertTrue(status)
 
-    def test_get_zone_success(self):
-        NsOneMockHttp.type = 'GET_ZONE_SUCCESS'
-        zone = self.driver.get_zone(zone_id='getzone.com')
-
-        self.assertEqual(zone.id, '52051b2c9f782d58bb4df41b')
-        self.assertEqual(zone.domain, 'example.com')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, 3600)
-
     def test_get_zone_zone_does_not_exist(self):
         NsOneMockHttp.type = 'GET_ZONE_ZONE_DOES_NOT_EXIST'
         try:
