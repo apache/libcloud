@@ -177,6 +177,56 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_no_pass_random_gen(self):
+        image = self.driver.list_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
+
     def test_create_node_response_STR(self):
         rootPw = 'pass123'
         image = self.driver.list_images()[0].id
@@ -715,6 +765,31 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         location = self.driver.ex_get_location_by_id(None)
         self.assertIsNone(location)
 
+    def test_ex_get_base_image_by_id(self):
+        image_id = self.driver.list_images()[0].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_customer_image_by_id(self):
+        image_id = self.driver.ex_list_customer_images()[1].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_base_img(self):
+        image_id = self.driver.list_images()[1].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_customer_img(self):
+        image_id = self.driver.ex_list_customer_images()[0].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_image_by_id_customer_FAIL(self):
+        image_id = 'FAKE_IMAGE_ID'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_get_base_image_by_id(image_id)
+
     def test_priv_location_to_location_id(self):
         location = self.driver.ex_get_location_by_id('NA9')
         self.assertEqual(
@@ -731,6 +806,30 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_priv_location_to_location_id_TYPEERROR(self):
         with self.assertRaises(TypeError):
             self.driver._location_to_location_id([1, 2, 3])
+
+    def test_priv_image_needs_auth_os_img(self):
+        image = self.driver.list_images()[0]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_os_img_STR(self):
+        image = self.driver.list_images()[0].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        self.assertTrue(not self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        self.assertTrue(not self.driver._image_needs_auth(image))
 
 
 class InvalidRequestError(Exception):
@@ -1349,10 +1448,50 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer(self, method, url, body, headers):
         request = ET.fromstring(body)

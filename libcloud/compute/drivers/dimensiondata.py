@@ -24,6 +24,7 @@ except ImportError:
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.dimensiondata import dd_object_to_id
+from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.dimensiondata import (DimensionDataConnection,
                                            DimensionDataStatus)
 from libcloud.common.dimensiondata import DimensionDataNetwork
@@ -177,12 +178,14 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: :class:`Node`
         """
         password = None
-        if isinstance(auth, basestring):
-            auth_obj = NodeAuthPassword(password=auth)
-            password = auth
-        else:
-            auth_obj = self._get_and_check_auth(auth)
-            password = auth_obj.password
+        image_needs_auth = self._image_needs_auth(image)
+        if image_needs_auth:
+            if isinstance(auth, basestring):
+                auth_obj = NodeAuthPassword(password=auth)
+                password = auth
+            else:
+                auth_obj = self._get_and_check_auth(auth)
+                password = auth_obj.password
 
         if (ex_network_domain is None and
                 ex_network is None and
@@ -262,8 +265,9 @@ class DimensionDataNodeDriver(NodeDriver):
 
         node = self.ex_get_node_by_id(node_id)
 
-        if getattr(auth_obj, "generated", False):
-            node.extra['password'] = auth_obj.password
+        if image_needs_auth:
+            if getattr(auth_obj, "generated", False):
+                node.extra['password'] = auth_obj.password
 
         return node
 
@@ -389,7 +393,7 @@ class DimensionDataNodeDriver(NodeDriver):
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
 
-        return self._to_base_images(
+        return self._to_images(
             self.connection.request_with_orgId_api_2(
                 'image/osImage',
                 params=params)
@@ -1665,44 +1669,94 @@ class DimensionDataNodeDriver(NodeDriver):
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
 
-        return self._to_base_images(
+        return self._to_images(
             self.connection.request_with_orgId_api_2(
                 'image/customerImage',
                 params=params)
             .object, 'customerImage')
 
+    def ex_get_base_image_by_id(self, id):
+        """
+        Gets a Base image in the Dimension Data Cloud given the id
+
+        :param id: The id of the image
+        :type  id: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        image = self.connection.request_with_orgId_api_2(
+            'image/osImage/%s' % id).object
+        return self._to_image(image)
+
+    def ex_get_customer_image_by_id(self, id):
+        """
+        Gets a Customer image in the Dimension Data Cloud given the id
+
+        :param id: The id of the image
+        :type  id: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        image = self.connection.request_with_orgId_api_2(
+            'image/customerImage/%s' % id).object
+        return self._to_image(image)
+
+    def ex_get_image_by_id(self, id):
+        """
+        Gets a Base/Customer image in the Dimension Data Cloud given the id
+
+        Note: This first checks the base image
+              If it is not a base image we check if it is a customer image
+              If it is not in either of these a DimensionDataAPIException
+              is thrown
+
+        :param id: The id of the image
+        :type  id: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        try:
+            return self.ex_get_base_image_by_id(id)
+        except DimensionDataAPIException as e:
+            if e.code != 'RESOURCE_NOT_FOUND':
+                raise e
+        return self.ex_get_customer_image_by_id(id)
+
     def _list_nodes_single_page(self, params={}):
         return self.connection.request_with_orgId_api_2(
             'server/server', params=params).object
 
-    def _to_base_images(self, object, el_name='osImage'):
+    def _to_images(self, object, el_name='osImage'):
         images = []
         locations = self.list_locations()
 
         for element in object.findall(fixxpath(el_name, TYPES_URN)):
-            images.append(self._to_base_image(element, locations))
+            images.append(self._to_image(element, locations))
 
         return images
 
-    def _to_base_image(self, element, locations):
-        # Eventually we will probably need multiple _to_image() functions
-        # that parse <ServerImage> differently than <DeployedImage>.
-        # DeployedImages are customer snapshot images, and ServerImages are
-        # 'base' images provided by DimensionData
+    def _to_image(self, element, locations=None):
         location_id = element.get('datacenterId')
+        if locations is None:
+            locations = self.list_locations(location_id)
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+        if element.tag.endswith('customerImage'):
+            is_customer_image = True
+        else:
+            is_customer_image = False
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
-            'OS_type': os_el.get('type'),
+            'OS_type': os_el.get('family'),
             'OS_displayName': os_el.get('displayName'),
             'cpu': cpu_spec,
             'memoryGb': findtext(element, 'memoryGb', TYPES_URN),
             'osImageKey': findtext(element, 'osImageKey', TYPES_URN),
             'created': findtext(element, 'createTime', TYPES_URN),
             'location': location,
+            'isCustomerImage': is_customer_image
         }
 
         return NodeImage(id=element.get('id'),
@@ -1929,7 +1983,6 @@ class DimensionDataNodeDriver(NodeDriver):
 
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
-
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
         extra = {
@@ -2016,6 +2069,13 @@ class DimensionDataNodeDriver(NodeDriver):
                                     'failureReason',
                                     TYPES_URN))
         return s
+
+    def _image_needs_auth(self, image):
+        if not isinstance(image, NodeImage):
+            image = self.ex_get_image_by_id(image)
+        if image.extra['isCustomerImage'] and image.extra['OS_type'] == 'UNIX':
+            return False
+        return True
 
     @staticmethod
     def _get_node_state(state, started, action):
