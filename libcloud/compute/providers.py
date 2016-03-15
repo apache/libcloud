@@ -18,7 +18,7 @@ Provider related utilities
 
 from libcloud.utils.misc import get_driver as _get_provider_driver
 from libcloud.utils.misc import set_driver as _set_provider_driver
-from libcloud.compute.types import Provider, DEPRECATED_RACKSPACE_PROVIDERS
+from libcloud.compute.types import Provider
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.compute.deprecated import DEPRECATED_DRIVERS
 
@@ -32,46 +32,12 @@ DRIVERS = {
     ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
-    Provider.EC2_US_EAST:
+    Provider.EC2:
     ('libcloud.compute.drivers.ec2', 'EC2NodeDriver'),
-    Provider.EC2_EU_WEST:
-    ('libcloud.compute.drivers.ec2', 'EC2EUNodeDriver'),
-    Provider.EC2_US_WEST:
-    ('libcloud.compute.drivers.ec2', 'EC2USWestNodeDriver'),
-    Provider.EC2_US_WEST_OREGON:
-    ('libcloud.compute.drivers.ec2', 'EC2USWestOregonNodeDriver'),
-    Provider.EC2_AP_SOUTHEAST:
-    ('libcloud.compute.drivers.ec2', 'EC2APSENodeDriver'),
-    Provider.EC2_AP_NORTHEAST:
-    ('libcloud.compute.drivers.ec2', 'EC2APNENodeDriver'),
-    Provider.EC2_AP_NORTHEAST1:
-    ('libcloud.compute.drivers.ec2', 'EC2APNE1NodeDriver'),
-    Provider.EC2_AP_NORTHEAST2:
-    ('libcloud.compute.drivers.ec2', 'EC2APNE2NodeDriver'),
-    Provider.EC2_SA_EAST:
-    ('libcloud.compute.drivers.ec2', 'EC2SAEastNodeDriver'),
-    Provider.EC2_AP_SOUTHEAST2:
-    ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
     Provider.ECP:
     ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS:
     ('libcloud.compute.drivers.elastichosts', 'ElasticHostsNodeDriver'),
-    Provider.ELASTICHOSTS_UK1:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
-    Provider.ELASTICHOSTS_UK2:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
-    Provider.ELASTICHOSTS_US1:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
-    Provider.ELASTICHOSTS_US2:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS2NodeDriver'),
-    Provider.ELASTICHOSTS_US3:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS3NodeDriver'),
-    Provider.ELASTICHOSTS_CA1:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsCA1NodeDriver'),
-    Provider.ELASTICHOSTS_AU1:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsAU1NodeDriver'),
-    Provider.ELASTICHOSTS_CN1:
-    ('libcloud.compute.drivers.elastichosts', 'ElasticHostsCN1NodeDriver'),
     Provider.SKALICLOUD:
     ('libcloud.compute.drivers.skalicloud', 'SkaliCloudNodeDriver'),
     Provider.SERVERLOVE:
@@ -175,21 +141,22 @@ DRIVERS = {
     ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
     Provider.ALIYUN_ECS:
     ('libcloud.compute.drivers.ecs', 'ECSDriver'),
-
-    # Deprecated
-    Provider.CLOUDSIGMA_US:
-    ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaLvsNodeDriver'),
 }
+
+DEPRECTATED_PROVIDER_CONSTANTS = OLD_CONSTANT_TO_NEW_MAPPING.keys()
 
 
 def get_driver(provider):
+    # Those providers have been shut down or similar.
     if provider in DEPRECATED_DRIVERS:
         url = DEPRECATED_DRIVERS[provider]['url']
         reason = DEPRECATED_DRIVERS[provider]['reason']
         msg = ('Provider no longer supported: %s, please visit: %s' %
                (url, reason))
         raise Exception(msg)
-    if provider in DEPRECATED_RACKSPACE_PROVIDERS:
+
+    # Those drivers have moved to "region" constructor argument model
+    if provider in DEPRECTATED_PROVIDER_CONSTANTS:
         id_to_name_map = dict([(v, k) for k, v in Provider.__dict__.items()])
         old_name = id_to_name_map[provider]
         new_name = id_to_name_map[OLD_CONSTANT_TO_NEW_MAPPING[provider]]
