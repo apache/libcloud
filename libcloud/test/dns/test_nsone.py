@@ -7,7 +7,7 @@ from libcloud.test.secrets import DNS_PARAMS_NSONE
 from libcloud.dns.drivers.nsone import NsOneDNSDriver
 from libcloud.utils.py3 import httplib
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError,\
-    RecordDoesNotExistError, RecordAlreadyExistsError, RecordType
+    RecordDoesNotExistError,  RecordType
 from libcloud.dns.base import Zone, Record
 
 
@@ -102,7 +102,7 @@ class NsOneTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_get_record_record_does_not_exist(self):
-        NsOneMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
+        NsOneMockHttp.type = 'GET_RECORD_DOES_NOT_EXIST'
 
         try:
             self.driver.get_record(zone_id='getrecord.com', record_id='A')
@@ -180,72 +180,86 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getzone_com_GET_ZONE_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_getzone_com_GET_ZONE_SUCCESS(self, method, url, body,
+                                               headers):
         body = self.fixtures.load('get_zone_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_zonedoesnotexist_com_GET_ZONE_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _v1_zones_zonedoesnotexist_com_GET_ZONE_ZONE_DOES_NOT_EXIST(
+            self, method, url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
 
         return 404, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_DELETE_ZONE_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_test_com_DELETE_ZONE_SUCCESS(
+            self, method, url, body, headers):
         body = self.fixtures.load('delete_zone_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_DELETE_ZONE_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _v1_zones_test_com_DELETE_ZONE_ZONE_DOES_NOT_EXIST(
+            self, method, url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_newzone_com_CREATE_ZONE_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_newzone_com_CREATE_ZONE_SUCCESS(self, method,
+                                                  url, body, headers):
         body = self.fixtures.load('create_zone_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_newzone_com_CREATE_ZONE_ZONE_ALREADY_EXISTS(self, method, url, body, headers):
+    def _v1_zones_newzone_com_CREATE_ZONE_ZONE_ALREADY_EXISTS(
+            self, method, url, body, headers):
         body = self.fixtures.load('zone_already_exists.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_LIST_RECORDS_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_test_com_LIST_RECORDS_SUCCESS(
+            self, method, url, body, headers):
         body = self.fixtures.load('get_zone_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_LIST_RECORDS_EMPTY(self, method, url, body, headers):
+    def _v1_zones_test_com_LIST_RECORDS_EMPTY(
+            self, method, url, body, headers):
         body = self.fixtures.load('list_records_empty.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_LIST_RECORDS_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _v1_zones_test_com_LIST_RECORDS_ZONE_DOES_NOT_EXIST(
+            self, method, url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_A_DELETE_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _v1_zones_test_com_example_com_A_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
         body = self.fixtures.load('record_does_not_exist.json')
 
         return 404, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_A_DELETE_RECORD_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_test_com_example_com_A_DELETE_RECORD_SUCCESS(
+            self, method, url, body, headers):
         body = self.fixtures.load('delete_record_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_SUCCESS(
+            self, method, url, body, headers):
         body = self.fixtures.load('get_record_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_GET_RECORD_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_getrecord_com_GET_RECORD_SUCCESS(
+            self, method, url, body, headers):
         body = self.fixtures.load('get_zone_success.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
         body = self.fixtures.load('record_does_not_exist.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
