@@ -199,7 +199,8 @@ class DimensionDataNodeDriver(NodeDriver):
         image_id = self._image_to_image_id(image)
         ET.SubElement(server_elm, "imageId").text = image_id
         ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
-        ET.SubElement(server_elm, "administratorPassword").text = password
+        if password is not None:
+            ET.SubElement(server_elm, "administratorPassword").text = password
 
         if ex_cpu_specification is not None:
             cpu = ET.SubElement(server_elm, "cpu")
