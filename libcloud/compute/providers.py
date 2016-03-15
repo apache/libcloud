@@ -16,9 +16,9 @@
 Provider related utilities
 """
 
-from libcloud.utils.misc import get_driver as _get_provider_driver
-from libcloud.utils.misc import set_driver as _set_provider_driver
 from libcloud.compute.types import Provider
+from libcloud.common.providers import get_driver as _get_provider_driver
+from libcloud.common.providers import set_driver as _set_provider_driver
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.compute.deprecated import DEPRECATED_DRIVERS
 
@@ -143,34 +143,13 @@ DRIVERS = {
     ('libcloud.compute.drivers.ecs', 'ECSDriver'),
 }
 
-DEPRECTATED_PROVIDER_CONSTANTS = OLD_CONSTANT_TO_NEW_MAPPING.keys()
-
 
 def get_driver(provider):
-    # Those providers have been shut down or similar.
-    if provider in DEPRECATED_DRIVERS:
-        url = DEPRECATED_DRIVERS[provider]['url']
-        reason = DEPRECATED_DRIVERS[provider]['reason']
-        msg = ('Provider no longer supported: %s, please visit: %s' %
-               (url, reason))
-        raise Exception(msg)
-
-    # Those drivers have moved to "region" constructor argument model
-    if provider in DEPRECTATED_PROVIDER_CONSTANTS:
-        id_to_name_map = dict([(v, k) for k, v in Provider.__dict__.items()])
-        old_name = id_to_name_map[provider]
-        new_name = id_to_name_map[OLD_CONSTANT_TO_NEW_MAPPING[provider]]
-
-        url = 'http://s.apache.org/lc0140un'
-        msg = ('Provider constant %s has been removed. New constant '
-               'is now called %s.\n'
-               'For more information on this change and how to modify your '
-               'code to work with it, please visit: %s' %
-               (old_name, new_name, url))
-        raise Exception(msg)
-
-    return _get_provider_driver(DRIVERS, provider)
+    return _get_provider_driver(drivers=DRIVERS, provider=provider,
+                                deprecated_providers=DEPRECATED_DRIVERS,
+                                deprecated_constants=OLD_CONSTANT_TO_NEW_MAPPING)
 
 
 def set_driver(provider, module, klass):
-    return _set_provider_driver(DRIVERS, provider, module, klass)
+    return _set_provider_driver(drivers=DRIVERS, provider=provider,
+                                module=module, klass=klass)
