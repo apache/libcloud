@@ -90,6 +90,13 @@ Compute
   (LIBCLOUD-802, GITHUB-712)
   [Sam Song]
 
+* Remove deprecated provider constants with the region in the name and related
+  driver classes (e.g. `EC2_US_EAST``, etc.).
+
+  Those drivers have moved to single provider constant + ``region`` constructor
+  argument model.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 

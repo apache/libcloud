@@ -23,13 +23,6 @@ from libcloud.utils.iso8601 import UTC
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
-from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
-from libcloud.compute.drivers.ec2 import EC2USWestOregonNodeDriver
-from libcloud.compute.drivers.ec2 import EC2EUNodeDriver
-from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
-from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
-from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
-from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
 from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
@@ -1187,47 +1180,6 @@ class EC2APSE2Tests(EC2Tests):
 
 class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
-
-
-# Tests for the old, deprecated way of instantiating a driver.
-class EC2OldStyleModelTests(EC2Tests):
-    driver_klass = EC2USWestNodeDriver
-
-    def setUp(self):
-        EC2MockHttp.test = self
-        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
-        EC2MockHttp.use_param = 'Action'
-        EC2MockHttp.type = None
-
-        self.driver = self.driver_klass(*EC2_PARAMS)
-
-
-class EC2USWest1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestNodeDriver
-
-
-class EC2USWest2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestOregonNodeDriver
-
-
-class EC2EUWestOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2EUNodeDriver
-
-
-class EC2APSE1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSENodeDriver
-
-
-class EC2APNEOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APNENodeDriver
-
-
-class EC2APSE2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSESydneyNodeDriver
-
-
-class EC2SAEastOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2SAEastNodeDriver
 
 
 class EC2MockHttp(MockHttpTestCase):
