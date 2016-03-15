@@ -127,8 +127,9 @@ class DimensionDataNodeDriver(NodeDriver):
         :type       image:  :class:`NodeImage` or ``str``
 
         :keyword    auth:   Initial authentication information for the
-                            node (required)
-        :type       auth:   :class:`NodeAuthPassword` or ``str``
+                            node. (If this is a customer LINUX
+                            image auth will be ignored)
+        :type       auth:   :class:`NodeAuthPassword` or ``str`` or ``None``
 
         :keyword    ex_description:  description for this node (required)
         :type       ex_description:  ``str``
