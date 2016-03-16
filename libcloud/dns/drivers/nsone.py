@@ -1,3 +1,4 @@
+import sys
 try:
     import simplejson as json
 except ImportError:
@@ -56,7 +57,8 @@ class NsOneDNSDriver(DNSDriver):
         action = '/v1/zones/%s' % zone_id
         try:
             response = self.connection.request(action=action, method='GET')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'zone not found':
                 raise ZoneDoesNotExistError(value=e.message, driver=self,
                                             zone_id=zone_id)
@@ -92,7 +94,8 @@ class NsOneDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action, method='PUT',
                                                data=post_data)
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'zone already exists':
                 raise ZoneAlreadyExistsError(value=e.message, driver=self,
                                              zone_id=domain)
@@ -117,7 +120,8 @@ class NsOneDNSDriver(DNSDriver):
         """
         try:
             response = self.connection.request(action=action, method='DELETE')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'zone not found':
                 raise ZoneDoesNotExistError(value=e.message, driver=self,
                                             zone_id=zone.id)
@@ -136,7 +140,8 @@ class NsOneDNSDriver(DNSDriver):
         action = '/v1/zones/%s' % zone.domain
         try:
             response = self.connection.request(action=action, method='GET')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'zone not found':
                 raise ZoneDoesNotExistError(value=e.message, driver=self,
                                             zone_id=zone.id)
@@ -160,7 +165,8 @@ class NsOneDNSDriver(DNSDriver):
         action = '/v1/zones/%s/%s/%s' % (zone_id, zone_id, record_id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'record not found':
                 raise RecordDoesNotExistError(value=e.message, driver=self,
                                               record_id=record_id)
@@ -182,7 +188,8 @@ class NsOneDNSDriver(DNSDriver):
                                          record.type)
         try:
             response = self.connection.request(action=action, method='DELETE')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'record not found':
                 raise RecordDoesNotExistError(value=e.message, driver=self,
                                               record_id=record.id)
@@ -224,7 +231,8 @@ class NsOneDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action, method='PUT',
                                                data=post_data)
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'record already exists':
                 raise RecordAlreadyExistsError(value=e.message, driver=self,
                                                record_id='')
@@ -265,7 +273,8 @@ class NsOneDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action, data=post_data,
                                                method='POST')
-        except NsOneException, e:
+        except NsOneException:
+            e = sys.exc_info()[1]
             if e.message == 'record does not exist':
                 raise RecordDoesNotExistError(value=e.message, driver=self,
                                               id=record.id)
