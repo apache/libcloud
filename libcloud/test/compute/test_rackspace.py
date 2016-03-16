@@ -51,7 +51,6 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
                 get_driver(provider)
             except Exception:
                 e = sys.exc_info()[1]
-                print str(e)
                 self.assertTrue(str(e).find('has been removed') != -1)
             else:
                 self.fail('Exception was not thrown')

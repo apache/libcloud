@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from libcloud.storage.types import Provider
+from libcloud.storage.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
 
@@ -62,19 +63,13 @@ DRIVERS = {
     ('libcloud.storage.drivers.backblaze_b2', 'BackblazeB2StorageDriver'),
     Provider.ALIYUN_OSS:
     ('libcloud.storage.drivers.oss', 'OSSStorageDriver'),
-
-    # Deprecated
-    Provider.CLOUDFILES_US:
-    ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
-    Provider.CLOUDFILES_UK:
-    ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
-    Provider.CLOUDFILES_SWIFT:
-    ('libcloud.storage.drivers.cloudfiles', 'OpenStackSwiftStorageDriver')
 }
 
 
 def get_driver(provider):
-    return _get_provider_driver(drivers=DRIVERS, provider=provider)
+    deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
+    return _get_provider_driver(drivers=DRIVERS, provider=provider,
+                                deprecated_constants=deprecated_constants)
 
 
 def set_driver(provider, module, klass):

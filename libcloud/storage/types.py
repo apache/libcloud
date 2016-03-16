@@ -15,15 +15,19 @@
 
 from libcloud.common.types import LibcloudError
 
-__all__ = ['Provider',
-           'ContainerError',
-           'ObjectError',
-           'ContainerAlreadyExistsError',
-           'ContainerDoesNotExistError',
-           'ContainerIsNotEmptyError',
-           'ObjectDoesNotExistError',
-           'ObjectHashMismatchError',
-           'InvalidContainerNameError']
+__all__ = [
+    'Provider',
+    'ContainerError',
+    'ObjectError',
+    'ContainerAlreadyExistsError',
+    'ContainerDoesNotExistError',
+    'ContainerIsNotEmptyError',
+    'ObjectDoesNotExistError',
+    'ObjectHashMismatchError',
+    'InvalidContainerNameError',
+
+    'OLD_CONSTANT_TO_NEW_MAPPING'
+]
 
 
 class Provider(object):
@@ -73,6 +77,14 @@ class Provider(object):
     CLOUDFILES_US = 'cloudfiles_us'
     CLOUDFILES_UK = 'cloudfiles_uk'
     CLOUDFILES_SWIFT = 'cloudfiles_swift'
+
+
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    # CloudFiles
+    Provider.CLOUDFILES_US: Provider.CLOUDFILES,
+    Provider.CLOUDFILES_UK: Provider.CLOUDFILES_UK,
+    Provider.CLOUDFILES_SWIFT: Provider.OPENSTACK_SWIFT
+}
 
 
 class ContainerError(LibcloudError):

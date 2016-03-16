@@ -145,9 +145,10 @@ DRIVERS = {
 
 
 def get_driver(provider):
+    deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
     return _get_provider_driver(drivers=DRIVERS, provider=provider,
                                 deprecated_providers=DEPRECATED_DRIVERS,
-                                deprecated_constants=OLD_CONSTANT_TO_NEW_MAPPING)
+                                deprecated_constants=deprecated_constants)
 
 
 def set_driver(provider, module, klass):
