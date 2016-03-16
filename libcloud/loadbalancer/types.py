@@ -18,6 +18,8 @@ __all__ = [
     "State",
     "LibcloudLBError",
     "LibcloudLBImmutableError",
+
+    "OLD_CONSTANT_TO_NEW_MAPPING"
 ]
 
 from libcloud.common.types import LibcloudError
@@ -49,6 +51,12 @@ class Provider(object):
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
+
+
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    Provider.RACKSPACE_US: Provider.RACKSPACE,
+    Provider.RACKSPACE_UK: Provider.RACKSPACE,
+}
 
 
 class State(object):

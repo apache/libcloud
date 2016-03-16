@@ -1525,9 +1525,3 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                 break
 
         return date
-
-
-class RackspaceUKLBDriver(RackspaceLBDriver):
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'lon'
-        super(RackspaceUKLBDriver, self).__init__(*args, **kwargs)
