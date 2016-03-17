@@ -23,7 +23,9 @@ __all__ = [
     'ZoneAlreadyExistsError',
     'RecordError',
     'RecordDoesNotExistError',
-    'RecordAlreadyExistsError'
+    'RecordAlreadyExistsError',
+
+    'OLD_CONSTANT_TO_NEW_MAPPING'
 ]
 
 
@@ -54,6 +56,12 @@ class Provider(object):
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
+
+
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    Provider.RACKSPACE_US: Provider.RACKSPACE,
+    Provider.RACKSPACE_UK: Provider.RACKSPACE,
+}
 
 
 class RecordType(object):

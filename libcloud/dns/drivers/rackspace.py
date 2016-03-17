@@ -12,16 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.common.openstack import OpenStackDriverMixin
-
-__all__ = [
-    'RackspaceUSDNSDriver',
-    'RackspaceUKDNSDriver'
-]
-
-from libcloud.utils.py3 import httplib
 import copy
 
+from libcloud.utils.py3 import httplib
+from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.base import PollingConnection
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError
@@ -33,6 +27,11 @@ from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
+
+__all__ = [
+    'RackspaceDNSResponse',
+    'RackspaceDNSConnection'
+]
 
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
 VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'priority', 'created',
@@ -632,24 +631,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         kwargs = self.openstack_connection_kwargs()
         kwargs['region'] = self.region
         return kwargs
-
-
-class RackspaceUSDNSDriver(RackspaceDNSDriver):
-    name = 'Rackspace DNS (US)'
-    type = Provider.RACKSPACE_US
-
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'us'
-        super(RackspaceUSDNSDriver, self).__init__(*args, **kwargs)
-
-
-class RackspaceUKDNSDriver(RackspaceDNSDriver):
-    name = 'Rackspace DNS (UK)'
-    type = Provider.RACKSPACE_UK
-
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'uk'
-        super(RackspaceUKDNSDriver, self).__init__(*args, **kwargs)
 
 
 def _rackspace_result_has_more(response, result_length, limit):
