@@ -2313,15 +2313,19 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ip_obj, = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
-    def ex_create_floating_ip(self):
+    def ex_create_floating_ip(self, ip_pool):
         """
         Create new floating IP
+
+        :param      ip_pool: name of the floating IP pool
+        :type       ip_pool: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
-                                       data={})
+                                       data={'pool': ip_pool})
+
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']
