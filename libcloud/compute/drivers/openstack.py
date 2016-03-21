@@ -2313,15 +2313,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ip_obj, = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
-    def ex_create_floating_ip(self, ip_pool):
+    def ex_create_floating_ip(self, ip_pool=None):
         """
-        Create new floating IP
+        Create new floating IP. The ip_pool attribute is optional only if your
+        infrastructure has only one IP pool available.
 
         :param      ip_pool: name of the floating IP pool
         :type       ip_pool: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
+        if (ip_pool is None) and (len(self.ex_list_floating_ip_pools()) == 1):
+            ip_pool = self.ex_list_floating_ip_pools()[0].name
+        elif (ip_pool is None) and (len(self.ex_list_floating_ip_pools()) > 1):
+            return None
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
                                        data={'pool': ip_pool})
