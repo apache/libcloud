@@ -119,6 +119,10 @@ Loadbalancer
 DNS
 ~~~~
 
+- Added NSOne driver
+  [Oltjano Terpollari]
+  (GITHUB-710)
+
 - Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
   connection class is correctly set to the hostname.
   [Tomaz Muraus]
