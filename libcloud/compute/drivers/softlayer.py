@@ -278,6 +278,8 @@ class SoftLayerNodeDriver(NodeDriver):
         :type       ex_os: ``str``
         :keyword    ex_keyname: The name of the key pair
         :type       ex_keyname: ``str``
+        :keyword    post_uri: Post-install script to run after reload
+        :type       post_uri:``str``
         """
         name = kwargs['name']
         os = 'DEBIAN_LATEST'
@@ -305,6 +307,10 @@ class SoftLayerNodeDriver(NodeDriver):
 
         if kwargs.get('ex_local_disk') is False:
             local_disk = 'false'
+
+        post_uri = ''
+        if kwargs.get('post_uri'):
+            post_uri = kwargs.get('post_uri')
 
         disk_size = DEFAULT_DISK_SIZE
         if size.disk:
@@ -336,6 +342,7 @@ class SoftLayerNodeDriver(NodeDriver):
             'hourlyBillingFlag': hourly,
             'operatingSystemReferenceCode': os,
             'localDiskFlag': local_disk,
+            'postInstallScriptUri': post_uri,
             'blockDevices': [
                 {
                     'device': '0',
