@@ -2323,13 +2323,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
-        if (ip_pool is None) and (len(self.ex_list_floating_ip_pools()) == 1):
-            ip_pool = self.ex_list_floating_ip_pools()[0].name
-        elif (ip_pool is None) and (len(self.ex_list_floating_ip_pools()) > 1):
-            return None
+        data = {'pool': ip_pool} if ip_pool is not None else {}
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
-                                       data={'pool': ip_pool})
+                                       data=data)
 
         data = resp.object['floating_ip']
         id = data['id']
