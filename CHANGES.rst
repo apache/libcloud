@@ -32,6 +32,10 @@ General
 Compute
 ~~~~~~~
 
+- [openstack] when creating floating IPs, added pool_id as an optional argument
+  (GITHUB-725)
+  [marko-p]
+
 - [google compute] Added setMachineType method to allow for changing sizes of instances
   (GITHUB-721)
   [Eric Johnson]
