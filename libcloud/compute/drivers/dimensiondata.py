@@ -688,6 +688,17 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_create_anti_affinity_rule(self, node_list):
+        """
+        Create an anti affinity rule given a list of nodes
+        Anti affinity rules ensure that servers will not reside
+        on the same VMware ESX host
+
+        :param node_list: The list of nodes to create a rule for
+        :type  node_list: ``list`` of :class:`Node` or
+                          ``list`` of ``str``
+
+        :rtype: ``bool``
+        """
         if not isinstance(node_list, (list, tuple)):
             raise TypeError("Node list must be a list or a tuple.")
         anti_affinity_xml_request = ET.Element('NewAntiAffinityRule',
@@ -703,6 +714,15 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_delete_anti_affinity_rule(self, anti_affinity_rule):
+        """
+        Remove anti affinity rule
+
+        :param anti_affinity_rule: The anti affinity rule to delete
+        :type  anti_affinity_rule: :class:`DimensionDataAntiAffinityRule` or
+                                   ``str``
+
+        :rtype: ``bool``
+        """
         rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
             anti_affinity_rule)
         result = self.connection.request_with_orgId_api_1(
@@ -712,10 +732,34 @@ class DimensionDataNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_list_anti_affinity_rules(self, network=None, network_domain=None,
-                                    node=None, ex_filter_id=None,
-                                    ex_filter_state=None,
-                                    return_generator=False):
+                                    node=None, filter_id=None,
+                                    filter_state=None):
+        """
+        List anti affinity rules for a network, network domain, or node
 
+        :param network: The network to list anti affinity rules for
+                        One of network, network_domain, or node is required
+        :type  network: :class:`DimensionDataNetwork` or ``str``
+
+        :param network_domain: The network domain to list anti affinity rules
+                               One of network, network_domain,
+                               or node is required
+        :type  network_domain: :class:`DimensionDataNetworkDomain` or ``str``
+
+        :param node: The node to list anti affinity rules for
+                     One of network, netwok_domain, or node is required
+        :type  node: :class:`Node` or ``str``
+
+        :param filter_id: This will allow you to filter the rules
+                          by this node id
+        :type  filter_id: ``str``
+
+        :type  filter_state: This will allow you to filter rules by
+                             node state (i.e. NORMAL)
+        :type  filter_state: ``str``
+
+        :rtype: ``list`` of :class:`DimensionDataAntiAffinityRule`
+        """
         not_none_arguments = [key
                               for key in (network, network_domain, node)
                               if key is not None]
@@ -732,11 +776,11 @@ class DimensionDataNodeDriver(NodeDriver):
                 self._network_to_network_id(network)
         if node is not None:
             params['serverId'] = \
-                self._node_to_node_id(network_domain)
-        if ex_filter_id is not None:
-            params['id'] = ex_filter_id
-        if ex_filter_state is not None:
-            params['state'] = ex_filter_state
+                self._node_to_node_id(node)
+        if filter_id is not None:
+            params['id'] = filter_id
+        if filter_state is not None:
+            params['state'] = filter_state
 
         paged_result = self.connection.paginated_request_with_orgId_api_2(
             'server/antiAffinityRule',
