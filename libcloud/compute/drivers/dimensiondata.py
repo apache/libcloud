@@ -1149,7 +1149,7 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Deletes an existing VLAN
 
-        :param      vlan: the VLAN to delete
+        :param      vlan: The VLAN to delete
         :type       vlan: :class:`DimensionDataNetworkDomain`
 
         :rtype: ``bool``
