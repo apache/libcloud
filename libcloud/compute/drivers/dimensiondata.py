@@ -36,6 +36,7 @@ from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
+from libcloud.common.dimensiondata import DimensionDataAntiAffinityRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
@@ -686,6 +687,68 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
+    def ex_create_anti_affinity_rule(self, node_list):
+        if not isinstance(node_list, (list, tuple)):
+            raise TypeError("Node list must be a list or a tuple.")
+        anti_affinity_xml_request = ET.Element('NewAntiAffinityRule',
+                                               {'xmlns': SERVER_NS})
+        for node in node_list:
+            ET.SubElement(anti_affinity_xml_request, 'serverId').text = \
+                self._node_to_node_id(node)
+        result = self.connection.request_with_orgId_api_1(
+            'antiAffinityRule',
+            method='POST',
+            data=ET.tostring(anti_affinity_xml_request)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_delete_anti_affinity_rule(self, anti_affinity_rule):
+        rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
+            anti_affinity_rule)
+        result = self.connection.request_with_orgId_api_1(
+            'antiAffinityRule/%s?delete' % (rule_id),
+            method='GET').object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_list_anti_affinity_rules(self, network=None, network_domain=None,
+                                    node=None, ex_filter_id=None,
+                                    ex_filter_state=None,
+                                    return_generator=False):
+
+        not_none_arguments = [key
+                              for key in (network, network_domain, node)
+                              if key is not None]
+        if len(not_none_arguments) != 1:
+            raise ValueError("One and ONLY one of network, "
+                             "network_domain, or node must be set")
+
+        params = {}
+        if network_domain is not None:
+            params['networkDomainId'] = \
+                self._network_domain_to_network_domain_id(network_domain)
+        if network is not None:
+            params['networkId'] = \
+                self._network_to_network_id(network)
+        if node is not None:
+            params['serverId'] = \
+                self._node_to_node_id(network_domain)
+        if ex_filter_id is not None:
+            params['id'] = ex_filter_id
+        if ex_filter_state is not None:
+            params['state'] = ex_filter_state
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'server/antiAffinityRule',
+            method='GET',
+            params=params
+        )
+
+        rules = []
+        for result in paged_result:
+            rules.extend(self._to_anti_affinity_rules(result))
+        return rules
+
     def ex_attach_node_to_vlan(self, node, vlan):
         """
         Attach a node to a VLAN by adding an additional NIC to
@@ -1084,10 +1147,10 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_delete_vlan(self, vlan):
         """
-        Deletes an existing VLAN
+        deletes an existing vlan
 
-        :param      vlan: The VLAN to delete
-        :type       vlan: :class:`DimensionDataNetworkDomain`
+        :param      vlan: the vlan to delete
+        :type       vlan: :class:`dimensiondatanetworkdomain`
 
         :rtype: ``bool``
         """
@@ -1205,9 +1268,38 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_firewall_rules(response, network_domain)
 
-    def ex_create_firewall_rule(self, network_domain, rule, position):
+    def ex_create_firewall_rule(self, network_domain, rule, position,
+                                position_relative_to_rule=None):
+        """
+        Creates a firewall rule
+
+        :param network_domain: The network domain in which to create
+                                the firewall rule
+        :type  network_domain: :class:`DimensionDataNetworkDomain` or ``str``
+
+        :param rule: The rule in which to create
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :param position: The position in which to create the rule
+                         There are two types of positions
+                         with position_relative_to_rule arg and without it
+                         With: 'BEFORE' or 'AFTER'
+                         Without: 'FIRST' or 'LAST'
+        :type  position: ``str``
+
+        :param position_relative_to_rule: The rule or rule name in
+                                          which to decide positioning by
+        :type  position_relative_to_rule:
+            :class:`DimensionDataFirewallRule` or ``str``
+
+        :rtype: ``bool``
+        """
+        positions_without_rule = ('FIRST', 'LAST')
+        positions_with_rule = ('BEFORE', 'AFTER')
+
         create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "networkDomainId").text = \
+            self._network_domain_to_network_domain_id(network_domain)
         ET.SubElement(create_node, "name").text = rule.name
         ET.SubElement(create_node, "action").text = rule.action
         ET.SubElement(create_node, "ipVersion").text = rule.ip_version
@@ -1241,7 +1333,25 @@ class DimensionDataNodeDriver(NodeDriver):
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
         ET.SubElement(create_node, "enabled").text = 'true'
+
+        # Set up positioning of rule
         placement = ET.SubElement(create_node, "placement")
+        if position_relative_to_rule is not None:
+            if position not in positions_with_rule:
+                raise ValueError("When position_relative_to_rule is specified"
+                                 " position must be %s"
+                                 % ', '.join(positions_with_rule))
+            if isinstance(position_relative_to_rule,
+                          DimensionDataFirewallRule):
+                rule_name = position_relative_to_rule.name
+            else:
+                rule_name = position_relative_to_rule
+            placement.set('relativeToRule', rule_name)
+        else:
+            if position not in positions_without_rule:
+                raise ValueError("When position_relative_to_rule is not"
+                                 " specified position must be %s"
+                                 % ', '.join(positions_without_rule))
         placement.set('position', position)
 
         response = self.connection.request_with_orgId_api_2(
@@ -1782,6 +1892,22 @@ class DimensionDataNodeDriver(NodeDriver):
             external_ip=findtext(element, 'externalIp', TYPES_URN),
             status=findtext(element, 'state', TYPES_URN))
 
+    def _to_anti_affinity_rules(self, object):
+        rules = []
+        for element in findall(object, 'antiAffinityRule', TYPES_URN):
+            rules.append(
+                self._to_anti_affinity_rule(element))
+        return rules
+
+    def _to_anti_affinity_rule(self, element):
+        node_list = []
+        for node in findall(element, 'serverSummary', TYPES_URN):
+            node_list.append(node.get('id'))
+        return DimensionDataAntiAffinityRule(
+            id=element.get('id'),
+            node_list=node_list
+        )
+
     def _to_firewall_rules(self, object, network_domain):
         rules = []
         locations = self.list_locations()
@@ -2090,6 +2216,10 @@ class DimensionDataNodeDriver(NodeDriver):
                 return NodeState.TERMINATED
 
     @staticmethod
+    def _node_to_node_id(node):
+        return dd_object_to_id(node, Node)
+
+    @staticmethod
     def _location_to_location_id(location):
         return dd_object_to_id(location, NodeLocation)
 
@@ -2104,6 +2234,10 @@ class DimensionDataNodeDriver(NodeDriver):
     @staticmethod
     def _network_to_network_id(network):
         return dd_object_to_id(network, DimensionDataNetwork)
+
+    @staticmethod
+    def _anti_affinity_rule_to_anti_affinity_rule_id(rule):
+        return dd_object_to_id(rule, DimensionDataAntiAffinityRule)
 
     @staticmethod
     def _network_domain_to_network_domain_id(network_domain):
