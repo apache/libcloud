@@ -22,7 +22,6 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import Node
-from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -434,6 +433,22 @@ class DimensionDataConnection(ConnectionUserAndKey):
             params=params, data=data,
             method=method, headers=headers)
 
+    def paginated_request_with_orgId_api_2(self, action, params=None, data='',
+                                           headers=None, method='GET',
+                                           return_generator=False,
+                                           page_count=250):
+
+        paged_resp = self.request_with_orgId_api_2(action, params,
+                                                   data, headers,
+                                                   method).object
+        yield paged_resp
+
+        while paged_resp.get('pageCount') >= paged_resp.get('pageSize'):
+            params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
+            paged_resp = self._list_nodes_single_page(action, params, data,
+                                                      headers, method).object
+            yield paged_resp
+
     def get_resource_path_api_1(self):
         """
         This method returns a resource path which is necessary for referencing
@@ -729,6 +744,19 @@ class DimensionDataNatRule(object):
     def __repr__(self):
         return (('<DimensionDataNatRule: id=%s, status=%s>')
                 % (self.id, self.status))
+
+
+class DimensionDataAntiAffinityRule(object):
+    """
+    Anti-Affinity Rule
+    """
+    def __init__(self, id, node_list):
+        self.id = id
+        self.node_list = node_list
+
+    def __repr__(self):
+        return (('<DimensionDataAntiAffinityRule: id=%s>')
+                % (self.id))
 
 
 class DimensionDataVlan(object):
