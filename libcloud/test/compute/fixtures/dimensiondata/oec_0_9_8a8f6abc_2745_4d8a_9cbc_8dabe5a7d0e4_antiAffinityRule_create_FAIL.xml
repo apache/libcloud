@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns5:Status xmlns:ns16="http://oec.api.opsource.net/schemas/storage" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns15="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns9="http://oec.api.opsource.net/schemas/admin" xmlns:ns5="http://oec.api.opsource.net/schemas/general" xmlns:ns12="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns13="http://oec.api.opsource.net/schemas/reset" xmlns:ns6="http://oec.api.opsource.net/schemas/vip" xmlns:ns7="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns10="http://oec.api.opsource.net/schemas/backup" xmlns:ns8="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns11="http://oec.api.opsource.net/schemas/support" xmlns:ns2="http://oec.api.opsource.net/schemas/network" xmlns:ns4="http://oec.api.opsource.net/schemas/directory" xmlns:ns3="http://oec.api.opsource.net/schemas/organization">
+  <ns5:operation>Create Anti Affinity Rule</ns5:operation>
+  <ns5:result>ERROR</ns5:result>
+  <ns5:resultDetail>Server 'ansible-test-image-rhel6' (id 22f3544a-c874-4930-a31c-e9e513e51114) is already used in another Anti-Affinity Rule (id 07e3621a-a920-4a9a-943c-d8021f27f418).</ns5:resultDetail>
+  <ns5:resultCode>REASON_692</ns5:resultCode>
+</ns5:Status>
