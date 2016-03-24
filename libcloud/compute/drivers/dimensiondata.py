@@ -1147,10 +1147,10 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def ex_delete_vlan(self, vlan):
         """
-        deletes an existing vlan
+        Deletes an existing VLAN
 
-        :param      vlan: the vlan to delete
-        :type       vlan: :class:`dimensiondatanetworkdomain`
+        :param      vlan: the VLAN to delete
+        :type       vlan: :class:`DimensionDataNetworkDomain`
 
         :rtype: ``bool``
         """
