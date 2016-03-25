@@ -1625,11 +1625,31 @@ class GCENodeDriver(NodeDriver):
             # The aggregated response returns a dict for each zone
             if zone is None:
                 for v in response['items'].values():
-                    zone_nodes = [self._to_node(i) for i in
-                                  v.get('instances', [])]
-                    list_nodes.extend(zone_nodes)
+                    for i in v.get('instances', []):
+                        try:
+                            list_nodes.append(self._to_node(i))
+                        # If a GCE node has been deleted between
+                        #   - is was listed by `request('.../instances', 'GET')
+                        #   - it is converted by `self._to_node(i)`
+                        # `_to_node()` will raise a ResourceNotFoundError.
+                        #
+                        # Just ignore that node and return the list of the
+                        # other nodes.
+                        except ResourceNotFoundError:
+                            pass
             else:
-                list_nodes = [self._to_node(i) for i in response['items']]
+                for i in response['items']:
+                    try:
+                        list_nodes.append(self._to_node(i))
+                    # If a GCE node has been deleted between
+                    #   - is was listed by `request('.../instances', 'GET')
+                    #   - it is converted by `self._to_node(i)`
+                    # `_to_node()` will raise a ResourceNotFoundError.
+                    #
+                    # Just ignore that node and return the list of the
+                    # other nodes.
+                    except ResourceNotFoundError:
+                        pass
         return list_nodes
 
     def ex_list_regions(self):
