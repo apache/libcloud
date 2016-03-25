@@ -436,8 +436,35 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
     def paginated_request_with_orgId_api_2(self, action, params=None, data='',
                                            headers=None, method='GET',
-                                           return_generator=False,
-                                           page_count=250):
+                                           page_size=250):
+        """
+        A paginated request to the MCP2.0 API
+        This essentially calls out to request_with_orgId_api_2 for each page
+        and yields the response to make a generator
+        This generator can be looped through to grab all the pages.
+
+        :param action: The resource to access (i.e. 'network/vlan')
+        :type  action: ``str``
+
+        :param params: Parameters to give to the action
+        :type  params: ``dict`` or ``None``
+
+        :param data: The data payload to be added to the request
+        :type  data: ``str``
+
+        :param headers: Additional header to be added to the request
+        :type  headers: ``str`` or ``dict`` or ``None``
+
+        :param method: HTTP Method for the request (i.e. 'GET', 'POST')
+        :type  method: ``str``
+
+        :param page_size: The size of each page to be returned
+                          Note: Max page size in MCP2.0 is currently 250
+        :type  page_size: ``int``
+        """
+        if params is None:
+            params = {}
+        params['pageSize'] = page_size
 
         paged_resp = self.request_with_orgId_api_2(action, params,
                                                    data, headers,
@@ -750,9 +777,21 @@ class DimensionDataNatRule(object):
 
 class DimensionDataAntiAffinityRule(object):
     """
-    Anti-Affinity Rule
+    Anti-Affinity rule for DimensionData
+
+    An Anti-Affinity rule ensures that servers in the rule will
+    not reside on the same VMware ESX host.
     """
     def __init__(self, id, node_list):
+        """
+        Instantiate a new :class:`DimensionDataAntiAffinityRule`
+
+        :param id: The ID of the Anti-Affinity rule
+        :type  id: ``str``
+
+        :param node_list: List of node ids that belong in this rule
+        :type  node_list: ``list`` of ``str``
+        """
         self.id = id
         self.node_list = node_list
 
