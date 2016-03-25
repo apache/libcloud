@@ -5,16 +5,16 @@
       <name>ansible-test-image-rhel6</name>
       <description>my new node</description>
       <networkingDetails>
-        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Deloitte Test">
-          <primaryNic id="aafffb27-f16b-4757-9b63-ef7d8acd9c7f" privateIpv4="172.16.1.8" ipv6="2607:f480:111:1423:1b57:e47a:c212:257d" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="deloitte-test"/>        </networkInfo>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="aafffb27-f16b-4757-9b63-ef7d8acd9c7f" privateIpv4="172.16.1.8" ipv6="2607:f480:111:1423:1b57:e47a:c212:257d" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>        </networkInfo>
       </networkingDetails>
     </serverSummary>
     <serverSummary id="5718d174-31d4-4d49-b1c6-fcb0d782f233">
       <name>ansible-custom-image-test-UAT</name>
       <description>my new node</description>
       <networkingDetails>
-        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Deloitte Test">
-          <primaryNic id="b359cea3-4452-46fe-b30b-b3ce839cde9b" privateIpv4="172.16.1.9" ipv6="2607:f480:111:1423:7fa7:9a9b:ecb9:882e" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="deloitte-test"/>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="b359cea3-4452-46fe-b30b-b3ce839cde9b" privateIpv4="172.16.1.9" ipv6="2607:f480:111:1423:7fa7:9a9b:ecb9:882e" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
         </networkInfo>
       </networkingDetails>
     </serverSummary>
@@ -24,8 +24,8 @@
       <name>rhel-ansible-full-test</name>
       <description>RHEL Ansible Test</description>
       <networkingDetails>
-        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Deloitte Test">
-          <primaryNic id="e081e784-5768-472c-b7f3-353e1646edc8" privateIpv4="172.16.1.15" ipv6="2607:f480:111:1423:70c9:9216:f7bf:dcf6" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="deloitte-test"/>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="e081e784-5768-472c-b7f3-353e1646edc8" privateIpv4="172.16.1.15" ipv6="2607:f480:111:1423:70c9:9216:f7bf:dcf6" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
         </networkInfo>
       </networkingDetails>
     </serverSummary>
@@ -33,8 +33,8 @@
       <name>rhel-ansible-full-test</name>
       <description>RHEL Ansible Test</description>
       <networkingDetails>
-        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Deloitte Test">
-          <primaryNic id="3278f833-9535-405c-91b8-0a0470f58aae" privateIpv4="172.16.1.17" ipv6="2607:f480:111:1423:3081:71a8:4c52:a8a" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="deloitte-test"/>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="3278f833-9535-405c-91b8-0a0470f58aae" privateIpv4="172.16.1.17" ipv6="2607:f480:111:1423:3081:71a8:4c52:a8a" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
         </networkInfo>
       </networkingDetails>
     </serverSummary>

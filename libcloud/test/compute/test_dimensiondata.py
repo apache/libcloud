@@ -19,6 +19,7 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
+from types import GeneratorType
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -90,6 +91,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 9)
+
+    def test_paginated_mcp2_call_with_page_size(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'PAGESIZE50'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server', page_size=50)
+        self.assertTrue(isinstance(node_list_generator, GeneratorType))
 
     # We're making sure here the filters make it to the URL
     # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
@@ -1171,8 +1179,15 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGESIZE50(self, method, url, body, headers):
+        if not url.endswith('pageSize=50'):
+            raise ValueError("pageSize is not set as expected")
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
-        if url.endswith('pageNumber=2'):
+        if 'pageNumber=2' in url:
             body = self.fixtures.load(
                 'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1229,6 +1244,8 @@ class DimensionDataMockHttp(MockHttp):
                 assert value == 'FAKE_ID'
             elif key == 'state':
                 assert value == 'FAKE_STATE'
+            elif key == 'pageSize':
+                assert value == '250'
             elif key == 'networkDomainId':
                 pass
             else:
@@ -1239,7 +1256,7 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_PAGINATED(self, method, url, body, headers):
-        if url.endswith('pageNumber=2'):
+        if 'pageNumber=2' in url:
             body = self.fixtures.load(
                 'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
