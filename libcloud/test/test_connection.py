@@ -23,7 +23,7 @@ from mock import Mock, call, patch
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.utils.loggingconnection import LoggingConnection
+from libcloud.common.base import LoggingConnection
 from libcloud.httplib_ssl import LibcloudBaseConnection
 from libcloud.httplib_ssl import LibcloudHTTPConnection
 from libcloud.utils.misc import retry
