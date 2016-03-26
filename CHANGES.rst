@@ -32,6 +32,11 @@ General
 Compute
 ~~~~~~~
 
+- [dimension data] added support for managing host anti-affinity rules, added paging support to
+  all supported calls and added support for requesting priority ordering when creating ACL rules
+  (GITHUB-726)
+  [Jeff Dunham]
+
 - [openstack] when creating floating IPs, added pool_id as an optional argument
   (GITHUB-725)
   [marko-p]
