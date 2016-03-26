@@ -17,19 +17,17 @@ Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
 import os
-import sys
 import socket
-import ssl
 import base64
 import warnings
+
+import requests
 
 import libcloud.security
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlunquote
-from libcloud.utils.py3 import match_hostname
-from libcloud.utils.py3 import CertificateError
 
 
 __all__ = [
@@ -195,7 +193,7 @@ class LibcloudBaseConnection(object):
         self.port = port
 
 
-class LibcloudHTTPConnection(httplib.HTTPConnection, LibcloudBaseConnection):
+class LibcloudHTTPConnection(LibcloudBaseConnection):
     def __init__(self, *args, **kwargs):
         # Support for HTTP proxy
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
@@ -206,8 +204,21 @@ class LibcloudHTTPConnection(httplib.HTTPConnection, LibcloudBaseConnection):
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
 
+        def connect():
+            pass
 
-class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
+        def request(method, url, body=None, headers=None):
+            method = method.lower()
+            if method == 'get':
+                response = requests.get(url, headers=headers)
+            elif method == 'post':
+                response = requests.post(url, data=body, headers=headers)
+            elif method == 'head':
+                response = requests.head(url, headers=headers)
+            return response
+
+
+class LibcloudHTTPSConnection(LibcloudBaseConnection):
     """
     LibcloudHTTPSConnection
 
@@ -268,50 +279,17 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                 libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
 
     def connect(self):
-        """
-        Connect
+        pass
 
-        Checks if verification is toggled; if not, just call
-        httplib.HTTPSConnection's connect
-        """
-        if not self.verify:
-            return httplib.HTTPSConnection.connect(self)
-
-        # otherwise, create a connection and verify the hostname
-        # use socket.create_connection (in 2.6+) if possible
-        if getattr(socket, 'create_connection', None):
-            sock = socket.create_connection((self.host, self.port),
-                                            self.timeout)
-        else:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((self.host, self.port))
-
-        # Activate the HTTP proxy
-        if self.http_proxy_used:
-            self._activate_http_proxy(sock=sock)
-
-        ssl_version = libcloud.security.SSL_VERSION
-
-        try:
-            self.sock = ssl.wrap_socket(
-                sock,
-                self.key_file,
-                self.cert_file,
-                cert_reqs=ssl.CERT_REQUIRED,
-                ca_certs=self.ca_cert,
-                ssl_version=ssl_version)
-        except socket.error:
-            exc = sys.exc_info()[1]
-            # Re-throw an exception with a more friendly error message
-            exc = get_socket_error_exception(ssl_version=ssl_version, exc=exc)
-            raise exc
-
-        cert = self.sock.getpeercert()
-        try:
-            match_hostname(cert, self.host)
-        except CertificateError:
-            e = sys.exc_info()[1]
-            raise ssl.SSLError('Failed to verify hostname: %s' % (str(e)))
+    def request(method, url, body=None, headers=None):
+            method = method.lower()
+            if method == 'get':
+                response = requests.get(url, headers=headers)
+            elif method == 'post':
+                response = requests.post(url, data=body, headers=headers)
+            elif method == 'head':
+                response = requests.head(url, headers=headers)
+            return response
 
 
 def get_socket_error_exception(ssl_version, exc):
