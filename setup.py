@@ -253,7 +253,7 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
-install_requires = []
+install_requires = ['requests']
 if PY2_pre_26:
     install_requires.extend(['ssl', 'simplejson'])
 
