@@ -64,6 +64,8 @@ class LibcloudBaseConnection(object):
     Note: This class should not be instantiated directly.
     """
 
+    session = None
+
     proxy_scheme = None
     proxy_host = None
     proxy_port = None
@@ -72,6 +74,9 @@ class LibcloudBaseConnection(object):
     proxy_password = None
 
     http_proxy_used = False
+
+    def __init__(self):
+        self.session = requests.Session()
 
     def set_http_proxy(self, proxy_url):
         """
@@ -97,7 +102,9 @@ class LibcloudBaseConnection(object):
         self.proxy_password = password
         self.http_proxy_used = True
 
-        self._setup_http_proxy()
+        self.session.proxies = {
+            self.proxy_scheme: proxy_url
+        }
 
     def _parse_proxy_url(self, proxy_url):
         """
@@ -137,61 +144,6 @@ class LibcloudBaseConnection(object):
         return (proxy_scheme, proxy_host, proxy_port, proxy_username,
                 proxy_password)
 
-    def _setup_http_proxy(self):
-        """
-        Set up HTTP proxy.
-
-        :param proxy_url: Proxy URL (e.g. http://<host>:3128)
-        :type proxy_url: ``str``
-        """
-        headers = {}
-
-        if self.proxy_username and self.proxy_password:
-            # Include authentication header
-            user_pass = '%s:%s' % (self.proxy_username, self.proxy_password)
-            encoded = base64.encodestring(b(urlunquote(user_pass))).strip()
-            auth_header = 'Basic %s' % (encoded.decode('utf-8'))
-            headers['Proxy-Authorization'] = auth_header
-
-        if hasattr(self, 'set_tunnel'):
-            # Python 2.7 and higher
-            # pylint: disable=no-member
-            self.set_tunnel(host=self.host, port=self.port, headers=headers)
-        elif hasattr(self, '_set_tunnel'):
-            # Python 2.6
-            # pylint: disable=no-member
-            self._set_tunnel(host=self.host, port=self.port, headers=headers)
-        else:
-            raise ValueError('Unsupported Python version')
-
-        self._set_hostport(host=self.proxy_host, port=self.proxy_port)
-
-    def _activate_http_proxy(self, sock):
-        self.sock = sock
-        self._tunnel()  # pylint: disable=no-member
-
-    def _set_hostport(self, host, port):
-        """
-        Backported from Python stdlib so Proxy support also works with
-        Python 3.4.
-        """
-        if port is None:
-            i = host.rfind(':')
-            j = host.rfind(']')         # ipv6 addresses have [...]
-            if i > j:
-                try:
-                    port = int(host[i + 1:])
-                except ValueError:
-                    msg = "nonnumeric port: '%s'" % (host[i + 1:])
-                    raise httplib.InvalidURL(msg)
-                host = host[:i]
-            else:
-                port = self.default_port  # pylint: disable=no-member
-            if host and host[0] == '[' and host[-1] == ']':
-                host = host[1:-1]
-        self.host = host
-        self.port = port
-
 
 class LibcloudHTTPConnection(LibcloudBaseConnection):
     def __init__(self, *args, **kwargs):
@@ -199,23 +151,23 @@ class LibcloudHTTPConnection(LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
-        super(LibcloudHTTPConnection, self).__init__(*args, **kwargs)
+        super(LibcloudHTTPConnection, self).__init__()
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
 
-        def connect():
-            pass
+    def connect():
+        pass
 
-        def request(method, url, body=None, headers=None):
-            method = method.lower()
-            if method == 'get':
-                response = requests.get(url, headers=headers)
-            elif method == 'post':
-                response = requests.post(url, data=body, headers=headers)
-            elif method == 'head':
-                response = requests.head(url, headers=headers)
-            return response
+    def request(self, method, url, body=None, headers=None):
+        method = method.lower()
+        if method == 'get':
+            response = self.session.get(url, headers=headers)
+        elif method == 'post':
+            response = self.session.post(url, data=body, headers=headers)
+        elif method == 'head':
+            response = self.session.head(url, headers=headers)
+        return response
 
 
 class LibcloudHTTPSConnection(LibcloudBaseConnection):
@@ -237,7 +189,7 @@ class LibcloudHTTPSConnection(LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
-        super(LibcloudHTTPSConnection, self).__init__(*args, **kwargs)
+        super(LibcloudHTTPSConnection, self).__init__()
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
@@ -281,7 +233,7 @@ class LibcloudHTTPSConnection(LibcloudBaseConnection):
     def connect(self):
         pass
 
-    def request(method, url, body=None, headers=None):
+    def request(self, method, url, body=None, headers=None):
             method = method.lower()
             if method == 'get':
                 response = requests.get(url, headers=headers)

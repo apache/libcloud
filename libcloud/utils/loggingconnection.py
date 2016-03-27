@@ -23,11 +23,11 @@ import xml.dom.minidom
 
 import sys
 import os
-import httplib
 
 from libcloud.common.base import (LibcloudHTTPConnection,
                                   LibcloudHTTPSConnection,
                                   HTTPResponse)
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
