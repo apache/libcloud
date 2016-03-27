@@ -25,8 +25,8 @@ except ImportError:
     have_paramiko = False
 
 from libcloud import _init_once
-from libcloud.common.base import LoggingHTTPConnection
-from libcloud.common.base import LoggingHTTPSConnection
+from libcloud.utils.loggingconnection import LoggingHTTPConnection
+from libcloud.utils.loggingconnection import LoggingHTTPSConnection
 
 from libcloud.test import unittest
 

@@ -18,16 +18,12 @@ verification, depending on libcloud.security settings.
 """
 import os
 import socket
-import base64
 import warnings
 
 import requests
 
 import libcloud.security
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlunquote
 
 
 __all__ = [
