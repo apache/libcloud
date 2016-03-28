@@ -32,6 +32,10 @@ General
 Compute
 ~~~~~~~
 
+- [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
+  (GITHUB-729)
+  [Viktor Ognev]
+
 - [dimension data] added support for managing host anti-affinity rules, added paging support to
   all supported calls and added support for requesting priority ordering when creating ACL rules
   (GITHUB-726)
