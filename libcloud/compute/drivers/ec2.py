@@ -3108,10 +3108,13 @@ class BaseEC2NodeDriver(NodeDriver):
         :param ex_encrypted: Specifies whether the volume should be encrypted.
         :type ex_encrypted: ``bool``
 
-        :param ex_kms_key_id: The full ARN of the AWS Key Management Service (AWS KMS)
-                        customer master key (CMK) to use when creating the encrypted volume.
-                        Example: arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
-                        Only used if encrypted is set to True
+        :param ex_kms_key_id: The full ARN of the AWS Key Management
+                            Service (AWS KMS) customer master key (CMK) to use
+                            when creating the encrypted volume.
+                            Example:
+                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123
+                                                    -456a-a12b-a123b4cd56ef.
+                            Only used if encrypted is set to True
         :type ex_kms_key_id: ``str``
 
         :return: The newly created volume.
@@ -3139,10 +3142,10 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted:
+        if ex_encrypted is not None:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id:
+        if ex_kms_key_id is not None:
             params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
