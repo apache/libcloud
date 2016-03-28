@@ -3113,8 +3113,8 @@ class BaseEC2NodeDriver(NodeDriver):
                             when creating the encrypted volume.
                             Example:
                             arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123
-                                                    -456a-a12b-a123b4cd56ef.
-                            Only used if encrypted is set to True
+                            -456a-a12b-a123b4cd56ef.
+                            Only used if encrypted is set to True.
         :type ex_kms_key_id: ``str``
 
         :return: The newly created volume.
