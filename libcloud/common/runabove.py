@@ -26,7 +26,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.connection import get_response_object
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from libcloud.httplib_ssl import LibcloudConnection
 
 __all__ = [
     'RunAboveResponse',
@@ -100,7 +100,7 @@ class RunAboveConnection(ConnectionUserAndKey):
             'Content-Type': 'application/json',
             'X-Ra-Application': user_id,
         }
-        httpcon = LibcloudHTTPSConnection(self.host)
+        httpcon = LibcloudConnection(self.host)
         httpcon.request(method='POST', url=action, body=data, headers=headers)
         response = httpcon.getresponse()
 
