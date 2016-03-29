@@ -36,8 +36,8 @@ from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 class DigitalOcean_v1_Tests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanNodeDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanNodeDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v1_PARAMS,
                                              api_version='v1')

@@ -30,8 +30,7 @@ from libcloud.test import MockHttp
 class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        CloudFlareDNSDriver.connectionCls.conn_classes = (
-            CloudFlareMockHttp, CloudFlareMockHttp)
+        CloudFlareDNSDriver.connectionCls.conn_class = CloudFlareMockHttp
         CloudFlareMockHttp.type = None
         CloudFlareMockHttp.use_param = 'a'
         self.driver = CloudFlareDNSDriver(*DNS_PARAMS_CLOUDFLARE)

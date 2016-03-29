@@ -28,8 +28,7 @@ class GoDaddyTests(unittest.TestCase):
 
     def setUp(self):
         GoDaddyMockHttp.type = None
-        GoDaddyDNSDriver.connectionCls.conn_classes = (
-            None, GoDaddyMockHttp)
+        GoDaddyDNSDriver.connectionCls.conn_class = GoDaddyMockHttp
         self.driver = GoDaddyDNSDriver(*DNS_PARAMS_GODADDY)
 
     def assertHasKeys(self, dictionary, keys):

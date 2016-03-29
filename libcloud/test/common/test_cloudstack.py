@@ -47,7 +47,7 @@ class CloudStackMockDriver(object):
 
 class CloudStackCommonTest(unittest.TestCase):
     def setUp(self):
-        CloudStackConnection.conn_classes = (None, CloudStackMockHttp)
+        CloudStackConnection.conn_class = CloudStackMockHttp
         self.connection = CloudStackConnection('apikey', 'secret',
                                                host=CloudStackMockDriver.host)
         self.connection.poll_interval = 0.0

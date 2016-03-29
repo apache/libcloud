@@ -51,8 +51,7 @@ class RackspaceUSTests(unittest.TestCase):
     endpoint_url = 'https://dns.api.rackspacecloud.com/v1.0/11111'
 
     def setUp(self):
-        self.klass.connectionCls.conn_classes = (
-            None, RackspaceMockHttp)
+        self.klass.connectionCls.conn_class = RackspaceMockHttp
         RackspaceMockHttp.type = None
         self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
         self.driver.connection.poll_interval = 0.0

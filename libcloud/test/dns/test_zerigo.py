@@ -29,8 +29,7 @@ from libcloud.test.secrets import DNS_PARAMS_ZERIGO
 
 class ZerigoTests(unittest.TestCase):
     def setUp(self):
-        ZerigoDNSDriver.connectionCls.conn_classes = (
-            None, ZerigoMockHttp)
+        ZerigoDNSDriver.connectionCls.conn_class = ZerigoMockHttp
         ZerigoMockHttp.type = None
         self.driver = ZerigoDNSDriver(*DNS_PARAMS_ZERIGO)
 

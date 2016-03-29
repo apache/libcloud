@@ -31,7 +31,7 @@ from libcloud.dns.base import Zone, Record
 class ZonomiTests(unittest.TestCase):
 
     def setUp(self):
-        ZonomiDNSDriver.connectionCls.conn_classes = (None, ZonomiMockHttp)
+        ZonomiDNSDriver.connectionCls.conn_class = ZonomiMockHttp
         ZonomiMockHttp.type = None
         self.driver = ZonomiDNSDriver(*DNS_PARAMS_ZONOMI)
         self.test_zone = Zone(id='zone.com', domain='zone.com',

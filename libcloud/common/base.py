@@ -600,6 +600,10 @@ class Connection(object):
                 url = '?'.join((action, urlencode(params, doseq=True)))
         else:
             url = action
+            
+        # IF connection has not yet been established
+        if self.connection is None:
+            self.connect()
 
         try:
             # @TODO: Should we just pass File object as body to request method

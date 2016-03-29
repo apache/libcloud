@@ -28,8 +28,7 @@ from libcloud.test.secrets import DNS_PARAMS_ROUTE53
 
 class Route53Tests(unittest.TestCase):
     def setUp(self):
-        Route53DNSDriver.connectionCls.conn_classes = (
-            Route53MockHttp, Route53MockHttp)
+        Route53DNSDriver.connectionCls.conn_class = Route53MockHttp
         Route53MockHttp.type = None
         self.driver = Route53DNSDriver(*DNS_PARAMS_ROUTE53)
 

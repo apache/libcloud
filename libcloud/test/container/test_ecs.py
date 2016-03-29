@@ -30,12 +30,10 @@ from libcloud.test import MockHttp
 class ElasticContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        ElasticContainerDriver.connectionCls.conn_classes = (
-            ECSMockHttp, ECSMockHttp)
+        ElasticContainerDriver.connectionCls.conn_class = ECSMockHttp
         ECSMockHttp.type = None
         ECSMockHttp.use_param = 'a'
-        ElasticContainerDriver.ecrConnectionClass.conn_classes = (
-            ECSMockHttp, ECSMockHttp)
+        ElasticContainerDriver.ecrConnectionClass.conn_class = ECSMockHttp
 
         self.driver = ElasticContainerDriver(*CONTAINER_PARAMS_ECS)
 

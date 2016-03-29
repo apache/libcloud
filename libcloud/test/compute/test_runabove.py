@@ -107,8 +107,7 @@ class RunAboveMockHttp(BaseRunAboveMockHttp):
 @patch('libcloud.common.runabove.RunAboveConnection._timedelta', 42)
 class RunAboveTests(unittest.TestCase):
     def setUp(self):
-        RunAboveNodeDriver.connectionCls.conn_classes = (
-            RunAboveMockHttp, RunAboveMockHttp)
+        RunAboveNodeDriver.connectionCls.conn_class = RunAboveMockHttp
         RunAboveMockHttp.type = None
         self.driver = RunAboveNodeDriver(*RUNABOVE_PARAMS)
 

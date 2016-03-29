@@ -26,8 +26,7 @@ from libcloud.test.secrets import DNS_PARAMS_DNSIMPLE
 
 class DNSimpleDNSTests(unittest.TestCase):
     def setUp(self):
-        DNSimpleDNSDriver.connectionCls.conn_classes = (
-            None, DNSimpleDNSMockHttp)
+        DNSimpleDNSDriver.connectionCls.conn_class = DNSimpleDNSMockHttp
         DNSimpleDNSMockHttp.type = None
         self.driver = DNSimpleDNSDriver(*DNS_PARAMS_DNSIMPLE)
 

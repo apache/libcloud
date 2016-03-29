@@ -38,8 +38,7 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         self.driver_klass.connectionCls.authCls = MockAuthConn()
-        self.driver_klass.connectionCls.conn_classes = (
-            None, BackblazeB2MockHttp)
+        self.driver_klass.connectionCls.conn_class = BackblazeB2MockHttp
         self.driver_klass.connectionCls.rawResponseCls = \
             BackblazeB2MockRawResponse
         BackblazeB2MockHttp.type = None

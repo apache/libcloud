@@ -26,8 +26,8 @@ from libcloud.utils.py3 import httplib
 class DigitalOceanTests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanBaseDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanBaseDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanBaseDriver(*DIGITALOCEAN_v2_PARAMS)
 

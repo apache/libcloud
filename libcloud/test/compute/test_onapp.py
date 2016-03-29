@@ -13,8 +13,7 @@ class OnAppNodeTestCase(LibcloudTestCase):
     driver_klass = OnAppNodeDriver
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = \
-            (None, OnAppMockHttp)
+        self.driver_klass.connectionCls.conn_class = OnAppMockHttp
 
         self.driver = OnAppNodeDriver(*ONAPP_PARAMS)
 

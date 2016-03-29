@@ -45,8 +45,7 @@ null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
 class SoftLayerTests(unittest.TestCase):
 
     def setUp(self):
-        SoftLayer.connectionCls.conn_classes = (
-            SoftLayerMockHttp, SoftLayerMockHttp)
+        SoftLayer.connectionCls.conn_class = SoftLayerMockHttp
         SoftLayerMockHttp.type = None
         self.driver = SoftLayer(*SOFTLAYER_PARAMS)
 

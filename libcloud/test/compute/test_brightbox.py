@@ -39,8 +39,7 @@ USER_DATA = '#!/bin/sh\ntest_script.sh\n'
 class BrightboxTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        BrightboxNodeDriver.connectionCls.conn_classes = (
-            None, BrightboxMockHttp)
+        BrightboxNodeDriver.connectionCls.conn_class = BrightboxMockHttp
         BrightboxMockHttp.type = None
         self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS)
 

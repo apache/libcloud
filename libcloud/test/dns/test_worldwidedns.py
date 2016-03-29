@@ -31,8 +31,7 @@ from libcloud.test.secrets import DNS_PARAMS_WORLDWIDEDNS
 
 class WorldWideDNSTests(unittest.TestCase):
     def setUp(self):
-        WorldWideDNSDriver.connectionCls.conn_classes = (
-            None, WorldWideDNSMockHttp)
+        WorldWideDNSDriver.connectionCls.conn_class = WorldWideDNSMockHttp
         WorldWideDNSMockHttp.type = None
         self.driver = WorldWideDNSDriver(*DNS_PARAMS_WORLDWIDEDNS)
 

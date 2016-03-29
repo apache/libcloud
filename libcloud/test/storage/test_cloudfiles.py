@@ -55,8 +55,7 @@ class CloudFilesTests(unittest.TestCase):
     region = 'ord'
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (
-            None, CloudFilesMockHttp)
+        self.driver_klass.connectionCls.conn_class = CloudFilesMockHttp
         self.driver_klass.connectionCls.rawResponseCls = \
             CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None

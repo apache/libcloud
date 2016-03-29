@@ -53,9 +53,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def setUp(self):
         GCEMockHttp.test = self
-        GCENodeDriver.connectionCls.conn_classes = (GCEMockHttp, GCEMockHttp)
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GCEMockHttp.type = None
         kwargs = GCE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'

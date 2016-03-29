@@ -40,7 +40,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
     def setUp(self):
         Azure = get_driver(Provider.AZURE)
-        Azure.connectionCls.conn_classes = (None, AzureMockHttp)
+        Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(self.SUBSCRIPTION_ID, self.KEY_FILE)
 
     def test_locations_returned_successfully(self):

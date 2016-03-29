@@ -31,8 +31,7 @@ class VultrTests(unittest.TestCase):
 
     def setUp(self):
         VultrMockHttp.type = None
-        VultrDNSDriver.connectionCls.conn_classes = (
-            None, VultrMockHttp)
+        VultrDNSDriver.connectionCls.conn_class = VultrMockHttp
         self.driver = VultrDNSDriver(*VULTR_PARAMS)
         self.test_zone = Zone(id='test.com', type='master', ttl=None,
                               domain='test.com', extra={}, driver=self)

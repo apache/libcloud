@@ -33,7 +33,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-m
 class GoGridTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        GoGridNodeDriver.connectionCls.conn_classes = (None, GoGridMockHttp)
+        GoGridNodeDriver.connectionCls.conn_class = GoGridMockHttp
         GoGridMockHttp.type = None
         self.driver = GoGridNodeDriver("foo", "bar")
 

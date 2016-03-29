@@ -32,7 +32,7 @@ from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 class DimensionDataTests(unittest.TestCase):
 
     def setUp(self):
-        DimensionData.connectionCls.conn_classes = (None, DimensionDataMockHttp)
+        DimensionData.connectionCls.conn_class = DimensionDataMockHttp
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 

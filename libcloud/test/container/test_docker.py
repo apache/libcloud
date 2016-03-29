@@ -30,8 +30,7 @@ from libcloud.test import MockHttp
 class DockerContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        DockerContainerDriver.connectionCls.conn_classes = (
-            DockerMockHttp, DockerMockHttp)
+        DockerContainerDriver.connectionCls.conn_class = DockerMockHttp
         DockerMockHttp.type = None
         DockerMockHttp.use_param = 'a'
         self.driver = DockerContainerDriver(*CONTAINER_PARAMS_DOCKER)

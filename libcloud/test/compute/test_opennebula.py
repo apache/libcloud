@@ -73,8 +73,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_1_4_MockHttp, OpenNebula_1_4_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_1_4_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('1.4',))
 
     def test_create_node(self):
@@ -270,8 +269,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_2_0_MockHttp, OpenNebula_2_0_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_2_0_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('2.0',))
 
     def test_create_node(self):
@@ -542,8 +540,7 @@ class OpenNebula_3_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_3_0_MockHttp, OpenNebula_3_0_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_3_0_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.0',))
 
     def test_ex_list_networks(self):
@@ -586,8 +583,7 @@ class OpenNebula_3_2_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_3_2_MockHttp, OpenNebula_3_2_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_3_2_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.2',))
 
     def test_reboot_node(self):
@@ -651,8 +647,7 @@ class OpenNebula_3_6_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_3_6_MockHttp, OpenNebula_3_6_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_3_6_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.6',))
 
     def test_create_volume(self):
@@ -721,8 +716,7 @@ class OpenNebula_3_8_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         Setup test environment.
         """
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (
-            OpenNebula_3_8_MockHttp, OpenNebula_3_8_MockHttp)
+        OpenNebulaNodeDriver.connectionCls.conn_class = OpenNebula_3_8_MockHttp
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.8',))
 
     def test_list_sizes(self):

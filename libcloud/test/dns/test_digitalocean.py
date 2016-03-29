@@ -26,8 +26,7 @@ from libcloud.utils.py3 import httplib
 class DigitalOceanDNSTests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanDNSDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanDNSMockHttp)
+        DigitalOceanDNSDriver.connectionCls.conn_class = DigitalOceanDNSMockHttp
         DigitalOceanDNSMockHttp.type = None
         self.driver = DigitalOceanDNSDriver(*DIGITALOCEAN_v2_PARAMS)
 

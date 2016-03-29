@@ -34,8 +34,7 @@ from libcloud.dns.drivers.durabledns import RECORD_EXTRA_PARAMS_DEFAULT_VALUES
 class DurableDNSTests(LibcloudTestCase):
 
     def setUp(self):
-        DurableDNSDriver.connectionCls.conn_classes = \
-            (None, DurableDNSMockHttp)
+        DurableDNSDriver.connectionCls.conn_class = DurableDNSMockHttp
         DurableDNSMockHttp.type = None
         self.driver = DurableDNSDriver(*DNS_PARAMS_DURABLEDNS)
 

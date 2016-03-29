@@ -30,7 +30,7 @@ class VoxelTest(unittest.TestCase):
 
     def setUp(self):
 
-        Voxel.connectionCls.conn_classes = (None, VoxelMockHttp)
+        Voxel.connectionCls.conn_class = VoxelMockHttp
         VoxelMockHttp.type = None
         self.driver = Voxel(*VOXEL_PARAMS)
 

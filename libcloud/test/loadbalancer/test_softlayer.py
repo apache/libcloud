@@ -32,8 +32,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 class SoftlayerLBTests(unittest.TestCase):
     def setUp(self):
 
-        SoftlayerLBDriver.connectionCls.conn_classes = (SoftLayerMockHttp,
-                                                        SoftLayerMockHttp)
+        SoftlayerLBDriver.connectionCls.conn_class = SoftLayerMockHttp
         SoftLayerMockHttp.type = None
 
         self.driver = SoftlayerLBDriver(*SOFTLAYER_PARAMS)

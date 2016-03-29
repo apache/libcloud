@@ -29,7 +29,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def setUp(self):
         ProfitBricks = get_driver(Provider.PROFIT_BRICKS)
-        ProfitBricks.connectionCls.conn_classes = (None, ProfitBricksMockHttp)
+        ProfitBricks.connectionCls.conn_class = ProfitBricksMockHttp
         self.driver = ProfitBricks(*PROFIT_BRICKS_PARAMS)
 
     ''' Server Function Tests

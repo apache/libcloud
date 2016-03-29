@@ -31,8 +31,7 @@ class LiquidWebTests(unittest.TestCase):
 
     def setUp(self):
         LiquidWebMockHttp.type = None
-        LiquidWebDNSDriver.connectionCls.conn_classes = (
-            None, LiquidWebMockHttp)
+        LiquidWebDNSDriver.connectionCls.conn_class = LiquidWebMockHttp
         self.driver = LiquidWebDNSDriver(*DNS_PARAMS_LIQUIDWEB)
         self.test_zone = Zone(id='11', type='master', ttl=None,
                               domain='example.com', extra={},

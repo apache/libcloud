@@ -28,8 +28,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 class BrightboxLBTests(unittest.TestCase):
     def setUp(self):
-        BrightboxLBDriver.connectionCls.conn_classes = (None,
-                                                        BrightboxLBMockHttp)
+        BrightboxLBDriver.connectionCls.conn_class = BrightboxLBMockHttp
         BrightboxLBMockHttp.type = None
         self.driver = BrightboxLBDriver(*LB_BRIGHTBOX_PARAMS)
 

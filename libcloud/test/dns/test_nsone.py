@@ -14,7 +14,7 @@ from libcloud.dns.base import Zone, Record
 class NsOneTests(unittest.TestCase):
     def setUp(self):
         NsOneMockHttp.type = None
-        NsOneDNSDriver.connectionCls.conn_classes = (None, NsOneMockHttp)
+        NsOneDNSDriver.connectionCls.conn_class = NsOneMockHttp
         self.driver = NsOneDNSDriver(*DNS_PARAMS_NSONE)
         self.test_zone = Zone(id='test.com', type='master', ttl=None,
                               domain='test.com', extra={}, driver=self)

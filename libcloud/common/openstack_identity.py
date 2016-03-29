@@ -583,7 +583,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
 
         # enable tests to use the same mock connection classes.
         if parent_conn:
-            self.conn_classes = parent_conn.conn_classes
+            self.conn_class = parent_conn.conn_class
             self.driver = parent_conn.driver
         else:
             self.driver = None

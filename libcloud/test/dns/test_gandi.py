@@ -28,8 +28,7 @@ from libcloud.test.common.test_gandi import BaseGandiMockHttp
 class GandiTests(unittest.TestCase):
 
     def setUp(self):
-        GandiDNSDriver.connectionCls.conn_classes = (
-            GandiMockHttp, GandiMockHttp)
+        GandiDNSDriver.connectionCls.conn_class = GandiMockHttp
         GandiMockHttp.type = None
         self.driver = GandiDNSDriver(*DNS_GANDI)
 

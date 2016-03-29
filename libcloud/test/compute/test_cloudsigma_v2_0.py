@@ -35,8 +35,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 class CloudSigmaAPI20BaseTestCase(object):
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = \
-            (CloudSigmaMockHttp, CloudSigmaMockHttp)
+        self.driver_klass.connectionCls.conn_class = CloudSigmaMockHttp
 
         CloudSigmaMockHttp.type = None
         CloudSigmaMockHttp.use_param = 'do'

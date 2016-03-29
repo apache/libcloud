@@ -44,7 +44,7 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         """
         Set up the driver with the main user
         """
-        AbiquoNodeDriver.connectionCls.conn_classes = (AbiquoMockHttp, None)
+        AbiquoNodeDriver.connectionCls.conn_class = AbiquoMockHttp
         self.driver = AbiquoNodeDriver('son', 'goku',
                                        'http://dummy.host.com/api')
 
@@ -65,7 +65,7 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         Test, through the 'list_images' method, that a '403 Forbidden'
         raises an 'ForbidenError' instead of the 'MalformedUrlException'
         """
-        AbiquoNodeDriver.connectionCls.conn_classes = (AbiquoMockHttp, None)
+        AbiquoNodeDriver.connectionCls.conn_class = AbiquoMockHttp
         conn = AbiquoNodeDriver('son', 'gohan', 'http://dummy.host.com/api')
         self.assertRaises(ForbiddenError, conn.list_images)
 
