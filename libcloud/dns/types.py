@@ -48,7 +48,7 @@ class Provider(object):
     DURABLEDNS = 'durabledns'
     GODADDY = 'godaddy'
     CLOUDFLARE = 'cloudflare'
-
+    LUADNS = 'luadns'
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
