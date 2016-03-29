@@ -23,9 +23,8 @@ from mock import Mock, call, patch
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.utils.loggingconnection import LoggingConnection
 from libcloud.httplib_ssl import LibcloudBaseConnection
-from libcloud.httplib_ssl import LibcloudHTTPConnection
+from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.misc import retry
 
 
@@ -74,7 +73,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
                                 proxy_url=proxy_url)
 
     def test_constructor(self):
-        conn = LibcloudHTTPConnection(host='localhost', port=80)
+        conn = LibcloudConnection(host='localhost', port=80)
         self.assertEqual(conn.proxy_scheme, None)
         self.assertEqual(conn.proxy_host, None)
         self.assertEqual(conn.proxy_port, None)
@@ -86,7 +85,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3128)
 
         proxy_url = 'http://127.0.0.4:3128'
-        conn = LibcloudHTTPConnection(host='localhost', port=80,
+        conn = LibcloudConnection(host='localhost', port=80,
                                       proxy_url=proxy_url)
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.4')
@@ -94,7 +93,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         os.environ['http_proxy'] = proxy_url
         proxy_url = 'http://127.0.0.5:3128'
-        conn = LibcloudHTTPConnection(host='localhost', port=80,
+        conn = LibcloudConnection(host='localhost', port=80,
                                       proxy_url=proxy_url)
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.5')
@@ -258,26 +257,6 @@ class ConnectionClassTestCase(unittest.TestCase):
             pass
 
         self.assertEqual(con.context, {})
-
-    def test_log_curl(self):
-        url = '/test/path'
-        body = None
-        headers = {}
-
-        con = LoggingConnection()
-        con.protocol = 'http'
-        con.host = 'example.com'
-        con.port = 80
-
-        for method in ['GET', 'POST', 'PUT', 'DELETE']:
-            cmd = con._log_curl(method=method, url=url, body=body,
-                                headers=headers)
-            self.assertEqual(cmd, 'curl -i -X %s --compress http://example.com:80/test/path' %
-                             (method))
-
-        # Should use --head for head requests
-        cmd = con._log_curl(method='HEAD', url=url, body=body, headers=headers)
-        self.assertEqual(cmd, 'curl -i --head --compress http://example.com:80/test/path')
 
     def _raise_socket_error(self):
         raise socket.gaierror('')

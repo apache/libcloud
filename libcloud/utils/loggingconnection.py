@@ -19,7 +19,7 @@ except:
     import json
 
 from pipes import quote as pquote
-import xml.dom.minidom
+from xml.dom.minidom import parseString
 
 import sys
 import os
@@ -104,7 +104,7 @@ class LoggingConnection():
                     pass
             elif pretty_print and content_type == 'text/xml':
                 try:
-                    elem = xml.dom.minidom.parseString(body.decode('utf-8'))
+                    elem = parseString(body.decode('utf-8'))
                     body = elem.toprettyxml()
                 except Exception:
                     # Invalid XML

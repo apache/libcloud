@@ -45,8 +45,7 @@ from libcloud.utils.compression import decompress_data
 
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudHTTPConnection
-from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from libcloud.httplib_ssl import LibcloudConnection
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
@@ -319,8 +318,8 @@ class Connection(object):
     """
     A Base Connection class to derive from.
     """
-    # conn_classes = (LoggingHTTPSConnection)
-    conn_classes = (LibcloudHTTPConnection, LibcloudHTTPSConnection)
+    # conn_class = LoggingHTTPSConnection
+    conn_class = LibcloudConnection
 
     responseCls = Response
     rawResponseCls = RawResponse
@@ -470,12 +469,12 @@ class Connection(object):
         if self.proxy_url:
             kwargs.update({'proxy_url': self.proxy_url})
 
-        connection = self.conn_classes[secure](**kwargs)
+        connection = self.conn_class(**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
-        # connection = self.conn_classes[False]("127.0.0.1", 8080)
+        # connection = self.conn_class("127.0.0.1", 8080)
 
         self.connection = connection
 

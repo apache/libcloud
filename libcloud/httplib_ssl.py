@@ -18,18 +18,15 @@ verification, depending on libcloud.security settings.
 """
 import os
 import socket
-import warnings
 
 import requests
 
-import libcloud.security
 from libcloud.utils.py3 import urlparse
 
 
 __all__ = [
     'LibcloudBaseConnection',
-    'LibcloudHTTPConnection',
-    'LibcloudHTTPSConnection'
+    'LibcloudConnection'
 ]
 
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
@@ -141,103 +138,64 @@ class LibcloudBaseConnection(object):
                 proxy_password)
 
 
-class LibcloudHTTPConnection(LibcloudBaseConnection):
-    def __init__(self, *args, **kwargs):
+class LibcloudConnection(LibcloudBaseConnection):
+    timeout = None
+    host = None
+    response = None
+
+    def __init__(self,  host, port, **kwargs):
+        self.host = '{}://{}'.format(
+            'https' if port == 443 else 'http',
+            host
+        )
         # Support for HTTP proxy
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
-        super(LibcloudHTTPConnection, self).__init__()
+        super(LibcloudConnection, self).__init__()
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
+        self.session.timeout = kwargs.get('timeout', 60)
 
-    def connect():
+    def request(self, method, url, body=None, headers=None, raw=False):
+        self.response = self.session.request(
+            method=method.lower(),
+            url=''.join([self.host, url]),
+            data=body,
+            headers=headers,
+            allow_redirects=1,
+            stream=raw
+        )
+
+    def getresponse(self):
+        return self
+
+    def getheaders(self):
+        # urlib decoded response body, libcloud has a bug
+        # and will not check if content is gzipped, so let's
+        # remove headers indicating compressed content.
+        if 'content-encoding' in self.response.headers:
+            del self.response.headers['content-encoding']
+        return self.response.headers
+
+    @property
+    def status(self):
+        return self.response.status_code
+
+    @property
+    def reason(self):
+        return None if self.response.status_code > 400 else self.response.text
+
+    def connect(self):  # pragma: no cover
         pass
 
-    def request(self, method, url, body=None, headers=None):
-        method = method.lower()
-        if method == 'get':
-            response = self.session.get(url, headers=headers)
-        elif method == 'post':
-            response = self.session.post(url, data=body, headers=headers)
-        elif method == 'head':
-            response = self.session.head(url, headers=headers)
-        return response
+    def read(self):
+        return self.response.content
 
-
-class LibcloudHTTPSConnection(LibcloudBaseConnection):
-    """
-    LibcloudHTTPSConnection
-
-    Subclass of HTTPSConnection which verifies certificate names
-    if and only if CA certificates are available.
-    """
-    verify = True         # verify by default
-    ca_cert = None        # no default CA Certificate
-
-    def __init__(self, *args, **kwargs):
-        """
-        Constructor
-        """
-        self._setup_verify()
-        # Support for HTTP proxy
-        proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
-        proxy_url = kwargs.pop('proxy_url', proxy_url_env)
-
-        super(LibcloudHTTPSConnection, self).__init__()
-
-        if proxy_url:
-            self.set_http_proxy(proxy_url=proxy_url)
-
-    def _setup_verify(self):
-        """
-        Setup Verify SSL or not
-
-        Reads security module's VERIFY_SSL_CERT and toggles whether
-        the class overrides the connect() class method or runs the
-        inherited httplib.HTTPSConnection connect()
-        """
-        self.verify = libcloud.security.VERIFY_SSL_CERT
-
-        if self.verify:
-            self._setup_ca_cert()
-        else:
-            warnings.warn(libcloud.security.VERIFY_SSL_DISABLED_MSG)
-
-    def _setup_ca_cert(self):
-        """
-        Setup CA Certs
-
-        Search in CA_CERTS_PATH for valid candidates and
-        return first match.  Otherwise, complain about certs
-        not being available.
-        """
-        if not self.verify:
-            return
-
-        ca_certs_available = [cert
-                              for cert in libcloud.security.CA_CERTS_PATH
-                              if os.path.exists(cert) and os.path.isfile(cert)]
-        if ca_certs_available:
-            # use first available certificate
-            self.ca_cert = ca_certs_available[0]
-        else:
-            raise RuntimeError(
-                libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
-
-    def connect(self):
-        pass
-
-    def request(self, method, url, body=None, headers=None):
-            method = method.lower()
-            if method == 'get':
-                response = requests.get(url, headers=headers)
-            elif method == 'post':
-                response = requests.post(url, data=body, headers=headers)
-            elif method == 'head':
-                response = requests.head(url, headers=headers)
-            return response
+    def close(self):  # pragma: no cover
+        # return connection back to pool
+        self.response.close()
 
 
 def get_socket_error_exception(ssl_version, exc):
