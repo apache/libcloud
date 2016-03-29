@@ -39,9 +39,9 @@ def enable_debug(fo):
     :param fo: Where to append debugging information
     :type fo: File like object, only write operations are used.
     """
-    from libcloud.common.base import (Connection,
-                                      LoggingConnection)
-    LoggingConnection.log = fo
+    from libcloud.common.base import Connection
+    from libcloud.utils.loggingconnection import LoggingConnection
+
     LoggingConnection.log = fo
     Connection.conn_class = LoggingConnection
 
