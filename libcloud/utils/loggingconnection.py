@@ -26,8 +26,7 @@ from xml.dom.minidom import parseString
 import sys
 import os
 
-from libcloud.common.base import (LibcloudHTTPConnection,
-                                  LibcloudHTTPSConnection,
+from libcloud.common.base import (LibcloudConnection,
                                   HTTPResponse)
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import PY3
@@ -40,7 +39,7 @@ from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.compression import decompress_data
 
 
-class LoggingConnection():
+class LoggingBaseConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
     with the curl command.
@@ -170,7 +169,7 @@ class LoggingConnection():
         return " ".join(cmd)
 
 
-class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
+class LoggingConnection(LoggingBaseConnection, LibcloudConnection):
     """
     Utility Class for logging HTTPS connections
     """
@@ -178,7 +177,7 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     protocol = 'https'
 
     def getresponse(self):
-        r = LibcloudHTTPSConnection.getresponse(self)
+        r = LibcloudConnection.getresponse(self)
         if self.log is not None:
             r, rv = self._log_response(r)
             self.log.write(rv + "\n")
@@ -192,31 +191,5 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return LibcloudHTTPSConnection.request(self, method, url, body,
-                                               headers)
-
-
-class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
-    """
-    Utility Class for logging HTTP connections
-    """
-
-    protocol = 'http'
-
-    def getresponse(self):
-        r = LibcloudHTTPConnection.getresponse(self)
-        if self.log is not None:
-            r, rv = self._log_response(r)
-            self.log.write(rv + "\n")
-            self.log.flush()
-        return r
-
-    def request(self, method, url, body=None, headers=None):
-        headers.update({'X-LC-Request-ID': str(id(self))})
-        if self.log is not None:
-            pre = '# -------- begin %d request ----------\n' % id(self)
-            self.log.write(pre +
-                           self._log_curl(method, url, body, headers) + "\n")
-            self.log.flush()
-        return LibcloudHTTPConnection.request(self, method, url,
-                                              body, headers)
+        return LibcloudConnection.request(self, method, url, body,
+                                          headers)

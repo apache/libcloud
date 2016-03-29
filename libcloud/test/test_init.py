@@ -25,8 +25,7 @@ except ImportError:
     have_paramiko = False
 
 from libcloud import _init_once
-from libcloud.utils.loggingconnection import LoggingHTTPConnection
-from libcloud.utils.loggingconnection import LoggingHTTPSConnection
+from libcloud.utils.loggingconnection import LoggingConnection
 
 from libcloud.test import unittest
 
@@ -36,8 +35,7 @@ class TestUtils(unittest.TestCase):
         # Debug mode is disabled
         _init_once()
 
-        self.assertEqual(LoggingHTTPConnection.log, None)
-        self.assertEqual(LoggingHTTPSConnection.log, None)
+        self.assertEqual(LoggingConnection.log, None)
 
         if have_paramiko:
             logger = paramiko.util.logging.getLogger()
@@ -48,8 +46,7 @@ class TestUtils(unittest.TestCase):
         os.environ['LIBCLOUD_DEBUG'] = '/dev/null'
         _init_once()
 
-        self.assertTrue(LoggingHTTPConnection.log is not None)
-        self.assertTrue(LoggingHTTPSConnection.log is not None)
+        self.assertTrue(LoggingConnection.log is not None)
 
         if have_paramiko:
             logger = paramiko.util.logging.getLogger()
