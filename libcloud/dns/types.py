@@ -49,6 +49,7 @@ class Provider(object):
     GODADDY = 'godaddy'
     CLOUDFLARE = 'cloudflare'
     NSONE = 'nsone'
+    NFSN = 'nfsn'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

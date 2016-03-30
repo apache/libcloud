@@ -14,6 +14,7 @@ Provider              Documentation                             Provider constan
 `Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                   LINODE            :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_      :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
+`NearlyFreeSpeech.net DNS`_                                     NFSN              :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`      
 `Point DNS`_          :doc:`Click </dns/drivers/pointdns>`      POINTDNS          :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
 `Rackspace DNS`_                                                RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `Rackspace DNS (UK)`_                                           RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUKDNSDriver` 
@@ -37,6 +38,7 @@ Provider              Documentation                             Provider constan
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
+.. _`NearlyFreeSpeech.net DNS`: https://www.nearlyfreespeech.net/
 .. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/
