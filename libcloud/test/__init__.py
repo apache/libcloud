@@ -91,7 +91,7 @@ class MockResponse(object):
         self.reason = reason or self.reason
 
     def read(self, *args, **kwargs):
-        return self.body.read(*args, **kwargs)
+        return self.body
 
     def next(self):
         if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
