@@ -57,6 +57,8 @@ DRIVERS = {
     ('libcloud.dns.drivers.godaddy', 'GoDaddyDNSDriver'),
     Provider.CLOUDFLARE:
     ('libcloud.dns.drivers.cloudflare', 'CloudFlareDNSDriver'),
+    Provider.NFSN:
+    ('libcloud.dns.drivers.nfsn', 'NFSNDNSDriver'),
 
     # Deprecated
     Provider.RACKSPACE_US:
