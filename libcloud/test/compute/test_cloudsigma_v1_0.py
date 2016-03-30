@@ -35,7 +35,7 @@ class CloudSigmaAPI10BaseTestCase(object):
     def setUp(self):
         self.driver = self.driver_klass(*self.driver_args,
                                         **self.driver_kwargs)
-
+        CloudSigmaHttp.type = None
         self.driver.connectionCls.conn_class = CloudSigmaHttp
 
     def test_list_nodes(self):
