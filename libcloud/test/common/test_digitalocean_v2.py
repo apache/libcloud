@@ -96,8 +96,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
 
     def _v2_actions_page_1(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions_page_1.json')
-        return (self.response[None], body, {},
-                httplib.responses[self.response[None]])
+        return (httplib.OK, body, {},
+                httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
