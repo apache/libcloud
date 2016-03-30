@@ -79,7 +79,7 @@ class MockResponse(object):
     A mock HTTPResponse
     """
     headers = {}
-    body = None
+    body = ''
     status = 0
     reason = ''
     version = 11

@@ -36,11 +36,10 @@ import requests
 
 import libcloud
 
-from libcloud.utils.py3 import PY3, PY25
+from libcloud.utils.py3 import PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys, retry
 from libcloud.utils.compression import decompress_data
@@ -153,7 +152,7 @@ class Response(object):
         self.error = response.reason
         self.status = response.status_code
 
-        self.body = response.text
+        self.body = response.text if response.text is not None else ''
 
         if not self.success():
             raise exception_from_message(code=self.status,
@@ -170,7 +169,7 @@ class Response(object):
         :return: Parsed body.
         :rtype: ``str``
         """
-        return self.body
+        return self.body if self.body is not None else ''
 
     def parse_error(self):
         """
@@ -227,7 +226,8 @@ class JsonResponse(Response):
     """
 
     def parse_body(self):
-        if len(self.body) == 0 and not self.parse_zero_length_body:
+        if self.body is not None and \
+        len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
 
         try:
@@ -249,7 +249,7 @@ class XmlResponse(Response):
 
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body
+            return self.body if self.body is not None else ''
 
         try:
             body = ET.XML(self.body)
