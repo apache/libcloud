@@ -5,8 +5,8 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.luadns import LuadnsResponse, LuadnsConnection,\
-  LuadnsException
+from libcloud.common.luadns import LuadnsResponse, LuadnsConnection
+from libcloud.common.luadns import LuadnsException
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
