@@ -15,6 +15,7 @@
 
 import sys
 import random
+import requests
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import StringIO
@@ -78,14 +79,14 @@ class MockResponse(object):
     A mock HTTPResponse
     """
     headers = {}
-    body = StringIO()
+    body = None
     status = 0
     reason = ''
     version = 11
 
     def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(u(body)) if body else StringIO()
+        self.body = body
         self.headers = headers or self.headers
         self.reason = reason or self.reason
 
@@ -109,6 +110,17 @@ class MockResponse(object):
 
     def msg(self):
         raise NotImplemented
+
+    @property
+    def status_code(self):
+        return self.status
+
+    def raise_for_status(self):
+        raise requests.exceptions.HTTPError(self.status)
+
+    @property
+    def text(self):
+        return self.body
 
 
 class BaseMockHttpObject(object):
@@ -323,6 +335,11 @@ class MockRawResponse(BaseMockHttpObject):
 
     @property
     def status(self):
+        self._get_response_if_not_availale()
+        return self._status
+
+    @property
+    def status_code(self):
         self._get_response_if_not_availale()
         return self._status
 

@@ -70,6 +70,5 @@ def exception_from_message(code, message, headers=None):
 
     if headers and 'retry_after' in headers:
         kwargs['retry_after'] = headers['retry_after']
-
     cls = _code_map.get(code, BaseHTTPError)
     return cls(**kwargs)

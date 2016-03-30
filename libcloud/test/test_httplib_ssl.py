@@ -36,7 +36,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
     def setUp(self):
         libcloud.security.VERIFY_SSL_CERT = False
         libcloud.security.CA_CERTS_PATH = ORIGINAL_CA_CERS_PATH
-        self.httplib_object = LibcloudConnection('foo.bar')
+        self.httplib_object = LibcloudConnection('foo.bar', port=80)
 
     def test_custom_ca_path_using_env_var_doesnt_exist(self):
         os.environ['SSL_CERT_FILE'] = '/foo/doesnt/exist'

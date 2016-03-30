@@ -32,6 +32,8 @@ try:
 except:
     import json
 
+import requests
+
 import libcloud
 
 from libcloud.utils.py3 import PY3, PY25
@@ -149,26 +151,13 @@ class Response(object):
         # names
         self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
-        self.status = response.status
+        self.status = response.status_code
 
-        # This attribute is set when using LoggingConnection.
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data:
-            # LoggingConnection already decompresses data so it can log it
-            # which means we don't need to decompress it here.
-            self.body = response._original_data
-        else:
-            self.body = self._decompress_response(body=response.read(),
-                                                  headers=self.headers)
-
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
+        self.body = response.text
 
         if not self.success():
             raise exception_from_message(code=self.status,
-                                         message=self.parse_error(),
-                                         headers=self.headers)
+                                         message=self.parse_error())
 
         self.object = self.parse_body()
 
@@ -204,7 +193,8 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-        return self.status in [httplib.OK, httplib.CREATED]
+        return self.status in [requests.codes.ok, requests.codes.created,
+                               httplib.OK, httplib.CREATED]
 
     def _decompress_response(self, body, headers):
         """
