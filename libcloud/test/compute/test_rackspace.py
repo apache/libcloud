@@ -184,7 +184,7 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_args = RACKSPACE_NOVA_PARAMS
     driver_kwargs = {'region': 'lon'}
 
-    conn_classes = RackspaceNovaLonMockHttp
+    conn_class = RackspaceNovaLonMockHttp
     auth_url = 'https://lon.auth.api.example.com'
 
     expected_endpoint = 'https://lon.servers.api.rackspacecloud.com/v2/1337'
