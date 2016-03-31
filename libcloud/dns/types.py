@@ -50,6 +50,7 @@ class Provider(object):
     CLOUDFLARE = 'cloudflare'
     NSONE = 'nsone'
     LUADNS = 'luadns'
+    NFSN = 'nfsn'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
