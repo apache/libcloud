@@ -24,7 +24,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
@@ -65,6 +65,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 7)
 
+    def test_node_extras(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(isinstance(ret[0].extra['vmWareTools'], DimensionDataServerVMWareTools))
+        self.assertTrue(isinstance(ret[0].extra['cpu'], DimensionDataServerCpuSpecification))
+        self.assertTrue(isinstance(ret[0].extra['disks'], list))
+        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
+        self.assertTrue(isinstance(ret[1].extra['disks'], list))
+        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
+
     def test_server_states(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
@@ -76,16 +88,6 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret[5].state == 'terminated')
         self.assertTrue(ret[6].state == 'stopped')
         self.assertEqual(len(ret), 7)
-        node = ret[0]
-        self.assertTrue(isinstance(node.extra['disks'], list))
-        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
-
-        self.assertTrue(isinstance(ret[0].extra['disks'], list))
-        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
-        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
-        self.assertTrue(isinstance(ret[1].extra['disks'], list))
-        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
-        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
