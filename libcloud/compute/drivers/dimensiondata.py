@@ -32,6 +32,7 @@ from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.common.dimensiondata import DimensionDataServerDisk
+from libcloud.common.dimensiondata import DimensionDataServerVMWareTools
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
@@ -2129,6 +2130,12 @@ class DimensionDataNodeDriver(NodeDriver):
             cores_per_socket=int(element.get('coresPerSocket')),
             performance=element.get('speed'))
 
+    def _to_vmware_tools(self, element):
+        return DimensionDataServerVMWareTools(
+            status=element.get('runningStatus'),
+            version_status=element.get('versionStatus'),
+            api_version=element.get('apiVersion'))
+
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
         return [self._to_disk(el) for el in disk_elements]
@@ -2157,6 +2164,7 @@ class DimensionDataNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
+        vmware_tools = self._to_vmware_tools(element.find(fixxpath('vmwareTools', TYPES_URN)))
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -2182,7 +2190,8 @@ class DimensionDataNodeDriver(NodeDriver):
                 'operatingSystem',
                 TYPES_URN)).get('displayName'),
             'status': status,
-            'disks': disks
+            'disks': disks,
+            'vmWareTools': vmware_tools
         }
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
