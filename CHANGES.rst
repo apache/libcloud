@@ -132,6 +132,10 @@ Loadbalancer
 DNS
 ~~~~
 
+- Added Lua DNS driver
+  [Oltjano Terpollari]
+  (GITHUB-732)
+
 - Added NSOne driver
   [Oltjano Terpollari]
   (GITHUB-710)
