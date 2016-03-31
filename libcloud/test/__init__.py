@@ -89,15 +89,16 @@ class MockResponse(object):
         self.body = body
         self.headers = headers or self.headers
         self.reason = reason or self.reason
+        self.body_iter = iter(self.body) if self.body is not None else None
 
     def read(self, *args, **kwargs):
         return self.body
 
     def next(self):
         if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-            return self.body.next()
+            return self.body_iter.next()
         else:
-            return next(self.body)
+            return next(self.body_iter)
 
     def __next__(self):
         return self.next()
