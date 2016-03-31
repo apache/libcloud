@@ -4,6 +4,7 @@
 Provider                              list volumes create volume destroy volume attach volume detach volume list snapshots create snapshot
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 `Abiquo`_                             no           no            no             no            no            no             no             
+`Aliyun ECS`_                         yes          yes           yes            yes           yes           yes            yes            
 `PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
@@ -79,6 +80,7 @@ Provider                              list volumes create volume destroy volume 
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net

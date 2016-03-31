@@ -4,6 +4,7 @@
 Provider                              list nodes create node reboot node destroy node list images list sizes deploy node
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 `Abiquo`_                             yes        yes         yes         yes          yes         yes        no         
+`Aliyun ECS`_                         yes        yes         yes         yes          yes         yes        yes        
 `PCextreme AuroraCompute`_            yes        yes         yes         yes          yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
@@ -79,6 +80,7 @@ Provider                              list nodes create node reboot node destroy
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net

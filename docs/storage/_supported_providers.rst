@@ -3,6 +3,7 @@
 ============================= =============================================== ================= ============================================== ====================================
 Provider                      Documentation                                   Provider constant Module                                         Class Name                          
 ============================= =============================================== ================= ============================================== ====================================
+`Aliyun OSS`_                                                                 ALIYUN_OSS        :mod:`libcloud.storage.drivers.oss`            :class:`OSSStorageDriver`           
 `PCextreme AuroraObjects`_    :doc:`Click </storage/drivers/auroraobjects>`   AURORAOBJECTS     :mod:`libcloud.storage.drivers.auroraobjects`  :class:`AuroraObjectsStorageDriver` 
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `Backblaze B2`_               :doc:`Click </storage/drivers/backblaze_b2>`    BACKBLAZE_B2      :mod:`libcloud.storage.drivers.backblaze_b2`   :class:`BackblazeB2StorageDriver`   
@@ -20,11 +21,13 @@ Provider                      Documentation                                   Pr
 `Amazon S3 (ap-northeast-2)`_                                                 S3_AP_NORTHEAST2  :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE2StorageDriver`       
 `Amazon S3 (ap-southeast-1)`_                                                 S3_AP_SOUTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APSEStorageDriver`        
 `Amazon S3 (eu-west-1)`_                                                      S3_EU_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3EUWestStorageDriver`      
+`Amazon S3 (standard)`_                                                       S3_RGW_OUTSCALE   :mod:`libcloud.storage.drivers.s3`             :class:`S3RGWOutscaleStorageDriver` 
 `Amazon S3 (sa-east-1)`_                                                      S3_SA_EAST        :mod:`libcloud.storage.drivers.s3`             :class:`S3SAEastStorageDriver`      
 `Amazon S3 (us-west-1)`_                                                      S3_US_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestStorageDriver`      
 `Amazon S3 (us-west-2)`_                                                      S3_US_WEST_OREGON :mod:`libcloud.storage.drivers.s3`             :class:`S3USWestOregonStorageDriver`
 ============================= =============================================== ================= ============================================== ====================================
 
+.. _`Aliyun OSS`: http://www.aliyun.com/product/oss
 .. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
@@ -42,6 +45,7 @@ Provider                      Documentation                                   Pr
 .. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/

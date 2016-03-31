@@ -4,6 +4,7 @@
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========
 `Abiquo`_                             yes         no        no           no           no        
+`Aliyun ECS`_                         yes         yes       yes          yes          yes       
 `PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Azure Virtual machines`_             yes         no        no           no           no        
 `Bluebox Blocks`_                     yes         no        no           no           no        
@@ -79,6 +80,7 @@ Provider                              list images get image create image delete 
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net

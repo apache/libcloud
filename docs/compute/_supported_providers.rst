@@ -4,6 +4,7 @@
 Provider                              Documentation                                     Provider constant   Module                                            Class Name                          
 ===================================== ================================================= =================== ================================================= ====================================
 `Abiquo`_                                                                               ABIQUO              :mod:`libcloud.compute.drivers.abiquo`            :class:`AbiquoNodeDriver`           
+`Aliyun ECS`_                         :doc:`Click </compute/drivers/aliyun_ecs>`        ALIYUN_ECS          :mod:`libcloud.compute.drivers.ecs`               :class:`ECSDriver`                  
 `PCextreme AuroraCompute`_            :doc:`Click </compute/drivers/auroracompute>`     AURORACOMPUTE       :mod:`libcloud.compute.drivers.auroracompute`     :class:`AuroraComputeNodeDriver`    
 `Azure Virtual machines`_             :doc:`Click </compute/drivers/azure>`             AZURE               :mod:`libcloud.compute.drivers.azure`             :class:`AzureNodeDriver`            
 `Bluebox Blocks`_                                                                       BLUEBOX             :mod:`libcloud.compute.drivers.bluebox`           :class:`BlueboxNodeDriver`          
@@ -79,6 +80,7 @@ Provider                              Documentation                             
 ===================================== ================================================= =================== ================================================= ====================================
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net

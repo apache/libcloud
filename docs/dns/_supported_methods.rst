@@ -14,6 +14,7 @@ Provider              list zones list records create zone update zone create rec
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Linode DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          
 `Liquidweb DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
+`NFSN DNS`_           no         yes          no          no          yes           no            no          yes          
 `Point DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
 `Rackspace DNS (UK)`_ yes        yes          yes         yes         yes           yes           yes         yes          
@@ -37,6 +38,7 @@ Provider              list zones list records create zone update zone create rec
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
+.. _`NFSN DNS`: https://www.nearlyfreespeech.net
 .. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Rackspace DNS (UK)`: http://www.rackspace.com/

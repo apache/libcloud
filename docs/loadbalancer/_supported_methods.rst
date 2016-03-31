@@ -3,6 +3,7 @@
 ====================================== =============== ============== ============ ============= ============= ===================
 Provider                               create balancer list balancers list members attach member detach member attach compute node
 ====================================== =============== ============== ============ ============= ============= ===================
+`Aliyun Server Load Balancer`_         yes             yes            yes          yes           yes           yes                
 `Brightbox`_                           yes             yes            yes          yes           yes           yes                
 `CloudStack`_                          yes             yes            yes          yes           yes           no                 
 `Dimension Data Load Balancer`_        yes             yes            yes          yes           yes           no                 
@@ -16,6 +17,7 @@ Provider                               create balancer list balancers list membe
 `Softlayer Load Balancing`_            no              yes            yes          yes           yes           no                 
 ====================================== =============== ============== ============ ============= ============= ===================
 
+.. _`Aliyun Server Load Balancer`: https://www.aliyun.com/product/slb
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Dimension Data Load Balancer`: https://cloud.dimensiondata.com/
