@@ -2164,7 +2164,8 @@ class DimensionDataNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
-        vmware_tools = self._to_vmware_tools(element.find(fixxpath('vmwareTools', TYPES_URN)))
+        vmware_tools = self._to_vmware_tools(
+            element.find(fixxpath('vmwareTools', TYPES_URN)))
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),

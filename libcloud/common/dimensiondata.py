@@ -721,17 +721,17 @@ class DimensionDataServerVMWareTools(object):
     """
     def __init__(self, status, version_status, api_version):
         """
-        Instantiate a new :class:`DimensionDataServerCpuSpecification`
+        Instantiate a new :class:`DimensionDataServerVMWareTools` object
 
-        :param cpu_count: The number of CPUs
-        :type  cpu_count: ``int``
+        :param status: The status of VMWare Tools
+        :type  status: ``str``
 
-        :param cores_per_socket: The number of cores per socket, the
-            recommendation is 1
-        :type  cores_per_socket: ``int``
+        :param version_status: The status for the version of VMWare Tools
+            (i.e NEEDS_UPGRADE)
+        :type  version_status: ``str``
 
-        :param performance: The performance type, e.g. HIGHPERFORMANCE
-        :type  performance: ``str``
+        :param api_version: The API version of VMWare Tools
+        :type  api_version: ``str``
         """
         self.status = status
         self.version_status = version_status
