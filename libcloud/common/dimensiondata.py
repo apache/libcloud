@@ -715,6 +715,35 @@ class DimensionDataServerDisk(object):
                 % (self.id, self.size_gb))
 
 
+class DimensionDataServerVMWareTools(object):
+    """
+    A class that represents the VMWareTools for a node
+    """
+    def __init__(self, status, version_status, api_version):
+        """
+        Instantiate a new :class:`DimensionDataServerCpuSpecification`
+
+        :param cpu_count: The number of CPUs
+        :type  cpu_count: ``int``
+
+        :param cores_per_socket: The number of cores per socket, the
+            recommendation is 1
+        :type  cores_per_socket: ``int``
+
+        :param performance: The performance type, e.g. HIGHPERFORMANCE
+        :type  performance: ``str``
+        """
+        self.status = status
+        self.version_status = version_status
+        self.api_version = api_version
+
+    def __repr__(self):
+        return (('<DimensionDataServerVMWareTools '
+                 'status=%s, version_status=%s, '
+                 'api_version=%s>')
+                % (self.status, self.version_status, self.api_version))
+
+
 class DimensionDataFirewallRule(object):
     """
     DimensionData Firewall Rule for a network domain
