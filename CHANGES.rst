@@ -32,6 +32,10 @@ General
 Compute
 ~~~~~~~
 
+- [dimension data] added support for VMWare tools VM information inside list_nodes responses
+  (GITHUB-734)
+  [Jeff Dunham]
+
 - [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
   (GITHUB-729)
   [Viktor Ognev]
@@ -106,6 +110,10 @@ Compute
 Storage
 ~~~~~~~
 
+- Added Outscale storage driver
+  (GITHUB-730)
+  [Javier M. Mellid]
+
 - Improvements to Google Auth for Storage and Compute and MIME bug fix
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
@@ -131,6 +139,10 @@ Loadbalancer
 
 DNS
 ~~~~
+
+- Added NearlyFreeSpeech.net (NSFN) driver
+  [Ken Drayer]
+  (GITHUB-733)
 
 - Added Lua DNS driver
   [Oltjano Terpollari]
