@@ -29,6 +29,19 @@ General
   (GITHUB-711, GITHUB-714, LIBCLOUD-803)
   [Tomaz Muraus, Scott Crunkleton]
 
+* Remove deprecated provider constants with the region in the name and related
+  driver classes (e.g. ``EC2_US_EAST``, etc.).
+
+  Those drivers have moved to single provider constant + ``region`` constructor
+  argument model.
+  [Tomaz Muraus]
+
+* Introduce new `list_regions`` class method on the base driver class. This
+  method is to be used with provider drivers which support multiple regions and
+  ``region`` constructor argument. It allows users to enumerate available /
+  supported regions.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -106,13 +119,6 @@ Compute
 - New driver for Aliyun Elastic Compute Service.
   (LIBCLOUD-802, GITHUB-712)
   [Sam Song]
-
-* Remove deprecated provider constants with the region in the name and related
-  driver classes (e.g. `EC2_US_EAST``, etc.).
-
-  Those drivers have moved to single provider constant + ``region`` constructor
-  argument model.
-  [Tomaz Muraus]
 
 Storage
 ~~~~~~~

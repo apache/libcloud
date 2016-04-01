@@ -265,6 +265,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                                       port=port, region=region,
                                                       **kwargs)
 
+    @classmethod
+    def list_regions(cls):
+        return ['ord', 'dfw', 'iad', 'lon', 'hkg', 'syd']
+
     def iterate_containers(self):
         response = self.connection.request('')
 

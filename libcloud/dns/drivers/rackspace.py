@@ -162,7 +162,8 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='us', **kwargs):
-        if region not in ['us', 'uk']:
+        valid_regions = self.list_regions()
+        if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
         OpenStackDriverMixin.__init__(self, **kwargs)
@@ -180,6 +181,10 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
     }
+
+    @classmethod
+    def list_regions(cls):
+        return ['us', 'uk']
 
     def iterate_zones(self):
         offset = 0

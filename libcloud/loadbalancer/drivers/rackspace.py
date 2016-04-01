@@ -324,6 +324,9 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         super(RackspaceLBDriver, self).__init__(key=key, secret=secret,
                                                 secure=secure, host=host,
                                                 port=port, region=region)
+    @classmethod
+    def list_regions(cls):
+        return ENDPOINT_ARGS_MAP.keys()
 
     def _ex_connection_class_kwargs(self):
         endpoint_args = ENDPOINT_ARGS_MAP[self.region]

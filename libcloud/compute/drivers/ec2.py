@@ -6321,7 +6321,8 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         if hasattr(self, '_region'):
             region = self._region
 
-        if region not in VALID_EC2_REGIONS:
+        valid_regions = self.list_regions()
+        if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
         details = REGION_DETAILS[region]
@@ -6336,6 +6337,10 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         super(EC2NodeDriver, self).__init__(key=key, secret=secret,
                                             secure=secure, host=host,
                                             port=port, **kwargs)
+
+    @classmethod
+    def list_regions(cls):
+        return VALID_EC2_REGIONS
 
 
 class IdempotentParamError(LibcloudError):
