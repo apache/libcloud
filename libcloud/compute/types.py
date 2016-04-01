@@ -104,7 +104,7 @@ class Provider(Type):
     """
     AZURE = 'azure'
     DUMMY = 'dummy'
-    EC2 = 'ec2_us_east'
+    EC2 = 'ec2'
     RACKSPACE = 'rackspace'
     GCE = 'gce'
     GOGRID = 'gogrid'
