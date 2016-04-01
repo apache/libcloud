@@ -274,7 +274,7 @@ def generate_providers_table(api):
 
         try:
             cls = get_driver_method(enum)
-        except Exception as e:
+        except Exception:
             # Deprecated providers throw an exception
             print('Ignoring deprecated constant "%s"' % (enum))
             continue
