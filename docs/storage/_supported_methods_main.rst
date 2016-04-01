@@ -8,8 +8,6 @@ Provider                      list containers list objects create container dele
 `Microsoft Azure (blobs)`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Backblaze B2`_               yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles`_                 yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
-`CloudFiles (UK)`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
-`CloudFiles (US)`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Google Storage`_             yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `KTUCloud Storage`_           yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Nimbus.io`_                  yes             no           yes              no               no            no                      no              no                        no           
@@ -32,8 +30,6 @@ Provider                      list containers list objects create container dele
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
-.. _`CloudFiles (UK)`: http://www.rackspace.com/
-.. _`CloudFiles (US)`: http://www.rackspace.com/
 .. _`Google Storage`: http://cloud.google.com/
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Nimbus.io`: https://nimbus.io/

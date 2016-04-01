@@ -8,8 +8,6 @@ Provider                      enable container cdn enable object cdn get contain
 `Microsoft Azure (blobs)`_    no                   no                no                    no                
 `Backblaze B2`_               no                   no                no                    no                
 `CloudFiles`_                 yes                  no                yes                   yes               
-`CloudFiles (UK)`_            yes                  no                yes                   yes               
-`CloudFiles (US)`_            yes                  no                yes                   yes               
 `Google Storage`_             no                   no                no                    no                
 `KTUCloud Storage`_           yes                  no                yes                   yes               
 `Nimbus.io`_                  no                   no                no                    no                
@@ -32,8 +30,6 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
-.. _`CloudFiles (UK)`: http://www.rackspace.com/
-.. _`CloudFiles (US)`: http://www.rackspace.com/
 .. _`Google Storage`: http://cloud.google.com/
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Nimbus.io`: https://nimbus.io/
