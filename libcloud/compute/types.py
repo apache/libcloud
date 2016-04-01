@@ -209,7 +209,6 @@ DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_ORD]
 OLD_CONSTANT_TO_NEW_MAPPING = {
     # Rackspace
-    Provider.RACKSPACE: Provider.RACKSPACE_FIRST_GEN,
     Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
 
     Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
