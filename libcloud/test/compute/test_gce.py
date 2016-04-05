@@ -30,7 +30,7 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           GCEZone)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     ResourceNotFoundError, ResourceExistsError,
-                                    InvalidRequestError, GoogleBaseError)
+                                    GoogleBaseError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 

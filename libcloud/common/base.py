@@ -151,7 +151,7 @@ class Response(object):
         self.headers = lowercase_keys(dict(response.headers))
         self.error = response.reason
         self.status = response.status_code
-        
+
         if isinstance(response.text, basestring):
             self.body = response.text.strip() \
                 if response.text is not None else ''
