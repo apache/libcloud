@@ -60,7 +60,8 @@ SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
 TEST_REQUIREMENTS = [
     'mock',
-    'requests'
+    'requests',
+    'requests-mock'
 ]
 
 if PY2_pre_279 or PY3_pre_32:

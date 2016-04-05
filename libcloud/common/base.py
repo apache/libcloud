@@ -148,11 +148,11 @@ class Response(object):
 
         # http.client In Python 3 doesn't automatically lowercase the header
         # names
-        self.headers = lowercase_keys(dict(response.getheaders()))
+        self.headers = lowercase_keys(dict(response.headers))
         self.error = response.reason
         self.status = response.status_code
 
-        self.body = response.text if response.text is not None else ''
+        self.body = response.text.strip() if response.text is not None else ''
 
         if not self.success():
             raise exception_from_message(code=self.status,
@@ -226,8 +226,7 @@ class JsonResponse(Response):
     """
 
     def parse_body(self):
-        if self.body is not None and \
-        len(self.body) == 0 and not self.parse_zero_length_body:
+        if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
 
         try:
