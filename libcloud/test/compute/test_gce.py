@@ -485,13 +485,6 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertRaises(GoogleBaseError, self.driver.ex_set_machine_type,
                           node, 'custom-4-61440')
 
-    def test_ex_set_machine_type_invalid(self):
-        # get stopped node, change machine type
-        zone = 'us-central1-a'
-        node = self.driver.ex_get_node('custom-node', zone)
-        self.assertRaises(InvalidRequestError, self.driver.ex_set_machine_type,
-                          node, 'custom-1-61440')
-
     def test_ex_set_machine_type(self):
         # get stopped node, change machine type
         zone = 'us-central1-a'
