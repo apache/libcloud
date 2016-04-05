@@ -14,16 +14,12 @@
 # limitations under the License.
 
 import socket
-import tempfile
 import ssl
 
 from mock import Mock, patch, MagicMock
 
-from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import TRANSIENT_SSL_ERROR
 from libcloud.common.base import Connection
-from libcloud.common.base import Response
-from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.test import unittest
 
 CONFLICT_RESPONSE_STATUS = [
@@ -64,28 +60,6 @@ class FailedRequestRetryTestCase(unittest.TestCase):
 
                 self.assertRaises(ssl.SSLError, conn.request, '/')
                 self.assertGreater(connection.request.call_count, 1)
-
-    def test_rate_limit_error(self):
-        sock = Mock()
-        con = Connection()
-
-        try:
-            with patch('libcloud.utils.py3.httplib.HTTPResponse.getheaders',
-                       MagicMock(return_value=CONFLICT_RESPONSE_STATUS)):
-                with patch(
-                        'libcloud.utils.py3.httplib.HTTPResponse._read_status',
-                        MagicMock(return_value=SIMPLE_RESPONSE_STATUS)):
-                    with tempfile.TemporaryFile(mode='w+b') as f:
-                        f.write('HTTP/1.1 429 CONFLICT\n'.encode())
-                        f.flush()
-                        sock.makefile = Mock(return_value=f)
-                        mock_obj = httplib.HTTPResponse(sock)
-                        mock_obj.begin()
-                        Response(mock_obj, con)
-        except RateLimitReachedError:
-            pass
-        except Exception:
-            self.fail('Failed to raise Rate Limit exception')
 
 if __name__ == '__main__':
     unittest.main()

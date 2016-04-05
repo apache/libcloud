@@ -175,6 +175,7 @@ class LoggingConnection(LoggingBaseConnection, LibcloudConnection):
     """
 
     protocol = 'https'
+    port = None
 
     def getresponse(self):
         r = LibcloudConnection.getresponse(self)

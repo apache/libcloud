@@ -36,7 +36,7 @@ import requests
 
 import libcloud
 
-from libcloud.utils.py3 import PY25, basestring
+from libcloud.utils.py3 import PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
@@ -152,11 +152,8 @@ class Response(object):
         self.error = response.reason
         self.status = response.status_code
 
-        if isinstance(response.text, basestring):
-            self.body = response.text.strip() \
-                if response.text is not None else ''
-        else:
-            self.body = ''
+        self.body = response.text.strip() \
+            if response.text is not None else ''
 
         if not self.success():
             raise exception_from_message(code=self.status,
