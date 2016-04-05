@@ -76,7 +76,6 @@ import base64
 import errno
 import time
 import datetime
-import logging
 import os
 import socket
 import sys
@@ -486,10 +485,6 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                 key = key['private_key']
             except ValueError:
                 key = contents
-                logger = logging.getLogger(__name__)
-                logger.warn('%s not in JSON format.  This format is '
-                            'deprecated.  Please download a JSON key '
-                            'from the Cloud Console.' % keypath)
 
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)

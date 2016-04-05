@@ -1,0 +1,16 @@
+[
+    {
+        "data": "192.0.2.1",
+        "name": "",
+        "scope": "member",
+        "ttl": "3600",
+        "type": "A"
+    },
+    {
+        "data": "ns.phx2.nearlyfreespeech.net.",
+        "name": "",
+        "scope": "member",
+        "ttl": "3600",
+        "type": "NS"
+    }
+]

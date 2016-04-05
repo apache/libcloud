@@ -4,6 +4,7 @@
 Provider                              list key pairs get key pair create key pair import public key from string import public key from file delete key pair
 ===================================== ============== ============ =============== ============================= =========================== ===============
 `Abiquo`_                             no             no           no              no                            no                          no             
+`Aliyun ECS`_                         no             no           no              no                            no                          no             
 `PCextreme AuroraCompute`_            yes            yes          yes             yes                           no                          yes            
 `Azure Virtual machines`_             no             no           no              no                            no                          no             
 `Bluebox Blocks`_                     no             no           no              no                            no                          no             
@@ -79,6 +80,7 @@ Provider                              list key pairs get key pair create key pai
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net

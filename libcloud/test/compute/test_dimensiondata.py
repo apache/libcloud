@@ -19,11 +19,12 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
+from types import GeneratorType
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
@@ -64,6 +65,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 7)
 
+    def test_node_extras(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(isinstance(ret[0].extra['vmWareTools'], DimensionDataServerVMWareTools))
+        self.assertTrue(isinstance(ret[0].extra['cpu'], DimensionDataServerCpuSpecification))
+        self.assertTrue(isinstance(ret[0].extra['disks'], list))
+        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
+        self.assertTrue(isinstance(ret[1].extra['disks'], list))
+        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
+
     def test_server_states(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
@@ -75,21 +88,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret[5].state == 'terminated')
         self.assertTrue(ret[6].state == 'stopped')
         self.assertEqual(len(ret), 7)
-        node = ret[0]
-        self.assertTrue(isinstance(node.extra['disks'], list))
-        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
-
-        self.assertTrue(isinstance(ret[0].extra['disks'], list))
-        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
-        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
-        self.assertTrue(isinstance(ret[1].extra['disks'], list))
-        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
-        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 9)
+
+    def test_paginated_mcp2_call_with_page_size(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'PAGESIZE50'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server', page_size=50)
+        self.assertTrue(isinstance(node_list_generator, GeneratorType))
 
     # We're making sure here the filters make it to the URL
     # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
@@ -665,6 +675,36 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
+    def test_ex_create_firewall_rule_ALL_VALUES(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        for rule in rules:
+            self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', rules[-1])
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE_STR(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', 'RULE_WITH_SOURCE_AND_DEST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'BEFORE')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION_WITH_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'LAST', 'RULE_WITH_SOURCE_AND_DEST')
+
     def test_ex_get_firewall_rule(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
@@ -789,6 +829,97 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         image_id = 'FAKE_IMAGE_ID'
         with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_get_base_image_by_id(image_id)
+
+    def test_ex_create_anti_affinity_rule(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule([node_list[0], node_list[1]])
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE_STR(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0].id, node_list[1].id))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_FAIL_STR(self):
+        node_list = 'string'
+        with self.assertRaises(TypeError):
+            self.driver.ex_create_anti_affinity_rule(node_list)
+
+    def test_ex_create_anti_affinity_rule_FAIL_EXISTING(self):
+        node_list = self.driver.list_nodes()
+        DimensionDataMockHttp.type = 'FAIL_EXISTING'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+
+    def test_ex_delete_anti_affinity_rule(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_STR(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule.id)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_FAIL(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        DimensionDataMockHttp.type = 'FAIL'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_delete_anti_affinity_rule(rule)
+
+    def test_ex_list_anti_affinity_rules_NETWORK_DOMAIN(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NETWORK(self):
+        network = self.driver.list_networks()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network=network)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NODE(self):
+        node = self.driver.list_nodes()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(node=node)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_PAGINATED(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'PAGINATED'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 4)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_ALLFILTERS(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain, filter_id='FAKE_ID', filter_state='FAKE_STATE')
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_BAD_ARGS(self):
+        with self.assertRaises(ValueError):
+            self.driver.ex_list_anti_affinity_rules(network='fake_network', network_domain='fake_network_domain')
 
     def test_priv_location_to_location_id(self):
         location = self.driver.ex_get_location_by_id('NA9')
@@ -979,6 +1110,30 @@ class DimensionDataMockHttp(MockHttp):
                 'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_POST.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_FAIL_EXISTING(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418_FAIL(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server.xml')
@@ -1026,8 +1181,15 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGESIZE50(self, method, url, body, headers):
+        if not url.endswith('pageSize=50'):
+            raise ValueError("pageSize is not set as expected")
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
-        if url.endswith('pageNumber=2'):
+        if 'pageNumber=2' in url:
             body = self.fixtures.load(
                 'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1068,6 +1230,42 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'id':
+                assert value == 'FAKE_ID'
+            elif key == 'state':
+                assert value == 'FAKE_STATE'
+            elif key == 'pageSize':
+                assert value == '250'
+            elif key == 'networkDomainId':
+                pass
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_PAGINATED(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list_PAGINATED.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
         if url.endswith('id=NA9'):

@@ -32,10 +32,12 @@ from libcloud.common.dimensiondata import DimensionDataNetworkDomain
 from libcloud.common.dimensiondata import DimensionDataVlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
 from libcloud.common.dimensiondata import DimensionDataServerDisk
+from libcloud.common.dimensiondata import DimensionDataServerVMWareTools
 from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
 from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
+from libcloud.common.dimensiondata import DimensionDataAntiAffinityRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
@@ -686,6 +688,112 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
+    def ex_create_anti_affinity_rule(self, node_list):
+        """
+        Create an anti affinity rule given a list of nodes
+        Anti affinity rules ensure that servers will not reside
+        on the same VMware ESX host
+
+        :param node_list: The list of nodes to create a rule for
+        :type  node_list: ``list`` of :class:`Node` or
+                          ``list`` of ``str``
+
+        :rtype: ``bool``
+        """
+        if not isinstance(node_list, (list, tuple)):
+            raise TypeError("Node list must be a list or a tuple.")
+        anti_affinity_xml_request = ET.Element('NewAntiAffinityRule',
+                                               {'xmlns': SERVER_NS})
+        for node in node_list:
+            ET.SubElement(anti_affinity_xml_request, 'serverId').text = \
+                self._node_to_node_id(node)
+        result = self.connection.request_with_orgId_api_1(
+            'antiAffinityRule',
+            method='POST',
+            data=ET.tostring(anti_affinity_xml_request)).object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_delete_anti_affinity_rule(self, anti_affinity_rule):
+        """
+        Remove anti affinity rule
+
+        :param anti_affinity_rule: The anti affinity rule to delete
+        :type  anti_affinity_rule: :class:`DimensionDataAntiAffinityRule` or
+                                   ``str``
+
+        :rtype: ``bool``
+        """
+        rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
+            anti_affinity_rule)
+        result = self.connection.request_with_orgId_api_1(
+            'antiAffinityRule/%s?delete' % (rule_id),
+            method='GET').object
+        response_code = findtext(result, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_list_anti_affinity_rules(self, network=None, network_domain=None,
+                                    node=None, filter_id=None,
+                                    filter_state=None):
+        """
+        List anti affinity rules for a network, network domain, or node
+
+        :param network: The network to list anti affinity rules for
+                        One of network, network_domain, or node is required
+        :type  network: :class:`DimensionDataNetwork` or ``str``
+
+        :param network_domain: The network domain to list anti affinity rules
+                               One of network, network_domain,
+                               or node is required
+        :type  network_domain: :class:`DimensionDataNetworkDomain` or ``str``
+
+        :param node: The node to list anti affinity rules for
+                     One of network, netwok_domain, or node is required
+        :type  node: :class:`Node` or ``str``
+
+        :param filter_id: This will allow you to filter the rules
+                          by this node id
+        :type  filter_id: ``str``
+
+        :type  filter_state: This will allow you to filter rules by
+                             node state (i.e. NORMAL)
+        :type  filter_state: ``str``
+
+        :rtype: ``list`` of :class:`DimensionDataAntiAffinityRule`
+        """
+        not_none_arguments = [key
+                              for key in (network, network_domain, node)
+                              if key is not None]
+        if len(not_none_arguments) != 1:
+            raise ValueError("One and ONLY one of network, "
+                             "network_domain, or node must be set")
+
+        params = {}
+        if network_domain is not None:
+            params['networkDomainId'] = \
+                self._network_domain_to_network_domain_id(network_domain)
+        if network is not None:
+            params['networkId'] = \
+                self._network_to_network_id(network)
+        if node is not None:
+            params['serverId'] = \
+                self._node_to_node_id(node)
+        if filter_id is not None:
+            params['id'] = filter_id
+        if filter_state is not None:
+            params['state'] = filter_state
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'server/antiAffinityRule',
+            method='GET',
+            params=params
+        )
+
+        rules = []
+        for result in paged_result:
+            rules.extend(self._to_anti_affinity_rules(result))
+        return rules
+
     def ex_attach_node_to_vlan(self, node, vlan):
         """
         Attach a node to a VLAN by adding an additional NIC to
@@ -1205,9 +1313,38 @@ class DimensionDataNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_firewall_rules(response, network_domain)
 
-    def ex_create_firewall_rule(self, network_domain, rule, position):
+    def ex_create_firewall_rule(self, network_domain, rule, position,
+                                position_relative_to_rule=None):
+        """
+        Creates a firewall rule
+
+        :param network_domain: The network domain in which to create
+                                the firewall rule
+        :type  network_domain: :class:`DimensionDataNetworkDomain` or ``str``
+
+        :param rule: The rule in which to create
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :param position: The position in which to create the rule
+                         There are two types of positions
+                         with position_relative_to_rule arg and without it
+                         With: 'BEFORE' or 'AFTER'
+                         Without: 'FIRST' or 'LAST'
+        :type  position: ``str``
+
+        :param position_relative_to_rule: The rule or rule name in
+                                          which to decide positioning by
+        :type  position_relative_to_rule:
+            :class:`DimensionDataFirewallRule` or ``str``
+
+        :rtype: ``bool``
+        """
+        positions_without_rule = ('FIRST', 'LAST')
+        positions_with_rule = ('BEFORE', 'AFTER')
+
         create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node, "networkDomainId").text = network_domain.id
+        ET.SubElement(create_node, "networkDomainId").text = \
+            self._network_domain_to_network_domain_id(network_domain)
         ET.SubElement(create_node, "name").text = rule.name
         ET.SubElement(create_node, "action").text = rule.action
         ET.SubElement(create_node, "ipVersion").text = rule.ip_version
@@ -1240,8 +1377,26 @@ class DimensionDataNodeDriver(NodeDriver):
                 dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
-        ET.SubElement(create_node, "enabled").text = 'true'
+        ET.SubElement(create_node, "enabled").text = rule.enabled
+
+        # Set up positioning of rule
         placement = ET.SubElement(create_node, "placement")
+        if position_relative_to_rule is not None:
+            if position not in positions_with_rule:
+                raise ValueError("When position_relative_to_rule is specified"
+                                 " position must be %s"
+                                 % ', '.join(positions_with_rule))
+            if isinstance(position_relative_to_rule,
+                          DimensionDataFirewallRule):
+                rule_name = position_relative_to_rule.name
+            else:
+                rule_name = position_relative_to_rule
+            placement.set('relativeToRule', rule_name)
+        else:
+            if position not in positions_without_rule:
+                raise ValueError("When position_relative_to_rule is not"
+                                 " specified position must be %s"
+                                 % ', '.join(positions_without_rule))
         placement.set('position', position)
 
         response = self.connection.request_with_orgId_api_2(
@@ -1782,6 +1937,22 @@ class DimensionDataNodeDriver(NodeDriver):
             external_ip=findtext(element, 'externalIp', TYPES_URN),
             status=findtext(element, 'state', TYPES_URN))
 
+    def _to_anti_affinity_rules(self, object):
+        rules = []
+        for element in findall(object, 'antiAffinityRule', TYPES_URN):
+            rules.append(
+                self._to_anti_affinity_rule(element))
+        return rules
+
+    def _to_anti_affinity_rule(self, element):
+        node_list = []
+        for node in findall(element, 'serverSummary', TYPES_URN):
+            node_list.append(node.get('id'))
+        return DimensionDataAntiAffinityRule(
+            id=element.get('id'),
+            node_list=node_list
+        )
+
     def _to_firewall_rules(self, object, network_domain):
         rules = []
         locations = self.list_locations()
@@ -1959,6 +2130,12 @@ class DimensionDataNodeDriver(NodeDriver):
             cores_per_socket=int(element.get('coresPerSocket')),
             performance=element.get('speed'))
 
+    def _to_vmware_tools(self, element):
+        return DimensionDataServerVMWareTools(
+            status=element.get('runningStatus'),
+            version_status=element.get('versionStatus'),
+            api_version=element.get('apiVersion'))
+
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
         return [self._to_disk(el) for el in disk_elements]
@@ -1987,6 +2164,8 @@ class DimensionDataNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
+        vmware_tools = self._to_vmware_tools(
+            element.find(fixxpath('vmwareTools', TYPES_URN)))
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -2012,7 +2191,8 @@ class DimensionDataNodeDriver(NodeDriver):
                 'operatingSystem',
                 TYPES_URN)).get('displayName'),
             'status': status,
-            'disks': disks
+            'disks': disks,
+            'vmWareTools': vmware_tools
         }
 
         public_ip = findtext(element, 'publicIpAddress', TYPES_URN)
@@ -2090,6 +2270,10 @@ class DimensionDataNodeDriver(NodeDriver):
                 return NodeState.TERMINATED
 
     @staticmethod
+    def _node_to_node_id(node):
+        return dd_object_to_id(node, Node)
+
+    @staticmethod
     def _location_to_location_id(location):
         return dd_object_to_id(location, NodeLocation)
 
@@ -2104,6 +2288,10 @@ class DimensionDataNodeDriver(NodeDriver):
     @staticmethod
     def _network_to_network_id(network):
         return dd_object_to_id(network, DimensionDataNetwork)
+
+    @staticmethod
+    def _anti_affinity_rule_to_anti_affinity_rule_id(rule):
+        return dd_object_to_id(rule, DimensionDataAntiAffinityRule)
 
     @staticmethod
     def _network_domain_to_network_domain_id(network_domain):

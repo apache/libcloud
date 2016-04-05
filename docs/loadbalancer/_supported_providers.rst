@@ -3,6 +3,7 @@
 ====================================== ================================================== ================= ================================================== ==============================
 Provider                               Documentation                                      Provider constant Module                                             Class Name                    
 ====================================== ================================================== ================= ================================================== ==============================
+`Aliyun Server Load Balancer`_                                                            ALIYUN_SLB        :mod:`libcloud.loadbalancer.drivers.slb`           :class:`SLBDriver`            
 `Brightbox`_                                                                              BRIGHTBOX         :mod:`libcloud.loadbalancer.drivers.brightbox`     :class:`BrightboxLBDriver`    
 `CloudStack`_                                                                             CLOUDSTACK        :mod:`libcloud.loadbalancer.drivers.cloudstack`    :class:`CloudStackLBDriver`   
 `Dimension Data Load Balancer`_        :doc:`Click </loadbalancer/drivers/dimensiondata>` DIMENSIONDATA     :mod:`libcloud.loadbalancer.drivers.dimensiondata` :class:`DimensionDataLBDriver`
@@ -16,6 +17,7 @@ Provider                               Documentation                            
 `Softlayer Load Balancing`_                                                               SOFTLAYER         :mod:`libcloud.loadbalancer.drivers.softlayer`     :class:`SoftlayerLBDriver`    
 ====================================== ================================================== ================= ================================================== ==============================
 
+.. _`Aliyun Server Load Balancer`: https://www.aliyun.com/product/slb
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Dimension Data Load Balancer`: https://cloud.dimensiondata.com/

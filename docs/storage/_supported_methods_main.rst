@@ -3,9 +3,10 @@
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 Provider                      list containers list objects create container delete container upload object streaming object upload download object streaming object download delete object
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
+`Aliyun OSS`_                 yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `PCextreme AuroraObjects`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Microsoft Azure (blobs)`_    yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
-`Backblaze B2`_               yes             yes          yes              yes              yes           no                      yes             yes                       yes          
+`Backblaze B2`_               yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles`_                 yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (UK)`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (US)`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
@@ -20,11 +21,13 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (ap-northeast-2)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (ap-southeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (eu-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
+`Amazon S3 (standard)`_       yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (sa-east-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================= =============
 
+.. _`Aliyun OSS`: http://www.aliyun.com/product/oss
 .. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
@@ -42,6 +45,7 @@ Provider                      list containers list objects create container dele
 .. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/

@@ -32,6 +32,19 @@ General
 Compute
 ~~~~~~~
 
+- [dimension data] added support for VMWare tools VM information inside list_nodes responses
+  (GITHUB-734)
+  [Jeff Dunham]
+
+- [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
+  (GITHUB-729)
+  [Viktor Ognev]
+
+- [dimension data] added support for managing host anti-affinity rules, added paging support to
+  all supported calls and added support for requesting priority ordering when creating ACL rules
+  (GITHUB-726)
+  [Jeff Dunham]
+
 - [openstack] when creating floating IPs, added pool_id as an optional argument
   (GITHUB-725)
   [marko-p]
@@ -97,6 +110,10 @@ Compute
 Storage
 ~~~~~~~
 
+- Added Outscale storage driver
+  (GITHUB-730)
+  [Javier M. Mellid]
+
 - Improvements to Google Auth for Storage and Compute and MIME bug fix
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
@@ -122,6 +139,14 @@ Loadbalancer
 
 DNS
 ~~~~
+
+- Added NearlyFreeSpeech.net (NSFN) driver
+  [Ken Drayer]
+  (GITHUB-733)
+
+- Added Lua DNS driver
+  [Oltjano Terpollari]
+  (GITHUB-732)
 
 - Added NSOne driver
   [Oltjano Terpollari]

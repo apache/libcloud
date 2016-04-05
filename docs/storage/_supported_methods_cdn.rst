@@ -3,6 +3,7 @@
 ============================= ==================== ================= ===================== ==================
 Provider                      enable container cdn enable object cdn get container cdn URL get object cdn URL
 ============================= ==================== ================= ===================== ==================
+`Aliyun OSS`_                 no                   no                no                    no                
 `PCextreme AuroraObjects`_    yes                  yes               yes                   yes               
 `Microsoft Azure (blobs)`_    no                   no                no                    no                
 `Backblaze B2`_               no                   no                no                    no                
@@ -20,11 +21,13 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (ap-northeast-2)`_ no                   no                no                    no                
 `Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
 `Amazon S3 (eu-west-1)`_      no                   no                no                    no                
+`Amazon S3 (standard)`_       no                   no                no                    no                
 `Amazon S3 (sa-east-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-2)`_      no                   no                no                    no                
 ============================= ==================== ================= ===================== ==================
 
+.. _`Aliyun OSS`: http://www.aliyun.com/product/oss
 .. _`PCextreme AuroraObjects`: https://www.pcextreme.com/aurora/objects
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
@@ -42,6 +45,7 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
