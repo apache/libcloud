@@ -16,9 +16,7 @@
 import os
 import sys
 import os.path
-import socket
 
-import mock
 from mock import patch
 
 import libcloud.security

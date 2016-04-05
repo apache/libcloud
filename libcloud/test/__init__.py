@@ -18,11 +18,9 @@ import random
 import requests
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
-from libcloud.utils.py3 import u
 from libcloud.utils.py3 import unittest2_required
 
 if unittest2_required:
