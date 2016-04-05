@@ -21,6 +21,7 @@ import socket
 
 import requests
 
+import libcloud.security
 from libcloud.utils.py3 import urlparse
 
 
@@ -68,8 +69,12 @@ class LibcloudBaseConnection(object):
 
     http_proxy_used = False
 
+    ca_cert = None
+
     def __init__(self):
         self.session = requests.Session()
+        self.verify = True
+        self.ca_cert = None
 
     def set_http_proxy(self, proxy_url):
         """
@@ -137,6 +142,15 @@ class LibcloudBaseConnection(object):
         return (proxy_scheme, proxy_host, proxy_port, proxy_username,
                 proxy_password)
 
+    def _setup_verify(self):
+        self.verify = libcloud.security.VERIFY_SSL_CERT
+
+    def _setup_ca_cert(self):
+        if self.verify is False:
+            pass
+        else:
+            self.ca_cert = libcloud.security.CA_CERTS_PATH
+
 
 class LibcloudConnection(LibcloudBaseConnection):
     timeout = None
@@ -165,7 +179,8 @@ class LibcloudConnection(LibcloudBaseConnection):
             data=body,
             headers=headers,
             allow_redirects=1,
-            stream=raw
+            stream=raw,
+            verify=self.ca_cert if self.ca_cert is not None else self.verify
         )
 
     def getresponse(self):

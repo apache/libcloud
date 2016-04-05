@@ -70,20 +70,6 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertEqual(libcloud.security.CA_CERTS_PATH, [file_path])
 
     @patch('warnings.warn')
-    def test_setup_verify(self, _):
-        libcloud.security.CA_CERTS_PATH = []
-
-        # Should throw a runtime error
-        libcloud.security.VERIFY_SSL_CERT = True
-
-        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
-        self.assertRaisesRegexp(RuntimeError, expected_msg,
-                                self.httplib_object._setup_verify)
-
-        libcloud.security.VERIFY_SSL_CERT = False
-        self.httplib_object._setup_verify()
-
-    @patch('warnings.warn')
     def test_setup_ca_cert(self, _):
         # verify = False, _setup_ca_cert should be a no-op
         self.httplib_object.verify = False
@@ -99,58 +85,6 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.httplib_object._setup_ca_cert()
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
-
-        # verify = True, no CA certs are available, exception should be thrown
-        libcloud.security.CA_CERTS_PATH = []
-
-        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
-        self.assertRaisesRegexp(RuntimeError, expected_msg,
-                                self.httplib_object._setup_ca_cert)
-
-    @mock.patch('socket.create_connection', mock.MagicMock())
-    @mock.patch('socket.socket', mock.MagicMock())
-    @mock.patch('ssl.wrap_socket')
-    def test_connect_throws_friendly_error_message_on_ssl_wrap_connection_reset_by_peer(self, mock_wrap_socket):
-        # Test that we re-throw a more friendly error message in case
-        # "connection reset by peer" error occurs when trying to establish a
-        # SSL connection
-        libcloud.security.VERIFY_SSL_CERT = True
-        self.httplib_object.verify = True
-        self.httplib_object.http_proxy_used = False
-
-        # No connection reset by peer, original exception should be thrown
-        mock_wrap_socket.side_effect = Exception('foo bar fail')
-
-        expected_msg = 'foo bar fail'
-        self.assertRaisesRegexp(Exception, expected_msg,
-                                self.httplib_object.connect)
-
-        # Connection reset by peer, wrapped exception with friendly error
-        # message should be thrown
-        mock_wrap_socket.side_effect = socket.error('Connection reset by peer')
-
-        expected_msg = 'Failed to establish SSL / TLS connection'
-        self.assertRaisesRegexp(socket.error, expected_msg,
-                                self.httplib_object.connect)
-
-        # Same error but including errno
-        with self.assertRaises(socket.error) as cm:
-            mock_wrap_socket.side_effect = socket.error(104, 'Connection reset by peer')
-            self.httplib_object.connect()
-
-        e = cm.exception
-        self.assertEqual(e.errno, 104)
-        self.assertTrue(expected_msg in str(e))
-
-        # Test original exception is propagated correctly on non reset by peer
-        # error
-        with self.assertRaises(socket.error) as cm:
-            mock_wrap_socket.side_effect = socket.error(105, 'Some random error')
-            self.httplib_object.connect()
-
-        e = cm.exception
-        self.assertEqual(e.errno, 105)
-        self.assertTrue('Some random error' in str(e))
 
 
 if __name__ == '__main__':

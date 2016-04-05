@@ -34,7 +34,7 @@ class ResponseClassesTests(unittest.TestCase):
         self._mock_connection = Mock()
 
     def test_XmlResponse_class(self):
-        self._mock_response.read.return_value = '<foo>bar</foo>'
+        self._mock_response.text = '<foo>bar</foo>'
         response = XmlResponse(response=self._mock_response,
                                connection=self._mock_connection)
 
@@ -43,7 +43,7 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(parsed.text, 'bar')
 
     def test_XmlResponse_class_malformed_response(self):
-        self._mock_response.read.return_value = '<foo>'
+        self._mock_response.text = '<foo>'
 
         try:
             XmlResponse(response=self._mock_response,
@@ -54,7 +54,7 @@ class ResponseClassesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_XmlResponse_class_zero_length_body_strip(self):
-        self._mock_response.read.return_value = ' '
+        self._mock_response.text = ' '
 
         response = XmlResponse(response=self._mock_response,
                                connection=self._mock_connection)
@@ -71,7 +71,7 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(parsed, {'foo': 'bar'})
 
     def test_JsonResponse_class_malformed_response(self):
-        self._mock_response.read.return_value = '{"foo": "bar'
+        self._mock_response.text = '{"foo": "bar'
 
         try:
             JsonResponse(response=self._mock_response,
@@ -82,7 +82,7 @@ class ResponseClassesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_JsonResponse_class_zero_length_body_strip(self):
-        self._mock_response.read.return_value = ' '
+        self._mock_response.text = ' '
 
         response = JsonResponse(response=self._mock_response,
                                 connection=self._mock_connection)
@@ -94,7 +94,7 @@ class ResponseClassesTests(unittest.TestCase):
         original_data = 'foo bar ponies, wooo zlib'
         compressed_data = zlib.compress(b(original_data))
 
-        self._mock_response.read.return_value = compressed_data
+        self._mock_response.text = compressed_data
         self._mock_response.getheaders.return_value = \
             {'Content-Encoding': 'deflate'}
 
@@ -127,7 +127,7 @@ class ResponseClassesTests(unittest.TestCase):
         stream.close()
         compressed_data = string_io.getvalue()
 
-        self._mock_response.read.return_value = compressed_data
+        self._mock_response.text = compressed_data
         self._mock_response.getheaders.return_value = \
             {'Content-Encoding': 'gzip'}
 
