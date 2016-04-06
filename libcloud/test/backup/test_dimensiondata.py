@@ -23,6 +23,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.types import InvalidCredsError
+from libcloud.backup.base import BackupTargetJob
 from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
 from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
 
@@ -127,9 +128,36 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         client = response.clients[0]
         self.assertEqual(client.id, '30b1ff76-c76d-4d7c-b39d-3b72be0384c8')
         self.assertEqual(client.type.type, 'FA.Linux')
-        self.assertEqual(client.running_job.percentage, 5)
+        self.assertEqual(client.running_job.progress, 5)
+        self.assertTrue(isinstance(client.running_job, BackupTargetJob))
         self.assertEqual(len(client.alert.notify_list), 2)
         self.assertTrue(isinstance(client.alert.notify_list, list))
+
+    def test_ex_cancel_target_job(self):
+        target = self.driver.list_targets()[0]
+        response = self.driver.ex_get_backup_details_for_target(target)
+        client = response.clients[0]
+        self.assertTrue(isinstance(client.running_job, BackupTargetJob))
+        success = client.running_job.cancel()
+        self.assertTrue(success)
+
+    def test_ex_cancel_target_job_with_extras(self):
+        success = self.driver.cancel_target_job(
+            None,
+            ex_client='30b1ff76_c76d_4d7c_b39d_3b72be0384c8',
+            ex_target='e75ead52_692f_4314_8725_c8a4f4d13a87'
+        )
+        self.assertTrue(success)
+
+    def test_ex_cancel_target_job_FAIL(self):
+        DimensionDataMockHttp.type = 'FAIL'
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.cancel_target_job(
+                None,
+                ex_client='30b1ff76_c76d_4d7c_b39d_3b72be0384c8',
+                ex_target='e75ead52_692f_4314_8725_c8a4f4d13a87'
+            )
+        self.assertEqual(context.exception.code, 'ERROR')
 
     """Test a backup info for a target that does not have a client"""
     def test_ex_get_backup_details_for_target_NO_CLIENT(self):
@@ -196,8 +224,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
             )
         )
 
-    def test_ex_remove_client_from_target_BUSY(self):
-        DimensionDataMockHttp.type = 'BUSY'
+    def test_ex_remove_client_from_target_FAIL(self):
+        DimensionDataMockHttp.type = 'FAIL'
         with self.assertRaises(DimensionDataAPIException) as context:
             self.driver.ex_remove_client_from_target(
                 'e75ead52-692f-4314-8725-c8a4f4d13a87',
@@ -269,7 +297,7 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _oec_0_9_myaccount_BUSY(self, method, url, body, headers):
+    def _oec_0_9_myaccount_FAIL(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -291,6 +319,21 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOCLIENT(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOJOB(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DISABLED(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -414,16 +457,32 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            ('_remove_backup_client.xml')
-        )
+        if url.endswith('disable'):
+            body = self.fixtures.load(
+                ('_remove_backup_client.xml')
+            )
+        elif url.endswith('cancelJob'):
+            body = self.fixtures.load(
+                ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+                 '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml')
+            )
+        else:
+            raise ValueError("Unknown URL: %s" % url)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_BUSY(
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_FAIL(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            ('_remove_backup_client_BUSY.xml')
-        )
+        if url.endswith('disable'):
+            body = self.fixtures.load(
+                ('_remove_backup_client_FAIL.xml')
+            )
+        elif url.endswith('cancelJob'):
+            body = self.fixtures.load(
+                ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+                 '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml')
+            )
+        else:
+            raise ValueError("Unknown URL: %s" % url)
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
 
