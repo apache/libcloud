@@ -1348,7 +1348,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return locations
 
-    def list_nodes(self, project=None):
+    def list_nodes(self, project=None, location=None):
         """
         @inherits: :class:`NodeDriver.list_nodes`
 
@@ -1356,12 +1356,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                              the defined project.
         :type       project: :class:`.CloudStackProject`
 
+        :keyword    location: Limit nodes returned to those in the defined
+                              location.
+        :type       location: :class:`.NodeLocation`
+
         :rtype: ``list`` of :class:`CloudStackNode`
         """
 
         args = {}
+
         if project:
             args['projectid'] = project.id
+
+        if location is not None:
+            args['zoneid'] = location.id
+
         vms = self._sync_request('listVirtualMachines', params=args)
         addrs = self._sync_request('listPublicIpAddresses', params=args)
         port_forwarding_rules = self._sync_request('listPortForwardingRules')
