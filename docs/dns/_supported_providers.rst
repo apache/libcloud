@@ -14,7 +14,7 @@ Provider            Documentation                             Provider Constant 
 `Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
-`NFSN DNS`_                                                   NFSN              single region driver :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`        
+`NFSN DNS`_         :doc:`Click </dns/drivers/nfsn>`          NFSN              single region driver :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`        
 `Point DNS`_        :doc:`Click </dns/drivers/pointdns>`      POINTDNS          single region driver :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
 `Rackspace DNS`_                                              RACKSPACE         us, uk               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `Route53 DNS`_                                                ROUTE53           single region driver :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
