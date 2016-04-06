@@ -2074,15 +2074,15 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 # public and 'fixed' for private
                 explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
-                if explicit_ip_type == 'floating':
+                if public_subnet:
+                    # Check for public subnet
+                    is_public_ip = True
+                elif explicit_ip_type == 'floating':
                     is_public_ip = True
                 elif explicit_ip_type == 'fixed':
                     is_public_ip = False
                 elif label in public_networks_labels:
                     # Try label next
-                    is_public_ip = True
-                elif public_subnet:
-                    # Check for public subnet
                     is_public_ip = True
 
                 if is_public_ip:
@@ -2108,6 +2108,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             created_at=created,
             driver=self,
             extra=dict(
+                addresses=api_node['addresses'],
                 hostId=api_node['hostId'],
                 access_ip=api_node.get('accessIPv4'),
                 access_ipv6=api_node.get('accessIPv6', None),
