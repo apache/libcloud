@@ -286,7 +286,7 @@ BAD_MESSAGE_XML_ELEMENTS = (
 )
 
 
-def dd_object_to_id(obj, obj_type):
+def dd_object_to_id(obj, obj_type, id_value='id'):
     """
     Takes in a DD object or string and prints out it's id
     This is a helper method, as many of our functions can take either an object
@@ -303,7 +303,7 @@ def dd_object_to_id(obj, obj_type):
     :rtype: ``str``
     """
     if isinstance(obj, obj_type):
-        return obj.id
+        return getattr(obj, id_value)
     elif isinstance(obj, (basestring)):
         return obj
     else:
