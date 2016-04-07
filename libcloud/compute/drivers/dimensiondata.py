@@ -1377,9 +1377,8 @@ class DimensionDataNodeDriver(NodeDriver):
                 dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
-        ET.SubElement(create_node, "enabled").text = rule.enabled
-
         # Set up positioning of rule
+        ET.SubElement(create_node, "enabled").text = str(rule.enabled).lower()
         placement = ET.SubElement(create_node, "placement")
         if position_relative_to_rule is not None:
             if position not in positions_with_rule:
