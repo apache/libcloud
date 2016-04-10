@@ -1,5 +1,5 @@
 BuddyNS Driver Documentation
-==========================
+============================
 
 BuddyNS.com is part of FrontDam GmbH, a small swiss company making
 systems for uptime of Internet services, and run by a tribe of passionate
