@@ -53,6 +53,7 @@ class Provider(object):
     NSONE = 'nsone'
     LUADNS = 'luadns'
     NFSN = 'nfsn'
+    BUDDYNS = 'buddyns'
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
