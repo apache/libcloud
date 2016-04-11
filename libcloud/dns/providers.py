@@ -67,6 +67,11 @@ DRIVERS = {
     ('libcloud.dns.drivers.cloudflare', 'CloudFlareDNSDriver'),
     Provider.NFSN:
     ('libcloud.dns.drivers.nfsn', 'NFSNDNSDriver'),
+    Provider.NSONE:
+    ('libcloud.dns.drivers.nsone', 'NsOneDNSDriver'),
+    Provider.LUADNS:
+    ('libcloud.dns.drivers.luadns', 'LuadnsDNSDriver'),
+
 
     # Deprecated
     Provider.RACKSPACE_US:

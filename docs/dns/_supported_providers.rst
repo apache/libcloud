@@ -14,7 +14,9 @@ Provider            Documentation                             Provider Constant 
 `Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
+`Luadns`_           :doc:`Click </dns/drivers/luadns>`        LUADNS            single region driver :mod:`libcloud.dns.drivers.luadns`       :class:`LuadnsDNSDriver`      
 `NFSN DNS`_         :doc:`Click </dns/drivers/nfsn>`          NFSN              single region driver :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`        
+`NS1 DNS`_                                                    NSONE             single region driver :mod:`libcloud.dns.drivers.nsone`        :class:`NsOneDNSDriver`       
 `Point DNS`_        :doc:`Click </dns/drivers/pointdns>`      POINTDNS          single region driver :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
 `Rackspace DNS`_                                              RACKSPACE         us, uk               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `Route53 DNS`_                                                ROUTE53           single region driver :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
@@ -36,7 +38,9 @@ Provider            Documentation                             Provider Constant 
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
+.. _`Luadns`: https://www.luadns.com
 .. _`NFSN DNS`: https://www.nearlyfreespeech.net
+.. _`NS1 DNS`: https://ns1.com
 .. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
