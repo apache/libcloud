@@ -1,0 +1,4 @@
+{ "status":"Forbidden",
+  "request_id":"a75744f55cabe0411e02fa97e1a5d91b",
+  "message":"Zone 'test.com' is taken already."
+}

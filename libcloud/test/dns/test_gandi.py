@@ -50,13 +50,21 @@ class GandiTests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records), 4)
 
         record = records[1]
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
+
+        record = records[3]
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.id, 'MX:')
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'aspmx.l.google.com')
+        self.assertEqual(record.extra['priority'], 15)
+        self.assertEqual(record.extra['ttl'], 86400)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')

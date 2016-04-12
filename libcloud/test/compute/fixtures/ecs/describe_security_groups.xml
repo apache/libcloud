@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeSecurityGroupsResponse>
+	<PageNumber>1</PageNumber>
+	<TotalCount>1</TotalCount>
+	<PageSize>10</PageSize>
+	<RegionId>cn-qingdao</RegionId>
+	<RequestId>7F154B0C-2594-416D-B546-75021185A6DA</RequestId>
+	<SecurityGroups>
+		<SecurityGroup>
+			<CreationTime>2015-06-26T08:35:30Z</CreationTime>
+			<Tags />
+			<SecurityGroupId>sg-28ou0f3xa</SecurityGroupId>
+			<SecurityGroupName>sg-28ou0f3xa</SecurityGroupName>
+			<Description>System created security group.</Description>
+			<VpcId></VpcId>
+		</SecurityGroup>
+	</SecurityGroups>
+</DescribeSecurityGroupsResponse>

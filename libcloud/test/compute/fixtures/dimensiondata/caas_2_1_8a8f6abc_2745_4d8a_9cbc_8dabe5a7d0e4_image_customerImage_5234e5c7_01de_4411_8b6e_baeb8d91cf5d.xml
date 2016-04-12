@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <customerImage xmlns="urn:didata.com:api:cloud:types" id="5234e5c7-01de-4411-8b6e-baeb8d91cf5d" datacenterId="NA9">
+        <name>ImportedCustomerImage</name>
+        <description />
+        <operatingSystem id="REDHAT664" displayName="REDHAT6/64" family="UNIX" />
+        <cpu count="4" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>2</memoryGb>
+        <disk id="1a82316f-23ed-4fe9-b6d8-6b92ac467423" scsiId="0" sizeGb="12" speed="STANDARD" />
+        <createTime>2015-11-19T14:29:02.000Z</createTime>
+        <source type="IMPORT">
+        <artifact type="MF" value="ImportedCustomerImage.mf" date="2015-1119T14:28:54.000Z" />
+        <artifact type="OVF" value="ImportedCustomerImage.ovf" date="2015-1119T14:28:05.000Z" />
+        <artifact type="VMDK" value="ImportedCustomerImage-disk1.vmdk" date="2015-11-19T12:22:31.000Z" /></source>
+        <state>NORMAL</state>
+        <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="NOT_RUNNING" apiVersion="8389" />
+        <virtualHardware version="vmx-10" upToDate="true" />
+    </customerImage>

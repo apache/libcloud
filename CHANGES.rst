@@ -1,8 +1,23 @@
 ﻿Changelog
 =========
 
-Changes with Apache Libcloud in development
--------------------------------------------
+Changes with latest version of Apache Libcloud
+----------------------------------------------
+
+General
+~~~~~~~
+
+Compute
+~~~~~~~
+
+- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s `list_nodes()` while some VMs are being shutdown can result
+  in the `following`libcloud.common.google.ResourceNotFoundError` exception to be raised.
+  (GITHUB-727)
+  [Lénaïc Huard]
+
+
+Changes with Apache Libcloud in 1.0.0-rc2
+-----------------------------------------
 
 General
 ~~~~~~~
@@ -29,8 +44,42 @@ General
   (GITHUB-711, GITHUB-714, LIBCLOUD-803)
   [Tomaz Muraus, Scott Crunkleton]
 
+* Remove deprecated provider constants with the region in the name and related
+  driver classes (e.g. ``EC2_US_EAST``, etc.).
+
+  Those drivers have moved to single provider constant + ``region`` constructor
+  argument model.
+  [Tomaz Muraus]
+
+* Introduce new `list_regions`` class method on the base driver class. This
+  method is to be used with provider drivers which support multiple regions and
+  ``region`` constructor argument. It allows users to enumerate available /
+  supported regions.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
+
+- [dimension data] added support for VMWare tools VM information inside list_nodes responses
+  (GITHUB-734)
+  [Jeff Dunham]
+
+- [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
+  (GITHUB-729)
+  [Viktor Ognev]
+
+- [dimension data] added support for managing host anti-affinity rules, added paging support to
+  all supported calls and added support for requesting priority ordering when creating ACL rules
+  (GITHUB-726)
+  [Jeff Dunham]
+
+- [openstack] when creating floating IPs, added pool_id as an optional argument
+  (GITHUB-725)
+  [marko-p]
+
+- [google compute] Added setMachineType method to allow for changing sizes of instances
+  (GITHUB-721)
+  [Eric Johnson]
 
 - [google compute] allow bypassing image search in standard project list
   (GITHUB-713)
@@ -82,8 +131,16 @@ Compute
   (GITHUB-698)
   [Allard Hoeve] [Rick van de Loo]
 
+- New driver for Aliyun Elastic Compute Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
 Storage
 ~~~~~~~
+
+- Added Outscale storage driver
+  (GITHUB-730)
+  [Javier M. Mellid]
 
 - Improvements to Google Auth for Storage and Compute and MIME bug fix
   (LIBCLOUD-800, GITHUB-689)
@@ -97,12 +154,39 @@ Storage
   (GITHUB-696)
   [Jay jshridha]
 
+- New driver for Aliyun OSS Storage Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- New driver for Aliyun SLB Loadbalancer Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
 DNS
 ~~~~
+
+- Added NearlyFreeSpeech.net (NSFN) driver
+  [Ken Drayer]
+  (GITHUB-733)
+
+- Added Lua DNS driver
+  [Oltjano Terpollari]
+  (GITHUB-732)
+
+- Added NSOne driver
+  [Oltjano Terpollari]
+  (GITHUB-710)
 
 - Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
   connection class is correctly set to the hostname.
   [Tomaz Muraus]
+
+- Fix handling of ``MX`` records in the Gandi driver.
+  (GITHUB-718)
+  [Ryan Lee]
 
 Backup
 ~~~~~~

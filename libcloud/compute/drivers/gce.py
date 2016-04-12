@@ -1625,11 +1625,31 @@ class GCENodeDriver(NodeDriver):
             # The aggregated response returns a dict for each zone
             if zone is None:
                 for v in response['items'].values():
-                    zone_nodes = [self._to_node(i) for i in
-                                  v.get('instances', [])]
-                    list_nodes.extend(zone_nodes)
+                    for i in v.get('instances', []):
+                        try:
+                            list_nodes.append(self._to_node(i))
+                        # If a GCE node has been deleted between
+                        #   - is was listed by `request('.../instances', 'GET')
+                        #   - it is converted by `self._to_node(i)`
+                        # `_to_node()` will raise a ResourceNotFoundError.
+                        #
+                        # Just ignore that node and return the list of the
+                        # other nodes.
+                        except ResourceNotFoundError:
+                            pass
             else:
-                list_nodes = [self._to_node(i) for i in response['items']]
+                for i in response['items']:
+                    try:
+                        list_nodes.append(self._to_node(i))
+                    # If a GCE node has been deleted between
+                    #   - is was listed by `request('.../instances', 'GET')
+                    #   - it is converted by `self._to_node(i)`
+                    # `_to_node()` will raise a ResourceNotFoundError.
+                    #
+                    # Just ignore that node and return the list of the
+                    # other nodes.
+                    except ResourceNotFoundError:
+                        pass
         return list_nodes
 
     def ex_list_regions(self):
@@ -3683,6 +3703,30 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/global/networks/%s' % (network.name)
         self.connection.async_request(request, method='DELETE')
+        return True
+
+    def ex_set_machine_type(self, node, machine_type='n1-standard-1'):
+        """
+        Set the machine type of the stopped instance. Can be the short-name,
+        a full, or partial URL.
+
+        :param  node: Target node object to change
+        :type   node: :class:`Node`
+
+        :param  machine_type: Desired machine type
+        :type   machine_type: ``str``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = mt_url = '/zones/%s' % node.extra['zone'].name
+
+        mt = machine_type.split('/')[-1]
+        mt_url = '%s/machineTypes/%s' % (mt_url, mt)
+
+        request = '%s/instances/%s/setMachineType' % (request, node.name)
+        body = {"machineType": mt_url}
+        self.connection.async_request(request, method='POST', data=body)
         return True
 
     def ex_start_node(self, node):

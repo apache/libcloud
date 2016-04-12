@@ -1,30 +1,31 @@
 .. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
 
-===================== ========================================= ================= ======================================== ==============================
-Provider              Documentation                             Provider constant Module                                   Class Name                    
-===================== ========================================= ================= ======================================== ==============================
-`AuroraDNS`_          :doc:`Click </dns/drivers/auroradns>`     AURORADNS         :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
-`CloudFlare DNS`_     :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
-`DigitalOcean`_       :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
-`DNSimple`_           :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
-`DurableDNS`_         :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
-`Gandi DNS`_                                                    GANDI             :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
-`GoDaddy DNS`_        :doc:`Click </dns/drivers/godaddy>`       GODADDY           :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
-`Google DNS`_                                                   GOOGLE            :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
-`Host Virtual DNS`_   :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
-`Linode DNS`_                                                   LINODE            :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
-`Liquidweb DNS`_      :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
-`Point DNS`_          :doc:`Click </dns/drivers/pointdns>`      POINTDNS          :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
-`Rackspace DNS`_                                                RACKSPACE         :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
-`Rackspace DNS (UK)`_                                           RACKSPACE_UK      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUKDNSDriver` 
-`Rackspace DNS (US)`_                                           RACKSPACE_US      :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceUSDNSDriver` 
-`Route53 DNS`_                                                  ROUTE53           :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
-`Softlayer DNS`_                                                SOFTLAYER         :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
-`Vultr DNS`_          :doc:`Click </dns/drivers/vultr>`         VULTR             :mod:`libcloud.dns.drivers.vultr`        :class:`VultrDNSDriver`       
-`World Wide DNS`_     :doc:`Click </dns/drivers/worldwidedns>`  WORLDWIDEDNS      :mod:`libcloud.dns.drivers.worldwidedns` :class:`WorldWideDNSDriver`   
-`Zerigo DNS`_                                                   ZERIGO            :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
-`Zonomi DNS`_         :doc:`Click </dns/drivers/zonomi>`        ZONOMI            :mod:`libcloud.dns.drivers.zonomi`       :class:`ZonomiDNSDriver`      
-===================== ========================================= ================= ======================================== ==============================
+=================== ========================================= ================= ==================== ======================================== ==============================
+Provider            Documentation                             Provider Constant Supported Regions    Module                                   Class Name                    
+=================== ========================================= ================= ==================== ======================================== ==============================
+`AuroraDNS`_        :doc:`Click </dns/drivers/auroradns>`     AURORADNS         single region driver :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
+`CloudFlare DNS`_   :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        single region driver :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
+`DigitalOcean`_     :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     single region driver :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
+`DNSimple`_         :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
+`DurableDNS`_       :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        single region driver :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
+`Gandi DNS`_                                                  GANDI             single region driver :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
+`GoDaddy DNS`_      :doc:`Click </dns/drivers/godaddy>`       GODADDY           single region driver :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
+`Google DNS`_                                                 GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
+`Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
+`Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
+`Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
+`Luadns`_           :doc:`Click </dns/drivers/luadns>`        LUADNS            single region driver :mod:`libcloud.dns.drivers.luadns`       :class:`LuadnsDNSDriver`      
+`NFSN DNS`_         :doc:`Click </dns/drivers/nfsn>`          NFSN              single region driver :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`        
+`NS1 DNS`_                                                    NSONE             single region driver :mod:`libcloud.dns.drivers.nsone`        :class:`NsOneDNSDriver`       
+`Point DNS`_        :doc:`Click </dns/drivers/pointdns>`      POINTDNS          single region driver :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
+`Rackspace DNS`_                                              RACKSPACE         us, uk               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
+`Route53 DNS`_                                                ROUTE53           single region driver :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
+`Softlayer DNS`_                                              SOFTLAYER         single region driver :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
+`Vultr DNS`_        :doc:`Click </dns/drivers/vultr>`         VULTR             single region driver :mod:`libcloud.dns.drivers.vultr`        :class:`VultrDNSDriver`       
+`World Wide DNS`_   :doc:`Click </dns/drivers/worldwidedns>`  WORLDWIDEDNS      single region driver :mod:`libcloud.dns.drivers.worldwidedns` :class:`WorldWideDNSDriver`   
+`Zerigo DNS`_                                                 ZERIGO            single region driver :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
+`Zonomi DNS`_       :doc:`Click </dns/drivers/zonomi>`        ZONOMI            single region driver :mod:`libcloud.dns.drivers.zonomi`       :class:`ZonomiDNSDriver`      
+=================== ========================================= ================= ==================== ======================================== ==============================
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`CloudFlare DNS`: https://www.cloudflare.com
@@ -37,10 +38,11 @@ Provider              Documentation                             Provider constan
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
+.. _`Luadns`: https://www.luadns.com
+.. _`NFSN DNS`: https://www.nearlyfreespeech.net
+.. _`NS1 DNS`: https://ns1.com
 .. _`Point DNS`: https://pointhq.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
-.. _`Rackspace DNS (UK)`: http://www.rackspace.com/
-.. _`Rackspace DNS (US)`: http://www.rackspace.com/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Softlayer DNS`: https://www.softlayer.com
 .. _`Vultr DNS`: http://www.vultr.com/

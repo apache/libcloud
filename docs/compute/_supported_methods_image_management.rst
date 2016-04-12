@@ -4,6 +4,7 @@
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========
 `Abiquo`_                             yes         no        no           no           no        
+`Aliyun ECS`_                         yes         yes       yes          yes          yes       
 `PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Azure Virtual machines`_             yes         no        no           no           no        
 `Bluebox Blocks`_                     yes         no        no           no           no        
@@ -16,27 +17,8 @@ Provider                              list images get image create image delete 
 `DigitalOcean`_                       yes         yes       yes          yes          no        
 `DimensionData`_                      yes         no        no           no           no        
 `Amazon EC2`_                         yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-2)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-southeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-southeast-2)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (eu-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (eu-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (sa-east-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2`_                         yes         yes       yes          yes          yes       
-`Amazon EC2 (us-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (us-west-2)`_             yes         yes       yes          yes          yes       
 `Enomaly Elastic Computing Platform`_ yes         no        no           no           no        
 `ElasticHosts`_                       yes         no        no           no           no        
-`ElasticHosts (syd-y)`_               yes         no        no           no           no        
-`ElasticHosts (tor-p)`_               yes         no        no           no           no        
-`ElasticHosts (cn-1)`_                yes         no        no           no           no        
-`ElasticHosts (lon-p)`_               yes         no        no           no           no        
-`ElasticHosts (lon-b)`_               yes         no        no           no           no        
-`ElasticHosts (sat-p)`_               yes         no        no           no           no        
-`ElasticHosts (lax-p)`_               yes         no        no           no           no        
-`ElasticHosts (sjc-c)`_               yes         no        no           no           no        
 `Eucalyptus`_                         yes         yes       yes          yes          yes       
 `Exoscale`_                           yes         no        no           no           no        
 `Gandi`_                              yes         no        no           no           no        
@@ -79,6 +61,7 @@ Provider                              list images get image create image delete 
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
@@ -91,27 +74,8 @@ Provider                              list images get image create image delete 
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-2)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-southeast-2)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (eu-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (eu-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (sa-east-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (us-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (us-west-2)`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts (syd-y)`: http://www.elastichosts.com/
-.. _`ElasticHosts (tor-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (cn-1)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lon-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lon-b)`: http://www.elastichosts.com/
-.. _`ElasticHosts (sat-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/

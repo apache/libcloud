@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils.misc import get_driver as get_provider_driver
-from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.storage.types import Provider
+from libcloud.storage.types import OLD_CONSTANT_TO_NEW_MAPPING
+from libcloud.common.providers import get_driver as _get_provider_driver
+from libcloud.common.providers import set_driver as _set_provider_driver
 
 DRIVERS = {
     Provider.DUMMY:
@@ -42,6 +43,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.s3', 'S3APNE2StorageDriver'),
     Provider.S3_SA_EAST:
     ('libcloud.storage.drivers.s3', 'S3SAEastStorageDriver'),
+    Provider.S3_RGW_OUTSCALE:
+    ('libcloud.storage.drivers.s3', 'S3RGWOutscaleStorageDriver'),
     Provider.NINEFOLD:
     ('libcloud.storage.drivers.ninefold', 'NinefoldStorageDriver'),
     Provider.GOOGLE_STORAGE:
@@ -58,20 +61,17 @@ DRIVERS = {
     ('libcloud.storage.drivers.auroraobjects', 'AuroraObjectsStorageDriver'),
     Provider.BACKBLAZE_B2:
     ('libcloud.storage.drivers.backblaze_b2', 'BackblazeB2StorageDriver'),
-
-    # Deprecated
-    Provider.CLOUDFILES_US:
-    ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
-    Provider.CLOUDFILES_UK:
-    ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
-    Provider.CLOUDFILES_SWIFT:
-    ('libcloud.storage.drivers.cloudfiles', 'OpenStackSwiftStorageDriver')
+    Provider.ALIYUN_OSS:
+    ('libcloud.storage.drivers.oss', 'OSSStorageDriver'),
 }
 
 
 def get_driver(provider):
-    return get_provider_driver(DRIVERS, provider)
+    deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
+    return _get_provider_driver(drivers=DRIVERS, provider=provider,
+                                deprecated_constants=deprecated_constants)
 
 
 def set_driver(provider, module, klass):
-    return set_provider_driver(DRIVERS, provider, module, klass)
+    return _set_provider_driver(drivers=DRIVERS, provider=provider,
+                                module=module, klass=klass)

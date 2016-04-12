@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeRegionsResponse>
+	<RequestId>FD28A957-20B2-447E-8A5A-952F50C4EDF0</RequestId>
+	<Regions>
+		<Region>
+			<RegionId>ap-southeast-1</RegionId>
+			<LocalName>亚太（新加坡）</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-shenzhen</RegionId>
+			<LocalName>深圳</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-qingdao</RegionId>
+			<LocalName>青岛</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-beijing</RegionId>
+			<LocalName>北京</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-shanghai</RegionId>
+			<LocalName>上海</LocalName>
+		</Region>
+		<Region>
+			<RegionId>us-east-1</RegionId>
+			<LocalName>美东弗吉尼亚</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-hongkong</RegionId>
+			<LocalName>香港</LocalName>
+		</Region>
+		<Region>
+			<RegionId>cn-hangzhou</RegionId>
+			<LocalName>杭州</LocalName>
+		</Region>
+		<Region>
+			<RegionId>us-west-1</RegionId>
+			<LocalName>美国硅谷</LocalName>
+		</Region>
+	</Regions>
+</DescribeRegionsResponse>

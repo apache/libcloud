@@ -30,7 +30,7 @@ __all__ = [
     "MalformedResponseError",
     "InvalidCredsError",
     "InvalidCredsException",
-    "DEPRECATED_RACKSPACE_PROVIDERS",
+
     "OLD_CONSTANT_TO_NEW_MAPPING"
 ]
 
@@ -100,10 +100,11 @@ class Provider(Type):
     :cvar VULTR: vultr driver.
     :cvar AZURE: Azure driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
+    :cvar ALIYUN_ECS: Aliyun ECS driver.
     """
     AZURE = 'azure'
     DUMMY = 'dummy'
-    EC2 = 'ec2_us_east'
+    EC2 = 'ec2'
     RACKSPACE = 'rackspace'
     GCE = 'gce'
     GOGRID = 'gogrid'
@@ -159,6 +160,7 @@ class Provider(Type):
     NTTA = 'ntta'
     MEDONE = 'medone'
     CISCOCCS = 'ciscoccs'
+    ALIYUN_ECS = 'aliyun_ecs'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
@@ -166,7 +168,13 @@ class Provider(Type):
     KILI = 'kili'
     ONAPP = 'onapp'
 
-    # Deprecated constants which are still supported
+    # Deprecated constants which aren't supported anymore
+    RACKSPACE_UK = 'rackspace_uk'
+    RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
+    RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
+    RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
+    RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
+
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
@@ -190,13 +198,6 @@ class Provider(Type):
 
     CLOUDSIGMA_US = 'cloudsigma_us'
 
-    # Deprecated constants which aren't supported anymore
-    RACKSPACE_UK = 'rackspace_uk'
-    RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
-    RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
-    RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
-    RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
-
     # Removed
     # SLICEHOST = 'slicehost'
 
@@ -207,13 +208,37 @@ DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_LON,
                                   Provider.RACKSPACE_NOVA_ORD]
 OLD_CONSTANT_TO_NEW_MAPPING = {
-    Provider.RACKSPACE: Provider.RACKSPACE_FIRST_GEN,
+    # Rackspace
     Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
 
     Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_DFW: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
-    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE
+    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE,
+
+    # AWS
+    Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_EU: Provider.EC2,
+    Provider.EC2_EU_WEST: Provider.EC2,
+    Provider.EC2_US_WEST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST1: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST2: Provider.EC2,
+    Provider.EC2_US_WEST_OREGON: Provider.EC2,
+    Provider.EC2_SA_EAST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+
+    # ElasticHosts
+    Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_UK2: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US2: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US3: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_CA1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_AU1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_CN1: Provider.ELASTICHOSTS,
 }
 
 

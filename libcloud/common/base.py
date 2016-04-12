@@ -1162,6 +1162,15 @@ class BaseDriver(object):
         self.connection.driver = self
         self.connection.connect()
 
+    @classmethod
+    def list_regions(cls):
+        """
+        Method which returns a list of the available / supported regions.
+
+        :rtype: ``list`` of ``str``
+        """
+        return []
+
     def _ex_connection_class_kwargs(self):
         """
         Return extra connection keyword arguments which are passed to the

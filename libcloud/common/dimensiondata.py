@@ -22,6 +22,7 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import Node
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -285,6 +286,33 @@ BAD_MESSAGE_XML_ELEMENTS = (
 )
 
 
+def dd_object_to_id(obj, obj_type, id_value='id'):
+    """
+    Takes in a DD object or string and prints out it's id
+    This is a helper method, as many of our functions can take either an object
+    or a string, and we need an easy way of converting them
+
+    :param obj: The object to get the id for
+    :type  obj: ``object``
+
+    :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                  function needs to return an object which has ``status``
+                  attribute.
+    :type   func: ``function``
+
+    :rtype: ``str``
+    """
+    if isinstance(obj, obj_type):
+        return getattr(obj, id_value)
+    elif isinstance(obj, (basestring)):
+        return obj
+    else:
+        raise TypeError(
+            "Invalid type %s looking for basestring or %s"
+            % (type(obj).__name__, obj_type.__name__)
+        )
+
+
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
     ADVANCED = "ADVANCED"
@@ -405,6 +433,50 @@ class DimensionDataConnection(ConnectionUserAndKey):
             action=action,
             params=params, data=data,
             method=method, headers=headers)
+
+    def paginated_request_with_orgId_api_2(self, action, params=None, data='',
+                                           headers=None, method='GET',
+                                           page_size=250):
+        """
+        A paginated request to the MCP2.0 API
+        This essentially calls out to request_with_orgId_api_2 for each page
+        and yields the response to make a generator
+        This generator can be looped through to grab all the pages.
+
+        :param action: The resource to access (i.e. 'network/vlan')
+        :type  action: ``str``
+
+        :param params: Parameters to give to the action
+        :type  params: ``dict`` or ``None``
+
+        :param data: The data payload to be added to the request
+        :type  data: ``str``
+
+        :param headers: Additional header to be added to the request
+        :type  headers: ``str`` or ``dict`` or ``None``
+
+        :param method: HTTP Method for the request (i.e. 'GET', 'POST')
+        :type  method: ``str``
+
+        :param page_size: The size of each page to be returned
+                          Note: Max page size in MCP2.0 is currently 250
+        :type  page_size: ``int``
+        """
+        if params is None:
+            params = {}
+        params['pageSize'] = page_size
+
+        paged_resp = self.request_with_orgId_api_2(action, params,
+                                                   data, headers,
+                                                   method).object
+        yield paged_resp
+
+        while paged_resp.get('pageCount') >= paged_resp.get('pageSize'):
+            params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
+            paged_resp = self.request_with_orgId_api_2(action, params,
+                                                       data, headers,
+                                                       method).object
+            yield paged_resp
 
     def get_resource_path_api_1(self):
         """
@@ -643,6 +715,35 @@ class DimensionDataServerDisk(object):
                 % (self.id, self.size_gb))
 
 
+class DimensionDataServerVMWareTools(object):
+    """
+    A class that represents the VMWareTools for a node
+    """
+    def __init__(self, status, version_status, api_version):
+        """
+        Instantiate a new :class:`DimensionDataServerVMWareTools` object
+
+        :param status: The status of VMWare Tools
+        :type  status: ``str``
+
+        :param version_status: The status for the version of VMWare Tools
+            (i.e NEEDS_UPGRADE)
+        :type  version_status: ``str``
+
+        :param api_version: The API version of VMWare Tools
+        :type  api_version: ``str``
+        """
+        self.status = status
+        self.version_status = version_status
+        self.api_version = api_version
+
+    def __repr__(self):
+        return (('<DimensionDataServerVMWareTools '
+                 'status=%s, version_status=%s, '
+                 'api_version=%s>')
+                % (self.status, self.version_status, self.api_version))
+
+
 class DimensionDataFirewallRule(object):
     """
     DimensionData Firewall Rule for a network domain
@@ -701,6 +802,31 @@ class DimensionDataNatRule(object):
     def __repr__(self):
         return (('<DimensionDataNatRule: id=%s, status=%s>')
                 % (self.id, self.status))
+
+
+class DimensionDataAntiAffinityRule(object):
+    """
+    Anti-Affinity rule for DimensionData
+
+    An Anti-Affinity rule ensures that servers in the rule will
+    not reside on the same VMware ESX host.
+    """
+    def __init__(self, id, node_list):
+        """
+        Instantiate a new :class:`DimensionDataAntiAffinityRule`
+
+        :param id: The ID of the Anti-Affinity rule
+        :type  id: ``str``
+
+        :param node_list: List of node ids that belong in this rule
+        :type  node_list: ``list`` of ``str``
+        """
+        self.id = id
+        self.node_list = node_list
+
+    def __repr__(self):
+        return (('<DimensionDataAntiAffinityRule: id=%s>')
+                % (self.id))
 
 
 class DimensionDataVlan(object):
@@ -1051,7 +1177,7 @@ class DimensionDataBackupDetails(object):
     a targets backups configuration
     """
 
-    def __init__(self, asset_id, service_plan, state, clients=None):
+    def __init__(self, asset_id, service_plan, status, clients=None):
         """
         Initialize an instance of :class:`DimensionDataBackupDetails`
 
@@ -1061,15 +1187,16 @@ class DimensionDataBackupDetails(object):
         :param service_plan: The service plan for backups. i.e (Essentials)
         :type  service_plan: ``str``
 
-        :param state: The overall state this backup target. i.e. (unregistered)
-        :type  state: ``str``
+        :param status: The overall status this backup target.
+                       i.e. (unregistered)
+        :type  status: ``str``
 
         :param clients: Backup clients attached to this target
         :type  clients: ``list`` of :class:`DimensionDataBackupClient`
         """
         self.asset_id = asset_id
         self.service_plan = service_plan
-        self.state = state
+        self.status = status
         self.clients = clients
 
     def __repr__(self):
