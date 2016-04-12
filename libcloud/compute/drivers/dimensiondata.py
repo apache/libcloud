@@ -822,7 +822,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if vlan is not None:
             ET.SubElement(nic, 'vlanId').text = vlan.id
-        elif primary_ipv4 is not None:
+        elif private_ipv4 is not None:
             ET.SubElement(nic, 'privateIpv4').text = private_ipv4
         else:
             raise ValueError("One of vlan or primary_ipv4 "
