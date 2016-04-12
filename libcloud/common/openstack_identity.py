@@ -571,14 +571,13 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     timeout = None
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
+                 domain_name=None, token_scope=None,
                  timeout=None, parent_conn=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
                                                           key=key,
                                                           url=auth_url,
                                                           timeout=timeout)
 
-        self.auth_url = auth_url
-        self.tenant_name = tenant_name
         self.parent_conn = parent_conn
 
         # enable tests to use the same mock connection classes.
@@ -590,6 +589,10 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
 
         self.auth_url = auth_url
         self.tenant_name = tenant_name
+        self.domain_name = domain_name if domain_name is not None else \
+            'Default'
+        self.token_scope = token_scope if token_scope is not None else \
+            OpenStackIdentityTokenScope.PROJECT
         self.timeout = timeout
 
         self.urls = {}
@@ -926,8 +929,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     ]
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name='Default',
-                 token_scope=OpenStackIdentityTokenScope.PROJECT,
+                 domain_name=None, token_scope=None,
                  timeout=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
@@ -940,8 +942,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                             domain to scope the token to.
         :type domain_name: ``str``
 
-        :param token_scope: Whether to scope a token to a "project" or a
-                         "domain"
+        :param token_scope: Whether to scope a token to a "project", a
+                            "domain" or "unscoped"
         :type token_scope: ``str``
         """
         super(OpenStackIdentity_3_0_Connection,
@@ -949,23 +951,20 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              user_id=user_id,
                              key=key,
                              tenant_name=tenant_name,
+                             domain_name=domain_name,
+                             token_scope=token_scope,
                              timeout=timeout,
                              parent_conn=parent_conn)
-        if token_scope not in self.VALID_TOKEN_SCOPES:
-            raise ValueError('Invalid value for "token_scope" argument: %s' %
-                             (token_scope))
 
-        if (token_scope == OpenStackIdentityTokenScope.PROJECT and
-                (not tenant_name or not domain_name)):
+        if self.token_scope not in self.VALID_TOKEN_SCOPES:
+            raise ValueError('Invalid value for "token_scope" argument: %s' %
+                             (self.token_scope))
+
+        if (self.token_scope == OpenStackIdentityTokenScope.PROJECT and
+                (not self.tenant_name or not self.domain_name)):
             raise ValueError('Must provide tenant_name and domain_name '
                              'argument')
-        elif (token_scope == OpenStackIdentityTokenScope.DOMAIN and
-                not domain_name):
-            raise ValueError('Must provide domain_name argument')
 
-        self.tenant_name = tenant_name
-        self.domain_name = domain_name
-        self.token_scope = token_scope
         self.auth_user_roles = None
 
     def authenticate(self, force=False):
