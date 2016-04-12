@@ -1,0 +1,3 @@
+ {"errors":
+   {"name": ["Zone with this Domain already exists."]},
+   "detail": "Invalid zone submitted for addition."}
