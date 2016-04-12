@@ -794,17 +794,24 @@ class DimensionDataNodeDriver(NodeDriver):
             rules.extend(self._to_anti_affinity_rules(result))
         return rules
 
-    def ex_attach_node_to_vlan(self, node, vlan):
+    def ex_attach_node_to_vlan(self, node, vlan=None, private_ipv4=None):
         """
         Attach a node to a VLAN by adding an additional NIC to
         the node on the target VLAN. The IP will be automatically
-        assigned based on the VLAN IP network space.
+        assigned based on the VLAN IP network space. Alternatively, provide
+        a private IPv4 address instead of VLAN information, and this will
+        be assigned to the node on corresponding NIC.
 
         :param      node: Node which should be used
         :type       node: :class:`Node`
 
         :param      vlan: VLAN to attach the node to
+                          (required unless private_ipv4)
         :type       vlan: :class:`DimensionDataVlan`
+
+        :keyword    private_ipv4: Private nic IPv4 Address
+                                  (required unless vlan)
+        :type       private_ipv4: ``str``
 
         :rtype: ``bool``
         """
@@ -812,7 +819,14 @@ class DimensionDataNodeDriver(NodeDriver):
                              {'xmlns': TYPES_URN})
         ET.SubElement(request, 'serverId').text = node.id
         nic = ET.SubElement(request, 'nic')
-        ET.SubElement(nic, 'vlanId').text = vlan.id
+
+        if vlan is not None:
+            ET.SubElement(nic, 'vlanId').text = vlan.id
+        elif primary_ipv4 is not None:
+            ET.SubElement(nic, 'privateIpv4').text = private_ipv4
+        else:
+            raise ValueError("One of vlan or primary_ipv4 "
+                             "must be specified")
 
         response = self.connection.request_with_orgId_api_2(
             'server/addNic',
