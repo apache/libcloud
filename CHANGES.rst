@@ -15,6 +15,13 @@ Compute
   (GITHUB-727)
   [Lénaïc Huard]
 
+DNS
+~~~
+
+- Added BuddyNS driver
+  (GITHUB-742)
+  [Oltjano Terpollari]
+
 
 Changes with Apache Libcloud in 1.0.0-rc2
 -----------------------------------------
