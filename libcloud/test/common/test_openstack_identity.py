@@ -274,16 +274,6 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                 key='test',
                                 token_scope='project')
 
-        # Missing domain_name
-        expected_msg = 'Must provide domain_name argument'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                OpenStackIdentity_3_0_Connection,
-                                auth_url='http://none',
-                                user_id='test',
-                                key='test',
-                                token_scope='domain',
-                                domain_name=None)
-
         # Scope to project all ok
         OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                          user_id='test',
@@ -298,6 +288,15 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                          token_scope='domain',
                                          tenant_name=None,
                                          domain_name='Default')
+
+    def test_authenticate(self):
+        auth = OpenStackIdentity_3_0_Connection(auth_url='http://none',
+                                                user_id='test_user_id',
+                                                key='test_key',
+                                                token_scope='project',
+                                                tenant_name="test_tenant",
+                                                domain_name='test_domain')
+        auth.authenticate()
 
     def test_list_supported_versions(self):
         OpenStackIdentity_3_0_MockHttp.type = 'v3'
@@ -572,6 +571,20 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load('v3_projects.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v3_auth_tokens(self, method, url, body, headers):
+        if method == 'POST':
+            status = httplib.OK
+            data = json.loads(body)
+            if data['auth']['identity']['password']['user']['domain']['name'] != 'test_domain' or \
+                    data['auth']['scope']['project']['domain']['name'] != 'test_domain':
+                status = httplib.UNAUTHORIZED
+
+            body = ComputeFileFixtures('openstack').load('_v3__auth.json')
+            headers = self.json_content_headers.copy()
+            headers['x-subject-token'] = '00000000000000000000000000000000'
+            return (status, body, headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v3_users(self, method, url, body, headers):
