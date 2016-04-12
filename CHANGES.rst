@@ -1,8 +1,23 @@
 ﻿Changelog
 =========
 
+Changes with latest version of Apache Libcloud
+----------------------------------------------
+
+General
+~~~~~~~
+
+Compute
+~~~~~~~
+
+- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s `list_nodes()` while some VMs are being shutdown can result
+  in the `following`libcloud.common.google.ResourceNotFoundError` exception to be raised.
+  (GITHUB-727)
+  [Lénaïc Huard]
+
+
 Changes with Apache Libcloud in 1.0.0-rc2
--------------------------------------------
+-----------------------------------------
 
 General
 ~~~~~~~
