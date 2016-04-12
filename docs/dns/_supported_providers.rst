@@ -4,6 +4,7 @@
 Provider            Documentation                             Provider Constant Supported Regions    Module                                   Class Name                    
 =================== ========================================= ================= ==================== ======================================== ==============================
 `AuroraDNS`_        :doc:`Click </dns/drivers/auroradns>`     AURORADNS         single region driver :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
+`BuddyNS DNS`_      :doc:`Click </dns/drivers/buddyns>`       BUDDYNS           single region driver :mod:`libcloud.dns.drivers.buddyns`      :class:`BuddyNSDNSDriver`     
 `CloudFlare DNS`_   :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        single region driver :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
 `DigitalOcean`_     :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     single region driver :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
 `DNSimple`_         :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
@@ -28,6 +29,7 @@ Provider            Documentation                             Provider Constant 
 =================== ========================================= ================= ==================== ======================================== ==============================
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
+.. _`BuddyNS DNS`: https://www.buddyns.com
 .. _`CloudFlare DNS`: https://www.cloudflare.com
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/

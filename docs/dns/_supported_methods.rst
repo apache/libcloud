@@ -4,6 +4,7 @@
 Provider            list zones list records create zone update zone create record update record delete zone delete record
 =================== ========== ============ =========== =========== ============= ============= =========== =============
 `AuroraDNS`_        yes        yes          yes         no          yes           yes           yes         yes          
+`BuddyNS DNS`_      yes        no           yes         no          no            no            yes         no           
 `CloudFlare DNS`_   yes        yes          no          no          yes           yes           no          yes          
 `DigitalOcean`_     yes        yes          yes         no          yes           yes           yes         yes          
 `DNSimple`_         yes        yes          yes         no          yes           yes           yes         yes          
@@ -28,6 +29,7 @@ Provider            list zones list records create zone update zone create recor
 =================== ========== ============ =========== =========== ============= ============= =========== =============
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
+.. _`BuddyNS DNS`: https://www.buddyns.com
 .. _`CloudFlare DNS`: https://www.cloudflare.com
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
