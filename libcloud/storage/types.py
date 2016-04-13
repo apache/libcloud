@@ -34,6 +34,9 @@ class Provider(object):
     """
     Defines for each of the supported providers
 
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+
     :cvar DUMMY: Example provider
     :cvar ALIYUN_OSS: Aliyun OSS storage driver
     :cvar AURORAOBJECTS: AuroraObjects storage driver
