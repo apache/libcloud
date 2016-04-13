@@ -2068,8 +2068,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 except:
                     # IPv6
 
-                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
-                    # public and 'fixed' for private
+                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating'
+                    # for public and 'fixed' for private
                     explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
                     if label in public_networks_labels:
