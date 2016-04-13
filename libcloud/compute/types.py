@@ -59,6 +59,9 @@ class Provider(Type):
     """
     Defines for each of the supported providers
 
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+
     :cvar DUMMY: Example provider
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
