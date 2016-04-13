@@ -26,6 +26,10 @@ Compute
   (GITHUB-738)
   [Lionel Schaub]
 
+- Add new `Perth, Australia` and `Manila, Philippines` region to the CloudSigma
+  v2 driver.
+  [Tomaz Muraus]
+
 DNS
 ~~~
 
