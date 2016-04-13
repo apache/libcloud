@@ -35,18 +35,23 @@ class LibcloudLBImmutableError(LibcloudLBError):
 
 class Provider(object):
     """
+    Defines for each of the supported providers
+
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+
     :cvar ALIYUN_SLB: Aliyun SLB loadbalancer driver
     """
-    RACKSPACE = 'rackspace'
+    ALIYUN_SLB = 'aliyun_slb'
+    BRIGHTBOX = 'brightbox'
+    CLOUDSTACK = 'cloudstack'
+    DIMENSIONDATA = 'dimensiondata'
+    ELB = 'elb'
+    GCE = 'gce'
     GOGRID = 'gogrid'
     NINEFOLD = 'ninefold'
-    BRIGHTBOX = 'brightbox'
-    ELB = 'elb'
-    CLOUDSTACK = 'cloudstack'
-    GCE = 'gce'
+    RACKSPACE = 'rackspace'
     SOFTLAYER = 'softlayer'
-    DIMENSIONDATA = 'dimensiondata'
-    ALIYUN_SLB = 'aliyun_slb'
 
     # Deprecated
     RACKSPACE_US = 'rackspace_us'

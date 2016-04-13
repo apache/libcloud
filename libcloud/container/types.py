@@ -40,10 +40,16 @@ class Type(object):
 
 
 class Provider(object):
+    """
+    Defines for each of the supported providers
+
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+    """
     DUMMY = 'dummy'
     DOCKER = 'docker'
-    JOYENT = 'joyent'
     ECS = 'ecs'
+    JOYENT = 'joyent'
     KUBERNETES = 'kubernetes'
 
 
