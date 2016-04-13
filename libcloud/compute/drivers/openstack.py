@@ -2061,29 +2061,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         for label, values in api_node['addresses'].items():
             for value in values:
                 ip = value['addr']
-
                 is_public_ip = False
 
                 try:
-                    public_subnet = is_public_subnet(ip)
+                    is_public_ip = is_public_subnet(ip)
                 except:
                     # IPv6
-                    public_subnet = False
 
-                # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
-                # public and 'fixed' for private
-                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
+                    # public and 'fixed' for private
+                    explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
-                if public_subnet:
-                    # Check for public subnet
-                    is_public_ip = True
-                elif explicit_ip_type == 'floating':
-                    is_public_ip = True
-                elif explicit_ip_type == 'fixed':
-                    is_public_ip = False
-                elif label in public_networks_labels:
-                    # Try label next
-                    is_public_ip = True
+                    if label in public_networks_labels:
+                        is_public_ip = True
+                    elif explicit_ip_type == 'floating':
+                        is_public_ip = True
+                    elif explicit_ip_type == 'fixed':
+                        is_public_ip = False
 
                 if is_public_ip:
                     public_ips.append(ip)
