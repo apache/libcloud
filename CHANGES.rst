@@ -15,6 +15,11 @@ Compute
   (GITHUB-727)
   [Lénaïc Huard]
 
+- Allow user to filter nodes by location by adding optional `location`
+  argument to the `list_nodes()` method in the CloudStack driver.
+  (GITHUB-737)
+  [Lionel Schaub]
+
 DNS
 ~~~
 
