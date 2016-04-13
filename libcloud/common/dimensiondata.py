@@ -558,7 +558,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def get_account_details(self):
         """
         Get the details of this account
-        
+
         :rtype: :class:`DimensionDataAccountDetails`
         """
         body = self.request_api_1('myaccount').object
