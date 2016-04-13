@@ -25,6 +25,7 @@ try:
 except ImportError:
     import json
 
+from libcloud.compute.base import NodeLocation
 from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, \
     CloudStackAffinityGroupType
@@ -594,6 +595,21 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(nodes[0].extra['port_forwarding_rules']))
         self.assertEqual('bc7ea3ee-a2c3-4b86-a53f-01bdaa1b2e32',
                          nodes[0].extra['port_forwarding_rules'][0].id)
+
+    def test_list_nodes_location_filter(self):
+        def list_nodes_mock(self, **kwargs):
+            self.assertTrue('zoneid' in kwargs)
+            self.assertEqual('1', kwargs.get('zoneid'))
+
+            body, obj = self._load_fixture('listVirtualMachines_default.json')
+            return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+
+        CloudStackMockHttp._cmd_listVirtualMachines = list_nodes_mock
+        try:
+            location = NodeLocation(1, 'Sydney', 'Unknown', self.driver)
+            self.driver.list_nodes(location=location)
+        finally:
+            del CloudStackMockHttp._cmd_listVirtualMachines
 
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)
