@@ -21,6 +21,11 @@ Compute
   (GITHUB-737)
   [Lionel Schaub]
 
+- Fix OpenStack IP type resolution - make sure IP addresses are correctly
+  categorized and assigned on `private_ips` and `public_ips` Node attribute.
+  (GITHUB-738)
+  [Lionel Schaub]
+
 DNS
 ~~~
 
