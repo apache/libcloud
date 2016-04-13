@@ -60,111 +60,111 @@ class Provider(Type):
     Defines for each of the supported providers
 
     :cvar DUMMY: Example provider
+    :cvar ABIQUO: Abiquo driver
+    :cvar ALIYUN_ECS: Aliyun ECS driver.
+    :cvar AURORACOMPUTE: Aurora Compute driver.
+    :cvar AZURE: Azure driver.
+    :cvar BLUEBOX: Bluebox
+    :cvar CLOUDSIGMA: CloudSigma
+    :cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
+    :cvar CLOUDSTACK: CloudStack
+    :cvar DIMENSIONDATA: Dimension Data Cloud
+    :cvar EC2_EU_WEST: Amazon AWS EU Ireland
     :cvar EC2_US_EAST: Amazon AWS US N. Virgina
     :cvar EC2_US_WEST: Amazon AWS US N. California
-    :cvar EC2_EU_WEST: Amazon AWS EU Ireland
-    :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
-    :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
+    :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    :cvar ECP: Enomaly
+    :cvar ELASTICHOSTS: ElasticHosts.com
+    :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
     :cvar GOGRID: GoGrid
-    :cvar VPSNET: VPS.net
-    :cvar LINODE: Linode.com
-    :cvar VCLOUD: vmware vCloud
-    :cvar RIMUHOSTING: RimuHosting.com
-    :cvar ECP: Enomaly
-    :cvar IBM: IBM Developer Cloud
-    :cvar OPENNEBULA: OpenNebula.org
-    :cvar ELASTICHOSTS: ElasticHosts.com
-    :cvar CLOUDSIGMA: CloudSigma
-    :cvar NIMBUS: Nimbus
-    :cvar BLUEBOX: Bluebox
-    :cvar OPSOURCE: Opsource Cloud
-    :cvar DIMENSIONDATA: Dimension Data Cloud
-    :cvar NINEFOLD: Ninefold
-    :cvar TERREMARK: Terremark
-    :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
-    :cvar CLOUDSTACK: CloudStack
-    :cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
-    :cvar LIBVIRT: Libvirt driver
-    :cvar JOYENT: Joyent driver
-    :cvar VCL: VCL driver
-    :cvar KTUCLOUD: kt ucloud driver
     :cvar GRIDSPOT: Gridspot driver
-    :cvar ABIQUO: Abiquo driver
-    :cvar NEPHOSCALE: NephoScale driver
-    :cvar EXOSCALE: Exoscale driver.
+    :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
-    :cvar OUTSCALE_SAS: Outscale SAS driver.
+    :cvar JOYENT: Joyent driver
+    :cvar KTUCLOUD: kt ucloud driver
+    :cvar LIBVIRT: Libvirt driver
+    :cvar LINODE: Linode.com
+    :cvar NEPHOSCALE: NephoScale driver
+    :cvar NIMBUS: Nimbus
+    :cvar NINEFOLD: Ninefold
+    :cvar OPENNEBULA: OpenNebula.org
+    :cvar OPSOURCE: Opsource Cloud
     :cvar OUTSCALE_INC: Outscale INC driver.
+    :cvar OUTSCALE_SAS: Outscale SAS driver.
     :cvar PROFIT_BRICKS: ProfitBricks driver.
+    :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
+    :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
+    :cvar RIMUHOSTING: RimuHosting.com
+    :cvar TERREMARK: Terremark
+    :cvar VCL: VCL driver
+    :cvar VCLOUD: vmware vCloud
+    :cvar VPSNET: VPS.net
     :cvar VULTR: vultr driver.
-    :cvar AZURE: Azure driver.
-    :cvar AURORACOMPUTE: Aurora Compute driver.
-    :cvar ALIYUN_ECS: Aliyun ECS driver.
     """
-    AZURE = 'azure'
     DUMMY = 'dummy'
+    ABIQUO = 'abiquo'
+    ALIYUN_ECS = 'aliyun_ecs'
+    AURORACOMPUTE = 'aurora_compute'
+    AZURE = 'azure'
+    BLUEBOX = 'bluebox'
+    BRIGHTBOX = 'brightbox'
+    BSNL = 'bsnl'
+    CISCOCCS = 'ciscoccs'
+    CLOUDFRAMES = 'cloudframes'
+    CLOUDSIGMA = 'cloudsigma'
+    CLOUDSTACK = 'cloudstack'
+    CLOUDWATT = 'cloudwatt'
+    DIGITAL_OCEAN = 'digitalocean'
+    DIMENSIONDATA = 'dimensiondata'
     EC2 = 'ec2'
-    RACKSPACE = 'rackspace'
+    ECP = 'ecp'
+    ELASTICHOSTS = 'elastichosts'
+    EUCALYPTUS = 'eucalyptus'
+    EXOSCALE = 'exoscale'
+    GANDI = 'gandi'
     GCE = 'gce'
     GOGRID = 'gogrid'
-    VPSNET = 'vpsnet'
-    LINODE = 'linode'
-    VCLOUD = 'vcloud'
-    RIMUHOSTING = 'rimuhosting'
-    VOXEL = 'voxel'
-    SOFTLAYER = 'softlayer'
-    EUCALYPTUS = 'eucalyptus'
-    ECP = 'ecp'
-    IBM = 'ibm'
-    OPENNEBULA = 'opennebula'
-    ELASTICHOSTS = 'elastichosts'
-    BRIGHTBOX = 'brightbox'
-    CLOUDSIGMA = 'cloudsigma'
-    NIMBUS = 'nimbus'
-    BLUEBOX = 'bluebox'
-    GANDI = 'gandi'
-    OPSOURCE = 'opsource'
-    DIMENSIONDATA = 'dimensiondata'
-    OPENSTACK = 'openstack'
-    SKALICLOUD = 'skalicloud'
-    SERVERLOVE = 'serverlove'
-    NINEFOLD = 'ninefold'
-    TERREMARK = 'terremark'
-    CLOUDSTACK = 'cloudstack'
-    LIBVIRT = 'libvirt'
-    JOYENT = 'joyent'
-    VCL = 'vcl'
-    KTUCLOUD = 'ktucloud'
     GRIDSPOT = 'gridspot'
-    RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
-    ABIQUO = 'abiquo'
-    DIGITAL_OCEAN = 'digitalocean'
-    NEPHOSCALE = 'nephoscale'
-    CLOUDFRAMES = 'cloudframes'
-    EXOSCALE = 'exoscale'
+    IBM = 'ibm'
     IKOULA = 'ikoula'
-    OUTSCALE_SAS = 'outscale_sas'
-    OUTSCALE_INC = 'outscale_inc'
-    VSPHERE = 'vsphere'
-    PROFIT_BRICKS = 'profitbricks'
-    VULTR = 'vultr'
-    AURORACOMPUTE = 'aurora_compute'
-    CLOUDWATT = 'cloudwatt'
-    PACKET = 'packet'
-    RUNABOVE = 'runabove'
-    INTERNETSOLUTIONS = 'internetsolutions'
     INDOSAT = 'indosat'
-    BSNL = 'bsnl'
-    NTTA = 'ntta'
+    INTERNETSOLUTIONS = 'internetsolutions'
+    JOYENT = 'joyent'
+    KTUCLOUD = 'ktucloud'
+    LIBVIRT = 'libvirt'
+    LINODE = 'linode'
     MEDONE = 'medone'
-    CISCOCCS = 'ciscoccs'
-    ALIYUN_ECS = 'aliyun_ecs'
+    NEPHOSCALE = 'nephoscale'
+    NIMBUS = 'nimbus'
+    NINEFOLD = 'ninefold'
+    NTTA = 'ntta'
+    OPENNEBULA = 'opennebula'
+    OPENSTACK = 'openstack'
+    OPSOURCE = 'opsource'
+    OUTSCALE_INC = 'outscale_inc'
+    OUTSCALE_SAS = 'outscale_sas'
+    PACKET = 'packet'
+    PROFIT_BRICKS = 'profitbricks'
+    RACKSPACE = 'rackspace'
+    RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
+    RIMUHOSTING = 'rimuhosting'
+    RUNABOVE = 'runabove'
+    SERVERLOVE = 'serverlove'
+    SKALICLOUD = 'skalicloud'
+    SOFTLAYER = 'softlayer'
+    TERREMARK = 'terremark'
+    VCL = 'vcl'
+    VCLOUD = 'vcloud'
+    VOXEL = 'voxel'
+    VPSNET = 'vpsnet'
+    VSPHERE = 'vsphere'
+    VULTR = 'vultr'
 
     # OpenStack based providers
-    HPCLOUD = 'hpcloud'
     CLOUDWATT = 'cloudwatt'
+    HPCLOUD = 'hpcloud'
     KILI = 'kili'
     ONAPP = 'onapp'
 
