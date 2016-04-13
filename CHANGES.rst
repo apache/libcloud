@@ -10,8 +10,9 @@ General
 Compute
 ~~~~~~~
 
-- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s `list_nodes()` while some VMs are being shutdown can result
-  in the `following`libcloud.common.google.ResourceNotFoundError` exception to be raised.
+- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
+  `list_nodes()` while some VMs are being shutdown can result in the following
+  `libcloud.common.google.ResourceNotFoundError` exception to be raised.
   (GITHUB-727)
   [Lénaïc Huard]
 
