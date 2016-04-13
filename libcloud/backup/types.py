@@ -22,9 +22,9 @@ __all__ = [
 
 class Provider(object):
     DUMMY = 'dummy'
+    DIMENSIONDATA = 'dimensiondata'
     EBS = 'ebs'
     GCE = 'gce'
-    DIMENSIONDATA = 'dimensiondata'
 
 
 class BackupTargetType(object):
