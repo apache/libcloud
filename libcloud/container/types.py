@@ -42,8 +42,8 @@ class Type(object):
 class Provider(object):
     DUMMY = 'dummy'
     DOCKER = 'docker'
-    JOYENT = 'joyent'
     ECS = 'ecs'
+    JOYENT = 'joyent'
     KUBERNETES = 'kubernetes'
 
 
