@@ -555,6 +555,32 @@ class DimensionDataConnection(ConnectionUserAndKey):
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
 
+    def get_account_details(self):
+        """
+        Get the details of this account
+        
+        :rtype: :class:`DimensionDataAccountDetails`
+        """
+        body = self.request_api_1('myaccount').object
+        return DimensionDataAccountDetails(
+            user_name=findtext(body, 'userName', DIRECTORY_NS),
+            full_name=findtext(body, 'fullName', DIRECTORY_NS),
+            first_name=findtext(body, 'firstName', DIRECTORY_NS),
+            last_name=findtext(body, 'lastName', DIRECTORY_NS),
+            email=findtext(body, 'emailAddress', DIRECTORY_NS))
+
+
+class DimensionDataAccountDetails(object):
+    """
+    Dimension Data account class details
+    """
+    def __init__(self, user_name, full_name, first_name, last_name, email):
+        self.user_name = user_name
+        self.full_name = full_name
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+
 
 class DimensionDataStatus(object):
     """

@@ -51,6 +51,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         with self.assertRaises(InvalidCredsError):
             self.driver.list_nodes()
 
+    def test_get_account_details(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.connection.get_account_details()
+        self.assertEqual(ret.full_name, 'Test User')
+        self.assertEqual(ret.first_name, 'Test')
+        self.assertEqual(ret.email, 'test@example.com')
+
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
