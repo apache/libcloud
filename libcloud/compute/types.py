@@ -69,13 +69,9 @@ class Provider(Type):
     :cvar AZURE: Azure driver.
     :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
-    :cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
-    :cvar EC2_EU_WEST: Amazon AWS EU Ireland
-    :cvar EC2_US_EAST: Amazon AWS US N. Virgina
-    :cvar EC2_US_WEST: Amazon AWS US N. California
-    :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    :cvar EC2: Amazon AWS.
     :cvar ECP: Enomaly
     :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar EXOSCALE: Exoscale driver.
