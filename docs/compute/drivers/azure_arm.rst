@@ -26,6 +26,7 @@ The following directions are based on
 https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/
 
 .. sourcecode:: bash
+
   azure ad app create --name "<Your Application Display Name>" --home-page "<https://YourApplicationHomePage>" --identifier-uris "<https://YouApplicationUri>" --password <Your_Password>
   azure ad sp create "<Application_Id>"
   azure role assignment create --objectId "<Object_Id>" -o Owner -c /subscriptions/{subscriptionId}/
