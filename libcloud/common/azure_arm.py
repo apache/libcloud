@@ -17,11 +17,16 @@ import json
 import time
 import urllib
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, RawResponse, LoggingHTTPSConnection
+from libcloud.common.base import (ConnectionUserAndKey,
+                                  JsonResponse,
+                                  RawResponse)
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from libcloud.utils.py3 import basestring
+
 
 class AzureBaseDriver(object):
     name = "Microsoft Azure Resource Management API"
+
 
 class AzureJsonResponse(JsonResponse):
     def parse_error(self):
@@ -30,7 +35,8 @@ class AzureJsonResponse(JsonResponse):
         if isinstance(b, basestring):
             return b
         elif isinstance(b, dict) and "error" in b:
-            return "[%s] %s" % (b["error"].get("code"), b["error"].get("message"))
+            return "[%s] %s" % (b["error"].get("code"),
+                                b["error"].get("message"))
         else:
             return str(b)
 
@@ -61,8 +67,10 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     login_host = 'login.windows.net'
     login_resource = 'https://management.core.windows.net/'
 
-    def __init__(self, key, secret, secure=True, tenant_id=None, subscription_id=None, **kwargs):
-        super(AzureResourceManagementConnection, self).__init__(key, secret, **kwargs)
+    def __init__(self, key, secret, secure=True, tenant_id=None,
+                 subscription_id=None, **kwargs):
+        super(AzureResourceManagementConnection, self) \
+            .__init__(key, secret, **kwargs)
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
 
@@ -76,7 +84,9 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         return json.dumps(data)
 
     def get_token_from_credentials(self):
-        """Log in and get bearer token used to authorize API requests."""
+        """
+        Log in and get bearer token used to authorize API requests.
+        """
 
         conn = self.conn_classes[1](self.login_host, 443)
         conn.connect()
@@ -87,7 +97,8 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
             "resource": self.login_resource
         })
         headers = {"Content-type": "application/x-www-form-urlencoded"}
-        conn.request("POST", "/%s/oauth2/token" % self.tenant_id, params, headers)
+        conn.request("POST", "/%s/oauth2/token" % self.tenant_id,
+                     params, headers)
         js = AzureAuthJsonResponse(conn.getresponse(), conn)
         self.access_token = js.object["access_token"]
         self.expires_on = js.object["expires_on"]
@@ -101,9 +112,10 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
-        if (time.time()+300) >= self.expires_on:
+        if (time.time() + 300) >= self.expires_on:
             self.get_token_from_credentials(self)
 
-        return super(AzureResourceManagementConnection, self).request(action, params=params,
-                                                               data=data, headers=headers,
-                                                               method=method, raw=raw)
+        return super(AzureResourceManagementConnection, self) \
+            .request(action, params=params,
+                     data=data, headers=headers,
+                     method=method, raw=raw)

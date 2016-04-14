@@ -34,6 +34,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
+from libcloud.utils.py3 import basestring
 
 
 class AzureImage(NodeImage):
@@ -60,7 +61,9 @@ class AzureVhdImage(NodeImage):
     """Represents a VHD node image that an Azure VM can boot from."""
 
     def __init__(self, storage_account, blob_container, name, driver):
-        urn = "https://%s.blob.core.windows.net/%s/%s" % (storage_account, blob_container, name)
+        urn = "https://%s.blob.core.windows.net/%s/%s" % (storage_account,
+                                                          blob_container,
+                                                          name)
         super(AzureVhdImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
@@ -209,7 +212,10 @@ class AzureNodeDriver(NodeDriver):
                 location = self.default_location
             else:
                 raise ValueError("location is required.")
-        action = "/subscriptions/%s/providers/Microsoft.Compute/locations/%s/vmSizes" % (self.subscription_id, location.id)
+        action = \
+            "/subscriptions/%s/providers/Microsoft" \
+            ".Compute/locations/%s/vmSizes" \
+            % (self.subscription_id, location.id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_node_size(d) for d in r.object["value"]]
@@ -251,8 +257,11 @@ class AzureNodeDriver(NodeDriver):
             if not ex_publisher:
                 publishers = self.ex_list_publishers(loc)
             else:
-                publishers = [("/subscriptions/%s/providers/Microsoft.Compute/locations/%s/publishers/%s" % (self.subscription_id, loc.id, ex_publisher),
-                               ex_publisher)]
+                publishers = [(
+                    "/subscriptions/%s/providers/Microsoft"
+                    ".Compute/locations/%s/publishers/%s" %
+                    (self.subscription_id, loc.id, ex_publisher),
+                    ex_publisher)]
 
             for pub in publishers:
                 if not ex_offer:
@@ -286,8 +295,8 @@ class AzureNodeDriver(NodeDriver):
 
         :param image_id: Either an image urn in the form
         `Publisher:Offer:Sku:Version` or a Azure blob store URI in the form
-        `http://storageaccount.blob.core.windows.net/container/image.vhd` pointing
-        to a VHD file.
+        `http://storageaccount.blob.core.windows.net/container/image.vhd`
+        pointing to a VHD file.
         :type image_id: ``str``
 
         :param location: The location at which to search for the image
@@ -304,7 +313,8 @@ class AzureNodeDriver(NodeDriver):
             return AzureVhdImage(storageAccount, blobContainer, blob, self)
         else:
             (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
-            i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
+            i = self.list_images(location, ex_publisher,
+                                 ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
     def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True):
@@ -323,9 +333,13 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if ex_resource_group:
-            action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines" % (self.subscription_id, ex_resource_group)
+            action = "/subscriptions/%s/resourceGroups/%s/" \
+                     "providers/Microsoft.Compute/virtualMachines" \
+                     % (self.subscription_id, ex_resource_group)
         else:
-            action = "/subscriptions/%s/providers/Microsoft.Compute/virtualMachines" % (self.subscription_id)
+            action = "/subscriptions/%s/providers/Microsoft.Compute/" \
+                     "virtualMachines" \
+                     % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_node(n, fetch_nic=ex_fetch_nic)
@@ -370,7 +384,8 @@ class AzureNodeDriver(NodeDriver):
 
             >>> driver = AzureNodeDriver(...)
             >>> node = driver.create_node("test_node", ...)
-            >>> password = node.extra["properties"]["osProfile"]["adminPassword"]
+            >>> password = node.extra["properties"] \
+                           ["osProfile"]["adminPassword"]
 
         :param name:   String with a name for this new node (required)
         :type name:   ``str``
@@ -395,7 +410,8 @@ class AzureNodeDriver(NodeDriver):
         :type ex_resource_group: ``str``
 
         :param ex_storage_account:  The storage account id in which to store
-        the node's disk image.  Note: when booting from a user image (AzureVhdImage)
+        the node's disk image.
+        Note: when booting from a user image (AzureVhdImage)
         the source image and the node image must use the same storage account.
         :type ex_storage_account: ``str``
 
@@ -428,8 +444,10 @@ class AzureNodeDriver(NodeDriver):
         :param ex_tags: Optional tags to associate with this node.
         :type ex_tags: ``dict``
 
-        :param ex_customdata: Custom data that will be placed in the file /var/lib/waagent/CustomData
-        https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-how-to-inject-custom-data/
+        :param ex_customdata: Custom data that will
+            be placed in the file /var/lib/waagent/CustomData
+            https://azure.microsoft.com/en-us/documentation/ \
+            articles/virtual-machines-how-to-inject-custom-data/
         :type ex_customdata: ``str``
 
         :return: The newly created node.
@@ -445,9 +463,10 @@ class AzureNodeDriver(NodeDriver):
             if ex_subnet is None:
                 ex_subnet = "default"
 
-            subnet_id = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualnetworks/%s/subnets/%s" % (
-                self.subscription_id, ex_resource_group,
-                ex_network, ex_subnet)
+            subnet_id = "/subscriptions/%s/resourceGroups/%s/providers" \
+                        "/Microsoft.Network/virtualnetworks/%s/subnets/%s" % \
+                        (self.subscription_id, ex_resource_group,
+                         ex_network, ex_subnet)
             subnet = AzureSubnet(subnet_id, ex_subnet, {})
             ex_nic = self.ex_create_network_interface(name + "-nic",
                                                       subnet,
@@ -456,15 +475,22 @@ class AzureNodeDriver(NodeDriver):
 
         auth = self._get_and_check_auth(auth)
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s" % (self.subscription_id, ex_resource_group, name)
+        target = "/subscriptions/%s/resourceGroups/%s/providers" \
+                 "/Microsoft.Compute/virtualMachines/%s" % \
+                 (self.subscription_id, ex_resource_group, name)
 
         n = 0
         while True:
             try:
-                instance_vhd = "https://%s.blob.core.windows.net/%s/%s-os_%i.vhd" % (ex_storage_account, ex_blob_container, name, n)
+                instance_vhd = "https://%s.blob.core.windows.net" \
+                               "/%s/%s-os_%i.vhd" \
+                               % (ex_storage_account,
+                                  ex_blob_container,
+                                  name,
+                                  n)
                 self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
                 break
-            except LibcloudError as e:
+            except LibcloudError:
                 n += 1
 
         if isinstance(image, AzureVhdImage):
@@ -500,7 +526,10 @@ class AzureNodeDriver(NodeDriver):
                 }
             }
         else:
-            raise LibcloudError("Unknown image type %s, expected one of AzureImage, AzureVhdImage", type(image))
+            raise LibcloudError(
+                "Unknown image type %s,"
+                "expected one of AzureImage, AzureVhdImage",
+                type(image))
 
         data = {
             "id": target,
@@ -527,12 +556,14 @@ class AzureNodeDriver(NodeDriver):
         }
 
         if ex_customdata:
-            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata)
+            data["properties"]["osProfile"]["customData"] = \
+                base64.b64encode(ex_customdata)
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 
         if isinstance(auth, NodeAuthSSHKey):
-            data["properties"]["osProfile"]["adminPassword"] = binascii.hexlify(os.urandom(20))
+            data["properties"]["osProfile"]["adminPassword"] = \
+                binascii.hexlify(os.urandom(20))
             data["properties"]["osProfile"]["linuxConfiguration"] = {
                 "disablePasswordAuthentication": "true",
                 "ssh": {
@@ -551,7 +582,8 @@ class AzureNodeDriver(NodeDriver):
             }
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
-            raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
+            raise ValueError(
+                "Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -621,42 +653,55 @@ class AzureNodeDriver(NodeDriver):
         while True:
             try:
                 time.sleep(10)
-                self.connection.request(node.id, params={"api-version": "2015-06-15"})
+                self.connection.request(
+                    node.id,
+                    params={"api-version": "2015-06-15"})
             except BaseHTTPError as h:
                 if h.code == 404:
                     break
                 else:
                     return False
 
-        # Optionally clean up the network interfaces that were attached to this node.
+        # Optionally clean up the network
+        # interfaces that were attached to this node.
+        interfaces = \
+            node.extra["properties"]["networkProfile"]["networkInterfaces"]
         if ex_destroy_nic:
-            for nic in node.extra["properties"]["networkProfile"]["networkInterfaces"]:
+            for nic in interfaces:
                 while True:
                     try:
                         self.connection.request(nic["id"],
-                                                params={"api-version": "2015-06-15"},
+                                                params={
+                                                    "api-version":
+                                                    "2015-06-15"},
                                                 method='DELETE')
                         break
                     except BaseHTTPError as h:
                         if h.code == 202:
                             break
-                        if h.code == 400 and h.message.startswith("[NicInUse]"):
+                        inuse = h.message.startswith("[NicInUse]")
+                        if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
                             return False
 
         # Optionally clean up OS disk VHD.
+        vhd_uri = \
+            node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"]
         if ex_destroy_vhd:
             while True:
                 try:
                     resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(resourceGroup,
-                                            node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"])
+                    self._ex_delete_old_vhd(
+                        resourceGroup,
+                        vhd_uri)
                     break
                 except LibcloudError as e:
                     if "LeaseIdMissing" in str(e):
-                        # Unfortunately lease errors (which occur if the vhd blob
-                        # hasn't yet been released by the VM being destroyed) get raised as plain
+                        # Unfortunately lease errors
+                        # (which occur if the vhd blob
+                        # hasn't yet been released by the VM being destroyed)
+                        # get raised as plain
                         # LibcloudError.  Wait a bit and try again.
                         time.sleep(10)
                     else:
@@ -682,7 +727,9 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise ValueError("location is required.")
 
-        action = "/subscriptions/%s/providers/Microsoft.Compute/locations/%s/publishers" % (self.subscription_id, location.id)
+        action = "/subscriptions/%s/providers/Microsoft.Compute/" \
+                 "locations/%s/publishers" \
+                 % (self.subscription_id, location.id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [(p["id"], p["name"]) for p in r.object]
@@ -737,7 +784,8 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "%s/versions" % (sku)
-        r = self.connection.request(action, params={"api-version": "2015-06-15"})
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
 
     def ex_list_networks(self):
@@ -748,7 +796,9 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNetwork`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network/virtualnetworks" % (self.subscription_id)
+        action = "/subscriptions/%s/providers/" \
+                 "Microsoft.Network/virtualnetworks" \
+                 % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [AzureNetwork(net["id"], net["name"], net["location"],
@@ -773,7 +823,8 @@ class AzureNodeDriver(NodeDriver):
 
     def ex_list_nics(self, resource_group):
         """
-        List available virtual network interface controllers in a resource group.
+        List available virtual network interface controllers
+        in a resource group
 
         :param resource_group: List NICS in a specific resource group
         containing the NICs.
@@ -783,7 +834,9 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network/networkInterfaces" % (self.subscription_id, resource_group)
+        action = "/subscriptions/%s/providers/Microsoft.Network" \
+                 "/networkInterfaces" % \
+                 (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_nic(net) for net in r.object["value"]]
@@ -827,7 +880,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network/publicIPAddresses" % (self.subscription_id, resource_group)
+        action = "/subscriptions/%s/providers/Microsoft.Network" \
+                 "/publicIPAddresses" % (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
@@ -855,7 +909,9 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s" % (self.subscription_id, resource_group, name)
+        target = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/publicIPAddresses/%s" \
+                 % (self.subscription_id, resource_group, name)
         data = {
             "location": location.id,
             "tags": {},
@@ -902,7 +958,9 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s" % (self.subscription_id, resource_group, name)
+        target = "/subscriptions/%s/resourceGroups/%s/providers" \
+                 "/Microsoft.Network/networkInterfaces/%s" \
+                 % (self.subscription_id, resource_group, name)
 
         data = {
             "location": location.id,
@@ -950,8 +1008,9 @@ class AzureNodeDriver(NodeDriver):
 
         if not isinstance(resource, basestring):
             resource = resource.id
-        r = self.connection.request(resource,
-                                    params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            resource,
+            params={"api-version": "2015-06-15"})
         if replace:
             r.object["tags"] = tags
         else:
@@ -1003,7 +1062,8 @@ class AzureNodeDriver(NodeDriver):
         Get account keys required to access to a storage account
         (using AzureBlobsStorageDriver).
 
-        :param resource_group: The resource group containing the storage account
+        :param resource_group: The resource group
+            containing the storage account
         :type resource_group: ``str``
 
         :param storage_account: Storage account to access
@@ -1013,11 +1073,15 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``.dict``
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/listKeys" % (
-            self.subscription_id, resource_group, storage_account)
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Storage/storageAccounts/%s/listKeys" \
+                 % (self.subscription_id,
+                    resource_group,
+                    storage_account)
 
         r = self.connection.request(action,
-                                    params={"api-version": "2015-05-01-preview"},
+                                    params={
+                                        "api-version": "2015-05-01-preview"},
                                     method="POST")
         return r.object
 
@@ -1031,7 +1095,8 @@ class AzureNodeDriver(NodeDriver):
         """
         Run a command on the node as root.
 
-        Does not require ssh to log in, uses Windows Azure Agent (waagent) running
+        Does not require ssh to log in,
+        uses Windows Azure Agent (waagent) running
         on the node.
 
         :param node: The node on which to run the command.
@@ -1043,17 +1108,20 @@ class AzureNodeDriver(NodeDriver):
         :type command: ``str``
 
         :param filerefs: Optional files to fetch by URI from Azure blob store
-        (must provide storage_account_name and storage_account_key), or regular HTTP.
+        (must provide storage_account_name and storage_account_key),
+        or regular HTTP.
         :type command: ``list`` of ``str``
 
         :param location: The location of the virtual machine
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
 
-        :param storage_account_name: The storage account from which to fetch files in `filerefs`
+        :param storage_account_name: The storage account
+            from which to fetch files in `filerefs`
         :type storage_account_name: ``str``
 
-        :param storage_account_key: The storage key to authorize to the blob store.
+        :param storage_account_key: The storage key to
+            authorize to the blob store.
         :type storage_account_key: ``str``
 
         :type: ``list`` of :class:`.NodeLocation`
@@ -1088,8 +1156,7 @@ class AzureNodeDriver(NodeDriver):
         if storage_account_name and storage_account_key:
             data["properties"]["protectedSettings"] = {
                 "storageAccountName": storage_account_name,
-                "storageAccountKey": storage_account_key
-                }
+                "storageAccountKey": storage_account_key}
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -1119,20 +1186,23 @@ class AzureNodeDriver(NodeDriver):
     def _to_node(self, data, fetch_nic=True):
         private_ips = []
         public_ips = []
+        nics = data["properties"]["networkProfile"]["networkInterfaces"]
         if fetch_nic:
-            for nic in data["properties"]["networkProfile"]["networkInterfaces"]:
+            for nic in nics:
                 try:
                     n = self.ex_get_nic(nic["id"])
-                    priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
+                    priv = n.extra["ipConfigurations"][0]["properties"] \
+                        .get("privateIPAddress")
                     if priv:
                         private_ips.append(priv)
-                    pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
+                    pub = n.extra["ipConfigurations"][0]["properties"].get(
+                        "publicIPAddress")
                     if pub:
                         pub_addr = self.ex_get_public_ip(pub["id"])
                         addr = pub_addr.extra.get("ipAddress")
                         if addr:
                             public_ips.append(addr)
-                except BaseHTTPError as h:
+                except BaseHTTPError:
                     pass
 
         state = NodeState.UNKNOWN
@@ -1161,7 +1231,7 @@ class AzureNodeDriver(NodeDriver):
                     break
                 elif status["code"] == "PowerState/running":
                     state = NodeState.RUNNING
-        except BaseHTTPError as h:
+        except BaseHTTPError:
             pass
 
         node = Node(data["id"],

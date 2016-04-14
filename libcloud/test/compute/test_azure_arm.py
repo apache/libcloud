@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.import libcloud
 
-from libcloud.test import unittest
 from libcloud.test import LibcloudTestCase
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.utils.py3 import httplib
-from libcloud.compute.base import NodeLocation
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+
 
 class AzureNodeDriverTests(LibcloudTestCase):
 
@@ -48,8 +47,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
                           "East Asia",
                           "Southeast Asia",
                           "Japan East",
-                          "Japan West"
-                      ])
+                          "Japan West"])
 
     def test_sizes_returned_successfully(self):
         sizes = self.driver.list_sizes(location=self.driver.list_locations()[0])
