@@ -186,6 +186,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(images[0].extra['cpu'].cpu_count, 2)
         self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
 
+    def test_clean_failed_deployment_response(self):
+        node = Node(id='11', name=None, state=None,
+                    public_ips=None, private_ips=None, driver=self.driver)
+        ret = self.driver.ex_clean_failed_deployment(node)
+        self.assertTrue(ret is True)
+
     def test_ex_list_customer_images(self):
         images = self.driver.ex_list_customer_images()
         self.assertEqual(len(images), 3)
@@ -1715,6 +1721,11 @@ class DimensionDataMockHttp(MockHttp):
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cleanServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cleanServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
