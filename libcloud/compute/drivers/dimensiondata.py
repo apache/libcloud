@@ -1831,10 +1831,14 @@ class DimensionDataNodeDriver(NodeDriver):
         Removes a node that has failed to deploy
 
         :param  node: The failed node to clean
-        :type   node: :class:`Node`
+        :type   node: :class:`Node` or ``str``
         """
+        if isinstance(node, str):
+            node_id = node
+        else:
+            node_id = node.id
         request_elm = ET.Element('cleanServer',
-                                 {'xmlns': TYPES_URN, 'id': node.id})
+                                 {'xmlns': TYPES_URN, 'id': node_id})
         body = self.connection.request_with_orgId_api_2(
             'server/cleanServer',
             method='POST',

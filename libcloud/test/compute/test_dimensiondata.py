@@ -186,9 +186,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(images[0].extra['cpu'].cpu_count, 2)
         self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
 
-    def test_clean_failed_deployment_response(self):
+    def test_clean_failed_deployment_response_with_node(self):
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
+        ret = self.driver.ex_clean_failed_deployment(node)
+        self.assertTrue(ret is True)
+
+    def test_clean_failed_deployment_response_with_node_id(self):
+        node = 'e75ead52-692f-4314-8725-c8a4f4d13a87'
         ret = self.driver.ex_clean_failed_deployment(node)
         self.assertTrue(ret is True)
 

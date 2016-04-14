@@ -5,5 +5,5 @@ xmlns="urn:didata.com:api:cloud:types" requestId="au/2016-04-
 <operation>CLEAN_SERVER</operation>
 <responseCode>IN_PROGRESS</responseCode>
 <message>The request to clean a failed Server deployment for Server
-ee9dd854-f013-4006-89f9-d9f3f97dff57 has been accepted and is being processed.</message>
+e75ead52-692f-4314-8725-c8a4f4d13a87 has been accepted and is being processed.</message>
 </response>
