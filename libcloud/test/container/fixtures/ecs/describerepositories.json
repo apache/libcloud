@@ -1,0 +1,8 @@
+{
+    "repositories": [{
+            "registryId": "647433528374",
+            "repositoryArn": "arn:aws:ecr:us-east-1:647433528374:repository/my-images",
+            "repositoryName": "my-images"
+        }
+    ]
+}

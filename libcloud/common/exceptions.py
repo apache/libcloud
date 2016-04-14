@@ -24,7 +24,7 @@ __all__ = [
 class BaseHTTPError(Exception):
 
     """
-    The base exception class for all HTTP related eceptions.
+    The base exception class for all HTTP related exceptions.
     """
 
     def __init__(self, code, message, headers=None):

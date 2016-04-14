@@ -19,9 +19,10 @@ from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -35,6 +36,7 @@ SERVER_NS = NAMESPACE_BASE + "/server"
 NETWORK_NS = NAMESPACE_BASE + "/network"
 DIRECTORY_NS = NAMESPACE_BASE + "/directory"
 GENERAL_NS = NAMESPACE_BASE + "/general"
+BACKUP_NS = NAMESPACE_BASE + "/backup"
 
 # API 2.0 Namespaces and URNs
 TYPES_URN = "urn:didata.com:api:cloud:types"
@@ -56,9 +58,14 @@ API_ENDPOINTS = {
         'host': 'api-au.dimensiondata.com',
         'vendor': 'DimensionData'
     },
+    'dd-au-gov': {
+        'name': 'Australia Canberra ACT (AU)',
+        'host': 'api-canberra.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
     'dd-af': {
         'name': 'Africa (AF)',
-        'host': 'api-af.dimensiondata.com',
+        'host': 'api-mea.dimensiondata.com',
         'vendor': 'DimensionData'
     },
     'dd-ap': {
@@ -75,11 +82,235 @@ API_ENDPOINTS = {
         'name': 'Canada (CA)',
         'host': 'api-canada.dimensiondata.com',
         'vendor': 'DimensionData'
-    }
+    },
+    'is-na': {
+        'name': 'North America (NA)',
+        'host': 'usapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-eu': {
+        'name': 'Europe (EU)',
+        'host': 'euapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-au': {
+        'name': 'Australia (AU)',
+        'host': 'auapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-af': {
+        'name': 'Africa (AF)',
+        'host': 'meaapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'apapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'latamapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'is-canada': {
+        'name': 'Canada (CA)',
+        'host': 'canadaapi.cloud.is.co.za',
+        'vendor': 'InternetSolutions'
+    },
+    'ntta-na': {
+        'name': 'North America (NA)',
+        'host': 'cloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-eu': {
+        'name': 'Europe (EU)',
+        'host': 'eucloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-au': {
+        'name': 'Australia (AU)',
+        'host': 'aucloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-af': {
+        'name': 'Africa (AF)',
+        'host': 'sacloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'ntta-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'hkcloudapi.nttamerica.com',
+        'vendor': 'NTTNorthAmerica'
+    },
+    'cisco-na': {
+        'name': 'North America (NA)',
+        'host': 'iaas-api-na.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-eu': {
+        'name': 'Europe (EU)',
+        'host': 'iaas-api-eu.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-au': {
+        'name': 'Australia (AU)',
+        'host': 'iaas-api-au.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-af': {
+        'name': 'Africa (AF)',
+        'host': 'iaas-api-mea.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'iaas-api-ap.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'iaas-api-sa.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'cisco-canada': {
+        'name': 'Canada (CA)',
+        'host': 'iaas-api-ca.cisco-ccs.com',
+        'vendor': 'Cisco'
+    },
+    'med1-il': {
+        'name': 'Israel (IL)',
+        'host': 'api.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-na': {
+        'name': 'North America (NA)',
+        'host': 'api-na.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-eu': {
+        'name': 'Europe (EU)',
+        'host': 'api-eu.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-au': {
+        'name': 'Australia (AU)',
+        'host': 'api-au.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-af': {
+        'name': 'Africa (AF)',
+        'host': 'api-af.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-ap': {
+        'name': 'Asia Pacific (AP)',
+        'host': 'api-ap.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-latam': {
+        'name': 'South America (LATAM)',
+        'host': 'api-sa.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'med1-canada': {
+        'name': 'Canada (CA)',
+        'host': 'api-ca.cloud.med-1.com',
+        'vendor': 'Med-1'
+    },
+    'indosat-id': {
+        'name': 'Indonesia (ID)',
+        'host': 'iaas-api.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-na': {
+        'name': 'North America (NA)',
+        'host': 'iaas-usapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-eu': {
+        'name': 'Europe (EU)',
+        'host': 'iaas-euapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-au': {
+        'name': 'Australia (AU)',
+        'host': 'iaas-auapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'indosat-af': {
+        'name': 'Africa (AF)',
+        'host': 'iaas-afapi.indosat.com',
+        'vendor': 'Indosat'
+    },
+    'bsnl-in': {
+        'name': 'India (IN)',
+        'host': 'api.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-na': {
+        'name': 'North America (NA)',
+        'host': 'usapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-eu': {
+        'name': 'Europe (EU)',
+        'host': 'euapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-au': {
+        'name': 'Australia (AU)',
+        'host': 'auapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
+    'bsnl-af': {
+        'name': 'Africa (AF)',
+        'host': 'afapi.bsnlcloud.com',
+        'vendor': 'BSNL'
+    },
 }
 
 # Default API end-point for the base connection class.
 DEFAULT_REGION = 'dd-na'
+
+BAD_CODE_XML_ELEMENTS = (
+    ('responseCode', SERVER_NS),
+    ('responseCode', TYPES_URN),
+    ('result', GENERAL_NS)
+)
+
+BAD_MESSAGE_XML_ELEMENTS = (
+    ('message', SERVER_NS),
+    ('message', TYPES_URN),
+    ('resultDetail', GENERAL_NS)
+)
+
+
+def dd_object_to_id(obj, obj_type, id_value='id'):
+    """
+    Takes in a DD object or string and prints out it's id
+    This is a helper method, as many of our functions can take either an object
+    or a string, and we need an easy way of converting them
+
+    :param obj: The object to get the id for
+    :type  obj: ``object``
+
+    :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                  function needs to return an object which has ``status``
+                  attribute.
+    :type   func: ``function``
+
+    :rtype: ``str``
+    """
+    if isinstance(obj, obj_type):
+        return getattr(obj, id_value)
+    elif isinstance(obj, (basestring)):
+        return obj
+    else:
+        raise TypeError(
+            "Invalid type %s looking for basestring or %s"
+            % (type(obj).__name__, obj_type.__name__)
+        )
 
 
 class NetworkDomainServicePlan(object):
@@ -97,12 +328,14 @@ class DimensionDataResponse(XmlResponse):
         body = self.parse_body()
 
         if self.status == httplib.BAD_REQUEST:
-            code = findtext(body, 'responseCode', SERVER_NS)
-            if code is None:
-                code = findtext(body, 'responseCode', TYPES_URN)
-            message = findtext(body, 'message', SERVER_NS)
-            if message is None:
-                message = findtext(body, 'message', TYPES_URN)
+            for response_code in BAD_CODE_XML_ELEMENTS:
+                code = findtext(body, response_code[0], response_code[1])
+                if code is not None:
+                    break
+            for message in BAD_MESSAGE_XML_ELEMENTS:
+                message = findtext(body, message[0], message[1])
+                if message is not None:
+                    break
             raise DimensionDataAPIException(code=code,
                                             msg=message,
                                             driver=self.connection.driver)
@@ -201,6 +434,50 @@ class DimensionDataConnection(ConnectionUserAndKey):
             params=params, data=data,
             method=method, headers=headers)
 
+    def paginated_request_with_orgId_api_2(self, action, params=None, data='',
+                                           headers=None, method='GET',
+                                           page_size=250):
+        """
+        A paginated request to the MCP2.0 API
+        This essentially calls out to request_with_orgId_api_2 for each page
+        and yields the response to make a generator
+        This generator can be looped through to grab all the pages.
+
+        :param action: The resource to access (i.e. 'network/vlan')
+        :type  action: ``str``
+
+        :param params: Parameters to give to the action
+        :type  params: ``dict`` or ``None``
+
+        :param data: The data payload to be added to the request
+        :type  data: ``str``
+
+        :param headers: Additional header to be added to the request
+        :type  headers: ``str`` or ``dict`` or ``None``
+
+        :param method: HTTP Method for the request (i.e. 'GET', 'POST')
+        :type  method: ``str``
+
+        :param page_size: The size of each page to be returned
+                          Note: Max page size in MCP2.0 is currently 250
+        :type  page_size: ``int``
+        """
+        if params is None:
+            params = {}
+        params['pageSize'] = page_size
+
+        paged_resp = self.request_with_orgId_api_2(action, params,
+                                                   data, headers,
+                                                   method).object
+        yield paged_resp
+
+        while paged_resp.get('pageCount') >= paged_resp.get('pageSize'):
+            params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
+            paged_resp = self.request_with_orgId_api_2(action, params,
+                                                       data, headers,
+                                                       method).object
+            yield paged_resp
+
     def get_resource_path_api_1(self):
         """
         This method returns a resource path which is necessary for referencing
@@ -222,8 +499,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
                        **kwargs):
         """
-        Wait for the function which returns a instance with field status to
-        match.
+        Wait for the function which returns a instance with field status/state
+        to match.
 
         Keep polling func until one of the desired states is matched
 
@@ -252,15 +529,20 @@ class DimensionDataConnection(ConnectionUserAndKey):
         cnt = 0
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
-            if result.status is state or result.status in state:
+            if isinstance(result, Node):
+                object_state = result.state
+            else:
+                object_state = result.status
+
+            if object_state is state or object_state in state:
                 return result
             sleep(poll_interval)
             cnt += 1
 
         msg = 'Status check for object %s timed out' % (result)
-        raise DimensionDataAPIException(code=result.status,
+        raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
-                                        driver=self.connection.driver)
+                                        driver=self.driver)
 
     def _get_orgId(self):
         """
@@ -272,6 +554,32 @@ class DimensionDataConnection(ConnectionUserAndKey):
             body = self.request_api_1('myaccount').object
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
+
+    def get_account_details(self):
+        """
+        Get the details of this account
+
+        :rtype: :class:`DimensionDataAccountDetails`
+        """
+        body = self.request_api_1('myaccount').object
+        return DimensionDataAccountDetails(
+            user_name=findtext(body, 'userName', DIRECTORY_NS),
+            full_name=findtext(body, 'fullName', DIRECTORY_NS),
+            first_name=findtext(body, 'firstName', DIRECTORY_NS),
+            last_name=findtext(body, 'lastName', DIRECTORY_NS),
+            email=findtext(body, 'emailAddress', DIRECTORY_NS))
+
+
+class DimensionDataAccountDetails(object):
+    """
+    Dimension Data account class details
+    """
+    def __init__(self, user_name, full_name, first_name, last_name, email):
+        self.user_name = user_name
+        self.full_name = full_name
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
 
 
 class DimensionDataStatus(object):
@@ -341,7 +649,7 @@ class DimensionDataNetworkDomain(object):
         self.plan = plan
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
+        return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
                  'description=%s, location=%s, status=%s>')
                 % (self.id, self.name, self.description, self.location,
                    self.status))
@@ -362,7 +670,7 @@ class DimensionDataPublicIpBlock(object):
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s,'
+        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s, '
                  'size=%s, location=%s, status=%s>')
                 % (self.id, self.base_ip, self.size, self.location,
                    self.status))
@@ -398,6 +706,70 @@ class DimensionDataServerCpuSpecification(object):
                 % (self.cpu_count, self.cores_per_socket, self.performance))
 
 
+class DimensionDataServerDisk(object):
+    """
+    A class that represents the disk on a server
+    """
+    def __init__(self, id, scsi_id, size_gb, speed, state):
+        """
+        Instantiate a new :class:`DimensionDataServerDisk`
+
+        :param id: The id of the disk
+        :type  id: ``str``
+
+        :param scsi_id: Representation for scsi
+        :type  scsi_id: ``int``
+
+        :param size_gb: Size of the disk
+        :type  size_gb: ``int``
+
+        :param speed: Speed of the disk (i.e. STANDARD)
+        :type  speed: ``str``
+
+        :param state: State of the disk (i.e. PENDING)
+        :type  state: ``str``
+        """
+        self.id = id
+        self.scsi_id = scsi_id
+        self.size_gb = size_gb
+        self.speed = speed
+        self.state = state
+
+    def __repr__(self):
+        return (('<DimensionDataServerDisk: '
+                 'id=%s, size_gb=%s')
+                % (self.id, self.size_gb))
+
+
+class DimensionDataServerVMWareTools(object):
+    """
+    A class that represents the VMWareTools for a node
+    """
+    def __init__(self, status, version_status, api_version):
+        """
+        Instantiate a new :class:`DimensionDataServerVMWareTools` object
+
+        :param status: The status of VMWare Tools
+        :type  status: ``str``
+
+        :param version_status: The status for the version of VMWare Tools
+            (i.e NEEDS_UPGRADE)
+        :type  version_status: ``str``
+
+        :param api_version: The API version of VMWare Tools
+        :type  api_version: ``str``
+        """
+        self.status = status
+        self.version_status = version_status
+        self.api_version = api_version
+
+    def __repr__(self):
+        return (('<DimensionDataServerVMWareTools '
+                 'status=%s, version_status=%s, '
+                 'api_version=%s>')
+                % (self.status, self.version_status, self.api_version))
+
+
 class DimensionDataFirewallRule(object):
     """
     DimensionData Firewall Rule for a network domain
@@ -419,10 +791,14 @@ class DimensionDataFirewallRule(object):
         self.enabled = enabled
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, name=%s,'
-                 'action=%s, location=%s, status=%s>')
+        return (('<DimensionDataFirewallRule: id=%s, name=%s, '
+                 'action=%s, location=%s, network_domain=%s, '
+                 'status=%s, ip_version=%s, protocol=%s, source=%s, '
+                 'destination=%s, enabled=%s>')
                 % (self.id, self.name, self.action, self.location,
-                   self.status))
+                   self.network_domain, self.status, self.ip_version,
+                   self.protocol, self.source, self.destination,
+                   self.enabled))
 
 
 class DimensionDataFirewallAddress(object):
@@ -452,6 +828,31 @@ class DimensionDataNatRule(object):
     def __repr__(self):
         return (('<DimensionDataNatRule: id=%s, status=%s>')
                 % (self.id, self.status))
+
+
+class DimensionDataAntiAffinityRule(object):
+    """
+    Anti-Affinity rule for DimensionData
+
+    An Anti-Affinity rule ensures that servers in the rule will
+    not reside on the same VMware ESX host.
+    """
+    def __init__(self, id, node_list):
+        """
+        Instantiate a new :class:`DimensionDataAntiAffinityRule`
+
+        :param id: The ID of the Anti-Affinity rule
+        :type  id: ``str``
+
+        :param node_list: List of node ids that belong in this rule
+        :type  node_list: ``list`` of ``str``
+        """
+        self.id = id
+        self.node_list = node_list
+
+    def __repr__(self):
+        return (('<DimensionDataAntiAffinityRule: id=%s>')
+                % (self.id))
 
 
 class DimensionDataVlan(object):
@@ -500,10 +901,10 @@ class DimensionDataVlan(object):
                                             as a CIDR range size
         :type  ipv6_range_size: ``int``
 
-        :param ipv4_gateway: The IPv4 default gateway addres
+        :param ipv4_gateway: The IPv4 default gateway address
         :type  ipv4_gateway: ``str``
 
-        :param ipv6_gateway: The IPv6 default gateway addres
+        :param ipv6_gateway: The IPv6 default gateway address
         :type  ipv6_gateway: ``str``
         """
         self.id = str(id)
@@ -611,8 +1012,8 @@ class DimensionDataPoolMember(object):
         self.node_id = node_id
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
-                 'ip=%s, status=%s, port=%s, node_id=%s')
+        return (('<DimensionDataPoolMember: id=%s, name=%s, '
+                 'ip=%s, status=%s, port=%s, node_id=%s>')
                 % (self.id, self.name,
                    self.ip, self.status, self.port,
                    self.node_id))
@@ -683,7 +1084,7 @@ class DimensionDataVirtualListener(object):
         self.ip = ip
 
     def __repr__(self):
-        return (('<DimensionDataPool: id=%s, name=%s, '
+        return (('<DimensionDataVirtualListener: id=%s, name=%s, '
                  'status=%s, ip=%s>')
                 % (self.id, self.name,
                    self.status, self.ip))
@@ -794,3 +1195,212 @@ class DimensionDataVirtualListenerCompatibility(object):
         return (('<DimensionDataVirtualListenerCompatibility: '
                  'type=%s, protocol=%s>')
                 % (self.type, self.protocol))
+
+
+class DimensionDataBackupDetails(object):
+    """
+    Dimension Data Backup Details represents information about
+    a targets backups configuration
+    """
+
+    def __init__(self, asset_id, service_plan, status, clients=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupDetails`
+
+        :param asset_id: Asset identification for backups
+        :type  asset_id: ``str``
+
+        :param service_plan: The service plan for backups. i.e (Essentials)
+        :type  service_plan: ``str``
+
+        :param status: The overall status this backup target.
+                       i.e. (unregistered)
+        :type  status: ``str``
+
+        :param clients: Backup clients attached to this target
+        :type  clients: ``list`` of :class:`DimensionDataBackupClient`
+        """
+        self.asset_id = asset_id
+        self.service_plan = service_plan
+        self.status = status
+        self.clients = clients
+
+    def __repr__(self):
+        return (('<DimensionDataBackupDetails: id=%s>')
+                % (self.asset_id))
+
+
+class DimensionDataBackupClient(object):
+    """
+    An object that represents a backup client
+    """
+    def __init__(self, id, type, status,
+                 schedule_policy, storage_policy, download_url,
+                 alert=None, running_job=None):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClient`
+
+        :param id: Unique ID for the client
+        :type  id: ``str``
+
+        :param type: The type of client that this client is
+        :type  type: :class:`DimensionDataBackupClientType`
+
+        :param status: The states of this particular backup client.
+                       i.e. (Unregistered)
+        :type  status: ``str``
+
+        :param schedule_policy: The schedule policy for this client
+                                NOTE: Dimension Data only sends back the name
+                                of the schedule policy, no further details
+        :type  schedule_policy: ``str``
+
+        :param storage_policy: The storage policy for this client
+                               NOTE: Dimension Data only sends back the name
+                               of the storage policy, no further details
+        :type  storage_policy: ``str``
+
+        :param download_url: The download url for this client
+        :type  download_url: ``str``
+
+        :param alert: The alert configured for this backup client (optional)
+        :type  alert: :class:`DimensionDataBackupClientAlert`
+
+        :param alert: The running job for the client (optional)
+        :type  alert: :class:`DimensionDataBackupClientRunningJob`
+        """
+        self.id = id
+        self.type = type
+        self.status = status
+        self.schedule_policy = schedule_policy
+        self.storage_policy = storage_policy
+        self.download_url = download_url
+        self.alert = alert
+        self.running_job = running_job
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClient: id=%s>')
+                % (self.id))
+
+
+class DimensionDataBackupClientAlert(object):
+    """
+    An alert for a backup client
+    """
+    def __init__(self, trigger, notify_list=[]):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientAlert`
+
+        :param trigger: Trigger type for the client i.e. ON_FAILURE
+        :type  trigger: ``str``
+
+        :param notify_list: List of email addresses that are notified
+                            when the alert is fired
+        :type  notify_list: ``list`` of ``str``
+        """
+        self.trigger = trigger
+        self.notify_list = notify_list
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientAlert: trigger=%s>')
+                % (self.trigger))
+
+
+class DimensionDataBackupClientRunningJob(object):
+    """
+    A running job for a given backup client
+    """
+    def __init__(self, id, status, percentage=0):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientRunningJob`
+
+        :param id: The unqiue ID of the job
+        :type  id: ``str``
+
+        :param status: The status of the job i.e. Waiting
+        :type  status: ``str``
+
+        :param percentage: The percentage completion of the job
+        :type  percentage: ``int``
+        """
+        self.id = id
+        self.percentage = percentage
+        self.status = status
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientRunningJob: id=%s>')
+                % (self.id))
+
+
+class DimensionDataBackupClientType(object):
+    """
+    A client type object for backups
+    """
+    def __init__(self, type, is_file_system, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupClientType`
+
+        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
+        :type  type: ``str``
+
+        :param is_file_system: The name of the iRule
+        :type  is_file_system: ``bool``
+
+        :param description: Description of the client
+        :type  description: ``str``
+        """
+        self.type = type
+        self.is_file_system = is_file_system
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupClientType: type=%s>')
+                % (self.type))
+
+
+class DimensionDataBackupStoragePolicy(object):
+    """
+    A representation of a storage policy
+    """
+    def __init__(self, name, retention_period, secondary_location):
+        """
+        Initialize an instance of :class:`DimensionDataBackupStoragePolicy`
+
+        :param name: The name of the storage policy i.e. 14 Day Storage Policy
+        :type  name: ``str``
+
+        :param retention_period: How long to keep the backup in days
+        :type  retention_period: ``int``
+
+        :param secondary_location: The secondary location i.e. Primary
+        :type  secondary_location: ``str``
+        """
+        self.name = name
+        self.retention_period = retention_period
+        self.secondary_location = secondary_location
+
+    def __repr__(self):
+        return (('<DimensionDataBackupStoragePolicy: name=%s>')
+                % (self.name))
+
+
+class DimensionDataBackupSchedulePolicy(object):
+    """
+    A representation of a schedule policy
+    """
+    def __init__(self, name, description):
+        """
+        Initialize an instance of :class:`DimensionDataBackupSchedulePolicy`
+
+        :param name: The name of the policy i.e 12AM - 6AM
+        :type  name: ``str``
+
+        :param description: Short summary of the details of the policy
+        :type  description: ``str``
+        """
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+        return (('<DimensionDataBackupSchedulePolicy: name=%s>')
+                % (self.name))

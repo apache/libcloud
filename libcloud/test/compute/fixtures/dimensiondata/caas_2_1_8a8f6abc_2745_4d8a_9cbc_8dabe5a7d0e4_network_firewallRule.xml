@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<firewallRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="13" totalCount="13" pageSize="50">
+<firewallRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="13" totalCount="13" pageSize="50">     
     <firewallRule id="756cba02-b0bc-48f4-aea5-9445870b6148" datacenterId="NA9" ruleType="DEFAULT_RULE">
         <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
         <name>CCDEFAULT.BlockOutboundMailIPv4</name>
@@ -206,5 +206,68 @@
         </destination>
         <enabled>true</enabled>
         <state>NORMAL</state>
+    </firewallRule>
+    <firewallRule id="b976e0e6-4fb2-4f3e-a016-652e02d211b4" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>b30c224c-c95b-4cd9-bb8b-bfdfb5486abf</networkDomainId>
+        <name>SpecificSourceIP</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV6</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+            <ip address="2607:f480:111:1336:6503:544c:74a6:3a28"/>
+        </source>
+        <destination>
+            <ip address="ANY"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+      </firewallRule>
+      <firewallRule id="ce250bd3-0e45-4c13-a6d2-74e0657ef699" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>423c4386-87b4-43c4-9604-88ae237bfc7f</networkDomainId>
+        <name>RULE_WITH_SOURCE_AND_DEST_IP_ONLY</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+          <ip address="10.10.10.15"/>
+        </source>
+        <destination>
+          <ip address="10.10.10.14"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+      </firewallRule>
+      <firewallRule id="ce250bd3-0e45-4c13-a6d2-74e0657ef699" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>423c4386-87b4-43c4-9604-88ae237bfc7f</networkDomainId>
+        <name>RULE_WITH_DEST_IP_NO_PORT</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+          <ip address="10.10.10.15"/>
+        </source>
+        <destination>
+          <ip address="10.10.10.14"/>
+          <port begin="40000" end="40005"/>
+        </destination>
+        <enabled>true</enabled>
+        <state>NORMAL</state>
+      </firewallRule>
+      <firewallRule id="ce250bd3-0e45-4c13-a6d2-74e0657ef700" datacenterId="NA9" ruleType="CLIENT_RULE">
+        <networkDomainId>423c4386-87b4-43c4-9604-88ae237bfc7f</networkDomainId>
+        <name>RULE_WITH_SOURCE_AND_DEST</name>
+        <action>ACCEPT_DECISIVELY</action>
+        <ipVersion>IPV4</ipVersion>
+        <protocol>TCP</protocol>
+        <source>
+          <ip address="10.10.10.0" prefixSize="24"/>
+          <port begin="40000" end="40005"/>
+      </source>
+      <destination>
+        <ip address="10.10.10.0" prefixSize="24"/>
+        <port begin="40000"/>
+      </destination>
+      <enabled>true</enabled>
+      <state>NORMAL</state>
     </firewallRule>
 </firewallRules>

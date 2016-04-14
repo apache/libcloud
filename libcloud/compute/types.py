@@ -30,12 +30,32 @@ __all__ = [
     "MalformedResponseError",
     "InvalidCredsError",
     "InvalidCredsException",
-    "DEPRECATED_RACKSPACE_PROVIDERS",
+
     "OLD_CONSTANT_TO_NEW_MAPPING"
 ]
 
 
-class Provider(object):
+class Type(object):
+    @classmethod
+    def tostring(cls, value):
+        """Return the string representation of the state object attribute
+        :param str value: the state object to turn into string
+        :return: the uppercase string that represents the state object
+        :rtype: str
+        """
+        return value.upper()
+
+    @classmethod
+    def fromstring(cls, value):
+        """Return the state object attribute that matches the string
+        :param str value: the string to look up
+        :return: the state object attribute that matches the string
+        :rtype: str
+        """
+        return getattr(cls, value.upper(), None)
+
+
+class Provider(Type):
     """
     Defines for each of the supported providers
 
@@ -81,11 +101,12 @@ class Provider(object):
     :cvar AZURE: Azure Service Manager (classic) driver.
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
+    :cvar ALIYUN_ECS: Aliyun ECS driver.
     """
     AZURE = 'azure'
     AZURE_ARM = 'azure_arm'
     DUMMY = 'dummy'
-    EC2 = 'ec2_us_east'
+    EC2 = 'ec2'
     RACKSPACE = 'rackspace'
     GCE = 'gce'
     GOGRID = 'gogrid'
@@ -135,6 +156,13 @@ class Provider(object):
     CLOUDWATT = 'cloudwatt'
     PACKET = 'packet'
     RUNABOVE = 'runabove'
+    INTERNETSOLUTIONS = 'internetsolutions'
+    INDOSAT = 'indosat'
+    BSNL = 'bsnl'
+    NTTA = 'ntta'
+    MEDONE = 'medone'
+    CISCOCCS = 'ciscoccs'
+    ALIYUN_ECS = 'aliyun_ecs'
 
     # OpenStack based providers
     HPCLOUD = 'hpcloud'
@@ -142,13 +170,21 @@ class Provider(object):
     KILI = 'kili'
     ONAPP = 'onapp'
 
-    # Deprecated constants which are still supported
+    # Deprecated constants which aren't supported anymore
+    RACKSPACE_UK = 'rackspace_uk'
+    RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
+    RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
+    RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
+    RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
+
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
     EC2_US_WEST = 'ec2_us_west'
     EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
     EC2_AP_NORTHEAST = 'ec2_ap_northeast'
+    EC2_AP_NORTHEAST1 = 'ec2_ap_northeast_1'
+    EC2_AP_NORTHEAST2 = 'ec2_ap_northeast_2'
     EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
@@ -164,13 +200,6 @@ class Provider(object):
 
     CLOUDSIGMA_US = 'cloudsigma_us'
 
-    # Deprecated constants which aren't supported anymore
-    RACKSPACE_UK = 'rackspace_uk'
-    RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
-    RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
-    RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
-    RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
-
     # Removed
     # SLICEHOST = 'slicehost'
 
@@ -181,81 +210,97 @@ DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_LON,
                                   Provider.RACKSPACE_NOVA_ORD]
 OLD_CONSTANT_TO_NEW_MAPPING = {
-    Provider.RACKSPACE: Provider.RACKSPACE_FIRST_GEN,
+    # Rackspace
     Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
 
     Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_DFW: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
-    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE
+    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE,
+
+    # AWS
+    Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_EU: Provider.EC2,
+    Provider.EC2_EU_WEST: Provider.EC2,
+    Provider.EC2_US_WEST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST1: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST2: Provider.EC2,
+    Provider.EC2_US_WEST_OREGON: Provider.EC2,
+    Provider.EC2_SA_EAST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+
+    # ElasticHosts
+    Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_UK2: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US2: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_US3: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_CA1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_AU1: Provider.ELASTICHOSTS,
+    Provider.ELASTICHOSTS_CN1: Provider.ELASTICHOSTS,
 }
 
 
-class NodeState(object):
+class NodeState(Type):
     """
     Standard states for a node
 
     :cvar RUNNING: Node is running.
+    :cvar STARTING: Node is starting up.
     :cvar REBOOTING: Node is rebooting.
     :cvar TERMINATED: Node is terminated. This node can't be started later on.
+    :cvar STOPPING: Node is currently trying to stop.
     :cvar STOPPED: Node is stopped. This node can be started later on.
     :cvar PENDING: Node is pending.
     :cvar SUSPENDED: Node is suspended.
     :cvar ERROR: Node is an error state. Usually no operations can be performed
                  on the node once it ends up in the error state.
     :cvar PAUSED: Node is paused.
+    :cvar RECONFIGURING: Node is being reconfigured.
     :cvar UNKNOWN: Node state is unknown.
     """
-    RUNNING = 0
-    REBOOTING = 1
-    TERMINATED = 2
-    PENDING = 3
-    UNKNOWN = 4
-    STOPPED = 5
-    SUSPENDED = 6
-    ERROR = 7
-    PAUSED = 8
-
-    @classmethod
-    def tostring(cls, value):
-        values = cls.__dict__
-        values = dict([(key, string) for key, string in values.items() if
-                       not key.startswith('__')])
-
-        for item_key, item_value in values.items():
-            if value == item_value:
-                return item_key
-
-    @classmethod
-    def fromstring(cls, value):
-        return getattr(cls, value.upper(), None)
+    RUNNING = 'running'
+    STARTING = 'starting'
+    REBOOTING = 'rebooting'
+    TERMINATED = 'terminated'
+    PENDING = 'pending'
+    UNKNOWN = 'unknown'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'
+    SUSPENDED = 'suspended'
+    ERROR = 'error'
+    PAUSED = 'paused'
+    RECONFIGURING = 'reconfiguring'
 
 
-class StorageVolumeState(object):
+class StorageVolumeState(Type):
     """
     Standard states of a StorageVolume
     """
-    AVAILABLE = "available"
-    ERROR = "error"
-    INUSE = "in_use"
-    CREATING = "creating"
-    DELETING = "deleting"
-    DELETED = "deleted"
-    BACKUP = "backup"
-    ATTACHING = "attaching"
-    UNKNOWN = "unknown"
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    INUSE = 'inuse'
+    CREATING = 'creating'
+    DELETING = 'deleting'
+    DELETED = 'deleted'
+    BACKUP = 'backup'
+    ATTACHING = 'attaching'
+    UNKNOWN = 'unknown'
 
 
-class VolumeSnapshotState(object):
+class VolumeSnapshotState(Type):
     """
     Standard states of VolumeSnapshots
     """
-    AVAILABLE = 0
-    ERROR = 1
-    CREATING = 2
-    DELETING = 3
-    RESTORING = 4
-    UNKNOWN = 5
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    CREATING = 'creating'
+    DELETING = 'deleting'
+    RESTORING = 'restoring'
+    UNKNOWN = 'unknown'
 
 
 class Architecture(object):

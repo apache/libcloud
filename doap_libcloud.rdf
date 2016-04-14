@@ -266,6 +266,34 @@
         <revision>v0.19.0</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>0.20.0</name>
+        <created>2015-12-15</created>
+        <revision>v0.20.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.20.1</name>
+        <created>2016-01-19</created>
+        <revision>v0.20.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>1.0.0-pre1</name>
+        <created>2016-01-26</created>
+        <revision>v1.0.0-pre1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>1.0.0-rc2</name>
+        <created>2016-04-11</created>
+        <revision>v1.0.0-rc2</revision>
+      </Version>
+  </release>
     <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>

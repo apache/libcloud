@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListMultipartUploadsResult>
+    <Bucket>oss-example</Bucket>
+    <KeyMarker></KeyMarker>
+    <UploadIdMarker></UploadIdMarker>
+    <NextKeyMarker></NextKeyMarker>
+    <NextUploadIdMarker></NextUploadIdMarker>
+    <Delimiter></Delimiter>
+    <Prefix></Prefix>
+    <MaxUploads>2</MaxUploads>
+    <IsTruncated>false</IsTruncated>
+    <Upload>
+        <Key>multipart.data</Key>
+        <UploadId>0004B999EF5A239BB9138C6227D69F95</UploadId>
+        <Initiated>2012-02-23T04:18:23.000Z</Initiated>
+    </Upload>
+</ListMultipartUploadsResult>

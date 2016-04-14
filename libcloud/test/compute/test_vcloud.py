@@ -26,6 +26,7 @@ from libcloud.utils.py3 import httplib, b
 from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
 from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
 from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver
+from libcloud.compute.drivers.vcloud import VCloud_5_5_NodeDriver
 from libcloud.compute.drivers.vcloud import Vdc
 from libcloud.compute.base import Node, NodeImage
 from libcloud.compute.types import NodeState
@@ -392,6 +393,41 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
             'https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
 
 
+class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
+
+    def setUp(self):
+        VCloudNodeDriver.connectionCls.host = 'test'
+        VCloudNodeDriver.connectionCls.conn_classes = (
+            None, VCloud_5_5_MockHttp)
+        VCloud_5_5_MockHttp.type = None
+        self.driver = VCloudNodeDriver(
+            *VCLOUD_PARAMS, **{'api_version': '5.5'})
+
+        self.assertTrue(isinstance(self.driver, VCloud_5_5_NodeDriver))
+
+    def test_ex_create_snapshot(self):
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
+        self.driver.ex_create_snapshot(node)
+
+    def test_ex_remove_snapshots(self):
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
+        self.driver.ex_remove_snapshots(node)
+
+    def test_ex_revert_to_snapshot(self):
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
+        self.driver.ex_revert_to_snapshot(node)
+
+    def test_ex_acquire_mks_ticket(self):
+        node = self.driver.ex_find_node('testNode')
+        self.driver.ex_acquire_mks_ticket(node.id)
+
+
 class TerremarkMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('terremark')
@@ -710,6 +746,43 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
         body = self.fixtures.load(
             'api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+
+class VCloud_5_5_MockHttp(VCloud_1_5_MockHttp):
+    # TODO: Move 5.5 fixtures to their own folder
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_action_createSnapshot(self, method, url, body, headers):
+        assert method == 'POST'
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_create_snapshot.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_task_fab4b26f_4f2e_4d49_ad01_ae9324bbfe48(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_action_removeAllSnapshots(self, method, url, body, headers):
+        assert method == 'POST'
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_remove_snapshots.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_task_2518935e_b315_4d8e_9e99_9275f751877c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'api_task_2518935e_b315_4d8e_9e99_9275f751877c.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_action_revertToCurrentSnapshot(self, method, url, body, headers):
+        assert method == 'POST'
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_revert_snapshot.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_task_fe75d3af_f5a3_44a5_b016_ae0bdadfc32b(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'api_task_fe75d3af_f5a3_44a5_b016_ae0bdadfc32b.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
 

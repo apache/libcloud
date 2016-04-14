@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns5:Status xmlns:ns16="http://oec.api.opsource.net/schemas/storage" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns15="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns9="http://oec.api.opsource.net/schemas/admin" xmlns:ns5="http://oec.api.opsource.net/schemas/general" xmlns:ns12="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns13="http://oec.api.opsource.net/schemas/reset" xmlns:ns6="http://oec.api.opsource.net/schemas/vip" xmlns:ns7="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns10="http://oec.api.opsource.net/schemas/backup" xmlns:ns8="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns11="http://oec.api.opsource.net/schemas/support" xmlns:ns2="http://oec.api.opsource.net/schemas/network" xmlns:ns4="http://oec.api.opsource.net/schemas/directory" xmlns:ns3="http://oec.api.opsource.net/schemas/organization">
+    <ns5:operation>Create Anti Affinity Rule</ns5:operation>
+    <ns5:result>SUCCESS</ns5:result>
+    <ns5:resultDetail>Request to create Server Anti-Affinity Rule between 'rhel-ansible-full-test' and 'rhel-ansible-full-test' on 'Deloitte Test' has been accepted and is being processed.</ns5:resultDetail>
+    <ns5:resultCode>REASON_0</ns5:resultCode>
+    <ns5:additionalInformation name="antiaffinityrule.id">
+        <ns5:value>5e10b1ab-68f2-4a8b-a49c-d88d623db665</ns5:value>
+    </ns5:additionalInformation>
+</ns5:Status>
+

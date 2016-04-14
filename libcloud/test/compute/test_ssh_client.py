@@ -29,6 +29,7 @@ from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
 
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import u
 
 from mock import patch, Mock, MagicMock
 
@@ -38,6 +39,7 @@ else:
     import paramiko
 
 
+@unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
 class ParamikoSSHClientTests(LibcloudTestCase):
 
     @patch('paramiko.SSHClient', Mock)
@@ -256,10 +258,87 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         self.assertTrue(content.find(expected_msg) != -1)
 
+    def test_consume_stdout(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
 
-if not ParamikoSSHClient:
-    class ParamikoSSHClientTests(LibcloudTestCase):  # NOQA
-        pass
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, False]
+        chan.recv.side_effect = ['123', '456']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual(u('123456'), stdout)
+        self.assertEqual(len(stdout), 6)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, False]
+        chan.recv.side_effect = ['987', '6543210']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual(u('9876543210'), stdout)
+        self.assertEqual(len(stdout), 10)
+
+    def test_consume_stderr(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, False]
+        chan.recv_stderr.side_effect = ['123', '456']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual(u('123456'), stderr)
+        self.assertEqual(len(stderr), 6)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1024
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, False]
+        chan.recv_stderr.side_effect = ['987', '6543210']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual(u('9876543210'), stderr)
+        self.assertEqual(len(stderr), 10)
+
+    def test_consume_stdout_chunk_contains_part_of_multi_byte_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, True, True, False]
+        chan.recv.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
+        self.assertTrue(len(stdout) in [1, 2])
+
+    def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, True, True, False]
+        chan.recv_stderr.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
+        self.assertTrue(len(stderr) in [1, 2])
 
 
 class ShellOutSSHClientTests(LibcloudTestCase):

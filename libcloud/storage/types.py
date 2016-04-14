@@ -15,15 +15,19 @@
 
 from libcloud.common.types import LibcloudError
 
-__all__ = ['Provider',
-           'ContainerError',
-           'ObjectError',
-           'ContainerAlreadyExistsError',
-           'ContainerDoesNotExistError',
-           'ContainerIsNotEmptyError',
-           'ObjectDoesNotExistError',
-           'ObjectHashMismatchError',
-           'InvalidContainerNameError']
+__all__ = [
+    'Provider',
+    'ContainerError',
+    'ObjectError',
+    'ContainerAlreadyExistsError',
+    'ContainerDoesNotExistError',
+    'ContainerIsNotEmptyError',
+    'ObjectDoesNotExistError',
+    'ObjectHashMismatchError',
+    'InvalidContainerNameError',
+
+    'OLD_CONSTANT_TO_NEW_MAPPING'
+]
 
 
 class Provider(object):
@@ -37,12 +41,14 @@ class Provider(object):
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     :cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
     :cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
+    :cvar S3_RGW_OUTSCALE: OUTSCALE RGW S3
     :cvar NINEFOLD: Ninefold
     :cvar GOOGLE_STORAGE Google Storage
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     :cvar NIMBUS: Nimbus.io driver
     :cvar LOCAL: Local storage driver
     :cvar AURORAOBJECTS: AuroraObjects storage driver
+    :cvar ALIYUN_OSS: Aliyun OSS storage driver
     """
     DUMMY = 'dummy'
     S3 = 's3'
@@ -50,7 +56,10 @@ class Provider(object):
     S3_EU_WEST = 's3_eu_west'
     S3_AP_SOUTHEAST = 's3_ap_southeast'
     S3_AP_NORTHEAST = 's3_ap_northeast'
+    S3_AP_NORTHEAST1 = 's3_ap_northeast_1'
+    S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
     S3_SA_EAST = 's3_sa_east'
+    S3_RGW_OUTSCALE = 's3_rgw_outscale'
     NINEFOLD = 'ninefold'
     GOOGLE_STORAGE = 'google_storage'
     S3_US_WEST_OREGON = 's3_us_west_oregon'
@@ -61,11 +70,21 @@ class Provider(object):
     AZURE_BLOBS = 'azure_blobs'
     KTUCLOUD = 'ktucloud'
     AURORAOBJECTS = 'auroraobjects'
+    BACKBLAZE_B2 = 'backblaze_b2'
+    ALIYUN_OSS = 'aliyun_oss'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
     CLOUDFILES_UK = 'cloudfiles_uk'
     CLOUDFILES_SWIFT = 'cloudfiles_swift'
+
+
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    # CloudFiles
+    Provider.CLOUDFILES_US: Provider.CLOUDFILES,
+    Provider.CLOUDFILES_UK: Provider.CLOUDFILES_UK,
+    Provider.CLOUDFILES_SWIFT: Provider.OPENSTACK_SWIFT
+}
 
 
 class ContainerError(LibcloudError):

@@ -318,6 +318,9 @@ For example:
 Make sure that all the code you have added or modified has appropriate test
 coverage. Also make sure all the tests including the existing ones still pass.
 
+Use ``libcloud.test.unittest`` as the unit testing package to ensure that
+your tests work with older versions of Python.
+
 For more information on how to write and run tests, please see
 :doc:`Testing page </testing>`.
 
@@ -349,7 +352,7 @@ pull request description contains link to the JIRA ticket.
 Wait for your changes to be reviewed and address any outstanding comments.
 
 10. Squash the commits and generate the patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the changes has been reviewed, all the outstanding issues have been
 addressed and the pull request has been +1'ed, close the pull request, squash

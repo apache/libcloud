@@ -23,35 +23,46 @@ __all__ = [
     'ZoneAlreadyExistsError',
     'RecordError',
     'RecordDoesNotExistError',
-    'RecordAlreadyExistsError'
+    'RecordAlreadyExistsError',
+
+    'OLD_CONSTANT_TO_NEW_MAPPING'
 ]
 
 
 class Provider(object):
     DUMMY = 'dummy'
-    LINODE = 'linode'
-    RACKSPACE = 'rackspace'
-    ZERIGO = 'zerigo'
-    ROUTE53 = 'route53'
-    HOSTVIRTUAL = 'hostvirtual'
-    GANDI = 'gandi'
-    GOOGLE = 'google'
-    SOFTLAYER = 'softlayer'
-    DIGITAL_OCEAN = 'digitalocean'
     AURORADNS = 'auroradns'
-    WORLDWIDEDNS = 'worldwidedns'
-    DNSIMPLE = 'dnsimple'
-    POINTDNS = 'pointdns'
-    VULTR = 'vultr'
-    LIQUIDWEB = 'liquidweb'
-    ZONOMI = 'zonomi'
-    DURABLEDNS = 'durabledns'
-    GODADDY = 'godaddy'
+    BUDDYNS = 'buddyns'
     CLOUDFLARE = 'cloudflare'
-
+    DIGITAL_OCEAN = 'digitalocean'
+    DNSIMPLE = 'dnsimple'
+    DURABLEDNS = 'durabledns'
+    GANDI = 'gandi'
+    GODADDY = 'godaddy'
+    GOOGLE = 'google'
+    HOSTVIRTUAL = 'hostvirtual'
+    LINODE = 'linode'
+    LIQUIDWEB = 'liquidweb'
+    LUADNS = 'luadns'
+    NFSN = 'nfsn'
+    NSONE = 'nsone'
+    POINTDNS = 'pointdns'
+    RACKSPACE = 'rackspace'
+    ROUTE53 = 'route53'
+    SOFTLAYER = 'softlayer'
+    VULTR = 'vultr'
+    WORLDWIDEDNS = 'worldwidedns'
+    ZERIGO = 'zerigo'
+    ZONOMI = 'zonomi'
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
+
+
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    Provider.RACKSPACE_US: Provider.RACKSPACE,
+    Provider.RACKSPACE_UK: Provider.RACKSPACE,
+}
 
 
 class RecordType(object):
@@ -61,26 +72,24 @@ class RecordType(object):
     A = 'A'
     AAAA = 'AAAA'
     ALIAS = 'ALIAS'
-    MX = 'MX'
-    NS = 'NS'
     CNAME = 'CNAME'
     DNAME = 'DNAME'
+    GEO = 'GEO'
     HINFO = 'HINFO'
-    TXT = 'TXT'
+    LOC = 'LOC'
+    MX = 'MX'
+    NAPTR = 'NAPTR'
+    NS = 'NS'
     PTR = 'PTR'
+    REDIRECT = 'REDIRECT'
+    RP = 'RP'
     SOA = 'SOA'
-    HINFO = 'HINFO'
     SPF = 'SPF'
     SRV = 'SRV'
     SSHFP = 'SSHFP'
-    PTR = 'PTR'
-    RP = 'RP'
-    NAPTR = 'NAPTR'
-    REDIRECT = 'REDIRECT'
-    GEO = 'GEO'
+    TXT = 'TXT'
     URL = 'URL'
     WKS = 'WKS'
-    LOC = 'LOC'
 
 
 class ZoneError(LibcloudError):

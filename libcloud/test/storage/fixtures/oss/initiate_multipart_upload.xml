@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InitiateMultipartUploadResult>
+    <Bucket>multipart_upload</Bucket>
+    <Key>multipart.data</Key>
+    <UploadId>0004B9894A22E5B1888A1E29F8236E2D</UploadId>
+</InitiateMultipartUploadResult>

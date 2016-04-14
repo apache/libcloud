@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns6:Status xmlns:ns16="http://oec.api.opsource.net/schemas/storage" xmlns="http://oec.api.opsource.net/schemas/admin" xmlns:ns14="http://oec.api.opsource.net/schemas/directory" xmlns:ns15="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns9="http://oec.api.opsource.net/schemas/backup" xmlns:ns5="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns12="http://oec.api.opsource.net/schemas/support" xmlns:ns13="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns6="http://oec.api.opsource.net/schemas/general" xmlns:ns7="http://oec.api.opsource.net/schemas/reset" xmlns:ns10="http://oec.api.opsource.net/schemas/server" xmlns:ns8="http://oec.api.opsource.net/schemas/network" xmlns:ns11="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns2="http://oec.api.opsource.net/schemas/organization" xmlns:ns4="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns3="http://oec.api.opsource.net/schemas/vip">
+    <ns6:operation>Disable Backup Client</ns6:operation>
+    <ns6:result>SUCCESS</ns6:result>
+    <ns6:resultDetail>Backup Client disabled</ns6:resultDetail>
+    <ns6:resultCode>REASON_0</ns6:resultCode>
+</ns6:Status>

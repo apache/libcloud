@@ -1,0 +1,47 @@
+{
+  "kind": "Pod",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "hello-world",
+    "namespace": "default",
+    "selfLink": "/api/v1/namespaces/default/pods/hello-world",
+    "uid": "1fad5411-b9af-11e5-8701-0050568157ec",
+    "resourceVersion": "32",
+    "creationTimestamp": "2016-01-13T04:35:50Z"
+  },
+  "spec": {
+    "volumes": [
+      {
+        "name": "default-token-dpyh0",
+        "secret": {
+          "secretName": "default-token-dpyh0"
+        }
+      }
+    ],
+    "containers": [
+      {
+        "name": "hello-world",
+        "image": "ubuntu:14.04",
+        "resources": {},
+        "volumeMounts": [
+          {
+            "name": "default-token-dpyh0",
+            "readOnly": true,
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "imagePullPolicy": "IfNotPresent"
+      }
+    ],
+    "restartPolicy": "Always",
+    "terminationGracePeriodSeconds": 30,
+    "dnsPolicy": "ClusterFirst",
+    "serviceAccountName": "default",
+    "serviceAccount": "default",
+    "securityContext": {}
+  },
+  "status": {
+    "phase": "Pending"
+  }
+}

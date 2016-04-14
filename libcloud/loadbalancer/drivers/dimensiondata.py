@@ -321,7 +321,7 @@ class DimensionDataLBDriver(Driver):
         """
         return self.network_domain_id
 
-    def ex_create_pool_member(self, pool, node, port):
+    def ex_create_pool_member(self, pool, node, port=None):
         """
         Create a new member in an existing pool from an existing node
 
@@ -340,6 +340,8 @@ class DimensionDataLBDriver(Driver):
         create_pool_m = ET.Element('addPoolMember', {'xmlns': TYPES_URN})
         ET.SubElement(create_pool_m, "poolId").text = pool.id
         ET.SubElement(create_pool_m, "nodeId").text = node.id
+        if port is not None:
+            ET.SubElement(create_pool_m, "port").text = str(port)
         ET.SubElement(create_pool_m, "status").text = 'ENABLED'
 
         response = self.connection.request_with_orgId_api_2(
@@ -383,7 +385,7 @@ class DimensionDataLBDriver(Driver):
         :param ip: IPv4 address of the node (required)
         :type  ip: ``str``
 
-        :param ex_description: Description of the node
+        :param ex_description: Description of the node (required)
         :type  ex_description: ``str``
 
         :param connection_limit: Maximum number
@@ -493,7 +495,7 @@ class DimensionDataLBDriver(Driver):
         :param balancer_method: The load balancer algorithm (required)
         :type  balancer_method: ``str``
 
-        :param ex_description: Description of the node
+        :param ex_description: Description of the node (required)
         :type  ex_description: ``str``
 
         :param health_monitors: A list of health monitors to use for the pool.
@@ -558,6 +560,7 @@ class DimensionDataLBDriver(Driver):
                                    ex_description,
                                    port,
                                    pool,
+                                   listener_ip_address=None,
                                    persistence_profile=None,
                                    fallback_persistence_profile=None,
                                    irule=None,
@@ -574,14 +577,17 @@ class DimensionDataLBDriver(Driver):
         :param name: name of the listener (required)
         :type  name: ``str``
 
-        :param ex_description: Description of the node
+        :param ex_description: Description of the node (required)
         :type  ex_description: ``str``
 
-        :param port: Description of the node
+        :param port: Description of the node (required)
         :type  port: ``str``
 
         :param pool: The pool to use for the listener
         :type  pool: :class:`DimensionDataPool`
+
+        :param listener_ip_address: The IPv4 Address of the virtual listener
+        :type  listener_ip_address: ``str``
 
         :param persistence_profile: Persistence profile
         :type  persistence_profile: :class:`DimensionDataPersistenceProfile`
@@ -627,6 +633,9 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "type").text = listener_type
         ET.SubElement(create_node_elm, "protocol") \
             .text = protocol
+        if listener_ip_address is not None:
+            ET.SubElement(create_node_elm, "listenerIpAddress").text = \
+                str(listener_ip_address)
         ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
@@ -1041,9 +1050,15 @@ class DimensionDataLBDriver(Driver):
         port = findtext(element, 'port', TYPES_URN)
         extra = {}
 
-        extra['pool_id'] = element.find(fixxpath(
+        pool_element = element.find(fixxpath(
             'pool',
-            TYPES_URN)).get('id')
+            TYPES_URN))
+        if pool_element is None:
+            extra['pool_id'] = None
+
+        else:
+            extra['pool_id'] = pool_element.get('id')
+
         extra['network_domain_id'] = findtext(element, 'networkDomainId',
                                               TYPES_URN)
 

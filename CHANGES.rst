@@ -1,5 +1,288 @@
-Changelog
+﻿Changelog
 =========
+
+Changes with latest version of Apache Libcloud
+----------------------------------------------
+
+General
+~~~~~~~
+
+Compute
+~~~~~~~
+
+- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
+  `list_nodes()` while some VMs are being shutdown can result in the following
+  `libcloud.common.google.ResourceNotFoundError` exception to be raised.
+  (GITHUB-727)
+  [Lénaïc Huard]
+
+- Allow user to filter nodes by location by adding optional `location`
+  argument to the `list_nodes()` method in the CloudStack driver.
+  (GITHUB-737)
+  [Lionel Schaub]
+
+- Fix OpenStack IP type resolution - make sure IP addresses are correctly
+  categorized and assigned on `private_ips` and `public_ips` Node attribute.
+  (GITHUB-738)
+  [Lionel Schaub]
+
+- Add new `Perth, Australia` and `Manila, Philippines` region to the CloudSigma
+  v2 driver.
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- Added BuddyNS driver
+  (GITHUB-742)
+  [Oltjano Terpollari]
+
+
+Changes with Apache Libcloud in 1.0.0-rc2
+-----------------------------------------
+
+General
+~~~~~~~
+
+- Fix a bug with consuming stdout and stderr in the paramiko SSH client which
+  would manifest itself under very rare condition when a consumed chunk only
+  contained a single byte or part of a multi byte UTF-8 character.
+  [Lakshmi Kannan, Tomaz Muraus]
+
+- Increase default chunk size from ``1024`` to ``4096`` bytes in the paramiko
+  SSH client. This results in smaller number of receive calls on the average.
+  [Tomaz Muraus]
+
+- Fix to Dimension Data API address for Middle-East and Africa
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Addition of Dimension Data Australia federal government region to dimension data
+  drivers.
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Throw a more user-friendly exception on "No address associated with hostname".
+  (GITHUB-711, GITHUB-714, LIBCLOUD-803)
+  [Tomaz Muraus, Scott Crunkleton]
+
+* Remove deprecated provider constants with the region in the name and related
+  driver classes (e.g. ``EC2_US_EAST``, etc.).
+
+  Those drivers have moved to single provider constant + ``region`` constructor
+  argument model.
+  [Tomaz Muraus]
+
+* Introduce new `list_regions`` class method on the base driver class. This
+  method is to be used with provider drivers which support multiple regions and
+  ``region`` constructor argument. It allows users to enumerate available /
+  supported regions.
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [dimension data] added support for VMWare tools VM information inside list_nodes responses
+  (GITHUB-734)
+  [Jeff Dunham]
+
+- [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
+  (GITHUB-729)
+  [Viktor Ognev]
+
+- [dimension data] added support for managing host anti-affinity rules, added paging support to
+  all supported calls and added support for requesting priority ordering when creating ACL rules
+  (GITHUB-726)
+  [Jeff Dunham]
+
+- [openstack] when creating floating IPs, added pool_id as an optional argument
+  (GITHUB-725)
+  [marko-p]
+
+- [google compute] Added setMachineType method to allow for changing sizes of instances
+  (GITHUB-721)
+  [Eric Johnson]
+
+- [google compute] allow bypassing image search in standard project list
+  (GITHUB-713)
+  [Max Illfelder]
+
+- Add support for requesting a MKS token for accessing the remote console in VMware
+  vCloud driver
+  (GITHUB-706)
+  [Juan Font Alonso]
+
+- Add support in VMware vCloud driver for v5.5 API, with snapshot support
+  (GITHUB-658)
+  [Juan Font Alonso]
+
+- Added support for adding a family to an image on Google Compute Driver
+  (GITHUB-704)
+  [Max Illfelder]
+
+- Deprecated IBM SCE, HP Helion, OpSource, Ninefold and CloudFrames drivers, removed
+  driver code and tests.
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- Introduced error messages (`libcloud.compute.deprecated`) for deprecated drivers
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- New Compute drivers- BSNL, Indosat, Med-1, NTT-America, Internet Solutions
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Fix to set default signature version for AWS Seoul region to v4, removed
+  non-supported size (hs1.xlarge)
+  (GITHUB-684)
+  [Geunwoo Shin]
+
+- Support filtering by location in list_nodes for dimension data compute driver
+  fix lack of paging support
+  (GITHUB-691)
+  [Jeff Dunham]
+
+- Support for filtering by IPv4, IPv6, network, network domain, VLAN in Dimension
+  data driver.
+  (GITHUB-694)
+  [Jeff Dunham]
+
+- Added `Node.created_at` which, on supported drivers, contains the datetime the
+  node was first started.
+  (GITHUB-698)
+  [Allard Hoeve] [Rick van de Loo]
+
+- New driver for Aliyun Elastic Compute Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+Storage
+~~~~~~~
+
+- Added Outscale storage driver
+  (GITHUB-730)
+  [Javier M. Mellid]
+
+- Improvements to Google Auth for Storage and Compute and MIME bug fix
+  (LIBCLOUD-800, GITHUB-689)
+  [Scott Crunkleton]
+
+- Implement ``get_container``, ``get_object`` and ``upload_object_via_stream``
+  methods in the Backblaze B2 storage driver.
+
+  Note: Backblaze API doesn't upload streaming uploads so when using
+  ``upload_object_via_stream`` whole file is read and buffered in memory.
+  (GITHUB-696)
+  [Jay jshridha]
+
+- New driver for Aliyun OSS Storage Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- New driver for Aliyun SLB Loadbalancer Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+DNS
+~~~~
+
+- Added NearlyFreeSpeech.net (NSFN) driver
+  [Ken Drayer]
+  (GITHUB-733)
+
+- Added Lua DNS driver
+  [Oltjano Terpollari]
+  (GITHUB-732)
+
+- Added NSOne driver
+  [Oltjano Terpollari]
+  (GITHUB-710)
+
+- Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
+  connection class is correctly set to the hostname.
+  [Tomaz Muraus]
+
+- Fix handling of ``MX`` records in the Gandi driver.
+  (GITHUB-718)
+  [Ryan Lee]
+
+Backup
+~~~~~~
+
+- Dimension Data - added additional testing, fixed bug on client response naming,
+  added support for adding backup clients to a backup enabled node.
+  (GITHUB-692, GITHUB-693, GITHUB-695)
+  [Jeff Dunham]
+
+Changes with Apache Libcloud 1.0.0-pre1
+---------------------------------------
+
+General
+~~~~~~~
+
+- Introduction of container based drivers for Docker, Rkt and Container-as-a-service
+  providers
+  (LIBCLOUD-781, GITHUB-666)
+  [Anthony Shaw]
+
+- Introduce a new ``libcloud.backup`` API for Backup as a Service projects and
+  products.
+  (GITHUB-621)
+  [Anthony Shaw]
+
+- Also retry failed HTTP(s) requests upon transient "read operation timed out"
+  SSL error.
+  (GITHUB-556, LIBCLOUD-728)
+  [Scott Kruger]
+
+- Throw a more user-friendly exception if a client fails to establish SSL / TLS
+  connection with a server because of an unsupported SSL / TLS version.
+  (GITHUB-682)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- Add ap-northeast-2 region to EC2 driver (South Korea)
+  (GITHUB-681)
+  [Anthony Shaw]
+
+- Added Added volume type to EC2 volume extra to EC2 driver.
+  (GITHUB-680)
+  [Gennadiy Stas]
+
+- Add LazyObject class that provides lazy-loading, see `GCELicense` for usage
+  (LIBCLOUD-786, GITHUB-665)
+  [Scott Crunkleton]
+
+- Added t2.nano instance type to EC2 Compute driver
+  (GITHUB-663)
+  [Anthony Shaw]
+
+- Support for passing the image ID as a string instead of an instance of image when
+  creating nodes in Dimension Data driver.
+  (GITHUB-664)
+  [Anthony Shaw]
+
+DNS
+~~~
+
+- Add support for 'health checks' in Aurora DNS driver
+  (GITHUB-672)
+  [Wido den Hollander]
+
+- Make sure ``ttl`` attribute is correctly parsed and added to the ``Record``
+  ``extra`` dictionary.
+  (GITHUB-675)
+  [Wido den Hollander]
+
+- Improve unit tests of Aurora DNS driver
+  (GITHUB-679)
+  [Wido den Hollander]
 
 Changes with Apache Libcloud 0.20.1
 -----------------------------------
@@ -39,6 +322,14 @@ General
 
 Compute
 ~~~~~~~
+
+- [google] Allow for old and new style service account client email address
+  (LIBCLOUD-785)
+  [Hoang Phan]
+
+- Minor security improvement for storing cached GCE credentials
+  (LIBCLOUD-718)
+  [Siim Põder]
 
 - Removed DreamHosts Compute Driver, DreamHosts users will now use the OpenStack Node driver since DreamHosts are OpenStack
   API compliant
@@ -102,7 +393,7 @@ Compute
   Dimension Data driver by using new ``ex_wait_for_state`` method.
   (LIBCLOUD-707, GITHUB-631)
   [Anthony Shaw]
-  
+
 - Added M4 pricing and instance information to EC2 driver
   (GITHUB-634)
   [Benjamin Zaitlen]
@@ -110,7 +401,7 @@ Compute
 - Added C4 instance information to EC2 driver
   (GITHUB-638)
   [amitofs]
-  
+
 - Allow location of the datacenter to be supplied in ProfitBricks driver
   (LIBCLOUD-771, GITHUB-635)
   [Joel Reymont]
@@ -128,6 +419,11 @@ Compute
   (GITHUB-633)
   [Scott Crunkleton]
 
+- All NodeState, StorageVolumeState, VolumeSnapshotState and Provider attributes
+  are now strings instead of integers.
+  (GITHUB-624)
+  [Allard Hoeve]
+
 Storage
 ~~~~~~~
 
@@ -138,13 +434,14 @@ DNS
 ~~~
 
 - RackSpace driver - New DNS driver methods:
-    ex_iterate_ptr_records
-    ex_get_ptr_record
-    ex_create_ptr_record
-    ex_update_ptr_record
-    ex_delete_ptr_record
-    This should cover all of the functionality offered by the Rackspace
-    DNS API in regards to RDNS.
+   - ex_iterate_ptr_records
+   - ex_get_ptr_record
+   - ex_create_ptr_record
+   - ex_update_ptr_record
+   - ex_delete_ptr_record
+
+  This should cover all of the functionality offered by the Rackspace DNS API
+  in regards to RDNS.
   (LIBCLOUD-780, GITHUB-652)
   [Greg Hill]
 
@@ -196,7 +493,7 @@ General
 
 Compute
 ~~~~~~~
-  
+
 - Fixed malformed XML requests with Dimension Data driver.
   (LIBCLOUD-760, GITHUB-610)
   [Anthony Shaw]
@@ -610,11 +907,12 @@ Compute
   [Konstantin Skaburskas]
 
 - Various improvements in the DigitalOcean driver:
-  - Increase page size to API maximum.
-  - Add ``ex_create_attr`` kwarg to ``create_node`` method.
-  - Update all the ``list_*`` methods to use paginated requests
-  - Allow user to specify page size by passing ``ex_per_page`` argument to the
-    constructor.
+   - Increase page size to API maximum.
+   - Add ``ex_create_attr`` kwarg to ``create_node`` method.
+   - Update all the ``list_*`` methods to use paginated requests
+   - Allow user to specify page size by passing ``ex_per_page`` argument to the
+     constructor.
+
   (LIBCLOUD-717, GITHUB-537)
   [Javier Castillo II]
 

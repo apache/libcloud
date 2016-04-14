@@ -88,6 +88,10 @@ class DigitalOcean_v1_Tests(LibcloudTestCase):
         self.assertEqual(nodes[0].extra['image_id'], 1601)
         self.assertEqual(nodes[0].extra['size_id'], 66)
 
+    def test_list_nodes_does_not_support_created_datetime(self):
+        nodes = self.driver.list_nodes()
+        self.assertIsNone(nodes[0].created_at)
+
     def test_create_node_invalid_size(self):
         image = NodeImage(id='invalid', name=None, driver=self.driver)
         size = self.driver.list_sizes()[0]

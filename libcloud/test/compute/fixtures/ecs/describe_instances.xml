@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeInstancesResponse>
+	<PageNumber>1</PageNumber>
+	<TotalCount>1</TotalCount>
+	<PageSize>10</PageSize>
+	<RequestId>CA75EE06-D5F7-433C-870B-5042EED6C1DC</RequestId>
+	<Instances>
+		<Instance>
+			<ImageId>ubuntu1404_64_20G_aliaegis_20150325.vhd</ImageId>
+			<InnerIpAddress>
+				<IpAddress>10.163.197.74</IpAddress>
+			</InnerIpAddress>
+			<InstanceTypeFamily>ecs.t1</InstanceTypeFamily>
+			<VlanId></VlanId>
+			<InstanceId>i-28n7dkvov</InstanceId>
+			<EipAddress>
+				<IpAddress></IpAddress>
+				<AllocationId></AllocationId>
+				<InternetChargeType></InternetChargeType>
+			</EipAddress>
+			<InternetMaxBandwidthIn>-1</InternetMaxBandwidthIn>
+			<ZoneId>cn-qingdao-b</ZoneId>
+			<InternetChargeType>PayByTraffic</InternetChargeType>
+			<SerialNumber>ca0122d9-374d-4fce-9fc0-71f7c3eaf1c3</SerialNumber>
+			<IoOptimized>false</IoOptimized>
+			<Memory>1024</Memory>
+			<Cpu>1</Cpu>
+			<VpcAttributes>
+				<NatIpAddress></NatIpAddress>
+				<PrivateIpAddress />
+				<VSwitchId></VSwitchId>
+				<VpcId></VpcId>
+			</VpcAttributes>
+			<InternetMaxBandwidthOut>1</InternetMaxBandwidthOut>
+			<DeviceAvailable>true</DeviceAvailable>
+			<SecurityGroupIds>
+				<SecurityGroupId>sg-28ou0f3xa</SecurityGroupId>
+			</SecurityGroupIds>
+			<InstanceName>iZ28n7dkvovZ</InstanceName>
+			<Description></Description>
+			<InstanceNetworkType>classic</InstanceNetworkType>
+			<PublicIpAddress>
+				<IpAddress>114.215.124.73</IpAddress>
+			</PublicIpAddress>
+			<HostName>iZ28n7dkvovZ</HostName>
+			<InstanceType>ecs.t1.small</InstanceType>
+			<CreationTime>2015-12-27T07:35Z</CreationTime>
+			<Status>Starting</Status>
+			<ClusterId></ClusterId>
+			<RegionId>cn-qingdao</RegionId>
+			<OperationLocks />
+			<InstanceChargeType>PostPaid</InstanceChargeType>
+			<ExpiredTime>2999-09-08T16:00Z</ExpiredTime>
+		</Instance>
+	</Instances>
+</DescribeInstancesResponse>

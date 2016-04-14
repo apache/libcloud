@@ -35,7 +35,8 @@ from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection
+from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
+    AWSTokenConnection, SignedAWSConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
@@ -54,8 +55,19 @@ S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
-S3_AP_NORTHEAST_HOST = 's3-ap-northeast-1.amazonaws.com'
+S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
+S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
+S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
+
+S3_RGW_OUTSCALE_HOSTS_BY_REGION =\
+    {'eu-west-1': 'osu.eu-west-1.outscale.com',
+     'eu-west-2': 'osu.eu-west-2.outscale.com',
+     'us-west-1': 'osu.us-west-1.outscale.com',
+     'us-east-2': 'osu.us-east-2.outscale.com',
+     'cn-southeast-1': 'osu.cn-southeast-1.outscale.hk'}
+
+S3_RGW_OUTSCALE_DEFAULT_REGION = 'eu-west-2'
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -494,7 +506,7 @@ class BaseS3StorageDriver(StorageDriver):
     def _upload_from_iterator(self, iterator, object_path, upload_id,
                               calculate_hash=True):
         """
-        Uploads data from an interator in fixed sized chunks to S3
+        Uploads data from an iterator in fixed sized chunks to S3
 
         :param iterator: The generator for fetching the upload data
         :type iterator: ``generator``
@@ -958,14 +970,39 @@ class S3APSEStorageDriver(S3StorageDriver):
     ex_location_name = 'ap-southeast-1'
 
 
-class S3APNEConnection(S3Connection):
-    host = S3_AP_NORTHEAST_HOST
+class S3APNE1Connection(S3Connection):
+    host = S3_AP_NORTHEAST1_HOST
+
+S3APNEConnection = S3APNE1Connection
 
 
-class S3APNEStorageDriver(S3StorageDriver):
+class S3APNE1StorageDriver(S3StorageDriver):
     name = 'Amazon S3 (ap-northeast-1)'
     connectionCls = S3APNEConnection
     ex_location_name = 'ap-northeast-1'
+
+S3APNEStorageDriver = S3APNE1StorageDriver
+
+
+class S3APNE2Connection(SignedAWSConnection, BaseS3Connection):
+    host = S3_AP_NORTHEAST2_HOST
+    service_name = 's3'
+    version = API_VERSION
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, token=None,
+                 retry_delay=None, backoff=None):
+        super(S3APNE2Connection, self).__init__(user_id, key, secure, host,
+                                                port, url, timeout, proxy_url,
+                                                token, retry_delay, backoff,
+                                                4)  # force version 4
+
+
+class S3APNE2StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (ap-northeast-2)'
+    connectionCls = S3APNE2Connection
+    ex_location_name = 'ap-northeast-2'
+    region_name = 'ap-northeast-2'
 
 
 class S3SAEastConnection(S3Connection):
@@ -976,3 +1013,25 @@ class S3SAEastStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (sa-east-1)'
     connectionCls = S3SAEastConnection
     ex_location_name = 'sa-east-1'
+
+
+class S3RGWOutscaleConnection(S3Connection):
+    pass
+
+
+class S3RGWOutscaleStorageDriver(S3StorageDriver):
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None, region=S3_RGW_OUTSCALE_DEFAULT_REGION,
+                 **kwargs):
+        if region not in S3_RGW_OUTSCALE_HOSTS_BY_REGION:
+            raise LibcloudError('Unknown region (%s)' % (region), driver=self)
+        self.name = 'OUTSCALE Ceph RGW S3 (%s)' % (region)
+        self.ex_location_name = region
+        self.region_name = region
+        self.connectionCls = S3RGWOutscaleConnection
+        self.connectionCls.host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
+        super(S3RGWOutscaleStorageDriver, self).__init__(key, secret,
+                                                         secure, host, port,
+                                                         api_version, region,
+                                                         **kwargs)

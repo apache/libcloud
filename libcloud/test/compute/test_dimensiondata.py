@@ -19,20 +19,20 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
-import unittest
+from types import GeneratorType
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
+from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.utils.xml import fixxpath, findtext
 
 
 class DimensionDataTests(unittest.TestCase, TestCaseMixin):
@@ -43,33 +43,106 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
     def test_invalid_region(self):
-        try:
-            self.driver = DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            DimensionData(*DIMENSIONDATA_PARAMS, region='blah')
 
     def test_invalid_creds(self):
         DimensionDataMockHttp.type = 'UNAUTHORIZED'
-        try:
+        with self.assertRaises(InvalidCredsError):
             self.driver.list_nodes()
-            self.assertTrue(
-                False)  # Above command should have thrown an InvalidCredsException
-        except InvalidCredsError:
-            pass
+
+    def test_get_account_details(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.connection.get_account_details()
+        self.assertEqual(ret.full_name, 'Test User')
+        self.assertEqual(ret.first_name, 'Test')
+        self.assertEqual(ret.email, 'test@example.com')
 
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
         self.assertEqual(len(ret), 5)
-        first_node = ret[0]
-        self.assertEqual(first_node.id, 'NA3')
-        self.assertEqual(first_node.name, 'US - West')
-        self.assertEqual(first_node.country, 'US')
+        first_loc = ret[0]
+        self.assertEqual(first_loc.id, 'NA3')
+        self.assertEqual(first_loc.name, 'US - West')
+        self.assertEqual(first_loc.country, 'US')
 
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 2)
+        self.assertEqual(len(ret), 7)
+
+    def test_node_extras(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(isinstance(ret[0].extra['vmWareTools'], DimensionDataServerVMWareTools))
+        self.assertTrue(isinstance(ret[0].extra['cpu'], DimensionDataServerCpuSpecification))
+        self.assertTrue(isinstance(ret[0].extra['disks'], list))
+        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
+        self.assertTrue(isinstance(ret[1].extra['disks'], list))
+        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
+
+    def test_server_states(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(ret[0].state == 'running')
+        self.assertTrue(ret[1].state == 'starting')
+        self.assertTrue(ret[2].state == 'stopping')
+        self.assertTrue(ret[3].state == 'reconfiguring')
+        self.assertTrue(ret[4].state == 'running')
+        self.assertTrue(ret[5].state == 'terminated')
+        self.assertTrue(ret[6].state == 'stopped')
+        self.assertEqual(len(ret), 7)
+
+    def test_list_nodes_response_PAGINATED(self):
+        DimensionDataMockHttp.type = 'PAGINATED'
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 9)
+
+    def test_paginated_mcp2_call_with_page_size(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'PAGESIZE50'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server', page_size=50)
+        self.assertTrue(isinstance(node_list_generator, GeneratorType))
+
+    # We're making sure here the filters make it to the URL
+    # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
+    def test_list_nodes_response_strings_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        ret = self.driver.list_nodes(ex_location='fake_loc', ex_name='fake_name',
+                                     ex_ipv6='fake_ipv6', ex_ipv4='fake_ipv4', ex_vlan='fake_vlan',
+                                     ex_image='fake_image', ex_deployed=True,
+                                     ex_started=True, ex_state='fake_state',
+                                     ex_network='fake_network', ex_network_domain='fake_network_domain')
+        self.assertTrue(isinstance(ret, list))
+        self.assertEqual(len(ret), 7)
+
+        node = ret[3]
+        self.assertTrue(isinstance(node.extra['disks'], list))
+        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
+        disk = node.extra['disks'][0]
+        self.assertEqual(disk.id, "c2e1f199-116e-4dbc-9960-68720b832b0a")
+        self.assertEqual(disk.scsi_id, 0)
+        self.assertEqual(disk.size_gb, 50)
+        self.assertEqual(disk.speed, "STANDARD")
+        self.assertEqual(disk.state, "NORMAL")
+
+    def test_list_nodes_response_LOCATION(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_locations()
+        first_loc = ret[0]
+        ret = self.driver.list_nodes(ex_location=first_loc)
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
+
+    def test_list_nodes_response_LOCATION_STR(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes(ex_location='NA3')
+        for node in ret:
+            self.assertEqual(node.extra['datacenterId'], 'NA3')
 
     def test_list_sizes_response(self):
         DimensionDataMockHttp.type = None
@@ -88,12 +161,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.reboot()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
@@ -105,12 +174,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             node.destroy()
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -140,6 +205,66 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_no_pass_random_gen(self):
+        image = self.driver.list_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
+
+    def test_create_node_response_STR(self):
+        rootPw = 'pass123'
+        image = self.driver.list_images()[0].id
+        network = self.driver.ex_list_networks()[0].id
+        node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_create_node_response_network_domain(self):
         rootPw = NodeAuthPassword('pass123')
         location = self.driver.ex_get_location_by_id('NA9')
@@ -160,15 +285,140 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
+    def test_create_node_response_network_domain_STR(self):
+        rootPw = NodeAuthPassword('pass123')
+        location = self.driver.ex_get_location_by_id('NA9')
+        image = self.driver.list_images(location=location)[0]
+        network_domain = self.driver.ex_list_network_domains(location=location)[0].id
+        vlan = self.driver.ex_list_vlans(location=location)[0].id
+        cpu = DimensionDataServerCpuSpecification(
+            cpu_count=4,
+            cores_per_socket=1,
+            performance='HIGHPERFORMANCE'
+        )
+        node = self.driver.create_node(name='test2', image=image, auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain=network_domain,
+                                       ex_vlan=vlan,
+                                       ex_is_started=False, ex_cpu_specification=cpu,
+                                       ex_memory_gb=4)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_create_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        try:
-            self.driver.create_node(name='test2', image=image, auth=rootPw,
-                                    ex_description='test2 node', ex_network=None,
-                                    ex_isStarted=False)
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network=None,
+                                    ex_is_started=False)
+
+    def test_create_node_mcp1_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp1_network(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network='fakenetwork',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_vlan='fakevlan',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_network_domain_no_vlan_or_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_is_started=False)
+
+    def test_create_node_mcp2_additional_nics(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        additional_vlans = ['fakevlan1', 'fakevlan2']
+        additional_ipv4 = ['10.0.0.2', '10.0.0.3']
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_additional_nics_vlan=additional_vlans,
+                                       ex_additional_nics_ipv4=additional_ipv4,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_bad_additional_nics_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_ipv4='badstring',
+                                    ex_is_started=False)
+
+    def test_create_node_bad_additional_nics_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_vlan='badstring',
+                                    ex_is_started=False)
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -180,12 +430,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_shutdown_graceful(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
@@ -197,12 +443,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_start_node(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
@@ -220,12 +462,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         DimensionDataMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)
-        try:
+        with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_power_off(node)
-            self.assertTrue(
-                False)  # above command should have thrown DimensionDataAPIException
-        except DimensionDataAPIException:
-            pass
 
     def test_ex_reset(self):
         node = Node(id='11', name=None, state=None,
@@ -237,7 +475,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_by_id('e75ead52-692f-4314-8725-c8a4f4d13a87')
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
         ret = self.driver.ex_attach_node_to_vlan(node, vlan)
-        self.assertTrue(ret)
+        self.assertTrue(ret is True)
 
     def test_ex_destroy_nic(self):
         node = self.driver.ex_destroy_nic('a202e51b-41c0-4cfc-add0-b1c62fc0ecf6')
@@ -251,6 +489,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_ex_create_network(self):
         location = self.driver.ex_get_location_by_id('NA9')
         net = self.driver.ex_create_network(location, "Test Network", "test")
+        self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
+        self.assertEqual(net.name, "Test Network")
+
+    def test_ex_create_network_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        net = self.driver.ex_create_network(location, "Test Network")
         self.assertEqual(net.id, "208e3a8e-9d2f-11e2-b29c-001517c4643e")
         self.assertEqual(net.name, "Test Network")
 
@@ -270,6 +514,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         net = self.driver.ex_create_network_domain(location=location,
                                                    name='test',
                                                    description='test',
+                                                   service_plan=plan)
+        self.assertEqual(net.name, 'test')
+        self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
+
+    def test_ex_create_network_domain_NO_DESCRIPTION(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        plan = NetworkDomainServicePlan.ADVANCED
+        net = self.driver.ex_create_network_domain(location=location,
+                                                   name='test',
                                                    service_plan=plan)
         self.assertEqual(net.name, 'test')
         self.assertTrue(net.id, 'f14a871f-9a25-470c-aef8-51e13202e1aa')
@@ -301,11 +554,33 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'Aurora')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_ex_list_network_domains_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        nets = self.driver.ex_list_network_domains(location='fake_location', name='fake_name',
+                                                   service_plan='fake_plan', state='fake_state')
+        self.assertEqual(nets[0].name, 'Aurora')
+        self.assertTrue(isinstance(nets[0].location, NodeLocation))
+
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
         self.assertEqual(vlans[0].name, "Primary")
 
+    def test_ex_list_vlans_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        vlans = self.driver.ex_list_vlans(location='fake_location', network_domain='fake_network_domain',
+                                          name='fake_name', ipv4_address='fake_ipv4', ipv6_address='fake_ipv6', state='fake_state')
+        self.assertEqual(vlans[0].name, "Primary")
+
     def test_ex_create_vlan(self,):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        vlan = self.driver.ex_create_vlan(network_domain=net,
+                                          name='test',
+                                          private_ipv4_base_address='10.3.4.0',
+                                          private_ipv4_prefix_size='24',
+                                          description='test vlan')
+        self.assertEqual(vlan.id, '0e56433f-d808-4669-821d-812769517ff8')
+
+    def test_ex_create_vlan_NO_DESCRIPTION(self,):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         vlan = self.driver.ex_create_vlan(network_domain=net,
                                           name='test',
@@ -330,6 +605,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver.ex_wait_for_state('NORMAL',
                                       self.driver.ex_get_vlan,
                                       vlan_id='0e56433f-d808-4669-821d-812769517ff8')
+
+    def test_ex_wait_for_state_NODE(self):
+        self.driver.ex_wait_for_state('running',
+                                      self.driver.ex_get_node_by_id,
+                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+
+    def test_ex_wait_for_state_FAIL(self):
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_wait_for_state('starting',
+                                          self.driver.ex_get_node_by_id,
+                                          id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                                          timeout=2
+                                          )
+        self.assertEqual(context.exception.code, 'running')
+        self.assertTrue('timed out' in context.exception.msg)
 
     def test_ex_update_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
@@ -394,6 +684,44 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rules = self.driver.ex_list_firewall_rules(net)
         rule = self.driver.ex_create_firewall_rule(net, rules[0], 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_with_specific_source_ip(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = list(filter(lambda x: x.name == 'SpecificSourceIP',
+                                              rules))[0]
+        rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_ALL_VALUES(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        for rule in rules:
+            self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', rules[-1])
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE_STR(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', 'RULE_WITH_SOURCE_AND_DEST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'BEFORE')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION_WITH_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'LAST', 'RULE_WITH_SOURCE_AND_DEST')
 
     def test_ex_get_firewall_rule(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
@@ -487,6 +815,171 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_reconfigure_node(node, 4, 4, 1, 'HIGHPERFORMANCE')
         self.assertTrue(result)
 
+    def test_ex_get_location_by_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertTrue(location.id, 'NA9')
+
+    def test_ex_get_location_by_id_NO_LOCATION(self):
+        location = self.driver.ex_get_location_by_id(None)
+        self.assertIsNone(location)
+
+    def test_ex_get_base_image_by_id(self):
+        image_id = self.driver.list_images()[0].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_customer_image_by_id(self):
+        image_id = self.driver.ex_list_customer_images()[1].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_base_img(self):
+        image_id = self.driver.list_images()[1].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_customer_img(self):
+        image_id = self.driver.ex_list_customer_images()[0].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_image_by_id_customer_FAIL(self):
+        image_id = 'FAKE_IMAGE_ID'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_get_base_image_by_id(image_id)
+
+    def test_ex_create_anti_affinity_rule(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule([node_list[0], node_list[1]])
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE_STR(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0].id, node_list[1].id))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_FAIL_STR(self):
+        node_list = 'string'
+        with self.assertRaises(TypeError):
+            self.driver.ex_create_anti_affinity_rule(node_list)
+
+    def test_ex_create_anti_affinity_rule_FAIL_EXISTING(self):
+        node_list = self.driver.list_nodes()
+        DimensionDataMockHttp.type = 'FAIL_EXISTING'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+
+    def test_ex_delete_anti_affinity_rule(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_STR(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule.id)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_FAIL(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        DimensionDataMockHttp.type = 'FAIL'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_delete_anti_affinity_rule(rule)
+
+    def test_ex_list_anti_affinity_rules_NETWORK_DOMAIN(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NETWORK(self):
+        network = self.driver.list_networks()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network=network)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NODE(self):
+        node = self.driver.list_nodes()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(node=node)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_PAGINATED(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'PAGINATED'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 4)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_ALLFILTERS(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain, filter_id='FAKE_ID', filter_state='FAKE_STATE')
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_BAD_ARGS(self):
+        with self.assertRaises(ValueError):
+            self.driver.ex_list_anti_affinity_rules(network='fake_network', network_domain='fake_network_domain')
+
+    def test_priv_location_to_location_id(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertEqual(
+            self.driver._location_to_location_id(location),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_STR(self):
+        self.assertEqual(
+            self.driver._location_to_location_id('NA9'),
+            'NA9'
+        )
+
+    def test_priv_location_to_location_id_TYPEERROR(self):
+        with self.assertRaises(TypeError):
+            self.driver._location_to_location_id([1, 2, 3])
+
+    def test_priv_image_needs_auth_os_img(self):
+        image = self.driver.list_images()[0]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_os_img_STR(self):
+        image = self.driver.list_images()[0].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        self.assertTrue(not self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        self.assertTrue(not self.driver._image_needs_auth(image))
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -505,6 +998,14 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_PAGINATED(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -589,6 +1090,11 @@ class DimensionDataMockHttp(MockHttp):
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation_NA9(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_4bba37be_506f_11e3_b29c_001517c4643e(self, method,
                                                                                                    url, body, headers):
         body = self.fixtures.load(
@@ -621,6 +1127,30 @@ class DimensionDataMockHttp(MockHttp):
             body = self.fixtures.load(
                 'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_POST.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_FAIL_EXISTING(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418_FAIL(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
         body = self.fixtures.load(
@@ -660,11 +1190,117 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+        if url.endswith('datacenterId=NA3'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_NA3.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGESIZE50(self, method, url, body, headers):
+        if not url.endswith('pageSize=50'):
+            raise ValueError("pageSize is not set as expected")
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_paginated.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_loc'
+            elif key == 'networkId':
+                assert value == 'fake_network'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'vlanId':
+                assert value == 'fake_vlan'
+            elif key == 'ipv6':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            elif key == 'started':
+                assert value == 'True'
+            elif key == 'deployed':
+                assert value == 'True'
+            elif key == 'sourceImageId':
+                assert value == 'fake_image'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'id':
+                assert value == 'FAKE_ID'
+            elif key == 'state':
+                assert value == 'FAKE_STATE'
+            elif key == 'pageSize':
+                assert value == '250'
+            elif key == 'networkDomainId':
+                pass
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_PAGINATED(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_list_PAGINATED.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_ALLFILTERS(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -738,7 +1374,49 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'type':
+                assert value == 'fake_plan'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'ipv6Address':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4Address':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -747,6 +1425,29 @@ class DimensionDataMockHttp(MockHttp):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deployServer":
             raise InvalidRequestError(request.tag)
+
+        # Make sure the we either have a network tag with an IP or networkId
+        # Or Network info with a primary nic that has privateip or vlanid
+        network = request.find(fixxpath('network', TYPES_URN))
+        network_info = request.find(fixxpath('networkInfo', TYPES_URN))
+        if network is not None:
+            if network_info is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            ipv4 = findtext(network, 'privateIpv4', TYPES_URN)
+            networkId = findtext(network, 'networkId', TYPES_URN)
+            if ipv4 is None and networkId is None:
+                raise InvalidRequestError('Invalid request MCP1 requests need privateIpv4 or networkId')
+        elif network_info is not None:
+            if network is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            primary_nic = network_info.find(fixxpath('primaryNic', TYPES_URN))
+            ipv4 = findtext(primary_nic, 'privateIpv4', TYPES_URN)
+            vlanId = findtext(primary_nic, 'vlanId', TYPES_URN)
+            if ipv4 is None and vlanId is None:
+                raise InvalidRequestError('Invalid request MCP2 requests need privateIpv4 or vlanId')
+        else:
+            raise InvalidRequestError('Invalid request, does not have network or network_info in XML')
+
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -765,6 +1466,11 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -958,10 +1664,50 @@ class DimensionDataMockHttp(MockHttp):
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
         body = self.fixtures.load(
             'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer(self, method, url, body, headers):
         request = ET.fromstring(body)

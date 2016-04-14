@@ -818,7 +818,7 @@ class CloudStackNetworkACL(object):
         :type       id ``int``
 
         :param      protocol: the protocol for the ACL rule. Valid values are
-                    TCP/UDP/ICMP/ALL or valid protocol number
+                               TCP/UDP/ICMP/ALL or valid protocol number
         :type       protocol: ``string``
 
         :param      acl_id: Name of the network ACL List
@@ -837,7 +837,8 @@ class CloudStackNetworkACL(object):
         :type       end_port: ``str``
 
         :param      traffic_type: the traffic type for the ACL,can be Ingress
-                    or Egress, defaulted to Ingress if not specified
+                                  or Egress, defaulted to Ingress if not
+                                  specified
         :type       traffic_type: ``str``
 
         :rtype: :class:`CloudStackNetworkACL`
@@ -1347,7 +1348,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return locations
 
-    def list_nodes(self, project=None):
+    def list_nodes(self, project=None, location=None):
         """
         @inherits: :class:`NodeDriver.list_nodes`
 
@@ -1355,12 +1356,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                              the defined project.
         :type       project: :class:`.CloudStackProject`
 
+        :keyword    location: Limit nodes returned to those in the defined
+                              location.
+        :type       location: :class:`.NodeLocation`
+
         :rtype: ``list`` of :class:`CloudStackNode`
         """
 
         args = {}
+
         if project:
             args['projectid'] = project.id
+
+        if location is not None:
+            args['zoneid'] = location.id
+
         vms = self._sync_request('listVirtualMachines', params=args)
         addrs = self._sync_request('listPublicIpAddresses', params=args)
         port_forwarding_rules = self._sync_request('listPortForwardingRules')
@@ -2507,7 +2517,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                 icmp_code=None, icmp_type=None,
                                 start_port=None, end_port=None):
         """
-        Creates a Firewalle Rule
+        Creates a Firewall Rule
 
         :param      address: External IP address
         :type       address: :class:`CloudStackAddress`
@@ -2560,7 +2570,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_delete_firewall_rule(self, firewall_rule):
         """
-        Remove a Firewall rule.
+        Remove a Firewall Rule.
 
         :param firewall_rule: Firewall rule which should be used
         :type  firewall_rule: :class:`CloudStackFirewallRule`
@@ -2574,7 +2584,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_list_egress_firewall_rules(self):
         """
-        Lists all agress Firewall Rules
+        Lists all egress Firewall Rules
 
         :rtype: ``list`` of :class:`CloudStackEgressFirewallRule`
         """
@@ -2597,9 +2607,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                        icmp_code=None, icmp_type=None,
                                        start_port=None, end_port=None):
         """
-        Creates a Firewalle Rule
+        Creates a Firewall Rule
 
-        :param      network_id: the id network network for the egress firwall
+        :param      network_id: the id network network for the egress firewall
                     services
         :type       network_id: ``str``
 
@@ -2709,7 +2719,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             Default value is false
         :type      list_all: ``bool``
 
-        :param     network_id: list port forwarding rules for ceratin network
+        :param     network_id: list port forwarding rules for certain network
         :type      network_id: ``string``
 
         :param     page: The page to list the keypairs from

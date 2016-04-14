@@ -99,7 +99,7 @@ def exhaust_iterator(iterator):
     Exhaust an iterator and return all data returned by it.
 
     :type iterator: :class:`object` which implements iterator interface.
-    :param response: An object which implements an iterator interface
+    :param iterator: An object which implements an iterator interface
                      or a File like object with read method.
 
     :rtype ``str``

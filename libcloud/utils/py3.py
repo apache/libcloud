@@ -176,8 +176,15 @@ else:
         """Take an integer and make a 1-character byte string."""
         return chr(s)
 
-    def next(i):
-        return i.next()
+    _default_value_next = object()
+
+    def next(iterator, default=_default_value_next):
+        try:
+            return iterator.next()
+        except StopIteration:
+            if default is _default_value_next:
+                raise
+            return default
 
     def dictvalues(d):
         return d.values()

@@ -22,8 +22,7 @@ from libcloud.compute.base import Node
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.rackspace import RackspacePTRRecord
-from libcloud.dns.drivers.rackspace import RackspaceUSDNSDriver
-from libcloud.dns.drivers.rackspace import RackspaceUKDNSDriver
+from libcloud.dns.drivers.rackspace import RackspaceDNSDriver
 from libcloud.loadbalancer.base import LoadBalancer
 
 from libcloud.test import MockHttp
@@ -47,14 +46,17 @@ RDNS_LB = LoadBalancer('370b0ff8-3f57-4e10-ac84-e9145ce005841', 'server1',
 
 
 class RackspaceUSTests(unittest.TestCase):
-    klass = RackspaceUSDNSDriver
+    klass = RackspaceDNSDriver
     endpoint_url = 'https://dns.api.rackspacecloud.com/v1.0/11111'
+    region = 'us'
 
     def setUp(self):
         self.klass.connectionCls.conn_classes = (
             None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
-        self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
+
+        driver_kwargs = {'region': self.region}
+        self.driver = self.klass(*DNS_PARAMS_RACKSPACE, **driver_kwargs)
         self.driver.connection.poll_interval = 0.0
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -85,7 +87,7 @@ class RackspaceUSTests(unittest.TestCase):
                          driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint(self):
-        kwargs = {'ex_force_auth_version': '2.0_password'}
+        kwargs = {'ex_force_auth_version': '2.0_password', 'region': self.region}
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
@@ -404,8 +406,9 @@ class RackspaceUSTests(unittest.TestCase):
 
 
 class RackspaceUKTests(RackspaceUSTests):
-    klass = RackspaceUKDNSDriver
+    klass = RackspaceDNSDriver
     endpoint_url = 'https://lon.dns.api.rackspacecloud.com/v1.0/11111'
+    region = 'uk'
 
 
 class RackspaceMockHttp(MockHttp):
