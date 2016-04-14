@@ -1833,10 +1833,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  node: The failed node to clean
         :type   node: :class:`Node` or ``str``
         """
-        if isinstance(node, str):
-            node_id = node
-        else:
-            node_id = node.id
+        node_id = self._node_to_node_id(node)
         request_elm = ET.Element('cleanServer',
                                  {'xmlns': TYPES_URN, 'id': node_id})
         body = self.connection.request_with_orgId_api_2(
