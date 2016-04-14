@@ -115,7 +115,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
-        if (time.time() + 300) >= self.expires_on:
+        if (time.time() + 300) >= int(self.expires_on):
             self.get_token_from_credentials(self)
 
         return super(AzureResourceManagementConnection, self) \
