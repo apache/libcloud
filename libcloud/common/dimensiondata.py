@@ -369,7 +369,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     api_path_version_1 = '/oec'
     api_path_version_2 = '/caas'
     api_version_1 = '0.9'
-    api_version_2 = '2.1'
+    api_version_2 = '2.2'
 
     _orgId = None
     responseCls = DimensionDataResponse
