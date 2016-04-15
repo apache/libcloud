@@ -704,6 +704,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
+    def test_ex_create_firewall_rule_address_list(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.address_list_id = '12345'
+        rule.destination.address_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
     def test_ex_create_firewall_rule_ALL_VALUES(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rules = self.driver.ex_list_firewall_rules(net)
