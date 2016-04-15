@@ -1674,7 +1674,8 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_storage_to_node(self, node, amount, speed='STANDARD'):
+    def ex_add_storage_to_node(self, node, amount,
+                               speed='STANDARD', scsi_id=None):
         """
         Add storage to the node
 
@@ -1687,13 +1688,25 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
+        :param  scsi_id: The target SCSI ID (optional)
+        :type   scsi_id: ``int``
+
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s?addLocalStorage&amount=%s&speed=%s' %
-            (node.id, amount, speed)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        update_node = ET.Element('addDisk',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'sizeGb').text = str(amount)
+        ET.SubElement(update_node, 'speed').text = speed.upper()
+        if scsi_id is not None:
+            ET.SubElement(update_node, 'scsiId').text = str(scsi_id)
+
+        result = self.connection.request_with_orgId_api_2(
+            'server/addDisk',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_remove_storage_from_node(self, node, disk_id):
         """
@@ -1707,11 +1720,31 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s/disk/%s?delete' %
-            (node.id, disk_id)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        disk = [disk for disk in node.extra['disks']
+                if disk.scsi_id == disk_id][0]
+        return self.ex_remove_storage(disk.id)
+
+    def ex_remove_storage(self, disk_id):
+        """
+        Remove storage from a node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  disk_id: The ID of the disk to remove
+        :type   disk_id: ``str``
+
+        :rtype: ``bool``
+        """
+        update_node = ET.Element('removeDisk',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', disk_id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/removeDisk',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_change_storage_speed(self, node, disk_id, speed):
         """
