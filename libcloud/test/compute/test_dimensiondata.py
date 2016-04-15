@@ -1737,7 +1737,7 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'server_addDisk.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeDisk(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_removeDisk.xml')
