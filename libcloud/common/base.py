@@ -1153,10 +1153,19 @@ class BaseDriver(object):
         self.region = region
 
         conn_kwargs = self._ex_connection_class_kwargs()
-        conn_kwargs.update({'timeout': kwargs.pop('timeout', None),
-                            'retry_delay': kwargs.pop('retry_delay', None),
-                            'backoff': kwargs.pop('backoff', None),
-                            'proxy_url': kwargs.pop('proxy_url', None)})
+
+        # Note: We do that to make sure those additional arguments which are
+        # provided via "_ex_connection_class_kwargs" are not overriden with
+        # None
+        additional_kwargs = ['timeout', 'retry_delay', 'backoff', 'proxy_url']
+        for kwarg_name in additional_kwargs:
+            value = kwargs.pop(kwarg_name, None)
+
+            # Constructor argument has precedence over
+            # _ex_connection_class_kwargs kwarg
+            if value is not None or kwarg_name not in conn_kwargs:
+                conn_kwargs[kwarg_name] = value
+
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self
