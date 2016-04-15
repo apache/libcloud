@@ -1367,7 +1367,7 @@ class DimensionDataNodeDriver(NodeDriver):
         source = ET.SubElement(create_node, "source")
         if rule.source.address_list_id is not None:
             source_ip = ET.SubElement(source, 'ipAddressListId')
-            source_ip.set('id', rule.source.address_list_id)
+            source_ip.text = rule.source.address_list_id
         else:
             source_ip = ET.SubElement(source, 'ip')
             if rule.source.any_ip:
@@ -1376,16 +1376,20 @@ class DimensionDataNodeDriver(NodeDriver):
                 source_ip.set('address', rule.source.ip_address)
                 if rule.source.ip_prefix_size is not None:
                     source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
-                if rule.source.port_begin is not None:
-                    source_port = ET.SubElement(source, 'port')
-                    source_port.set('begin', rule.source.port_begin)
-                if rule.source.port_end is not None:
-                    source_port.set('end', rule.source.port_end)
+        if rule.source.port_list_id is not None:
+            source_port = ET.SubElement(source, 'portListId')
+            source_port.text = rule.source.port_list_id
+        else:
+            if rule.source.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_end is not None:
+                source_port.set('end', rule.source.port_end)
         # Setup destination port rule
         dest = ET.SubElement(create_node, "destination")
         if rule.destination.address_list_id is not None:
             dest_ip = ET.SubElement(dest, 'ipAddressListId')
-            dest_ip.set('id', rule.destination.address_list_id)
+            dest_ip.text = rule.destination.address_list_id
         else:
             dest_ip = ET.SubElement(dest, 'ip')
             if rule.destination.any_ip:
@@ -1394,11 +1398,15 @@ class DimensionDataNodeDriver(NodeDriver):
                 dest_ip.set('address', rule.destination.ip_address)
                 if rule.destination.ip_prefix_size is not None:
                     dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
-                if rule.destination.port_begin is not None:
-                    dest_port = ET.SubElement(dest, 'port')
-                    dest_port.set('begin', rule.destination.port_begin)
-                if rule.destination.port_end is not None:
-                    dest_port.set('end', rule.destination.port_end)
+        if rule.destination.port_list_id is not None:
+            dest_port = ET.SubElement(dest, 'portListId')
+            dest_port.text = rule.destination.port_list_id
+        else:
+            if rule.destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_end is not None:
+                dest_port.set('end', rule.destination.port_end)
         # Set up positioning of rule
         ET.SubElement(create_node, "enabled").text = str(rule.enabled).lower()
         placement = ET.SubElement(create_node, "placement")
