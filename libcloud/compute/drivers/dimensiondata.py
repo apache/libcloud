@@ -1375,7 +1375,8 @@ class DimensionDataNodeDriver(NodeDriver):
             else:
                 source_ip.set('address', rule.source.ip_address)
                 if rule.source.ip_prefix_size is not None:
-                    source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
+                    source_ip.set('prefixSize',
+                                  str(rule.source.ip_prefix_size))
         if rule.source.port_list_id is not None:
             source_port = ET.SubElement(source, 'portListId')
             source_port.text = rule.source.port_list_id
