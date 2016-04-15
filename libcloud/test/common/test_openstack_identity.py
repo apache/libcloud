@@ -274,6 +274,16 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                 key='test',
                                 token_scope='project')
 
+        # Missing domain_name
+        expected_msg = 'Must provide domain_name argument'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                token_scope='domain',
+                                domain_name=None)
+
         # Scope to project all ok
         OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                          user_id='test',

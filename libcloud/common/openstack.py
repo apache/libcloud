@@ -31,7 +31,8 @@ from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.common.openstack_identity import get_class_for_auth_version
 
 # Imports for backward compatibility reasons
-from libcloud.common.openstack_identity import OpenStackServiceCatalog
+from libcloud.common.openstack_identity import (OpenStackServiceCatalog,
+                                                OpenStackIdentityTokenScope)
 
 
 try:
@@ -145,8 +146,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
                  ex_force_auth_token=None,
-                 ex_token_scope=None,
-                 ex_domain_name=None,
+                 ex_token_scope=OpenStackIdentityTokenScope.PROJECT,
+                 ex_domain_name='Default',
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,

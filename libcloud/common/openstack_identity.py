@@ -572,7 +572,8 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     auth_version = None
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name=None, token_scope=None,
+                 domain_name='Default',
+                 token_scope=OpenStackIdentityTokenScope.PROJECT,
                  timeout=None, parent_conn=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
                                                           key=key,
@@ -590,10 +591,8 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
 
         self.auth_url = auth_url
         self.tenant_name = tenant_name
-        self.domain_name = domain_name if domain_name is not None else \
-            'Default'
-        self.token_scope = token_scope if token_scope is not None else \
-            OpenStackIdentityTokenScope.PROJECT
+        self.domain_name = domain_name
+        self.token_scope = token_scope
         self.timeout = timeout
 
         self.urls = {}
@@ -930,7 +929,8 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     ]
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name=None, token_scope=None,
+                 domain_name='Default',
+                 token_scope=OpenStackIdentityTokenScope.PROJECT,
                  timeout=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
@@ -965,6 +965,9 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 (not self.tenant_name or not self.domain_name)):
             raise ValueError('Must provide tenant_name and domain_name '
                              'argument')
+        elif (self.token_scope == OpenStackIdentityTokenScope.DOMAIN and
+                not self.domain_name):
+            raise ValueError('Must provide domain_name argument')
 
         self.auth_user_roles = None
 
