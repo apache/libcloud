@@ -204,7 +204,7 @@ class DimensionDataLBDriver(Driver):
 
         :rtype: ``list`` of ``str``
         """
-        return ['http', 'https', 'tcp', 'udp']
+        return ['http', 'https', 'tcp', 'udp', 'ftp', 'smtp']
 
     def balancer_list_members(self, balancer):
         """
