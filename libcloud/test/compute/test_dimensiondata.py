@@ -798,7 +798,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_remove_storage_from_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.ex_remove_storage_from_node(node, 1)
+        result = self.driver.ex_remove_storage_from_node(node, 0)
         self.assertTrue(result)
 
     def test_ex_change_storage_speed(self):
@@ -1732,6 +1732,17 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'server_cleanServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_addDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_removeDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
