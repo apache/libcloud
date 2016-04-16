@@ -704,6 +704,20 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
+    def test_ex_create_firewall_rule_address_list(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.address_list_id = '12345'
+        rule.destination.address_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_port_list(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.port_list_id = '12345'
+        rule.destination.port_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
     def test_ex_create_firewall_rule_ALL_VALUES(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rules = self.driver.ex_list_firewall_rules(net)
@@ -798,7 +812,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_remove_storage_from_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.ex_remove_storage_from_node(node, 1)
+        result = self.driver.ex_remove_storage_from_node(node, 0)
         self.assertTrue(result)
 
     def test_ex_change_storage_speed(self):
@@ -1732,6 +1746,17 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load(
             'server_cleanServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_addDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_removeDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -1365,13 +1365,22 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(create_node, "protocol").text = rule.protocol
         # Setup source port rule
         source = ET.SubElement(create_node, "source")
-        source_ip = ET.SubElement(source, 'ip')
-        if rule.source.any_ip:
-            source_ip.set('address', 'ANY')
+        if rule.source.address_list_id is not None:
+            source_ip = ET.SubElement(source, 'ipAddressListId')
+            source_ip.text = rule.source.address_list_id
         else:
-            source_ip.set('address', rule.source.ip_address)
-            if rule.source.ip_prefix_size is not None:
-                source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
+            source_ip = ET.SubElement(source, 'ip')
+            if rule.source.any_ip:
+                source_ip.set('address', 'ANY')
+            else:
+                source_ip.set('address', rule.source.ip_address)
+                if rule.source.ip_prefix_size is not None:
+                    source_ip.set('prefixSize',
+                                  str(rule.source.ip_prefix_size))
+        if rule.source.port_list_id is not None:
+            source_port = ET.SubElement(source, 'portListId')
+            source_port.text = rule.source.port_list_id
+        else:
             if rule.source.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
                 source_port.set('begin', rule.source.port_begin)
@@ -1379,13 +1388,21 @@ class DimensionDataNodeDriver(NodeDriver):
                 source_port.set('end', rule.source.port_end)
         # Setup destination port rule
         dest = ET.SubElement(create_node, "destination")
-        dest_ip = ET.SubElement(dest, 'ip')
-        if rule.destination.any_ip:
-            dest_ip.set('address', 'ANY')
+        if rule.destination.address_list_id is not None:
+            dest_ip = ET.SubElement(dest, 'ipAddressListId')
+            dest_ip.text = rule.destination.address_list_id
         else:
-            dest_ip.set('address', rule.destination.ip_address)
-            if rule.destination.ip_prefix_size is not None:
-                dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+            dest_ip = ET.SubElement(dest, 'ip')
+            if rule.destination.any_ip:
+                dest_ip.set('address', 'ANY')
+            else:
+                dest_ip.set('address', rule.destination.ip_address)
+                if rule.destination.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+        if rule.destination.port_list_id is not None:
+            dest_port = ET.SubElement(dest, 'portListId')
+            dest_port.text = rule.destination.port_list_id
+        else:
             if rule.destination.port_begin is not None:
                 dest_port = ET.SubElement(dest, 'port')
                 dest_port.set('begin', rule.destination.port_begin)
@@ -1674,7 +1691,8 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_storage_to_node(self, node, amount, speed='STANDARD'):
+    def ex_add_storage_to_node(self, node, amount,
+                               speed='STANDARD', scsi_id=None):
         """
         Add storage to the node
 
@@ -1687,15 +1705,43 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
+        :param  scsi_id: The target SCSI ID (optional)
+        :type   scsi_id: ``int``
+
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s?addLocalStorage&amount=%s&speed=%s' %
-            (node.id, amount, speed)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        update_node = ET.Element('addDisk',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'sizeGb').text = str(amount)
+        ET.SubElement(update_node, 'speed').text = speed.upper()
+        if scsi_id is not None:
+            ET.SubElement(update_node, 'scsiId').text = str(scsi_id)
 
-    def ex_remove_storage_from_node(self, node, disk_id):
+        result = self.connection.request_with_orgId_api_2(
+            'server/addDisk',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_storage_from_node(self, node, scsi_id):
+        """
+        Remove storage from a node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  scsi_id: The ID of the disk to remove
+        :type   scsi_id: ``str``
+
+        :rtype: ``bool``
+        """
+        disk = [disk for disk in node.extra['disks']
+                if disk.scsi_id == scsi_id][0]
+        return self.ex_remove_storage(disk.id)
+
+    def ex_remove_storage(self, disk_id):
         """
         Remove storage from a node
 
@@ -1707,11 +1753,15 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s/disk/%s?delete' %
-            (node.id, disk_id)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        remove_disk = ET.Element('removeDisk',
+                                 {'xmlns': TYPES_URN})
+        remove_disk.set('id', disk_id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/removeDisk',
+            method='POST',
+            data=ET.tostring(remove_disk)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_change_storage_speed(self, node, disk_id, speed):
         """
@@ -2015,12 +2065,18 @@ class DimensionDataNodeDriver(NodeDriver):
     def _to_firewall_address(self, element):
         ip = element.find(fixxpath('ip', TYPES_URN))
         port = element.find(fixxpath('port', TYPES_URN))
+        port_list = element.find(fixxpath('portList', TYPES_URN))
+        address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
         return DimensionDataFirewallAddress(
             any_ip=ip.get('address') == 'ANY',
             ip_address=ip.get('address'),
             ip_prefix_size=ip.get('prefixSize'),
             port_begin=port.get('begin') if port is not None else None,
-            port_end=port.get('end') if port is not None else None
+            port_end=port.get('end') if port is not None else None,
+            port_list_id=port_list.get('id', None)
+            if port_list is not None else None,
+            address_list_id=address_list.get('id')
+            if address_list is not None else None
         )
 
     def _to_ip_blocks(self, object):
