@@ -1708,20 +1708,20 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_remove_storage_from_node(self, node, disk_id):
+    def ex_remove_storage_from_node(self, node, scsi_id):
         """
         Remove storage from a node
 
         :param  node: The server to add storage to
         :type   node: :class:`Node`
 
-        :param  disk_id: The ID of the disk to remove
-        :type   disk_id: ``str``
+        :param  scsi_id: The ID of the disk to remove
+        :type   scsi_id: ``str``
 
         :rtype: ``bool``
         """
         disk = [disk for disk in node.extra['disks']
-                if disk.scsi_id == disk_id][0]
+                if disk.scsi_id == scsi_id][0]
         return self.ex_remove_storage(disk.id)
 
     def ex_remove_storage(self, disk_id):
@@ -1736,13 +1736,13 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        update_node = ET.Element('removeDisk',
+        remove_disk = ET.Element('removeDisk',
                                  {'xmlns': TYPES_URN})
-        update_node.set('id', disk_id)
+        remove_disk.set('id', disk_id)
         result = self.connection.request_with_orgId_api_2(
             'server/removeDisk',
             method='POST',
-            data=ET.tostring(update_node)).object
+            data=ET.tostring(remove_disk)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
