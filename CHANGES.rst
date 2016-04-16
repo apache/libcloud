@@ -7,6 +7,14 @@ Changes with latest version of Apache Libcloud
 General
 ~~~~~~~
 
+- Fix a regression with ``timeout`` argument provided via
+  ``_ex_connection_class_kwargs`` method being overriden with ``None`` inside
+  the ``BaseDriver`` constructor method.
+
+  Reported by Jay Rolette.
+  (GITHUB-755)
+  [Tomaz Muraus, Jay Rolette]
+
 Compute
 ~~~~~~~
 
