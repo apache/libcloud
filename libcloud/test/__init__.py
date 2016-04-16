@@ -319,24 +319,24 @@ class MockRawResponse(BaseMockHttpObject):
 
     @property
     def response(self):
-        return self._get_response_if_not_availale()
+        return self._get_response_if_not_available()
 
     @property
     def status(self):
-        self._get_response_if_not_availale()
+        self._get_response_if_not_available()
         return self._status
 
     @property
     def headers(self):
-        self._get_response_if_not_availale()
+        self._get_response_if_not_available()
         return self._headers
 
     @property
     def reason(self):
-        self._get_response_if_not_availale()
+        self._get_response_if_not_available()
         return self._reason
 
-    def _get_response_if_not_availale(self):
+    def _get_response_if_not_available(self):
         if not self._response:
             meth_name = self._get_method_name(type=self.type,
                                               use_param=False, qs=None,
