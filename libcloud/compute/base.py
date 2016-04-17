@@ -191,7 +191,7 @@ class Node(UuidMixin):
         :type size: :class:`.NodeSize`
 
         :param image: Image of this node. (optional)
-        :type size: :class:`.NodeImage`
+        :type image: :class:`.NodeImage`
 
         :param created_at: The datetime this node was created (optional)
         :type created_at: :class: `datetime.datetime`
