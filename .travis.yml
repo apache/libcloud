@@ -65,6 +65,7 @@ matrix:
     - env: ENV=pypy-lxml
     - env: ENV=pypy3-lxml
     - env: ENV=py3.2-lxml
+    - env: ENV=3.2-lxml
     - env: ENV=3.3-lxml
     - env: ENV=3.4-lxml
     - env: ENV=3.5-lxml
