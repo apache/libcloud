@@ -60,14 +60,14 @@ matrix:
             - gcc
   # For now allow failures of all the builds which use lxml
   allow_failures:
-    - env: TASK=py2.6-lxml
-    - env: TASK=py2.7-lxml
-    - env: TASK=pypypy-lxml
-    - env: TASK=pypypy3-lxml
-    - env: TASK=3.2-lxml
-    - env: TASK=3.3-lxml
-    - env: TASK=3.4-lxml
-    - env: TASK=3.5-lxml
+    - env: TOX_ENV=py2.6-lxml
+    - env: TOX_ENV=py2.7-lxml
+    - env: TOX_ENV=pypypy-lxml
+    - env: TOX_ENV=pypypy3-lxml
+    - env: TOX_ENV=3.2-lxml
+    - env: TOX_ENV=3.3-lxml
+    - env: TOX_ENV=3.4-lxml
+    - env: TOX_ENV=3.5-lxml
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
 
