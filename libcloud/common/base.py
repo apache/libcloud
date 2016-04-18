@@ -170,9 +170,6 @@ class Response(object):
             self.body = self._decompress_response(body=response.read(),
                                                   headers=self.headers)
 
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-
         if not self.success():
             raise exception_from_message(code=self.status,
                                          message=self.parse_error(),
