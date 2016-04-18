@@ -22,6 +22,9 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - env: ENV=3.5-lxml
+      python: 3.5
+      before_script: TOX_ENV=py3.5-lxml
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
