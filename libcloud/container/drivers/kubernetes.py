@@ -159,9 +159,10 @@ class KubernetesContainerDriver(ContainerDriver):
             result = self.connection.request(
                 ROOT_URL + "v1/pods").object
         except Exception as exc:
-            if hasattr(exc, 'errno') and exc.errno == 111:
+            errno = getattr(exc, 'errno', None)
+            if errno == 111:
                 raise KubernetesException(
-                    exc.errno,
+                    errno,
                     'Make sure kube host is accessible'
                     'and the API port is correct')
             raise
@@ -181,10 +182,12 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request(ROOT_URL + "v1/nodes/%s" %
-                                         id).object
+        # result = self.connection.request(ROOT_URL + "v1/nodes/%s" %
+        #                                  id).object
 
-        return self._to_container(result)
+        # TODO: Fixme
+        # return self._to_container(result)
+        return None
 
     def list_clusters(self):
         """
@@ -199,9 +202,10 @@ class KubernetesContainerDriver(ContainerDriver):
             result = self.connection.request(
                 ROOT_URL + "v1/namespaces/").object
         except Exception as exc:
-            if hasattr(exc, 'errno') and exc.errno == 111:
+            errno = getattr(exc, 'errno', None)
+            if errno == 111:
                 raise KubernetesException(
-                    exc.errno,
+                    errno,
                     'Make sure kube host is accessible'
                     'and the API port is correct')
             raise
@@ -313,8 +317,8 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_delete_pod(container.extra['namespace'],
-                                  container.extra['pod'])
+        return self.ex_destroy_pod(container.extra['namespace'],
+                                   container.extra['pod'])
 
     def ex_list_pods(self):
         """
@@ -391,6 +395,7 @@ class KubernetesContainerDriver(ContainerDriver):
         Get the docker API version information
         """
         result = self.connection.request('/version').object
+        result = result or {}
         api_version = result.get('ApiVersion')
 
         return api_version
