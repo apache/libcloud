@@ -34,6 +34,8 @@ from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
 from libcloud.utils.xml import fixxpath, findtext, findall
 
+# pylint: disable=no-member
+
 DEFAULT_BACKUP_PLAN = 'Advanced'
 
 
