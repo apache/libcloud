@@ -125,6 +125,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_type = None
     service_name = None
     service_region = None
+    accept_format = None
     _auth_version = None
 
     def __init__(self, user_id, key, secure=True,

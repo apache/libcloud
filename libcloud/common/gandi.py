@@ -90,6 +90,7 @@ class BaseGandiDriver(object):
 
         for i in range(0, timeout, check_interval):
             try:
+                # pylint: disable=no-member
                 op = self.connection.request('operation.info', int(id)).object
 
                 if op['step'] == 'DONE':

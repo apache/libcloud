@@ -51,10 +51,10 @@ class LiquidWebException(ProviderError):
         super(LiquidWebException, self).__init__(value, http_code, driver=None)
 
     def __str__(self):
-        return "%s  %s" % (self.code, self.value)
+        return "%s  %s" % (self.http_code, self.value)
 
     def __repr__(self):
-        return "LiquidWebException %s %s" % (self.code, self.value)
+        return "LiquidWebException %s %s" % (self.http_code, self.value)
 
 
 class APIException(LiquidWebException):

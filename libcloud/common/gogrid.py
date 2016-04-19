@@ -127,6 +127,7 @@ class BaseGoGridDriver(object):
                 for el in object['list']]
 
     def _to_location(self, element):
+        # pylint: disable=no-member
         location = NodeLocation(id=element['id'],
                                 name=element['name'],
                                 country="US",
@@ -170,6 +171,7 @@ class BaseGoGridDriver(object):
         if "location" in kwargs and kwargs['location'] is not None:
             params['datacenter'] = kwargs['location'].id
 
+        # pylint: disable=no-member
         response = self.connection.request('/api/grid/ip/list', params=params)
         ips = self._to_ips(response.object)
         return ips
@@ -179,5 +181,6 @@ class BaseGoGridDriver(object):
         try:
             return ips[0].ip
         except IndexError:
+            # pylint: disable=no-member
             raise LibcloudError('No public unassigned IPs left',
                                 self.driver)
