@@ -233,6 +233,7 @@ class BackblazeB2StorageDriver(StorageDriver):
     supports_chunked_encoding = False
 
     def iterate_containers(self):
+        # pylint: disable=unexpected-keyword-arg
         resp = self.connection.request(action='b2_list_buckets',
                                        method='GET',
                                        include_account_id=True)
@@ -274,6 +275,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         data = {}
         data['bucketName'] = container_name
         data['bucketType'] = ex_type
+        # pylint: disable=unexpected-keyword-arg
         resp = self.connection.request(action='b2_create_bucket',
                                        data=data, method='POST',
                                        include_account_id=True)
@@ -283,6 +285,7 @@ class BackblazeB2StorageDriver(StorageDriver):
     def delete_container(self, container):
         data = {}
         data['bucketId'] = container.extra['id']
+        # pylint: disable=unexpected-keyword-arg
         resp = self.connection.request(action='b2_delete_bucket',
                                        data=data, method='POST',
                                        include_account_id=True)
@@ -292,6 +295,7 @@ class BackblazeB2StorageDriver(StorageDriver):
                         delete_on_failure=True):
         action = self._get_object_download_path(container=obj.container,
                                                 obj=obj)
+        # pylint: disable=no-member
         response = self.connection.download_request(action=action)
 
         # TODO: Include metadata from response headers
@@ -309,6 +313,7 @@ class BackblazeB2StorageDriver(StorageDriver):
     def download_object_as_stream(self, obj, chunk_size=None):
         action = self._get_object_download_path(container=obj.container,
                                                 obj=obj)
+        # pylint: disable=no-member
         response = self.connection.download_request(action=action)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
@@ -510,6 +515,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         upload_host = parsed_url.netloc
         request_path = parsed_url.path
 
+        # pylint: disable=no-member
         response = self.connection.upload_request(action=request_path,
                                                   headers=headers,
                                                   upload_host=upload_host,
