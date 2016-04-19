@@ -91,7 +91,7 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(parsed, '')
 
     def test_deflate_encoding(self):
-        original_data = 'foo bar ponies, wooo zlib'
+        original_data = b'foo bar ponies, wooo zlib'
         compressed_data = zlib.compress(b(original_data))
 
         self._mock_response.read.return_value = compressed_data
@@ -114,7 +114,7 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(body, original_data)
 
     def test_gzip_encoding(self):
-        original_data = 'foo bar ponies, wooo gzip'
+        original_data = b'foo bar ponies, wooo gzip'
 
         if PY3:
             from io import BytesIO
