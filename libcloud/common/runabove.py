@@ -54,6 +54,7 @@ class RunAboveException(Exception):
 class RunAboveResponse(JsonResponse):
     def parse_error(self):
         response = super(RunAboveResponse, self).parse_body()
+        response = response or {}
 
         if response.get('errorCode', None) == 'INVALID_SIGNATURE':
             raise InvalidCredsError('Signature validation failed, probably '

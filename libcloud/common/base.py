@@ -413,6 +413,8 @@ class LoggingConnection():
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
+        # pylint: disable=no-member
+
         cmd = ["curl"]
 
         if self.http_proxy_used:
@@ -624,6 +626,8 @@ class Connection(object):
         # prefer the attribute base_url if its set or sent
         connection = None
         secure = self.secure
+
+        # pylint: disable=no-member
 
         if getattr(self, 'base_url', None) and base_url is None:
             (host, port,

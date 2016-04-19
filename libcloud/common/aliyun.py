@@ -200,7 +200,7 @@ class SignedAliyunConnection(AliyunConnection):
 
         self.signer = signer_cls(access_key=self.user_id,
                                  access_secret=self.key,
-                                 version=self.version)
+                                 version=signature_version)
 
     def add_default_params(self, params):
         params = self.signer.get_request_params(params=params,

@@ -141,9 +141,9 @@ class PowerDNSDriver(DNSDriver):
             raise NotImplementedError('Unsupported API version: %s' %
                                       api_version)
 
-        return super(PowerDNSDriver, self).__init__(key=key, secure=secure,
-                                                    host=host, port=port,
-                                                    **kwargs)
+        super(PowerDNSDriver, self).__init__(key=key, secure=secure,
+                                             host=host, port=port,
+                                             **kwargs)
 
     def create_record(self, name, zone, type, data, extra=None):
         """

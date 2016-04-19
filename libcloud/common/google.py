@@ -160,7 +160,7 @@ class ResourceNotFoundError(GoogleBaseError):
                 "error may be an authentication issue. " \
                 "Please  ensure your auth credentials match " \
                 "your project. "
-        super(GoogleBaseError, self).__init__(value, http_code, driver)
+        super(ResourceNotFoundError, self).__init__(value, http_code, driver)
 
 
 class QuotaExceededError(GoogleBaseError):
@@ -377,6 +377,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         :return:  A dictionary containing updated token information.
         :rtype:   ``dict``
         """
+        # pylint: disable=no-member
         return self.get_new_token()
 
 

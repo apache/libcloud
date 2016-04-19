@@ -470,6 +470,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
                                                    data, headers,
                                                    method).object
         yield paged_resp
+        paged_resp = paged_resp or {}
 
         while paged_resp.get('pageCount') >= paged_resp.get('pageSize'):
             params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
