@@ -67,6 +67,7 @@ class CloudFlareDNSResponse(JsonResponse):
 
     def parse_body(self):
         body = super(CloudFlareDNSResponse, self).parse_body()
+        body = body or {}
 
         result = body.get('result', None)
         error_code = body.get('err_code', None)

@@ -292,7 +292,7 @@ class NsOneDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.message == 'record does not exist':
                 raise RecordDoesNotExistError(value=e.message, driver=self,
-                                              id=record.id)
+                                              record_id=record.id)
             else:
                 raise e
         record = self._to_record(item=response.parse_body(), zone=zone)
