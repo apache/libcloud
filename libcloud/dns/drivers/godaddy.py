@@ -71,7 +71,7 @@ class GoDaddyDNSConnection(ConnectionKey):
 
     allow_insecure = False
 
-    def __init__(self, key, secret, shopper_id, secure=True, host=None,
+    def __init__(self, key, secret, secure=True, shopper_id=None, host=None,
                  port=None, url=None, timeout=None,
                  proxy_url=None, backoff=None, retry_delay=None):
         super(GoDaddyDNSConnection, self).__init__(
@@ -130,6 +130,7 @@ class GoDaddyDNSDriver(DNSDriver):
         :param  secret: Your access key secret
         :type   secret: ``str``
         """
+        self.shopper_id = shopper_id
         super(GoDaddyDNSDriver, self).__init__(key=key, secret=secret,
                                                secure=secure,
                                                host=host, port=port,
@@ -468,6 +469,9 @@ class GoDaddyDNSDriver(DNSDriver):
 
     def _get_id_of_record(self, name, type):
         return '%s:%s' % (name, type)
+
+    def _ex_connection_class_kwargs(self):
+        return {'shopper_id': self.shopper_id}
 
 
 class GoDaddyAvailability(object):
