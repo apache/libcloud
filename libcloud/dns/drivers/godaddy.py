@@ -87,7 +87,8 @@ class GoDaddyDNSConnection(ConnectionKey):
         self.shopper_id = shopper_id
 
     def add_default_headers(self, headers):
-        headers['X-Shopper-Id'] = self.shopper_id
+        if self.shopper_id is not None:
+            headers['X-Shopper-Id'] = self.shopper_id
         headers['Authorization'] = "sso-key %s:%s" % \
             (self.key, self.secret)
         return headers
