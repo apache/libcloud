@@ -20,7 +20,10 @@ This version is compatible with the following versions of Abiquo:
 
     * Abiquo 3.1 (http://wiki.abiquo.com/display/ABI31/The+Abiquo+API)
 """
-import xml.etree.ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.compute.base import NodeDriver, NodeSize
 from libcloud.compute.types import Provider, LibcloudError
