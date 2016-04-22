@@ -25,6 +25,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
+from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
@@ -964,6 +965,133 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         with self.assertRaises(ValueError):
             self.driver.ex_list_anti_affinity_rules(network='fake_network', network_domain='fake_network_domain')
 
+    def test_ex_create_tag_key(self):
+        success = self.driver.ex_create_tag_key('MyTestKey')
+        self.assertTrue(success)
+
+    def test_ex_create_tag_key_ALLPARAMS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLPARAMS'
+        success = self.driver.ex_create_tag_key('MyTestKey', description="Test Key Desc.", value_required=False, display_on_report=False)
+        self.assertTrue(success)
+
+    def test_ex_create_tag_key_BADREQUEST(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'BADREQUEST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_create_tag_key('MyTestKey')
+
+    def test_ex_list_tag_keys(self):
+        tag_keys = self.driver.ex_list_tag_keys()
+        self.assertTrue(isinstance(tag_keys, list))
+        self.assertTrue(isinstance(tag_keys[0], DimensionDataTagKey))
+        self.assertTrue(isinstance(tag_keys[0].id, str))
+
+    def test_ex_list_tag_keys_ALLFILTERS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        self.driver.ex_list_tag_keys(id='fake_id', name='fake_name', value_required=False, display_on_report=False)
+
+    def test_ex_get_tag_by_id(self):
+        tag = self.driver.ex_get_tag_key_by_id('d047c609-93d7-4bc5-8fc9-732c85840075')
+        self.assertTrue(isinstance(tag, DimensionDataTagKey))
+
+    def test_ex_get_tag_by_id_NOEXIST(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'NOEXIST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_get_tag_key_by_id('d047c609-93d7-4bc5-8fc9-732c85840075')
+
+    def test_ex_get_tag_by_name(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'SINGLE'
+        tag = self.driver.ex_get_tag_key_by_name('LibcloudTest')
+        self.assertTrue(isinstance(tag, DimensionDataTagKey))
+
+    def test_ex_get_tag_by_name_NOEXIST(self):
+        with self.assertRaises(ValueError):
+            self.driver.ex_get_tag_key_by_name('LibcloudTest')
+
+    def test_ex_modify_tag_key_NAME(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NAME'
+        success = self.driver.ex_modify_tag_key(tag_key, name='NewName')
+        self.assertTrue(success)
+
+    def test_ex_modify_tag_key_NOTNAME(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOTNAME'
+        success = self.driver.ex_modify_tag_key(tag_key, description='NewDesc', value_required=False, display_on_report=True)
+        self.assertTrue(success)
+
+    def test_ex_modify_tag_key_NOCHANGE(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOCHANGE'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_modify_tag_key(tag_key)
+
+    def test_ex_remove_tag_key(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        success = self.driver.ex_remove_tag_key(tag_key)
+        self.assertTrue(success)
+
+    def test_ex_remove_tag_key_NOEXIST(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOEXIST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_remove_tag_key(tag_key)
+
+    def test_ex_apply_tag_to_asset(self):
+        node = self.driver.list_nodes()[0]
+        success = self.driver.ex_apply_tag_to_asset(node, 'TagKeyName', 'FakeValue')
+        self.assertTrue(success)
+
+    def test_ex_apply_tag_to_asset_NOVALUE(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOVALUE'
+        success = self.driver.ex_apply_tag_to_asset(node, 'TagKeyName')
+        self.assertTrue(success)
+
+    def test_ex_apply_tag_to_asset_NOTAGKEY(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOTAGKEY'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_apply_tag_to_asset(node, 'TagKeyNam')
+
+    def test_ex_apply_tag_to_asset_BADASSETTYPE(self):
+        network = self.driver.list_networks()[0]
+        DimensionDataMockHttp.type = 'NOTAGKEY'
+        with self.assertRaises(TypeError):
+            self.driver.ex_apply_tag_to_asset(network, 'TagKeyNam')
+
+    def test_ex_remove_tag_from_asset(self):
+        node = self.driver.list_nodes()[0]
+        success = self.driver.ex_remove_tag_from_asset(node, 'TagKeyName')
+        self.assertTrue(success)
+
+    def test_ex_remove_tag_from_asset_NOTAG(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOTAG'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_remove_tag_from_asset(node, 'TagKeyNam')
+
+    def test_ex_list_tags(self):
+        tags = self.driver.ex_list_tags()
+        self.assertTrue(isinstance(tags, list))
+        self.assertTrue(isinstance(tags[0], DimensionDataTag))
+        self.assertTrue(len(tags) == 3)
+
+    def test_ex_list_tags_ALLPARAMS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLPARAMS'
+        tags = self.driver.ex_list_tags(asset_id='fake_asset_id', asset_type='fake_asset_type',
+                                        location='fake_location', tag_key_name='fake_tag_key_name',
+                                        tag_key_id='fake_tag_key_id', value='fake_value',
+                                        value_required=False, display_on_report=False)
+        self.assertTrue(isinstance(tags, list))
+        self.assertTrue(isinstance(tags[0], DimensionDataTag))
+        self.assertTrue(len(tags) == 3)
+
     def test_priv_location_to_location_id(self):
         location = self.driver.ex_get_location_by_id('NA9')
         self.assertEqual(
@@ -1757,6 +1885,266 @@ class DimensionDataMockHttp(MockHttp):
             'server_removeDisk.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is not None:
+            raise ValueError("Default description for a tag should be blank")
+        if value_required is None or value_required != 'true':
+            raise ValueError("Default valueRequired should be true")
+        if display_on_report is None or display_on_report != 'true':
+            raise ValueError("Default displayOnReport should be true")
+
+        body = self.fixtures.load(
+            'tag_createTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey_ALLPARAMS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is None:
+            raise ValueError("Description should have a value")
+        if value_required is None or value_required != 'false':
+            raise ValueError("valueRequired should be false")
+        if display_on_report is None or display_on_report != 'false':
+            raise ValueError("displayOnReport should be false")
+
+        body = self.fixtures.load(
+            'tag_createTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey_BADREQUEST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_createTagKey_BADREQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_SINGLE(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_list_SINGLE.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'id':
+                assert value == 'fake_id'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'valueRequired':
+                assert value == 'false'
+            elif key == 'displayOnReport':
+                assert value == 'false'
+            elif key == 'pageSize':
+                assert value == '250'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'tag_tagKey_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_d047c609_93d7_4bc5_8fc9_732c85840075(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_d047c609_93d7_4bc5_8fc9_732c85840075_NOEXIST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NAME(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is not None:
+            raise ValueError("Description should be empty")
+        if value_required is not None:
+            raise ValueError("valueRequired should be empty")
+        if display_on_report is not None:
+            raise ValueError("displayOnReport should be empty")
+        body = self.fixtures.load(
+            'tag_editTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NOTNAME(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is not None:
+            raise ValueError("Name should be empty")
+        if description is None:
+            raise ValueError("Description should not be empty")
+        if value_required is None:
+            raise ValueError("valueRequired should not be empty")
+        if display_on_report is None:
+            raise ValueError("displayOnReport should not be empty")
+        body = self.fixtures.load(
+            'tag_editTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NOCHANGE(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_editTagKey_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_deleteTagKey(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteTagKey":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'tag_deleteTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_deleteTagKey_NOEXIST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_deleteTagKey_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}applyTags":
+            raise InvalidRequestError(request.tag)
+        asset_type = findtext(request, 'assetType', TYPES_URN)
+        asset_id = findtext(request, 'assetId', TYPES_URN)
+        tag = request.find(fixxpath('tag', TYPES_URN))
+        tag_key_name = findtext(tag, 'tagKeyName', TYPES_URN)
+        value = findtext(tag, 'value', TYPES_URN)
+        if asset_type is None:
+            raise ValueError("assetType should not be empty")
+        if asset_id is None:
+            raise ValueError("assetId should not be empty")
+        if tag_key_name is None:
+            raise ValueError("tagKeyName should not be empty")
+        if value is None:
+            raise ValueError("value should not be empty")
+
+        body = self.fixtures.load(
+            'tag_applyTags.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags_NOVALUE(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}applyTags":
+            raise InvalidRequestError(request.tag)
+        asset_type = findtext(request, 'assetType', TYPES_URN)
+        asset_id = findtext(request, 'assetId', TYPES_URN)
+        tag = request.find(fixxpath('tag', TYPES_URN))
+        tag_key_name = findtext(tag, 'tagKeyName', TYPES_URN)
+        value = findtext(tag, 'value', TYPES_URN)
+        if asset_type is None:
+            raise ValueError("assetType should not be empty")
+        if asset_id is None:
+            raise ValueError("assetId should not be empty")
+        if tag_key_name is None:
+            raise ValueError("tagKeyName should not be empty")
+        if value is not None:
+            raise ValueError("value should be empty")
+
+        body = self.fixtures.load(
+            'tag_applyTags.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags_NOTAGKEY(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_applyTags_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_removeTags(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}removeTags":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'tag_removeTag.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_removeTags_NOTAG(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_removeTag_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tag_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag_ALLPARAMS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'assetId':
+                assert value == 'fake_asset_id'
+            elif key == 'assetType':
+                assert value == 'fake_asset_type'
+            elif key == 'valueRequired':
+                assert value == 'false'
+            elif key == 'displayOnReport':
+                assert value == 'false'
+            elif key == 'pageSize':
+                assert value == '250'
+            elif key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'value':
+                assert value == 'fake_value'
+            elif key == 'tagKeyName':
+                assert value == 'fake_tag_key_name'
+            elif key == 'tagKeyId':
+                assert value == 'fake_tag_key_id'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'tag_tag_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

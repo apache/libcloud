@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T171444589-0400_7abb497e-403a-4b4a-a073-671212e77a14">
+  <operation>CREATE_TAG_KEY</operation>
+  <responseCode>OK</responseCode>
+  <message>Tag Key 'MyTestKey' has been created.</message>
+  <info name="tagKeyId" value="4f921962-402d-438d-aa37-6f6a0392a1a9"/>
+</response>

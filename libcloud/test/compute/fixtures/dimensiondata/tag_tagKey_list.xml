@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tagKeys xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="3" totalCount="3" pageSize="250">
+  <tagKey id="d047c609-93d7-4bc5-8fc9-732c85840075">
+    <name>AaronTestModified</name>
+    <description>Testing for VMWare</description>
+    <valueRequired>true</valueRequired>
+    <displayOnReport>true</displayOnReport>
+  </tagKey>
+  <tagKey id="5ab77f5f-5aa9-426f-8459-4eab34e03d54">
+    <name>LibcloudTest</name>
+    <valueRequired>true</valueRequired>
+    <displayOnReport>true</displayOnReport>
+  </tagKey>
+  <tagKey id="4f921962-402d-438d-aa37-6f6a0392a1a9">
+    <name>MyTestKey</name>
+    <valueRequired>true</valueRequired>
+    <displayOnReport>true</displayOnReport>
+  </tagKey>
+</tagKeys>
