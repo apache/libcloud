@@ -39,6 +39,8 @@ from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import DimensionDataAntiAffinityRule
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
+from libcloud.common.dimensiondata import DimensionDataTagKey
+from libcloud.common.dimensiondata import DimensionDataTag
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
@@ -71,6 +73,14 @@ NODE_STATE_MAP = {
         NodeState.REBOOTING,
     ('PENDING_CHANGE', 'true', 'RECONFIGURE_SERVER'):
         NodeState.RECONFIGURING,
+}
+
+OBJECT_TO_TAGGING_ASSET_TYPE_MAP = {
+    'Node': 'SERVER',
+    'NodeImage': 'CUSTOMER_IMAGE',
+    'DimensionDataNetworkDomain': 'NETWORK_DOMAIN',
+    'DimensionDataVlan': 'VLAN',
+    'DimensionDataPublicIpBlock': 'PUBLIC_IP_BLOCK'
 }
 
 
@@ -1909,9 +1919,360 @@ class DimensionDataNodeDriver(NodeDriver):
                 raise e
         return self.ex_get_customer_image_by_id(id)
 
+    def ex_create_tag_key(self, name, description=None,
+                          value_required=True, display_on_report=True):
+        """
+        Creates a tag key in the Dimension Data Cloud
+
+        :param name: The name of the tag key (required)
+        :type  name: ``str``
+
+        :param description: The description of the tag key
+        :type  description: ``str``
+
+        :param value_required: If a value is required for the tag
+                               Tags themselves can be just a tag,
+                               or be a key/value pair
+        :type  value_required: ``bool``
+
+        :param display_on_report: Should this key show up on the usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``bool``
+        """
+        create_tag_key = ET.Element('createTagKey', {'xmlns': TYPES_URN})
+        ET.SubElement(create_tag_key, 'name').text = name
+        if description is not None:
+            ET.SubElement(create_tag_key, 'description').text = description
+        ET.SubElement(create_tag_key, 'valueRequired').text = \
+            str(value_required).lower()
+        ET.SubElement(create_tag_key, 'displayOnReport').text = \
+            str(display_on_report).lower()
+        response = self.connection.request_with_orgId_api_2(
+            'tag/createTagKey',
+            method='POST',
+            data=ET.tostring(create_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_tag_keys(self, id=None, name=None,
+                         value_required=None, display_on_report=None):
+        """
+        List tag keys in the Dimension Data Cloud
+
+        :param id: Filter the list to the id of the tag key
+        :type  id: ``str``
+
+        :param name: Filter the list to the name of the tag key
+        :type  name: ``str``
+
+        :param value_required: Filter the list to if a value is required
+                               for a tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: Filter the list to if the tag key should
+                                  show up on usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``list`` of :class:`DimensionDataTagKey`
+        """
+        params = {}
+        if id is not None:
+            params['id'] = id
+        if name is not None:
+            params['name'] = name
+        if value_required is not None:
+            params['valueRequired'] = str(value_required).lower()
+        if display_on_report is not None:
+            params['displayOnReport'] = str(display_on_report).lower()
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'tag/tagKey',
+            method='GET',
+            params=params
+        )
+
+        tag_keys = []
+        for result in paged_result:
+            tag_keys.extend(self._to_tag_keys(result))
+        return tag_keys
+
+    def ex_get_tag_key_by_id(self, id):
+        """
+        Get a specific tag key by ID
+
+        :param id: ID of the tag key you want (required)
+        :type  id: ``str``
+
+        :rtype: :class:`DimensionDataTagKey`
+        """
+        tag_key = self.connection.request_with_orgId_api_2(
+            'tag/tagKey/%s' % id).object
+        return self._to_tag_key(tag_key)
+
+    def ex_get_tag_key_by_name(self, name):
+        """
+        Get a specific tag key by Name
+
+        :param name: Name of the tag key you want (required)
+        :type  name: ``str``
+
+        :rtype: :class:`DimensionDataTagKey`
+        """
+        tag_keys = self.ex_list_tag_keys(name=name)
+        if len(tag_keys) != 1:
+            raise ValueError("No tags found with name %s" % name)
+        return tag_keys[0]
+
+    def ex_modify_tag_key(self, tag_key, name=None, description=None,
+                          value_required=None, display_on_report=None):
+
+        """
+        Modify a specific tag key
+
+        :param tag_key: The tag key you want to modify (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :param name: Set to modifiy the name of the tag key
+        :type  name: ``str``
+
+        :param description: Set to modify the description of the tag key
+        :type  description: ``str``
+
+        :param value_required: Set to modify if a value is required for
+                               the tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: Set to modify if this tag key should display
+                                  on the usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``bool``
+        """
+        tag_key_id = self._tag_key_to_tag_key_id(tag_key)
+        modify_tag_key = ET.Element('editTagKey',
+                                    {'xmlns': TYPES_URN, 'id': tag_key_id})
+        if name is not None:
+            ET.SubElement(modify_tag_key, 'name').text = name
+        if description is not None:
+            ET.SubElement(modify_tag_key, 'description').text = description
+        if value_required is not None:
+            ET.SubElement(modify_tag_key, 'valueRequired').text = \
+                str(value_required).lower()
+        if display_on_report is not None:
+            ET.SubElement(modify_tag_key, 'displayOnReport').text = \
+                str(display_on_report).lower()
+
+        response = self.connection.request_with_orgId_api_2(
+            'tag/editTagKey',
+            method='POST',
+            data=ET.tostring(modify_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_tag_key(self, tag_key):
+        """
+        Modify a specific tag key
+
+        :param tag_key: The tag key you want to remove (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :rtype: ``bool``
+        """
+        tag_key_id = self._tag_key_to_tag_key_id(tag_key)
+        remove_tag_key = ET.Element('deleteTagKey',
+                                    {'xmlns': TYPES_URN, 'id': tag_key_id})
+        response = self.connection.request_with_orgId_api_2(
+            'tag/deleteTagKey',
+            method='POST',
+            data=ET.tostring(remove_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_apply_tag_to_asset(self, asset, tag_key, value=None):
+        """
+        Apply a tag to a Dimension Data Asset
+
+        :param asset: The asset to apply a tag to. (required)
+        :type  asset: :class:`Node` or :class:`NodeImage` or
+                      :class:`DimensionDataNewtorkDomain` or
+                      :class:`DimensionDataVlan` or
+                      :class:`DimensionDataPublicIpBlock`
+
+        :param tag_key: The tag_key to apply to the asset. (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :param value: The value to be assigned to the tag key
+                      This is only required if the :class:`DimensionDataTagKey`
+                      requires it
+        :type  value: ``str``
+
+        :rtype: ``bool``
+        """
+        asset_type = self._get_tagging_asset_type(asset)
+        tag_key_name = self._tag_key_to_tag_key_name(tag_key)
+
+        apply_tags = ET.Element('applyTags', {'xmlns': TYPES_URN})
+        ET.SubElement(apply_tags, 'assetType').text = asset_type
+        ET.SubElement(apply_tags, 'assetId').text = asset.id
+
+        tag_ele = ET.SubElement(apply_tags, 'tag')
+        ET.SubElement(tag_ele, 'tagKeyName').text = tag_key_name
+        if value is not None:
+            ET.SubElement(tag_ele, 'value').text = value
+
+        response = self.connection.request_with_orgId_api_2(
+            'tag/applyTags',
+            method='POST',
+            data=ET.tostring(apply_tags)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_tag_from_asset(self, asset, tag_key):
+        """
+        Remove a tag from an asset
+
+        :param asset: The asset to remove a tag from. (required)
+        :type  asset: :class:`Node` or :class:`NodeImage` or
+                      :class:`DimensionDataNewtorkDomain` or
+                      :class:`DimensionDataVlan` or
+                      :class:`DimensionDataPublicIpBlock`
+
+        :param tag_key: The tag key you want to remove (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :rtype: ``bool``
+        """
+        asset_type = self._get_tagging_asset_type(asset)
+        tag_key_name = self._tag_key_to_tag_key_name(tag_key)
+
+        apply_tags = ET.Element('removeTags', {'xmlns': TYPES_URN})
+        ET.SubElement(apply_tags, 'assetType').text = asset_type
+        ET.SubElement(apply_tags, 'assetId').text = asset.id
+        ET.SubElement(apply_tags, 'tagKeyName').text = tag_key_name
+        response = self.connection.request_with_orgId_api_2(
+            'tag/removeTags',
+            method='POST',
+            data=ET.tostring(apply_tags)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_tags(self, asset_id=None, asset_type=None, location=None,
+                     tag_key_name=None, tag_key_id=None, value=None,
+                     value_required=None, display_on_report=None):
+        """
+        List tags in the Dimension Data Cloud
+
+        :param asset_id: Filter the list by asset id
+        :type  asset_id: ``str``
+
+        :param asset_type: Filter the list by asset type
+        :type  asset_type: ``str``
+
+        :param location: Filter the list by the assets location
+        :type  location: :class:``NodeLocation`` or ``str``
+
+        :param tag_key_name: Filter the list by a tag key name
+        :type  tag_key_name: ``str``
+
+        :param tag_key_id: Filter the list by a tag key id
+        :type  tag_key_id: ``str``
+
+        :param value: Filter the list by a tag value
+        :type  value: ``str``
+
+        :param value_required: Filter the list to if a value is required
+                               for a tag
+        :type  value_required: ``bool``
+
+        :param display_on_report: Filter the list to if the tag should
+                                  show up on usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``list`` of :class:`DimensionDataTag`
+        """
+        params = {}
+        if asset_id is not None:
+            params['assetId'] = asset_id
+        if asset_type is not None:
+            params['assetType'] = asset_type
+        if location is not None:
+            params['datacenterId'] = self._location_to_location_id(location)
+        if tag_key_name is not None:
+            params['tagKeyName'] = tag_key_name
+        if tag_key_id is not None:
+            params['tagKeyId'] = tag_key_id
+        if value is not None:
+            params['value'] = value
+        if value_required is not None:
+            params['valueRequired'] = str(value_required).lower()
+        if display_on_report is not None:
+            params['displayOnReport'] = str(display_on_report).lower()
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'tag/tag',
+            method='GET',
+            params=params
+        )
+
+        tags = []
+        for result in paged_result:
+            tags.extend(self._to_tags(result))
+        return tags
+
+    @staticmethod
+    def _get_tagging_asset_type(asset):
+        objecttype = type(asset)
+        if objecttype.__name__ in OBJECT_TO_TAGGING_ASSET_TYPE_MAP:
+            return OBJECT_TO_TAGGING_ASSET_TYPE_MAP[objecttype.__name__]
+        raise TypeError("Asset type %s cannot be tagged" % objecttype.__name__)
+
     def _list_nodes_single_page(self, params={}):
         return self.connection.request_with_orgId_api_2(
             'server/server', params=params).object
+
+    def _to_tags(self, object):
+        tags = []
+        for element in object.findall(fixxpath('tag', TYPES_URN)):
+            tags.append(self._to_tag(element))
+        return tags
+
+    def _to_tag(self, element):
+        tag_key = self._to_tag_key(element, from_tag_api=True)
+        return DimensionDataTag(
+            asset_type=findtext(element, 'assetType', TYPES_URN),
+            asset_id=findtext(element, 'assetId', TYPES_URN),
+            asset_name=findtext(element, 'assetId', TYPES_URN),
+            datacenter=findtext(element, 'datacenterId', TYPES_URN),
+            key=tag_key,
+            value=findtext(element, 'value', TYPES_URN)
+        )
+
+    def _to_tag_keys(self, object):
+        keys = []
+        for element in object.findall(fixxpath('tagKey', TYPES_URN)):
+            keys.append(self._to_tag_key(element))
+        return keys
+
+    def _to_tag_key(self, element, from_tag_api=False):
+        if from_tag_api:
+            id = findtext(element, 'tagKeyId', TYPES_URN)
+            name = findtext(element, 'tagKeyName', TYPES_URN)
+        else:
+            id = element.get('id')
+            name = findtext(element, 'name', TYPES_URN)
+
+        return DimensionDataTagKey(
+            id=id,
+            name=name,
+            description=findtext(element, 'description', TYPES_URN),
+            value_required=self._str2bool(
+                findtext(element, 'valueRequired', TYPES_URN)
+            ),
+            display_on_report=self._str2bool(
+                findtext(element, 'displayOnReport', TYPES_URN)
+            )
+        )
 
     def _to_images(self, object, el_name='osImage'):
         images = []
@@ -2326,3 +2687,15 @@ class DimensionDataNodeDriver(NodeDriver):
     @staticmethod
     def _network_domain_to_network_domain_id(network_domain):
         return dd_object_to_id(network_domain, DimensionDataNetworkDomain)
+
+    @staticmethod
+    def _tag_key_to_tag_key_id(tag_key):
+        return dd_object_to_id(tag_key, DimensionDataTagKey)
+
+    @staticmethod
+    def _tag_key_to_tag_key_name(tag_key):
+        return dd_object_to_id(tag_key, DimensionDataTagKey, id_value='name')
+
+    @staticmethod
+    def _str2bool(string):
+        return string.lower() in ("true")
