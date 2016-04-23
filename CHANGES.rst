@@ -15,6 +15,12 @@ General
   (GITHUB-755)
   [Tomaz Muraus, Jay Rolette]
 
+- Fix OpenStack v3 authentication and allow user to provide a custom value for
+  the OpenStack ``domain`` parameter. Previously only possible value as a
+  default value of ``Default``.
+  (GITHUB-744)
+  [Lionel Schaub]
+
 Compute
 ~~~~~~~
 
