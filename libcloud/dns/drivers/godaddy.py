@@ -89,6 +89,7 @@ class GoDaddyDNSConnection(ConnectionKey):
     def add_default_headers(self, headers):
         if self.shopper_id is not None:
             headers['X-Shopper-Id'] = self.shopper_id
+        headers['Content-type'] = 'application/json'
         headers['Authorization'] = "sso-key %s:%s" % \
             (self.key, self.secret)
         return headers
@@ -189,7 +190,7 @@ class GoDaddyDNSDriver(DNSDriver):
         new_record = self._format_record(name, type, data, extra)
         self.connection.request(
             '/v1/domains/%s/records' % (zone.domain), method='PATCH',
-            data=[new_record])
+            data=json.dumps([new_record]))
         id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
@@ -228,7 +229,7 @@ class GoDaddyDNSDriver(DNSDriver):
                                               record.type,
                                               record.name),
             method='PUT',
-            data=[new_record])
+            data=json.dumps([new_record]))
         id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
@@ -420,9 +421,10 @@ class GoDaddyDNSDriver(DNSDriver):
                 'type': type,
                 'name': name,
                 'data': data,
-                'priority': 1,
                 'ttl': extra.get('ttl', 5)
             }
+        if type == RecordType.MX:
+            new_record['priority'] = 1
         return new_record
 
     def _to_zones(self, items):
