@@ -553,7 +553,7 @@ def main_load_balancer():
     name = '%s-firewall' % DEMO_BASE_NAME
     allowed = [{'IPProtocol': 'tcp',
                 'ports': ['80']}]
-    firewall = gce.ex_create_firewall(name, allowed, source_tags=[tag])
+    firewall = gce.ex_create_firewall(name, allowed, target_tags=[tag])
     display('    Firewall %s created' % firewall.name)
 
     # == Create a Health Check ==
@@ -634,7 +634,7 @@ def main_load_balancer():
         sys.stdout.flush()
         time.sleep(.25)
 
-    print ""
+    print('')
     if CLEANUP:
         balancers = gcelb.list_balancers()
         healthchecks = gcelb.ex_list_healthchecks()
