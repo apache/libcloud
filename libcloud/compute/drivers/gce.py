@@ -2288,7 +2288,7 @@ class GCENodeDriver(NodeDriver):
                     description=None, ex_can_ip_forward=None,
                     ex_disks_gce_struct=None, ex_nic_gce_struct=None,
                     ex_on_host_maintenance=None, ex_automatic_restart=None,
-                    ex_preemptible=None):
+                    ex_preemptible=None, ex_image_family=None):
         """
         Create a new node and return a node object for the node.
 
@@ -2401,6 +2401,11 @@ class GCENodeDriver(NodeDriver):
                                   preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -2408,9 +2413,15 @@ class GCENodeDriver(NodeDriver):
             raise ValueError("Cannot specify both 'ex_boot_disk' and "
                              "'ex_disks_gce_struct'")
 
-        if not image and not ex_boot_disk and not ex_disks_gce_struct:
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
+
+        if not (image or ex_image_family or ex_boot_disk or
+                ex_disks_gce_struct):
             raise ValueError("Missing root device or image. Must specify an "
-                             "'image', existing 'ex_boot_disk', or use the "
+                             "'image', 'ex_image_family', existing "
+                             "'ex_boot_disk', or use the "
                              "'ex_disks_gce_struct'.")
 
         location = location or self.zone
@@ -2420,6 +2431,8 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
@@ -2473,7 +2486,8 @@ class GCENodeDriver(NodeDriver):
                                  ex_disks_gce_struct=None,
                                  ex_nic_gce_struct=None,
                                  ex_on_host_maintenance=None,
-                                 ex_automatic_restart=None):
+                                 ex_automatic_restart=None,
+                                 ex_image_family=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -2599,12 +2613,21 @@ class GCENodeDriver(NodeDriver):
                                         default value for the instance type.)
         :type     ex_automatic_restart: ``bool`` or ``None``
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
                              "'ex_disks_gce_struct'.")
+
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
 
         location = location or self.zone
         if not hasattr(location, 'name'):
@@ -2613,6 +2636,8 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
@@ -2842,7 +2867,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
-                      ex_disk_type='pd-standard'):
+                      ex_disk_type='pd-standard', ex_image_family=None):
         """
         Create a volume (disk).
 
@@ -2872,9 +2897,21 @@ class GCENodeDriver(NodeDriver):
                                 for an SSD disk.
         :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
+
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
+
         request, volume_data, params = self._create_vol_req(
             size, name, location, snapshot, image, ex_disk_type)
         try:
@@ -4138,6 +4175,69 @@ class GCENodeDriver(NodeDriver):
         if not image:
             raise ResourceNotFoundError('Could not find image \'%s\'' % (
                                         partial_name), None, None)
+        return image
+
+    def ex_get_image_from_family(self, image_family, ex_project_list=None,
+                                 ex_standard_projects=True):
+        """
+        Return an GCENodeImage object based on an image family name.
+
+        :param  image_family: The name of the Image Family to return the
+                              latest image from.
+        :type   image_family: ``str``
+
+        :param  ex_project_list: The name of the project to list for images.
+                                 Examples include: 'debian-cloud'.
+        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+
+        :param  ex_standard_projects: If true, check in standard projects if
+                                      the image is not found.
+        :type   ex_standard_projects: ``bool``
+
+        :return:  GCENodeImage object based on provided information or
+                  ResourceNotFoundError if the image family is not found.
+        :rtype:   :class:`GCENodeImage` or raise ``ResourceNotFoundError``
+        """
+        def _try_image_family(image_family, project=None):
+            request = '/global/images/family/%s' % (image_family)
+            save_request_path = self.connection.request_path
+            if project:
+                new_request_path = save_request_path.replace(self.project,
+                                                             project)
+                self.connection.request_path = new_request_path
+            try:
+                response = self.connection.request(request, method='GET')
+                image = self._to_node_image(response.object)
+            except ResourceNotFoundError:
+                image = None
+            finally:
+                self.connection.request_path = save_request_path
+
+            return image
+
+        image = None
+        if image_family.startswith('https://'):
+            response = self.connection.request(image_family, method='GET')
+            return self._to_node_image(response.object)
+
+        if not ex_project_list:
+            image = _try_image_family(image_family)
+        else:
+            for img_proj in ex_project_list:
+                image = _try_image_family(image_family, project=img_proj)
+                if image:
+                    break
+
+        if not image and ex_standard_projects:
+            for img_proj, short_list in self.IMAGE_PROJECTS.items():
+                for short_name in short_list:
+                    if image_family.startswith(short_name):
+                        image = _try_image_family(image_family,
+                                                  project=img_proj)
+
+        if not image:
+            raise ResourceNotFoundError('Could not find image for family '
+                                        '\'%s\'' % (image_family), None, None)
         return image
 
     def ex_get_route(self, name):

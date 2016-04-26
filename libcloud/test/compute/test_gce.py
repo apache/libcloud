@@ -632,6 +632,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
+    def test_create_node_image_family(self):
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        node = self.driver.create_node(node_name, size, image=None,
+                                       ex_image_family='coreos')
+        self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.name, node_name)
+
+        image = self.driver.ex_get_image('debian-7')
+        self.assertRaises(ValueError, self.driver.create_node, node_name,
+                          size, image, ex_image_family='coreos')
+
     def test_create_node_req_with_serviceaccounts(self):
         image = self.driver.ex_get_image('debian-7')
         size = self.driver.ex_get_size('n1-standard-1')
@@ -770,6 +782,23 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(nodes[0].name, '%s-000' % base_name)
         self.assertEqual(nodes[1].name, '%s-001' % base_name)
 
+    def test_ex_create_multiple_nodes_image_family(self):
+        base_name = 'lcnode'
+        image = None
+        size = self.driver.ex_get_size('n1-standard-1')
+        number = 2
+        nodes = self.driver.ex_create_multiple_nodes(base_name, size, image,
+                                                     number, ex_image_family='coreos')
+        self.assertEqual(len(nodes), 2)
+        self.assertTrue(isinstance(nodes[0], Node))
+        self.assertTrue(isinstance(nodes[1], Node))
+        self.assertEqual(nodes[0].name, '%s-000' % base_name)
+        self.assertEqual(nodes[1].name, '%s-001' % base_name)
+
+        image = self.driver.ex_get_image('debian-7')
+        self.assertRaises(ValueError, self.driver.ex_create_multiple_nodes,
+                          base_name, size, image, number, ex_image_family='coreos')
+
     def test_ex_create_targethttpproxy(self):
         proxy_name = 'web-proxy'
         urlmap_name = 'web-map'
@@ -821,6 +850,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
             urlmap = self.driver.ex_create_urlmap(urlmap_name, service)
             self.assertTrue(isinstance(urlmap, GCEUrlMap))
             self.assertEqual(urlmap_name, urlmap.name)
+
+    def test_create_volume_image_family(self):
+        volume_name = 'lcdisk'
+        size = 10
+        volume = self.driver.create_volume(size, volume_name,
+                                           ex_image_family='coreos')
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+        image = self.driver.ex_get_image('debian-7')
+        self.assertRaises(ValueError, self.driver.create_volume, size,
+                          volume_name, image=image,
+                          ex_image_family='coreos')
 
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
@@ -1166,6 +1208,29 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image,
                           partial_name, 'suse-cloud',
                           ex_standard_projects=False)
+
+    def test_ex_get_image_from_family(self):
+        family = 'coreos'
+        description = 'CoreOS beta 522.3.0'
+        image = self.driver.ex_get_image_from_family(family)
+        self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
+        self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
+
+        url = ('https://www.googleapis.com/compute/v1/projects/coreos-cloud/'
+               'global/images/family/coreos')
+        image = self.driver.ex_get_image_from_family(url)
+        self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
+        self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
+
+        project_list = ['coreos-cloud']
+        image = self.driver.ex_get_image_from_family(family, ex_project_list=project_list, ex_standard_projects=False)
+        self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
+        self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
+
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image_from_family, 'nofamily')
 
     def test_ex_copy_image(self):
         name = 'coreos'
@@ -1644,6 +1709,16 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('global_images_debian_7_wheezy_v20131014_deprecate.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_images_family_coreos(self, method, url, body, headers):
+        body = self.fixtures.load('global_images_family_notfound.json')
+        return (httplib.NOT_FOUND, body, self.json_hdr,
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _global_images_family_nofamily(self, method, url, body, headers):
+        body = self.fixtures.load('global_images_family_notfound.json')
+        return (httplib.NOT_FOUND, body, self.json_hdr,
+                httplib.responses[httplib.NOT_FOUND])
+
     def _global_routes(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('global_routes_post.json')
@@ -2098,23 +2173,29 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('projects_windows-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_rhel_cloud_global_images(self, method, url, boyd, header):
+    def _projects_rhel_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_rhel-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_gce_nvme_global_images(self, method, url, boyd, header):
+    def _projects_gce_nvme_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_gce-nvme_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_images(self, method, url, boyd, header):
+    def _projects_coreos_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_coreos-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_opensuse_cloud_global_images(self, method, url, boyd, header):
+    def _projects_coreos_cloud_global_images_family_coreos(
+            self, method, url, body, header):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_images_family_coreos.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_opensuse_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_opensuse-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_google_containers_global_images(self, method, url, boyd, header):
+    def _projects_google_containers_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_google-containers_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
