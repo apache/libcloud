@@ -5529,8 +5529,12 @@ class GCENodeDriver(NodeDriver):
         extra['guestCpus'] = machine_type.get('guestCpus')
         extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         try:
+            orig_api_name = self.api_name
+            self.api_name = "%s_%s" % (self.api_name,
+                                       extra['zone'].name.split("-")[0])
             price = self._get_size_price(size_id=machine_type['name'])
-        except KeyError:
+            self.api_name = orig_api_name
+        except:
             price = None
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],

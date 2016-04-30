@@ -24,6 +24,14 @@ General
 Compute
 ~~~~~~~
 
+- Fix missing pricing data for GCE
+  (LIBCLOUD-713, GITHUB-779)
+  [Eric Johnson]
+
+- Add Image Family support for GCE
+  (GITHUB-778)
+  [Rick Wright]
+
 - Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
   `list_nodes()` while some VMs are being shutdown can result in the following
   `libcloud.common.google.ResourceNotFoundError` exception to be raised.
