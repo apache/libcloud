@@ -24,6 +24,10 @@ General
 Compute
 ~~~~~~~
 
+- Add Subnetworks to GCE driver
+  (GITHUB-780)
+  [Eric Johnson]
+
 - Fix missing pricing data for GCE
   (LIBCLOUD-713, GITHUB-779)
   [Eric Johnson]
