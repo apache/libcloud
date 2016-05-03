@@ -516,6 +516,8 @@ class DimensionDataBackupDriver(BackupDriver):
         """
         if not isinstance(target, BackupTarget):
             target = self.ex_get_target_by_id(target)
+            if target is None:
+                return
         response = self.connection.request_with_orgId_api_1(
             'server/%s/backup' % (target.address),
             method='GET').object
