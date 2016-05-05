@@ -2566,12 +2566,11 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_location(self, element):
         networking = element.find(fixxpath('networking', TYPES_URN))
-        l = NodeLocation(id=element.get('id'),
-                         name=findtext(element, 'displayName', TYPES_URN),
-                         country=findtext(element, 'country', TYPES_URN),
-                         driver=self,
-                         extra={'networking_type': networking.get('type')})
-        return l
+        return NodeLocation(id=element.get('id'),
+                            name=findtext(element, 'displayName', TYPES_URN),
+                            country=findtext(element, 'country', TYPES_URN),
+                            driver=self,
+                            extra={'networking_type': networking.get('type')})
 
     def _to_cpu_spec(self, element):
         return DimensionDataServerCpuSpecification(
