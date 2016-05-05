@@ -849,6 +849,10 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         location = self.driver.ex_get_location_by_id(None)
         self.assertIsNone(location)
 
+    def test_ex_get_location_extra_network_type(self):
+        location = self.driver.ex_get_location_by_id('NA9')
+        self.assertEqual(location.extra['networking_type'], '2')
+
     def test_ex_get_base_image_by_id(self):
         image_id = self.driver.list_images()[0].id
         image = self.driver.ex_get_base_image_by_id(image_id)
