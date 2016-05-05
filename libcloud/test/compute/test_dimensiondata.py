@@ -1405,7 +1405,6 @@ class DimensionDataMockHttp(MockHttp):
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATEDEMPTY(self, method, url, body, headers):
-        print("In empty")
         body = self.fixtures.load(
             'server_server_paginated_empty.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
