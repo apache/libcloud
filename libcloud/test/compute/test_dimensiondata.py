@@ -102,6 +102,26 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 9)
 
+    def test_paginated_mcp2_call_EMPTY(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'EMPTY'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server')
+        empty_node_list = []
+        for node_list in node_list_generator:
+            empty_node_list.extend(node_list)
+        self.assertTrue(len(empty_node_list) == 0)
+
+    def test_paginated_mcp2_call_PAGED_THEN_EMPTY(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'PAGED_THEN_EMPTY'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server')
+        final_node_list = []
+        for node_list in node_list_generator:
+            final_node_list.extend(node_list)
+        self.assertTrue(len(final_node_list) == 2)
+
     def test_paginated_mcp2_call_with_page_size(self):
         # cache org
         self.driver.connection._get_orgId()
@@ -1359,6 +1379,21 @@ class DimensionDataMockHttp(MockHttp):
             'server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_EMPTY(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_server_paginated_empty.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGED_THEN_EMPTY(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
+            body = self.fixtures.load(
+                'server_server_paginated_empty.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'server_server_paginated.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
         if 'pageNumber=2' in url:
             body = self.fixtures.load(
@@ -1368,6 +1403,12 @@ class DimensionDataMockHttp(MockHttp):
             body = self.fixtures.load(
                 'server_server_paginated.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATEDEMPTY(self, method, url, body, headers):
+        print("In empty")
+        body = self.fixtures.load(
+            'server_server_paginated_empty.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
         (_, params) = url.split('?')
