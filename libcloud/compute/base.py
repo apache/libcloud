@@ -394,7 +394,7 @@ class NodeLocation(object):
     'US'
     """
 
-    def __init__(self, id, name, country, driver):
+    def __init__(self, id, name, country, driver, extra=None):
         """
         :param id: Location ID.
         :type id: ``str``
@@ -407,11 +407,16 @@ class NodeLocation(object):
 
         :param driver: Driver this location belongs to.
         :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provided specific attributes associated with
+                      this NodeLocation.
+        :type extra: ``dict``
         """
         self.id = str(id)
         self.name = name
         self.country = country
         self.driver = driver
+        self.extra = extra or {}
 
     def __repr__(self):
         return (('<NodeLocation: id=%s, name=%s, country=%s, driver=%s>')
