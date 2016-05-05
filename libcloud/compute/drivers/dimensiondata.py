@@ -2292,7 +2292,7 @@ class DimensionDataNodeDriver(NodeDriver):
         return DimensionDataTag(
             asset_type=findtext(element, 'assetType', TYPES_URN),
             asset_id=findtext(element, 'assetId', TYPES_URN),
-            asset_name=findtext(element, 'assetId', TYPES_URN),
+            asset_name=findtext(element, 'assetName', TYPES_URN),
             datacenter=findtext(element, 'datacenterId', TYPES_URN),
             key=tag_key,
             value=findtext(element, 'value', TYPES_URN)
