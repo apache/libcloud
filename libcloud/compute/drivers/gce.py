@@ -1628,7 +1628,7 @@ class GCENodeDriver(NodeDriver):
         :type     region: ``str`` or :class:`GCERegion`
 
         :return: A list of subnetwork objects.
-        :rtype: ``list`` of :class:`GCESubNetwork`
+        :rtype: ``list`` of :class:`GCESubnetwork`
         """
         region = self._set_region(region)
         if region is None:
@@ -2433,7 +2433,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def create_node(self, name, size, image, location=None,
-                    ex_network='default', ex_tags=None, ex_metadata=None,
+                    ex_network='default', ex_subnetwork=None,
+                    ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
                     ex_disk_auto_delete=True, ex_service_accounts=None,
@@ -2460,6 +2461,9 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
+
+        :keyword  ex_subnetwork: The subnetwork to associate with the node.
+        :type     ex_subnetwork: ``str`` or :class:`GCESubnetwork`
 
         :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
@@ -2583,6 +2587,12 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_subnetwork:
+            if not hasattr(ex_subnetwork, 'name'):
+                ex_subnetwork = \
+                    self.ex_get_subnetwork(ex_subnetwork,
+                                           region=self._get_region_from_zone(
+                                               location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -2620,7 +2630,8 @@ class GCENodeDriver(NodeDriver):
                                                    ex_nic_gce_struct,
                                                    ex_on_host_maintenance,
                                                    ex_automatic_restart,
-                                                   ex_preemptible)
+                                                   ex_preemptible,
+                                                   ex_subnetwork)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -4956,7 +4967,7 @@ class GCENodeDriver(NodeDriver):
                          ex_disks_gce_struct=None, ex_nic_gce_struct=None,
                          ex_on_host_maintenance=None,
                          ex_automatic_restart=None,
-                         ex_preemptible=None):
+                         ex_preemptible=None, ex_subnetwork=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -5067,6 +5078,9 @@ class GCENodeDriver(NodeDriver):
                                          not be preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
+        :param  ex_subnetwork: The network to associate with the node.
+        :type   ex_subnetwork: :class:`GCESubnetwork`
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -5171,9 +5185,12 @@ class GCENodeDriver(NodeDriver):
                                      "'ex_nic_gce_struct'. Use one or the "
                                      "other.")
 
+        ni = []
         if network:
             ni = [{'kind': 'compute#instanceNetworkInterface',
                    'network': network.extra['selfLink']}]
+            if ex_subnetwork:
+                ni[0]['subnetwork'] = ex_subnetwork.extra['selfLink']
             if external_ip:
                 access_configs = [{'name': 'External NAT',
                                    'type': 'ONE_TO_ONE_NAT'}]
