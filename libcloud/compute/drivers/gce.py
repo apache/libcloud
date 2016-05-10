@@ -2433,7 +2433,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def create_node(self, name, size, image, location=None,
-                    ex_network='default', ex_subnetwork=None, ex_tags=None, ex_metadata=None,
+                    ex_network='default', ex_subnetwork=None,
+                    ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
                     ex_disk_auto_delete=True, ex_service_accounts=None,
@@ -2588,7 +2589,8 @@ class GCENodeDriver(NodeDriver):
             ex_network = self.ex_get_network(ex_network)
         if ex_subnetwork:
             if not hasattr(ex_subnetwork, 'name'):
-                ex_subnetwork = self.ex_get_subnetwork(ex_subnetwork, region=self._get_region_from_zone(location))
+                ex_subnetwork = self.ex_get_subnetwork(ex_subnetwork,
+                                                       region=self._get_region_from_zone(location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -2626,7 +2628,8 @@ class GCENodeDriver(NodeDriver):
                                                    ex_nic_gce_struct,
                                                    ex_on_host_maintenance,
                                                    ex_automatic_restart,
-                                                   ex_preemptible, ex_subnetwork)
+                                                   ex_preemptible,
+                                                   ex_subnetwork)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -5183,7 +5186,7 @@ class GCENodeDriver(NodeDriver):
         ni = []
         if network:
             ni = [{'kind': 'compute#instanceNetworkInterface',
-               'network': network.extra['selfLink']}]
+                   'network': network.extra['selfLink']}]
             if ex_subnetwork:
                 ni[0]['subnetwork'] = ex_subnetwork.extra['selfLink']
             if external_ip:
