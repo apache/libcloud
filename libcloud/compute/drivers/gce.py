@@ -1628,11 +1628,7 @@ class GCENodeDriver(NodeDriver):
         :type     region: ``str`` or :class:`GCERegion`
 
         :return: A list of subnetwork objects.
-<<<<<<< HEAD
-        :rtype: ``list`` of :class:`GCESubnetwork`
-=======
         :rtype: ``list`` of :class:`GCESubNetwork`
->>>>>>> 32465669cf2c0c9b46054f15c3b767b584137ba2
         """
         region = self._set_region(region)
         if region is None:
