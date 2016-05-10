@@ -97,7 +97,11 @@ class GCEConnection(GoogleBaseConnection):
                                             auth_type=auth_type,
                                             credential_file=credential_file,
                                             **kwargs)
-        self.request_path = '/compute/%s/projects/%s' % (API_VERSION, project)
+        self.api_version = API_VERSION
+        if 'api_version' in kwargs:
+            self.api_version = kwargs['api_version']
+        self.request_path = '/compute/%s/projects/%s' % (self.api_version,
+                                                         project)
         self.gce_params = None
 
     def pre_connect_hook(self, params, headers):
@@ -1108,8 +1112,6 @@ class GCENodeDriver(NodeDriver):
 
         # Cache Zone and Region information to reduce API calls and
         # increase speed
-        self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
-                                                      self.project)
         self.zone_list = self.ex_list_zones()
         self.zone_dict = {}
         for zone in self.zone_list:
@@ -2307,7 +2309,7 @@ class GCENodeDriver(NodeDriver):
         route_data['tags'] = tags
         if next_hop is None:
             url = 'https://www.googleapis.com/compute/%s/projects/%s/%s' % (
-                  API_VERSION, self.project,
+                  self.api_version, self.project,
                   "global/gateways/default-internet-gateway")
             route_data['nextHopGateway'] = url
         elif isinstance(next_hop, str):
@@ -5405,7 +5407,7 @@ class GCENodeDriver(NodeDriver):
         else:
             volume_data['type'] = 'https://www.googleapis.com/compute/'
             volume_data['type'] += '%s/projects/%s/zones/%s/diskTypes/%s' % (
-                API_VERSION, self.project, location.name, ex_disk_type)
+                self.api_version, self.project, location.name, ex_disk_type)
         request = '/zones/%s/disks' % (location.name)
 
         return request, volume_data, params
