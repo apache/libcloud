@@ -655,6 +655,46 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           size, image, location=zone, ex_network=network,
                           ex_nic_gce_struct=ex_nic_gce_struct)
 
+    def test_create_node_subnetwork_opts(self):
+        node_name = 'sn-node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        image = self.driver.ex_get_image('debian-7')
+        zone = self.driver.ex_get_zone('us-central1-a')
+        network = self.driver.ex_get_network('custom-network')
+        subnetwork = self.driver.ex_get_subnetwork('cf-972cf02e6ad49112')
+
+        ex_nic_gce_struct = [
+            {
+                "network": "global/networks/custom-network",
+                "subnetwork": "projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112",
+                "accessConfigs": [
+                    {
+                        "name": "External NAT",
+                        "type": "ONE_TO_ONE_NAT"
+                    }
+                ]
+            }
+        ]
+        # Test using just the network and subnetwork
+        node = self.driver.create_node(node_name, size, image, location=zone,
+                                       ex_network=network,
+                                       ex_subnetwork=subnetwork)
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+        self.assertEqual(node.extra['networkInterfaces'][0]["subnetwork"].split('/')[-1], 'cf-972cf02e6ad49112')
+
+        # Test using just the struct
+        node = self.driver.create_node(node_name, size, image, location=zone,
+                                       ex_nic_gce_struct=ex_nic_gce_struct)
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+        self.assertEqual(node.extra['networkInterfaces'][0]["subnetwork"].split('/')[-1], 'cf-972cf02e6ad49112')
+
+        # Test using subnetwork selfLink
+        node = self.driver.create_node(node_name, size, image, location=zone,
+                                       ex_network=network,
+                                       ex_subnetwork=subnetwork.extra['selfLink'])
+        self.assertEqual(node.extra['networkInterfaces'][0]["name"], 'nic0')
+        self.assertEqual(node.extra['networkInterfaces'][0]["subnetwork"].split('/')[-1], 'cf-972cf02e6ad49112')
+
     def test_create_node_disk_opts(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
@@ -1810,6 +1850,10 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_networks.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_networks_custom_network(self, method, url, body, headers):
+        body = self.fixtures.load('global_networks_custom_network.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_networks_cf(self, method, url, body, headers):
         body = self.fixtures.load('global_networks_cf.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -2630,6 +2674,11 @@ class GCEMockHttp(MockHttpTestCase):
                 'zones_us-central1-a_instances_post.json')
         else:
             body = self.fixtures.load('zones_us-central1-a_instances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_sn_node_name(self, method, url, body,
+                                                    headers):
+        body = self.fixtures.load('zones_us-central1-a_instances_sn-node-name.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_node_name(self, method, url, body,

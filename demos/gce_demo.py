@@ -375,6 +375,20 @@ def main_compute():
         subnets.append(gce.ex_get_subnetwork(sn))
     display('Display custom subnetworks:', subnets)
 
+    # == Launch instance in custom subnetwork ==
+    display('Creating Node in custom subnetwork:')
+    name = '%s-subnet-node' % DEMO_BASE_NAME
+    node_1 = gce.create_node(name, 'g1-small', 'debian-8',
+                             ex_disk_auto_delete=True,
+                             ex_network=network_custom,
+                             ex_subnetwork=subnet)
+    display('  Node %s created' % name)
+
+    # == Destroy instance in custom subnetwork ==
+    display('Destroying Node in custom subnetwork:')
+    node_1.destroy()
+    display('  Node %s destroyed' % name)
+
     # == Delete an subnetwork ==
     display('Delete Custom Subnetwork:')
     subnet.destroy()

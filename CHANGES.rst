@@ -24,6 +24,10 @@ General
 Compute
 ~~~~~~~
 
+- GCE nodes can be launched in a subnetwork
+  (GITHUB-783)
+  [Lars Larsson]
+
 - Add Subnetworks to GCE driver
   (GITHUB-780)
   [Eric Johnson]
