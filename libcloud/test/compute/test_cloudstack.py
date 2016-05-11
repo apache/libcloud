@@ -544,6 +544,29 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         self.assertEqual(volumeName, volume.name)
 
+    def test_create_volume_no_matching_volume_type(self):
+        """If the ex_disk_type does not exit, then an exception should be
+        thrown."""
+
+        location = self.driver.list_locations()[0]
+
+        self.assertRaises(
+            LibcloudError,
+            self.driver.create_volume,
+            'vol-0', location, 11, ex_volume_type='FooVolumeType')
+
+    def test_create_volume_with_defined_volume_type(self):
+        CloudStackMockHttp.fixture_tag = 'withvolumetype'
+
+        volumeName = 'vol-0'
+        location = self.driver.list_locations()[0]
+        volumeType = self.ex_list_disk_offerings()[0]
+
+        volume = self.driver.create_volume(10, volumeName, locationi,
+                     ex_volume_type=volumeType)
+
+        self.assertEqual(volumeName, volume.name)
+
     def test_attach_volume(self):
         node = self.driver.list_nodes()[0]
         volumeName = 'vol-0'
