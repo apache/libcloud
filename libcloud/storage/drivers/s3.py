@@ -36,7 +36,7 @@ from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
-    AWSTokenConnection, SignedAWSConnection
+    AWSTokenConnection, SignedAWSConnection, DEFAULT_SIGNATURE_VERSION
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
@@ -834,7 +834,7 @@ class BaseS3StorageDriver(StorageDriver):
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
         response = response.response
-        server_hash = headers['etag'].replace('"', '')
+        server_hash = headers.get('etag', '').replace('"', '')
 
         if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
@@ -1015,8 +1015,37 @@ class S3SAEastStorageDriver(S3StorageDriver):
     ex_location_name = 'sa-east-1'
 
 
-class S3RGWOutscaleConnection(S3Connection):
-    pass
+class S3RGWOutscaleConnectionAWS4(SignedAWSConnection, BaseS3Connection):
+    service_name = 's3'
+    version = API_VERSION
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, token=None,
+                 retry_delay=None, backoff=None, **kwargs):
+
+        super(S3RGWOutscaleConnectionAWS4, self).__init__(user_id, key,
+                                                          secure, host,
+                                                          port, url,
+                                                          timeout,
+                                                          proxy_url, token,
+                                                          retry_delay,
+                                                          backoff,
+                                                          4)  # force aws4
+
+
+class S3RGWOutscaleConnectionAWS2(S3Connection):
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, token=None,
+                 retry_delay=None, backoff=None, **kwargs):
+
+        super(S3RGWOutscaleConnectionAWS2, self).__init__(user_id, key,
+                                                          secure, host,
+                                                          port, url,
+                                                          timeout,
+                                                          proxy_url, token,
+                                                          retry_delay,
+                                                          backoff)
 
 
 class S3RGWOutscaleStorageDriver(S3StorageDriver):
@@ -1029,9 +1058,19 @@ class S3RGWOutscaleStorageDriver(S3StorageDriver):
         self.name = 'OUTSCALE Ceph RGW S3 (%s)' % (region)
         self.ex_location_name = region
         self.region_name = region
-        self.connectionCls = S3RGWOutscaleConnection
-        self.connectionCls.host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
+        self.signature_version =\
+            kwargs.pop('signature_version', DEFAULT_SIGNATURE_VERSION)
+        self.connectionCls = S3RGWOutscaleConnectionAWS2
+        if self.signature_version == '4':
+            self.connectionCls = S3RGWOutscaleConnectionAWS4
+        host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
+        self.connectionCls.host = host
         super(S3RGWOutscaleStorageDriver, self).__init__(key, secret,
                                                          secure, host, port,
                                                          api_version, region,
                                                          **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = {}
+        kwargs['signature_version'] = self.signature_version
+        return kwargs
