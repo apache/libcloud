@@ -559,11 +559,12 @@ class CloudStackCommonTestCase(TestCaseMixin):
         CloudStackMockHttp.fixture_tag = 'withvolumetype'
 
         volumeName = 'vol-0'
-        location = self.driver.list_locations()[0]
-        volumeType = self.ex_list_disk_offerings()[0]
+        volLocation = self.driver.list_locations()[0]
+        diskOffering = self.driver.ex_list_disk_offerings()[0]
+        volumeType = diskOffering.name
 
-        volume = self.driver.create_volume(10, volumeName, locationi,
-                     ex_volume_type=volumeType)
+        volume = self.driver.create_volume(10, volumeName, location=volLocation,
+                                           ex_volume_type=volumeType)
 
         self.assertEqual(volumeName, volume.name)
 

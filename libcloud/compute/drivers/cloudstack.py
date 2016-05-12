@@ -2111,7 +2111,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return projects
 
-    def create_volume(self, size, name, location=None, snapshot=None, 
+    def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type=None):
         """
         Creates a data volume
