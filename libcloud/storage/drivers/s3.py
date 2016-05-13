@@ -1055,14 +1055,22 @@ class S3RGWOutscaleStorageDriver(S3StorageDriver):
                  **kwargs):
         if region not in S3_RGW_OUTSCALE_HOSTS_BY_REGION:
             raise LibcloudError('Unknown region (%s)' % (region), driver=self)
+
         self.name = 'OUTSCALE Ceph RGW S3 (%s)' % (region)
         self.ex_location_name = region
         self.region_name = region
-        self.signature_version =\
-            kwargs.pop('signature_version', DEFAULT_SIGNATURE_VERSION)
-        self.connectionCls = S3RGWOutscaleConnectionAWS2
-        if self.signature_version == '4':
+        self.signature_version = str(kwargs.pop('signature_version',
+                                                DEFAULT_SIGNATURE_VERSION))
+
+        if self.signature_version not in ['2', '4']:
+            raise ValueError('Invalid signature_version: %s' %
+                             (self.signature_version))
+
+        if self.signature_version == '2':
+            self.connectionCls = S3RGWOutscaleConnectionAWS2
+        elif self.signature_version == '4':
             self.connectionCls = S3RGWOutscaleConnectionAWS4
+
         host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
         self.connectionCls.host = host
         super(S3RGWOutscaleStorageDriver, self).__init__(key, secret,
