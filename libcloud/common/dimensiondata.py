@@ -472,7 +472,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         yield paged_resp
         paged_resp = paged_resp or {}
 
-        while paged_resp.get('pageCount') >= paged_resp.get('pageSize'):
+        while int(paged_resp.get('pageCount')) >= \
+                int(paged_resp.get('pageSize')):
             params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
             paged_resp = self.request_with_orgId_api_2(action, params,
                                                        data, headers,
@@ -1407,4 +1408,85 @@ class DimensionDataBackupSchedulePolicy(object):
 
     def __repr__(self):
         return (('<DimensionDataBackupSchedulePolicy: name=%s>')
+                % (self.name))
+
+
+class DimensionDataTag(object):
+    """
+    A representation of a Tag in Dimension Data
+    A Tag first must have a Tag Key, then an asset is tag with
+    a key and an option value.  Tags can be queried later to filter assets
+    and also show up on usage report if so desired.
+    """
+    def __init__(self, asset_type, asset_id, asset_name,
+                 datacenter, key, value):
+        """
+        Initialize an instance of :class:`DimensionDataTag`
+
+        :param asset_type: The type of asset.  Current asset types:
+                           SERVER, VLAN, NETWORK_DOMAIN, CUSTOMER_IMAGE,
+                           PUBLIC_IP_BLOCK, ACCOUNT
+        :type  asset_type: ``str``
+
+        :param asset_id: The GUID of the asset that is tagged
+        :type  asset_id: ``str``
+
+        :param asset_name: The name of the asset that is tagged
+        :type  asset_name: ``str``
+
+        :param datacenter: The short datacenter name of the tagged asset
+        :type  datacenter: ``str``
+
+        :param key: The tagged key
+        :type  key: :class:`DimensionDataTagKey`
+
+        :param value: The tagged value
+        :type  value: ``None`` or ``str``
+        """
+        self.asset_type = asset_type
+        self.asset_id = asset_id
+        self.asset_name = asset_name
+        self.datacenter = datacenter
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+        return (('<DimensionDataTag: asset_name=%s, tag_name=%s, value=%s>')
+                % (self.asset_name, self.key.name, self.value))
+
+
+class DimensionDataTagKey(object):
+    """
+    A representation of a Tag Key in Dimension Data
+    A tag key is required to tag an asset
+    """
+    def __init__(self, id, name, description,
+                 value_required, display_on_report):
+        """
+        Initialize an instance of :class:`DimensionDataTagKey`
+
+        :param id: GUID of the tag key
+        :type  id: ``str``
+
+        :param name: Name of the tag key
+        :type  name: ``str``
+
+        :param description: Description of the tag key
+        :type  description: ``str``
+
+        :param value_required: If a value is required for this tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: If this tag key should be displayed on
+                                  usage reports
+        :type  display_on_report: ``bool``
+        """
+        self.id = id
+        self.name = name
+        self.description = description
+        self.value_required = value_required
+        self.display_on_report = display_on_report
+
+    def __repr__(self):
+        return (('<DimensionDataTagKey: name=%s>')
                 % (self.name))

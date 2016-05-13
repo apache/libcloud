@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T193459513-0400_d0f68e46-acd1-4af0-a41c-21b6e90695cb">
+  <operation>DELETE_TAG_KEY</operation>
+  <responseCode>OK</responseCode>
+  <message>Tag Key (Id:4f921962-402d-438d-aa37-6f6a0392a1a9) has been deleted.</message>
+</response>

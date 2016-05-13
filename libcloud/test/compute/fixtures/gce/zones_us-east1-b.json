@@ -1,0 +1,10 @@
+{
+ "kind": "compute#zone",
+ "id": "2231",
+ "creationTimestamp": "2015-09-08T16:57:06.746-07:00",
+ "name": "us-east1-b",
+ "description": "us-east1-b",
+ "status": "UP",
+ "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-east1",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b"
+}

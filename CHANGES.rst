@@ -15,8 +15,26 @@ General
   (GITHUB-755)
   [Tomaz Muraus, Jay Rolette]
 
+- Fix OpenStack v3 authentication and allow user to provide a custom value for
+  the OpenStack ``domain`` parameter. Previously only possible value as a
+  default value of ``Default``.
+  (GITHUB-744)
+  [Lionel Schaub]
+
 Compute
 ~~~~~~~
+
+- Add Subnetworks to GCE driver
+  (GITHUB-780)
+  [Eric Johnson]
+
+- Fix missing pricing data for GCE
+  (LIBCLOUD-713, GITHUB-779)
+  [Eric Johnson]
+
+- Add Image Family support for GCE
+  (GITHUB-778)
+  [Rick Wright]
 
 - Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
   `list_nodes()` while some VMs are being shutdown can result in the following

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tags xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="3" totalCount="3" pageSize="1000">
+  <tag>
+    <assetType>SERVER</assetType>
+    <assetId>09242b55-3bc8-4cb7-b30c-4158267f58e6</assetId>
+    <assetName>App server</assetName>
+    <datacenterId>NA9</datacenterId>
+    <tagKeyId>5ab77f5f-5aa9-426f-8459-4eab34e03d54</tagKeyId>
+    <tagKeyName>ChangeNameTest</tagKeyName>
+    <value>No way!</value>
+    <displayOnReport>true</displayOnReport>
+    <valueRequired>true</valueRequired>
+  </tag>
+  <tag>
+    <assetType>NETWORK_DOMAIN</assetType>
+    <assetId>1a16bf5e-583b-42c9-af94-a92d9ee1607f</assetId>
+    <assetName>An Ho1a Demo</assetName>
+    <datacenterId>NA9</datacenterId>
+    <tagKeyId>d047c609-93d7-4bc5-8fc9-732c85840075</tagKeyId>
+    <tagKeyName>AaronTestModified</tagKeyName>
+    <value>Success</value>
+    <displayOnReport>true</displayOnReport>
+    <valueRequired>true</valueRequired>
+  </tag>
+  <tag>
+    <assetType>SERVER</assetType>
+    <assetId>77da591d-b58e-43ef-8bc2-ddde3f732893</assetId>
+    <assetName>Test 1</assetName>
+    <datacenterId>NA9</datacenterId>
+    <tagKeyId>d047c609-93d7-4bc5-8fc9-732c85840075</tagKeyId>
+    <tagKeyName>AaronTestModified</tagKeyName>
+    <value>Test VMware</value>
+    <displayOnReport>true</displayOnReport>
+    <valueRequired>true</valueRequired>
+  </tag>
+</tags>
