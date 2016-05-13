@@ -38,6 +38,13 @@ Compute
   v2 driver.
   [Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- Add support for AWS signature v4 to the Outscale storage driver.
+  (GITHUB-736)
+  [Javier M. Mellid]
+
 DNS
 ~~~
 
