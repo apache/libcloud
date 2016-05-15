@@ -1,0 +1,42 @@
+{
+    "status": {
+        "code": "1",
+        "message": "Action completed successful",
+        "created_at": "2014-06-04 21:22:08"
+    },
+    "info": {
+        "domain_total": 1,
+        "all_total": 1,
+        "mine_total": 1,
+        "share_total": 0,
+        "vip_total": 0,
+        "ismark_total": 0,
+        "pause_total": 0,
+        "error_total": 1,
+        "lock_total": 0,
+        "spam_total": 0,
+        "vip_expire": 0,
+        "share_out_total": 0
+    },
+    "domains": [
+        {
+            "id": 6,
+            "name": "dnspod.com",
+            "grade": "DP_Free",
+            "grade_title": "Free",
+            "status": "enable",
+            "ext_status": "notexist",
+            "records": "3",
+            "group_id": "1",
+            "is_mark": "no",
+            "remark": "",
+            "is_vip": "no",
+            "searchengine_push": "yes",
+            "beian": "no",
+            "created_on": "2014-06-04 16:19:31",
+            "updated_on": "2014-06-04 16:20:05",
+            "ttl": "600",
+            "owner": "yizero@qq.com"
+        }
+    ]
+}

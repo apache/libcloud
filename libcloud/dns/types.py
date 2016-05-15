@@ -61,6 +61,7 @@ class Provider(object):
     WORLDWIDEDNS = 'worldwidedns'
     ZERIGO = 'zerigo'
     ZONOMI = 'zonomi'
+    DNSPOD = 'dnspod'
     # Deprecated
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'

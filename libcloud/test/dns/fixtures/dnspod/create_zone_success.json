@@ -1,0 +1,12 @@
+{
+    "status": {
+        "code":"1",
+        "message":"Action completed successful",
+        "created_at":"2012-08-29 22:12:35"
+    },
+    "domain": {
+        "id":"3",
+        "punycode":"api2.com",
+        "domain":"api2.com"
+    }
+}
