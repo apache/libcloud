@@ -2063,8 +2063,12 @@ class DimensionDataNodeDriver(NodeDriver):
             status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_address(self, element):
+        ip = element.find(fixxpath('ip', TYPES_URN))
+        port = element.find(fixxpath('port', TYPES_URN))
+        port_list = element.find(fixxpath('portList', TYPES_URN))
+        address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
         if address_list is None:
-            return DimensionDataFirewallAddress(
+            return DimensionDataFirewallAddress (
                 any_ip=ip.get('address') == 'ANY',
                 ip_address=ip.get('address'),
                 ip_prefix_size=ip.get('prefixSize'),
