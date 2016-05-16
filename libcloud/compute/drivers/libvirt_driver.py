@@ -257,6 +257,10 @@ class LibvirtNodeDriver(NodeDriver):
             # Only Linux is supported atm
             return result
 
+        if '///' not in self._uri:
+            # Only local libvirtd is supported atm
+            return result
+
         mac_addresses = self._get_mac_addresses_for_domain(domain=domain)
 
         cmd = ['arp', '-an']
