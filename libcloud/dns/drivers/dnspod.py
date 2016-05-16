@@ -21,6 +21,7 @@ from libcloud.dns.types import Provider, ZoneDoesNotExistError, \
 from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
 from libcloud.common.dnspod import DNSPodConnection, DNSPodResponse, \
     DNSPodException
+from libcloud.utils.py3 import urlencode
 
 __all__ = [
     'DNSPodDNSDriver'
@@ -56,7 +57,7 @@ class DNSPodDNSDriver(DNSDriver):
     def list_zones(self):
         action = '/Domain.List'
         data = {'user_token': self.key, 'format': 'json'}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
         try:
             response = self.connection.request(action=action, method='POST',
                                                data=data)
@@ -77,7 +78,7 @@ class DNSPodDNSDriver(DNSDriver):
         """
         action = '/Domain.Remove'
         data = {'user_token': self.key, 'format': 'json', 'domain_id': zone.id}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
 
         try:
             self.connection.request(action=action, method='POST',
@@ -99,7 +100,7 @@ class DNSPodDNSDriver(DNSDriver):
         """
         action = '/Domain.Info'
         data = {'user_token': self.key, 'format': 'json', 'domain_id': zone_id}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
 
         try:
             response = self.connection.request(action=action, method='POST',
@@ -138,7 +139,7 @@ class DNSPodDNSDriver(DNSDriver):
         data = {'user_token': self.key, 'format': 'json', 'domain': domain}
         if extra is not None:
             data.update(extra)
-        data = urllib.urlencode(data)
+        data = urlencode(data)
         try:
             response = self.connection.request(action=action, method='POST',
                                                data=data)
@@ -168,7 +169,7 @@ class DNSPodDNSDriver(DNSDriver):
         action = '/Record.List'
         data = {'user_token': self.key, 'format': 'json',
                 'domain_id': zone.id}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
         try:
             response = self.connection.request(action=action, data=data,
                                                method='POST')
@@ -195,7 +196,7 @@ class DNSPodDNSDriver(DNSDriver):
         action = '/Record.Remove'
         data = {'user_token': self.key, 'format': 'json',
                 'domain_id': record.zone.id, 'record_id': record.id}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
         try:
             self.connection.request(action=action, method='POST',
                                     data=data)
@@ -228,7 +229,7 @@ class DNSPodDNSDriver(DNSDriver):
         action = '/Record.Info'
         data = {'user_token': self.key, 'format': 'json',
                 'domain_id': zone_id, 'record_id': record_id}
-        data = urllib.urlencode(data)
+        data = urlencode(data)
         try:
             response = self.connection.request(action=action, method='POST',
                                                data=data)
@@ -285,7 +286,7 @@ class DNSPodDNSDriver(DNSDriver):
         # extra = {'ttl': '13', 'record_line': default, 'mx': 1}
         if extra is not None:
             to_post.update(extra)
-        data = urllib.urlencode(to_post)
+        data = urlencode(to_post)
         try:
             response = self.connection.request(action=action,
                                                method='POST',
