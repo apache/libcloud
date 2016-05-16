@@ -292,8 +292,8 @@ class DNSPodDNSDriver(DNSDriver):
                                                data=data)
         except DNSPodException:
             e = sys.exc_info()[1]
-            if e.message == 'Record impacted, same record' \
-                            'exists or CNAME/URL impacted':
+            if e.message == ('Record impacted, same record exists '
+                             'or CNAME/URL impacted'):
                 raise RecordAlreadyExistsError(record_id='', driver=self,
                                                value=name)
             raise e
