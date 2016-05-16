@@ -8,7 +8,7 @@ from libcloud.test.secrets import DNS_PARAMS_DNSPOD
 from libcloud.dns.drivers.dnspod import DNSPodDNSDriver
 from libcloud.utils.py3 import httplib
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError,\
- RecordType, RecordDoesNotExistError, RecordAlreadyExistsError
+    RecordType, RecordDoesNotExistError, RecordAlreadyExistsError
 from libcloud.dns.base import Zone, Record
 
 
