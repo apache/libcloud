@@ -43,8 +43,10 @@ DRIVERS = {
     ('libcloud.storage.drivers.s3', 'S3APNE2StorageDriver'),
     Provider.S3_SA_EAST:
     ('libcloud.storage.drivers.s3', 'S3SAEastStorageDriver'),
+    Provider.S3_RGW:
+    ('libcloud.storage.drivers.rgw', 'S3RGWStorageDriver'),
     Provider.S3_RGW_OUTSCALE:
-    ('libcloud.storage.drivers.s3', 'S3RGWOutscaleStorageDriver'),
+    ('libcloud.storage.drivers.rgw', 'S3RGWOutscaleStorageDriver'),
     Provider.NINEFOLD:
     ('libcloud.storage.drivers.ninefold', 'NinefoldStorageDriver'),
     Provider.GOOGLE_STORAGE:

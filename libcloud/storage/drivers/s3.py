@@ -36,7 +36,7 @@ from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
-    AWSTokenConnection, SignedAWSConnection, DEFAULT_SIGNATURE_VERSION
+    AWSTokenConnection, SignedAWSConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
@@ -59,15 +59,6 @@ S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
 S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
 S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
-
-S3_RGW_OUTSCALE_HOSTS_BY_REGION =\
-    {'eu-west-1': 'osu.eu-west-1.outscale.com',
-     'eu-west-2': 'osu.eu-west-2.outscale.com',
-     'us-west-1': 'osu.us-west-1.outscale.com',
-     'us-east-2': 'osu.us-east-2.outscale.com',
-     'cn-southeast-1': 'osu.cn-southeast-1.outscale.hk'}
-
-S3_RGW_OUTSCALE_DEFAULT_REGION = 'eu-west-2'
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -1013,72 +1004,3 @@ class S3SAEastStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (sa-east-1)'
     connectionCls = S3SAEastConnection
     ex_location_name = 'sa-east-1'
-
-
-class S3RGWOutscaleConnectionAWS4(SignedAWSConnection, BaseS3Connection):
-    service_name = 's3'
-    version = API_VERSION
-
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None, token=None,
-                 retry_delay=None, backoff=None, **kwargs):
-
-        super(S3RGWOutscaleConnectionAWS4, self).__init__(user_id, key,
-                                                          secure, host,
-                                                          port, url,
-                                                          timeout,
-                                                          proxy_url, token,
-                                                          retry_delay,
-                                                          backoff,
-                                                          4)  # force aws4
-
-
-class S3RGWOutscaleConnectionAWS2(S3Connection):
-
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None, token=None,
-                 retry_delay=None, backoff=None, **kwargs):
-
-        super(S3RGWOutscaleConnectionAWS2, self).__init__(user_id, key,
-                                                          secure, host,
-                                                          port, url,
-                                                          timeout,
-                                                          proxy_url, token,
-                                                          retry_delay,
-                                                          backoff)
-
-
-class S3RGWOutscaleStorageDriver(S3StorageDriver):
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=S3_RGW_OUTSCALE_DEFAULT_REGION,
-                 **kwargs):
-        if region not in S3_RGW_OUTSCALE_HOSTS_BY_REGION:
-            raise LibcloudError('Unknown region (%s)' % (region), driver=self)
-
-        self.name = 'OUTSCALE Ceph RGW S3 (%s)' % (region)
-        self.ex_location_name = region
-        self.region_name = region
-        self.signature_version = str(kwargs.pop('signature_version',
-                                                DEFAULT_SIGNATURE_VERSION))
-
-        if self.signature_version not in ['2', '4']:
-            raise ValueError('Invalid signature_version: %s' %
-                             (self.signature_version))
-
-        if self.signature_version == '2':
-            self.connectionCls = S3RGWOutscaleConnectionAWS2
-        elif self.signature_version == '4':
-            self.connectionCls = S3RGWOutscaleConnectionAWS4
-
-        host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
-        self.connectionCls.host = host
-        super(S3RGWOutscaleStorageDriver, self).__init__(key, secret,
-                                                         secure, host, port,
-                                                         api_version, region,
-                                                         **kwargs)
-
-    def _ex_connection_class_kwargs(self):
-        kwargs = {}
-        kwargs['signature_version'] = self.signature_version
-        return kwargs
