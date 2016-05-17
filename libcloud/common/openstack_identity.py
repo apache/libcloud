@@ -1388,58 +1388,6 @@ class OpenStackIdentity_3_0_Connection_OIDC(OpenStackIdentity_3_0_Connection):
     name = 'OpenStack Identity API v3.x with OIDC support'
     auth_version = '3.0'
 
-    def get_unscoped_token_from_oidc_token(self):
-        """
-        Get unscoped token from OIDC token
-        The OIDC token must be set in the self.key attribute.
-        The identity provider name required to get the full path
-        must be set in the self.tenant_name attribute.
-        """
-        path = ('/v3/OS-FEDERATION/identity_providers/%s/protocols/oidc/auth' %
-                self.tenant_name)
-        response = self.request(path,
-                                headers={'Content-Type': 'application/json',
-                                         'Authorization': 'Bearer %s' %
-                                         self.key},
-                                method='GET')
-
-        if response.status == httplib.UNAUTHORIZED:
-            # Invalid credentials
-            raise InvalidCredsError()
-        elif response.status in [httplib.OK, httplib.CREATED]:
-            if 'x-subject-token' in response.headers:
-                return response.headers['x-subject-token']
-            else:
-                raise MalformedResponseError('No x-subject-token returned',
-                                             driver=self.driver)
-        else:
-            raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
-
-    def get_project_id(self, token):
-        """
-        Get the first project ID accessible with the specified token
-        """
-        path = '/v3/OS-FEDERATION/projects'
-        response = self.request(path,
-                                headers={'Content-Type': 'application/json',
-                                         'X-Auth-Token': token},
-                                method='GET')
-
-        if response.status == httplib.UNAUTHORIZED:
-            # Invalid credentials
-            raise InvalidCredsError()
-        elif response.status in [httplib.OK, httplib.CREATED]:
-            try:
-                body = json.loads(response.body)
-                return body["projects"][0]["id"]
-            except Exception:
-                e = sys.exc_info()[1]
-                raise MalformedResponseError('Failed to parse JSON', e)
-        else:
-            raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
-
     def authenticate(self, force=False):
         """
         Perform authentication.
@@ -1447,8 +1395,8 @@ class OpenStackIdentity_3_0_Connection_OIDC(OpenStackIdentity_3_0_Connection):
         if not self._is_authentication_needed(force=force):
             return self
 
-        subject_token = self.get_unscoped_token_from_oidc_token()
-        project_id = self.get_project_id(subject_token)
+        subject_token = self._get_unscoped_token_from_oidc_token()
+        project_id = self._get_project_id(token=subject_token)
 
         data = {
             'auth': {
@@ -1523,6 +1471,59 @@ class OpenStackIdentity_3_0_Connection_OIDC(OpenStackIdentity_3_0_Connection):
                                          driver=self.driver)
 
         return self
+
+    def _get_unscoped_token_from_oidc_token(self):
+        """
+        Get unscoped token from OIDC token
+        The OIDC token must be set in the self.key attribute.
+        The identity provider name required to get the full path
+        must be set in the self.tenant_name attribute.
+        """
+        path = ('/v3/OS-FEDERATION/identity_providers/%s/protocols/oidc/auth' %
+                self.tenant_name)
+        response = self.request(path,
+                                headers={'Content-Type': 'application/json',
+                                         'Authorization': 'Bearer %s' %
+                                         self.key},
+                                method='GET')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            if 'x-subject-token' in response.headers:
+                return response.headers['x-subject-token']
+            else:
+                raise MalformedResponseError('No x-subject-token returned',
+                                             driver=self.driver)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
+
+    def _get_project_id(self, token):
+        """
+        Get the first project ID accessible with the specified token
+        """
+        path = '/v3/OS-FEDERATION/projects'
+        response = self.request(path,
+                                headers={'Content-Type': 'application/json',
+                                         'X-Auth-Token': token},
+                                method='GET')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            try:
+                body = json.loads(response.body)
+                return body["projects"][0]["id"]
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
+
 
 def get_class_for_auth_version(auth_version):
     """
