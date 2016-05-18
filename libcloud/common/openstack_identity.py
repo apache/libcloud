@@ -43,7 +43,7 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0_password',
     '3.0',
     '3.x_password',
-    '3.x_oidc'
+    '3.x_oidc_access_token'
 ]
 
 # How many seconds to subtract from the auth token expiration time before
@@ -1379,7 +1379,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         return role
 
 
-class OpenStackIdentity_3_0_Connection_OIDC(OpenStackIdentity_3_0_Connection):
+class OpenStackIdentity_3_0_Connection_OIDC_access_token(OpenStackIdentity_3_0_Connection):
     """
     Connection class for Keystone API v3.x. using OpenID Connect tokens
     """
@@ -1474,13 +1474,15 @@ class OpenStackIdentity_3_0_Connection_OIDC(OpenStackIdentity_3_0_Connection):
 
     def _get_unscoped_token_from_oidc_token(self):
         """
-        Get unscoped token from OIDC token
+        Get unscoped token from OIDC access token
         The OIDC token must be set in the self.key attribute.
         The identity provider name required to get the full path
+        must be set in the self.user_id attribute.
+        The protocol name required to get the full path
         must be set in the self.tenant_name attribute.
         """
-        path = ('/v3/OS-FEDERATION/identity_providers/%s/protocols/oidc/auth' %
-                self.tenant_name)
+        path = ('/v3/OS-FEDERATION/identity_providers/%s/protocols/%s/auth' %
+                (self.user_id, self.tenant_name))
         response = self.request(path,
                                 headers={'Content-Type': 'application/json',
                                          'Authorization': 'Bearer %s' %
@@ -1539,8 +1541,8 @@ def get_class_for_auth_version(auth_version):
         cls = OpenStackIdentity_2_0_Connection
     elif auth_version == '3.x_password':
         cls = OpenStackIdentity_3_0_Connection
-    elif auth_version == '3.x_oidc':
-        cls = OpenStackIdentity_3_0_Connection_OIDC
+    elif auth_version == '3.x_oidc_access_token':
+        cls = OpenStackIdentity_3_0_Connection_OIDC_access_token
     else:
         raise LibcloudError('Unsupported Auth Version requested')
 
