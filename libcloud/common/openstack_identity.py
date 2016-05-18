@@ -1380,7 +1380,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
 
 class OpenStackIdentity_3_0_Connection_OIDC_access_token(
-          OpenStackIdentity_3_0_Connection):
+        OpenStackIdentity_3_0_Connection):
     """
     Connection class for Keystone API v3.x. using OpenID Connect tokens
     """
