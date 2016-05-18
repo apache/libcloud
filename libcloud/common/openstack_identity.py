@@ -70,7 +70,7 @@ __all__ = [
     'OpenStackIdentity_1_1_Connection',
     'OpenStackIdentity_2_0_Connection',
     'OpenStackIdentity_3_0_Connection',
-    'OpenStackIdentity_3_0_Connection_OIDC',
+    'OpenStackIdentity_3_0_Connection_OIDC_access_token',
 
     'get_class_for_auth_version'
 ]
