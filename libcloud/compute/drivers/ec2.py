@@ -650,7 +650,7 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 128
         }
-    },
+    }
 }
 
 #  From <https://aws.amazon.com/marketplace/help/200777880>
@@ -990,7 +990,7 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Tokyo) Region
