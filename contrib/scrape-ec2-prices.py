@@ -166,7 +166,7 @@ def scrape_ec2_pricing():
                         # Price not available
                         continue
 
-                    result[libcloud_region_name][size['size']] = price
+                    result[libcloud_region_name][size['size']] = float(price)
 
     return result
 
