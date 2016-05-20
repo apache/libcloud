@@ -162,6 +162,10 @@ def scrape_ec2_pricing():
 
                 for size in sizes:
                     price = size['valueColumns'][0]['prices']['USD']
+                    if str(price).lower() == 'n/a':
+                        # Price not available
+                        continue
+
                     result[libcloud_region_name][size['size']] = price
 
     return result
