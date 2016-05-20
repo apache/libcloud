@@ -1383,6 +1383,17 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         OpenStackIdentity_3_0_Connection):
     """
     Connection class for Keystone API v3.x. using OpenID Connect tokens
+
+    The OIDC token must be set in the self.key attribute.
+
+    The identity provider name required to get the full path
+    must be set in the self.user_id attribute.
+
+    The protocol name required to get the full path
+    must be set in the self.tenant_name attribute.
+
+    The user must be scoped to the first project accessible with the
+    specified access token (usually there are only one)
     """
 
     responseCls = OpenStackAuthResponse
@@ -1476,11 +1487,6 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
     def _get_unscoped_token_from_oidc_token(self):
         """
         Get unscoped token from OIDC access token
-        The OIDC token must be set in the self.key attribute.
-        The identity provider name required to get the full path
-        must be set in the self.user_id attribute.
-        The protocol name required to get the full path
-        must be set in the self.tenant_name attribute.
         """
         path = ('/v3/OS-FEDERATION/identity_providers/%s/protocols/%s/auth' %
                 (self.user_id, self.tenant_name))
@@ -1505,7 +1511,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
     def _get_project_id(self, token):
         """
-        Get the first project ID accessible with the specified token
+        Get the first project ID accessible with the specified access token
         """
         path = '/v3/OS-FEDERATION/projects'
         response = self.request(path,
