@@ -67,6 +67,11 @@ Storage
   (GITHUB-736)
   [Javier M. Mellid]
 
+
+- Add new S3 RGW storage driver.
+  (GITHUB-786)
+  [Javier M. Mellid]
+
 DNS
 ~~~
 
