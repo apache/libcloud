@@ -389,6 +389,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         names = [
             ('ec2_us_east', 'us-east-1'),
             ('ec2_us_west', 'us-west-1'),
+            ('ec2_us_west', 'us-west-2'),
             ('ec2_eu_west', 'eu-west-1'),
             ('ec2_ap_southeast', 'ap-southeast-1'),
             ('ec2_ap_northeast', 'ap-northeast-1'),
@@ -412,20 +413,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 53)
+                self.assertEqual(len(sizes), 54)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
+                self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
                 self.assertEqual(len(sizes), 45)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 41)
+                self.assertEqual(len(sizes), 52)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 43)
+                self.assertEqual(len(sizes), 44)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 47)
+                self.assertEqual(len(sizes), 48)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 51)
+                self.assertEqual(len(sizes), 52)
 
         self.driver.region_name = region_old
 

@@ -82,7 +82,8 @@
             "t2.small": "0.040",
             "t2.medium": "0.080",
             "t2.large": "0.160",
-            "t2.nano": "0.010"
+            "t2.nano": "0.010",
+            "x1.32xlarge": "19.341"
         },
         "ec2_ap_southeast": {
             "c1.medium": "0.164",
@@ -138,7 +139,8 @@
             "t2.small": "0.04",
             "t2.medium": "0.08",
             "t2.large": "0.16",
-            "t2.nano": "0.01"
+            "t2.nano": "0.01",
+            "x1.32xlarge": "19.341"
         },
         "ec2_ap_southeast_2": {
             "c1.medium": "0.164",
@@ -193,7 +195,9 @@
             "t2.micro": "0.02",
             "t2.small": "0.04",
             "t2.medium": "0.08",
-            "t2.large": "0.16"
+            "t2.large": "0.16",
+            "t2.nano": "0.01",
+            "x1.32xlarge": "19.341"
         },
         "ec2_eu_central": {
             "c1.medium": "N/A",
@@ -248,7 +252,9 @@
             "t2.micro": "0.015",
             "t2.small": "0.03",
             "t2.medium": "0.06",
-            "t2.large": "0.12"
+            "t2.large": "0.12",
+            "t2.nano": "0.0075",
+            "x1.32xlarge": "18.674"
         },
         "ec2_eu_west": {
             "c1.medium": "0.148",
@@ -304,7 +310,8 @@
             "t2.small": "0.028",
             "t2.medium": "0.056",
             "t2.large": "0.112",
-            "t2.nano": "0.007"
+            "t2.nano": "0.007",
+            "x1.32xlarge": "16.006"
         },
         "ec2_sa_east": {
             "c1.medium": "0.179",
@@ -393,7 +400,8 @@
             "t2.small": "0.026",
             "t2.medium": "0.052",
             "t2.large": "0.104",
-            "t2.nano": "0.0065"
+            "t2.nano": "0.0065",
+            "x1.32xlarge": "13.338"
         },
         "ec2_us_govwest": {
             "c1.medium": "0.157",
@@ -545,7 +553,8 @@
             "t2.small": "0.026",
             "t2.medium": "0.052",
             "t2.large": "0.104",
-            "t2.nano": "0.0065"
+            "t2.nano": "0.0065",
+            "x1.32xlarge": "13.338"
         },
         "elastichosts": {
             "small": 0.1,
@@ -1034,5 +1043,5 @@
         }
     },
     "storage": {},
-    "updated": 1452645090
+    "updated": 1463600139
 }
