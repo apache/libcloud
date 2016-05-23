@@ -446,16 +446,7 @@ class PowerDNSDriver(DNSDriver):
         if ttl is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
 
-        records = self._add_records([{
-            'content': data,
-            'disabled': False,
-            'name': record_name,
-            'ttl': ttl,
-            'type': type,
-            'extra': extra,
-        }])
-        records = []
-        records += self._add_records({
+        records = self._add_records({
             'content': data,
             'disabled': False,
             'name': record_name,
