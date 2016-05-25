@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na/2016-03-15T12:38:27.999-04:00/e9e8370d-d4d4-4725-afae-77e7832bacbd">
+  <operation>GET_CUSTOMER_IMAGE</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Server Image 2ffa36c8-1848-49eb-b4fa-9d908775f68c not found.</message>
+</response>

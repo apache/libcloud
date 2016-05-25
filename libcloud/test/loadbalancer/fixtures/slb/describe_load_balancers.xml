@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeLoadBalancersResponse>
+	<LoadBalancers>
+		<LoadBalancer>
+			<CreateTimeStamp>1452403099000</CreateTimeStamp>
+			<SlaveZoneId>cn-hangzhou-b</SlaveZoneId>
+			<NetworkType>classic</NetworkType>
+			<MasterZoneId>cn-hangzhou-d</MasterZoneId>
+			<RegionIdAlias>cn-hangzhou</RegionIdAlias>
+			<CreateTime>2016-01-10T13:18Z</CreateTime>
+			<RegionId>cn-hangzhou-dg-a01</RegionId>
+			<Address>120.27.186.149</Address>
+			<AddressType>internet</AddressType>
+			<LoadBalancerId>15229f88562-cn-hangzhou-dg-a01</LoadBalancerId>
+			<LoadBalancerName>abc</LoadBalancerName>
+			<LoadBalancerStatus>active</LoadBalancerStatus>
+		</LoadBalancer>
+	</LoadBalancers>
+	<RequestId>A0DAF856-B181-4098-B507-6CE9E40420E8</RequestId>
+</DescribeLoadBalancersResponse>

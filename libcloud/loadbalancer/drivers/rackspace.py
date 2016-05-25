@@ -325,6 +325,10 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                                                 secure=secure, host=host,
                                                 port=port, region=region)
 
+    @classmethod
+    def list_regions(cls):
+        return ENDPOINT_ARGS_MAP.keys()
+
     def _ex_connection_class_kwargs(self):
         endpoint_args = ENDPOINT_ARGS_MAP[self.region]
         kwargs = self.openstack_connection_kwargs()
@@ -1525,9 +1529,3 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                 break
 
         return date
-
-
-class RackspaceUKLBDriver(RackspaceLBDriver):
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'lon'
-        super(RackspaceUKLBDriver, self).__init__(*args, **kwargs)

@@ -21,6 +21,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node
+from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 
 # Roadmap / TODO:
@@ -284,6 +286,33 @@ BAD_MESSAGE_XML_ELEMENTS = (
 )
 
 
+def dd_object_to_id(obj, obj_type, id_value='id'):
+    """
+    Takes in a DD object or string and prints out it's id
+    This is a helper method, as many of our functions can take either an object
+    or a string, and we need an easy way of converting them
+
+    :param obj: The object to get the id for
+    :type  obj: ``object``
+
+    :param  func: The function to call, e.g. ex_get_vlan. Note: This
+                  function needs to return an object which has ``status``
+                  attribute.
+    :type   func: ``function``
+
+    :rtype: ``str``
+    """
+    if isinstance(obj, obj_type):
+        return getattr(obj, id_value)
+    elif isinstance(obj, (basestring)):
+        return obj
+    else:
+        raise TypeError(
+            "Invalid type %s looking for basestring or %s"
+            % (type(obj).__name__, obj_type.__name__)
+        )
+
+
 class NetworkDomainServicePlan(object):
     ESSENTIALS = "ESSENTIALS"
     ADVANCED = "ADVANCED"
@@ -340,7 +369,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     api_path_version_1 = '/oec'
     api_path_version_2 = '/caas'
     api_version_1 = '0.9'
-    api_version_2 = '2.1'
+    api_version_2 = '2.2'
 
     _orgId = None
     responseCls = DimensionDataResponse
@@ -405,6 +434,52 @@ class DimensionDataConnection(ConnectionUserAndKey):
             params=params, data=data,
             method=method, headers=headers)
 
+    def paginated_request_with_orgId_api_2(self, action, params=None, data='',
+                                           headers=None, method='GET',
+                                           page_size=250):
+        """
+        A paginated request to the MCP2.0 API
+        This essentially calls out to request_with_orgId_api_2 for each page
+        and yields the response to make a generator
+        This generator can be looped through to grab all the pages.
+
+        :param action: The resource to access (i.e. 'network/vlan')
+        :type  action: ``str``
+
+        :param params: Parameters to give to the action
+        :type  params: ``dict`` or ``None``
+
+        :param data: The data payload to be added to the request
+        :type  data: ``str``
+
+        :param headers: Additional header to be added to the request
+        :type  headers: ``str`` or ``dict`` or ``None``
+
+        :param method: HTTP Method for the request (i.e. 'GET', 'POST')
+        :type  method: ``str``
+
+        :param page_size: The size of each page to be returned
+                          Note: Max page size in MCP2.0 is currently 250
+        :type  page_size: ``int``
+        """
+        if params is None:
+            params = {}
+        params['pageSize'] = page_size
+
+        paged_resp = self.request_with_orgId_api_2(action, params,
+                                                   data, headers,
+                                                   method).object
+        yield paged_resp
+        paged_resp = paged_resp or {}
+
+        while int(paged_resp.get('pageCount')) >= \
+                int(paged_resp.get('pageSize')):
+            params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
+            paged_resp = self.request_with_orgId_api_2(action, params,
+                                                       data, headers,
+                                                       method).object
+            yield paged_resp
+
     def get_resource_path_api_1(self):
         """
         This method returns a resource path which is necessary for referencing
@@ -426,8 +501,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
                        **kwargs):
         """
-        Wait for the function which returns a instance with field status to
-        match.
+        Wait for the function which returns a instance with field status/state
+        to match.
 
         Keep polling func until one of the desired states is matched
 
@@ -456,15 +531,20 @@ class DimensionDataConnection(ConnectionUserAndKey):
         cnt = 0
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
-            if result.status is state or result.status in state:
+            if isinstance(result, Node):
+                object_state = result.state
+            else:
+                object_state = result.status
+
+            if object_state is state or object_state in state:
                 return result
             sleep(poll_interval)
             cnt += 1
 
         msg = 'Status check for object %s timed out' % (result)
-        raise DimensionDataAPIException(code=result.status,
+        raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
-                                        driver=self.connection.driver)
+                                        driver=self.driver)
 
     def _get_orgId(self):
         """
@@ -476,6 +556,32 @@ class DimensionDataConnection(ConnectionUserAndKey):
             body = self.request_api_1('myaccount').object
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
+
+    def get_account_details(self):
+        """
+        Get the details of this account
+
+        :rtype: :class:`DimensionDataAccountDetails`
+        """
+        body = self.request_api_1('myaccount').object
+        return DimensionDataAccountDetails(
+            user_name=findtext(body, 'userName', DIRECTORY_NS),
+            full_name=findtext(body, 'fullName', DIRECTORY_NS),
+            first_name=findtext(body, 'firstName', DIRECTORY_NS),
+            last_name=findtext(body, 'lastName', DIRECTORY_NS),
+            email=findtext(body, 'emailAddress', DIRECTORY_NS))
+
+
+class DimensionDataAccountDetails(object):
+    """
+    Dimension Data account class details
+    """
+    def __init__(self, user_name, full_name, first_name, last_name, email):
+        self.user_name = user_name
+        self.full_name = full_name
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
 
 
 class DimensionDataStatus(object):
@@ -602,6 +708,70 @@ class DimensionDataServerCpuSpecification(object):
                 % (self.cpu_count, self.cores_per_socket, self.performance))
 
 
+class DimensionDataServerDisk(object):
+    """
+    A class that represents the disk on a server
+    """
+    def __init__(self, id, scsi_id, size_gb, speed, state):
+        """
+        Instantiate a new :class:`DimensionDataServerDisk`
+
+        :param id: The id of the disk
+        :type  id: ``str``
+
+        :param scsi_id: Representation for scsi
+        :type  scsi_id: ``int``
+
+        :param size_gb: Size of the disk
+        :type  size_gb: ``int``
+
+        :param speed: Speed of the disk (i.e. STANDARD)
+        :type  speed: ``str``
+
+        :param state: State of the disk (i.e. PENDING)
+        :type  state: ``str``
+        """
+        self.id = id
+        self.scsi_id = scsi_id
+        self.size_gb = size_gb
+        self.speed = speed
+        self.state = state
+
+    def __repr__(self):
+        return (('<DimensionDataServerDisk: '
+                 'id=%s, size_gb=%s')
+                % (self.id, self.size_gb))
+
+
+class DimensionDataServerVMWareTools(object):
+    """
+    A class that represents the VMWareTools for a node
+    """
+    def __init__(self, status, version_status, api_version):
+        """
+        Instantiate a new :class:`DimensionDataServerVMWareTools` object
+
+        :param status: The status of VMWare Tools
+        :type  status: ``str``
+
+        :param version_status: The status for the version of VMWare Tools
+            (i.e NEEDS_UPGRADE)
+        :type  version_status: ``str``
+
+        :param api_version: The API version of VMWare Tools
+        :type  api_version: ``str``
+        """
+        self.status = status
+        self.version_status = version_status
+        self.api_version = api_version
+
+    def __repr__(self):
+        return (('<DimensionDataServerVMWareTools '
+                 'status=%s, version_status=%s, '
+                 'api_version=%s>')
+                % (self.status, self.version_status, self.api_version))
+
+
 class DimensionDataFirewallRule(object):
     """
     DimensionData Firewall Rule for a network domain
@@ -638,12 +808,15 @@ class DimensionDataFirewallAddress(object):
     The source or destination model in a firewall rule
     """
     def __init__(self, any_ip, ip_address, ip_prefix_size,
-                 port_begin, port_end):
+                 port_begin, port_end, address_list_id,
+                 port_list_id):
         self.any_ip = any_ip
         self.ip_address = ip_address
         self.ip_prefix_size = ip_prefix_size
         self.port_begin = port_begin
         self.port_end = port_end
+        self.address_list_id = address_list_id
+        self.port_list_id = port_list_id
 
 
 class DimensionDataNatRule(object):
@@ -660,6 +833,31 @@ class DimensionDataNatRule(object):
     def __repr__(self):
         return (('<DimensionDataNatRule: id=%s, status=%s>')
                 % (self.id, self.status))
+
+
+class DimensionDataAntiAffinityRule(object):
+    """
+    Anti-Affinity rule for DimensionData
+
+    An Anti-Affinity rule ensures that servers in the rule will
+    not reside on the same VMware ESX host.
+    """
+    def __init__(self, id, node_list):
+        """
+        Instantiate a new :class:`DimensionDataAntiAffinityRule`
+
+        :param id: The ID of the Anti-Affinity rule
+        :type  id: ``str``
+
+        :param node_list: List of node ids that belong in this rule
+        :type  node_list: ``list`` of ``str``
+        """
+        self.id = id
+        self.node_list = node_list
+
+    def __repr__(self):
+        return (('<DimensionDataAntiAffinityRule: id=%s>')
+                % (self.id))
 
 
 class DimensionDataVlan(object):
@@ -1010,7 +1208,7 @@ class DimensionDataBackupDetails(object):
     a targets backups configuration
     """
 
-    def __init__(self, asset_id, service_plan, state, clients=None):
+    def __init__(self, asset_id, service_plan, status, clients=None):
         """
         Initialize an instance of :class:`DimensionDataBackupDetails`
 
@@ -1020,15 +1218,16 @@ class DimensionDataBackupDetails(object):
         :param service_plan: The service plan for backups. i.e (Essentials)
         :type  service_plan: ``str``
 
-        :param state: The overall state this backup target. i.e. (unregistered)
-        :type  state: ``str``
+        :param status: The overall status this backup target.
+                       i.e. (unregistered)
+        :type  status: ``str``
 
         :param clients: Backup clients attached to this target
         :type  clients: ``list`` of :class:`DimensionDataBackupClient`
         """
         self.asset_id = asset_id
         self.service_plan = service_plan
-        self.state = state
+        self.status = status
         self.clients = clients
 
     def __repr__(self):
@@ -1209,4 +1408,85 @@ class DimensionDataBackupSchedulePolicy(object):
 
     def __repr__(self):
         return (('<DimensionDataBackupSchedulePolicy: name=%s>')
+                % (self.name))
+
+
+class DimensionDataTag(object):
+    """
+    A representation of a Tag in Dimension Data
+    A Tag first must have a Tag Key, then an asset is tag with
+    a key and an option value.  Tags can be queried later to filter assets
+    and also show up on usage report if so desired.
+    """
+    def __init__(self, asset_type, asset_id, asset_name,
+                 datacenter, key, value):
+        """
+        Initialize an instance of :class:`DimensionDataTag`
+
+        :param asset_type: The type of asset.  Current asset types:
+                           SERVER, VLAN, NETWORK_DOMAIN, CUSTOMER_IMAGE,
+                           PUBLIC_IP_BLOCK, ACCOUNT
+        :type  asset_type: ``str``
+
+        :param asset_id: The GUID of the asset that is tagged
+        :type  asset_id: ``str``
+
+        :param asset_name: The name of the asset that is tagged
+        :type  asset_name: ``str``
+
+        :param datacenter: The short datacenter name of the tagged asset
+        :type  datacenter: ``str``
+
+        :param key: The tagged key
+        :type  key: :class:`DimensionDataTagKey`
+
+        :param value: The tagged value
+        :type  value: ``None`` or ``str``
+        """
+        self.asset_type = asset_type
+        self.asset_id = asset_id
+        self.asset_name = asset_name
+        self.datacenter = datacenter
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+        return (('<DimensionDataTag: asset_name=%s, tag_name=%s, value=%s>')
+                % (self.asset_name, self.key.name, self.value))
+
+
+class DimensionDataTagKey(object):
+    """
+    A representation of a Tag Key in Dimension Data
+    A tag key is required to tag an asset
+    """
+    def __init__(self, id, name, description,
+                 value_required, display_on_report):
+        """
+        Initialize an instance of :class:`DimensionDataTagKey`
+
+        :param id: GUID of the tag key
+        :type  id: ``str``
+
+        :param name: Name of the tag key
+        :type  name: ``str``
+
+        :param description: Description of the tag key
+        :type  description: ``str``
+
+        :param value_required: If a value is required for this tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: If this tag key should be displayed on
+                                  usage reports
+        :type  display_on_report: ``bool``
+        """
+        self.id = id
+        self.name = name
+        self.description = description
+        self.value_required = value_required
+        self.display_on_report = display_on_report
+
+    def __repr__(self):
+        return (('<DimensionDataTagKey: name=%s>')
                 % (self.name))

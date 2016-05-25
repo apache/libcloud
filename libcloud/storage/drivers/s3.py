@@ -825,7 +825,7 @@ class BaseS3StorageDriver(StorageDriver):
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
         response = response.response
-        server_hash = headers['etag'].replace('"', '')
+        server_hash = headers.get('etag', '').replace('"', '')
 
         if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(

@@ -92,7 +92,8 @@ EC2_INSTANCE_TYPES = [
     't2.micro',
     't2.small',
     't2.medium',
-    't2.large'
+    't2.large',
+    'x1.32xlarge'
 ]
 
 # Maps EC2 region name to region name used in the pricing file
@@ -161,7 +162,11 @@ def scrape_ec2_pricing():
 
                 for size in sizes:
                     price = size['valueColumns'][0]['prices']['USD']
-                    result[libcloud_region_name][size['size']] = price
+                    if str(price).lower() == 'n/a':
+                        # Price not available
+                        continue
+
+                    result[libcloud_region_name][size['size']] = float(price)
 
     return result
 

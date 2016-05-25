@@ -519,6 +519,33 @@ class GCENodeImage(NodeImage):
                                               deprecated, obsolete, deleted)
 
 
+class GCESubnetwork(UuidMixin):
+    """A GCE Subnetwork object class."""
+    def __init__(self, id, name, cidr, network, region, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.network = network
+        self.region = region
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        """
+        Destroy this subnetwork
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        return self.driver.ex_destroy_subnetwork(self)
+
+    def __repr__(self):
+        return '<GCESubnetwork id="%s" name="%s" region="%s" network="%s" ' \
+               'cidr="%s">' % (self.id, self.name, self.region.name,
+                               self.network.name, self.cidr)
+
+
 class GCENetwork(UuidMixin):
     """A GCE Network object class."""
     def __init__(self, id, name, cidr, driver, extra=None):
@@ -527,6 +554,11 @@ class GCENetwork(UuidMixin):
         self.cidr = cidr
         self.driver = driver
         self.extra = extra
+        self.mode = 'legacy'
+        self.subnetworks = []
+        if 'mode' in extra and extra['mode'] != 'legacy':
+            self.mode = extra['mode']
+            self.subnetworks = extra['subnetworks']
         UuidMixin.__init__(self)
 
     def destroy(self):
@@ -539,8 +571,8 @@ class GCENetwork(UuidMixin):
         return self.driver.ex_destroy_network(network=self)
 
     def __repr__(self):
-        return '<GCENetwork id="%s" name="%s" cidr="%s">' % (
-            self.id, self.name, self.cidr)
+        return '<GCENetwork id="%s" name="%s" cidr="%s" mode="%s">' % (
+            self.id, self.name, self.cidr, self.mode)
 
 
 class GCERoute(UuidMixin):
@@ -1587,6 +1619,43 @@ class GCENodeDriver(NodeDriver):
                        response.get('items', [])]
         return list_routes
 
+    def ex_list_subnetworks(self, region=None):
+        """
+        Return the list of subnetworks.
+
+        :keyword  region: Region for the subnetwork. Specify 'all' to return
+                          the aggregated list of subnetworks.
+        :type     region: ``str`` or :class:`GCERegion`
+
+        :return: A list of subnetwork objects.
+        :rtype: ``list`` of :class:`GCESubnetwork`
+        """
+        region = self._set_region(region)
+        if region is None:
+            request = '/aggregated/subnetworks'
+        else:
+            request = '/regions/%s/subnetworks' % (region.name)
+
+        list_subnetworks = []
+        response = self.connection.request(request, method='GET').object
+
+        if 'items' in response:
+            if region is None:
+                for v in response['items'].values():
+                    for i in v.get('subnetworks', []):
+                        try:
+                            list_subnetworks.append(self._to_subnetwork(i))
+                        except ResourceNotFoundError:
+                            pass
+            else:
+                for i in response['items']:
+                    try:
+                        list_subnetworks.append(self._to_subnetwork(i))
+                    except ResourceNotFoundError:
+                        pass
+
+        return list_subnetworks
+
     def ex_list_networks(self):
         """
         Return the list of networks.
@@ -1625,11 +1694,31 @@ class GCENodeDriver(NodeDriver):
             # The aggregated response returns a dict for each zone
             if zone is None:
                 for v in response['items'].values():
-                    zone_nodes = [self._to_node(i) for i in
-                                  v.get('instances', [])]
-                    list_nodes.extend(zone_nodes)
+                    for i in v.get('instances', []):
+                        try:
+                            list_nodes.append(self._to_node(i))
+                        # If a GCE node has been deleted between
+                        #   - is was listed by `request('.../instances', 'GET')
+                        #   - it is converted by `self._to_node(i)`
+                        # `_to_node()` will raise a ResourceNotFoundError.
+                        #
+                        # Just ignore that node and return the list of the
+                        # other nodes.
+                        except ResourceNotFoundError:
+                            pass
             else:
-                list_nodes = [self._to_node(i) for i in response['items']]
+                for i in response['items']:
+                    try:
+                        list_nodes.append(self._to_node(i))
+                    # If a GCE node has been deleted between
+                    #   - is was listed by `request('.../instances', 'GET')
+                    #   - it is converted by `self._to_node(i)`
+                    # `_to_node()` will raise a ResourceNotFoundError.
+                    #
+                    # Just ignore that node and return the list of the
+                    # other nodes.
+                    except ResourceNotFoundError:
+                        pass
         return list_nodes
 
     def ex_list_regions(self):
@@ -2232,28 +2321,111 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_route(name)
 
-    def ex_create_network(self, name, cidr, description=None):
+    def ex_create_subnetwork(self, name, cidr=None, network=None, region=None,
+                             description=None):
         """
-        Create a network.
+        Create a subnetwork.
 
-        :param  name: Name of network to be created
+        :param  name: Name of subnetwork to be created
         :type   name: ``str``
 
         :param  cidr: Address range of network in CIDR format.
         :type   cidr: ``str``
 
+        :param  network: The network name or object this subnet belongs to.
+        :type   network: ``str`` or :class:`GCENetwork`
+
+        :param  region: The region the subnetwork belongs to.
+        :type   region: ``str`` or :class:`GCERegion`
+
         :param  description: Custom description for the network.
         :type   description: ``str`` or ``None``
+
+        :return:  Subnetwork object
+        :rtype:   :class:`GCESubnetwork`
+        """
+        if not cidr:
+            raise ValueError("Must provide an IP network in CIDR notation.")
+
+        if not network:
+            raise ValueError("Must provide a network for the subnetwork.")
+        else:
+            if isinstance(network, GCENetwork):
+                network_url = network.extra['selfLink']
+            else:
+                if network.startswith('https://'):
+                    network_url = network
+                else:
+                    network_obj = self.ex_get_network(network)
+                    network_url = network_obj.extra['selfLink']
+
+        if not region:
+            raise ValueError("Must provide a region for the subnetwork.")
+        else:
+            if isinstance(region, GCERegion):
+                region_url = region.extra['selfLink']
+            else:
+                if region.startswith('https://'):
+                    region_url = region
+                else:
+                    region_obj = self.ex_get_region(region)
+                    region_url = region_obj.extra['selfLink']
+
+        subnet_data = {}
+        subnet_data['name'] = name
+        subnet_data['description'] = description
+        subnet_data['ipCidrRange'] = cidr
+        subnet_data['network'] = network_url
+        subnet_data['region'] = region_url
+        region_name = region_url.split('/')[-1]
+
+        request = '/regions/%s/subnetworks' % (region_name)
+        self.connection.async_request(request, method='POST',
+                                      data=subnet_data)
+
+        return self.ex_get_subnetwork(name, region_name)
+
+    def ex_create_network(self, name, cidr, description=None, mode="legacy"):
+        """
+        Create a network. In November 2015, Google introduced Subnetworks and
+        suggests using networks with 'auto' generated subnetworks. See, the
+        `subnet docs <https://cloud.google.com/compute/docs/subnetworks>`_ for
+        more details. Note that libcloud follows the usability pattern from
+        the Cloud SDK (e.g. 'gcloud compute' command-line utility) and uses
+        'mode' to specify 'auto', 'custom', or 'legacy'.
+
+        :param  name: Name of network to be created
+        :type   name: ``str``
+
+        :param  cidr: Address range of network in CIDR format.
+        :type   cidr: ``str`` or ``None``
+
+        :param  description: Custom description for the network.
+        :type   description: ``str`` or ``None``
+
+        :param  mode: Create a 'auto', 'custom', or 'legacy' network.
+        :type   mode: ``str``
 
         :return:  Network object
         :rtype:   :class:`GCENetwork`
         """
         network_data = {}
         network_data['name'] = name
-        network_data['IPv4Range'] = cidr
         network_data['description'] = description
+        if mode.lower() not in ['auto', 'custom', 'legacy']:
+            raise ValueError("Invalid network mode: '%s'. Must be 'auto', "
+                             "'custom', or 'legacy'." % mode)
+        if cidr and mode in ['auto', 'custom']:
+            raise ValueError("Can only specify IPv4Range with 'legacy' mode.")
 
         request = '/global/networks'
+
+        if mode == 'legacy':
+            if not cidr:
+                raise ValueError("Must specify IPv4Range with 'legacy' mode.")
+            network_data['IPv4Range'] = cidr
+        else:
+            network_data['autoCreateSubnetworks'] = (mode.lower() == 'auto')
 
         self.connection.async_request(request, method='POST',
                                       data=network_data)
@@ -2261,14 +2433,15 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def create_node(self, name, size, image, location=None,
-                    ex_network='default', ex_tags=None, ex_metadata=None,
+                    ex_network='default', ex_subnetwork=None,
+                    ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True,
                     external_ip='ephemeral', ex_disk_type='pd-standard',
                     ex_disk_auto_delete=True, ex_service_accounts=None,
                     description=None, ex_can_ip_forward=None,
                     ex_disks_gce_struct=None, ex_nic_gce_struct=None,
                     ex_on_host_maintenance=None, ex_automatic_restart=None,
-                    ex_preemptible=None):
+                    ex_preemptible=None, ex_image_family=None):
         """
         Create a new node and return a node object for the node.
 
@@ -2288,6 +2461,9 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
+
+        :keyword  ex_subnetwork: The subnetwork to associate with the node.
+        :type     ex_subnetwork: ``str`` or :class:`GCESubnetwork`
 
         :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
@@ -2381,6 +2557,11 @@ class GCENodeDriver(NodeDriver):
                                   preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -2388,9 +2569,15 @@ class GCENodeDriver(NodeDriver):
             raise ValueError("Cannot specify both 'ex_boot_disk' and "
                              "'ex_disks_gce_struct'")
 
-        if not image and not ex_boot_disk and not ex_disks_gce_struct:
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
+
+        if not (image or ex_image_family or ex_boot_disk or
+                ex_disks_gce_struct):
             raise ValueError("Missing root device or image. Must specify an "
-                             "'image', existing 'ex_boot_disk', or use the "
+                             "'image', 'ex_image_family', existing "
+                             "'ex_boot_disk', or use the "
                              "'ex_disks_gce_struct'.")
 
         location = location or self.zone
@@ -2400,6 +2587,14 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_subnetwork:
+            if not hasattr(ex_subnetwork, 'name'):
+                ex_subnetwork = \
+                    self.ex_get_subnetwork(ex_subnetwork,
+                                           region=self._get_region_from_zone(
+                                               location))
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
@@ -2435,7 +2630,8 @@ class GCENodeDriver(NodeDriver):
                                                    ex_nic_gce_struct,
                                                    ex_on_host_maintenance,
                                                    ex_automatic_restart,
-                                                   ex_preemptible)
+                                                   ex_preemptible,
+                                                   ex_subnetwork)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -2453,7 +2649,8 @@ class GCENodeDriver(NodeDriver):
                                  ex_disks_gce_struct=None,
                                  ex_nic_gce_struct=None,
                                  ex_on_host_maintenance=None,
-                                 ex_automatic_restart=None):
+                                 ex_automatic_restart=None,
+                                 ex_image_family=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -2579,12 +2776,21 @@ class GCENodeDriver(NodeDriver):
                                         default value for the instance type.)
         :type     ex_automatic_restart: ``bool`` or ``None``
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
                              "'ex_disks_gce_struct'.")
+
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
 
         location = location or self.zone
         if not hasattr(location, 'name'):
@@ -2593,6 +2799,8 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
         if not hasattr(ex_disk_type, 'name'):
@@ -2822,7 +3030,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
-                      ex_disk_type='pd-standard'):
+                      ex_disk_type='pd-standard', ex_image_family=None):
         """
         Create a volume (disk).
 
@@ -2852,9 +3060,21 @@ class GCENodeDriver(NodeDriver):
                                 for an SSD disk.
         :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
+        if image and ex_image_family:
+            raise ValueError("Cannot specify both 'image' and "
+                             "'ex_image_family'")
+
+        if ex_image_family:
+            image = self.ex_get_image_from_family(ex_image_family)
+
         request, volume_data, params = self._create_vol_req(
             size, name, location, snapshot, image, ex_disk_type)
         try:
@@ -3685,6 +3905,30 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
+    def ex_set_machine_type(self, node, machine_type='n1-standard-1'):
+        """
+        Set the machine type of the stopped instance. Can be the short-name,
+        a full, or partial URL.
+
+        :param  node: Target node object to change
+        :type   node: :class:`Node`
+
+        :param  machine_type: Desired machine type
+        :type   machine_type: ``str``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = mt_url = '/zones/%s' % node.extra['zone'].name
+
+        mt = machine_type.split('/')[-1]
+        mt_url = '%s/machineTypes/%s' % (mt_url, mt)
+
+        request = '%s/instances/%s/setMachineType' % (request, node.name)
+        body = {"machineType": mt_url}
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_start_node(self, node):
         """
         Start a node that is stopped and in TERMINATED state.
@@ -4060,13 +4304,22 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
 
-    def ex_get_image(self, partial_name, ex_project_list=None):
+    def ex_get_image(self, partial_name, ex_project_list=None,
+                     ex_standard_projects=True):
         """
         Return an GCENodeImage object based on the name or link provided.
 
         :param  partial_name: The name, partial name, or full path of a GCE
                               image.
         :type   partial_name: ``str``
+
+        :param  ex_project_list: The name of the project to list for images.
+                                 Examples include: 'debian-cloud'.
+        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+
+        :param  ex_standard_projects: If true, check in standard projects if
+                                      the image is not found.
+        :type   ex_standard_projects: ``bool``
 
         :return:  GCENodeImage object based on provided information or None if
                   an image with that name is not found.
@@ -4076,7 +4329,7 @@ class GCENodeDriver(NodeDriver):
             response = self.connection.request(partial_name, method='GET')
             return self._to_node_image(response.object)
         image = self._match_images(ex_project_list, partial_name)
-        if not image:
+        if not image and ex_standard_projects:
             for img_proj, short_list in self.IMAGE_PROJECTS.items():
                 for short_name in short_list:
                     if partial_name.startswith(short_name):
@@ -4085,6 +4338,69 @@ class GCENodeDriver(NodeDriver):
         if not image:
             raise ResourceNotFoundError('Could not find image \'%s\'' % (
                                         partial_name), None, None)
+        return image
+
+    def ex_get_image_from_family(self, image_family, ex_project_list=None,
+                                 ex_standard_projects=True):
+        """
+        Return an GCENodeImage object based on an image family name.
+
+        :param  image_family: The name of the Image Family to return the
+                              latest image from.
+        :type   image_family: ``str``
+
+        :param  ex_project_list: The name of the project to list for images.
+                                 Examples include: 'debian-cloud'.
+        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+
+        :param  ex_standard_projects: If true, check in standard projects if
+                                      the image is not found.
+        :type   ex_standard_projects: ``bool``
+
+        :return:  GCENodeImage object based on provided information or
+                  ResourceNotFoundError if the image family is not found.
+        :rtype:   :class:`GCENodeImage` or raise ``ResourceNotFoundError``
+        """
+        def _try_image_family(image_family, project=None):
+            request = '/global/images/family/%s' % (image_family)
+            save_request_path = self.connection.request_path
+            if project:
+                new_request_path = save_request_path.replace(self.project,
+                                                             project)
+                self.connection.request_path = new_request_path
+            try:
+                response = self.connection.request(request, method='GET')
+                image = self._to_node_image(response.object)
+            except ResourceNotFoundError:
+                image = None
+            finally:
+                self.connection.request_path = save_request_path
+
+            return image
+
+        image = None
+        if image_family.startswith('https://'):
+            response = self.connection.request(image_family, method='GET')
+            return self._to_node_image(response.object)
+
+        if not ex_project_list:
+            image = _try_image_family(image_family)
+        else:
+            for img_proj in ex_project_list:
+                image = _try_image_family(image_family, project=img_proj)
+                if image:
+                    break
+
+        if not image and ex_standard_projects:
+            for img_proj, short_list in self.IMAGE_PROJECTS.items():
+                for short_name in short_list:
+                    if image_family.startswith(short_name):
+                        image = _try_image_family(image_family,
+                                                  project=img_proj)
+
+        if not image:
+            raise ResourceNotFoundError('Could not find image for family '
+                                        '\'%s\'' % (image_family), None, None)
         return image
 
     def ex_get_route(self, name):
@@ -4100,6 +4416,91 @@ class GCENodeDriver(NodeDriver):
         request = '/global/routes/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_route(response)
+
+    def ex_destroy_subnetwork(self, name, region=None):
+        """
+        Delete a Subnetwork object based on name and region.
+
+        :param  name: The name, URL or object of the subnetwork
+        :type   name: ``str`` or :class:`GCESubnetwork`
+
+        :param  name: The region object, name, or URL of the subnetwork
+        :type   name: ``str`` or :class:`GCERegion` or ``None``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        region_name = None
+        subnet_name = None
+        if region:
+            if isinstance(region, GCERegion):
+                region_name = region.name
+            else:
+                if region.startswith('https://'):
+                    region_name = region.split('/')[-1]
+                else:
+                    region_name = region
+        if isinstance(name, GCESubnetwork):
+            subnet_name = name.name
+            if not region_name:
+                region_name = name.region.name
+        else:
+            if name.startswith('https://'):
+                url_parts = self._get_components_from_path(name)
+                subnet_name = url_parts['name']
+                if not region_name:
+                    region_name = url_parts['region']
+            else:
+                subnet_name = name
+
+        if not region_name:
+            region = self._set_region(region)
+            if not region:
+                raise ("Could not determine region for subnetwork.")
+            else:
+                region_name = region.name
+
+        request = '/regions/%s/subnetworks/%s' % (region_name, subnet_name)
+        self.connection.request(request, method='DELETE').object
+        return True
+
+    def ex_get_subnetwork(self, name, region=None):
+        """
+        Return a Subnetwork object based on name and region.
+
+        :param  name: The name or URL of the subnetwork
+        :type   name: ``str``
+
+        :param  name: The region of the subnetwork
+        :type   name: ``str`` or :class:`GCERegion` or ``None``
+
+        :return:  A Subnetwork object
+        :rtype:   :class:`GCESubnetwork`
+        """
+        region_name = None
+        if name.startswith('https://'):
+            parts = self._get_components_from_path(name)
+            name = parts['name']
+            region_name = parts['region']
+        else:
+            if isinstance(region, GCERegion):
+                region_name = region.name
+            elif isinstance(region, str):
+                if region.startswith('https://'):
+                    region_name = region.split('/')[-1]
+                else:
+                    region_name = region
+
+        if not region_name:
+            region = self._set_region(region)
+            if not region:
+                raise ("Could not determine region for subnetwork.")
+            else:
+                region_name = region.name
+
+        request = '/regions/%s/subnetworks/%s' % (region_name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_subnetwork(response)
 
     def ex_get_network(self, name):
         """
@@ -4319,7 +4720,7 @@ class GCENodeDriver(NodeDriver):
             return None
         return self._to_zone(response)
 
-    def ex_copy_image(self, name, url, description=None):
+    def ex_copy_image(self, name, url, description=None, family=None):
         """
         Copy an image to your image collection.
 
@@ -4331,6 +4732,9 @@ class GCENodeDriver(NodeDriver):
 
         :param  description: The description of the image
         :type   description: ``str``
+
+        :param  family: The family of the image
+        :type   family: ``str``
 
         :return:  NodeImage object based on provided information or None if an
                   image with that name is not found.
@@ -4344,6 +4748,7 @@ class GCENodeDriver(NodeDriver):
         image_data = {
             'name': name,
             'description': description,
+            'family': family,
             'sourceType': 'RAW',
             'rawDisk': {
                 'source': url,
@@ -4490,9 +4895,9 @@ class GCENodeDriver(NodeDriver):
         supplied project.  If no project is given, it will search your own
         project.
 
-        :param  project:  The name of the project to search for images.
-                          Examples include: 'debian-cloud' and 'centos-cloud'.
-        :type   project:  ``str`` or ``None``
+        :param  project: The name of the project to search for images.
+                         Examples include: 'debian-cloud' and 'centos-cloud'.
+        :type   project: ``str``, ``list`` of ``str``, or ``None``
 
         :param  partial_name: The full name or beginning of a name for an
                               image.
@@ -4562,7 +4967,7 @@ class GCENodeDriver(NodeDriver):
                          ex_disks_gce_struct=None, ex_nic_gce_struct=None,
                          ex_on_host_maintenance=None,
                          ex_automatic_restart=None,
-                         ex_preemptible=None):
+                         ex_preemptible=None, ex_subnetwork=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to support both :class:`create_node` and
@@ -4673,6 +5078,9 @@ class GCENodeDriver(NodeDriver):
                                          not be preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
+        :param  ex_subnetwork: The network to associate with the node.
+        :type   ex_subnetwork: :class:`GCESubnetwork`
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -4777,9 +5185,12 @@ class GCENodeDriver(NodeDriver):
                                      "'ex_nic_gce_struct'. Use one or the "
                                      "other.")
 
+        ni = []
         if network:
             ni = [{'kind': 'compute#instanceNetworkInterface',
                    'network': network.extra['selfLink']}]
+            if ex_subnetwork:
+                ni[0]['subnetwork'] = ex_subnetwork.extra['selfLink']
             if external_ip:
                 access_configs = [{'name': 'External NAT',
                                    'type': 'ONE_TO_ONE_NAT'}]
@@ -5179,6 +5590,33 @@ class GCENodeDriver(NodeDriver):
                                  protocol=forwarding_rule.get('IPProtocol'),
                                  targetpool=target, driver=self, extra=extra)
 
+    def _to_subnetwork(self, subnetwork):
+        """
+        Return a Subnetwork object from the JSON-response dictionary.
+
+        :param  subnetwork: The dictionary describing the subnetwork.
+        :type   subnetwork: ``dict``
+
+        :return: Subnetwork object
+        :rtype: :class:`GCESubnetwork`
+        """
+        extra = {}
+
+        extra['creationTimestamp'] = subnetwork.get('creationTimestamp')
+        extra['description'] = subnetwork.get('description')
+        extra['gatewayAddress'] = subnetwork.get('gatewayAddress')
+        extra['ipCidrRange'] = subnetwork.get('ipCidrRange')
+        extra['network'] = subnetwork.get('network')
+        extra['region'] = subnetwork.get('region')
+        extra['selfLink'] = subnetwork.get('selfLink')
+        network = self._get_object_by_kind(subnetwork.get('network'))
+        region = self._get_object_by_kind(subnetwork.get('region'))
+
+        return GCESubnetwork(id=subnetwork['id'], name=subnetwork['name'],
+                             cidr=subnetwork.get('ipCidrRange'),
+                             network=network, region=region,
+                             driver=self, extra=extra)
+
     def _to_network(self, network):
         """
         Return a Network object from the JSON-response dictionary.
@@ -5192,9 +5630,23 @@ class GCENodeDriver(NodeDriver):
         extra = {}
 
         extra['selfLink'] = network.get('selfLink')
-        extra['gatewayIPv4'] = network.get('gatewayIPv4')
         extra['description'] = network.get('description')
         extra['creationTimestamp'] = network.get('creationTimestamp')
+        # 'legacy'
+        extra['gatewayIPv4'] = network.get('gatewayIPv4')
+        extra['IPv4Range'] = network.get('IPv4Range')
+        # 'auto' or 'custom'
+        extra['autoCreateSubnetworks'] = network.get('autoCreateSubnetworks')
+        extra['subnetworks'] = network.get('subnetworks')
+
+        # match Cloud SDK 'gcloud'
+        if 'autoCreateSubnetworks' in network:
+            if network['autoCreateSubnetworks']:
+                extra['mode'] = 'auto'
+            else:
+                extra['mode'] = 'custom'
+        else:
+            extra['mode'] = 'legacy'
 
         return GCENetwork(id=network['id'], name=network['name'],
                           cidr=network.get('IPv4Range'),
@@ -5372,8 +5824,12 @@ class GCENodeDriver(NodeDriver):
         extra['guestCpus'] = machine_type.get('guestCpus')
         extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         try:
+            orig_api_name = self.api_name
+            self.api_name = "%s_%s" % (self.api_name,
+                                       extra['zone'].name.split("-")[0])
             price = self._get_size_price(size_id=machine_type['name'])
-        except KeyError:
+            self.api_name = orig_api_name
+        except:
             price = None
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],

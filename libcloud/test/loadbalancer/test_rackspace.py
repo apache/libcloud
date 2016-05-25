@@ -29,7 +29,6 @@ from libcloud.loadbalancer.types import MemberCondition
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver, \
     RackspaceHealthMonitor, RackspaceHTTPHealthMonitor, \
     RackspaceConnectionThrottle, RackspaceAccessRule
-from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
 from libcloud.common.types import LibcloudError
 
@@ -922,7 +921,7 @@ class RackspaceUKLBTests(RackspaceLBTests):
         RackspaceLBDriver.connectionCls.conn_classes = (None,
                                                         RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
-        self.driver = RackspaceUKLBDriver('user', 'key')
+        self.driver = RackspaceLBDriver('user', 'key', region='lon')
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
 

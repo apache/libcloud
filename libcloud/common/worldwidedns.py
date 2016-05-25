@@ -190,6 +190,9 @@ class WorldWideDNSConnection(ConnectionUserAndKey):
         """
         params["NAME"] = self.user_id
         params["PASSWORD"] = self.key
-        if hasattr(self, 'reseller_id'):
-            params["ID"] = self.reseller_id
+
+        reseller_id = getattr(self, 'reseller_id', None)
+        if reseller_id:
+            params["ID"] = reseller_id
+
         return params

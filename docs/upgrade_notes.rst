@@ -5,6 +5,15 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud in development
+-----------------------
+
+* Per-region provider constants and related driver classes which have been
+  deprecated in Libcloud 0.14.0 have now been fully removed.
+
+  Those provider drivers have moved to the single provider constant +
+  ``region`` constructor argument in Libcloud 0.14.0.
+
 Libcloud 0.20.0
 ---------------
 

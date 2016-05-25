@@ -38,8 +38,6 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
-from libcloud.storage.drivers.cloudfiles import CloudFilesUSStorageDriver
-from libcloud.storage.drivers.cloudfiles import CloudFilesUKStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
@@ -61,8 +59,11 @@ class CloudFilesTests(unittest.TestCase):
             CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
         CloudFilesMockRawResponse.type = None
+
+        driver_kwargs = self.driver_kwargs.copy()
+        driver_kwargs['region'] = self.region
         self.driver = self.driver_klass(*self.driver_args,
-                                        **self.driver_kwargs)
+                                        **driver_kwargs)
 
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -866,12 +867,12 @@ class CloudFilesTests(unittest.TestCase):
 
 
 class CloudFilesDeprecatedUSTests(CloudFilesTests):
-    driver_klass = CloudFilesUSStorageDriver
+    driver_klass = CloudFilesStorageDriver
     region = 'ord'
 
 
 class CloudFilesDeprecatedUKTests(CloudFilesTests):
-    driver_klass = CloudFilesUKStorageDriver
+    driver_klass = CloudFilesStorageDriver
     region = 'lon'
 
 

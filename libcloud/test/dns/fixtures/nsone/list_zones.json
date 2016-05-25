@@ -1,0 +1,40 @@
+[
+  {
+    "id": "520422af9f782d37dffb588b",
+    "ttl": 3600,
+    "nx_ttl": 3600,
+    "retry": 7200,
+    "zone": "example.com",
+    "refresh": 43200,
+    "expiry": 1209600,
+    "dns_servers": [
+      "dns1.p03.nsone.net",
+      "dns2.p03.nsone.net",
+      "dns3.p03.nsone.net",
+      "dns4.p03.nsone.net"
+    ],
+    "networks": [0],
+    "network_pools": ["p03"],
+    "meta": {},
+    "hostmaster": "hostmaster@nsone.net"
+  },
+  {
+    "id": "520422c99f782d37dffb5892",
+    "ttl": 3600,
+    "nx_ttl": 3600,
+    "retry": 7200,
+    "zone": "nsoneisgreat.com",
+    "refresh": 43200,
+    "expiry": 1209600,
+    "dns_servers": [
+      "dns1.p04.nsone.net",
+      "dns2.p04.nsone.net",
+      "dns3.p04.nsone.net",
+      "dns4.p04.nsone.net"
+    ],
+    "networks": [0],
+    "network_pools": ["p04"],
+    "meta": {},
+    "hostmaster": "hostmaster@nsone.net"
+  }
+]

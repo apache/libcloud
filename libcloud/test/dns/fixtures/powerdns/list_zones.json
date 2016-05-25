@@ -1,0 +1,30 @@
+[
+   {
+      "id":"example.com.",
+      "url":"/servers/localhost/zones/example.com.",
+      "name":"example.com",
+      "kind":"Native",
+      "dnssec":false,
+      "account":"",
+      "masters":[
+
+      ],
+      "serial":1,
+      "notified_serial":0,
+      "last_check":0
+   },
+   {
+      "id":"example.net.",
+      "url":"/servers/localhost/zones/example.net.",
+      "name":"example.net",
+      "kind":"Native",
+      "dnssec":false,
+      "account":"",
+      "masters":[
+
+      ],
+      "serial":2016041501,
+      "notified_serial":0,
+      "last_check":0
+   }
+]

@@ -148,6 +148,8 @@ class DurableResponse(XmlResponse):
         zone_dict = {}
         record_dict = {}
         xml_obj = self.parse_body()
+
+        # pylint: disable=no-member
         envelop_body = xml_obj.getchildren()[0]
         method_resp = envelop_body.getchildren()[0]
         # parse the xml_obj

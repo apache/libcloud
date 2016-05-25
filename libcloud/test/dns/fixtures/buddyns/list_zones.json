@@ -1,0 +1,18 @@
+[ {
+    "name" : "microsoft.com",
+    "name_idn" : "microsoft.com",
+    "creation_ts" : "2013-11-06T19:39:38.205",
+    "master" : "65.55.37.62",
+    "serial" : 2013110601,
+    "status": "/api/v2/zone/microsoft.com/status/",
+    "delegation": "/api/v2/zone/microsoft.com/delegation/"
+},
+{
+    "name" : "google.de",
+    "name_idn" : "google.de",
+    "creation_ts" : "2012-06-06T19:53:07.269",
+    "master" : "154.15.200.6",
+    "serial" : 1383743519,
+    "status": "google.de/status/",
+    "delegation": "/api/v2/zone/bücher.de/delegation/"
+ } ]

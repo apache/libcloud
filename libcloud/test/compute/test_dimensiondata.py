@@ -19,18 +19,21 @@ except ImportError:
     from xml.etree import ElementTree as ET
 
 import sys
+from types import GeneratorType
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
+from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
+from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
+from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-
 from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.utils.xml import fixxpath, findtext
 
 
 class DimensionDataTests(unittest.TestCase, TestCaseMixin):
@@ -49,6 +52,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         with self.assertRaises(InvalidCredsError):
             self.driver.list_nodes()
 
+    def test_get_account_details(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.connection.get_account_details()
+        self.assertEqual(ret.full_name, 'Test User')
+        self.assertEqual(ret.first_name, 'Test')
+        self.assertEqual(ret.email, 'test@example.com')
+
     def test_list_locations_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_locations()
@@ -61,15 +71,46 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes_response(self):
         DimensionDataMockHttp.type = None
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 2)
+        self.assertEqual(len(ret), 7)
+
+    def test_node_extras(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(isinstance(ret[0].extra['vmWareTools'], DimensionDataServerVMWareTools))
+        self.assertTrue(isinstance(ret[0].extra['cpu'], DimensionDataServerCpuSpecification))
+        self.assertTrue(isinstance(ret[0].extra['disks'], list))
+        self.assertTrue(isinstance(ret[0].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[0].extra['disks'][0].size_gb, 10)
+        self.assertTrue(isinstance(ret[1].extra['disks'], list))
+        self.assertTrue(isinstance(ret[1].extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(ret[1].extra['disks'][0].size_gb, 10)
+
+    def test_server_states(self):
+        DimensionDataMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertTrue(ret[0].state == 'running')
+        self.assertTrue(ret[1].state == 'starting')
+        self.assertTrue(ret[2].state == 'stopping')
+        self.assertTrue(ret[3].state == 'reconfiguring')
+        self.assertTrue(ret[4].state == 'running')
+        self.assertTrue(ret[5].state == 'terminated')
+        self.assertTrue(ret[6].state == 'stopped')
+        self.assertEqual(len(ret), 7)
 
     def test_list_nodes_response_PAGINATED(self):
         DimensionDataMockHttp.type = 'PAGINATED'
         ret = self.driver.list_nodes()
-        self.assertEqual(len(ret), 4)
+        self.assertEqual(len(ret), 9)
+
+    def test_paginated_mcp2_call_with_page_size(self):
+        # cache org
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'PAGESIZE50'
+        node_list_generator = self.driver.connection.paginated_request_with_orgId_api_2('server/server', page_size=50)
+        self.assertTrue(isinstance(node_list_generator, GeneratorType))
 
     # We're making sure here the filters make it to the URL
-    # See _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
+    # See _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS for asserts
     def test_list_nodes_response_strings_ALLFILTERS(self):
         DimensionDataMockHttp.type = 'ALLFILTERS'
         ret = self.driver.list_nodes(ex_location='fake_loc', ex_name='fake_name',
@@ -78,6 +119,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                      ex_started=True, ex_state='fake_state',
                                      ex_network='fake_network', ex_network_domain='fake_network_domain')
         self.assertTrue(isinstance(ret, list))
+        self.assertEqual(len(ret), 7)
+
+        node = ret[3]
+        self.assertTrue(isinstance(node.extra['disks'], list))
+        self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
+        disk = node.extra['disks'][0]
+        self.assertEqual(disk.id, "c2e1f199-116e-4dbc-9960-68720b832b0a")
+        self.assertEqual(disk.scsi_id, 0)
+        self.assertEqual(disk.size_gb, 50)
+        self.assertEqual(disk.speed, "STANDARD")
+        self.assertEqual(disk.state, "NORMAL")
 
     def test_list_nodes_response_LOCATION(self):
         DimensionDataMockHttp.type = None
@@ -135,6 +187,17 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(images[0].extra['cpu'].cpu_count, 2)
         self.assertEqual(images[0].extra['OS_displayName'], 'REDHAT6/64')
 
+    def test_clean_failed_deployment_response_with_node(self):
+        node = Node(id='11', name=None, state=None,
+                    public_ips=None, private_ips=None, driver=self.driver)
+        ret = self.driver.ex_clean_failed_deployment(node)
+        self.assertTrue(ret is True)
+
+    def test_clean_failed_deployment_response_with_node_id(self):
+        node = 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+        ret = self.driver.ex_clean_failed_deployment(node)
+        self.assertTrue(ret is True)
+
     def test_ex_list_customer_images(self):
         images = self.driver.ex_list_customer_images()
         self.assertEqual(len(images), 3)
@@ -153,6 +216,56 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_response_no_pass_random_gen(self):
+        image = self.driver.list_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
+
+    def test_create_node_response_no_pass_customer_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        network = self.driver.ex_list_networks()[0]
+        node = self.driver.create_node(name='test2', image=image, auth=None,
+                                       ex_description='test2 node', ex_network=network,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+        self.assertTrue('password' not in node.extra)
 
     def test_create_node_response_STR(self):
         rootPw = 'pass123'
@@ -213,7 +326,111 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     auth=rootPw,
                                     ex_description='test2 node',
                                     ex_network=None,
-                                    ex_isStarted=False)
+                                    ex_is_started=False)
+
+    def test_create_node_mcp1_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp1_network(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network='fakenetwork',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_vlan='fakevlan',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_mcp2_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_network_domain_no_vlan_or_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_is_started=False)
+
+    def test_create_node_mcp2_additional_nics(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        additional_vlans = ['fakevlan1', 'fakevlan2']
+        additional_ipv4 = ['10.0.0.2', '10.0.0.3']
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_additional_nics_vlan=additional_vlans,
+                                       ex_additional_nics_ipv4=additional_ipv4,
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_bad_additional_nics_ipv4(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_ipv4='badstring',
+                                    ex_is_started=False)
+
+    def test_create_node_bad_additional_nics_vlan(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_vlan='fake_vlan',
+                                    ex_additional_nics_vlan='badstring',
+                                    ex_is_started=False)
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -349,8 +566,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'Aurora')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_ex_list_network_domains_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        nets = self.driver.ex_list_network_domains(location='fake_location', name='fake_name',
+                                                   service_plan='fake_plan', state='fake_state')
+        self.assertEqual(nets[0].name, 'Aurora')
+        self.assertTrue(isinstance(nets[0].location, NodeLocation))
+
     def test_ex_list_vlans(self):
         vlans = self.driver.ex_list_vlans()
+        self.assertEqual(vlans[0].name, "Primary")
+
+    def test_ex_list_vlans_ALLFILTERS(self):
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        vlans = self.driver.ex_list_vlans(location='fake_location', network_domain='fake_network_domain',
+                                          name='fake_name', ipv4_address='fake_ipv4', ipv6_address='fake_ipv6', state='fake_state')
         self.assertEqual(vlans[0].name, "Primary")
 
     def test_ex_create_vlan(self,):
@@ -387,6 +617,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.driver.ex_wait_for_state('NORMAL',
                                       self.driver.ex_get_vlan,
                                       vlan_id='0e56433f-d808-4669-821d-812769517ff8')
+
+    def test_ex_wait_for_state_NODE(self):
+        self.driver.ex_wait_for_state('running',
+                                      self.driver.ex_get_node_by_id,
+                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+
+    def test_ex_wait_for_state_FAIL(self):
+        with self.assertRaises(DimensionDataAPIException) as context:
+            self.driver.ex_wait_for_state('starting',
+                                          self.driver.ex_get_node_by_id,
+                                          id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                                          timeout=2
+                                          )
+        self.assertEqual(context.exception.code, 'running')
+        self.assertTrue('timed out' in context.exception.msg)
 
     def test_ex_update_vlan(self):
         vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
@@ -452,6 +697,58 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_create_firewall_rule(net, rules[0], 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
+    def test_ex_create_firewall_rule_with_specific_source_ip(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = list(filter(lambda x: x.name == 'SpecificSourceIP',
+                                              rules))[0]
+        rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_address_list(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.address_list_id = '12345'
+        rule.destination.address_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_port_list(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.port_list_id = '12345'
+        rule.destination.port_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_ALL_VALUES(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        for rule in rules:
+            self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', rules[-1])
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_WITH_POSITION_RULE_STR(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        rule = self.driver.ex_create_firewall_rule(net, rules[-2], 'BEFORE', 'RULE_WITH_SOURCE_AND_DEST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'BEFORE')
+
+    def test_ex_create_firewall_rule_FAIL_POSITION_WITH_RULE(self):
+        net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        with self.assertRaises(ValueError):
+            self.driver.ex_create_firewall_rule(net, rules[0], 'LAST', 'RULE_WITH_SOURCE_AND_DEST')
+
     def test_ex_get_firewall_rule(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
@@ -516,7 +813,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_remove_storage_from_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.ex_remove_storage_from_node(node, 1)
+        result = self.driver.ex_remove_storage_from_node(node, 0)
         self.assertTrue(result)
 
     def test_ex_change_storage_speed(self):
@@ -552,6 +849,249 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         location = self.driver.ex_get_location_by_id(None)
         self.assertIsNone(location)
 
+    def test_ex_get_base_image_by_id(self):
+        image_id = self.driver.list_images()[0].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_customer_image_by_id(self):
+        image_id = self.driver.ex_list_customer_images()[1].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_base_img(self):
+        image_id = self.driver.list_images()[1].id
+        image = self.driver.ex_get_base_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'WINDOWS')
+
+    def test_ex_get_image_by_id_customer_img(self):
+        image_id = self.driver.ex_list_customer_images()[0].id
+        image = self.driver.ex_get_customer_image_by_id(image_id)
+        self.assertEqual(image.extra['OS_type'], 'UNIX')
+
+    def test_ex_get_image_by_id_customer_FAIL(self):
+        image_id = 'FAKE_IMAGE_ID'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_get_base_image_by_id(image_id)
+
+    def test_ex_create_anti_affinity_rule(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule([node_list[0], node_list[1]])
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_TUPLE_STR(self):
+        node_list = self.driver.list_nodes()
+        success = self.driver.ex_create_anti_affinity_rule((node_list[0].id, node_list[1].id))
+        self.assertTrue(success)
+
+    def test_ex_create_anti_affinity_rule_FAIL_STR(self):
+        node_list = 'string'
+        with self.assertRaises(TypeError):
+            self.driver.ex_create_anti_affinity_rule(node_list)
+
+    def test_ex_create_anti_affinity_rule_FAIL_EXISTING(self):
+        node_list = self.driver.list_nodes()
+        DimensionDataMockHttp.type = 'FAIL_EXISTING'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_create_anti_affinity_rule((node_list[0], node_list[1]))
+
+    def test_ex_delete_anti_affinity_rule(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_STR(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        success = self.driver.ex_delete_anti_affinity_rule(rule.id)
+        self.assertTrue(success)
+
+    def test_ex_delete_anti_affinity_rule_FAIL(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rule = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)[0]
+        DimensionDataMockHttp.type = 'FAIL'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_delete_anti_affinity_rule(rule)
+
+    def test_ex_list_anti_affinity_rules_NETWORK_DOMAIN(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NETWORK(self):
+        network = self.driver.list_networks()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(network=network)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_NODE(self):
+        node = self.driver.list_nodes()[0]
+        rules = self.driver.ex_list_anti_affinity_rules(node=node)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_PAGINATED(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'PAGINATED'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain)
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 4)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_ALLFILTERS(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        rules = self.driver.ex_list_anti_affinity_rules(network_domain=net_domain, filter_id='FAKE_ID', filter_state='FAKE_STATE')
+        self.assertTrue(isinstance(rules, list))
+        self.assertEqual(len(rules), 2)
+        self.assertTrue(isinstance(rules[0].id, str))
+        self.assertTrue(isinstance(rules[0].node_list, list))
+
+    def test_ex_list_anti_affinity_rules_BAD_ARGS(self):
+        with self.assertRaises(ValueError):
+            self.driver.ex_list_anti_affinity_rules(network='fake_network', network_domain='fake_network_domain')
+
+    def test_ex_create_tag_key(self):
+        success = self.driver.ex_create_tag_key('MyTestKey')
+        self.assertTrue(success)
+
+    def test_ex_create_tag_key_ALLPARAMS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLPARAMS'
+        success = self.driver.ex_create_tag_key('MyTestKey', description="Test Key Desc.", value_required=False, display_on_report=False)
+        self.assertTrue(success)
+
+    def test_ex_create_tag_key_BADREQUEST(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'BADREQUEST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_create_tag_key('MyTestKey')
+
+    def test_ex_list_tag_keys(self):
+        tag_keys = self.driver.ex_list_tag_keys()
+        self.assertTrue(isinstance(tag_keys, list))
+        self.assertTrue(isinstance(tag_keys[0], DimensionDataTagKey))
+        self.assertTrue(isinstance(tag_keys[0].id, str))
+
+    def test_ex_list_tag_keys_ALLFILTERS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLFILTERS'
+        self.driver.ex_list_tag_keys(id='fake_id', name='fake_name', value_required=False, display_on_report=False)
+
+    def test_ex_get_tag_by_id(self):
+        tag = self.driver.ex_get_tag_key_by_id('d047c609-93d7-4bc5-8fc9-732c85840075')
+        self.assertTrue(isinstance(tag, DimensionDataTagKey))
+
+    def test_ex_get_tag_by_id_NOEXIST(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'NOEXIST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_get_tag_key_by_id('d047c609-93d7-4bc5-8fc9-732c85840075')
+
+    def test_ex_get_tag_by_name(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'SINGLE'
+        tag = self.driver.ex_get_tag_key_by_name('LibcloudTest')
+        self.assertTrue(isinstance(tag, DimensionDataTagKey))
+
+    def test_ex_get_tag_by_name_NOEXIST(self):
+        with self.assertRaises(ValueError):
+            self.driver.ex_get_tag_key_by_name('LibcloudTest')
+
+    def test_ex_modify_tag_key_NAME(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NAME'
+        success = self.driver.ex_modify_tag_key(tag_key, name='NewName')
+        self.assertTrue(success)
+
+    def test_ex_modify_tag_key_NOTNAME(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOTNAME'
+        success = self.driver.ex_modify_tag_key(tag_key, description='NewDesc', value_required=False, display_on_report=True)
+        self.assertTrue(success)
+
+    def test_ex_modify_tag_key_NOCHANGE(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOCHANGE'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_modify_tag_key(tag_key)
+
+    def test_ex_remove_tag_key(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        success = self.driver.ex_remove_tag_key(tag_key)
+        self.assertTrue(success)
+
+    def test_ex_remove_tag_key_NOEXIST(self):
+        tag_key = self.driver.ex_list_tag_keys()[0]
+        DimensionDataMockHttp.type = 'NOEXIST'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_remove_tag_key(tag_key)
+
+    def test_ex_apply_tag_to_asset(self):
+        node = self.driver.list_nodes()[0]
+        success = self.driver.ex_apply_tag_to_asset(node, 'TagKeyName', 'FakeValue')
+        self.assertTrue(success)
+
+    def test_ex_apply_tag_to_asset_NOVALUE(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOVALUE'
+        success = self.driver.ex_apply_tag_to_asset(node, 'TagKeyName')
+        self.assertTrue(success)
+
+    def test_ex_apply_tag_to_asset_NOTAGKEY(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOTAGKEY'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_apply_tag_to_asset(node, 'TagKeyNam')
+
+    def test_ex_apply_tag_to_asset_BADASSETTYPE(self):
+        network = self.driver.list_networks()[0]
+        DimensionDataMockHttp.type = 'NOTAGKEY'
+        with self.assertRaises(TypeError):
+            self.driver.ex_apply_tag_to_asset(network, 'TagKeyNam')
+
+    def test_ex_remove_tag_from_asset(self):
+        node = self.driver.list_nodes()[0]
+        success = self.driver.ex_remove_tag_from_asset(node, 'TagKeyName')
+        self.assertTrue(success)
+
+    def test_ex_remove_tag_from_asset_NOTAG(self):
+        node = self.driver.list_nodes()[0]
+        DimensionDataMockHttp.type = 'NOTAG'
+        with self.assertRaises(DimensionDataAPIException):
+            self.driver.ex_remove_tag_from_asset(node, 'TagKeyNam')
+
+    def test_ex_list_tags(self):
+        tags = self.driver.ex_list_tags()
+        self.assertTrue(isinstance(tags, list))
+        self.assertTrue(isinstance(tags[0], DimensionDataTag))
+        self.assertTrue(len(tags) == 3)
+
+    def test_ex_list_tags_ALLPARAMS(self):
+        self.driver.connection._get_orgId()
+        DimensionDataMockHttp.type = 'ALLPARAMS'
+        tags = self.driver.ex_list_tags(asset_id='fake_asset_id', asset_type='fake_asset_type',
+                                        location='fake_location', tag_key_name='fake_tag_key_name',
+                                        tag_key_id='fake_tag_key_id', value='fake_value',
+                                        value_required=False, display_on_report=False)
+        self.assertTrue(isinstance(tags, list))
+        self.assertTrue(isinstance(tags[0], DimensionDataTag))
+        self.assertTrue(len(tags) == 3)
+
     def test_priv_location_to_location_id(self):
         location = self.driver.ex_get_location_by_id('NA9')
         self.assertEqual(
@@ -568,6 +1108,30 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
     def test_priv_location_to_location_id_TYPEERROR(self):
         with self.assertRaises(TypeError):
             self.driver._location_to_location_id([1, 2, 3])
+
+    def test_priv_image_needs_auth_os_img(self):
+        image = self.driver.list_images()[0]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_os_img_STR(self):
+        image = self.driver.list_images()[0].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows(self):
+        image = self.driver.ex_list_customer_images()[1]
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_windows_STR(self):
+        image = self.driver.ex_list_customer_images()[1].id
+        self.assertTrue(self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux(self):
+        image = self.driver.ex_list_customer_images()[0]
+        self.assertTrue(not self.driver._image_needs_auth(image))
+
+    def test_priv_image_needs_auth_cust_img_linux_STR(self):
+        image = self.driver.ex_list_customer_images()[0].id
+        self.assertTrue(not self.driver._image_needs_auth(image))
 
 
 class InvalidRequestError(Exception):
@@ -717,64 +1281,95 @@ class DimensionDataMockHttp(MockHttp):
                 'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_POST.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server.xml')
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create.xml'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer(self, method, url, body, headers):
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_FAIL_EXISTING(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_create_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418_FAIL(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer.xml')
+            'server_deleteServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_INPROGRESS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_INPROGRESS(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deleteServer_RESOURCEBUSY.xml')
+            'server_deleteServer_RESOURCEBUSY.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}rebootServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer.xml')
+            'server_rebootServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_INPROGRESS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_INPROGRESS(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}rebootServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_rebootServer_RESOURCEBUSY.xml')
+            'server_rebootServer_RESOURCEBUSY.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
         if url.endswith('datacenterId=NA3'):
             body = self.fixtures.load(
-                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_NA3.xml')
+                'server_server_NA3.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+            'server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
-        if url.endswith('pageNumber=2'):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGESIZE50(self, method, url, body, headers):
+        if not url.endswith('pageSize=50'):
+            raise ValueError("pageSize is not set as expected")
+        body = self.fixtures.load(
+            'server_server.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
             body = self.fixtures.load(
-                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+                'server_server.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
             body = self.fixtures.load(
-                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_paginated.xml')
+                'server_server_paginated.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(self, method, url, body, headers):
         (_, params) = url.split('?')
         parameters = params.split('&')
         for parameter in parameters:
@@ -804,319 +1399,751 @@ class DimensionDataMockHttp(MockHttp):
             else:
                 raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server.xml')
+            'server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'id':
+                assert value == 'FAKE_ID'
+            elif key == 'state':
+                assert value == 'FAKE_STATE'
+            elif key == 'pageSize':
+                assert value == '250'
+            elif key == 'networkDomainId':
+                pass
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'server_antiAffinityRule_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_PAGINATED(self, method, url, body, headers):
+        if 'pageNumber=2' in url:
+            body = self.fixtures.load(
+                'server_antiAffinityRule_list.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load(
+                'server_antiAffinityRule_list_PAGINATED.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter(self, method, url, body, headers):
         if url.endswith('id=NA9'):
             body = self.fixtures.load(
-                'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_NA9.xml')
+                'infrastructure_datacenter_NA9.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter.xml')
+            'infrastructure_datacenter.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_datacenter_ALLFILTERS(self, method, url, body, headers):
+        if url.endswith('id=NA9'):
+            body = self.fixtures.load(
+                'infrastructure_datacenter_NA9.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        body = self.fixtures.load(
+            'infrastructure_datacenter.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}updateVmwareTools":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_updateVmwareTools.xml')
+            'server_updateVmwareTools.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}startServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer.xml')
+            'server_startServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}startServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_startServer_INPROGRESS.xml')
+            'server_startServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer.xml')
+            'server_shutdownServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer_INPROGRESS.xml')
+            'server_shutdownServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}resetServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_resetServer.xml')
+            'server_resetServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}powerOffServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer.xml')
+            'server_powerOffServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}powerOffServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_powerOffServer_INPROGRESS.xml')
+            'server_powerOffServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain.xml')
+            'network_networkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'type':
+                assert value == 'fake_plan'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan.xml')
+            'network_networkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'networkDomainId':
+                assert value == 'fake_network_domain'
+            elif key == 'ipv6Address':
+                assert value == 'fake_ipv6'
+            elif key == 'privateIpv4Address':
+                assert value == 'fake_ipv4'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'state':
+                assert value == 'fake_state'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'network_vlan.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deployServer":
             raise InvalidRequestError(request.tag)
+
+        # Make sure the we either have a network tag with an IP or networkId
+        # Or Network info with a primary nic that has privateip or vlanid
+        network = request.find(fixxpath('network', TYPES_URN))
+        network_info = request.find(fixxpath('networkInfo', TYPES_URN))
+        if network is not None:
+            if network_info is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            ipv4 = findtext(network, 'privateIpv4', TYPES_URN)
+            networkId = findtext(network, 'networkId', TYPES_URN)
+            if ipv4 is None and networkId is None:
+                raise InvalidRequestError('Invalid request MCP1 requests need privateIpv4 or networkId')
+        elif network_info is not None:
+            if network is not None:
+                raise InvalidRequestError("Request has both MCP1 and MCP2 values")
+            primary_nic = network_info.find(fixxpath('primaryNic', TYPES_URN))
+            ipv4 = findtext(primary_nic, 'privateIpv4', TYPES_URN)
+            vlanId = findtext(primary_nic, 'vlanId', TYPES_URN)
+            if ipv4 is None and vlanId is None:
+                raise InvalidRequestError('Invalid request MCP2 requests need privateIpv4 or vlanId')
+        else:
+            raise InvalidRequestError('Invalid request, does not have network or network_info in XML')
+
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployServer.xml')
+            'server_deployServer.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+            'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deployNetworkDomain":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain.xml')
+            'network_deployNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+            'network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be_ALLFILTERS(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}editNetworkDomain":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain.xml')
+            'network_editNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteNetworkDomain":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNetworkDomain.xml')
+            'network_deleteNetworkDomain.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deployVlan":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployVlan.xml')
+            'network_deployVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml')
+            'network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}editVlan":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan.xml')
+            'network_editVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteVlan":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteVlan.xml')
+            'network_deleteVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}expandVlan":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_expandVlan.xml')
+            'network_expandVlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}addPublicIpBlock":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_addPublicIpBlock.xml')
+            'network_addPublicIpBlock.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba.xml')
+            'network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock.xml')
+            'network_publicIpBlock.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8.xml')
+            'network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}removePublicIpBlock":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock.xml')
+            'network_removePublicIpBlock.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule.xml')
+            'network_firewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}createFirewallRule":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createFirewallRule.xml')
+            'network_createFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c.xml')
+            'network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}editFirewallRule":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule.xml')
+            'network_editFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteFirewallRule":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteFirewallRule.xml')
+            'network_deleteFirewallRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}createNatRule":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createNatRule.xml')
+            'network_createNatRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule.xml')
+            'network_natRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml')
+            'network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}deleteNatRule":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule.xml')
+            'network_deleteNatRule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}addNic":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addNic.xml')
+            'server_addNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}removeNic":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeNic.xml')
+            'server_removeNic.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_disableServerMonitoring(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_disableServerMonitoring(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}disableServerMonitoring":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_disableServerMonitoring.xml')
+            'server_disableServerMonitoring.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_enableServerMonitoring(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_enableServerMonitoring(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}enableServerMonitoring":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_enableServerMonitoring.xml')
+            'server_enableServerMonitoring.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}changeServerMonitoringPlan":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeServerMonitoringPlan.xml')
+            'server_changeServerMonitoringPlan.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage.xml')
+            'image_osImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c(self, method, url, body, headers):
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage.xml')
+            'image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer(self, method, url, body, headers):
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_osImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_customerImage.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_FAKE_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'image_customerImage_BAD_REQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}reconfigureServer":
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
-            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_reconfigureServer.xml')
+            'server_reconfigureServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cleanServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_cleanServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_addDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_addDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_removeDisk(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'server_removeDisk.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is not None:
+            raise ValueError("Default description for a tag should be blank")
+        if value_required is None or value_required != 'true':
+            raise ValueError("Default valueRequired should be true")
+        if display_on_report is None or display_on_report != 'true':
+            raise ValueError("Default displayOnReport should be true")
+
+        body = self.fixtures.load(
+            'tag_createTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey_ALLPARAMS(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}createTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is None:
+            raise ValueError("Description should have a value")
+        if value_required is None or value_required != 'false':
+            raise ValueError("valueRequired should be false")
+        if display_on_report is None or display_on_report != 'false':
+            raise ValueError("displayOnReport should be false")
+
+        body = self.fixtures.load(
+            'tag_createTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_createTagKey_BADREQUEST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_createTagKey_BADREQUEST.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_SINGLE(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_list_SINGLE.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_ALLFILTERS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'id':
+                assert value == 'fake_id'
+            elif key == 'name':
+                assert value == 'fake_name'
+            elif key == 'valueRequired':
+                assert value == 'false'
+            elif key == 'displayOnReport':
+                assert value == 'false'
+            elif key == 'pageSize':
+                assert value == '250'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'tag_tagKey_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_d047c609_93d7_4bc5_8fc9_732c85840075(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_d047c609_93d7_4bc5_8fc9_732c85840075_NOEXIST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NAME(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is None:
+            raise ValueError("Name must have a value in the request")
+        if description is not None:
+            raise ValueError("Description should be empty")
+        if value_required is not None:
+            raise ValueError("valueRequired should be empty")
+        if display_on_report is not None:
+            raise ValueError("displayOnReport should be empty")
+        body = self.fixtures.load(
+            'tag_editTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NOTNAME(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}editTagKey":
+            raise InvalidRequestError(request.tag)
+        name = findtext(request, 'name', TYPES_URN)
+        description = findtext(request, 'description', TYPES_URN)
+        value_required = findtext(request, 'valueRequired', TYPES_URN)
+        display_on_report = findtext(request, 'displayOnReport', TYPES_URN)
+        if name is not None:
+            raise ValueError("Name should be empty")
+        if description is None:
+            raise ValueError("Description should not be empty")
+        if value_required is None:
+            raise ValueError("valueRequired should not be empty")
+        if display_on_report is None:
+            raise ValueError("displayOnReport should not be empty")
+        body = self.fixtures.load(
+            'tag_editTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NOCHANGE(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_editTagKey_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_deleteTagKey(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}deleteTagKey":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'tag_deleteTagKey.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_deleteTagKey_NOEXIST(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_deleteTagKey_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}applyTags":
+            raise InvalidRequestError(request.tag)
+        asset_type = findtext(request, 'assetType', TYPES_URN)
+        asset_id = findtext(request, 'assetId', TYPES_URN)
+        tag = request.find(fixxpath('tag', TYPES_URN))
+        tag_key_name = findtext(tag, 'tagKeyName', TYPES_URN)
+        value = findtext(tag, 'value', TYPES_URN)
+        if asset_type is None:
+            raise ValueError("assetType should not be empty")
+        if asset_id is None:
+            raise ValueError("assetId should not be empty")
+        if tag_key_name is None:
+            raise ValueError("tagKeyName should not be empty")
+        if value is None:
+            raise ValueError("value should not be empty")
+
+        body = self.fixtures.load(
+            'tag_applyTags.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags_NOVALUE(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}applyTags":
+            raise InvalidRequestError(request.tag)
+        asset_type = findtext(request, 'assetType', TYPES_URN)
+        asset_id = findtext(request, 'assetId', TYPES_URN)
+        tag = request.find(fixxpath('tag', TYPES_URN))
+        tag_key_name = findtext(tag, 'tagKeyName', TYPES_URN)
+        value = findtext(tag, 'value', TYPES_URN)
+        if asset_type is None:
+            raise ValueError("assetType should not be empty")
+        if asset_id is None:
+            raise ValueError("assetId should not be empty")
+        if tag_key_name is None:
+            raise ValueError("tagKeyName should not be empty")
+        if value is not None:
+            raise ValueError("value should be empty")
+
+        body = self.fixtures.load(
+            'tag_applyTags.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_applyTags_NOTAGKEY(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_applyTags_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_removeTags(self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}removeTags":
+            raise InvalidRequestError(request.tag)
+        body = self.fixtures.load(
+            'tag_removeTag.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_removeTags_NOTAG(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_removeTag_BADREQUEST.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'tag_tag_list.xml'
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag_ALLPARAMS(self, method, url, body, headers):
+        (_, params) = url.split('?')
+        parameters = params.split('&')
+        for parameter in parameters:
+            (key, value) = parameter.split('=')
+            if key == 'assetId':
+                assert value == 'fake_asset_id'
+            elif key == 'assetType':
+                assert value == 'fake_asset_type'
+            elif key == 'valueRequired':
+                assert value == 'false'
+            elif key == 'displayOnReport':
+                assert value == 'false'
+            elif key == 'pageSize':
+                assert value == '250'
+            elif key == 'datacenterId':
+                assert value == 'fake_location'
+            elif key == 'value':
+                assert value == 'fake_value'
+            elif key == 'tagKeyName':
+                assert value == 'fake_tag_key_name'
+            elif key == 'tagKeyId':
+                assert value == 'fake_tag_key_id'
+            else:
+                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+        body = self.fixtures.load(
+            'tag_tag_list.xml'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

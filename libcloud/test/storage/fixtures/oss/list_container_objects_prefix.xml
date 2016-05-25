@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+  <Name>20150624</Name>
+  <Prefix>en</Prefix>
+  <Marker></Marker>
+  <MaxKeys>100</MaxKeys>
+  <Delimiter></Delimiter>
+  <IsTruncated>false</IsTruncated>
+  <Contents>
+    <Key>en/</Key>
+    <LastModified>2016-01-15T14:43:15.000Z</LastModified>
+    <ETag>"D41D8CD98F00B204E9800998ECF8427E"</ETag>
+    <Type>Normal</Type>
+    <Size>0</Size>
+    <StorageClass>Standard</StorageClass>
+    <Owner>
+      <ID>1751306716098727</ID>
+      <DisplayName>1751306716098727</DisplayName>
+    </Owner>
+  </Contents>
+  <Contents>
+    <Key>en/test.txt</Key>
+    <LastModified>2016-01-15T14:42:46.000Z</LastModified>
+    <ETag>"26AB0DB90D72E28AD0BA1E22EE510510"</ETag>
+    <Type>Normal</Type>
+    <Size>2</Size>
+    <StorageClass>Standard</StorageClass>
+    <Owner>
+      <ID>1751306716098727</ID>
+      <DisplayName>1751306716098727</DisplayName>
+    </Owner>
+  </Contents>
+</ListBucketResult>

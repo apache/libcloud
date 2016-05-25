@@ -128,7 +128,7 @@ class RimuHostingNodeDriver(NodeDriver):
         :param    api_context: Optional API context.
         :type     api_context: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP.
+        :param    secure: Whether to use HTTPS or HTTP.
         :type     secure: ``bool``
 
         :rtype: ``None``

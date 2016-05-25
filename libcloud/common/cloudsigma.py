@@ -60,6 +60,16 @@ API_ENDPOINTS_2_0 = {
         'name': 'Honolulu, HI',
         'country': 'United States',
         'host': 'hnl.cloudsigma.com'
+    },
+    'per': {
+        'name': 'Perth, Australia',
+        'country': 'Australia',
+        'host': 'per.cloudsigma.com'
+    },
+    'mnl': {
+        'name': 'Manila, Philippines',
+        'country': 'Philippines',
+        'host': 'mnl.cloudsigma.com'
     }
 }
 

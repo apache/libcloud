@@ -758,8 +758,11 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue('12.16.18.28' in node.public_ips)
         self.assertTrue('50.57.94.35' in node.public_ips)
 
-        # floating ip
-        self.assertTrue('192.168.3.3' in node.public_ips)
+        # fixed public ip
+        self.assertTrue('1.1.1.1' in node.public_ips)
+
+        # floating public ip
+        self.assertTrue('2.2.2.2' in node.public_ips)
 
         # test public IPv6
         self.assertTrue(
@@ -768,8 +771,12 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         # test private IPv4
         self.assertTrue('10.182.64.34' in node.private_ips)
 
-        # floating ip
+        # fixed private ip
         self.assertTrue('10.3.3.3' in node.private_ips)
+
+        # floating private ip
+        self.assertTrue('192.168.3.3' in node.private_ips)
+        self.assertTrue('172.16.1.1' in node.private_ips)
 
         # test private IPv6
         self.assertTrue(
@@ -851,7 +858,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
 
         for size in sizes:
-            self.assertTrue(isinstance(size.price, float),
+            self.assertTrue(size.price is None or isinstance(size.price, float),
                             'Wrong size price type')
             self.assertTrue(isinstance(size.ram, int))
             self.assertTrue(isinstance(size.vcpus, int))

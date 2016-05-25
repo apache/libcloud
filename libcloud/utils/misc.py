@@ -24,6 +24,8 @@ from functools import wraps
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
+from libcloud.common.providers import get_driver as _get_driver
+from libcloud.common.providers import set_driver as _set_driver
 
 __all__ = [
     'find',
@@ -65,49 +67,10 @@ def find(l, predicate):
     return results[0] if len(results) > 0 else None
 
 
-def get_driver(drivers, provider):
-    """
-    Get a driver.
-
-    :param drivers: Dictionary containing valid providers.
-    :param provider: Id of provider to get driver
-    :type provider: :class:`libcloud.types.Provider`
-    """
-    if provider in drivers:
-        mod_name, driver_name = drivers[provider]
-        _mod = __import__(mod_name, globals(), locals(), [driver_name])
-        return getattr(_mod, driver_name)
-
-    raise AttributeError('Provider %s does not exist' % (provider))
-
-
-def set_driver(drivers, provider, module, klass):
-    """
-    Sets a driver.
-
-    :param drivers: Dictionary to store providers.
-    :param provider: Id of provider to set driver for
-    :type provider: :class:`libcloud.types.Provider`
-    :param module: The module which contains the driver
-    :type module: L
-    :param klass: The driver class name
-    :type klass:
-    """
-
-    if provider in drivers:
-        raise AttributeError('Provider %s already registered' % (provider))
-
-    drivers[provider] = (module, klass)
-
-    # Check if this driver is valid
-    try:
-        driver = get_driver(drivers, provider)
-    except (ImportError, AttributeError):
-        exp = sys.exc_info()[1]
-        drivers.pop(provider)
-        raise exp
-
-    return driver
+# Note: Those are aliases for backward-compatibility for functions which have
+# been moved to "libcloud.common.providers" module
+get_driver = _get_driver
+set_driver = _set_driver
 
 
 def merge_valid_keys(params, valid_keys, extra):

@@ -275,9 +275,10 @@ class DockerContainerDriver(ContainerDriver):
             result = self.connection.request(
                 "/containers/json%s" % (ex)).object
         except Exception as exc:
-            if hasattr(exc, 'errno') and exc.errno == 111:
+            errno = getattr(exc, 'errno', None)
+            if errno == 111:
                 raise DockerException(
-                    exc.errno,
+                    errno,
                     'Make sure docker host is accessible'
                     'and the API port is correct')
             raise
@@ -351,7 +352,8 @@ class DockerContainerDriver(ContainerDriver):
             result = self.connection.request('/containers/create', data=data,
                                              params=params, method='POST')
         except Exception as e:
-            if e.message.startswith('No such image:'):
+            message = e.message or str(e)
+            if message.startswith('No such image:'):
                 raise DockerException(None, 'No such image: %s' % image.name)
             else:
                 raise DockerException(None, e)
@@ -642,6 +644,7 @@ class DockerContainerDriver(ContainerDriver):
         Get the docker API version information
         """
         result = self.connection.request('/version').object
+        result = result or {}
         api_version = result.get('ApiVersion')
 
         return api_version

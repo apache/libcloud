@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeSnapshotsResponse>
+	<PageNumber>1</PageNumber>
+	<TotalCount>1</TotalCount>
+	<PageSize>10</PageSize>
+	<RequestId>09CAE6FF-B864-4104-BBF4-FE1EF08066A6</RequestId>
+	<Snapshots>
+		<Snapshot>
+			<CreationTime>2016-01-05T11:12:42Z</CreationTime>
+			<Tags />
+			<Status>progressing</Status>
+			<Description>
+			</Description>
+			<ProductCode>
+			</ProductCode>
+			<SnapshotName>sys-snapshot-20160108</SnapshotName>
+			<SourceDiskType>system</SourceDiskType>
+			<SourceDiskId>d-28x069z28</SourceDiskId>
+			<SnapshotId>s-28n9lltbf</SnapshotId>
+			<SourceDiskSize>20</SourceDiskSize>
+			<Progress>0%</Progress>
+			<Usage>none</Usage>
+		</Snapshot>
+	</Snapshots>
+</DescribeSnapshotsResponse>
