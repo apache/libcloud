@@ -61,7 +61,8 @@ class DNSPodDNSDriver(DNSDriver):
         RecordType.TXT: 'TXT'
     }
 
-    def _make_request(self, data={}, **kwargs):
+    def _make_request(self, action, data=None):
+        data = data or {}
         if not data.get('user_token'):
             data['user_token'] = self.key
         if not data.get('format'):
