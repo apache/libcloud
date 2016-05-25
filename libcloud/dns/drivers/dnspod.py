@@ -61,14 +61,14 @@ class DNSPodDNSDriver(DNSDriver):
         RecordType.TXT: 'TXT'
     }
 
-    def _make_request(self, action, data=None):
+    def _make_request(self, action, method, data=None):
         data = data or {}
         if not data.get('user_token'):
             data['user_token'] = self.key
         if not data.get('format'):
             data['format'] = 'json'
         data = urlencode(data)
-        r = self.connection.request(action=kwargs['action'], method='POST',
+        r = self.connection.request(action=action, method=method,
                                     data=data)
         return r
 
