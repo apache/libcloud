@@ -75,10 +75,13 @@ Storage
 DNS
 ~~~
 
-- Added BuddyNS driver
+- Add BuddyNS driver.
   (GITHUB-742)
   [Oltjano Terpollari]
 
+- Added DNSPod driver (https://www.dnspod.com).
+  (GITHUB-787)
+  [Oltjano Terpollari]
 
 Changes with Apache Libcloud in 1.0.0-rc2
 -----------------------------------------
