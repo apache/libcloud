@@ -49,9 +49,10 @@ class Provider(object):
     :cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     :cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
-    :cvar S3_RGW_OUTSCALE: OUTSCALE RGW S3
     :cvar S3_US_WEST: Amazon S3 US West (Northern California)
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    :cvar S3_RGW: S3 RGW
+    :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
     """
     DUMMY = 'dummy'
     ALIYUN_OSS = 'aliyun_oss'
@@ -71,10 +72,11 @@ class Provider(object):
     S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
     S3_AP_SOUTHEAST = 's3_ap_southeast'
     S3_EU_WEST = 's3_eu_west'
-    S3_RGW_OUTSCALE = 's3_rgw_outscale'
     S3_SA_EAST = 's3_sa_east'
     S3_US_WEST = 's3_us_west'
     S3_US_WEST_OREGON = 's3_us_west_oregon'
+    S3_RGW = 's3_rgw'
+    S3_RGW_OUTSCALE = 's3_rgw_outscale'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'

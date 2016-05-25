@@ -858,7 +858,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
 
         for size in sizes:
-            self.assertTrue(isinstance(size.price, float),
+            self.assertTrue(size.price is None or isinstance(size.price, float),
                             'Wrong size price type')
             self.assertTrue(isinstance(size.ram, int))
             self.assertTrue(isinstance(size.vcpus, int))

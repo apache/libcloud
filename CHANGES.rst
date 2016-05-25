@@ -24,6 +24,22 @@ General
 Compute
 ~~~~~~~
 
+- GCE nodes can be launched in a subnetwork
+  (GITHUB-783)
+  [Lars Larsson]
+
+- Add Subnetworks to GCE driver
+  (GITHUB-780)
+  [Eric Johnson]
+
+- Fix missing pricing data for GCE
+  (LIBCLOUD-713, GITHUB-779)
+  [Eric Johnson]
+
+- Add Image Family support for GCE
+  (GITHUB-778)
+  [Rick Wright]
+
 - Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
   `list_nodes()` while some VMs are being shutdown can result in the following
   `libcloud.common.google.ResourceNotFoundError` exception to be raised.
@@ -43,6 +59,18 @@ Compute
 - Add new `Perth, Australia` and `Manila, Philippines` region to the CloudSigma
   v2 driver.
   [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- Add support for AWS signature v4 to the Outscale storage driver.
+  (GITHUB-736)
+  [Javier M. Mellid]
+
+
+- Add new S3 RGW storage driver.
+  (GITHUB-786, GITHUB-792)
+  [Javier M. Mellid]
 
 DNS
 ~~~

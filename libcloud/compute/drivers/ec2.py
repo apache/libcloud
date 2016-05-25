@@ -640,6 +640,16 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 2
         }
+    },
+    'x1.32xlarge': {
+        'id': 'x1.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo Extra Large instance',
+        'ram': GiB(1952),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
     }
 }
 
@@ -704,7 +714,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # US West (Northern California) Region
@@ -818,7 +829,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # EU (Ireland) Region
@@ -878,7 +890,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # EU (Frankfurt) Region
@@ -923,7 +936,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -975,7 +989,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1034,7 +1049,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1071,7 +1087,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # South America (Sao Paulo) Region
@@ -1155,7 +1172,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     'us-gov-west-1': {

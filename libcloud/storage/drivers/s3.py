@@ -60,15 +60,6 @@ S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
 S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
 
-S3_RGW_OUTSCALE_HOSTS_BY_REGION =\
-    {'eu-west-1': 'osu.eu-west-1.outscale.com',
-     'eu-west-2': 'osu.eu-west-2.outscale.com',
-     'us-west-1': 'osu.us-west-1.outscale.com',
-     'us-east-2': 'osu.us-east-2.outscale.com',
-     'cn-southeast-1': 'osu.cn-southeast-1.outscale.hk'}
-
-S3_RGW_OUTSCALE_DEFAULT_REGION = 'eu-west-2'
-
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
 
@@ -834,7 +825,7 @@ class BaseS3StorageDriver(StorageDriver):
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
         response = response.response
-        server_hash = headers['etag'].replace('"', '')
+        server_hash = headers.get('etag', '').replace('"', '')
 
         if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
@@ -1013,25 +1004,3 @@ class S3SAEastStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (sa-east-1)'
     connectionCls = S3SAEastConnection
     ex_location_name = 'sa-east-1'
-
-
-class S3RGWOutscaleConnection(S3Connection):
-    pass
-
-
-class S3RGWOutscaleStorageDriver(S3StorageDriver):
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=S3_RGW_OUTSCALE_DEFAULT_REGION,
-                 **kwargs):
-        if region not in S3_RGW_OUTSCALE_HOSTS_BY_REGION:
-            raise LibcloudError('Unknown region (%s)' % (region), driver=self)
-        self.name = 'OUTSCALE Ceph RGW S3 (%s)' % (region)
-        self.ex_location_name = region
-        self.region_name = region
-        self.connectionCls = S3RGWOutscaleConnection
-        self.connectionCls.host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
-        super(S3RGWOutscaleStorageDriver, self).__init__(key, secret,
-                                                         secure, host, port,
-                                                         api_version, region,
-                                                         **kwargs)
