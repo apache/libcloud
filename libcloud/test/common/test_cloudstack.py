@@ -120,7 +120,7 @@ class CloudStackCommonTest(unittest.TestCase):
 
         connection = CloudStackConnection('fnord', 'abracadabra')
         for case in cases:
-            params = connection._add_default_params(case[0])
+            params = connection._add_default_params(case[0], None)
             self.assertEqual(connection._make_signature(params), b(case[1]))
 
 
