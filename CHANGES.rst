@@ -21,6 +21,11 @@ General
   (GITHUB-744)
   [Lionel Schaub]
 
+- Add support for authenticating against Keystone and OpenStack based clouds
+  using OpenID Connect tokens.
+  (GITHUB-789)
+  [Miguel Caballer]
+
 Compute
 ~~~~~~~
 
