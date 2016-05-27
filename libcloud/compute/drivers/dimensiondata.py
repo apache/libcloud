@@ -101,7 +101,8 @@ class DimensionDataNodeDriver(NodeDriver):
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
         if region not in API_ENDPOINTS and host is None:
-            raise ValueError('Invalid region: %s, no host specified' % (region))
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
