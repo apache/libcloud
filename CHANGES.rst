@@ -77,6 +77,14 @@ Storage
   (GITHUB-786, GITHUB-792)
   [Javier M. Mellid]
 
+Loadbalancer
+~~~~~~~~~~~~
+
+- Update AWS ELB driver to use signature version 4 for authentication. This
+  way, the driver also work with the `eu-central-1` region.
+  (GITHUB-796)
+  [Tobias Paepke]
+
 DNS
 ~~~
 
