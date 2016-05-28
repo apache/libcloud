@@ -65,6 +65,17 @@ Compute
   v2 driver.
   [Tomaz Muraus]
 
+- Update libvirt driver so it returns false if a non-local libvirt URL is used
+  (right now only local instances are supported).
+  (LIBCLOUD-820, GITHUB-788)
+  [René Kjellerup]
+
+- Update libvirt driver to use `ip neight` command instead of `arp` to retrieve
+  node MAC address if `arp` command is not available or the current user
+  doesn't have permission to use it.
+  (LIBCLOUD-820, GITHUB-788)
+  [René Kjellerup]
+
 Storage
 ~~~~~~~
 
