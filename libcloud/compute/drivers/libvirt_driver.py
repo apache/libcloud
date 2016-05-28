@@ -263,11 +263,20 @@ class LibvirtNodeDriver(NodeDriver):
 
         mac_addresses = self._get_mac_addresses_for_domain(domain=domain)
 
-        cmd = ['arp', '-an']
-        child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+        arp_table = {}
+        try:
+            cmd = ['arp', '-an']
+            child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
-        stdout, _ = child.communicate()
-        arp_table = self._parse_arp_table(arp_output=stdout)
+            stdout, _ = child.communicate()
+            arp_table = self._parse_arp_table(arp_output=stdout)
+        except OSError as e:
+            if e.errno == 2:
+                cmd = ['ip', 'neigh']
+                child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+                stdout, _ = child.communicate()
+                arp_table = self._parse_arp_table(arp_output=stdout,re_match='(.*?)\s+.*lladdr\s+(.*?)\s+')
 
         for mac_address in mac_addresses:
             if mac_address in arp_table:
@@ -314,7 +323,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         return result
 
-    def _parse_arp_table(self, arp_output):
+    def _parse_arp_table(self, arp_output, re_match='.*?\((.*?)\) at (.*?)\s+'):
         """
         Parse arp command output and return a dictionary which maps mac address
         to an IP address.
@@ -322,11 +331,12 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
+        ip_mac = re.compile(re_match)
         lines = arp_output.split('\n')
 
         arp_table = defaultdict(list)
         for line in lines:
-            match = re.match('.*?\((.*?)\) at (.*?)\s+', line)
+            match = ip_mac.match(line)
 
             if not match:
                 continue
