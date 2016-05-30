@@ -94,10 +94,14 @@ class CloudStackCommonTest(unittest.TestCase):
             (
                 {
                     'command': 'listVirtualMachines'
+                    'response': 'json',
+                    'apiKey': self.connection.user_id,
                 }, 'z/a9Y7J52u48VpqIgiwaGUMCso0='
             ), (
                 {
                     'command': 'deployVirtualMachine',
+                    'response': 'json',
+                    'apiKey': self.connection.user_id,
                     'name': 'fred',
                     'displayname': 'George',
                     'serviceofferingid': 5,
@@ -108,6 +112,8 @@ class CloudStackCommonTest(unittest.TestCase):
             ), (
                 {
                     'command': 'deployVirtualMachine',
+                    'response': 'json',
+                    'apiKey': self.connection.user_id,
                     'name': 'fred',
                     'displayname': 'George+Ringo',
                     'serviceofferingid': 5,
@@ -119,9 +125,8 @@ class CloudStackCommonTest(unittest.TestCase):
         ]
 
         connection = CloudStackConnection('fnord', 'abracadabra')
-        for case in cases:
-            params = connection._add_default_params(case[0], None)
-            self.assertEqual(connection._make_signature(params), b(case[1]))
+        for params, sig in cases:
+            self.assertEqual(connection._make_signature(params, None), b(sig))
 
 
 class CloudStackMockHttp(MockHttpTestCase):
