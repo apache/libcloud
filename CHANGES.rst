@@ -12,6 +12,10 @@ Compute
   (GITHUB-946)
   [Matthew Harris]
 
+- [google compute] Fix to allow multiple node creation with subnets
+  (GITHUB-949)
+  [John Baublitz]
+
 Changes in Apache Libcloud 1.4.0
 --------------------------------
 
