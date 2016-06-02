@@ -5166,7 +5166,8 @@ class GCENodeDriver(NodeDriver):
             if not ex_disk_type:
                 ex_disk_type = 'pd-standard'
             if not hasattr(ex_disk_type, 'name'):
-                ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
+                ex_disk_type = self.ex_get_disktype(ex_disk_type,
+                                                    zone=location)
             disks = [{'boot': True,
                       'type': 'PERSISTENT',
                       'mode': 'READ_WRITE',
