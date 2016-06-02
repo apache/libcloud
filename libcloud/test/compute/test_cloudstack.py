@@ -221,6 +221,18 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.name, 'test')
         self.assertEqual(node.extra['key_name'], 'foobar')
 
+    def test_create_node_ex_userdata(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+        CloudStackMockHttp.fixture_tag = 'deploykeyname'
+        node = self.driver.create_node(name='test',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       ex_userdata='foobar')
+        self.assertEqual(node.name, 'test')
+
     def test_create_node_project(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]

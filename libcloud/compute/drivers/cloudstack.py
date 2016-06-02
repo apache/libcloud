@@ -1633,7 +1633,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             server_params['keypair'] = ex_key_name
 
         if ex_user_data:
-            ex_user_data = base64.b64encode(b(ex_user_data).decode('ascii'))
+            ex_user_data = base64.b64encode(b(ex_user_data)).decode('ascii')
             server_params['userdata'] = ex_user_data
 
         if ex_security_groups:
