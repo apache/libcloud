@@ -306,15 +306,14 @@ class LibvirtNodeDriver(NodeDriver):
             child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
             stdout, _ = child.communicate()
-            arp_table = self._parse_arp_table(arp_output=stdout)
+            arp_table = self._parse_ip_table_arp(arp_output=stdout)
         except OSError as e:
             if e.errno == 2:
                 cmd = ['ip', 'neigh']
                 child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
                 stdout, _ = child.communicate()
-                arp_table = self._parse_arp_table(arp_output=stdout,
-                                                  arp_cmd='ip')
+                arp_table = self._parse_ip_table_neigh(arp_output=stdout)
 
         for mac_address in mac_addresses:
             if mac_address in arp_table:
@@ -361,23 +360,41 @@ class LibvirtNodeDriver(NodeDriver):
 
         return result
 
-    def _parse_arp_table(self, arp_output, arp_cmd='arp'):
+    def _parse_ip_table_arp(self, arp_output):
         """
-        Parse arp command output and return a dictionary which maps mac address
+        Sets up the regexp for parsing out IP addresses from the 'arp -an'
+        command and pass it along to the parser function.
+
+        :return: Dictionary from the parsing funtion
+        :rtype: ``dict``
+        """
+        arp_regex = re.compile('.*?\((.*?)\) at (.*?)\s+')
+        return self._parse_mac_addr_table(arp_output, arp_regex)
+
+    def _parse_ip_table_neigh(self, ip_output):
+        """
+        Sets up the regexp for parsing out IP addresses from the 'ip neighbor'
+        command and pass it along to the parser function.
+
+        :return: Dictionary from the parsing funtion
+        :rtype: ``dict``
+        """
+        ip_regex = re.compile('(.*?)\s+.*lladdr\s+(.*?)\s+')
+        return self._parse_mac_addr_table(ip_output, ip_regex)
+
+    def _parse_mac_addr_table(self, cmd_output, mac_regex):
+        """
+        Parse the command output and return a dictionary which maps mac address
         to an IP address.
 
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
-        re_match = {}
-        re_match['arp'] = '.*?\((.*?)\) at (.*?)\s+'
-        re_match['ip'] = '(.*?)\s+.*lladdr\s+(.*?)\s+'
-        ip_mac = re.compile(re_match[arp_cmd])
-        lines = arp_output.split('\n')
+        lines = cmd_output.split('\n')
 
         arp_table = defaultdict(list)
         for line in lines:
-            match = ip_mac.match(line)
+            match = mac_regex.match(line)
 
             if not match:
                 continue
