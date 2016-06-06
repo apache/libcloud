@@ -570,7 +570,7 @@ class AuroraDNSDriver(DNSDriver):
         extra['modified'] = record['modified']
         extra['disabled'] = record['disabled']
         extra['ttl'] = record['ttl']
-        extra['prio'] = record['prio']
+        extra['priority'] = record['prio']
 
         return Record(id=record['id'], name=name,
                       type=record['type'],
