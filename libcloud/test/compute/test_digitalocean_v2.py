@@ -189,6 +189,48 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         nodes = self.driver._paginated_request('/v2/droplets', 'droplets')
         self.assertEqual(len(nodes), 2)
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 1)
+        volume = volumes[0]
+        self.assertEqual(volume.id, "62766883-2c28-11e6-b8e6-000f53306ae1")
+        self.assertEqual(volume.name, "example")
+        self.assertEqual(volume.size, 4)
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_list_volumes_empty(self):
+        DigitalOceanMockHttp.type = 'EMPTY'
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 0)
+
+    def test_create_volume(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        DigitalOceanMockHttp.type = 'CREATE'
+        volume = self.driver.create_volume(4, 'example', nyc1)
+        self.assertEqual(volume.id, "62766883-2c28-11e6-b8e6-000f53306ae1")
+        self.assertEqual(volume.name, "example")
+        self.assertEqual(volume.size, 4)
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'ATTACH'
+        resp = self.driver.attach_volume(node, volume)
+        self.assertTrue(resp)
+
+    def test_detach_volume(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'DETACH'
+        resp = self.driver.detach_volume(volume)
+        self.assertTrue(resp)
+
+    def test_destroy_volume(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'DESTROY'
+        resp = self.driver.destroy_volume(volume)
+        self.assertTrue(resp)
+
 
 class DigitalOceanMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -278,6 +320,33 @@ class DigitalOceanMockHttp(MockHttpTestCase):
     def _v2_droplets_PAGE_ONE(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes_page_1.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes(self, method, url, body, headers):
+        body = self.fixtures.load('list_volumes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_EMPTY(self, method, url, body, headers):
+        body = self.fixtures.load('list_volumes_empty.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_CREATE(self, method, url, body, headers):
+        body = self.fixtures.load('create_volume.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_volumes_actions_ATTACH(self, method, url, body, headers):
+        body = self.fixtures.load('attach_volume.json')
+        return (httplib.ACCEPTED, body, {},
+                httplib.responses[httplib.ACCEPTED])
+
+    def _v2_volumes_DETACH(self, method, url, body, headers):
+        body = self.fixtures.load('detach_volume.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_DESTROY(self, method,
+                                                                 url, body,
+                                                                 headers):
+        return (httplib.NO_CONTENT, None, {},
+                httplib.responses[httplib.NO_CONTENT])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
