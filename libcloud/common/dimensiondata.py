@@ -470,7 +470,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
                                                    data, headers,
                                                    method).object
         yield paged_resp
-        paged_resp = paged_resp or {}
+        if len(paged_resp) <= 0:
+            raise StopIteration
 
         while int(paged_resp.get('pageCount')) >= \
                 int(paged_resp.get('pageSize')):
