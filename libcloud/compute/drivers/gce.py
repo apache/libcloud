@@ -2590,12 +2590,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if ex_subnetwork:
-            if not hasattr(ex_subnetwork, 'name'):
-                ex_subnetwork = \
-                    self.ex_get_subnetwork(ex_subnetwork,
-                                           region=self._get_region_from_zone(
-                                               location))
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
