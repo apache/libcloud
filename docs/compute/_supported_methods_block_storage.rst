@@ -14,7 +14,7 @@ Provider                              list volumes create volume destroy volume 
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
 `Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
-`DigitalOcean`_                       no           no            no             no            no            no             no             
+`DigitalOcean`_                       yes          yes           yes            yes           yes           no             no             
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Enomaly Elastic Computing Platform`_ no           no            no             no            no            no             no             
