@@ -2357,8 +2357,8 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         datacenter_id = self._location_to_location_id(location)
         result = self.connection.raw_request_with_orgId_api_1(
-            'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s' %
-            (datacenter_id, start_date, end_date))
+            'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s'
+            % (datacenter_id, start_date, end_date))
         return result.response.body
 
     @staticmethod
