@@ -434,6 +434,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_additional_nics_vlan='badstring',
                                     ex_is_started=False)
 
+    def test_create_node_mcp2_indicate_dns(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test node dns',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_primary_dns='8.8.8.8',
+                                       ex_secondary_dns='8.8.4.4',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
                     public_ips=None, private_ips=None, driver=self.driver)

@@ -61,6 +61,32 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.assertEqual(data[param], params[param])
             self.assertEqual(data['name'], 'localhost')
 
+    def test_res_to_record(self):
+        res = {'id': 2,
+               'name': 'www',
+               'type': 'AAAA',
+               'content': '2001:db8:100',
+               'created': 1234,
+               'modified': 2345,
+               'disabled': False,
+               'ttl': 1800,
+               'prio': 10}
+
+        zone = Zone(id=1,
+                    domain='example.com',
+                    type=None,
+                    ttl=60,
+                    driver=self.driver)
+
+        record = self.driver._AuroraDNSDriver__res_to_record(zone, res)
+        self.assertEqual(res['name'], record.name)
+        self.assertEqual(res['ttl'], record.extra['ttl'])
+        self.assertEqual(res['prio'], record.extra['priority'])
+        self.assertEqual(res['type'], record.type)
+        self.assertEqual(res['content'], record.data)
+        self.assertEqual(zone, record.zone)
+        self.assertEqual(self.driver, record.driver)
+
     def test_list_zones(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 2)
@@ -98,7 +124,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         self.assertEquals(record.data, '127.0.0.1')
         self.assertEquals(record.type, RecordType.A)
         self.assertEquals(record.extra['ttl'], 900)
-        self.assertEquals(record.extra['prio'], None)
+        self.assertEquals(record.extra['priority'], None)
 
     def test_update_record(self):
         ttl = 900
