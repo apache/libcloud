@@ -27,6 +27,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
 from libcloud.compute.base import Node, NodeDriver
+from libcloud.compute.base import StorageVolume
 
 __all__ = [
     'DigitalOceanNodeDriver',
@@ -352,6 +353,10 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/sizes', 'sizes')
         return list(map(self._to_size, data))
 
+    def list_volumes(self):
+        data = self._paginated_request('/v2/volumes', 'volumes')
+        return list(map(self._to_volume, data))
+
     def create_node(self, name, size, image, location, ex_create_attr=None,
                     ex_ssh_key_ids=None, ex_user_data=None):
         """
@@ -570,6 +575,16 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                  'created_at': data['created_at']}
         return NodeImage(id=data['id'], name=data['name'], driver=self,
                          extra=extra)
+
+    def _to_volume(self, data):
+        extra = {'created_at': data['created_at'],
+                 'droplet_ids': data['droplet_ids'],
+                 'region': data['region'],
+                 'region_slug': data['region']['slug']}
+
+        return StorageVolume(id=data['id'], name=data['name'],
+                             size=data['size_gigabytes'], driver=self,
+                             extra=extra)
 
     def _to_location(self, data):
         return NodeLocation(id=data['slug'], name=data['name'], country=None,
