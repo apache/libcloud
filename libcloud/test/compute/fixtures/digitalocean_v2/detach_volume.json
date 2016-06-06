@@ -1,0 +1,34 @@
+{
+  "action": {
+    "region_slug": "nyc1",
+    "region": {
+      "available": true,
+      "features": [
+        "private_networking",
+        "backups",
+        "ipv6",
+        "metadata"
+      ],
+      "sizes": [
+        "512mb",
+        "1gb",
+        "2gb",
+        "4gb",
+        "8gb",
+        "16gb",
+        "32gb",
+        "48gb",
+        "64gb"
+      ],
+      "slug": "nyc1",
+      "name": "New York 1"
+    },
+    "resource_type": "backend",
+    "resource_id": null,
+    "completed_at": null,
+    "started_at": "2016-06-06T21:02:20Z",
+    "type": "detach_volume",
+    "status": "in-progress",
+    "id": 110956599
+  }
+}
