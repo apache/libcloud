@@ -584,6 +584,50 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
+    def attach_volume(self, node, volume, device=None):
+        """
+        Attaches volume to node.
+
+        :param node: Node to attach volume to.
+        :type node: :class:`.Node`
+
+        :param volume: Volume to attach.
+        :type volume: :class:`.StorageVolume`
+
+        :param device: Where the device is exposed, e.g. '/dev/sdb'
+        :type device: ``str``
+
+        :rytpe: ``bool``
+        """
+        attr = {'type': 'attach', 'droplet_id': node.id,
+                'volume_id': volume.id, 'region': volume.extra['region_slug']}
+
+        res = self.connection.request('/v2/volumes/actions',
+                                      data=json.dumps(attr), method='POST')
+
+        return res.status == httplib.ACCEPTED
+
+    def detach_volume(self, volume):
+        """
+        Detaches a volume from a node.
+
+        :param volume: Volume to be detached
+        :type volume: :class:`.StorageVolume`
+
+        :rtype: ``bool``
+        """
+        attr = {'type': 'detach', 'volume_id': volume.id,
+                'region': volume.extra['region_slug']}
+
+        responses = []
+        for droplet_id in volume.extra['droplet_ids']:
+            attr['droplet_id'] = droplet_id
+            res = self.connection.request('/v2/volumes/actions',
+                                          data=json.dumps(attr), method='POST')
+            responses.append(res)
+
+        return all([r.status == httplib.ACCEPTED for r in responses])
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
