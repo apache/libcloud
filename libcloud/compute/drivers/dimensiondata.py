@@ -2439,8 +2439,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 port_list_id=port_list.get('id', None)
                 if port_list is not None else None,
                 address_list_id=address_list.get('id')
-                if address_list is not None else None
-                )
+                if address_list is not None else None)
         else:
             return DimensionDataFirewallAddress(
                 any_ip=False,
@@ -2451,8 +2450,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 port_list_id=port_list.get('id', None)
                 if port_list is not None else None,
                 address_list_id=address_list.get('id')
-                if address_list is not None else None
-                )
+                if address_list is not None else None)
 
     def _to_ip_blocks(self, object):
         blocks = []
