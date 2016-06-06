@@ -2520,7 +2520,7 @@ class DimensionDataNodeDriver(NodeDriver):
         port_list = element.find(fixxpath('portList', TYPES_URN))
         address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
         if address_list is None:
-            return DimensionDataFirewallAddress (
+            return DimensionDataFirewallAddress(
                 any_ip=ip.get('address') == 'ANY',
                 ip_address=ip.get('address'),
                 ip_prefix_size=ip.get('prefixSize'),
@@ -2533,11 +2533,11 @@ class DimensionDataNodeDriver(NodeDriver):
                 )
         else:
             return DimensionDataFirewallAddress(
-                any_ip = False,
-                ip_address= None,
-                ip_prefix_size = None,
-                port_begin = None,
-                port_end = None,
+                any_ip=False,
+                ip_address=None,
+                ip_prefix_size=None,
+                port_begin=None,
+                port_end=None,
                 port_list_id=port_list.get('id', None)
                 if port_list is not None else None,
                 address_list_id=address_list.get('id')
