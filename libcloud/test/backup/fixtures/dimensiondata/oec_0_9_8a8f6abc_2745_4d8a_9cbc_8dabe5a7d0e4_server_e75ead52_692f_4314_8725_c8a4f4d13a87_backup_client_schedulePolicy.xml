@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BackupSchedulePolicies xmlns="http://oec.api.opsource.net/schemas/backup">
- <!--One or more repetitions, all attributes mandatory -->
- <schedulePolicy name="12AM - 6AM" description="Daily backup will start between 12AM - 6AM"/>
-</BackupSchedulePolicies>
