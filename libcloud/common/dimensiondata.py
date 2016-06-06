@@ -19,7 +19,7 @@ from base64 import b64encode
 from time import sleep
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
@@ -318,6 +318,10 @@ class NetworkDomainServicePlan(object):
     ADVANCED = "ADVANCED"
 
 
+class DimensionDataRawResponse(RawResponse):
+    pass
+
+
 class DimensionDataResponse(XmlResponse):
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
@@ -373,6 +377,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
     _orgId = None
     responseCls = DimensionDataResponse
+    rawResponseCls = DimensionDataRawResponse
 
     allow_insecure = False
 
@@ -415,6 +420,14 @@ class DimensionDataConnection(ConnectionUserAndKey):
             action=action,
             params=params, data=data,
             method=method, headers=headers)
+
+    def raw_request_with_orgId_api_1(self, action, params=None, data='',
+                                     headers=None, method='GET'):
+        action = "%s/%s" % (self.get_resource_path_api_1(), action)
+        return super(DimensionDataConnection, self).request(
+            action=action,
+            params=params, data=data,
+            method=method, headers=headers, raw=True)
 
     def request_with_orgId_api_1(self, action, params=None, data='',
                                  headers=None, method='GET'):

@@ -1133,6 +1133,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         image = self.driver.ex_list_customer_images()[0].id
         self.assertTrue(not self.driver._image_needs_auth(image))
 
+    def test_summary_usage_report(self):
+        report = self.driver.ex_summary_usage_report('2016-06-01', '2016-06-30')
+        report_content = report.readlines()
+        self.assertEqual(len(report_content), 13)
+        self.assertEqual(len(report_content[0]), 67)
+
+    def test_detailed_usage_report(self):
+        report = self.driver.ex_detailed_usage_report('2016-06-01', '2016-06-30')
+        report_content = report.readlines()
+        self.assertEqual(len(report_content), 42)
+        self.assertEqual(len(report_content[0]), 30)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -1302,6 +1314,18 @@ class DimensionDataMockHttp(MockHttp):
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418_FAIL(self, method, url, body, headers):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete_FAIL.xml'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'summary_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usageDetailed(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'detailed_usage_report.csv'
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
