@@ -76,6 +76,13 @@ Compute
   (LIBCLOUD-820, GITHUB-788)
   [René Kjellerup]
 
+- Update ``create_volume`` method in the CloudStack driver and add
+  ``ex_volume_type`` argument to it. If this argument is provided, a volume
+  which names matches this argument value will be searched and selected among
+  the available disk offerings.
+  (GITHUB-785)
+  [Greg Bishop]
+
 Storage
 ~~~~~~~
 

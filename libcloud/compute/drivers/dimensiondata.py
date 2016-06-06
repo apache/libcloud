@@ -100,10 +100,11 @@ class DimensionDataNodeDriver(NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
-        if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
-
-        self.selected_region = API_ENDPOINTS[region]
+        if region not in API_ENDPOINTS and host is None:
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
+        if region is not None:
+            self.selected_region = API_ENDPOINTS[region]
 
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
@@ -2428,17 +2429,28 @@ class DimensionDataNodeDriver(NodeDriver):
         port = element.find(fixxpath('port', TYPES_URN))
         port_list = element.find(fixxpath('portList', TYPES_URN))
         address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
-        return DimensionDataFirewallAddress(
-            any_ip=ip.get('address') == 'ANY',
-            ip_address=ip.get('address'),
-            ip_prefix_size=ip.get('prefixSize'),
-            port_begin=port.get('begin') if port is not None else None,
-            port_end=port.get('end') if port is not None else None,
-            port_list_id=port_list.get('id', None)
-            if port_list is not None else None,
-            address_list_id=address_list.get('id')
-            if address_list is not None else None
-        )
+        if address_list is None:
+            return DimensionDataFirewallAddress(
+                any_ip=ip.get('address') == 'ANY',
+                ip_address=ip.get('address'),
+                ip_prefix_size=ip.get('prefixSize'),
+                port_begin=port.get('begin') if port is not None else None,
+                port_end=port.get('end') if port is not None else None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
+        else:
+            return DimensionDataFirewallAddress(
+                any_ip=False,
+                ip_address=None,
+                ip_prefix_size=None,
+                port_begin=None,
+                port_end=None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
 
     def _to_ip_blocks(self, object):
         blocks = []

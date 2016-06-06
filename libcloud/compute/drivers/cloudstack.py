@@ -2111,17 +2111,28 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return projects
 
-    def create_volume(self, size, name, location=None, snapshot=None):
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      ex_volume_type=None):
         """
         Creates a data volume
         Defaults to the first location
         """
-        for diskOffering in self.ex_list_disk_offerings():
-            if diskOffering.size == size or diskOffering.customizable:
-                break
+        if ex_volume_type is None:
+            for diskOffering in self.ex_list_disk_offerings():
+                if diskOffering.size == size or diskOffering.customizable:
+                    break
+            else:
+                raise LibcloudError(
+                    'Disk offering with size=%s not found' % size)
         else:
-            raise LibcloudError(
-                'Disk offering with size=%s not found' % size)
+            for diskOffering in self.ex_list_disk_offerings():
+                if diskOffering.name == ex_volume_type:
+                    if not diskOffering.customizable:
+                        size = diskOffering.size
+                    break
+            else:
+                raise LibcloudError(
+                    'Volume type with name=%s not found' % ex_volume_type)
 
         if location is None:
             location = self.list_locations()[0]
