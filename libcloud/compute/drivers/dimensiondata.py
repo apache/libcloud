@@ -129,7 +129,9 @@ class DimensionDataNodeDriver(NodeDriver):
                     ex_memory_gb=None,
                     ex_cpu_specification=None,
                     ex_is_started=True, ex_additional_nics_vlan=None,
-                    ex_additional_nics_ipv4=None, **kwargs):
+                    ex_additional_nics_ipv4=None,
+                    ex_primary_dns=None,
+                    ex_secondary_dns=None, **kwargs):
         """
         Create a new DimensionData node
 
@@ -187,6 +189,14 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_additional_nics_ipv4: (MCP2 Only) List of additional
                                               nics to add by ipv4 address
         :type       ex_additional_nics_ipv4: ``list`` of ``str``
+
+        :keyword    ex_primary_dns: The node's primary DNS
+
+        :type       ex_primary_dns: ``str``
+
+        :keyword    ex_secondary_dns: The node's secondary DNS
+
+        :type       ex_secondary_dns: ``str``
 
         :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
@@ -267,6 +277,14 @@ class DimensionDataNodeDriver(NodeDriver):
             elif ex_additional_nics_vlan is not None:
                 raise TypeError("ex_additional_nics_vlan"
                                 "must be None or tuple/list")
+
+        if ex_primary_dns:
+            dns_elm = ET.SubElement(server_elm, "primaryDns")
+            dns_elm.text = ex_primary_dns
+
+        if ex_secondary_dns:
+            dns_elm = ET.SubElement(server_elm, "secondaryDns")
+            dns_elm.text = ex_secondary_dns
 
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
