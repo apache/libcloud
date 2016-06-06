@@ -536,6 +536,54 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                        qkey.extra['id']).object['ssh_key']
         return self._to_key_pair(data=data)
 
+    def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot: :class:`.VolumeSnapshot`
+
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        attr = {'name': name, 'size_gigabytes': size, 'region': location.id}
+
+        res = self.connection.request('/v2/volumes', data=json.dumps(attr),
+                                      method='POST')
+        data = res.object['volume']
+        status = res.object.get('status', 'OK')
+        if status == 'ERROR':
+            message = res.object.get('message', None)
+            error_message = res.object.get('error_message', message)
+            raise ValueError('Failed to create volume: %s' % (error_message))
+
+        return self._to_volume(data=data)
+
+    def destroy_volume(self, volume):
+        """
+        Destroys a storage volume.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        res = self.connection.request('/v2/volumes/%s' % volume.id,
+                                      method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
