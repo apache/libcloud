@@ -29,7 +29,7 @@ from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.test import MockHttp, unittest
+from libcloud.test import MockHttp, unittest, MockRawResponse, StorageMockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
@@ -40,6 +40,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.conn_classes = (None, DimensionDataMockHttp)
+        DimensionData.connectionCls.rawResponseCls = \
+            DimensionDataMockRawResponse
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
@@ -1135,15 +1137,15 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_summary_usage_report(self):
         report = self.driver.ex_summary_usage_report('2016-06-01', '2016-06-30')
-        report_content = report.readlines()
+        report_content = report
         self.assertEqual(len(report_content), 13)
-        self.assertEqual(len(report_content[0]), 67)
+        self.assertEqual(len(report_content[0]), 6)
 
     def test_detailed_usage_report(self):
         report = self.driver.ex_detailed_usage_report('2016-06-01', '2016-06-30')
-        report_content = report.readlines()
+        report_content = report
         self.assertEqual(len(report_content), 42)
-        self.assertEqual(len(report_content[0]), 30)
+        self.assertEqual(len(report_content[0]), 4)
 
 
 class InvalidRequestError(Exception):
@@ -1151,7 +1153,23 @@ class InvalidRequestError(Exception):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
 
 
-class DimensionDataMockHttp(MockHttp):
+class DimensionDataMockRawResponse(MockRawResponse):
+    fixtures = ComputeFileFixtures('dimensiondata')
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'summary_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usageDetailed(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'detailed_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+
+class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     fixtures = ComputeFileFixtures('dimensiondata')
 
@@ -1314,18 +1332,6 @@ class DimensionDataMockHttp(MockHttp):
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_07e3621a_a920_4a9a_943c_d8021f27f418_FAIL(self, method, url, body, headers):
         body = self.fixtures.load(
             'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_antiAffinityRule_delete_FAIL.xml'
-        )
-        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
-
-    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(self, method, url, body, headers):
-        body = self.fixtures.load(
-            'summary_usage_report.csv'
-        )
-        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
-
-    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usageDetailed(self, method, url, body, headers):
-        body = self.fixtures.load(
-            'detailed_usage_report.csv'
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 

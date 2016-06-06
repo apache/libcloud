@@ -44,7 +44,7 @@ from libcloud.common.dimensiondata import DimensionDataTag
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
-from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
@@ -2281,12 +2281,12 @@ class DimensionDataNodeDriver(NodeDriver):
         :param end_date: End date for the report
         :type  end_date: ``str`` in format YYYY-MM-DD
 
-        :rtype: :class:`io.StringIO`
+        :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usage?startDate=%s&endDate=%s' % (
                 start_date, end_date))
-        return result.response.body
+        return self._format_csv(result.response)
 
     def ex_detailed_usage_report(self, start_date, end_date):
         """
@@ -2298,12 +2298,12 @@ class DimensionDataNodeDriver(NodeDriver):
         :param end_date: End date for the report
         :type  end_date: ``str`` in format YYYY-MM-DD
 
-        :rtype: :class:`io.StringIO`
+        :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usageDetailed?startDate=%s&endDate=%s' % (
                 start_date, end_date))
-        return result.response.body
+        return self._format_csv(result.response)
 
     def ex_software_usage_report(self, start_date, end_date):
         """
@@ -2315,12 +2315,12 @@ class DimensionDataNodeDriver(NodeDriver):
         :param end_date: End date for the report
         :type  end_date: ``str`` in format YYYY-MM-DD
 
-        :rtype: :class:`io.StringIO`
+        :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
                 start_date, end_date))
-        return result.response.body
+        return self._format_csv(result.response)
 
     def ex_audit_log_report(self, start_date, end_date):
         """
@@ -2332,12 +2332,12 @@ class DimensionDataNodeDriver(NodeDriver):
         :param end_date: End date for the report
         :type  end_date: ``str`` in format YYYY-MM-DD
 
-        :rtype: :class:`io.StringIO`
+        :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
                 start_date, end_date))
-        return result.response.body
+        return self._format_csv(result.response)
 
     def ex_backup_usage_report(self, start_date, end_date, location):
         """
@@ -2353,13 +2353,18 @@ class DimensionDataNodeDriver(NodeDriver):
                            located in this location
         :type    location: :class:`NodeLocation` or ``str``
 
-        :rtype: :class:`io.StringIO`
+        :rtype: ``list`` of ``list``
         """
         datacenter_id = self._location_to_location_id(location)
         result = self.connection.raw_request_with_orgId_api_1(
             'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s'
             % (datacenter_id, start_date, end_date))
-        return result.response.body
+        return self._format_csv(result.response)
+
+    def _format_csv(self, http_response):
+        text = http_response.read()
+        lines = str.splitlines(ensure_string(text))
+        return [line.split(',') for line in lines]
 
     @staticmethod
     def _get_tagging_asset_type(asset):
