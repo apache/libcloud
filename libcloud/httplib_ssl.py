@@ -292,21 +292,50 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
 
         ssl_version = libcloud.security.SSL_VERSION
 
+        # Connect, using contexts and SNI if we can
+
         try:
-            self.sock = ssl.wrap_socket(
-                sock,
-                self.key_file,
-                self.cert_file,
-                cert_reqs=ssl.CERT_REQUIRED,
-                ca_certs=self.ca_cert,
-                ssl_version=ssl_version)
-        except socket.error:
-            exc = sys.exc_info()[1]
-            # Re-throw an exception with a more friendly error message
-            exc = get_socket_error_exception(ssl_version=ssl_version, exc=exc)
-            raise exc
+            self.tls_context = ssl.SSLContext(ssl_version)
+            self.tls_context.verify_mode = ssl.CERT_REQUIRED
+            if self.cert_file and self.key_file:
+                self.tls_context.load_cert_chain(
+                    self.cert_file, self.key_file, None)
+            if self.ca_cert:
+                self.tls_context.load_verify_locations(self.ca_cert)
+        except AttributeError:
+            self.tls_context = None
+
+        if self.tls_context and ssl.HAS_SNI:
+            try:
+                self.sock = self.tls_context.wrap_socket(
+                    sock,
+                    server_hostname=self.host,
+                )
+            except:
+                exc = sys.exc_info()[1]
+                exc = get_socket_error_exception(ssl_version=ssl_version,
+                                                 exc=exc)
+                raise exc
+        else:
+            try:
+                self.sock = ssl.wrap_socket(
+                    sock,
+                    self.key_file,
+                    self.cert_file,
+                    cert_reqs=ssl.CERT_REQUIRED,
+                    ca_certs=self.ca_cert,
+                    ssl_version=ssl_version
+                )
+            except:
+                exc = sys.exc_info()[1]
+                exc = get_socket_error_exception(ssl_version=ssl_version,
+                                                 exc=exc)
+                raise exc
 
         cert = self.sock.getpeercert()
+
+        # Verify Hostname
+
         try:
             match_hostname(cert, self.host)
         except CertificateError:

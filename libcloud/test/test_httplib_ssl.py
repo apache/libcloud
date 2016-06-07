@@ -16,6 +16,7 @@
 import os
 import sys
 import os.path
+import ssl
 import socket
 
 import mock
@@ -109,8 +110,17 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
     @mock.patch('socket.create_connection', mock.MagicMock())
     @mock.patch('socket.socket', mock.MagicMock())
-    @mock.patch('ssl.wrap_socket')
-    def test_connect_throws_friendly_error_message_on_ssl_wrap_connection_reset_by_peer(self, mock_wrap_socket):
+    def test_connect_throws_friendly_error_message_on_ssl_wrap_connection_reset_by_peer(self):
+
+        mock_wrap_socket = None
+
+        if getattr(ssl, 'SSLContext', None):
+            ssl.SSLContext.wrap_socket = mock.MagicMock()
+            mock_wrap_socket = ssl.SSLContext.wrap_socket
+        else:
+            ssl.wrap_socket = mock.MagicMock()
+            mock_wrap_socket = ssl.wrap_socket
+
         # Test that we re-throw a more friendly error message in case
         # "connection reset by peer" error occurs when trying to establish a
         # SSL connection
