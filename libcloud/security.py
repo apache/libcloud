@@ -56,6 +56,9 @@ CA_CERTS_PATH = [
 
     # homebrew: curl-ca-bundle (backward compatibility)
     '/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt',
+
+    # opensuse/sles: openssl
+    '/etc/ssl/certs/YaST-CA.pem',
 ]
 
 # Allow user to explicitly specify which CA bundle to use, using an environment

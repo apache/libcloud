@@ -13,6 +13,7 @@ following platforms:
 * ``ca-certificates`` package on Debian / Ubuntu / Arch / Gentoo
 * ``ca_root_nss`` port on FreeBSD
 * ``curl-ca-bundle`` port on Mac OS X
+* ``openssl`` and ``curl-ca-bundle`` homebrew package
 
 If no valid CA certificate files are found, you will see an error message
 similar to the one below:

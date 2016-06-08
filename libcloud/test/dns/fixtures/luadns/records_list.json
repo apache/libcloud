@@ -1,0 +1,22 @@
+[
+  {
+    "id": 6683,
+    "name": "example.org.",
+    "type": "NS",
+    "content": "b.ns.luadns.net.",
+    "ttl": 86400,
+    "zone_id": 3,
+    "created_at": "2015-01-17T13:08:37.522452Z",
+    "updated_at": "2015-01-17T13:08:37.522452Z"
+  },
+  {
+    "id": 6684,
+    "name": "example.org.",
+    "type": "NS",
+    "content": "a.ns.luadns.net.",
+    "ttl": 86400,
+    "zone_id": 3,
+    "created_at": "2015-01-17T13:08:37.520623Z",
+    "updated_at": "2015-01-17T13:08:37.520623Z"
+  }
+]

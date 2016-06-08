@@ -1,0 +1,26 @@
+{
+ "kind": "compute#operation",
+ "id": "1122640775725896976",
+ "name": "operation-setMachineType-notstopped",
+ "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+ "operationType": "setMachineType",
+ "targetLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/node-name",
+ "targetId": "10940055899777330894",
+ "status": "DONE",
+ "user": "erjohnso@google.com",
+ "progress": 100,
+ "insertTime": "2016-03-07T08:09:34.445-08:00",
+ "startTime": "2016-03-07T08:09:34.679-08:00",
+ "endTime": "2016-03-07T08:09:35.161-08:00",
+ "error": {
+  "errors": [
+   {
+    "code": "RESOURCE_NOT_READY",
+    "message": "The resource 'projects/project_name/zones/us-central1-a/instances/node-name' is not ready"
+   }
+  ]
+ },
+ "httpErrorStatusCode": 400,
+ "httpErrorMessage": "BAD REQUEST",
+ "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-setMachineType-notstopped"
+}

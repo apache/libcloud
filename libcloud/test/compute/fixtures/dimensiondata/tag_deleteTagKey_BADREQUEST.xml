@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T193649125-0400_88027795-0516-4f8d-be8d-15e7505adcef">
+  <operation>DELETE_TAG_KEY</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Tag Key fdafdsa not found.</message>
+</response>

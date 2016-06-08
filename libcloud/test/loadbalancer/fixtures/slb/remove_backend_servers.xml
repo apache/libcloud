@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RemoveBackendServersResponse>
+    <RequestId>365F4154-92F6-4AE4-92F8-7FF34B540710</RequestId>
+    <LoadBalancerId>139a00604ad-cn-east-hangzhou-01</LoadBalancerId>
+    <BackendServers>
+        <BackendServer>
+            <ServerId>node1</ServerId>
+            <Weight>100</Weight>
+        </BackendServer>
+    </BackendServers>
+</RemoveBackendServersResponse>

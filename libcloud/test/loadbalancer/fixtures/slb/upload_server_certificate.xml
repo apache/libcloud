@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UploadServerCertificateResponse>
+  <RequestId>365F4154-92F6-4AE4-92F8-7FF34B540710</RequestId>
+  <ServerCertificateId>idkp-123-cn-test-01</ServerCertificateId>
+  <ServerCertificateName>cert1</ServerCertificateName>
+  <Fingerprint>01:DF:AB:CD</Fingerprint>
+</UploadServerCertificateResponse>

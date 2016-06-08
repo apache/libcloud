@@ -18,6 +18,7 @@ DigitalOcean Driver
 import json
 import warnings
 
+from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.digitalocean import DigitalOcean_v1_BaseDriver
@@ -453,18 +454,6 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
-    def ex_get_creation_time(self, node):
-        """
-        Return the date and time that represent when the Instance was created.
-        :param      node: Node instance
-        :type       node: :class:`Node`
-
-        :return: ISO8601 combined date and time format string for when the
-         Droplet was created.
-        :rtype: ``str``
-        """
-        return node.extra['created_at']
-
     def get_image(self, image_id):
         """
         Get an image based on an image_id
@@ -551,6 +540,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         else:
             state = NodeState.UNKNOWN
 
+        created = parse_date(data['created_at'])
         networks = data['networks']
         private_ips = []
         public_ips = []
@@ -568,7 +558,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, extra=extra)
+                    created_at=created, driver=self, extra=extra)
         return node
 
     def _to_image(self, data):

@@ -25,6 +25,7 @@ try:
 except ImportError:
     import json
 
+from libcloud.compute.base import NodeLocation
 from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, \
     CloudStackAffinityGroupType
@@ -543,6 +544,30 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         self.assertEqual(volumeName, volume.name)
 
+    def test_create_volume_no_matching_volume_type(self):
+        """If the ex_disk_type does not exit, then an exception should be
+        thrown."""
+
+        location = self.driver.list_locations()[0]
+
+        self.assertRaises(
+            LibcloudError,
+            self.driver.create_volume,
+            'vol-0', location, 11, ex_volume_type='FooVolumeType')
+
+    def test_create_volume_with_defined_volume_type(self):
+        CloudStackMockHttp.fixture_tag = 'withvolumetype'
+
+        volumeName = 'vol-0'
+        volLocation = self.driver.list_locations()[0]
+        diskOffering = self.driver.ex_list_disk_offerings()[0]
+        volumeType = diskOffering.name
+
+        volume = self.driver.create_volume(10, volumeName, location=volLocation,
+                                           ex_volume_type=volumeType)
+
+        self.assertEqual(volumeName, volume.name)
+
     def test_attach_volume(self):
         node = self.driver.list_nodes()[0]
         volumeName = 'vol-0'
@@ -594,6 +619,21 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(nodes[0].extra['port_forwarding_rules']))
         self.assertEqual('bc7ea3ee-a2c3-4b86-a53f-01bdaa1b2e32',
                          nodes[0].extra['port_forwarding_rules'][0].id)
+
+    def test_list_nodes_location_filter(self):
+        def list_nodes_mock(self, **kwargs):
+            self.assertTrue('zoneid' in kwargs)
+            self.assertEqual('1', kwargs.get('zoneid'))
+
+            body, obj = self._load_fixture('listVirtualMachines_default.json')
+            return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+
+        CloudStackMockHttp._cmd_listVirtualMachines = list_nodes_mock
+        try:
+            location = NodeLocation(1, 'Sydney', 'Unknown', self.driver)
+            self.driver.list_nodes(location=location)
+        finally:
+            del CloudStackMockHttp._cmd_listVirtualMachines
 
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)

@@ -21,10 +21,16 @@ __all__ = [
 
 
 class Provider(object):
+    """
+    Defines for each of the supported providers
+
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+    """
     DUMMY = 'dummy'
+    DIMENSIONDATA = 'dimensiondata'
     EBS = 'ebs'
     GCE = 'gce'
-    DIMENSIONDATA = 'dimensiondata'
 
 
 class BackupTargetType(object):

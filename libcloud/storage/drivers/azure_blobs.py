@@ -19,7 +19,10 @@ import base64
 import os
 import binascii
 
-from xml.etree.ElementTree import Element, SubElement
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
@@ -693,10 +696,10 @@ class AzureBlobsStorageDriver(StorageDriver):
         :type upload_id: ``list``
         """
 
-        root = Element('BlockList')
+        root = ET.Element('BlockList')
 
         for block_id in chunks:
-            part = SubElement(root, 'Uncommitted')
+            part = ET.SubElement(root, 'Uncommitted')
             part.text = str(block_id)
 
         data = tostring(root)

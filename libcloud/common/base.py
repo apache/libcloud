@@ -16,6 +16,7 @@
 import os
 import sys
 import ssl
+import socket
 import copy
 import binascii
 import time
@@ -269,7 +270,11 @@ class XmlResponse(Response):
             return self.body
 
         try:
-            body = ET.XML(self.body)
+            try:
+                body = ET.XML(self.body)
+            except ValueError:
+                # lxml wants a bytes and tests are basically hard-coded to str
+                body = ET.XML(self.body.encode('utf-8'))
         except:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
@@ -412,6 +417,8 @@ class LoggingConnection():
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
+        # pylint: disable=no-member
+
         cmd = ["curl"]
 
         if self.http_proxy_used:
@@ -624,6 +631,8 @@ class Connection(object):
         connection = None
         secure = self.secure
 
+        # pylint: disable=no-member
+
         if getattr(self, 'base_url', None) and base_url is None:
             (host, port,
              secure, request_path) = self._tuple_from_url(self.base_url)
@@ -818,6 +827,24 @@ class Connection(object):
                 else:
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers)
+        except socket.gaierror:
+            e = sys.exc_info()[1]
+            message = str(e)
+            errno = getattr(e, 'errno', None)
+
+            if errno == -5:
+                # Throw a more-friendly exception on "no address associated
+                # with hostname" error. This error could simpli indicate that
+                # "host" Connection class attribute is set to an incorrect
+                # value
+                class_name = self.__class__.__name__
+                msg = ('%s. Perhaps "host" Connection class attribute '
+                       '(%s.connection) is set to an invalid, non-hostname '
+                       'value (%s)?' %
+                       (message, class_name, self.host))
+                raise socket.gaierror(msg)
+            self.reset_context()
+            raise e
         except ssl.SSLError:
             e = sys.exc_info()[1]
             self.reset_context()
@@ -1134,14 +1161,32 @@ class BaseDriver(object):
         self.region = region
 
         conn_kwargs = self._ex_connection_class_kwargs()
-        conn_kwargs.update({'timeout': kwargs.pop('timeout', None),
-                            'retry_delay': kwargs.pop('retry_delay', None),
-                            'backoff': kwargs.pop('backoff', None),
-                            'proxy_url': kwargs.pop('proxy_url', None)})
+
+        # Note: We do that to make sure those additional arguments which are
+        # provided via "_ex_connection_class_kwargs" are not overriden with
+        # None
+        additional_kwargs = ['timeout', 'retry_delay', 'backoff', 'proxy_url']
+        for kwarg_name in additional_kwargs:
+            value = kwargs.pop(kwarg_name, None)
+
+            # Constructor argument has precedence over
+            # _ex_connection_class_kwargs kwarg
+            if value is not None or kwarg_name not in conn_kwargs:
+                conn_kwargs[kwarg_name] = value
+
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self
         self.connection.connect()
+
+    @classmethod
+    def list_regions(cls):
+        """
+        Method which returns a list of the available / supported regions.
+
+        :rtype: ``list`` of ``str``
+        """
+        return []
 
     def _ex_connection_class_kwargs(self):
         """

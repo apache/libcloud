@@ -143,7 +143,7 @@ For example:
 
 .. sourcecode:: bash
 
-    git tag v0.15.0-tentative 105b9610835f99704996d861d613c5a9a8b3f8b1
+    git tag --sign v0.15.0-tentative 105b9610835f99704996d861d613c5a9a8b3f8b1
 
 5. Upload the release artifacts and start a [VOTE] thread
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,6 +153,15 @@ space. Then start a [VOTE] thread on the dev@libcloud.apache.org mailing list.
 
 Once the vote has passed tag the release with a new tag, removing the ``-tentative`` postfix.
 Upload the release artifacts to Apache servers and Pypi.
+
+For example:
+
+.. sourcecode:: bash
+
+    git tag --sign v0.15.0 105b9610835f99704996d861d613c5a9a8b3f8b1
+
+Keep in mind that it's important that you sign the commit / tag with your GPG
+key.
 
 6. Uploading release artifacts to Apache servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

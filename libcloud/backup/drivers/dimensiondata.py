@@ -18,13 +18,13 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.backup.base import BackupDriver, BackupTarget
+from libcloud.backup.base import BackupDriver, BackupTarget, BackupTargetJob
 from libcloud.backup.types import BackupTargetType
 from libcloud.backup.types import Provider
+from libcloud.common.dimensiondata import dd_object_to_id
 from libcloud.common.dimensiondata import DimensionDataConnection
 from libcloud.common.dimensiondata import DimensionDataBackupClient
 from libcloud.common.dimensiondata import DimensionDataBackupClientAlert
-from libcloud.common.dimensiondata import DimensionDataBackupClientRunningJob
 from libcloud.common.dimensiondata import DimensionDataBackupClientType
 from libcloud.common.dimensiondata import DimensionDataBackupDetails
 from libcloud.common.dimensiondata import DimensionDataBackupSchedulePolicy
@@ -33,6 +33,10 @@ from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
 from libcloud.utils.xml import fixxpath, findtext, findall
+
+# pylint: disable=no-member
+
+DEFAULT_BACKUP_PLAN = 'Advanced'
 
 
 class DimensionDataBackupDriver(BackupDriver):
@@ -52,10 +56,11 @@ class DimensionDataBackupDriver(BackupDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
-        if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
-
-        self.selected_region = API_ENDPOINTS[region]
+        if region not in API_ENDPOINTS and host is None:
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
+        if region is not None:
+            self.selected_region = API_ENDPOINTS[region]
 
         super(DimensionDataBackupDriver, self).__init__(
             key=key, secret=secret,
@@ -112,7 +117,12 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        service_plan = extra.get('service_plan', 'Advanced')
+        if extra is not None:
+            service_plan = extra.get('servicePlan', DEFAULT_BACKUP_PLAN)
+        else:
+            service_plan = DEFAULT_BACKUP_PLAN
+            extra = {'servicePlan': service_plan}
+
         create_node = ET.Element('NewBackup',
                                  {'xmlns': BACKUP_NS})
         create_node.set('servicePlan', service_plan)
@@ -185,7 +195,7 @@ class DimensionDataBackupDriver(BackupDriver):
         is supported.
 
         :param target: Backup target to update
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :param name: Name of the target
         :type name: ``str``
@@ -198,16 +208,22 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        service_plan = extra.get('servicePlan', 'Advanced')
+        if extra is not None:
+            service_plan = extra.get('servicePlan', DEFAULT_BACKUP_PLAN)
+        else:
+            service_plan = DEFAULT_BACKUP_PLAN
         request = ET.Element('ModifyBackup',
                              {'xmlns': BACKUP_NS})
         request.set('servicePlan', service_plan)
-
+        server_id = self._target_to_target_address(target)
         self.connection.request_with_orgId_api_1(
-            'server/%s/backup/modify' % (target.address),
+            'server/%s/backup/modify' % (server_id),
             method='POST',
             data=ET.tostring(request)).object
-        target.extra = extra
+        if isinstance(target, BackupTarget):
+            target.extra = extra
+        else:
+            target = self.ex_get_target_by_id(server_id)
         return target
 
     def delete_target(self, target):
@@ -215,12 +231,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Delete a backup target
 
         :param target: Backup target to delete
-        :type  target: Instance of :class:`BackupTarget`
+        :type  target: Instance of :class:`BackupTarget` or ``str``
 
         :rtype: ``bool``
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup?disable' % (target.address),
+            'server/%s/backup?disable' % (server_id),
             method='GET').object
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
@@ -355,20 +372,55 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'suspend_target_job not implemented for this driver')
 
-    def cancel_target_job(self, target, job):
+    def cancel_target_job(self, job, ex_client=None, ex_target=None):
         """
         Cancel a backup job on a target
 
-        :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
+        :param job: Backup target job to cancel.  If it is ``None``
+                    ex_client and ex_target must be set
+        :type  job: Instance of :class:`BackupTargetJob` or ``None``
 
-        :param job: Backup target job to cancel
-        :type  job: Instance of :class:`BackupTargetJob`
+        :param ex_client: Client of the job to cancel.
+                          Not necessary if job is specified.
+                          DimensionData only has 1 job per client
+        :type  ex_client: Instance of :class:`DimensionDataBackupClient`
+                          or ``str``
+
+        :param ex_target: Target to cancel a job from.
+                          Not necessary if job is specified.
+        :type  ex_target: Instance of :class:`BackupTarget` or ``str``
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'cancel_target_job not implemented for this driver')
+        if job is None:
+            if ex_client is None or ex_target is None:
+                raise ValueError("Either job or ex_client and "
+                                 "ex_target have to be set")
+            server_id = self._target_to_target_address(ex_target)
+            client_id = self._client_to_client_id(ex_client)
+        else:
+            server_id = job.target.address
+            client_id = job.extra['clientId']
+
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup/client/%s?cancelJob' % (server_id,
+                                                      client_id),
+            method='GET').object
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_get_target_by_id(self, id):
+        """
+        Get a target by server id
+
+        :param id: The id of the target you want to get
+        :type  id: ``str``
+
+        :rtype: :class:`BackupTarget`
+        """
+        node = self.connection.request_with_orgId_api_2(
+            'server/server/%s' % id).object
+        return self._to_target(node)
 
     def ex_add_client_to_target(self, target, client_type, storage_policy,
                                 schedule_policy, trigger, email):
@@ -400,11 +452,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-
-        if isinstance(target, BackupTarget):
-            server_id = target.address
-        else:
-            server_id = target
+        server_id = self._target_to_target_address(target)
 
         backup_elm = ET.Element('NewBackupClient',
                                 {'xmlns': BACKUP_NS})
@@ -438,36 +486,54 @@ class DimensionDataBackupDriver(BackupDriver):
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_get_backup_details_for_target(self, target):
+    def ex_remove_client_from_target(self, target, backup_client):
         """
-        Returns a list of available backup client types
+        Removes a client from a backup target
 
-        :param  target: The backup target to list available types for
+        :param  target: The backup target to remove the client from
         :type   target: :class:`BackupTarget` or ``str``
 
-        :rtype: ``list`` of :class:`DimensionDataBackupDetails`
-        """
+        :param  backup_client: The backup client to remove
+        :type   backup_client: :class:`DimensionDataBackupClient` or ``str``
 
-        if isinstance(target, BackupTarget):
-            server_id = target.address
-        else:
-            server_id = target
+        :rtype: ``bool``
+        """
+        server_id = self._target_to_target_address(target)
+        client_id = self._client_to_client_id(backup_client)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup' % (server_id),
+            'server/%s/backup/client/%s?disable' % (server_id, client_id),
             method='GET').object
-        return self._to_backup_details(response)
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_get_backup_details_for_target(self, target):
+        """
+        Returns a backup details object for a target
+
+        :param  target: The backup target to get details for
+        :type   target: :class:`BackupTarget` or ``str``
+
+        :rtype: :class:`DimensionDataBackupDetails`
+        """
+        if not isinstance(target, BackupTarget):
+            target = self.ex_get_target_by_id(target)
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup' % (target.address),
+            method='GET').object
+        return self._to_backup_details(response, target)
 
     def ex_list_available_client_types(self, target):
         """
         Returns a list of available backup client types
 
         :param  target: The backup target to list available types for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupClientType`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/type' % (target.address),
+            'server/%s/backup/client/type' % (server_id),
             method='GET').object
         return self._to_client_types(response)
 
@@ -476,12 +542,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup storage policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupStoragePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/storagePolicy' % (target.address),
+            'server/%s/backup/client/storagePolicy' % (server_id),
             method='GET').object
         return self._to_storage_policies(response)
 
@@ -490,12 +557,13 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup schedule policies
 
         :param  target: The backup target to list available policies for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
         :rtype: ``list`` of :class:`DimensionDataBackupSchedulePolicy`
         """
+        server_id = self._target_to_target_address(target)
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client/schedulePolicy' % (target.address),
+            'server/%s/backup/client/schedulePolicy' % (server_id),
             method='GET').object
         return self._to_schedule_policies(response)
 
@@ -537,28 +605,29 @@ class DimensionDataBackupDriver(BackupDriver):
             is_file_system=bool(element.get('isFileSystem') == 'true')
         )
 
-    def _to_backup_details(self, object):
+    def _to_backup_details(self, object, target):
         return DimensionDataBackupDetails(
-            asset_id=object.get('asset_id'),
+            asset_id=object.get('assetId'),
             service_plan=object.get('servicePlan'),
-            state=object.get('state'),
-            clients=self._to_clients(object)
+            status=object.get('state'),
+            clients=self._to_clients(object, target)
         )
 
-    def _to_clients(self, object):
+    def _to_clients(self, object, target):
         elements = object.findall(fixxpath('backupClient', BACKUP_NS))
 
-        return [self._to_client(el) for el in elements]
+        return [self._to_client(el, target) for el in elements]
 
-    def _to_client(self, element):
+    def _to_client(self, element, target):
+        client_id = element.get('id')
         return DimensionDataBackupClient(
-            id=element.get('id'),
-            type=self._to_client_type(element, ),
+            id=client_id,
+            type=self._to_client_type(element),
             status=element.get('status'),
             schedule_policy=findtext(element, 'schedulePolicyName', BACKUP_NS),
             storage_policy=findtext(element, 'storagePolicyName', BACKUP_NS),
             download_url=findtext(element, 'downloadUrl', BACKUP_NS),
-            running_job=self._to_running_job(element),
+            running_job=self._to_backup_job(element, target, client_id),
             alert=self._to_alert(element)
         )
 
@@ -575,13 +644,16 @@ class DimensionDataBackupDriver(BackupDriver):
             )
         return None
 
-    def _to_running_job(self, element):
+    def _to_backup_job(self, element, target, client_id):
         running_job = element.find(fixxpath('runningJob', BACKUP_NS))
         if running_job is not None:
-            return DimensionDataBackupClientRunningJob(
+            return BackupTargetJob(
                 id=running_job.get('id'),
                 status=running_job.get('status'),
-                percentage=int(running_job.get('percentageComplete'))
+                progress=int(running_job.get('percentageComplete')),
+                driver=self.connection.driver,
+                target=target,
+                extra={'clientId': client_id}
             )
         return None
 
@@ -609,3 +681,11 @@ class DimensionDataBackupDriver(BackupDriver):
                          type=BackupTargetType.VIRTUAL,
                          extra=extra)
         return n
+
+    @staticmethod
+    def _client_to_client_id(backup_client):
+        return dd_object_to_id(backup_client, DimensionDataBackupClient)
+
+    @staticmethod
+    def _target_to_target_address(target):
+        return dd_object_to_id(target, BackupTarget, id_value='address')

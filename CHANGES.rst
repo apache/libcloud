@@ -1,8 +1,121 @@
 ﻿Changelog
 =========
 
-Changes with Apache Libcloud in development
--------------------------------------------
+Changes with latest version of Apache Libcloud
+----------------------------------------------
+
+General
+~~~~~~~
+
+- Fix a regression with ``timeout`` argument provided via
+  ``_ex_connection_class_kwargs`` method being overriden with ``None`` inside
+  the ``BaseDriver`` constructor method.
+
+  Reported by Jay Rolette.
+  (GITHUB-755)
+  [Tomaz Muraus, Jay Rolette]
+
+- Fix OpenStack v3 authentication and allow user to provide a custom value for
+  the OpenStack ``domain`` parameter. Previously only possible value as a
+  default value of ``Default``.
+  (GITHUB-744)
+  [Lionel Schaub]
+
+- Add support for authenticating against Keystone and OpenStack based clouds
+  using OpenID Connect tokens.
+  (GITHUB-789)
+  [Miguel Caballer]
+
+Compute
+~~~~~~~
+
+- GCE nodes can be launched in a subnetwork
+  (GITHUB-783)
+  [Lars Larsson]
+
+- Add Subnetworks to GCE driver
+  (GITHUB-780)
+  [Eric Johnson]
+
+- Fix missing pricing data for GCE
+  (LIBCLOUD-713, GITHUB-779)
+  [Eric Johnson]
+
+- Add Image Family support for GCE
+  (GITHUB-778)
+  [Rick Wright]
+
+- Fix a race condition on GCE driver `list_nodes()`- Invoking GCE’s
+  `list_nodes()` while some VMs are being shutdown can result in the following
+  `libcloud.common.google.ResourceNotFoundError` exception to be raised.
+  (GITHUB-727)
+  [Lénaïc Huard]
+
+- Allow user to filter nodes by location by adding optional `location`
+  argument to the `list_nodes()` method in the CloudStack driver.
+  (GITHUB-737)
+  [Lionel Schaub]
+
+- Fix OpenStack IP type resolution - make sure IP addresses are correctly
+  categorized and assigned on `private_ips` and `public_ips` Node attribute.
+  (GITHUB-738)
+  [Lionel Schaub]
+
+- Add new `Perth, Australia` and `Manila, Philippines` region to the CloudSigma
+  v2 driver.
+  [Tomaz Muraus]
+
+- Update libvirt driver so it returns false if a non-local libvirt URL is used
+  (right now only local instances are supported).
+  (LIBCLOUD-820, GITHUB-788)
+  [René Kjellerup]
+
+- Update libvirt driver to use `ip neight` command instead of `arp` to retrieve
+  node MAC address if `arp` command is not available or the current user
+  doesn't have permission to use it.
+  (LIBCLOUD-820, GITHUB-788)
+  [René Kjellerup]
+
+- Update ``create_volume`` method in the CloudStack driver and add
+  ``ex_volume_type`` argument to it. If this argument is provided, a volume
+  which names matches this argument value will be searched and selected among
+  the available disk offerings.
+  (GITHUB-785)
+  [Greg Bishop]
+
+Storage
+~~~~~~~
+
+- Add support for AWS signature v4 to the Outscale storage driver.
+  (GITHUB-736)
+  [Javier M. Mellid]
+
+
+- Add new S3 RGW storage driver.
+  (GITHUB-786, GITHUB-792)
+  [Javier M. Mellid]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- Update AWS ELB driver to use signature version 4 for authentication. This
+  way, the driver also work with the `eu-central-1` region.
+  (GITHUB-796)
+  [Tobias Paepke]
+
+DNS
+~~~
+
+- Add BuddyNS driver.
+  (GITHUB-742)
+  [Oltjano Terpollari]
+
+- Added DNSPod driver (https://www.dnspod.com).
+  (GITHUB-787)
+  [Oltjano Terpollari]
+
+Changes with Apache Libcloud in 1.0.0-rc2
+-----------------------------------------
 
 General
 ~~~~~~~
@@ -16,8 +129,85 @@ General
   SSH client. This results in smaller number of receive calls on the average.
   [Tomaz Muraus]
 
+- Fix to Dimension Data API address for Middle-East and Africa
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Addition of Dimension Data Australia federal government region to dimension data
+  drivers.
+  (GITHUB-700)
+  [Anthony Shaw]
+
+- Throw a more user-friendly exception on "No address associated with hostname".
+  (GITHUB-711, GITHUB-714, LIBCLOUD-803)
+  [Tomaz Muraus, Scott Crunkleton]
+
+* Remove deprecated provider constants with the region in the name and related
+  driver classes (e.g. ``EC2_US_EAST``, etc.).
+
+  Those drivers have moved to single provider constant + ``region`` constructor
+  argument model.
+  [Tomaz Muraus]
+
+* Introduce new `list_regions`` class method on the base driver class. This
+  method is to be used with provider drivers which support multiple regions and
+  ``region`` constructor argument. It allows users to enumerate available /
+  supported regions.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
+
+- [dimension data] added support for VMWare tools VM information inside list_nodes responses
+  (GITHUB-734)
+  [Jeff Dunham]
+
+- [ec2] added ex_encrypted and ex_kms_key_id optional parameters to the create volume method
+  (GITHUB-729)
+  [Viktor Ognev]
+
+- [dimension data] added support for managing host anti-affinity rules, added paging support to
+  all supported calls and added support for requesting priority ordering when creating ACL rules
+  (GITHUB-726)
+  [Jeff Dunham]
+
+- [openstack] when creating floating IPs, added pool_id as an optional argument
+  (GITHUB-725)
+  [marko-p]
+
+- [google compute] Added setMachineType method to allow for changing sizes of instances
+  (GITHUB-721)
+  [Eric Johnson]
+
+- [google compute] allow bypassing image search in standard project list
+  (GITHUB-713)
+  [Max Illfelder]
+
+- Add support for requesting a MKS token for accessing the remote console in VMware
+  vCloud driver
+  (GITHUB-706)
+  [Juan Font Alonso]
+
+- Add support in VMware vCloud driver for v5.5 API, with snapshot support
+  (GITHUB-658)
+  [Juan Font Alonso]
+
+- Added support for adding a family to an image on Google Compute Driver
+  (GITHUB-704)
+  [Max Illfelder]
+
+- Deprecated IBM SCE, HP Helion, OpSource, Ninefold and CloudFrames drivers, removed
+  driver code and tests.
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- Introduced error messages (`libcloud.compute.deprecated`) for deprecated drivers
+  (GITHUB-701, LIBCLOUD-801)
+  [Anthony Shaw]
+
+- New Compute drivers- BSNL, Indosat, Med-1, NTT-America, Internet Solutions
+  (GITHUB-700)
+  [Anthony Shaw]
 
 - Fix to set default signature version for AWS Seoul region to v4, removed
   non-supported size (hs1.xlarge)
@@ -34,16 +224,67 @@ Compute
   (GITHUB-694)
   [Jeff Dunham]
 
-- Support for creation time (`ex_created_time`) in EC2 and digitalocean drivers
-  (GITHUB-697)
-  [Rick van de Loo]
+- Added `Node.created_at` which, on supported drivers, contains the datetime the
+  node was first started.
+  (GITHUB-698)
+  [Allard Hoeve] [Rick van de Loo]
+
+- New driver for Aliyun Elastic Compute Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
 
 Storage
 ~~~~~~~
 
+- Added Outscale storage driver
+  (GITHUB-730)
+  [Javier M. Mellid]
+
 - Improvements to Google Auth for Storage and Compute and MIME bug fix
   (LIBCLOUD-800, GITHUB-689)
   [Scott Crunkleton]
+
+- Implement ``get_container``, ``get_object`` and ``upload_object_via_stream``
+  methods in the Backblaze B2 storage driver.
+
+  Note: Backblaze API doesn't upload streaming uploads so when using
+  ``upload_object_via_stream`` whole file is read and buffered in memory.
+  (GITHUB-696)
+  [Jay jshridha]
+
+- New driver for Aliyun OSS Storage Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+Loadbalancer
+~~~~~~~~~~~~
+
+- New driver for Aliyun SLB Loadbalancer Service.
+  (LIBCLOUD-802, GITHUB-712)
+  [Sam Song]
+
+DNS
+~~~~
+
+- Added NearlyFreeSpeech.net (NSFN) driver
+  [Ken Drayer]
+  (GITHUB-733)
+
+- Added Lua DNS driver
+  [Oltjano Terpollari]
+  (GITHUB-732)
+
+- Added NSOne driver
+  [Oltjano Terpollari]
+  (GITHUB-710)
+
+- Fix a bug in the GoDaddy driver - make sure ``host`` attribute on the
+  connection class is correctly set to the hostname.
+  [Tomaz Muraus]
+
+- Fix handling of ``MX`` records in the Gandi driver.
+  (GITHUB-718)
+  [Ryan Lee]
 
 Backup
 ~~~~~~

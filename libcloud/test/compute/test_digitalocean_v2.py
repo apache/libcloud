@@ -15,6 +15,9 @@
 import sys
 import unittest
 
+from datetime import datetime
+from libcloud.utils.iso8601 import UTC
+
 try:
     import simplejson as json
 except ImportError:
@@ -87,6 +90,10 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(nodes[0].extra['image']['id'], 6918990)
         self.assertEqual(nodes[0].extra['size_slug'], '512mb')
 
+    def test_list_nodes_fills_created_datetime(self):
+        nodes = self.driver.list_nodes()
+        self.assertEqual(nodes[0].created_at, datetime(2014, 11, 14, 16, 29, 21, tzinfo=UTC))
+
     def test_create_node_invalid_size(self):
         image = NodeImage(id='invalid', name=None, driver=self.driver)
         size = self.driver.list_sizes()[0]
@@ -141,11 +148,6 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         DigitalOceanMockHttp.type = 'DESTROY'
         result = self.driver.destroy_node(node)
         self.assertTrue(result)
-
-    def test_ex_get_creation_time(self):
-        node = self.driver.list_nodes()[0]
-        creation_time = self.driver.ex_get_creation_time(node)
-        self.assertEqual(creation_time, "2014-11-14T16:29:21Z")
 
     def test_ex_rename_node_success(self):
         node = self.driver.list_nodes()[0]

@@ -270,7 +270,6 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
                 raise
 
 
-# ==== COMPUTE CODE STARTS HERE ====
 def main_compute():
     start_time = datetime.datetime.now()
     display('Compute demo/test start time: %s' % str(start_time))
@@ -300,6 +299,9 @@ def main_compute():
     firewalls = gce.ex_list_firewalls()
     display('Firewalls:', firewalls)
 
+    subnetworks = gce.ex_list_subnetworks()
+    display('Subnetworks:', subnetworks)
+
     networks = gce.ex_list_networks()
     display('Networks:', networks)
 
@@ -317,8 +319,92 @@ def main_compute():
 
     # == Clean up any old demo resources ==
     display('Cleaning up any "%s" resources' % DEMO_BASE_NAME)
+    # Delete subnetworks first, networks last
+    clean_up(gce, DEMO_BASE_NAME, None, subnetworks)
     clean_up(gce, DEMO_BASE_NAME, all_nodes,
-             all_addresses + all_volumes + firewalls + networks + snapshots)
+             all_addresses + all_volumes + firewalls + snapshots + networks)
+
+    # == Create a Legacy Network ==
+    display('Creating Legacy Network:')
+    name = '%s-legacy-network' % DEMO_BASE_NAME
+    cidr = '10.10.0.0/16'
+    network_legacy = gce.ex_create_network(name, cidr)
+    display('  Network %s created' % name)
+
+    # == Delete the Legacy Network ==
+    display('Delete Legacy Network:')
+    network_legacy.destroy()
+    display('  Network %s delete' % name)
+
+    # == Create an auto network ==
+    display('Creating Auto Network:')
+    name = '%s-auto-network' % DEMO_BASE_NAME
+    network_auto = gce.ex_create_network(name, cidr=None, mode='auto')
+    display('  AutoNetwork %s created' % network_auto.name)
+
+    # == Display subnetworks from the auto network ==
+    subnets = []
+    for sn in network_auto.subnetworks:
+        subnets.append(gce.ex_get_subnetwork(sn))
+    display('Display subnetworks:', subnets)
+
+    # == Delete the auto network ==
+    display('Delete Auto Network:')
+    network_auto.destroy()
+    display('  AutoNetwork %s deleted' % name)
+
+    # == Create an custom network ==
+    display('Creating Custom Network:')
+    name = '%s-custom-network' % DEMO_BASE_NAME
+    network_custom = gce.ex_create_network(name, cidr=None, mode='custom')
+    display('  Custom Network %s created' % network_custom.name)
+
+    # == Create a subnetwork ==
+    display('Creating Subnetwork:')
+    sname = '%s-subnetwork' % DEMO_BASE_NAME
+    region = 'us-central1'
+    cidr = '192.168.17.0/24'
+    subnet = gce.ex_create_subnetwork(sname, cidr, network_custom, region)
+    display('  Subnetwork %s created' % subnet.name)
+    # Refresh object, now that it has a subnet
+    network_custom = gce.ex_get_network(name)
+
+    # == Display subnetworks from the auto network ==
+    subnets = []
+    for sn in network_custom.subnetworks:
+        subnets.append(gce.ex_get_subnetwork(sn))
+    display('Display custom subnetworks:', subnets)
+
+    # == Launch instance in custom subnetwork ==
+    display('Creating Node in custom subnetwork:')
+    name = '%s-subnet-node' % DEMO_BASE_NAME
+    node_1 = gce.create_node(name, 'g1-small', 'debian-8',
+                             ex_disk_auto_delete=True,
+                             ex_network=network_custom,
+                             ex_subnetwork=subnet)
+    display('  Node %s created' % name)
+
+    # == Destroy instance in custom subnetwork ==
+    display('Destroying Node in custom subnetwork:')
+    node_1.destroy()
+    display('  Node %s destroyed' % name)
+
+    # == Delete an subnetwork ==
+    display('Delete Custom Subnetwork:')
+    subnet.destroy()
+    display('  Custom Subnetwork %s deleted' % sname)
+    is_deleted = False
+    while not is_deleted:
+        time.sleep(3)
+        try:
+            subnet = gce.ex_get_subnetwork(sname, region)
+        except ResourceNotFoundError:
+            is_deleted = True
+
+    # == Delete the auto network ==
+    display('Delete Custom Network:')
+    network_custom.destroy()
+    display('  Custom Network %s deleted' % name)
 
     # == Create Node with disk auto-created ==
     if MAX_NODES > 1:
@@ -361,6 +447,16 @@ def main_compute():
                                  ex_tags=['libcloud'], ex_disk_type='pd-ssd',
                                  ex_disk_auto_delete=False)
         display('  Node %s created' % name)
+
+        # Stop the node and change to a custom machine type (e.g. size)
+        display('Stopping node, setting custom size, starting node:')
+        name = '%s-np-node' % DEMO_BASE_NAME
+        gce.ex_stop_node(node_1)
+        gce.ex_set_machine_type(node_1, 'custom-2-4096')   # 2 vCPU, 4GB RAM
+        gce.ex_start_node(node_1)
+        node_1 = gce.ex_get_node(name)
+        display('  %s: state=%s, size=%s' % (name, node_1.extra['status'],
+                                             node_1.size))
 
         # == Create, and attach a disk ==
         display('Creating a new disk:')
@@ -470,6 +566,9 @@ def main_compute():
     firewalls = gce.ex_list_firewalls()
     display('Firewalls:', firewalls)
 
+    subnetworks = gce.ex_list_subnetworks()
+    display('Subnetworks:', subnetworks)
+
     networks = gce.ex_list_networks()
     display('Networks:', networks)
 
@@ -478,8 +577,9 @@ def main_compute():
 
     if CLEANUP:
         display('Cleaning up %s resources created' % DEMO_BASE_NAME)
+        clean_up(gce, DEMO_BASE_NAME, None, subnetworks)
         clean_up(gce, DEMO_BASE_NAME, nodes,
-                 addresses + firewalls + networks + snapshots)
+                 addresses + firewalls + snapshots + networks)
         volumes = gce.list_volumes()
         clean_up(gce, DEMO_BASE_NAME, None, volumes)
     end_time = datetime.datetime.now()
@@ -543,7 +643,7 @@ def main_load_balancer():
     name = '%s-firewall' % DEMO_BASE_NAME
     allowed = [{'IPProtocol': 'tcp',
                 'ports': ['80']}]
-    firewall = gce.ex_create_firewall(name, allowed, source_tags=[tag])
+    firewall = gce.ex_create_firewall(name, allowed, target_tags=[tag])
     display('    Firewall %s created' % firewall.name)
 
     # == Create a Health Check ==
@@ -624,7 +724,7 @@ def main_load_balancer():
         sys.stdout.flush()
         time.sleep(.25)
 
-    print ""
+    print('')
     if CLEANUP:
         balancers = gcelb.list_balancers()
         healthchecks = gcelb.ex_list_healthchecks()

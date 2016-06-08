@@ -2061,29 +2061,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         for label, values in api_node['addresses'].items():
             for value in values:
                 ip = value['addr']
-
                 is_public_ip = False
 
                 try:
-                    public_subnet = is_public_subnet(ip)
+                    is_public_ip = is_public_subnet(ip)
                 except:
                     # IPv6
-                    public_subnet = False
 
-                # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
-                # public and 'fixed' for private
-                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating'
+                    # for public and 'fixed' for private
+                    explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
-                if explicit_ip_type == 'floating':
-                    is_public_ip = True
-                elif explicit_ip_type == 'fixed':
-                    is_public_ip = False
-                elif label in public_networks_labels:
-                    # Try label next
-                    is_public_ip = True
-                elif public_subnet:
-                    # Check for public subnet
-                    is_public_ip = True
+                    if label in public_networks_labels:
+                        is_public_ip = True
+                    elif explicit_ip_type == 'floating':
+                        is_public_ip = True
+                    elif explicit_ip_type == 'fixed':
+                        is_public_ip = False
 
                 if is_public_ip:
                     public_ips.append(ip)
@@ -2096,6 +2090,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         image_id = image.get('id', None) if image else None
         config_drive = api_node.get("config_drive", False)
         volumes_attached = api_node.get('os-extended-volumes:volumes_attached')
+        created = parse_date(api_node["created"])
 
         return Node(
             id=api_node['id'],
@@ -2104,8 +2099,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                           NodeState.UNKNOWN),
             public_ips=public_ips,
             private_ips=private_ips,
+            created_at=created,
             driver=self,
             extra=dict(
+                addresses=api_node['addresses'],
                 hostId=api_node['hostId'],
                 access_ip=api_node.get('accessIPv4'),
                 access_ipv6=api_node.get('accessIPv6', None),
@@ -2311,15 +2308,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ip_obj, = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
-    def ex_create_floating_ip(self):
+    def ex_create_floating_ip(self, ip_pool=None):
         """
-        Create new floating IP
+        Create new floating IP. The ip_pool attribute is optional only if your
+        infrastructure has only one IP pool available.
+
+        :param      ip_pool: name of the floating IP pool
+        :type       ip_pool: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
+        data = {'pool': ip_pool} if ip_pool is not None else {}
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
-                                       data={})
+                                       data=data)
+
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']

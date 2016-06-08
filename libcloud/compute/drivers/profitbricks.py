@@ -85,6 +85,16 @@ class ProfitBricksConnection(ConnectionUserAndKey):
     api_prefix = API_VERSION
     responseCls = ProfitBricksResponse
 
+    # Supporting xml + lxml is funky :S
+    SOAPENV_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/'
+    SOAPENV = '{%s}' % SOAPENV_NAMESPACE
+    WS_NAMESPACE = 'http://ws.api.profitbricks.com/'
+    WS = '{%s}' % WS_NAMESPACE
+    NSMAP = {
+        'soapenv': SOAPENV_NAMESPACE,
+        'ws': WS_NAMESPACE,
+    }
+
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'text/xml'
         headers['Authorization'] = 'Basic %s' % (base64.b64encode(
@@ -93,13 +103,11 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
-        soap_env = ET.Element('soapenv:Envelope', {
-            'xmlns:soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
-            'xmlns:ws': 'http://ws.api.profitbricks.com/'
-        })
-        ET.SubElement(soap_env, 'soapenv:Header')
-        soap_body = ET.SubElement(soap_env, 'soapenv:Body')
-        soap_req_body = ET.SubElement(soap_body, 'ws:%s' % (data['action']))
+        soap_env = ET.Element(self.SOAPENV + 'Envelope',
+                              self.NSMAP, **self.NSMAP)
+        ET.SubElement(soap_env, self.SOAPENV + 'Header')
+        soap_body = ET.SubElement(soap_env, self.SOAPENV + 'Body')
+        soap_req_body = ET.SubElement(soap_body, self.WS + data['action'])
 
         if 'request' in data.keys():
             soap_req_body = ET.SubElement(soap_req_body, 'request')
