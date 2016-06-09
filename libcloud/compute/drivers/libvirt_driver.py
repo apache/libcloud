@@ -63,7 +63,7 @@ class LibvirtNodeDriver(NodeDriver):
         7: NodeState.UNKNOWN,  # domain is suspended by guest power management
     }
 
-    def __init__(self, uri):
+    def __init__(self, uri, key=None, secret=None):
         """
         :param  uri: Hypervisor URI (e.g. vbox:///session, qemu:///system,
                      etc.).
@@ -74,7 +74,26 @@ class LibvirtNodeDriver(NodeDriver):
                                'package')
 
         self._uri = uri
-        self.connection = libvirt.open(uri)
+        self._key = key
+        self._secret = secret
+        try:
+            self.connection = libvirt.open(uri)
+        except libvirt.libvirtError:
+            if key is None or secret is None:
+                raise RuntimeError('The remote Libvirt instance requires ' +
+                                   'authenication, please set \'key\' and ' +
+                                   '\'secret\' parameters')
+            auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
+                    self._cred_callback, None]
+            self.connection = libvirt.openAuth(uri, auth, 0)
+
+    def _cred_callback(self, cred, user_data):
+        for credential in cred:
+            if credential[0] == libvirt.VIR_CRED_AUTHNAME:
+                credential[4] = self._key
+            elif credential[0] == libvirt.VIR_CRED_PASSPHRASE:
+                credential[4] = self._secret
+        return 0
 
     def list_nodes(self):
         domains = self.connection.listAllDomains()
