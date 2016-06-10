@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthPassword
@@ -51,8 +53,12 @@ print('Use image %s' % image)
 
 sgs = ecs.ex_list_security_groups()
 print('Found %d security groups' % len(sgs))
-sg = sgs[0]
-print('Use security group %s' % sg)
+if len(sgs) == 0:
+    sg = ecs.ex_create_security_groups(ex_description='test')
+    print('Create security group %s' % sg)
+else:
+    sg = sgs[0]
+    print('Use security group %s' % sg)
 
 nodes = ecs.list_nodes()
 print('Found %d nodes' % len(nodes))
