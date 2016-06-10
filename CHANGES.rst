@@ -231,7 +231,7 @@ Compute
 
 - New driver for Aliyun Elastic Compute Service.
   (LIBCLOUD-802, GITHUB-712)
-  [Sam Song]
+  [Sam Song, Heng Wu]
 
 Storage
 ~~~~~~~
