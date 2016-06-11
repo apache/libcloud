@@ -68,6 +68,12 @@ class LibvirtNodeDriver(NodeDriver):
         :param  uri: Hypervisor URI (e.g. vbox:///session, qemu:///system,
                      etc.).
         :type   uri: ``str``
+
+        :param  key: the username for a remote libvirtd server
+        :type   key: ``str``
+
+        :param  secret: the password for a remote libvirtd server
+        :type   key: ``str``
         """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
@@ -88,6 +94,18 @@ class LibvirtNodeDriver(NodeDriver):
             self.connection = libvirt.openAuth(uri, auth, 0)
 
     def _cred_callback(self, cred, user_data):
+        """
+        Callback for the authentication scheme, which will provide username
+        and password for the login. Reference: ( http://bit.ly/1U5yyQg )
+
+        :param  cred: The credentials requested and the return
+        :type   cred: ``list``
+
+        :param  user_data: Custom data provided to the authentication routine
+        :type   user_data: ``list``
+
+        :rtype: ``int``
+        """
         for credential in cred:
             if credential[0] == libvirt.VIR_CRED_AUTHNAME:
                 credential[4] = self._key
