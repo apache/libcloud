@@ -54,10 +54,10 @@ print('Use image %s' % image)
 sgs = ecs.ex_list_security_groups()
 print('Found %d security groups' % len(sgs))
 if len(sgs) == 0:
-    sg = ecs.ex_create_security_groups(ex_description='test')
+    sg = ecs.ex_create_security_group(description='test')
     print('Create security group %s' % sg)
 else:
-    sg = sgs[0]
+    sg = sgs[0].id
     print('Use security group %s' % sg)
 
 nodes = ecs.list_nodes()
@@ -73,7 +73,7 @@ if len(nodes) == 0:
     auth = NodeAuthPassword('P@$$w0rd')
 
     node = ecs.create_node(image=image, size=small, name='test',
-                           ex_security_group_id=sg.id,
+                           ex_security_group_id=sg,
                            ex_internet_charge_type=ecs.internet_charge_types.BY_TRAFFIC,
                            ex_internet_max_bandwidth_out=1,
                            ex_data_disk=data_disk,
