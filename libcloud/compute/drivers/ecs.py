@@ -768,8 +768,7 @@ class ECSDriver(NodeDriver):
         return resp.success() and \
             self._wait_until_state([node], NodeState.STOPPED)
 
-    def ex_create_security_group(self, description=None,
-                                  client_token=None):
+    def ex_create_security_group(self, description=None, client_token=None):
         """
         Create a new security group.
 
@@ -788,7 +787,7 @@ class ECSDriver(NodeDriver):
         if client_token:
             params['ClientToken'] = client_token
         resp = self.connection.request(self.path, params)
-        return findtext(resp.object, 'SecurityGroupId', 
+        return findtext(resp.object, 'SecurityGroupId',
                         namespace=self.namespace)
 
     def ex_list_security_groups(self, ex_filters=None):
