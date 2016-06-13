@@ -4721,10 +4721,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         tags = {}
 
         for tag in tag_set:
-            for key, value in tag.iteritems():
-                key = tag['key']
-                value = tag['value']
-                tags[key] = value
+            key = tag['key']
+            value = tag['value']
+            tags[key] = value
 
         return tags
 

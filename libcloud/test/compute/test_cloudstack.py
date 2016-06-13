@@ -619,6 +619,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(1, len(nodes[0].extra['port_forwarding_rules']))
         self.assertEqual('bc7ea3ee-a2c3-4b86-a53f-01bdaa1b2e32',
                          nodes[0].extra['port_forwarding_rules'][0].id)
+        self.assertEqual({"testkey": "testvalue", "foo": "bar"},
+                         nodes[0].extra['tags'])
 
     def test_list_nodes_location_filter(self):
         def list_nodes_mock(self, **kwargs):
