@@ -76,9 +76,7 @@ else:
 
 if has_certifi and USE_CERTIFI:
     certifi_ca_bundle_path = certifi.where()
-
-    if certifi_ca_bundle_path not in CA_CERTS_PATH:
-        CA_CERTS_PATH.insert(0, certifi_ca_bundle_path)
+    CA_CERTS_PATH.insert(0, certifi_ca_bundle_path)
 
 # Allow user to explicitly specify which CA bundle to use, using an environment
 # variable
