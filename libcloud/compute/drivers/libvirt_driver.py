@@ -87,7 +87,7 @@ class LibvirtNodeDriver(NodeDriver):
         except libvirt.libvirtError:
             if key is None or secret is None:
                 raise RuntimeError('The remote Libvirt instance requires ' +
-                                   'authenication, please set \'key\' and ' +
+                                   'authentication, please set \'key\' and ' +
                                    '\'secret\' parameters')
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
                     self._cred_callback, None]
