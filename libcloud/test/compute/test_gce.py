@@ -657,7 +657,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         volumes_all = self.driver.list_volumes('all')
         volumes_uc1a = self.driver.list_volumes('us-central1-a')
         self.assertEqual(len(volumes), 2)
-        self.assertEqual(len(volumes_all), 10)
+        self.assertEqual(len(volumes_all), 17)
         self.assertEqual(len(volumes_uc1a), 2)
         self.assertEqual(volumes[0].name, 'lcdisk')
         self.assertEqual(volumes_uc1a[0].name, 'lcdisk')
