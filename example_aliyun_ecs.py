@@ -51,7 +51,6 @@ else:
     image = images[0]
 print('Use image %s' % image)
 
-	
 sgs = ecs.ex_list_security_groups()
 print('Found %d security groups' % len(sgs))
 if len(sgs) == 0:
