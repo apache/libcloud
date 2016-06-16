@@ -21,21 +21,21 @@ from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
 from libcloud.test import unittest
 
 
-class LibvirtNodeDriverTestCase( unittest.TestCase):
-    
-
-    def setUp(self):
-        self.driver = LibvirtNodeDriver('')
+class LibvirtNodeDriverTestCase(LibvirtNodeDriver, unittest.TestCase):
+    def __init__(self, argv=None):
+        unittest.TestCase.__init__(self,argv)
+        self._uri = 'qemu:///system'
+        self.connection = None
 
     def _assert_arp_table(self, arp_table):
         self.assertIn('52:54:00:bc:f9:6c', arp_table)
         self.assertIn('52:54:00:04:89:51', arp_table)
         self.assertIn('52:54:00:c6:40:ec', arp_table)
         self.assertIn('52:54:00:77:1c:83', arp_table)
-        self.assertEqual(arp_table['52:54:00:bc:f9:6c'], '1.2.10.80')
-        self.assertEqual(arp_table['52:54:00:04:89:51'], '1.2.10.33')
-        self.assertEqual(arp_table['52:54:00:c6:40:ec'], '1.2.10.97')
-        self.assertEqual(arp_table['52:54:00:77:1c:83'], '1.2.10.40')
+        self.assertIn('1.2.10.80', arp_table['52:54:00:bc:f9:6c'])
+        self.assertIn('1.2.10.33', arp_table['52:54:00:04:89:51'])
+        self.assertIn('1.2.10.97', arp_table['52:54:00:c6:40:ec'])
+        self.assertIn('1.2.10.40', arp_table['52:54:00:77:1c:83'])
 
     def test_arp_map(self):
         arp_output_str = """? (1.2.10.80) at 52:54:00:bc:f9:6c [ether] on br0
@@ -43,7 +43,7 @@ class LibvirtNodeDriverTestCase( unittest.TestCase):
 ? (1.2.10.97) at 52:54:00:c6:40:ec [ether] on br0
 ? (1.2.10.40) at 52:54:00:77:1c:83 [ether] on br0
 """
-        arp_table = self.driver._parse_ip_table_arp(arp_output_str)
+        arp_table = self._parse_ip_table_arp(arp_output_str)
         self._assert_arp_table(arp_table)
 
     def test_ip_map(self):
@@ -52,7 +52,7 @@ class LibvirtNodeDriverTestCase( unittest.TestCase):
 1.2.10.97 dev br0 lladdr 52:54:00:c6:40:ec DELAY
 1.2.10.40 dev br0 lladdr 52:54:00:77:1c:83 STALE
 """
-        arp_table = self.driver._parse_ip_table_neigh(arp_output_str)
+        arp_table = self._parse_ip_table_neigh(arp_output_str)
         self._assert_arp_table(arp_table)
 
 if __name__ == '__main__':
