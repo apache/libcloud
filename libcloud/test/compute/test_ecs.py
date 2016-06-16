@@ -922,5 +922,6 @@ class ECSMockHttp(MockHttpTestCase):
         resp_body = self.fixtures.load('describe_zones.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
