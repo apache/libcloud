@@ -99,7 +99,8 @@ class DimensionDataLBDriver(Driver):
         return kwargs
 
     def create_balancer(self, name, port=None, protocol=None,
-                        algorithm=None, members=None):
+                        algorithm=None, members=None,
+                        ex_listener_ip_address=None):
         """
         Create a new load balancer instance
 
@@ -118,6 +119,10 @@ class DimensionDataLBDriver(Driver):
 
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
         :type algorithm: :class:`.Algorithm`
+
+        :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
+                                       notation (x.x.x.x).
+        :type ex_listener_ip_address: ``str``
 
         :rtype: :class:`LoadBalancer`
         """
@@ -153,7 +158,8 @@ class DimensionDataLBDriver(Driver):
             name=name,
             ex_description=name,
             port=port,
-            pool=pool)
+            pool=pool,
+            listener_ip_address=ex_listener_ip_address)
 
         return LoadBalancer(
             id=listener.id,
@@ -163,7 +169,8 @@ class DimensionDataLBDriver(Driver):
             port=port,
             driver=self,
             extra={'pool_id': pool.id,
-                   'network_domain_id': network_domain_id}
+                   'network_domain_id': network_domain_id,
+                   'listener_ip_address': ex_listener_ip_address}
         )
 
     def list_balancers(self):
