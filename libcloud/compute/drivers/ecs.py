@@ -790,6 +790,19 @@ class ECSDriver(NodeDriver):
         return findtext(resp.object, 'SecurityGroupId',
                         namespace=self.namespace)
 
+    def ex_delete_security_group_by_id(self, group_id=None):
+        """
+        Delete a new security group.
+
+        :keyword group_id: security group id
+        :type group_id: ``str``
+        """
+        params = {'Action': 'DeleteSecurityGroup',
+                  'RegionId': self.region,
+                  'SecurityGroupId': group_id}
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+    
     def ex_list_security_groups(self, ex_filters=None):
         """
         List security groups in the current region.
