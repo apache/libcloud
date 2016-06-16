@@ -58,13 +58,15 @@ class DimensionDataTests(unittest.TestCase):
             port=80,
             protocol='http',
             algorithm=Algorithm.ROUND_ROBIN,
-            members=members)
+            members=members,
+            ex_listener_ip_address='5.6.7.8')
         self.assertEqual(balancer.name, 'test')
         self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(balancer.ip, '165.180.12.22')
         self.assertEqual(balancer.port, 80)
         self.assertEqual(balancer.extra['pool_id'], '9e6b496d-5261-4542-91aa-b50c7f569c54')
         self.assertEqual(balancer.extra['network_domain_id'], '1234')
+        self.assertEqual(balancer.extra['listener_ip_address'], '5.6.7.8')
 
     def test_create_balancer_with_defaults(self):
         self.driver.ex_set_current_network_domain('1234')
