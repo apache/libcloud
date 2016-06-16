@@ -23,7 +23,7 @@ from libcloud.test import unittest
 
 class LibvirtNodeDriverTestCase(LibvirtNodeDriver, unittest.TestCase):
     def __init__(self, argv=None):
-        unittest.TestCase.__init__(self,argv)
+        unittest.TestCase.__init__(self, argv)
         self._uri = 'qemu:///system'
         self.connection = None
 
