@@ -78,7 +78,7 @@ class DimensionDataTests(unittest.TestCase):
         self.assertEqual(balancer.name, 'test')
         self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(balancer.ip, '165.180.12.22')
-        self.assertEqual(balancer.port, 80)
+        self.assertEqual(balancer.port, None)
         self.assertEqual(balancer.extra['pool_id'], '9e6b496d-5261-4542-91aa-b50c7f569c54')
         self.assertEqual(balancer.extra['network_domain_id'], '1234')
 
@@ -158,6 +158,27 @@ class DimensionDataTests(unittest.TestCase):
             id=None,
             ip='112.12.2.2',
             port=80,
+            balancer=balancer,
+            extra=None)
+        member = self.driver.balancer_attach_member(balancer, member)
+        self.assertEqual(member.id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
+
+    def test_balancer_attach_member_without_port(self):
+        extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',
+                 'network_domain_id': '1234'}
+        balancer = LoadBalancer(
+            id='234',
+            name='test',
+            state=State.RUNNING,
+            ip='1.2.3.4',
+            port=1234,
+            driver=self.driver,
+            extra=extra
+        )
+        member = Member(
+            id=None,
+            ip='112.12.2.2',
+            port=None,
             balancer=balancer,
             extra=None)
         member = self.driver.balancer_attach_member(balancer, member)
