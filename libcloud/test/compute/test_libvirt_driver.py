@@ -21,11 +21,151 @@ from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
 from libcloud.test import unittest
 
 
+class virConnect:
+    """
+    A stub/Mock implementation of the libvirt.virConnect class returned by
+    the libvirt.openX calles
+    """
+    def stub(self, *args, **kwargs):
+        return 0
+
+    def __init__(self):
+        stub = self.stub
+        fnt = [
+            '_dispatchCloseCallback',
+            '_dispatchDomainEventAgentLifecycleCallback',
+            '_dispatchDomainEventBalloonChangeCallback',
+            '_dispatchDomainEventBlockJobCallback',
+            '_dispatchDomainEventCallbacks',
+            '_dispatchDomainEventDeviceAddedCallback',
+            '_dispatchDomainEventDeviceRemovalFailedCallback',
+            '_dispatchDomainEventDeviceRemovedCallback',
+            '_dispatchDomainEventDiskChangeCallback',
+            '_dispatchDomainEventGenericCallback',
+            '_dispatchDomainEventGraphicsCallback',
+            '_dispatchDomainEventIOErrorCallback',
+            '_dispatchDomainEventIOErrorReasonCallback',
+            '_dispatchDomainEventJobCompletedCallback',
+            '_dispatchDomainEventLifecycleCallback',
+            '_dispatchDomainEventMigrationIterationCallback',
+            '_dispatchDomainEventPMSuspendCallback',
+            '_dispatchDomainEventPMSuspendDiskCallback',
+            '_dispatchDomainEventPMWakeupCallback',
+            '_dispatchDomainEventRTCChangeCallback',
+            '_dispatchDomainEventTrayChangeCallback',
+            '_dispatchDomainEventTunableCallback',
+            '_dispatchDomainEventWatchdogCallback',
+            '_dispatchNetworkEventLifecycleCallback',
+            '_o', 'allocPages', 'baselineCPU', 'c_pointer', 'changeBegin',
+            'changeCommit', 'changeRollback', 'close', 'compareCPU',
+            'createLinux', 'createXML', 'createXMLWithFiles', 'defineXML',
+            'defineXMLFlags', 'domainEventDeregister',
+            'domainEventDeregisterAny', 'domainEventRegister',
+            'domainEventRegisterAny', 'domainListGetStats',
+            'domainXMLFromNative', 'domainXMLToNative',
+            'findStoragePoolSources', 'getAllDomainStats', 'getCPUMap',
+            'getCPUModelNames', 'getCPUStats', 'getCapabilities',
+            'getCellsFreeMemory',
+            'getDomainCapabilities',
+            'getFreeMemory',
+            'getFreePages',
+            'getHostname',
+            'getInfo',
+            'getLibVersion',
+            'getMaxVcpus',
+            'getMemoryParameters',
+            'getMemoryStats',
+            'getSecurityModel',
+            'getSysinfo',
+            'getType',
+            'getURI',
+            'getVersion',
+            'interfaceDefineXML',
+            'interfaceLookupByMACString',
+            'interfaceLookupByName',
+            'isAlive',
+            'isEncrypted',
+            'isSecure',
+            'listAllDevices',
+            'listAllDomains',
+            'listAllInterfaces',
+            'listAllNWFilters',
+            'listAllNetworks',
+            'listAllSecrets',
+            'listAllStoragePools',
+            'listDefinedDomains',
+            'listDefinedInterfaces',
+            'listDefinedNetworks',
+            'listDefinedStoragePools',
+            'listDevices',
+            'listDomainsID',
+            'listInterfaces',
+            'listNWFilters',
+            'listNetworks',
+            'listSecrets',
+            'listStoragePools',
+            'lookupByID',
+            'lookupByName',
+            'lookupByUUID',
+            'lookupByUUIDString',
+            'networkCreateXML',
+            'networkDefineXML',
+            'networkEventDeregisterAny',
+            'networkEventRegisterAny',
+            'networkLookupByName',
+            'networkLookupByUUID',
+            'networkLookupByUUIDString',
+            'newStream',
+            'nodeDeviceCreateXML',
+            'nodeDeviceLookupByName',
+            'nodeDeviceLookupSCSIHostByWWN',
+            'numOfDefinedDomains',
+            'numOfDefinedInterfaces',
+            'numOfDefinedNetworks',
+            'numOfDefinedStoragePools',
+            'numOfDevices',
+            'numOfDomains',
+            'numOfInterfaces',
+            'numOfNWFilters',
+            'numOfNetworks',
+            'numOfSecrets',
+            'numOfStoragePools',
+            'nwfilterDefineXML',
+            'nwfilterLookupByName',
+            'nwfilterLookupByUUID',
+            'nwfilterLookupByUUIDString',
+            'registerCloseCallback',
+            'restore',
+            'restoreFlags',
+            'saveImageDefineXML',
+            'saveImageGetXMLDesc',
+            'secretDefineXML',
+            'secretLookupByUUID',
+            'secretLookupByUUIDString',
+            'secretLookupByUsage',
+            'setKeepAlive',
+            'setMemoryParameters',
+            'storagePoolCreateXML',
+            'storagePoolDefineXML',
+            'storagePoolLookupByName',
+            'storagePoolLookupByUUID',
+            'storagePoolLookupByUUIDString',
+            'storageVolLookupByKey',
+            'storageVolLookupByPath',
+            'suspendForDuration',
+            'unregisterCloseCallback',
+            'virConnGetLastError',
+            'virConnResetLastError'
+        ]
+        for f in fnt:
+            self.__dict__[f] = stub
+
+
 class LibvirtNodeDriverTestCase(LibvirtNodeDriver, unittest.TestCase):
     def __init__(self, argv=None):
         unittest.TestCase.__init__(self, argv)
         self._uri = 'qemu:///system'
-        self.connection = None
+        self.connection = virConnect()
 
     def _assert_arp_table(self, arp_table):
         self.assertIn('52:54:00:bc:f9:6c', arp_table)
