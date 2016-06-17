@@ -100,6 +100,7 @@ class Provider(Type):
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
     :cvar VULTR: vultr driver.
+    :cvar CLC: CenturyLinkCloud driver.
     """
     DUMMY = 'dummy'
     ABIQUO = 'abiquo'
@@ -160,6 +161,7 @@ class Provider(Type):
     VPSNET = 'vpsnet'
     VSPHERE = 'vsphere'
     VULTR = 'vultr'
+    CLC = 'clc'
 
     # OpenStack based providers
     CLOUDWATT = 'cloudwatt'

@@ -141,6 +141,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
     Provider.ALIYUN_ECS:
     ('libcloud.compute.drivers.ecs', 'ECSDriver'),
+    Provider.CLC:
+    ('libcloud.compute.drivers.clc', 'CLCNodeDriver'),
 }
 
 
