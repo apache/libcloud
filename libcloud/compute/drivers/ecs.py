@@ -354,7 +354,7 @@ class ECSConnection(SignedAliyunConnection):
     Represents a single connection to the Aliyun ECS Endpoint.
     """
 
-    version = ECS_API_VERSION
+    api_version = ECS_API_VERSION
     host = ECS_API_ENDPOINT
     responseCls = AliyunXmlResponse
     service_name = 'ecs'

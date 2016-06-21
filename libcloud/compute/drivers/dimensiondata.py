@@ -44,7 +44,7 @@ from libcloud.common.dimensiondata import DimensionDataTag
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
-from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
@@ -100,10 +100,11 @@ class DimensionDataNodeDriver(NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
-        if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
-
-        self.selected_region = API_ENDPOINTS[region]
+        if region not in API_ENDPOINTS and host is None:
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
+        if region is not None:
+            self.selected_region = API_ENDPOINTS[region]
 
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
@@ -128,7 +129,9 @@ class DimensionDataNodeDriver(NodeDriver):
                     ex_memory_gb=None,
                     ex_cpu_specification=None,
                     ex_is_started=True, ex_additional_nics_vlan=None,
-                    ex_additional_nics_ipv4=None, **kwargs):
+                    ex_additional_nics_ipv4=None,
+                    ex_primary_dns=None,
+                    ex_secondary_dns=None, **kwargs):
         """
         Create a new DimensionData node
 
@@ -186,6 +189,14 @@ class DimensionDataNodeDriver(NodeDriver):
         :keyword    ex_additional_nics_ipv4: (MCP2 Only) List of additional
                                               nics to add by ipv4 address
         :type       ex_additional_nics_ipv4: ``list`` of ``str``
+
+        :keyword    ex_primary_dns: The node's primary DNS
+
+        :type       ex_primary_dns: ``str``
+
+        :keyword    ex_secondary_dns: The node's secondary DNS
+
+        :type       ex_secondary_dns: ``str``
 
         :return: The newly created :class:`Node`.
         :rtype: :class:`Node`
@@ -266,6 +277,14 @@ class DimensionDataNodeDriver(NodeDriver):
             elif ex_additional_nics_vlan is not None:
                 raise TypeError("ex_additional_nics_vlan"
                                 "must be None or tuple/list")
+
+        if ex_primary_dns:
+            dns_elm = ET.SubElement(server_elm, "primaryDns")
+            dns_elm.text = ex_primary_dns
+
+        if ex_secondary_dns:
+            dns_elm = ET.SubElement(server_elm, "secondaryDns")
+            dns_elm.text = ex_secondary_dns
 
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
@@ -2270,6 +2289,101 @@ class DimensionDataNodeDriver(NodeDriver):
             tags.extend(self._to_tags(result))
         return tags
 
+    def ex_summary_usage_report(self, start_date, end_date):
+        """
+        Get summary usage information
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usage?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_detailed_usage_report(self, start_date, end_date):
+        """
+        Get detailed usage information
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usageDetailed?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_software_usage_report(self, start_date, end_date):
+        """
+        Get detailed software usage reports
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_audit_log_report(self, start_date, end_date):
+        """
+        Get audit log report
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_backup_usage_report(self, start_date, end_date, location):
+        """
+        Get audit log report
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :keyword location: Filters the node list to nodes that are
+                           located in this location
+        :type    location: :class:`NodeLocation` or ``str``
+
+        :rtype: ``list`` of ``list``
+        """
+        datacenter_id = self._location_to_location_id(location)
+        result = self.connection.raw_request_with_orgId_api_1(
+            'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s'
+            % (datacenter_id, start_date, end_date))
+        return self._format_csv(result.response)
+
+    def _format_csv(self, http_response):
+        text = http_response.read()
+        lines = str.splitlines(ensure_string(text))
+        return [line.split(',') for line in lines]
+
     @staticmethod
     def _get_tagging_asset_type(asset):
         objecttype = type(asset)
@@ -2428,17 +2542,28 @@ class DimensionDataNodeDriver(NodeDriver):
         port = element.find(fixxpath('port', TYPES_URN))
         port_list = element.find(fixxpath('portList', TYPES_URN))
         address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
-        return DimensionDataFirewallAddress(
-            any_ip=ip.get('address') == 'ANY',
-            ip_address=ip.get('address'),
-            ip_prefix_size=ip.get('prefixSize'),
-            port_begin=port.get('begin') if port is not None else None,
-            port_end=port.get('end') if port is not None else None,
-            port_list_id=port_list.get('id', None)
-            if port_list is not None else None,
-            address_list_id=address_list.get('id')
-            if address_list is not None else None
-        )
+        if address_list is None:
+            return DimensionDataFirewallAddress(
+                any_ip=ip.get('address') == 'ANY',
+                ip_address=ip.get('address'),
+                ip_prefix_size=ip.get('prefixSize'),
+                port_begin=port.get('begin') if port is not None else None,
+                port_end=port.get('end') if port is not None else None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
+        else:
+            return DimensionDataFirewallAddress(
+                any_ip=False,
+                ip_address=None,
+                ip_prefix_size=None,
+                port_begin=None,
+                port_end=None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
 
     def _to_ip_blocks(self, object):
         blocks = []

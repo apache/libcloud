@@ -29,7 +29,7 @@ from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.test import MockHttp, unittest
+from libcloud.test import MockHttp, unittest, MockRawResponse, StorageMockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
@@ -40,6 +40,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.conn_classes = (None, DimensionDataMockHttp)
+        DimensionData.connectionCls.rawResponseCls = \
+            DimensionDataMockRawResponse
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
@@ -431,6 +433,21 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_vlan='fake_vlan',
                                     ex_additional_nics_vlan='badstring',
                                     ex_is_started=False)
+
+    def test_create_node_mcp2_indicate_dns(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test node dns',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_ipv4='10.0.0.1',
+                                       ex_primary_dns='8.8.8.8',
+                                       ex_secondary_dns='8.8.4.4',
+                                       ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
@@ -1133,13 +1150,41 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         image = self.driver.ex_list_customer_images()[0].id
         self.assertTrue(not self.driver._image_needs_auth(image))
 
+    def test_summary_usage_report(self):
+        report = self.driver.ex_summary_usage_report('2016-06-01', '2016-06-30')
+        report_content = report
+        self.assertEqual(len(report_content), 13)
+        self.assertEqual(len(report_content[0]), 6)
+
+    def test_detailed_usage_report(self):
+        report = self.driver.ex_detailed_usage_report('2016-06-01', '2016-06-30')
+        report_content = report
+        self.assertEqual(len(report_content), 42)
+        self.assertEqual(len(report_content[0]), 4)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
 
 
-class DimensionDataMockHttp(MockHttp):
+class DimensionDataMockRawResponse(MockRawResponse):
+    fixtures = ComputeFileFixtures('dimensiondata')
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'summary_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usageDetailed(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'detailed_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+
+class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     fixtures = ComputeFileFixtures('dimensiondata')
 

@@ -345,26 +345,26 @@ class DimensionDataMockHttp(MockHttp):
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_type(self, method, url, body, headers):
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_type.xml')
+            '_backup_client_type.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_storagePolicy(
             self, method, url, body, headers):
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_storagePolicy.xml')
+            '_backup_client_storagePolicy.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_schedulePolicy(
             self, method, url, body, headers):
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_schedulePolicy.xml')
+            '_backup_client_schedulePolicy.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client(
             self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(
-                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_client_SUCCESS_PUT.xml')
+                '_backup_client_SUCCESS_PUT.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
             raise ValueError("Unknown Method {0}".format(method))
@@ -375,7 +375,7 @@ class DimensionDataMockHttp(MockHttp):
         # If we get any other method something has gone wrong
         assert(method == 'GET')
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_NOCLIENT.xml')
+            '_backup_INFO_NOCLIENT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DISABLED(
@@ -384,7 +384,7 @@ class DimensionDataMockHttp(MockHttp):
         # If we get any other method something has gone wrong
         assert(method == 'GET')
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_DISABLED.xml')
+            '_backup_INFO_DISABLED.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_NOJOB(
@@ -393,7 +393,7 @@ class DimensionDataMockHttp(MockHttp):
         # If we get any other method something has gone wrong
         assert(method == 'GET')
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO_NOJOB.xml')
+            '_backup_INFO_NOJOB.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DEFAULT(
@@ -405,22 +405,22 @@ class DimensionDataMockHttp(MockHttp):
         if service_plan != DEFAULT_BACKUP_PLAN:
             raise InvalidRequestError('The default plan %s should have been passed in.  Not %s' % (DEFAULT_BACKUP_PLAN, service_plan))
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_ENABLE.xml')
+            '_backup_ENABLE.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup(
             self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(
-                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_ENABLE.xml')
+                '_backup_ENABLE.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == 'GET':
             if url.endswith('disable'):
                 body = self.fixtures.load(
-                    'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_DISABLE.xml')
+                    '_backup_DISABLE.xml')
                 return (httplib.OK, body, {}, httplib.responses[httplib.OK])
             body = self.fixtures.load(
-                'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_INFO.xml')
+                '_backup_INFO.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         else:
@@ -432,7 +432,7 @@ class DimensionDataMockHttp(MockHttp):
         # If we get any other method something has gone wrong
         assert(method == 'POST')
         body = self.fixtures.load(
-            'oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS.xml')
+            '_backup_EXISTS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify(
@@ -441,7 +441,7 @@ class DimensionDataMockHttp(MockHttp):
         service_plan = request.get('servicePlan')
         if service_plan != 'Essentials':
             raise InvalidRequestError("Expected Essentials backup plan in request")
-        body = self.fixtures.load('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
+        body = self.fixtures.load('_backup_modify.xml')
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -451,7 +451,7 @@ class DimensionDataMockHttp(MockHttp):
         service_plan = request.get('servicePlan')
         if service_plan != DEFAULT_BACKUP_PLAN:
             raise InvalidRequestError("Expected % backup plan in test" % DEFAULT_BACKUP_PLAN)
-        body = self.fixtures.load('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_modify.xml')
+        body = self.fixtures.load('_backup_modify.xml')
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -463,7 +463,7 @@ class DimensionDataMockHttp(MockHttp):
             )
         elif url.endswith('cancelJob'):
             body = self.fixtures.load(
-                ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+                (''
                  '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml')
             )
         else:
@@ -478,7 +478,7 @@ class DimensionDataMockHttp(MockHttp):
             )
         elif url.endswith('cancelJob'):
             body = self.fixtures.load(
-                ('oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87'
+                (''
                  '_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml')
             )
         else:
