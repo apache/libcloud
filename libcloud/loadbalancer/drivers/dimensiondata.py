@@ -98,16 +98,17 @@ class DimensionDataLBDriver(Driver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_balancer(self, name, port, protocol, algorithm, members):
+    def create_balancer(self, name, port=None, protocol=None,
+                        algorithm=None, members=None):
         """
         Create a new load balancer instance
 
         :param name: Name of the new load balancer (required)
         :type  name: ``str``
 
-        :param port: Port the load balancer should listen on,
-                    defaults to 80 (required)
-        :type  port: ``str``
+        :param port: An integer in the range of 1-65535. If not supplied,
+                     it will be taken to mean 'Any Port'
+        :type  port: ``int``
 
         :param protocol: Loadbalancer protocol, defaults to http.
         :type  protocol: ``str``
@@ -121,8 +122,6 @@ class DimensionDataLBDriver(Driver):
         :rtype: :class:`LoadBalancer`
         """
         network_domain_id = self.network_domain_id
-        if port is None:
-            port = 80
         if protocol is None:
             protocol = 'http'
         if algorithm is None:
@@ -559,8 +558,8 @@ class DimensionDataLBDriver(Driver):
                                    network_domain_id,
                                    name,
                                    ex_description,
-                                   port,
-                                   pool,
+                                   port=None,
+                                   pool=None,
                                    listener_ip_address=None,
                                    persistence_profile=None,
                                    fallback_persistence_profile=None,
@@ -581,8 +580,9 @@ class DimensionDataLBDriver(Driver):
         :param ex_description: Description of the node (required)
         :type  ex_description: ``str``
 
-        :param port: Description of the node (required)
-        :type  port: ``str``
+        :param port: An integer in the range of 1-65535. If not supplied,
+                     it will be taken to mean 'Any Port'
+        :type  port: ``int``
 
         :param pool: The pool to use for the listener
         :type  pool: :class:`DimensionDataPool`
@@ -636,7 +636,8 @@ class DimensionDataLBDriver(Driver):
         if listener_ip_address is not None:
             ET.SubElement(create_node_elm, "listenerIpAddress").text = \
                 str(listener_ip_address)
-        ET.SubElement(create_node_elm, "port").text = str(port)
+        if port is not None:
+            ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(connection_limit)
@@ -644,8 +645,9 @@ class DimensionDataLBDriver(Driver):
             .text = str(connection_rate_limit)
         ET.SubElement(create_node_elm, "sourcePortPreservation") \
             .text = source_port_preservation
-        ET.SubElement(create_node_elm, "poolId") \
-            .text = pool.id
+        if pool is not None:
+            ET.SubElement(create_node_elm, "poolId") \
+                .text = pool.id
         if persistence_profile is not None:
             ET.SubElement(create_node_elm, "persistenceProfileId") \
                 .text = persistence_profile.id
