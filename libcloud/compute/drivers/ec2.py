@@ -5435,7 +5435,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
-        kwargs['signature_version'] = self.signature_version
+        if self.token is None:
+            kwargs['signature_version'] = self.signature_version
+        else:
+            kwargs['token'] = self.token
+            # Force signature_version 4 for tokens or auth breaks
+            kwargs['signature_version'] = '4'
         return kwargs
 
     def _to_nodes(self, object, xpath):
@@ -6372,7 +6377,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='us-east-1', **kwargs):
+                 region='us-east-1', token=None, **kwargs):
         if hasattr(self, '_region'):
             region = self._region
 
@@ -6382,6 +6387,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
 
         details = REGION_DETAILS[region]
         self.region_name = region
+        self.token = token
         self.api_name = details['api_name']
         self.country = details['country']
         self.signature_version = details.get('signature_version',
