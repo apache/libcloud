@@ -259,6 +259,7 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
             self.assertDictEqual(params, expected_params)
         else:
             for key, value in expected_params.items():
+                self.assertIn(key, params)
                 self.assertEqual(params[key], value)
 
 

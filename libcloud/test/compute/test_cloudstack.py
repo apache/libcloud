@@ -221,6 +221,19 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.name, 'test')
         self.assertEqual(node.extra['key_name'], 'foobar')
 
+    def test_create_node_ex_userdata(self):
+        self.driver.path = '/test/path/userdata'
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+        CloudStackMockHttp.fixture_tag = 'deploykeyname'
+        node = self.driver.create_node(name='test',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       ex_userdata='foobar')
+        self.assertEqual(node.name, 'test')
+
     def test_create_node_project(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
@@ -1294,6 +1307,11 @@ class CloudStackMockHttp(MockHttpTestCase):
             fixture = command + '_' + self.fixture_tag + '.json'
             body, obj = self._load_fixture(fixture)
             return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+
+    def _test_path_userdata(self, method, url, body, headers):
+        if 'deployVirtualMachine' in url:
+            self.assertUrlContainsQueryParams(url, {'userdata': 'Zm9vYmFy'})
+        return self._test_path(method, url, body, headers)
 
     def _cmd_queryAsyncJobResult(self, jobid):
         fixture = 'queryAsyncJobResult' + '_' + str(jobid) + '.json'
