@@ -1486,15 +1486,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         # Power on the VM.
         if ex_deploy:
+            res = self.connection.request(get_url_path(vapp_href))
+            node = self._to_node(res.object)
             # Retry 3 times: when instantiating large number of VMs at the same
             # time some may fail on resource allocation
             retry = 3
             while True:
                 try:
-                    res = self.connection.request(
-                        '%s/power/action/powerOn' % get_url_path(vapp_href),
-                        method='POST')
-                    self._wait_for_task_completion(res.object.get('href'))
+                    self.ex_deploy_node(node, ex_force_customization)
                     break
                 except Exception:
                     if retry <= 0:
