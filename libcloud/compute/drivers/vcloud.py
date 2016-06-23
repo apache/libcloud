@@ -1022,19 +1022,37 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         else:
             return False
 
-    def ex_deploy_node(self, node):
+    def ex_deploy_node(self, node, force_customization=False):
         """
         Deploys existing node. Equal to vApp "start" operation.
 
         :param  node: The node to be deployed
         :type   node: :class:`Node`
 
+        :param  force_customization: Used to specify whether to force
+                                     customization on deployment,
+                                     if not set default value is False.
+        :type   force_customization: ``bool``
+
         :rtype: :class:`Node`
         """
+        if force_customization:
+            vms = self._get_vm_elements(node.id)
+            for vm in vms:
+                self._ex_deploy_node_or_vm(vm.get('href'),
+                                           force_customization=True)
+        else:
+            self._ex_deploy_node_or_vm(node.id)
+
+        res = self.connection.request(get_url_path(node.id))
+        return self._to_node(res.object)
+
+    def _ex_deploy_node_or_vm(self, vapp_or_vm_path, force_customization=False):
         data = {'powerOn': 'true',
+                'forceCustomization': str(force_customization).lower(),
                 'xmlns': 'http://www.vmware.com/vcloud/v1.5'}
         deploy_xml = ET.Element('DeployVAppParams', data)
-        path = get_url_path(node.id)
+        path = get_url_path(vapp_or_vm_path)
         headers = {
             'Content-Type':
             'application/vnd.vmware.vcloud.deployVAppParams+xml'
@@ -1044,8 +1062,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                       method='POST',
                                       headers=headers)
         self._wait_for_task_completion(res.object.get('href'))
-        res = self.connection.request(get_url_path(node.id))
-        return self._to_node(res.object)
 
     def ex_undeploy_node(self, node):
         """
@@ -1402,6 +1418,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                (started) after creation
         :type       ex_deploy: ``bool``
 
+        :keyword    ex_force_customization: Used to specify whether to force
+                                            customization on deployment,
+                                            if not set default value is False.
+        :type       ex_force_customization: ``bool``
+
         :keyword    ex_clone_timeout: timeout in seconds for clone/instantiate
                                       VM operation.
                                       Cloning might be a time consuming
@@ -1423,6 +1444,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_vm_network = kwargs.get('ex_vm_network', None)
         ex_vm_ipmode = kwargs.get('ex_vm_ipmode', None)
         ex_deploy = kwargs.get('ex_deploy', True)
+        ex_force_customization = kwargs.get('ex_force_customization', False)
         ex_vdc = kwargs.get('ex_vdc', None)
         ex_clone_timeout = kwargs.get('ex_clone_timeout',
                                       DEFAULT_TASK_COMPLETION_TIMEOUT)
