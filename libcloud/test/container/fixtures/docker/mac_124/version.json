@@ -1,0 +1,11 @@
+{
+    "Version": "1.12.0-rc2",
+    "ApiVersion": "1.24",
+    "GitCommit": "a7119de",
+    "GoVersion": "go1.6.2",
+    "Os": "linux",
+    "Arch": "amd64",
+    "KernelVersion": "4.4.13-moby",
+    "Experimental": true,
+    "BuildTime": "2016-06-17T22:09:20.440355664+00:00"
+}
