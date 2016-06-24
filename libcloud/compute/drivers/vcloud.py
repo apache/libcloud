@@ -1022,34 +1022,35 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         else:
             return False
 
-    def ex_deploy_node(self, node, force_customization=False):
+    def ex_deploy_node(self, node, ex_force_customization=False):
         """
         Deploys existing node. Equal to vApp "start" operation.
 
         :param  node: The node to be deployed
         :type   node: :class:`Node`
 
-        :param  force_customization: Used to specify whether to force
-                                     customization on deployment,
-                                     if not set default value is False.
-        :type   force_customization: ``bool``
+        :param  ex_force_customization: Used to specify whether to force
+                                        customization on deployment,
+                                        if not set default value is False.
+        :type   ex_force_customization: ``bool``
 
         :rtype: :class:`Node`
         """
-        if force_customization:
+        if ex_force_customization:
             vms = self._get_vm_elements(node.id)
             for vm in vms:
                 self._ex_deploy_node_or_vm(vm.get('href'),
-                                           force_customization=True)
+                                           ex_force_customization=True)
         else:
             self._ex_deploy_node_or_vm(node.id)
 
         res = self.connection.request(get_url_path(node.id))
         return self._to_node(res.object)
 
-    def _ex_deploy_node_or_vm(self, vapp_or_vm_path, force_customization=False):
+    def _ex_deploy_node_or_vm(self, vapp_or_vm_path,
+                              ex_force_customization=False):
         data = {'powerOn': 'true',
-                'forceCustomization': str(force_customization).lower(),
+                'forceCustomization': str(ex_force_customization).lower(),
                 'xmlns': 'http://www.vmware.com/vcloud/v1.5'}
         deploy_xml = ET.Element('DeployVAppParams', data)
         path = get_url_path(vapp_or_vm_path)
