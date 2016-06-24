@@ -28,8 +28,18 @@ try:
 except ImportError:
     has_epydoc = False
 
-import libcloud.utils
-from libcloud.utils.dist import get_packages, get_data_files
+# Mock out the backports module incase an import is requested.
+class MockBackports:
+    def match_hostname():
+        pass
+
+    def CertificateError():
+        pass
+
+sys.modules['backports.ssl_match_hostname'] = MockBackports
+
+import libcloud.utils  # NOQA
+from libcloud.utils.dist import get_packages, get_data_files  # NOQA
 
 libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
