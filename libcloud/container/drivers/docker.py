@@ -601,9 +601,13 @@ class DockerContainerDriver(ContainerDriver):
             except:
                 name = data.get('Id')
         state = data.get('State')
-        status = data.get('Status',
-                          state.get('Status')
-                          if state is not None else None)
+        if isinstance(state, dict):
+            status = data.get(
+                'Status',
+                state.get('Status')
+                if state is not None else None)
+        else:
+            status = data.get('Status')
         if 'Exited' in status:
             state = ContainerState.STOPPED
         elif status.startswith('Up '):

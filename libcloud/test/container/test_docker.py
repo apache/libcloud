@@ -14,8 +14,6 @@
 # limitations under the License.
 
 import sys
-import os
-from functools import wraps
 
 from libcloud.test import unittest
 
