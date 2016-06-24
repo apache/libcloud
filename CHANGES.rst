@@ -7,6 +7,10 @@ Changes with current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Add block storage support to DigitalOcean node driver
+  (GITHUB-807)
+  [Adam Wolfe Gordon]
+
 - Add SASL auth support to libvirt driver
   (GITHUB-809)
   [Katana-Steel]
