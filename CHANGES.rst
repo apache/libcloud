@@ -11,6 +11,10 @@ Compute
   (GITHUB-818)
   [Mark Maglana]
 
+- Add support for deleting security group in Aliyun ECS driver
+  (GITHUB-816)
+  [Heng Wu]
+
 
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------
