@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+Changes with current version of Apache Libcloud
+-----------------------------------------------
+
+Compute
+~~~~~~~
+
+- Allow VIPs in Dimension Data driver to bind to any port
+  (GITHUB-818)
+  [Mark Maglana]
+
+
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------
 
