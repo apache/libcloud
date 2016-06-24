@@ -18,12 +18,19 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
+import os
+import codecs
+
+from libcloud.backup.providers import Provider as BackupProvider
+from libcloud.compute.providers import Provider as ComputeProvider
+from libcloud.container.providers import Provider as ContainerProvider
+from libcloud.dns.providers import Provider as DnsProvider
+from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
+from libcloud.storage.providers import Provider as StorageProvider
+
 
 __all__ = ['__version__', 'enable_debug']
 __version__ = '1.0.0'
-
-import os
-import codecs
 
 try:
     import paramiko
@@ -75,3 +82,31 @@ def _init_once():
             paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()
+
+
+class DriverType:
+    """ Backup-as-a-service driver """
+    BACKUP = BackupProvider
+
+    """ Compute-as-a-Service driver """
+    COMPUTE = ComputeProvider
+
+    """ Container-as-a-Service driver """
+    CONTAINER = ContainerProvider
+
+    """ DNS service provider driver """
+    DNS = DnsProvider
+
+    """ Load balancer provider-driver """
+    LOADBALANCER = LoadBalancerProvider
+
+    """ Storage-as-a-Service driver """
+    STORAGE = StorageProvider
+
+
+def get_driver(provider):
+    """
+
+    Get a driver
+    """
+    pass
