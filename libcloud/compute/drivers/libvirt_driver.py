@@ -176,6 +176,26 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0
 
+    def ex_get_node_by_uuid(self, uuid):
+        """
+        Retrieve Node object for a domain with a provided uuid.
+
+        :type uuid: ``str``
+        """
+        domain = self._get_domain_for_uuid(uuid=uuid)
+        node = self._to_node(domain=domain)
+        return node
+
+    def ex_get_node_by_name(self, name):
+        """
+        Retrieve Node object for a domain with a provided name.
+
+        :type name: ``str``
+        """
+        domain = self._get_domain_for_name(name=name)
+        node = self._to_node(domain=domain)
+        return node
+
     def ex_take_node_screenshot(self, node, directory, screen=0):
         """
         Take a screenshot of a monitoring of a running instance.
@@ -342,6 +362,20 @@ class LibvirtNodeDriver(NodeDriver):
         Return libvirt domain object for the provided node.
         """
         domain = self.connection.lookupByUUIDString(node.uuid)
+        return domain
+
+    def _get_domain_for_uuid(self, uuid):
+        """
+        Return libvirt domain object for the provided uuid.
+        """
+        domain = self.connection.lookupByUUIDString(uuid)
+        return domain
+
+    def _get_domain_for_name(self, name):
+        """
+        Return libvirt domain object for the provided name.
+        """
+        domain = self.connection.lookupByName(name)
         return domain
 
     def _get_entries(self, element):
