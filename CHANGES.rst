@@ -7,6 +7,10 @@ Changes with current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Add SASL auth support to libvirt driver
+  (GITHUB-809)
+  [Katana-Steel]
+
 - Allow VIPs in Dimension Data driver to bind to any port
   (GITHUB-818)
   [Mark Maglana]
