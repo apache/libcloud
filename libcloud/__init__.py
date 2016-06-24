@@ -34,7 +34,8 @@ from libcloud.dns.providers import Provider as DnsProvider
 from libcloud.dns.providers import get_driver as get_dns_driver
 
 from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
-from libcloud.loadbalancer.providers import get_driver as get_loadbalancer_driver
+from libcloud.loadbalancer.providers import get_driver as \
+    get_loadbalancer_driver
 
 from libcloud.storage.providers import Provider as StorageProvider
 from libcloud.storage.providers import get_driver as get_storage_driver
