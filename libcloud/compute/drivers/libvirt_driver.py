@@ -180,7 +180,8 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Retrieve Node object for a domain with a provided uuid.
 
-        :type uuid: ``str``
+        :param  uuid: Uuid of the domain.
+        :type   uuid: ``str``
         """
         domain = self._get_domain_for_uuid(uuid=uuid)
         node = self._to_node(domain=domain)
@@ -190,7 +191,8 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Retrieve Node object for a domain with a provided name.
 
-        :type name: ``str``
+        :param  name: Name of the domain.
+        :type   name: ``str``
         """
         domain = self._get_domain_for_name(name=name)
         node = self._to_node(domain=domain)
