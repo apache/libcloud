@@ -41,6 +41,14 @@ Compute
   (GITHUB-826)
   [Heng Wu]
 
+Container
+~~~~~~~~~
+
+- Fixed API compatibility for Docker Container driver with API 1.24, set driver
+  to use versioned URL for all communication. Backported changes to 1.21 API
+  (GITHUB-821)
+  [Anthony Shaw]
+
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------
 
