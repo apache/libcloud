@@ -27,6 +27,10 @@ Compute
   (GITHUB-816)
   [Heng Wu]
 
+- Add ``ex_force_customization`` argument to the ``ex_deploy_node`` in vCloud
+  driver.
+  (GITHUB-824)
+  [Juan Font]
 
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------
