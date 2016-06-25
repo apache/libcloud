@@ -7,6 +7,10 @@ Changes with current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Add node lookup by UUID for libvirt driver
+  (GITHUB-823)
+  [Frank Wu]
+
 - Add block storage support to DigitalOcean node driver
   (GITHUB-807)
   [Adam Wolfe Gordon]
