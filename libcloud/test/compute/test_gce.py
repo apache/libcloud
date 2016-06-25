@@ -454,6 +454,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(image.name.startswith('coreos'))
         self.assertEqual(image.extra['description'], 'CoreOS beta 522.3.0')
         self.assertEqual(image.extra['family'], 'coreos')
+        self.assertEqual(image.extra['guestOsFeatures'],
+                         [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}])
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
@@ -1350,11 +1352,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
         description = 'CoreOS beta 522.3.0'
         family = 'coreos'
+        guest_os_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         image = self.driver.ex_copy_image(name, url, description=description,
-                                          family=family)
+                                          family=family,
+                                          guest_os_features=guest_os_features)
         self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
         self.assertEqual(image.extra['family'], family)
+        self.assertEqual(image.extra['guestOsFeatures'], guest_os_features)
 
     def test_ex_get_route(self):
         route_name = 'lcdemoroute'

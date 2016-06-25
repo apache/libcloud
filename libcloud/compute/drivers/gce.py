@@ -2192,7 +2192,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_forwarding_rule(name, global_rule=global_rule)
 
     def ex_create_image(self, name, volume, description=None, family=None,
-                        use_existing=True, wait_for_completion=True):
+                        guest_os_features=None, use_existing=True,
+                        wait_for_completion=True):
         """
         Create an image from the provided volume.
 
@@ -2203,15 +2204,21 @@ class GCENodeDriver(NodeDriver):
                         Google Cloud Storage URI
         :type   volume: ``str`` or :class:`StorageVolume`
 
-        :keyword    description: Description of the new Image
-        :type       description: ``str``
+        :keyword  description: Description of the new Image
+        :type     description: ``str``
 
-        :keyword    family: The name of the image family to which this image
-                            belongs. If you create resources by specifying an
-                            image family instead of a specific image name, the
-                            resource uses the latest non-deprecated image that
-                            is set with that family name.
-        :type       family: ``str``
+        :keyword  family: The name of the image family to which this image
+                          belongs. If you create resources by specifying an
+                          image family instead of a specific image name, the
+                          resource uses the latest non-deprecated image that
+                          is set with that family name.
+        :type     family: ``str``
+
+        :keywork  guest_os_features: Features of the guest operating system,
+                                     valid for bootable images only. Possible
+                                     values include \'VIRTIO_SCSI_MULTIQUEUE\'
+                                     if specified.
+        :type     guest_os_features: ``list`` of ``str`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -2226,10 +2233,11 @@ class GCENodeDriver(NodeDriver):
                                        creation progress
         :type     wait_for_completion: ``bool``
 
-        :return:    A GCENodeImage object for the new image
-        :rtype:     :class:`GCENodeImage`
+        :return:  A GCENodeImage object for the new image
+        :rtype:   :class:`GCENodeImage`
 
         """
+        possible_features = ['VIRTIO_SCSI_MULTIQUEUE']
         image_data = {}
         image_data['name'] = name
         image_data['description'] = description
@@ -2243,7 +2251,14 @@ class GCENodeDriver(NodeDriver):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
-
+        if guest_os_features:
+            image_data['guestOsFeatures'] = []
+            for feature in guest_os_features:
+                if feature in possible_features:
+                    image_data['guestOsFeatures'].append({'type': feature})
+                else:
+                    raise ValueError('Features must be one of %s'
+                                     % ','.join(possible_features))
         request = '/global/images'
 
         try:
@@ -4348,7 +4363,7 @@ class GCENodeDriver(NodeDriver):
         """
         Return an GCENodeImage object based on an image family name.
 
-        :param  image_family: The name of the Image Family to return the
+        :param  image_family: The name of the 'Image Family' to return the
                               latest image from.
         :type   image_family: ``str``
 
@@ -4723,7 +4738,8 @@ class GCENodeDriver(NodeDriver):
             return None
         return self._to_zone(response)
 
-    def ex_copy_image(self, name, url, description=None, family=None):
+    def ex_copy_image(self, name, url, description=None, family=None,
+                      guest_os_features=None):
         """
         Copy an image to your image collection.
 
@@ -4739,12 +4755,15 @@ class GCENodeDriver(NodeDriver):
         :param  family: The family of the image
         :type   family: ``str``
 
+        :param  guest_os_features: The features of the guest operating system.
+        :type   guest_os_features: ``list`` of ``str`` or ``None``
+
         :return:  NodeImage object based on provided information or None if an
                   image with that name is not found.
         :rtype:   :class:`NodeImage` or ``None``
         """
 
-        # the URL for an image can start with gs://
+        # The URL for an image can start with gs://
         if url.startswith('gs://'):
             url = url.replace('gs://', 'https://storage.googleapis.com/', 1)
 
@@ -4757,6 +4776,9 @@ class GCENodeDriver(NodeDriver):
                 'source': url,
             },
         }
+
+        if guest_os_features:
+            image_data['guestOsFeatures'] = guest_os_features
 
         request = '/global/images'
         self.connection.async_request(request, method='POST',
@@ -5713,6 +5735,8 @@ class GCENodeDriver(NodeDriver):
         extra['status'] = image.get('status', None)
         extra['archiveSizeBytes'] = image.get('archiveSizeBytes', None)
         extra['diskSizeGb'] = image.get('diskSizeGb', None)
+        if 'guestOsFeatures' in image:
+            extra['guestOsFeatures'] = image.get('guestOsFeatures', [])
         if 'sourceDisk' in image:
             extra['sourceDisk'] = image.get('sourceDisk', None)
         if 'sourceDiskId' in image:
