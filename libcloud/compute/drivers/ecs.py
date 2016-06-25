@@ -377,13 +377,14 @@ class ECSSecurityGroup(object):
         return ('<ECSSecurityGroup: id=%s, name=%s, driver=%s ...>' %
                 (self.id, self.name, self.driver.name))
 
+
 class ECSSecurityGroupAttribute(object):
 
     """
     Security group attribute.
     """
     def __init__(self, ip_protocol=None, port_range=None,
-                source_group_id=None, policy=None, nic_type=None):
+                 source_group_id=None, policy=None, nic_type=None):
         self.ip_protocol = ip_protocol
         self.port_range = port_range
         self.source_group_id = source_group_id
@@ -393,6 +394,7 @@ class ECSSecurityGroupAttribute(object):
     def __repr__(self):
         return ('<ECSSecurityGroupAttribute: ip_protocol=%s ...>' %
                 (self.ip_protocol))
+
 
 class ECSZone(object):
     """
@@ -868,7 +870,7 @@ class ECSDriver(NodeDriver):
 
         resp_object = self.connection.request(self.path, params).object
         sga_elements = findall(resp_object, 'Permissions/Permission',
-                                  namespace=self.namespace)
+                               namespace=self.namespace)
         return [self._to_security_group_attribute(el) for el in sga_elements]
 
     def ex_list_zones(self, region_id=None):
@@ -1560,7 +1562,7 @@ class ECSDriver(NodeDriver):
         ip_protocol = findtext(element, 'IpProtocol', namespace=self.namespace)
         port_range = findtext(element, 'PortRange', namespace=self.namespace)
         source_group_id = findtext(element, 'SourceGroupId',
-                               namespace=self.namespace)
+                                   namespace=self.namespace)
         policy = findtext(element, 'Policy', namespace=self.namespace)
         nic_type = findtext(element, 'NicType', namespace=self.namespace)
         return ECSSecurityGroupAttribute(ip_protocol=ip_protocol,
