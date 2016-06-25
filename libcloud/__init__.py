@@ -21,24 +21,9 @@ libcloud provides a unified interface to the cloud computing resources.
 import os
 import codecs
 
-from libcloud.backup.providers import Provider as BackupProvider
-from libcloud.backup.providers import get_driver as get_backup_driver
-
-from libcloud.compute.providers import Provider as ComputeProvider
-from libcloud.compute.providers import get_driver as get_compute_driver
-
-from libcloud.container.providers import Provider as ContainerProvider
-from libcloud.container.providers import get_driver as get_container_driver
-
-from libcloud.dns.providers import Provider as DnsProvider
-from libcloud.dns.providers import get_driver as get_dns_driver
-
-from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
-from libcloud.loadbalancer.providers import get_driver as \
-    get_loadbalancer_driver
-
-from libcloud.storage.providers import Provider as StorageProvider
-from libcloud.storage.providers import get_driver as get_storage_driver
+from libcloud.base import DriverType  # NOQA
+from libcloud.base import DriverTypeFactoryMap  # NOQA
+from libcloud.base import get_driver  # NOQA
 
 
 __all__ = ['__version__', 'enable_debug']
@@ -94,40 +79,3 @@ def _init_once():
             paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()
-
-
-class DriverType:
-    """ Backup-as-a-service driver """
-    BACKUP = BackupProvider
-
-    """ Compute-as-a-Service driver """
-    COMPUTE = ComputeProvider
-
-    """ Container-as-a-Service driver """
-    CONTAINER = ContainerProvider
-
-    """ DNS service provider driver """
-    DNS = DnsProvider
-
-    """ Load balancer provider-driver """
-    LOADBALANCER = LoadBalancerProvider
-
-    """ Storage-as-a-Service driver """
-    STORAGE = StorageProvider
-
-
-DriverTypeFactoryMap = {
-    DriverType.BACKUP: get_backup_driver,
-    DriverType.COMPUTE: get_compute_driver,
-    DriverType.CONTAINER: get_container_driver,
-    DriverType.DNS: get_dns_driver,
-    DriverType.LOADBALANCER: get_loadbalancer_driver,
-    DriverType.STORAGE: get_storage_driver
-}
-
-
-def get_driver(type, provider):
-    """
-    Get a driver
-    """
-    return DriverTypeFactoryMap[type](provider)
