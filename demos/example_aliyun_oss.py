@@ -59,6 +59,7 @@ if len(uploads) > 0:
     oss.ex_abort_all_multipart_uploads(c1)
     print('Abort them all')
 
+
 def data_iter(limit):
     i = 0
     while True:
@@ -68,7 +69,7 @@ def data_iter(limit):
             break
 
 print('Starting to upload 1MB using multipart api')
-one_mb = 1024*1024
+one_mb = 1024 * 1024
 obj = oss.upload_object_via_stream(data_iter(one_mb), c1, upload_object_name)
 print('Finish uploading')
 
@@ -77,6 +78,7 @@ print('Delete object %s' % obj)
 oss.delete_object(obj)
 
 # Create container
-#c2 = oss.create_container(container_name='20160117')
-#c2 = oss.create_container(container_name='20160117', ex_location='oss-cn-beijing')
-#c2_got = oss.get_container('20160117')
+#  c2 = oss.create_container(container_name='20160117')
+#  c2 = oss.create_container(container_name='20160117',
+#  ex_location='oss-cn-beijing')
+#  c2_got = oss.get_container('20160117')

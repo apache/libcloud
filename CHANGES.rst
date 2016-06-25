@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes with current version of Apache Libcloud
------------------------------------------------
+Changes with Apache Libcloud in development
+-------------------------------------------
 
 Compute
 ~~~~~~~
@@ -19,18 +19,27 @@ Compute
   (GITHUB-807)
   [Adam Wolfe Gordon]
 
-- Add SASL auth support to libvirt driver
+- Add SASL auth support to libvirt driver.
   (GITHUB-809)
   [Katana-Steel]
 
-- Allow VIPs in Dimension Data driver to bind to any port
+- Allow VIPs in Dimension Data driver to bind to any port.
   (GITHUB-818)
   [Mark Maglana]
 
-- Add support for deleting security group in Aliyun ECS driver
+- Add support for deleting a security group to the Aliyun ECS driver.
   (GITHUB-816)
   [Heng Wu]
 
+- Add ``ex_force_customization`` argument to the ``ex_deploy_node`` in vCloud
+  driver.
+  (GITHUB-824)
+  [Juan Font]
+
+- Add support for listing  attributes for a particular security group
+  (``ex_list_security_group_attributes``) to the Aliyun ECS driver.
+  (GITHUB-826)
+  [Heng Wu]
 
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------

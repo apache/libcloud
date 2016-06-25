@@ -72,9 +72,10 @@ if len(nodes) == 0:
 
     auth = NodeAuthPassword('P@$$w0rd')
 
+    ex_internet_charge_type = ecs.internet_charge_types.BY_TRAFFIC
     node = ecs.create_node(image=image, size=small, name='test',
                            ex_security_group_id=sg,
-                           ex_internet_charge_type=ecs.internet_charge_types.BY_TRAFFIC,
+                           ex_internet_charge_type=ex_internet_charge_type,
                            ex_internet_max_bandwidth_out=1,
                            ex_data_disk=data_disk,
                            auth=auth)

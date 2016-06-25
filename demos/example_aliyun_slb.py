@@ -47,7 +47,8 @@ else:
              'HealthCheck': 'off'}
     nodes = ecs.list_nodes()
     print('Found %d nodes' % len(nodes))
-    members = [Member(node.id, node.public_ips[0], 80, extra={'Weight': 50*(i+1)})
+    members = [Member(node.id, node.public_ips[0], 80,
+                      extra={'Weight': 50 * (i + 1)})
                for i, node in enumerate(nodes)]
     new_b = slb.create_balancer('test-balancer', 80, 'http',
                                 Algorithm.WEIGHTED_ROUND_ROBIN, members,

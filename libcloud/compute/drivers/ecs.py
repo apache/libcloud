@@ -378,6 +378,24 @@ class ECSSecurityGroup(object):
                 (self.id, self.name, self.driver.name))
 
 
+class ECSSecurityGroupAttribute(object):
+
+    """
+    Security group attribute.
+    """
+    def __init__(self, ip_protocol=None, port_range=None,
+                 source_group_id=None, policy=None, nic_type=None):
+        self.ip_protocol = ip_protocol
+        self.port_range = port_range
+        self.source_group_id = source_group_id
+        self.policy = policy
+        self.nic_type = nic_type
+
+    def __repr__(self):
+        return ('<ECSSecurityGroupAttribute: ip_protocol=%s ...>' %
+                (self.ip_protocol))
+
+
 class ECSZone(object):
     """
     ECSZone used to represent an availability zone in a region.
@@ -827,6 +845,33 @@ class ECSDriver(NodeDriver):
             return sgs
         return self._request_multiple_pages(self.path, params,
                                             _parse_response)
+
+    def ex_list_security_group_attributes(self, group_id=None,
+                                          nic_type='internet'):
+        """
+        List security group attributes in the current region.
+
+        :keyword group_id: security group id.
+        :type ex_filters: ``str``
+
+        :keyword nic_type: internet|intranet.
+        :type nic_type: ``str``
+
+        :return: a list of defined security group Attributes
+        :rtype: ``list`` of ``ECSSecurityGroupAttribute``
+        """
+        params = {'Action': 'DescribeSecurityGroupAttribute',
+                  'RegionId': self.region,
+                  'NicType': nic_type}
+
+        if group_id is None:
+            raise AttributeError('group_id is required')
+        params['SecurityGroupId'] = group_id
+
+        resp_object = self.connection.request(self.path, params).object
+        sga_elements = findall(resp_object, 'Permissions/Permission',
+                               namespace=self.namespace)
+        return [self._to_security_group_attribute(el) for el in sga_elements]
 
     def ex_list_zones(self, region_id=None):
         """
@@ -1512,6 +1557,18 @@ class ECSDriver(NodeDriver):
         return ECSSecurityGroup(_id, name, description=description,
                                 driver=self, vpc_id=vpc_id,
                                 creation_time=creation_time)
+
+    def _to_security_group_attribute(self, element):
+        ip_protocol = findtext(element, 'IpProtocol', namespace=self.namespace)
+        port_range = findtext(element, 'PortRange', namespace=self.namespace)
+        source_group_id = findtext(element, 'SourceGroupId',
+                                   namespace=self.namespace)
+        policy = findtext(element, 'Policy', namespace=self.namespace)
+        nic_type = findtext(element, 'NicType', namespace=self.namespace)
+        return ECSSecurityGroupAttribute(ip_protocol=ip_protocol,
+                                         port_range=port_range,
+                                         source_group_id=source_group_id,
+                                         policy=policy, nic_type=nic_type)
 
     def _to_zone(self, element):
         _id = findtext(element, 'ZoneId', namespace=self.namespace)
