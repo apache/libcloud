@@ -209,6 +209,13 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertFalse(self.driver._is_node(
             NodeImage('testId', 'testNode', driver=self.driver)))
 
+    def test_ex_deploy(self):
+        node = self.driver.ex_deploy_node(
+            Node('/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', 'testNode', state=0,
+                 public_ips=[], private_ips=[], driver=self.driver),
+            ex_force_customization=False)
+        self.assertEqual(node.state, NodeState.RUNNING)
+
     def test_ex_undeploy(self):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployTest', 'testNode', state=0,
@@ -627,6 +634,18 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load(
             'api_catalogItem_3132e037_759b_4627_9056_ca66466fa607.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_deployTest(self, method, url, body, headers):
+        body = self.fixtures.load('api_task_deploy.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_action_deploy(self, method, url, body, headers):
+        body = self.fixtures.load('api_task_deploy.xml')
+        return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
+
+    def _api_task_deploy(self, method, url, body, headers):
+        body = self.fixtures.load('api_task_deploy.xml')
+        return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_undeployTest(self, method, url, body, headers):
         body = self.fixtures.load('api_vApp_undeployTest.xml')
