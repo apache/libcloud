@@ -235,7 +235,8 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
-        result = self.connection.request('v%s/images/json' % (self.version)).object
+        result = self.connection.request('v%s/images/json' %
+                                         (self.version)).object
         images = []
         for image in result:
             try:
@@ -351,7 +352,8 @@ class DockerContainerDriver(ContainerDriver):
 
         data = json.dumps(payload)
         try:
-            result = self.connection.request('v%s/containers/create' % self.version,
+            result = self.connection.request('v%s/containers/create'
+                                             % (self.version),
                                              data=data,
                                              params=params, method='POST')
         except Exception as e:
@@ -531,7 +533,9 @@ class DockerContainerDriver(ContainerDriver):
         else:
             result = self.connection.request(
                 "v%s/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
-                (self.version, container.id, str(stream)), method='POST', data=data)
+                (self.version, container.id, str(stream)),
+                method='POST',
+                data=data)
             logs = result.body
 
         return logs
