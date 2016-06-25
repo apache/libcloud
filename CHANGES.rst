@@ -7,6 +7,10 @@ Changes with current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Added forceCustimization option for vcloud director driver
+  (GITHUB-824)
+  [Juan Font]
+
 - Add node lookup by UUID for libvirt driver
   (GITHUB-823)
   [Frank Wu]
