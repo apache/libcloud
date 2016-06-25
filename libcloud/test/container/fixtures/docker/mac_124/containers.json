@@ -1,0 +1,242 @@
+[{
+        "Id": "160936dc54fe8c332095676d9379003534b8cddd7565fa63018996e06dae1b6b",
+        "Names": ["/hubot"],
+        "Image": "stackstorm/hubot",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734872,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 4 seconds",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "d0c614dcdd1c6a89765c989640239a27ab3a99a5ca3dbd1de7494b939f39652c",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.7",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:07"
+                }
+            }
+        },
+        "Mounts": []
+    }, {
+        "Id": "6089a78e3e938a6a693601ad8a3f416d39273f8d2b4d3d3971b82eaa05281d08",
+        "Names": ["/fervent_noether"],
+        "Image": "nginx",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734871,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 5 seconds",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "1298dfe058795ed277e539e80e00cb88bbbcbb08051b1f43f979f878e959e9c4",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.6",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:06"
+                }
+            }
+        },
+        "Mounts": []
+    }, {
+        "Id": "1fa078bc0c56b94a81e62586aebab06042abc524df45fc3197eaff31dd61705f",
+        "Names": ["/cranky_nobel"],
+        "Image": "nginx",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734869,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 6 seconds",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "4985fa8a74f2997ee0794c1866e6492dbc9124705d41596fa27bb4c2505739fb",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.5",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:05"
+                }
+            }
+        },
+        "Mounts": []
+    }, {
+        "Id": "15faa50fa2a41f417cee3f2013fc150d0f90d9ed3102d8533e65099d50476e4d",
+        "Names": ["/sharp_kilby"],
+        "Image": "nginx",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734868,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 7 seconds",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "912a856ada2ab2e84a95ff2ca5236b9e84976e3daf4844623ba80228bb244660",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.4",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:04"
+                }
+            }
+        },
+        "Mounts": []
+    }, {
+        "Id": "c3bd5b03b4d5a636344b75271781c3402341db6be1e76168cb602c5d79439519",
+        "Names": ["/agitated_lalande"],
+        "Image": "nginx",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734867,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 9 seconds",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "2856237f86f145817f3807996c3e89c9ad019d45a29c98cb0ab165abebe11ef9",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:03"
+                }
+            }
+        },
+        "Mounts": []
+    }, {
+        "Id": "5ad88cda3edccb5523ddd6831a399f406434ef0fc35dc24caa6cd09ee08b7826",
+        "Names": ["/elated_euler"],
+        "Image": "nginx",
+        "ImageID": "sha256:0d409d33b27e47423b049f7f863faa08655a8c901749c2b25b93ca67d01a470d",
+        "Command": "nginx -g 'daemon off;'",
+        "Created": 1466734255,
+        "Ports": [{
+                "PrivatePort": 443,
+                "Type": "tcp"
+            }, {
+                "PrivatePort": 80,
+                "Type": "tcp"
+            }
+        ],
+        "Labels": {},
+        "State": "running",
+        "Status": "Up 10 minutes",
+        "HostConfig": {
+            "NetworkMode": "default"
+        },
+        "NetworkSettings": {
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "beceac1c78e75bd5f8a13a60e3bf95b76aa45cac2d31978ae77934da17c16cc8",
+                    "EndpointID": "80646c52b170bffbde82cffd0fff2c7096ecf55b47ec297481127b2a4e622416",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02"
+                }
+            }
+        },
+        "Mounts": []
+    }
+]
