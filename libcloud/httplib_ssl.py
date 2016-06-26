@@ -292,9 +292,10 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
 
         ssl_version = libcloud.security.SSL_VERSION
 
-        # Connect, using contexts and SNI if we can
+        # If we support SNI, use SSLContext and tls_context.wrap_socket()
+        # else revert to older behaviour with ssl.wrap_socket()
 
-        try:
+        if getattr(ssl, 'HAS_SNI', False):
             self.tls_context = ssl.SSLContext(ssl_version)
             self.tls_context.verify_mode = ssl.CERT_REQUIRED
             if self.cert_file and self.key_file:
@@ -302,10 +303,6 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                     self.cert_file, self.key_file, None)
             if self.ca_cert:
                 self.tls_context.load_verify_locations(self.ca_cert)
-        except AttributeError:
-            self.tls_context = None
-
-        if self.tls_context and ssl.HAS_SNI:
             try:
                 self.sock = self.tls_context.wrap_socket(
                     sock,

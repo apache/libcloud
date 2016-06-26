@@ -114,7 +114,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         mock_wrap_socket = None
 
-        if getattr(ssl, 'SSLContext', None):
+        if getattr(ssl, 'HAS_SNI', False):
             ssl.SSLContext.wrap_socket = mock.MagicMock()
             mock_wrap_socket = ssl.SSLContext.wrap_socket
         else:
