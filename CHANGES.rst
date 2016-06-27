@@ -4,6 +4,17 @@
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+General
+~~~~~~~
+
+- Add support for automatic SNI (SSL extension) using the hostname
+  supplied to connect to.
+
+  Note: This functionality is only available in Python 2.7.9 and
+  Python >= 3.2.
+  (LIBCLOUD-827, GITHUB-808)
+  [David Freedman]
+
 Compute
 ~~~~~~~
 
