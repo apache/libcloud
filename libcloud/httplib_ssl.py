@@ -12,10 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
+
 import os
 import sys
 import socket
@@ -294,15 +296,23 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
 
         # If we support SNI, use SSLContext and tls_context.wrap_socket()
         # else revert to older behaviour with ssl.wrap_socket()
+        # Note: This feature is only available in Python 2.7.9 and
+        # Python >= 3.2
+        has_sni = getattr(ssl, 'HAS_SNI', False)
 
-        if getattr(ssl, 'HAS_SNI', False):
+        if has_sni:
             self.tls_context = ssl.SSLContext(ssl_version)
             self.tls_context.verify_mode = ssl.CERT_REQUIRED
+
             if self.cert_file and self.key_file:
                 self.tls_context.load_cert_chain(
-                    self.cert_file, self.key_file, None)
+                    certfile=self.cert_file,
+                    keyfile=self.key_file,
+                    password=None)
+
             if self.ca_cert:
-                self.tls_context.load_verify_locations(self.ca_cert)
+                self.tls_context.load_verify_locations(cafile=self.ca_cert)
+
             try:
                 self.sock = self.tls_context.wrap_socket(
                     sock,
@@ -314,6 +324,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
                                                  exc=exc)
                 raise exc
         else:
+            # SNI support not available
             try:
                 self.sock = ssl.wrap_socket(
                     sock,
@@ -332,7 +343,6 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         cert = self.sock.getpeercert()
 
         # Verify Hostname
-
         try:
             match_hostname(cert, self.host)
         except CertificateError:
