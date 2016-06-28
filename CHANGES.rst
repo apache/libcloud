@@ -63,6 +63,15 @@ Container
   (GITHUB-821)
   [Anthony Shaw]
 
+Load Balancer
+~~~~~~~~~~~~~
+
+- Added additional parameters to the Rackspace driver in `list_balancers` for filtering and
+  searching.
+  (GITHUB-803)
+  [João Paulo Raittes]
+
+
 Changes with Apache Libcloud in 1.0.0
 -------------------------------------
 
