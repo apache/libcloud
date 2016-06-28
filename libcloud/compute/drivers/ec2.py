@@ -940,6 +940,43 @@ REGION_DETAILS = {
             'x1.32xlarge'
         ]
     },
+    # Asia Pacific (Mumbai, India) Region
+    'ap-south-1': {
+        'endpoint': 'ec2.ap-south-1.amazonaws.com',
+        'api_name': 'ec2_ap_south_1',
+        'country': 'India',
+        'signature_version': '4',
+        'instance_types': [
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge'
+        ]
+    },
     # Asia Pacific (Singapore) Region
     'ap-southeast-1': {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',

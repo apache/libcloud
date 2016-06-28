@@ -393,7 +393,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             ('ec2_eu_west', 'eu-west-1'),
             ('ec2_ap_southeast', 'ap-southeast-1'),
             ('ec2_ap_northeast', 'ap-northeast-1'),
-            ('ec2_ap_southeast_2', 'ap-southeast-2')
+            ('ec2_ap_southeast_2', 'ap-southeast-2'),
+            ('ec2_ap_south_1', 'ap-south-1')
         ]
 
         for api_name, region_name in names:
@@ -402,15 +403,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             sizes = self.driver.list_sizes()
 
             ids = [s.id for s in sizes]
-            self.assertTrue('t1.micro' in ids)
-            self.assertTrue('m1.small' in ids)
-            self.assertTrue('m1.large' in ids)
-            self.assertTrue('m1.xlarge' in ids)
-            self.assertTrue('c1.medium' in ids)
-            self.assertTrue('c1.xlarge' in ids)
-            self.assertTrue('m2.xlarge' in ids)
-            self.assertTrue('m2.2xlarge' in ids)
-            self.assertTrue('m2.4xlarge' in ids)
+
+            if region_name not in ['ap-south-1']:
+                self.assertTrue('t1.micro' in ids)
+                self.assertTrue('m1.small' in ids)
+                self.assertTrue('m1.large' in ids)
+                self.assertTrue('m1.xlarge' in ids)
+                self.assertTrue('c1.medium' in ids)
+                self.assertTrue('c1.xlarge' in ids)
+                self.assertTrue('m2.xlarge' in ids)
+                self.assertTrue('m2.2xlarge' in ids)
+                self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
                 self.assertEqual(len(sizes), 54)

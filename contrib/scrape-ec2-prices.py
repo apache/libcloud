@@ -45,6 +45,7 @@ EC2_REGIONS = [
     'ap-southeast-2',
     'ap-northeast-1',
     'ap-northeast-2',
+    'ap-south-1',
     'sa-east-1'
 ]
 
@@ -113,6 +114,7 @@ REGION_NAME_MAP = {
     'apac-tokyo': 'ec2_ap_northeast',
     'ap-northeast-1': 'ec2_ap_northeast',
     'ap-northeast-2': 'ec2_ap_northeast',
+    'ap-south-1': 'ec2_ap_south_1',
     'sa-east-1': 'ec2_sa_east',
     'us-gov-west-1': 'ec2_us_govwest'
 }
