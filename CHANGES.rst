@@ -52,6 +52,9 @@ Compute
   (GITHUB-826)
   [Heng Wu]
 
+- Add new Mumbai, India region to the EC2 driver.
+  [Tomaz Muraus]
+
 Container
 ~~~~~~~~~
 
