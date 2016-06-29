@@ -48,6 +48,7 @@ class Provider(object):
     :cvar S3: Amazon S3 US
     :cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     :cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
+    :cvar S3_CN_NORTH: Amazon S3 CN North (Beijing)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     :cvar S3_US_WEST: Amazon S3 US West (Northern California)
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
@@ -71,6 +72,7 @@ class Provider(object):
     S3_AP_NORTHEAST1 = 's3_ap_northeast_1'
     S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
     S3_AP_SOUTHEAST = 's3_ap_southeast'
+    S3_CN_NORTH = 's3_cn_north'
     S3_EU_WEST = 's3_eu_west'
     S3_SA_EAST = 's3_sa_east'
     S3_US_WEST = 's3_us_west'

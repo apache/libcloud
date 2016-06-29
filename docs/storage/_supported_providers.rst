@@ -18,6 +18,7 @@ Provider                      Documentation                                   Pr
 `Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST1  single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE1StorageDriver`       
 `Amazon S3 (ap-northeast-2)`_                                                 S3_AP_NORTHEAST2  single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3APNE2StorageDriver`       
 `Amazon S3 (ap-southeast-1)`_                                                 S3_AP_SOUTHEAST   single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3APSEStorageDriver`        
+`Amazon S3 (cn-north-1)`_                                                     S3_CN_NORTH       single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3CNNorthStorageDriver`
 `Amazon S3 (eu-west-1)`_                                                      S3_EU_WEST        single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3EUWestStorageDriver`      
 `Amazon S3 (standard)`_                                                       S3_RGW_OUTSCALE   single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3RGWOutscaleStorageDriver` 
 `Amazon S3 (sa-east-1)`_                                                      S3_SA_EAST        single region driver         :mod:`libcloud.storage.drivers.s3`             :class:`S3SAEastStorageDriver`      
@@ -40,6 +41,7 @@ Provider                      Documentation                                   Pr
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (cn-north-1)`: http://www.amazonaws.cn/en/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/

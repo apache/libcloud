@@ -53,6 +53,7 @@ EXPIRATION_SECONDS = 15 * 60
 S3_US_STANDARD_HOST = 's3.amazonaws.com'
 S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
+S3_CN_NORTH_HOST = 's3.cn-north-1.amazonaws.com.cn'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
 S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
@@ -939,6 +940,16 @@ class S3USWestOregonStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (us-west-2)'
     connectionCls = S3USWestOregonConnection
     ex_location_name = 'us-west-2'
+
+
+class S3CNNorthConnection(S3Connection):
+    host = S3_CN_NORTH_HOST
+
+
+class S3CNNorthStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (cn-north-1)'
+    connectionCls = S3CNNorthConnection
+    ex_location_name = 'CN'
 
 
 class S3EUWestConnection(S3Connection):
