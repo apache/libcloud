@@ -18,6 +18,10 @@ General
 Compute
 ~~~~~~~
 
+- Add support image guest OS features in GCE driver
+  (GITHUB-825)
+  [Max Illfelder]
+
 - Added forceCustimization option for vcloud director driver
   (GITHUB-824)
   [Juan Font]
