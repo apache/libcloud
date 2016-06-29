@@ -18,8 +18,10 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
 `Amazon S3 (ap-northeast-2)`_ no                   no                no                    no                
 `Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
+`Amazon S3 (cn-north-1)`_     no                   no                no                    no                
 `Amazon S3 (eu-west-1)`_      no                   no                no                    no                
-`Amazon S3 (standard)`_       no                   no                no                    no                
+`Ceph RGW`_                   no                   no                no                    no                
+`RGW Outscale`_               no                   no                no                    no                
 `Amazon S3 (sa-east-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-1)`_      no                   no                no                    no                
 `Amazon S3 (us-west-2)`_      no                   no                no                    no                
@@ -40,8 +42,10 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-southeast-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (cn-north-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
-.. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
+.. _`Ceph RGW`: http://ceph.com/
+.. _`RGW Outscale`: https://en.outscale.com/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
