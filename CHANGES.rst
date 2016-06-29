@@ -59,6 +59,10 @@ Compute
 - Add new Mumbai, India region to the EC2 driver.
   [Tomaz Muraus]
 
+- Add driver for the new AWS cn-north-1 region.
+  (GITHUB-827, LIBCLOUD-820)
+  [Jamie Cressey]
+
 Container
 ~~~~~~~~~
 
