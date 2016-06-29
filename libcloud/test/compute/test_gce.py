@@ -15,9 +15,10 @@
 """
 Tests for Google Compute Engine Driver
 """
+import datetime
+import mock
 import sys
 import unittest
-import datetime
 
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
@@ -449,13 +450,32 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_image(self):
         volume = self.driver.ex_get_volume('lcdisk')
-        image = self.driver.ex_create_image('coreos', volume)
+        description = 'CoreOS beta 522.3.0'
+        name = 'coreos'
+        family = 'coreos'
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
+        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
+        mock_request = mock.Mock()
+        mock_request.side_effect = self.driver.connection.async_request
+        self.driver.connection.async_request = mock_request
+
+        image = self.driver.ex_create_image(
+            name, volume, description=description, family='coreos',
+            guest_os_features=guest_os_features)
         self.assertTrue(isinstance(image, GCENodeImage))
-        self.assertTrue(image.name.startswith('coreos'))
-        self.assertEqual(image.extra['description'], 'CoreOS beta 522.3.0')
-        self.assertEqual(image.extra['family'], 'coreos')
-        self.assertEqual(image.extra['guestOsFeatures'],
-                         [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}])
+        self.assertTrue(image.name.startswith(name))
+        self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
+        self.assertEqual(image.extra['guestOsFeatures'], expected_features)
+        expected_data = {'description': description,
+                         'family': family,
+                         'guestOsFeatures': expected_features,
+                         'name': name,
+                         'sourceDisk': volume.extra['selfLink'],
+                         'zone': volume.extra['zone'].name}
+        mock_request.assert_called_once_with('/global/images',
+                                             data=expected_data,
+                                             method='POST')
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'

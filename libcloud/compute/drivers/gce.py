@@ -4756,7 +4756,7 @@ class GCENodeDriver(NodeDriver):
         :type   family: ``str``
 
         :param  guest_os_features: The features of the guest operating system.
-        :type   guest_os_features: ``list`` of ``str`` or ``None``
+        :type   guest_os_features: ``list`` of ``dict`` or ``None``
 
         :return:  NodeImage object based on provided information or None if an
                   image with that name is not found.
