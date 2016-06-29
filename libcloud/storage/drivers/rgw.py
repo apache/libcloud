@@ -69,6 +69,8 @@ class S3RGWConnectionAWS2(S3Connection):
 
 
 class S3RGWStorageDriver(S3StorageDriver):
+    name = 'Ceph RGW'
+    website = 'http://ceph.com/'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=S3_RGW_DEFAULT_REGION, **kwargs):
@@ -107,6 +109,8 @@ class S3RGWStorageDriver(S3StorageDriver):
 
 
 class S3RGWOutscaleStorageDriver(S3RGWStorageDriver):
+    name = 'RGW Outscale'
+    website = 'https://en.outscale.com/'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=S3_RGW_OUTSCALE_DEFAULT_REGION,
