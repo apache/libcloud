@@ -477,6 +477,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                                              data=expected_data,
                                              method='POST')
 
+    def test_ex_copy_image(self):
+        name = 'coreos'
+        url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
+        description = 'CoreOS beta 522.3.0'
+        family = 'coreos'
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
+        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
+        image = self.driver.ex_copy_image(name, url, description=description,
+                                          family=family,
+                                          guest_os_features=guest_os_features)
+        self.assertTrue(image.name.startswith(name))
+        self.assertEqual(image.extra['description'], description)
+        self.assertEqual(image.extra['family'], family)
+        self.assertEqual(image.extra['guestOsFeatures'], expected_features)
+
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
         allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
@@ -1366,20 +1381,6 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['family'], family)
 
         self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image_from_family, 'nofamily')
-
-    def test_ex_copy_image(self):
-        name = 'coreos'
-        url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
-        description = 'CoreOS beta 522.3.0'
-        family = 'coreos'
-        guest_os_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
-        image = self.driver.ex_copy_image(name, url, description=description,
-                                          family=family,
-                                          guest_os_features=guest_os_features)
-        self.assertTrue(image.name.startswith(name))
-        self.assertEqual(image.extra['description'], description)
-        self.assertEqual(image.extra['family'], family)
-        self.assertEqual(image.extra['guestOsFeatures'], guest_os_features)
 
     def test_ex_get_route(self):
         route_name = 'lcdemoroute'
