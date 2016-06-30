@@ -85,6 +85,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.driver = EC2NodeDriver(*EC2_PARAMS,
                                     **{'region': self.region})
 
+    def test_instantiate_driver_with_token(self):
+        token = 'temporary_credentials_token'
+        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        self.assertTrue(hasattr(driver, 'token'), 'Driver has no attribute token')
+        self.assertEquals(token, driver.token, "Driver token does not match with provided token")
+
+    def test_driver_with_token_signature_version(self):
+        token = 'temporary_credentials_token'
+        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        kwargs = driver._ex_connection_class_kwargs()
+        self.assertIn('signature_version', kwargs)
+        self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
+
+
+
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
