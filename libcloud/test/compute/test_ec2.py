@@ -98,8 +98,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertIn('signature_version', kwargs)
         self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
 
-
-
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,
