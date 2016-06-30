@@ -1061,6 +1061,8 @@ class GCENodeDriver(NodeDriver):
         "windows-cloud": ["windows"],
     }
 
+    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE']
+
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
@@ -2237,7 +2239,6 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCENodeImage`
 
         """
-        possible_features = ['VIRTIO_SCSI_MULTIQUEUE']
         image_data = {}
         image_data['name'] = name
         image_data['description'] = description
@@ -2254,11 +2255,11 @@ class GCENodeDriver(NodeDriver):
         if guest_os_features:
             image_data['guestOsFeatures'] = []
             for feature in guest_os_features:
-                if feature in possible_features:
+                if feature in self.GUEST_OS_FEATURES:
                     image_data['guestOsFeatures'].append({'type': feature})
                 else:
                     raise ValueError('Features must be one of %s'
-                                     % ','.join(possible_features))
+                                     % ','.join(self.GUEST_OS_FEATURES))
         request = '/global/images'
 
         try:
@@ -2274,6 +2275,59 @@ class GCENodeDriver(NodeDriver):
             if not use_existing:
                 raise e
 
+        return self.ex_get_image(name)
+
+    def ex_copy_image(self, name, url, description=None, family=None,
+                      guest_os_features=None):
+        """
+        Copy an image to your image collection.
+
+        :param  name: The name of the image
+        :type   name: ``str``
+
+        :param  url: The URL to the image. The URL can start with `gs://`
+        :param  url: ``str``
+
+        :param  description: The description of the image
+        :type   description: ``str``
+
+        :param  family: The family of the image
+        :type   family: ``str``
+
+        :param  guest_os_features: The features of the guest operating system.
+        :type   guest_os_features: ``list`` of ``str`` or ``None``
+
+        :return:  NodeImage object based on provided information or None if an
+                  image with that name is not found.
+        :rtype:   :class:`NodeImage` or ``None``
+        """
+
+        # The URL for an image can start with gs://
+        if url.startswith('gs://'):
+            url = url.replace('gs://', 'https://storage.googleapis.com/', 1)
+
+        image_data = {
+            'name': name,
+            'description': description,
+            'family': family,
+            'sourceType': 'RAW',
+            'rawDisk': {
+                'source': url,
+            },
+        }
+
+        if guest_os_features:
+            image_data['guestOsFeatures'] = []
+            for feature in guest_os_features:
+                if feature in self.GUEST_OS_FEATURES:
+                    image_data['guestOsFeatures'].append({'type': feature})
+                else:
+                    raise ValueError('Features must be one of %s'
+                                     % ','.join(self.GUEST_OS_FEATURES))
+
+        request = '/global/images'
+        self.connection.async_request(request, method='POST',
+                                      data=image_data)
         return self.ex_get_image(name)
 
     def ex_create_route(self, name, dest_range, priority=500,
@@ -4737,53 +4791,6 @@ class GCENodeDriver(NodeDriver):
         except ResourceNotFoundError:
             return None
         return self._to_zone(response)
-
-    def ex_copy_image(self, name, url, description=None, family=None,
-                      guest_os_features=None):
-        """
-        Copy an image to your image collection.
-
-        :param  name: The name of the image
-        :type   name: ``str``
-
-        :param  url: The URL to the image. The URL can start with `gs://`
-        :param  url: ``str``
-
-        :param  description: The description of the image
-        :type   description: ``str``
-
-        :param  family: The family of the image
-        :type   family: ``str``
-
-        :param  guest_os_features: The features of the guest operating system.
-        :type   guest_os_features: ``list`` of ``dict`` or ``None``
-
-        :return:  NodeImage object based on provided information or None if an
-                  image with that name is not found.
-        :rtype:   :class:`NodeImage` or ``None``
-        """
-
-        # The URL for an image can start with gs://
-        if url.startswith('gs://'):
-            url = url.replace('gs://', 'https://storage.googleapis.com/', 1)
-
-        image_data = {
-            'name': name,
-            'description': description,
-            'family': family,
-            'sourceType': 'RAW',
-            'rawDisk': {
-                'source': url,
-            },
-        }
-
-        if guest_os_features:
-            image_data['guestOsFeatures'] = guest_os_features
-
-        request = '/global/images'
-        self.connection.async_request(request, method='POST',
-                                      data=image_data)
-        return self.ex_get_image(name)
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,

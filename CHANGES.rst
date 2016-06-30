@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [google compute] Update copy image logic to match create image.
+  (GITHUB-828)
+  [Max Illfelder]
+
 - Removed HD attribute from the Abiquo compute driver to support the 3.4 API
   (GITHUB-840)
   [David Freedman]
