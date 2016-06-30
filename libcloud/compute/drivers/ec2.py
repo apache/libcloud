@@ -5435,12 +5435,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
-        if self.token is None:
-            kwargs['signature_version'] = self.signature_version
-        else:
+        if hasattr(self, 'token') and  self.token is not None:
             kwargs['token'] = self.token
             # Force signature_version 4 for tokens or auth breaks
             kwargs['signature_version'] = '4'
+        else:
+            kwargs['signature_version'] = self.signature_version
+
         return kwargs
 
     def _to_nodes(self, object, xpath):
