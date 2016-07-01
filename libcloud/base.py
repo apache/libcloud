@@ -64,8 +64,8 @@ DriverTypeFactoryMap = {
 
 
 class DriverTypeNotFoundError(KeyError):
-    def __init__(self):
-        self.message = "Driver type not found."
+    def __init__(self, type):
+        self.message = "Driver type '%s' not found." % type
 
     def __repr__(self):
         return self.message
@@ -78,4 +78,4 @@ def get_driver(type, provider):
     try:
         return DriverTypeFactoryMap[type](provider)
     except KeyError:
-        raise DriverTypeNotFoundError()
+        raise DriverTypeNotFoundError(type)
