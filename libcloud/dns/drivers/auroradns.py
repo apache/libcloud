@@ -261,24 +261,23 @@ class AuroraDNSDriver(DNSDriver):
         AuroraDNSHealthCheckType.TCP: 'TCP'
     }
 
-    def list_zones(self):
-        zones = []
-
+    def iterate_zones(self):
         res = self.connection.request('/zones')
         for zone in res.parse_body():
-            zones.append(self.__res_to_zone(zone))
+            yield self.__res_to_zone(zone)
 
-        return zones
+    def list_zones(self):
+        return list(self.iterate_zones())
 
-    def list_records(self, zone):
+    def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        records = []
         res = self.connection.request('/zones/%s/records' % zone.id)
 
         for record in res.parse_body():
-            records.append(self.__res_to_record(zone, record))
+            yield self.__res_to_record(zone, record)
 
-        return records
+    def list_records(self, zone):
+        return list(self.iterate_records(zone))
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})

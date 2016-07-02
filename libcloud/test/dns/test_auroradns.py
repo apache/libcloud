@@ -90,6 +90,8 @@ class AuroraDNSDriverTests(LibcloudTestCase):
     def test_list_zones(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 2)
+        for zone in zones:
+            self.assertTrue(zone.domain.startswith('auroradns'))
 
     def test_create_zone(self):
         zone = self.driver.create_zone('example.com')
