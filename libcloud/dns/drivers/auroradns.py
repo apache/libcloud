@@ -338,7 +338,7 @@ class AuroraDNSDriver(DNSDriver):
                                 method='DELETE')
         return True
 
-    def update_record(self, record, name, type, data, extra):
+    def update_record(self, record, name, type, data, extra=None):
         rdata = {}
 
         if name is not None:
