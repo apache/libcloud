@@ -250,9 +250,12 @@ class AuroraDNSDriver(DNSDriver):
         RecordType.MX: 'MX',
         RecordType.NS: 'NS',
         RecordType.SOA: 'SOA',
-        RecordType.SPF: 'SPF',
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
+        RecordType.DS: 'DS',
+        RecordType.PTR: 'PTR',
+        RecordType.SSHFP: 'SSHFP',
+        RecordType.TLSA: 'TLSA'
     }
 
     HEALTHCHECK_TYPE_MAP = {
@@ -336,6 +339,13 @@ class AuroraDNSDriver(DNSDriver):
                                                           record.id),
                                 method='DELETE')
         return True
+
+    def list_record_types(self):
+        types = []
+        for record_type in self.RECORD_TYPE_MAP.keys():
+            types.append(record_type)
+
+        return types
 
     def update_record(self, record, name, type, data, extra=None):
         rdata = {}

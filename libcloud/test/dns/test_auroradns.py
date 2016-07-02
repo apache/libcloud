@@ -87,6 +87,22 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         self.assertEqual(zone, record.zone)
         self.assertEqual(self.driver, record.driver)
 
+    def test_record_types(self):
+        types = self.driver.list_record_types()
+        self.assertEqual(len(types), 12)
+        self.assertTrue(RecordType.A in types)
+        self.assertTrue(RecordType.AAAA in types)
+        self.assertTrue(RecordType.MX in types)
+        self.assertTrue(RecordType.NS in types)
+        self.assertTrue(RecordType.SOA in types)
+        self.assertTrue(RecordType.TXT in types)
+        self.assertTrue(RecordType.CNAME in types)
+        self.assertTrue(RecordType.SRV in types)
+        self.assertTrue(RecordType.DS in types)
+        self.assertTrue(RecordType.SSHFP in types)
+        self.assertTrue(RecordType.PTR in types)
+        self.assertTrue(RecordType.TLSA in types)
+
     def test_list_zones(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 2)
