@@ -85,8 +85,8 @@ Load Balancer
   [João Paulo Raittes]
 
 
-Changes with Apache Libcloud in 1.0.0
--------------------------------------
+Changes with Apache Libcloud 1.0.0
+----------------------------------
 
 General
 ~~~~~~~
@@ -198,8 +198,8 @@ DNS
   (GITHUB-787)
   [Oltjano Terpollari]
 
-Changes with Apache Libcloud in 1.0.0-rc2
------------------------------------------
+Changes with Apache Libcloud 1.0.0-rc2
+--------------------------------------
 
 General
 ~~~~~~~
