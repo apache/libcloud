@@ -63,6 +63,11 @@ Compute
   (GITHUB-827, LIBCLOUD-820)
   [Jamie Cressey]
 
+- Fix authentication with temporary IAM role credentials (token) in the EC2
+  driver.
+  (GITHUB-820)
+  [Alejandro González]
+
 Container
 ~~~~~~~~~
 
