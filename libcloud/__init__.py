@@ -19,8 +19,6 @@ libcloud provides a unified interface to the cloud computing resources.
 :var __version__: Current version of libcloud
 """
 
-__all__ = ['__version__', 'enable_debug']
-__version__ = '1.0.0'
 
 import os
 import codecs
@@ -30,6 +28,12 @@ try:
     have_paramiko = True
 except ImportError:
     have_paramiko = False
+
+__all__ = [
+    '__version__',
+    'enable_debug'
+]
+__version__ = '1.1.0'
 
 
 def enable_debug(fo):
