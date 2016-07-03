@@ -296,7 +296,8 @@ class DockerContainerDriver(ContainerDriver):
                          volumes=None, volumes_from=None,
                          network_disabled=False, entrypoint=None,
                          cpu_shares=None, working_dir='', domainname=None,
-                         memswap_limit=0, port_bindings=None):
+                         memswap_limit=0, port_bindings=None,
+                         network_mode='bridge', labels=None):
         """
         Deploy an installed container image
 
@@ -348,6 +349,8 @@ class DockerContainerDriver(ContainerDriver):
             'MemorySwap': memswap_limit,
             'PublishAllPorts': True,
             'PortBindings': port_bindings,
+            'NetworkMode': network_mode,
+            'Labels': labels,
         }
 
         data = json.dumps(payload)
