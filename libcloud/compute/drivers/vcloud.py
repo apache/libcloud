@@ -1433,6 +1433,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                       Overrides the default task completion
                                       value.
         :type       ex_clone_timeout: ``int``
+
+        :keyword    ex_admin_password: set the node admin password explicitly.
+        :type       ex_admin_password: ``str``
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -1449,6 +1452,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_vdc = kwargs.get('ex_vdc', None)
         ex_clone_timeout = kwargs.get('ex_clone_timeout',
                                       DEFAULT_TASK_COMPLETION_TIMEOUT)
+        ex_admin_password = kwargs.get('ex_admin_password', None)
 
         self._validate_vm_names(ex_vm_names)
         self._validate_vm_cpu(ex_vm_cpu)
@@ -1484,6 +1488,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._change_vm_memory(vapp_href, ex_vm_memory)
         self._change_vm_script(vapp_href, ex_vm_script)
         self._change_vm_ipmode(vapp_href, ex_vm_ipmode)
+
+        if ex_admin_password is not None:
+            self._change_vm_admin_password(vapp_href, ex_admin_password)
 
         # Power on the VM.
         if ex_deploy:
@@ -1980,6 +1987,79 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
             res = self.connection.request(
                 '%s/networkConnectionSection' % get_url_path(vm.get('href')),
+                data=ET.tostring(res.object),
+                method='PUT',
+                headers=headers
+            )
+            self._wait_for_task_completion(res.object.get('href'))
+
+    def _update_or_insert_section(self, res, section, prev_section, text):
+        try:
+            res.object.find(
+                fixxpath(res.object, section)).text = text
+        except:
+            # "section" section does not exist, insert it just
+            # before "prev_section"
+            for i, e in enumerate(res.object):
+                if e.tag == \
+                                '{http://www.vmware.com/vcloud/v1.5}%s' % prev_section:
+                    break
+            e = ET.Element(
+                '{http://www.vmware.com/vcloud/v1.5}%s' % section)
+            e.text = text
+            res.object.insert(i, e)
+        return res
+
+    def _change_vm_admin_password(self, vapp_or_vm_id, ex_admin_password):
+        if ex_admin_password is None:
+            return
+
+        vms = self._get_vm_elements(vapp_or_vm_id)
+        for vm in vms:
+            # Get GuestCustomizationSection
+            res = self.connection.request(
+                '%s/guestCustomizationSection' % get_url_path(vm.get('href')))
+
+            headers = {
+                'Content-Type':
+                'application/vnd.vmware.vcloud.guestCustomizationSection+xml'
+            }
+
+            # Fix API quirk.
+            # If AdminAutoLogonEnabled==False the guestCustomizationSection
+            # must have AdminAutoLogonCount==0, even though
+            # it might have AdminAutoLogonCount==1 when requesting it for
+            # the first time.
+            auto_logon_enabled = res.object.find(
+                fixxpath(res.object, "AdminAutoLogonEnabled"))
+            if (auto_logon_enabled is not None
+                and auto_logon_enabled.text=='false'):
+                self._update_or_insert_section(res,
+                                               "AdminAutoLogonCount",
+                                               "ResetPasswordRequired",
+                                               '0')
+
+            # If we are establishing a password we do not want it
+            # to be automatically chosen.
+            self._update_or_insert_section(res,
+                                           'AdminPasswordAuto',
+                                           'AdminPassword',
+                                           'false')
+
+            # API does not allow to set AdminPassword if
+            # AdminPasswordEnabled is not enabled.
+            self._update_or_insert_section(res,
+                                           'AdminPasswordEnabled',
+                                           'AdminPasswordAuto',
+                                           'true')
+
+            self._update_or_insert_section(res,
+                                           'AdminPassword',
+                                           'AdminAutoLogonEnabled',
+                                           ex_admin_password)
+
+            res = self.connection.request(
+                '%s/guestCustomizationSection' % get_url_path(vm.get('href')),
                 data=ET.tostring(res.object),
                 method='PUT',
                 headers=headers
