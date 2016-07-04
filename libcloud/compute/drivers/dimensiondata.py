@@ -2786,6 +2786,10 @@ class DimensionDataNodeDriver(NodeDriver):
                  state=node_state,
                  public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=[private_ip] if private_ip is not None else [],
+                 size=self.list_sizes()[0],
+                 image=NodeImage(extra['sourceImageId'],
+                                 extra['OS_displayName'],
+                                 self.connection.driver),
                  driver=self.connection.driver,
                  extra=extra)
         return n
