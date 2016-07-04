@@ -203,6 +203,10 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.driver._change_vm_names(
             '/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', ['changed1', 'changed2'])
 
+    def test_change_vm_admin_password(self):
+        self.driver._change_vm_admin_password(
+            '/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', "12345678")
+
     def test_is_node(self):
         self.assertTrue(self.driver._is_node(
             Node('testId', 'testNode', state=0, public_ips=[], private_ips=[], driver=self.driver)))
