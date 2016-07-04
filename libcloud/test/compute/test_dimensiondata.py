@@ -126,6 +126,9 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         node = ret[3]
         self.assertTrue(isinstance(node.extra['disks'], list))
         self.assertTrue(isinstance(node.extra['disks'][0], DimensionDataServerDisk))
+        self.assertEqual(node.size.id, '1')
+        self.assertEqual(node.image.id, '3ebf3c0f-90fe-4a8b-8585-6e65b316592c')
+        self.assertEqual(node.image.name, 'WIN2008S/32')
         disk = node.extra['disks'][0]
         self.assertEqual(disk.id, "c2e1f199-116e-4dbc-9960-68720b832b0a")
         self.assertEqual(disk.scsi_id, 0)
