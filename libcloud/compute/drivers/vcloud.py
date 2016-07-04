@@ -2001,8 +2001,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             # "section" section does not exist, insert it just
             # before "prev_section"
             for i, e in enumerate(res.object):
-                if e.tag == \
-                                '{http://www.vmware.com/vcloud/v1.5}%s' % prev_section:
+                tag = '{http://www.vmware.com/vcloud/v1.5}%s' % prev_section
+                if e.tag == tag:
                     break
             e = ET.Element(
                 '{http://www.vmware.com/vcloud/v1.5}%s' % section)
@@ -2030,10 +2030,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             # must have AdminAutoLogonCount==0, even though
             # it might have AdminAutoLogonCount==1 when requesting it for
             # the first time.
-            auto_logon_enabled = res.object.find(
+            auto_logon = res.object.find(
                 fixxpath(res.object, "AdminAutoLogonEnabled"))
-            if (auto_logon_enabled is not None
-                and auto_logon_enabled.text=='false'):
+            if auto_logon is not None and auto_logon.text == 'false':
                 self._update_or_insert_section(res,
                                                "AdminAutoLogonCount",
                                                "ResetPasswordRequired",
