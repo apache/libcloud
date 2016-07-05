@@ -2011,6 +2011,21 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return res
 
     def ex_change_vm_admin_password(self, vapp_or_vm_id, ex_admin_password):
+        """
+        Changes the admin (or root) password of VM or VMs under the vApp. If
+        the vapp_or_vm_id param represents a link to an vApp all VMs that
+        are attached to this vApp will be modified.
+
+        :keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a
+                                   vApp ID is used here all attached VMs
+                                   will be modified
+        :type       vapp_or_vm_id: ``str``
+
+        :keyword    ex_admin_password: admin password to be used.
+        :type       ex_admin_password: ``str``
+
+        :rtype: ``None``
+        """
         if ex_admin_password is None:
             return
 
