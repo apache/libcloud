@@ -11,6 +11,15 @@ Compute
   (GITHUB-833)
   [Juan Font Alonso]
 
+Container
+~~~~~~~~~
+
+- Add network mode and labels when creating containers within
+  docker driver
+  (GITHUB-831)
+  [Jamie Cressey] 
+
+
 Changes with Apache Libcloud 1.1.0
 ----------------------------------
 
