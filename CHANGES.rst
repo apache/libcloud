@@ -1,6 +1,16 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Compute
+~~~~~~~
+
+- Add support for changing VM admin password in VMware driver
+  (GITHUB-833)
+  [Juan Font Alonso]
+
 Changes with Apache Libcloud 1.1.0
 ----------------------------------
 
