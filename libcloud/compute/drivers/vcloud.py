@@ -1490,7 +1490,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._change_vm_ipmode(vapp_href, ex_vm_ipmode)
 
         if ex_admin_password is not None:
-            self._change_vm_admin_password(vapp_href, ex_admin_password)
+            self.ex_change_vm_admin_password(vapp_href, ex_admin_password)
 
         # Power on the VM.
         if ex_deploy:
@@ -2010,7 +2010,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             res.object.insert(i, e)
         return res
 
-    def _change_vm_admin_password(self, vapp_or_vm_id, ex_admin_password):
+    def ex_change_vm_admin_password(self, vapp_or_vm_id, ex_admin_password):
         if ex_admin_password is None:
             return
 
