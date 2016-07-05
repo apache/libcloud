@@ -11,6 +11,13 @@ Compute
   (GITHUB-833)
   [Juan Font Alonso]
 
+DNS
+~~~
+
+- Updated the 'extra' parameter in `update_record()` to be optional in aurora driver
+  (GITHUB-830)
+  [Wido Hollander]
+
 Container
 ~~~~~~~~~
 
