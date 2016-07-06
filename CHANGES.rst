@@ -16,7 +16,11 @@ DNS
 
 - Updated the 'extra' parameter in `update_record()` to be optional in aurora driver
   (GITHUB-830)
-  [Wido Hollander]
+  [Wido den Hollander]
+
+- Support for iterating over records and zones in the Aurora DNS driver
+  (GITHUB-829)
+  [Wido den Hollander]
 
 Container
 ~~~~~~~~~
