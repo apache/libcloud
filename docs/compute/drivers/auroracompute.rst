@@ -11,6 +11,7 @@ The datacenters / availability zones are located in:
 - Miami (US)
 - Los Angelos (US)
 - Tokyo (JP)
+- Barcelona (ES)
 
 
 .. figure:: /_static/images/provider_logos/pcextreme.png

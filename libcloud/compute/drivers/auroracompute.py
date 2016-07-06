@@ -28,6 +28,7 @@ class AuroraComputeRegion(object):
     MIA = 'Miami'
     LAX = 'Los Angeles'
     TYO = 'Tokyo'
+    BCN = 'Barcelona'
 
 
 REGION_ENDPOINT_MAP = {
@@ -35,7 +36,8 @@ REGION_ENDPOINT_MAP = {
     AuroraComputeRegion.RTD: '/rtd',
     AuroraComputeRegion.MIA: '/mia',
     AuroraComputeRegion.LAX: '/lax',
-    AuroraComputeRegion.TYO: '/tyo'
+    AuroraComputeRegion.TYO: '/tyo',
+    AuroraComputeRegion.BCN: '/bcn'
 }
 
 
