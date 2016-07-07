@@ -41,6 +41,20 @@ With these credentials you can instantiate a driver:
    :language: python
 
 
+Create a Virtual Machine (node)
+-------------------------------
+
+Creating a Virtual Machine on AuroraCompute using libcloud works the same as on any
+other platform. This example is just to show exactly that.
+
+This example will create a Virtual Machine in Amsterdam. Should you want to create
+one in one of our other regions you should take a look at the example below which
+shows how to use our different regions.
+
+.. literalinclude:: /examples/compute/auroracompute/create_node.py
+   :language: python
+
+
 Using a different region
 ------------------------
 
