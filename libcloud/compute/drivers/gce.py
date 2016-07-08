@@ -4369,7 +4369,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  ex_project_list: The name of the project to list for images.
                                  Examples include: 'debian-cloud'.
-        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+        :type   ex_project_list: ``list`` of ``str``, or ``None``
 
         :param  ex_standard_projects: If true, check in standard projects if
                                       the image is not found.
