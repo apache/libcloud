@@ -82,16 +82,18 @@ class LibvirtNodeDriver(NodeDriver):
         self._uri = uri
         self._key = key
         self._secret = secret
-        try:
-            self.connection = libvirt.open(uri)
-        except libvirt.libvirtError:
-            if key is None or secret is None:
+        if '+tcp' in self._uri:
+            if key is None and secret is None:
                 raise RuntimeError('The remote Libvirt instance requires ' +
                                    'authentication, please set \'key\' and ' +
                                    '\'secret\' parameters')
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
                     self._cred_callback, None]
             self.connection = libvirt.openAuth(uri, auth, 0)
+        else:
+            self.connection = libvirt.open(uri)
+        if self.connection is None:
+            raise RuntimeError('Unable to establish a connection to libvirtd')
 
     def _cred_callback(self, cred, user_data):
         """
