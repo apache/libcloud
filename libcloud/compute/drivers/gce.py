@@ -1061,6 +1061,8 @@ class GCENodeDriver(NodeDriver):
         "windows-cloud": ["windows"],
     }
 
+    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE']
+
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
         """
@@ -2251,14 +2253,13 @@ class GCENodeDriver(NodeDriver):
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
         if guest_os_features:
-            possible_features = ['VIRTIO_SCSI_MULTIQUEUE']
             image_data['guestOsFeatures'] = []
             for feature in guest_os_features:
-                if feature in possible_features:
+                if feature in self.GUEST_OS_FEATURES:
                     image_data['guestOsFeatures'].append({'type': feature})
                 else:
                     raise ValueError('Features must be one of %s'
-                                     % ','.join(possible_features))
+                                     % ','.join(self.GUEST_OS_FEATURES))
         request = '/global/images'
 
         try:
@@ -2316,14 +2317,13 @@ class GCENodeDriver(NodeDriver):
         }
 
         if guest_os_features:
-            possible_features = ['VIRTIO_SCSI_MULTIQUEUE']
             image_data['guestOsFeatures'] = []
             for feature in guest_os_features:
-                if feature in possible_features:
+                if feature in self.GUEST_OS_FEATURES:
                     image_data['guestOsFeatures'].append({'type': feature})
                 else:
                     raise ValueError('Features must be one of %s'
-                                     % ','.join(possible_features))
+                                     % ','.join(self.GUEST_OS_FEATURES))
 
         request = '/global/images'
         self.connection.async_request(request, method='POST',
