@@ -2802,7 +2802,7 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if ex_subnetwork and if not hasattr(ex_subnetwork, 'name'):
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
             ex_subnetwork = \
                 self.ex_get_subnetwork(ex_subnetwork,
                                        region=self._get_region_from_zone(
