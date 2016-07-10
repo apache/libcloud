@@ -22,13 +22,18 @@ DNS
   (GITHUB-829)
   [Wido den Hollander]
 
+- Add support for DS, PTR, SSFHFP and TLSA record type to the Aurora DNS
+  driver.
+  (GITHUB-834)
+  [Wido den Hollander]
+
 Container
 ~~~~~~~~~
 
 - Add network mode and labels when creating containers within
   docker driver
   (GITHUB-831)
-  [Jamie Cressey] 
+  [Jamie Cressey]
 
 
 Changes with Apache Libcloud 1.1.0
