@@ -269,18 +269,12 @@ class AuroraDNSDriver(DNSDriver):
         for zone in res.parse_body():
             yield self.__res_to_zone(zone)
 
-    def list_zones(self):
-        return list(self.iterate_zones())
-
     def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         res = self.connection.request('/zones/%s/records' % zone.id)
 
         for record in res.parse_body():
             yield self.__res_to_record(zone, record)
-
-    def list_records(self, zone):
-        return list(self.iterate_records(zone))
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
