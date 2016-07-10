@@ -11,6 +11,10 @@ Compute
   (GITHUB-833)
   [Juan Font Alonso]
 
+- Add Barcelona (Spain) region to the Aurora Compute driver.
+  (GITHUB-835)
+  [Wido den Hollander]
+
 DNS
 ~~~
 
