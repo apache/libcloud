@@ -961,6 +961,8 @@ class S3CNNorthStorageDriver(S3StorageDriver):
     connectionCls = S3CNNorthConnection
     ex_location_name = 'cn-north-1'
     region_name = 'cn-north-1'
+    # v4 auth and multipart_upload currently do not work.
+    supports_s3_multipart_upload = False
 
 
 class S3EUWestConnection(S3Connection):
@@ -1016,6 +1018,8 @@ class S3APNE2StorageDriver(S3StorageDriver):
     connectionCls = S3APNE2Connection
     ex_location_name = 'ap-northeast-2'
     region_name = 'ap-northeast-2'
+    # v4 auth and multipart_upload currently do not work.
+    supports_s3_multipart_upload = False
 
 
 class S3SAEastConnection(S3Connection):
