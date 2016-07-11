@@ -244,7 +244,7 @@ class BaseS3StorageDriver(StorageDriver):
         :rtype: ``list`` of :class:`Object`
         """
         return list(self.iterate_container_objects(container,
-                    ex_prefix=ex_prefix))
+                                                   ex_prefix=ex_prefix))
 
     def iterate_container_objects(self, container, ex_prefix=None):
         """
@@ -846,7 +846,7 @@ class BaseS3StorageDriver(StorageDriver):
 
     def _to_containers(self, obj, xpath):
         for element in obj.findall(fixxpath(xpath=xpath,
-                                   namespace=self.namespace)):
+                                            namespace=self.namespace)):
             yield self._to_container(element)
 
     def _to_objs(self, obj, xpath, container):
@@ -942,14 +942,25 @@ class S3USWestOregonStorageDriver(S3StorageDriver):
     ex_location_name = 'us-west-2'
 
 
-class S3CNNorthConnection(S3Connection):
+class S3CNNorthConnection(SignedAWSConnection, BaseS3Connection):
     host = S3_CN_NORTH_HOST
+    service_name = 's3'
+    version = API_VERSION
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, token=None,
+                 retry_delay=None, backoff=None):
+        super(S3CNNorthConnection, self).__init__(user_id, key, secure, host,
+                                                  port, url, timeout, proxy_url,
+                                                  token, retry_delay, backoff,
+                                                  4)  # force version 4
 
 
 class S3CNNorthStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (cn-north-1)'
     connectionCls = S3CNNorthConnection
-    ex_location_name = 'CN'
+    ex_location_name = 'cn-north-1'
+    region_name = 'cn-north-1'
 
 
 class S3EUWestConnection(S3Connection):
