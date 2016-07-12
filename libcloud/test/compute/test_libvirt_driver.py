@@ -16,10 +16,14 @@
 import sys
 
 from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
+from libcloud.utils.py3 import unittest2_required
 
 
 from libcloud.test import unittest
-from unittest import mock
+if unittest2_required:
+    from unittest2 import mock
+else:
+    from unittest import mock
 
 
 @mock.patch('libcloud.compute.drivers.libvirt_driver.libvirt', autospec=True)
