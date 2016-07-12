@@ -21,7 +21,7 @@ from libcloud.utils.py3 import unittest2_required
 
 from libcloud.test import unittest
 if unittest2_required:
-    from unittest2 import mock
+    import mock
 else:
     from unittest import mock
 
