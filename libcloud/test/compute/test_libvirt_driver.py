@@ -18,6 +18,7 @@ import sys
 import mock
 
 from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
+from libcloud.compute.drivers.libvirt_driver import have_libvirt
 
 from libcloud.test import unittest
 
@@ -26,6 +27,7 @@ __all__ = [
 ]
 
 
+@unittest.skipIf(not have_libvirt, 'libvirt not available, skipping tests')
 @mock.patch('libcloud.compute.drivers.libvirt_driver.libvirt', autospec=True)
 class LibvirtNodeDriverTestCase(unittest.TestCase):
     arp_output_str = """? (1.2.10.80) at 52:54:00:bc:f9:6c [ether] on br0
