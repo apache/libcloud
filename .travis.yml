@@ -62,6 +62,7 @@ matrix:
           packages:
             - graphviz
             - gcc
+            - libvirt
   # For now allow failures of all the builds which use lxml
   allow_failures:
     - env: ENV=2.6-lxml
