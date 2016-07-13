@@ -2325,10 +2325,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         data = resp.object['floating_ip']
         id = data['id']
+        ip_pool_ = data.get('pool')
         ip_address = data['ip']
         return OpenStack_1_1_FloatingIpAddress(id=id,
                                                ip_address=ip_address,
-                                               pool=None,
+                                               pool=ip_pool_,
                                                node_id=None,
                                                driver=self)
 
