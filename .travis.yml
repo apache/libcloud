@@ -18,7 +18,6 @@ addons:
   apt:
     packages:
       - graphviz
-      - python-libvirt
 
 matrix:
   fast_finish: true
