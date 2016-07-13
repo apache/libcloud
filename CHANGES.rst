@@ -15,6 +15,10 @@ Compute
   (GITHUB-835)
   [Wido den Hollander]
 
+- Various improvements in the libvirt driver.
+  (GITHUB-838)
+  [Rene Kjellerup]
+
 DNS
 ~~~
 
