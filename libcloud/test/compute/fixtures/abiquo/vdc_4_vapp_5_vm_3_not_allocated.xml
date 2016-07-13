@@ -21,7 +21,6 @@
     <link href="http://10.60.12.7:80/api/admin/enterprises/1/datacenterrepositories/2/virtualmachinetemplates/11" type="application/vnd.abiquo.virtualmachinetemplate+xml" rel="virtualmachinetemplate"/>
     <link href="http://10.60.12.7:80/api/cloud/virtualdatacenters/4/virtualappliances/6/virtualmachines/3/storage/volumes" type="application/vnd.abiquo.iscsivolumes+xml" rel="volumes"/>
     <cpu>1</cpu>
-    <hdInBytes>27262976</hdInBytes>
     <highDisponibility>0</highDisponibility>
     <id>3</id>
     <idState>1</idState>
