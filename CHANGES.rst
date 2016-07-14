@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Removed HD attribute from the Abiquo compute driver to support the 3.4 API
+  (GITHUB-840)
+  [David Freedman]
+
 - Add image and size details to `list_nodes` response in Dimension Data driver
   (GITHUB-832)
   [Anthony Shaw]
