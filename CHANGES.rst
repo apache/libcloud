@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- Add image and size details to `list_nodes` response in Dimension Data driver
+  (GITHUB-832)
+  [Anthony Shaw]
+
 - Add support for changing VM admin password in VMware driver
   (GITHUB-833)
   [Juan Font Alonso]
