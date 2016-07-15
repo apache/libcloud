@@ -950,10 +950,11 @@ class S3CNNorthConnection(SignedAWSConnection, BaseS3Connection):
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None, token=None,
                  retry_delay=None, backoff=None):
-        super(S3CNNorthConnection, self).__init__(user_id, key, secure, host,
-                                                  port, url, timeout, proxy_url,
-                                                  token, retry_delay, backoff,
-                                                  4)  # force version 4
+        super(S3CNNorthConnection, self).__init__(
+            user_id, key, secure, host,
+            port, url, timeout, proxy_url,
+            token, retry_delay, backoff,
+            4)  # force version 4
 
 
 class S3CNNorthStorageDriver(S3StorageDriver):
