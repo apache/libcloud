@@ -55,6 +55,13 @@ Container
   (GITHUB-831)
   [Jamie Cressey]
 
+Storage
+~~~~~~~
+
+- Fix authentication issue in S3/China region, disabled multipart uploads as not supported
+  by region.
+  (GITHUB-839)
+  [Luke Morfitt]
 
 Changes with Apache Libcloud 1.1.0
 ----------------------------------
