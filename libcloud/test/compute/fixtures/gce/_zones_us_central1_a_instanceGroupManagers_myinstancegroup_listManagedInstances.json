@@ -1,0 +1,24 @@
+{
+    "managedInstances": [
+        {
+            "currentAction": "NONE",
+            "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/base-foo-2vld",
+	    "instanceStatus": "RUNNING"
+        },
+        {
+            "currentAction": "NONE",
+            "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/base-foo-il30",
+	    "instanceStatus": "RUNNING"
+        },
+        {
+            "currentAction": "NONE",
+            "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/base-foo-lnnr",
+	    "instanceStatus": "RUNNING"
+        },
+        {
+            "currentAction": "NONE",
+            "instance": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/base-foo-s41w",
+	    "instanceStatus": "RUNNING"
+        }
+    ]
+}
