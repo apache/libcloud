@@ -46,7 +46,7 @@ class ElasticLBTests(unittest.TestCase):
         token = 'temporary_credentials_token'
         driver = ElasticLBDriver(*LB_ELB_PARAMS, **{'token': token})
         kwargs = driver._ex_connection_class_kwargs()
-        self.assertIn('signature_version', kwargs)
+        self.assertTrue(('signature_version' in kwargs), 'Driver has no attribute signature_version')
         self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
 
     def test_list_protocols(self):
