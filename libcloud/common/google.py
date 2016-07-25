@@ -688,7 +688,7 @@ class GoogleOAuth2Credential(object):
         """
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
         data = json.dumps(self.token)
-        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY,
+        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY | os.O_TRUNC,
                                int('600', 8)), 'w') as f:
             f.write(data)
 
