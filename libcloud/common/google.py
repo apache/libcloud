@@ -677,7 +677,9 @@ class GoogleOAuth2Credential(object):
             with open(filename, 'r') as f:
                 data = f.read()
             token = json.loads(data)
-        except IOError:
+        except (IOError, ValueError):
+            # Note: File related errors (IOError) and errors related to json
+            # parsing of the data (ValueError) are not fatal.
             pass
         return token
 
@@ -686,11 +688,19 @@ class GoogleOAuth2Credential(object):
         Write token to credential file.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        data = json.dumps(self.token)
-        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY | os.O_TRUNC,
-                               int('600', 8)), 'w') as f:
-            f.write(data)
+        try:
+            filename = os.path.expanduser(self.credential_file)
+            filename = os.path.realpath(filename)
+            data = json.dumps(self.token)
+            write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+            with os.fdopen(os.open(filename, write_flags,
+                                   int('600', 8)), 'w') as f:
+                f.write(data)
+        except:
+            # Note: Failed to write (cache) token in a file is not fatal. It
+            # simply means degraded performance since we will need to acquire a
+            # new token each time script runs.
+            pass
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
