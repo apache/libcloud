@@ -704,7 +704,7 @@ class GoogleOAuth2Credential(object):
                                    int('600', 8)), 'w') as f:
                 f.write(data)
         except:
-            # Note: Failed to write (cache) token in a file is not fatal. It
+            # Note: Failure to write (cache) token in a file is not fatal. It
             # simply means degraded performance since we will need to acquire a
             # new token each time script runs.
             e = sys.exc_info()[1]
