@@ -41,6 +41,13 @@ Compute
   (GITHUB-838)
   [Rene Kjellerup]
 
+Load balancer
+~~~~~~~~~~~~~
+
+- Add support for temporary IAM role credentials (token) to the AWS ELB driver.
+  (GITHUB-843)
+  [Anton Kozyrev]
+
 DNS
 ~~~
 
