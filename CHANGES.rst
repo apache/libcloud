@@ -4,6 +4,16 @@
 Changes in current version of Apache Libcloud
 ---------------------------------------------
 
+General
+~~~~~~~
+
+- Fix caching of auth tokens in the Google Compute Engine drivers. Now we make
+  sure that the file is truncated before writing a new token. Not truncating
+  the file would cause issues if the new token is shorted then the existing one
+  which is cached in the file.
+  (GITHUB-844, LIBCLOUD-835)
+  [Paul Tiplady]
+
 Compute
 ~~~~~~~
 
