@@ -532,6 +532,8 @@ class Connection(object):
     retry_delay = None
 
     allow_insecure = True
+    skip_host = True
+    skip_accept_encoding = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None, proxy_url=None, retry_delay=None, backoff=None):
@@ -778,6 +780,9 @@ class Connection(object):
         else:
             headers.update({'Host': self.host})
 
+        skip_host = self.skip_host
+        skip_accept_encoding = self.skip_accept_encoding
+
         if data:
             data = self.encode_data(data)
             headers['Content-Length'] = str(len(data))
@@ -808,8 +813,8 @@ class Connection(object):
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
                 self.connection.putrequest(method, url,
-                                           skip_host=1,
-                                           skip_accept_encoding=1)
+                                            skip_host=skip_host,
+                                            skip_accept_encoding=skip_accept_encoding)
 
                 for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
