@@ -1235,6 +1235,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
+        'Migrating': NodeState.MIGRATING,
         'Stopped': NodeState.STOPPED,
         'Stopping': NodeState.PENDING,
         'Destroyed': NodeState.TERMINATED,
@@ -1251,7 +1252,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Allocated': StorageVolumeState.AVAILABLE,
         'Ready': StorageVolumeState.AVAILABLE,
         'Snapshotting': StorageVolumeState.BACKUP,
-        'UploadError': StorageVolumeState.ERROR
+        'UploadError': StorageVolumeState.ERROR,
+        'Migrating': StorageVolumeState.MIGRATING
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
