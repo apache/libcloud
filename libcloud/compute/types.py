@@ -271,6 +271,7 @@ class NodeState(Type):
     ERROR = 'error'
     PAUSED = 'paused'
     RECONFIGURING = 'reconfiguring'
+    MIGRATING = 'migrating'
 
 
 class StorageVolumeState(Type):
@@ -286,6 +287,7 @@ class StorageVolumeState(Type):
     BACKUP = 'backup'
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
+    MIGRATING = 'migrating'
 
 
 class VolumeSnapshotState(Type):
