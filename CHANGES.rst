@@ -17,6 +17,10 @@ General
 Compute
 ~~~~~~~
 
+- [cloudstack] Added StorageState-Migrating to the cloudstack driver.
+  (GITHUB-847)
+  [Marc-Aurèle Brothier]
+
 - [google compute] Update copy image logic to match create image.
   (GITHUB-828)
   [Max Illfelder]
