@@ -63,6 +63,21 @@ class ElasticLBTests(unittest.TestCase):
         self.assertEqual(balancers[0].id, 'tests')
         self.assertEqual(balancers[0].name, 'tests')
 
+    def test_list_balancers_with_tags(self):
+        balancers = self.driver.list_balancers(ex_fetch_tags=True)
+
+        self.assertEqual(len(balancers), 1)
+        self.assertEqual(balancers[0].id, 'tests')
+        self.assertEqual(balancers[0].name, 'tests')
+        self.assertTrue(('tags' in balancers[0].extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancers[0].extra['tags']['project'], 'lima')
+
+    def test_get_tags(self):
+        tags = self.driver.get_tags('tests')
+
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags['project'], 'lima')
+
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
 
@@ -151,6 +166,10 @@ class ElasticLBMockHttp(MockHttpTestCase):
 
     def _2012_06_01_DescribeLoadBalancers(self, method, url, body, headers):
         body = self.fixtures.load('describe_load_balancers.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _2012_06_01_DescribeTags(self, method, url, body, headers):
+        body = self.fixtures.load('describe_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_06_01_CreateLoadBalancer(self, method, url, body, headers):

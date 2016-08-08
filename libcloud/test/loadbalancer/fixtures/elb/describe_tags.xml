@@ -1,0 +1,18 @@
+<DescribeTagsResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2012-06-01/">
+    <DescribeTagsResult>
+        <TagDescriptions>
+            <member>
+                <Tags>
+                    <member>
+                        <Value>lima</Value>
+                        <Key>project</Key>
+                    </member>
+                </Tags>
+                <LoadBalancerName>tests</LoadBalancerName>
+            </member>
+        </TagDescriptions>
+    </DescribeTagsResult>
+    <ResponseMetadata>
+        <RequestId>07b1ecbc-1100-11e3-acaf-dd7edEXAMPLE</RequestId>
+    </ResponseMetadata>
+</DescribeTagsResponse>
