@@ -17,6 +17,10 @@ General
 Compute
 ~~~~~~~
 
+- [cloudstack] BUGFIX Values with wildcards failed signature validation
+  (GITHUB-846)
+  [Ronald van Zantvoot]
+
 - [cloudstack] Added StorageState-Migrating to the cloudstack driver.
   (GITHUB-847)
   [Marc-Aurèle Brothier]
