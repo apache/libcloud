@@ -4310,7 +4310,7 @@ class BaseEC2NodeDriver(NodeDriver):
                   'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
-            if tags[key] != None:
+            if tags[key] is not None:
                 params['Tag.%d.Value' % i] = tags[key]
 
         res = self.connection.request(self.path,

@@ -681,11 +681,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_delete_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         self.driver.ex_delete_tags(node, {'sample': 'tag'})
-    
+
     def test_ex_delete_tags2(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         self.driver.ex_create_tags(node, {'sample': 'another tag'})
-        self.driver.ex_delete_tags(node, {'sample':None})
+        self.driver.ex_delete_tags(node, {'sample': None})
 
     def test_ex_describe_addresses_for_node(self):
         node1 = Node('i-4382922a', None, None, None, None, self.driver)
