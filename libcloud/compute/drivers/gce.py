@@ -500,7 +500,7 @@ class GCENodeImage(NodeImage):
         :type   replacement: ``str`` or :class: `GCENodeImage`
 
         :param  state: Deprecation state of this image. Possible values include
-                       \'DELETED\', \'DEPRECATED\' or \'OBSOLETE\'.
+                       \'ACTIVE\', \'DELETED\', \'DEPRECATED\' or \'OBSOLETE\'.
         :type   state: ``str``
 
         :param  deprecated: RFC3339 timestamp to mark DEPRECATED
@@ -3873,7 +3873,7 @@ class GCENodeDriver(NodeDriver):
         if state is None:
             state = 'DEPRECATED'
 
-        possible_states = ['DELETED', 'DEPRECATED', 'OBSOLETE']
+        possible_states = ['ACTIVE', 'DELETED', 'DEPRECATED', 'OBSOLETE']
 
         if state not in possible_states:
             raise ValueError('state must be one of %s'
