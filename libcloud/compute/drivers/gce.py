@@ -3879,22 +3879,25 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('state must be one of %s'
                              % ','.join(possible_states))
 
-        image_data = {
-            'state': state,
-            'replacement': replacement.extra['selfLink'],
-        }
+        if state == 'ACTIVE':
+            image_data = {}
+        else:
+            image_data = {
+                'state': state,
+                'replacement': replacement.extra['selfLink'],
+            }
+            for attribute, value in [('deprecated', deprecated),
+                                     ('obsolete', obsolete),
+                                     ('deleted', deleted)]:
+                if value is None:
+                    continue
 
-        for attribute, value in [('deprecated', deprecated),
-                                 ('obsolete', obsolete),
-                                 ('deleted', deleted)]:
-            if value is None:
-                continue
-
-            try:
-                timestamp_to_datetime(value)
-            except:
-                raise ValueError('%s must be an RFC3339 timestamp' % attribute)
-            image_data[attribute] = value
+                try:
+                    timestamp_to_datetime(value)
+                except:
+                    raise ValueError('%s must be an RFC3339 timestamp'
+                                     % attribute)
+                image_data[attribute] = value
 
         request = '/global/images/%s/deprecate' % (image.name)
 
