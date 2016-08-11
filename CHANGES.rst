@@ -17,6 +17,10 @@ General
 Compute
 ~~~~~~~
 
+- [gce] Fix image undeprecation in GCE
+  (GITHUB-852)
+  [Max Illfelder]
+
 - [gce] Added Managed Instance Groups
   (GITHUB-842)
   [Tom Melendez]
