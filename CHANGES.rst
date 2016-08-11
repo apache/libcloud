@@ -17,6 +17,10 @@ General
 Compute
 ~~~~~~~
 
+- [gce] Allow undeprecation of an image.
+  (GITHUB-851)
+  [Max Illfelder]
+
 - [cloudstack] BUGFIX Values with wildcards failed signature validation
   (GITHUB-846)
   [Ronald van Zantvoot]
