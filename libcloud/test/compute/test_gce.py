@@ -51,6 +51,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     # environment.
     GCEZone._now = lambda x: datetime.datetime(2013, 6, 26, 19, 0, 0)
     datacenter = 'us-central1-a'
+    saved_request_path = None
 
     def setUp(self):
         GCEMockHttp.test = self
@@ -62,6 +63,29 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         kwargs['auth_type'] = 'IA'
         kwargs['datacenter'] = self.datacenter
         self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
+
+        # Start of supporting both 'v1' and 'beta' GCE APIs. As a first
+        # (hacky) pass, 99% of the test fixtures are all 'v1', so new
+        # tests with function names prefixed with 'test_beta_' will allow
+        # testing new 'beta' features w/o breaking all 'v1' tests.
+        if self._testMethodName.startswith('test_beta_'):
+            self.saved_request_path = self.driver.connection.request_path
+            rp_parts = self.driver.connection.request_path.split('/')
+            rp_parts[2] = 'beta'
+            self.driver.connection.request_path = "/".join(rp_parts)
+
+    def tearDown(self):
+        if self.saved_request_path is not None:
+            self.driver.connection.request_path = self.saved_request_path
+            self.saved_request_path = None
+
+    def test_v1_request_path(self):
+        rp = self.driver.connection.request_path
+        self.assertTrue(rp.startswith('/compute/v1/'))
+
+    def test_beta_request_path(self):
+        rp = self.driver.connection.request_path
+        self.assertTrue(rp.startswith('/compute/beta/'))
 
     def test_default_scopes(self):
         self.assertEqual(self.driver.scopes, None)
@@ -80,8 +104,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         obj = self.driver._get_object_by_kind('')
         self.assertIsNone(obj)
         obj = self.driver._get_object_by_kind(
-            'https://www.googleapis.com/compute/v1/projects/project_name/'
-            'global/targetHttpProxies/web-proxy')
+            'https://www.googleapis.com/compute/%s/projects/project_name/'
+            'global/targetHttpProxies/web-proxy' % API_VERSION)
         self.assertEqual(obj.name, 'web-proxy')
 
     def test_get_region_from_zone(self):
@@ -1367,8 +1391,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['description'], description)
         self.assertEqual(image.extra['family'], family)
 
-        url = ('https://www.googleapis.com/compute/v1/projects/coreos-cloud/'
-               'global/images/family/coreos')
+        url = ('https://www.googleapis.com/compute/%s/projects/coreos-cloud/'
+               'global/images/family/coreos' % API_VERSION)
         image = self.driver.ex_get_image_from_family(url)
         self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
         self.assertEqual(image.extra['description'], description)
@@ -1611,9 +1635,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(zone.name, zone_name)
         self.assertFalse(zone.time_until_mw)
         self.assertFalse(zone.next_mw_duration)
-
         zone_no_mw = self.driver.ex_get_zone('us-central1-a')
         self.assertEqual(zone_no_mw.time_until_mw, None)
+
+    def test_beta_ex_get_zone(self):
+        self.assertTrue(True)
 
 
 class GCEMockHttp(MockHttpTestCase):
