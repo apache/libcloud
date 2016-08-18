@@ -69,11 +69,8 @@ class ElasticLBDriver(Driver):
         balancers = self._to_balancers(data)
 
         if ex_fetch_tags:
-            for lb in balancers:
-                tags = lb.extra.get('tags', {})
-                tags.update(self.get_tags(lb.id))
-                if tags:
-                    lb.extra['tags'] = tags
+            for balancer in balancers:
+                self._ex_populate_balancer_tags(balancer)
 
         return balancers
 
@@ -116,21 +113,18 @@ class ElasticLBDriver(Driver):
         self.connection.request(ROOT, params=params)
         return True
 
-    def get_balancer(self, balancer_id):
+    def get_balancer(self, balancer_id, ex_fetch_tags=False):
         params = {
             'Action': 'DescribeLoadBalancers',
             'LoadBalancerNames.member.1': balancer_id
         }
         data = self.connection.request(ROOT, params=params).object
-        return self._to_balancers(data)[0]
+        balancer = self._to_balancers(data)[0]
 
-    def get_tags(self, balancer_id):
-        params = {
-            'Action': 'DescribeTags',
-            'LoadBalancerNames.member.1': balancer_id
-        }
-        data = self.connection.request(ROOT, params=params).object
-        return self._to_tags(data)
+        if ex_fetch_tags:
+            balancer = self._ex_populate_balancer_tags(balancer)
+
+        return balancer
 
     def balancer_attach_compute_node(self, balancer, node):
         params = {
@@ -393,3 +387,19 @@ class ElasticLBDriver(Driver):
             kwargs['signature_version'] = self.signature_version
 
         return kwargs
+
+    def _ex_list_balancer_tags(self, balancer_id):
+        params = {
+            'Action': 'DescribeTags',
+            'LoadBalancerNames.member.1': balancer_id
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_tags(data)
+
+    def _ex_populate_balancer_tags(self, balancer):
+        tags = balancer.extra.get('tags', {})
+        tags.update(self._ex_list_balancer_tags(balancer.id))
+        if tags:
+            balancer.extra['tags'] = tags
+
+        return balancer

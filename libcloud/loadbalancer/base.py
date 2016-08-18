@@ -222,19 +222,6 @@ class Driver(BaseDriver):
         raise NotImplementedError(
             'get_balancer not implemented for this driver')
 
-    def get_tags(self, balancer_id):
-        """
-        Return a dict of tag/value
-
-        :param balancer_id: id of a load balancer you want to fetch tags for
-        :type  balancer_id: ``str``
-
-        :rtype: ``dict``
-        """
-
-        raise NotImplementedError(
-            'get_tags not implemented for this driver')
-
     def update_balancer(self, balancer, **kwargs):
         """
         Sets the name, algorithm, protocol, or port on a load balancer.
