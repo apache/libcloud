@@ -72,8 +72,8 @@ class ElasticLBTests(unittest.TestCase):
         self.assertTrue(('tags' in balancers[0].extra), 'No tags dict found in balancer.extra')
         self.assertEqual(balancers[0].extra['tags']['project'], 'lima')
 
-    def test_get_tags(self):
-        tags = self.driver.get_tags('tests')
+    def test_list_balancer_tags(self):
+        tags = self.driver._ex_list_balancer_tags('tests')
 
         self.assertEqual(len(tags), 1)
         self.assertEqual(tags['project'], 'lima')
@@ -84,6 +84,23 @@ class ElasticLBTests(unittest.TestCase):
         self.assertEqual(balancer.id, 'tests')
         self.assertEqual(balancer.name, 'tests')
         self.assertEqual(balancer.state, State.UNKNOWN)
+
+    def test_get_balancer_with_tags(self):
+        balancer = self.driver.get_balancer(balancer_id='tests', ex_fetch_tags=True)
+
+        self.assertEqual(balancer.id, 'tests')
+        self.assertEqual(balancer.name, 'tests')
+        self.assertTrue(('tags' in balancer.extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancer.extra['tags']['project'], 'lima')
+
+    def test_populate_balancer_tags(self):
+        balancer = self.driver.get_balancer(balancer_id='tests')
+        balancer = self.driver._ex_populate_balancer_tags(balancer)
+
+        self.assertEqual(balancer.id, 'tests')
+        self.assertEqual(balancer.name, 'tests')
+        self.assertTrue(('tags' in balancer.extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancer.extra['tags']['project'], 'lima')
 
     def test_destroy_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
