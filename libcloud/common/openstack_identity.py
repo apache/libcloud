@@ -1480,6 +1480,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                                              missing required elements', e)
             body = 'code: %s body:%s' % (response.status, response.body)
         else:
+            body = 'code: %s body:%s' % (response.status, response.body)
             raise MalformedResponseError('Malformed response', body=body,
                                          driver=self.driver)
 
