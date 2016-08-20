@@ -1214,6 +1214,9 @@ class AzureNodeDriver(NodeDriver):
                 if port.name == "SSH":
                     ssh_port = port.public_port
 
+        if data.public_ips is not None:
+            public_ips = data.public_ips
+
         return Node(
             id=data.role_name,
             name=data.role_name,
@@ -1602,6 +1605,10 @@ class AzureNodeDriver(NodeDriver):
         parse the xml and fill all the data into a class of return_type
         """
         respbody = response.body
+
+        # WARNING: HACK
+        # Special case for PublicIPs, because somehow it is named completely differently from the rest
+        respbody = respbody.replace('PublicIPs', 'PublicIps')
 
         doc = minidom.parseString(respbody)
         return_obj = return_type()
@@ -3145,12 +3152,14 @@ class ConfigurationSetInputEndpoints(WindowsAzureDataTypedList):
 
 
 class PublicIP(WindowsAzureData):
-    def __init__(self, name):
+    def __init__(self, name='', address=''):
         """
         Definition of an public IP address
         :param name: Name of the Public IP Address
+        :param address: The actual Public IP Address
         """
         self.name = name
+        self.address = address
 
 
 class PublicIPs(WindowsAzureDataTypedList):
@@ -3348,6 +3357,7 @@ class RoleInstance(WindowsAzureData):
         self.instance_error_code = ''
         self.ip_address = ''
         self.instance_endpoints = InstanceEndpoints()
+        self.public_ips = PublicIPs()
         self.power_state = ''
         self.fqdn = ''
         self.host_name = ''
