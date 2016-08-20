@@ -2566,7 +2566,17 @@ class AzureXmlSerializer(object):
                 subnet_names
             )
 
-        return xml
+        public_ips = ET.Element("PublicIPs")
+        xml.append(public_ips)
+        for ip in configuration.public_ips:
+            public_ip = ET.Element("PublicIP")
+            AzureXmlSerializer.data_to_xml(
+                [('Name', ip.name)],
+                public_ip
+            )
+            public_ips.append(public_ip)
+
+        return
 
     @staticmethod
     def role_to_xml(availability_set_name,
@@ -3096,6 +3106,7 @@ class ConfigurationSet(WindowsAzureData):
         self.role_type = ''
         self.input_endpoints = ConfigurationSetInputEndpoints()
         self.subnet_names = ScalarListOf(str, 'SubnetName')
+        self.public_ips = PublicIPs()
 
 
 class ConfigurationSets(WindowsAzureDataTypedList):
@@ -3127,6 +3138,24 @@ class ConfigurationSetInputEndpoint(WindowsAzureData):
 class ConfigurationSetInputEndpoints(WindowsAzureDataTypedList):
     list_type = ConfigurationSetInputEndpoint
     xml_element_name = 'InputEndpoint'
+
+    _repr_attributes = [
+        'items'
+    ]
+
+
+class PublicIP(WindowsAzureData):
+    def __init__(self, name):
+        """
+        Definition of an public IP address
+        :param name: Name of the Public IP Address
+        """
+        self.name = name
+
+
+class PublicIPs(WindowsAzureDataTypedList):
+    list_type = PublicIP
+    xml_element_name = 'PublicIP'
 
     _repr_attributes = [
         'items'
