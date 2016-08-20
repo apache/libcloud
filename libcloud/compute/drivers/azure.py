@@ -280,6 +280,46 @@ AZURE_COMPUTE_INSTANCE_TYPES = {
         'price': '1.6261',
         'max_data_disks': 32,
         'cores': 16
+    },
+    'Standard_D2_v2': {
+        'id': 'Standard_D2_v2',
+        'name': 'D2 v2 Faster Compute Instance',
+        'ram': 7168,
+        'disk': 100,
+        'bandwidth': None,
+        'price': '0.16',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'Standard_D3_v2': {
+        'id': 'Standard_D3_v2',
+        'name': 'D3 v2 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 200,
+        'bandwidth': None,
+        'price': '0.319',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'Standard_D4_v2': {
+        'id': 'Standard_D4_v2',
+        'name': 'D4 v2 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 400,
+        'bandwidth': None,
+        'price': '0.672',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'Standard_D5_v2': {
+        'id': 'Standard_D5_v2',
+        'name': 'D5 v2 Faster Compute Instance',
+        'ram': 57344,
+        'disk': 800,
+        'bandwidth': None,
+        'price': '1.277',
+        'max_data_disks': 32,
+        'cores': 16
     }
 }
 
