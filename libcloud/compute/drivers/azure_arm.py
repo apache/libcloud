@@ -108,12 +108,3 @@ class AzureARMNodeDriver(NodeDriver):
             return self._perform_request(request)
         except Exception as e:
             raise e
-
-    def _ex_connection_class_kwargs(self):
-        """
-        Return extra connection keyword arguments which are passed to the
-        Connection class constructor.
-        """
-        return {
-            'token': self.token
-        }
