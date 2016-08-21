@@ -33,6 +33,11 @@ class AzureARMNodeDriver(NodeDriver):
             **kwargs
         )
 
+    # def list_locations(self, resource_group)
+    # def list_sizes(self, location):
+    # def list_nodes(self, resource_group)
+    # def create_node(self, resource_group)
+
     def _perform_get(self, path):
         request = AzureHTTPRequest()
         request.method = 'GET'
