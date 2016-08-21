@@ -36,7 +36,7 @@ class AzureARMNodeDriver(NodeDriver):
     # def list_locations(self, resource_group)
 
     def list_sizes(self, location):
-        path = '%s/providers/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
+        path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
         return self._perform_get(path)
 
     # def list_nodes(self, resource_group)
