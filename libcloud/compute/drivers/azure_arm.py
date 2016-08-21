@@ -68,17 +68,23 @@ class AzureARMNodeDriver(NodeDriver):
 
         request.path = url_quote(request.path, '/()$=\',')
 
-        # add encoded queries to request.path.
+        # Add the API version
+        api_version = ('api-version', API_VERSION)
         if request.query:
-            request.path += '?'
-            for name, value in request.query:
-                if value is not None:
-                    request.path += '%s=%s%s' % (
-                        name,
-                        url_quote(value, '/()$=\','),
-                        '&'
-                    )
-            request.path = request.path[:-1]
+            request.query.append(api_version)
+        else:
+            request.query = [api_version]
+
+        # add encoded queries to request.path.
+        request.path += '?'
+        for name, value in request.query:
+            if value is not None:
+                request.path += '%s=%s%s' % (
+                    name,
+                    url_quote(value, '/()$=\','),
+                    '&'
+                )
+        request.path = request.path[:-1]
 
         return request.path, request.query
 
