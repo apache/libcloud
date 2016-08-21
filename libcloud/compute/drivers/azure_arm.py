@@ -1,8 +1,9 @@
+import json
 import sys
 
 from libcloud.common.azure import AzureResourceManagerConnection, AzureRedirectException
 from libcloud.compute.base import NodeDriver
-from libcloud.compute.drivers.azure import AzureHTTPRequest, Locations
+from libcloud.compute.drivers.azure import AzureHTTPRequest, AzureNodeLocation
 from libcloud.compute.drivers.vcloud import urlparse
 from libcloud.compute.types import Provider
 
@@ -33,7 +34,7 @@ class AzureARMNodeDriver(NodeDriver):
             **kwargs
         )
 
-     def list_locations(self, resource_group):
+    def list_locations(self, resource_group):
         """
         Lists all locations
 
@@ -41,9 +42,26 @@ class AzureARMNodeDriver(NodeDriver):
         """
         path = self._default_path_prefix()
         path += '/locations'
-        data = self._perform_get(path, Locations)
+        json_data = self._perform_get(path)
+        raw_data = json.loads(json_data)
 
-        return [self._to_location(l) for l in data]
+        return [self._to_location(l) for l in raw_data]
+
+    def _to_location(self, location_data):
+        """
+            Convert the data from a Azure response object into a location
+            """
+        raw_data = location_data.get['value']
+        #vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
+
+        return AzureNodeLocation(
+            id=raw_data.get('name', None),
+            name=raw_data.get('display_name', None),
+            country=raw_data.get('display_name', None),
+            driver=self.connection.driver,
+            #available_services=data.available_services,
+            #virtual_machine_role_sizes=vm_role_sizes
+        )
 
     # def list_sizes(self, location):
     # def list_nodes(self, resource_group)
