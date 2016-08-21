@@ -40,8 +40,7 @@ class AzureARMNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        path = self._default_path_prefix()
-        path += '/locations'
+        path = '%slocations' % self._default_path_prefix
         json_data = self._perform_get(path)
         raw_data = json.loads(json_data)
 
