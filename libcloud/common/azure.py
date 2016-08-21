@@ -302,10 +302,10 @@ class AzureResourceManagerConnection(Connection):
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
     name = 'Azure Resource Manager API Connection'
-    host = 'management.core.windows.net'
+    host = 'management.windows.net'
     token = ""
 
-    def __init__(self, subscription_id, token, *args, **kwargs):
+    def __init__(self, token, *args, **kwargs):
         """
         :param  subscription_id: Azure subscription ID.
         :type   subscription_id: ``str``
@@ -319,5 +319,12 @@ class AzureResourceManagerConnection(Connection):
             **kwargs
         )
 
-        self.subscription_id = subscription_id
         self.token = token
+
+    def add_default_headers(self, headers):
+        """
+        @inherits: :class:`Connection.add_default_headers`
+        """
+        headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = self.token
+        return headers
