@@ -63,10 +63,15 @@ class AzureARMNodeDriver(NodeDriver):
             #virtual_machine_role_sizes=vm_role_sizes
         )
 
-    # def list_sizes(self, location):
+    # def list_locations(self, resource_group)
+
+    def list_sizes(self, location):
+        path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
+        return self._perform_get(path)
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
 
+    @property
     def _default_path_prefix(self):
         """Everything starts with the subscription prefix"""
         return '/subscription/%s/' % self.subscription_id
@@ -132,12 +137,3 @@ class AzureARMNodeDriver(NodeDriver):
             return self._perform_request(request)
         except Exception as e:
             raise e
-
-    def _ex_connection_class_kwargs(self):
-        """
-        Return extra connection keyword arguments which are passed to the
-        Connection class constructor.
-        """
-        return {
-            'token': self.token
-        }
