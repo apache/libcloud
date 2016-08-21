@@ -46,29 +46,27 @@ class AzureARMNodeDriver(NodeDriver):
 
         return [self._to_location(l) for l in raw_data]
 
+    def list_sizes(self, location):
+        path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
+        return self._perform_get(path)
+    # def list_nodes(self, resource_group)
+    # def create_node(self, resource_group)
+
     def _to_location(self, location_data):
         """
             Convert the data from a Azure response object into a location
             """
         raw_data = location_data.get['value']
-        #vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
+        # vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
 
         return AzureNodeLocation(
             id=raw_data.get('name', None),
             name=raw_data.get('display_name', None),
             country=raw_data.get('display_name', None),
             driver=self.connection.driver,
-            #available_services=data.available_services,
-            #virtual_machine_role_sizes=vm_role_sizes
+            # available_services=data.available_services,
+            # virtual_machine_role_sizes=vm_role_sizes
         )
-
-    # def list_locations(self, resource_group)
-
-    def list_sizes(self, location):
-        path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
-        return self._perform_get(path)
-    # def list_nodes(self, resource_group)
-    # def create_node(self, resource_group)
 
     @property
     def _default_path_prefix(self):
