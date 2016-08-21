@@ -38,6 +38,10 @@ class AzureARMNodeDriver(NodeDriver):
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
 
+    def _default_path_prefix(self):
+        """Everything starts with the subscription prefix"""
+        return '/subscription/%s/' % self.subscription_id
+
     def _perform_get(self, path):
         request = AzureHTTPRequest()
         request.method = 'GET'
