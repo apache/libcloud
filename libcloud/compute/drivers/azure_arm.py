@@ -2,6 +2,8 @@ from libcloud.common.azure import AzureResourceManagerConnection
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 
+AZURE_RESOURCE_MANAGEMENT_HOST = 'management.azure.com'
+
 
 class AzureARMNodeDriver(NodeDriver):
     connectionCls = AzureResourceManagerConnection

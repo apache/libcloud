@@ -554,7 +554,7 @@ class AzureResourceManagerConnection(Connection):
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
     name = 'Azure Resource Manager API Connection'
-    host = 'management.windows.net'
+    host = 'management.azure.com'
     token = ""
 
     def __init__(self, token, *args, **kwargs):
