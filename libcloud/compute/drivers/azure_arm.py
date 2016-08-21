@@ -34,10 +34,15 @@ class AzureARMNodeDriver(NodeDriver):
         )
 
     # def list_locations(self, resource_group)
-    # def list_sizes(self, location):
+
+    def list_sizes(self, location):
+        path = '%s/providers/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
+        return self._perform_get(path)
+
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
 
+    @property
     def _default_path_prefix(self):
         """Everything starts with the subscription prefix"""
         return '/subscription/%s/' % self.subscription_id

@@ -21,7 +21,6 @@ import hmac
 
 from hashlib import sha256
 
-from libcloud.compute.drivers.azure_arm import AzureARMNodeDriver
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
@@ -550,7 +549,7 @@ class AzureServiceManagementConnection(CertificateConnection):
 
 
 class AzureResourceManagerConnection(Connection):
-    driver = AzureARMNodeDriver
+    driver = AzureBaseDriver
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
     name = 'Azure Resource Manager API Connection'
