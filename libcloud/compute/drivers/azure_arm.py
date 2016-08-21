@@ -2,8 +2,8 @@ import json
 import sys
 
 from libcloud.common.azure import AzureResourceManagerConnection, AzureRedirectException
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.drivers.azure import AzureHTTPRequest, AzureNodeLocation
+from libcloud.compute.base import NodeDriver, NodeLocation
+from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
 from libcloud.compute.types import Provider
 
@@ -54,12 +54,13 @@ class AzureARMNodeDriver(NodeDriver):
 
     def _to_location(self, location_data):
         """
-            Convert the data from a Azure response object into a location
+            Convert the data from a Azure response object into a location. Commented out
+            code is from the classic Azure driver, not sure if we need those fields.
             """
         raw_data = location_data.get['value']
         # vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
 
-        return AzureNodeLocation(
+        return NodeLocation(
             id=raw_data.get('name', None),
             name=raw_data.get('display_name', None),
             country=raw_data.get('display_name', None),
