@@ -20,6 +20,8 @@ import base64
 import hmac
 
 from hashlib import sha256
+
+from libcloud.compute.drivers.azure_arm import AzureARMNodeDriver
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
@@ -31,7 +33,7 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
+from libcloud.common.base import ConnectionUserAndKey, RawResponse, Connection
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
@@ -293,3 +295,29 @@ class AzureServiceManagementConnection(CertificateConnection):
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
         #  headers['host'] = self.host
         return headers
+
+
+class AzureResourceManagerConnection(Connection):
+    driver = AzureARMNodeDriver
+    responseCls = AzureResponse
+    rawResponseCls = AzureRawResponse
+    name = 'Azure Resource Manager API Connection'
+    host = 'management.core.windows.net'
+    token = ""
+
+    def __init__(self, subscription_id, token, *args, **kwargs):
+        """
+        :param  subscription_id: Azure subscription ID.
+        :type   subscription_id: ``str``
+
+        :param  token: JSON web token to authenticate with Azure Active Directory
+        :type   token: ``str``
+        """
+
+        super(AzureResourceManagerConnection, self).__init__(
+            *args,
+            **kwargs
+        )
+
+        self.subscription_id = subscription_id
+        self.token = token
