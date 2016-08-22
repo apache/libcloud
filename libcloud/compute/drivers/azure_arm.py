@@ -41,22 +41,26 @@ class AzureARMNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`NodeLocation`
         """
         path = '%slocations' % self._default_path_prefix
-        json_data = self._perform_get(path)
-        raw_data = json.loads(json_data)
+        json_response = self._perform_get(path)
+        raw_data = json_response.parse_body()
 
         return [self._to_location(l) for l in raw_data]
 
     def list_sizes(self, location):
         path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
-        return self._perform_get(path)
+        json_response = self._perform_get(path)
+        raw_data = json_response.parse_body()
+
+        return raw_data
+
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
 
     def _to_location(self, location_data):
         """
-            Convert the data from a Azure response object into a location. Commented out
-            code is from the classic Azure driver, not sure if we need those fields.
-            """
+        Convert the data from a Azure response object into a location. Commented out
+        code is from the classic Azure driver, not sure if we need those fields.
+        """
         raw_data = location_data.get['value']
         # vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
 

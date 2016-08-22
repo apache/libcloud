@@ -32,7 +32,7 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, Connection
+from libcloud.common.base import ConnectionUserAndKey, RawResponse, Connection, JsonResponse
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
@@ -548,15 +548,31 @@ class AzureServiceManagementConnection(CertificateConnection):
         return headers
 
 
+class AzureARMResponse(JsonResponse):
+
+    valid_response_codes = [
+        httplib.NOT_FOUND,
+        httplib.CONFLICT,
+        httplib.BAD_REQUEST,
+        httplib.TEMPORARY_REDIRECT
+        # added TEMPORARY_REDIRECT as this can sometimes be
+        # sent by azure instead of a success or fail response
+    ]
+
+    def success(self):
+        i = int(self.status)
+        return 200 <= i <= 299 or i in self.valid_response_codes
+
+
 class AzureResourceManagerConnection(Connection):
     driver = AzureBaseDriver
-    responseCls = AzureResponse
+    responseCls = AzureARMResponse
     rawResponseCls = AzureRawResponse
     name = 'Azure Resource Manager API Connection'
     host = 'management.azure.com'
     token = ""
 
-    def __init__(self, token, *args, **kwargs):
+    def __init__(self, subscription_id, token, *args, **kwargs):
         """
         :param  subscription_id: Azure subscription ID.
         :type   subscription_id: ``str``
@@ -569,7 +585,7 @@ class AzureResourceManagerConnection(Connection):
             *args,
             **kwargs
         )
-
+        self.subscription_id = subscription_id
         self.token = token
 
     def add_default_headers(self, headers):
