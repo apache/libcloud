@@ -230,8 +230,11 @@ class AzureARMNodeDriver(NodeDriver):
         public_ips = []
         private_ips = []
         for ip_configuration in ip_configurations:
-            public_ips.append(ip_configuration['publicIPAddress'])
-            private_ips.append(ip_configuration['privateIPAddress'])
+            private_ips.append(ip_configuration['properties']['privateIPAddress'])
+
+            # Make another API call for public IP address:
+
+
         return public_ips, private_ips
 
     def _to_location(self, location_data):
