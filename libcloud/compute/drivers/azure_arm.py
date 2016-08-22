@@ -2,10 +2,10 @@ import json
 import sys
 
 from libcloud.common.azure import AzureResourceManagerConnection, AzureRedirectException
-from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize
+from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize, Node
 from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
-from libcloud.compute.types import Provider
+from libcloud.compute.types import Provider, NodeState
 
 from libcloud.utils.py3 import urlquote as url_quote, ensure_string
 
@@ -195,7 +195,30 @@ class AzureARMNodeDriver(NodeDriver):
         output = self._perform_put(path, payload)
         return output.parse_body()
 
-    #def _to_node(self, node_data):
+    def _to_node(self, node_data):
+        network_interface_urls = node_data['networkProfile']['networkInterfaces']
+        public_ips = []
+        private_ips = []
+        for network_interface_url in network_interface_urls:
+            public_ip, private_ip = self._get_public_and_private_ips(network_interface_url)
+            public_ips.append(public_ip)
+            private_ips.append(private_ip)
+
+        return Node(
+            id=node_data.get('name'),
+            name=node_data.get('name'),
+            state=NodeState.UKNOWN,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self.connection.driver,
+        )
+
+    def _get_public_and_private_ips(self, network_interace_url):
+        json_response = self._perform_get(network_interace_url)
+        raw_data = json_response.parse_body()
+        public_ip = raw_data['properties']['ipConfigurations']['publicIPAddress']
+        private_ip = raw_data['properties']['ipConfigurations']['privateIPAddress']
+        return public_ip, private_ip
 
     def _to_location(self, location_data):
         """
