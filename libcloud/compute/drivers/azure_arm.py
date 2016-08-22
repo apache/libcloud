@@ -176,7 +176,8 @@ class AzureARMNodeDriver(NodeDriver):
         }
         path = '%sresourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s' % \
                (self._default_path_prefix, resource_group_name, nic_name)
-        return self._perform_put(path, payload)
+        output = self._perform_put(path, payload)
+        return output.parse_body()
 
     def _create_public_ip_address(self, node_name, resource_group_name, location):
         public_ip_address_name = '%s-public-ip' % node_name
@@ -191,7 +192,8 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
                (self._default_path_prefix, resource_group_name, public_ip_address_name)
 
-        return self._perform_put(path, payload)
+        output = self._perform_put(path, payload)
+        return output.parse_body()
 
     def _to_location(self, location_data):
         """
