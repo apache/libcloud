@@ -7,10 +7,22 @@ from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
 from libcloud.compute.types import Provider
 
-from libcloud.utils.py3 import urlquote as url_quote
+from libcloud.utils.py3 import urlquote as url_quote, ensure_string
 
 AZURE_RESOURCE_MANAGEMENT_HOST = 'management.azure.com'
 DEFAULT_API_VERSION = '2016-07-01'
+
+if sys.version_info < (3,):
+    _unicode_type = unicode
+
+    def _str(value):
+        if isinstance(value, unicode):
+            return value.encode('utf-8')
+
+        return str(value)
+else:
+    _str = str
+    _unicode_type = str
 
 
 class AzureARMNodeDriver(NodeDriver):
@@ -125,8 +137,12 @@ class AzureARMNodeDriver(NodeDriver):
     def _create_public_ip_address(self, node_name, resource_group, location):
         public_ip_address_name = '%s-public-ip' % node_name
         payload = {
-            'publicIPAllocationMethod': 'dynamic',
-            'location': location
+            'location': location,
+            'properties': {
+                'publicIPAllocationMethod': 'Dynamic',
+                'publicIPAddressVersion': "IPv4",
+                'idleTimeoutInMinutes': 5
+            }
         }
         path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
                (self._default_path_prefix, resource_group, public_ip_address_name)
@@ -183,9 +199,28 @@ class AzureARMNodeDriver(NodeDriver):
         request.method = 'PUT'
         request.host = AZURE_RESOURCE_MANAGEMENT_HOST
         request.path = path
-        request.body = body
+        request.body = ensure_string(self._get_request_body(body))
         request.path, request.query = self._update_request_uri_query(request, api_version)
         return self._perform_request(request)
+
+    def _get_request_body(self, request_body):
+        if request_body is None:
+            return b''
+
+        if isinstance(request_body, dict):
+            return json.dumps(request_body)
+
+        if isinstance(request_body, bytes):
+            return request_body
+
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        request_body = str(request_body)
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        return request_body
 
     def _perform_get(self, path, api_version=None):
         request = AzureHTTPRequest()
