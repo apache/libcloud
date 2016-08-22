@@ -66,6 +66,8 @@ class AzureARMNodeDriver(NodeDriver):
 
     # def create_node(self, resource_group)
 
+    #def _to_node(self, node_data):
+
     def _to_location(self, location_data):
         """
         Convert the data from a Azure response object into a location. Commented out
