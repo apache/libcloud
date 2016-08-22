@@ -83,6 +83,7 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_subnet_name,
                     ex_admin_username,
                     ex_marketplace_image,
+                    ex_availability_set=None,
                     ex_public_key=None):
 
         # Create the public IP address
@@ -104,6 +105,9 @@ class AzureARMNodeDriver(NodeDriver):
         os_disk_name = '%s-os-disk' % name
 
         node_payload['properties'] = {
+            'availabilitySet': {
+                'id':
+            },
             'hardwareProfile': {
                 'vmSize': node_size.id
             },
@@ -144,6 +148,14 @@ class AzureARMNodeDriver(NodeDriver):
                 ]
             }
         }
+
+        if ex_availability_set:
+            availability_set_id = '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/availabilitySets/%s' % \
+                               (self.subscription_id, ex_resource_group_name, ex_availability_set)
+            node_payload['properties']['availabilitySet'] = {
+                'id': availability_set_id
+            }
+
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
                (self._default_path_prefix, ex_resource_group_name, name)
 
