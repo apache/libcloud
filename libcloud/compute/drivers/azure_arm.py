@@ -114,7 +114,7 @@ class AzureARMNodeDriver(NodeDriver):
                 'osDisk': {
                     'name': os_disk_name,
                     'vhd': {
-                        'uri": "http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
+                        'uri': 'http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
                     },
                     'createOption': 'fromImage',
                     'diskSizeGB': disk_size
