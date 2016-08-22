@@ -77,18 +77,21 @@ class AzureARMNodeDriver(NodeDriver):
         return [self._to_node(x) for x in raw_data['value']]
 
     def create_node(self, name, location, node_size, disk_size,
-                    ex_resource_group,
+                    ex_resource_group_name,
                     ex_storage_account_name,
                     ex_virtual_network_name,
+                    ex_subnet_name,
                     ex_admin_username,
                     ex_public_key=None,
                     ex_market_place_plan=None):
 
         # Create the public IP address
-        public_ip_address_name = self._create_public_ip_address(name, ex_resource_group, location)
+        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location)
 
         # Create the network interface card with that public IP address
-
+        nic = self._create_network_interface(name, ex_resource_group_name, location,
+                                             ex_virtual_network_name, ex_subnet_name,
+                                             public_ip_address['name'])
         # Create the machine
         # - name
         # - location
@@ -131,10 +134,51 @@ class AzureARMNodeDriver(NodeDriver):
                         ]
                     }
                }
+            },
+            'networkProfile': {
+                'networkInterfaces': [
+                    {
+                        'id': nic['id'],
+                        'properties': {
+                            'primary': True
+                        }
+                    }
+                ]
             }
         }
+        path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
+               (self._default_path_prefix, ex_resource_group_name, name)
 
-    def _create_public_ip_address(self, node_name, resource_group, location):
+        return self._perform_put(path, node_payload)
+
+    def _create_network_interface(self, node_name, resource_group_name, location,
+                                  virtual_network_name, subnet_name,
+                                  public_ip_address_name):
+        nic_name = '%s-nic' % node_name
+        payload = {
+            'location': location,
+            'properties': {
+                'ipConfigurations': [{
+                    'name': '%s-ip' % node_name,
+                    'properties': {
+                        'subnet': {
+                            'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s' %
+                                  (self.subscription_id, resource_group_name, virtual_network_name, subnet_name)
+                        },
+                        'privateIPAllocationMethod': 'Dynamic',
+                        'publicIPAddress': {
+                            'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' %
+                                  (self.subscription_id, resource_group_name, public_ip_address_name)
+                        }
+                    }
+                }]
+            }
+        }
+        path = '%sresourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s' % \
+               (self._default_path_prefix, resource_group_name, nic_name)
+        return self._perform_put(path, payload)
+
+    def _create_public_ip_address(self, node_name, resource_group_name, location):
         public_ip_address_name = '%s-public-ip' % node_name
         payload = {
             'location': location,
@@ -145,10 +189,9 @@ class AzureARMNodeDriver(NodeDriver):
             }
         }
         path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
-               (self._default_path_prefix, resource_group, public_ip_address_name)
+               (self._default_path_prefix, resource_group_name, public_ip_address_name)
 
-        output = self._perform_put(path, payload)
-        return output.get('name')
+        return self._perform_put(path, payload)
 
     def _to_location(self, location_data):
         """
