@@ -195,7 +195,7 @@ class AzureARMNodeDriver(NodeDriver):
         return output.parse_body()
 
     def _to_node(self, node_data):
-        network_interface_urls = node_data['networkProfile']['networkInterfaces']
+        network_interface_urls = node_data['properties'].get('networkProfile', {}).get('networkInterfaces', [])
         public_ips = []
         private_ips = []
         for network_interface_url in network_interface_urls:
@@ -210,6 +210,9 @@ class AzureARMNodeDriver(NodeDriver):
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self.connection.driver,
+            extra={
+                'provisioningState': node_data['properties']['provisioningState']
+            }
         )
 
     def _get_public_and_private_ips(self, network_interace_url):
