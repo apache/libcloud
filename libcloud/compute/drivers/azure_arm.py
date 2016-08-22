@@ -207,9 +207,9 @@ class AzureARMNodeDriver(NodeDriver):
         public_ips = []
         private_ips = []
         for network_interface_url in network_interface_urls:
-            public_ips, private_ips = self._get_public_and_private_ips(network_interface_url)
-            public_ips.extend(public_ips)
-            private_ips.extend(private_ips)
+            _public_ips, _private_ips = self._get_public_and_private_ips(network_interface_url)
+            public_ips.extend(_public_ips)
+            private_ips.extend(_private_ips)
 
         return Node(
             id=node_data.get('name'),
