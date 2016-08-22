@@ -76,7 +76,7 @@ class AzureARMNodeDriver(NodeDriver):
     @property
     def _default_path_prefix(self):
         """Everything starts with the subscription prefix"""
-        return '/subscription/%s/' % self.subscription_id
+        return '/subscriptions/%s/' % self.subscription_id
 
     def _perform_get(self, path):
         request = AzureHTTPRequest()
