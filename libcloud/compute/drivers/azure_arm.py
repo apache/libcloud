@@ -126,7 +126,7 @@ class AzureARMNodeDriver(NodeDriver):
                     'ssh': {
                         'publicKeys': [
                             {
-                                'path': '/home/%s/.ssh/id_rsa.pub' % ex_admin_username,
+                                'path': '/home/%s/.ssh/authorized_keys' % ex_admin_username,
                                 'keyData': ex_public_key
                             }
                         ]
