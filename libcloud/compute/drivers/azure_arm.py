@@ -65,11 +65,16 @@ class AzureARMNodeDriver(NodeDriver):
         return [self._to_node(x) for x in raw_data['value']]
 
     def create_node(self, name, location, node_size, disk_size,
-                    ex_storage_account_name, ex_admin_username,
+                    ex_resource_group,
+                    ex_storage_account_name,
+                    ex_virtual_network_name,
+                    ex_admin_username,
                     ex_public_key=None,
                     ex_market_place_plan=None):
-        # Create the virtual network if necessary
+
         # Create the public IP address
+        public_ip_address_name = self._create_public_ip_address(name, ex_resource_group, location)
+
         # Create the network interface card with that public IP address
 
         # Create the machine
@@ -117,6 +122,18 @@ class AzureARMNodeDriver(NodeDriver):
             }
         }
 
+    def _create_public_ip_address(self, node_name, resource_group, location):
+        public_ip_address_name = '%s-public-ip' % node_name
+        payload = {
+            'publicIPAllocationMethod': 'dynamic',
+            'location': location
+        }
+        path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
+               (self._default_path_prefix, resource_group, public_ip_address_name)
+
+        output = self._perform_put(path, payload)
+        return output.get('name')
+
     def _to_location(self, location_data):
         """
         Convert the data from a Azure response object into a location. Commented out
@@ -160,6 +177,15 @@ class AzureARMNodeDriver(NodeDriver):
     def _default_path_prefix(self):
         """Everything starts with the subscription prefix"""
         return '/subscriptions/%s/' % self.subscription_id
+
+    def _perform_put(self, path, body, api_version=None):
+        request = AzureHTTPRequest()
+        request.method = 'PUT'
+        request.host = AZURE_RESOURCE_MANAGEMENT_HOST
+        request.path = path
+        request.body = body
+        request.path, request.query = self._update_request_uri_query(request, api_version)
+        return self._perform_request(request)
 
     def _perform_get(self, path, api_version=None):
         request = AzureHTTPRequest()
