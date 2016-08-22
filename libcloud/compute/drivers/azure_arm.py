@@ -86,10 +86,10 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_market_place_plan=None):
 
         # Create the public IP address
-        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location)
+        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location.id)
 
         # Create the network interface card with that public IP address
-        nic = self._create_network_interface(name, ex_resource_group_name, location,
+        nic = self._create_network_interface(name, ex_resource_group_name, location.id,
                                              ex_virtual_network_name, ex_subnet_name,
                                              public_ip_address['name'])
         # Create the machine
