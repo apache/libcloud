@@ -105,9 +105,6 @@ class AzureARMNodeDriver(NodeDriver):
         os_disk_name = '%s-os-disk' % name
 
         node_payload['properties'] = {
-            'availabilitySet': {
-                'id':
-            },
             'hardwareProfile': {
                 'vmSize': node_size.id
             },
