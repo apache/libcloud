@@ -7,10 +7,22 @@ from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
 from libcloud.compute.types import Provider
 
-from libcloud.utils.py3 import urlquote as url_quote
+from libcloud.utils.py3 import urlquote as url_quote, ensure_string
 
 AZURE_RESOURCE_MANAGEMENT_HOST = 'management.azure.com'
 DEFAULT_API_VERSION = '2016-07-01'
+
+if sys.version_info < (3,):
+    _unicode_type = unicode
+
+    def _str(value):
+        if isinstance(value, unicode):
+            return value.encode('utf-8')
+
+        return str(value)
+else:
+    _str = str
+    _unicode_type = str
 
 
 class AzureARMNodeDriver(NodeDriver):
@@ -64,7 +76,124 @@ class AzureARMNodeDriver(NodeDriver):
         raw_data = json_response.parse_body()
         return [self._to_node(x) for x in raw_data['value']]
 
-    # def create_node(self, resource_group)
+    def create_node(self, name, location, node_size, disk_size,
+                    ex_resource_group_name,
+                    ex_storage_account_name,
+                    ex_virtual_network_name,
+                    ex_subnet_name,
+                    ex_admin_username,
+                    ex_public_key=None,
+                    ex_market_place_plan=None):
+
+        # Create the public IP address
+        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location)
+
+        # Create the network interface card with that public IP address
+        nic = self._create_network_interface(name, ex_resource_group_name, location,
+                                             ex_virtual_network_name, ex_subnet_name,
+                                             public_ip_address['name'])
+        # Create the machine
+        # - name
+        # - location
+        # - "plan": Marketplace image reference
+        node_payload = {
+            'name': name,
+            'location': location.id,
+        }
+
+        if ex_market_place_plan:
+            node_payload['plan'] = ex_market_place_plan
+
+        os_disk_name = '%s-os-disk' % name
+
+        node_payload['properties'] = {
+            'hardwareProfile': {
+                'vmSize': node_size.id
+            },
+            'storageProfile': {
+                'osDisk': {
+                    'name': os_disk_name,
+                    'vhd': {
+                        'uri": "http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
+                    },
+                    'createOption': 'fromImage',
+                    'diskSizeGB': disk_size
+                }
+            },
+            'osProfile': {
+                'computerName': name,
+                'adminUsername': ex_admin_username,
+                'linuxConfiguration': {
+                    'disablePasswordAuthentication': True,
+                    'ssh': {
+                        'publicKeys': [
+                            {
+                                'path': '/home/%s/.ssh/id_rsa.pub' % ex_admin_username,
+                                'keyData': ex_public_key
+                            }
+                        ]
+                    }
+               }
+            },
+            'networkProfile': {
+                'networkInterfaces': [
+                    {
+                        'id': nic['id'],
+                        'properties': {
+                            'primary': True
+                        }
+                    }
+                ]
+            }
+        }
+        path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
+               (self._default_path_prefix, ex_resource_group_name, name)
+
+        return self._perform_put(path, node_payload)
+
+    def _create_network_interface(self, node_name, resource_group_name, location,
+                                  virtual_network_name, subnet_name,
+                                  public_ip_address_name):
+        nic_name = '%s-nic' % node_name
+        payload = {
+            'location': location,
+            'properties': {
+                'ipConfigurations': [{
+                    'name': '%s-ip' % node_name,
+                    'properties': {
+                        'subnet': {
+                            'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s' %
+                                  (self.subscription_id, resource_group_name, virtual_network_name, subnet_name)
+                        },
+                        'privateIPAllocationMethod': 'Dynamic',
+                        'publicIPAddress': {
+                            'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' %
+                                  (self.subscription_id, resource_group_name, public_ip_address_name)
+                        }
+                    }
+                }]
+            }
+        }
+        path = '%sresourceGroups/%s/providers/Microsoft.Network/networkInterfaces/%s' % \
+               (self._default_path_prefix, resource_group_name, nic_name)
+        output = self._perform_put(path, payload)
+        return output.parse_body()
+
+    def _create_public_ip_address(self, node_name, resource_group_name, location):
+        public_ip_address_name = '%s-public-ip' % node_name
+        payload = {
+            'location': location,
+            'properties': {
+                'publicIPAllocationMethod': 'Dynamic',
+                'publicIPAddressVersion': "IPv4",
+                'idleTimeoutInMinutes': 5
+            }
+        }
+        path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
+               (self._default_path_prefix, resource_group_name, public_ip_address_name)
+
+        output = self._perform_put(path, payload)
+        return output.parse_body()
 
     #def _to_node(self, node_data):
 
@@ -111,6 +240,34 @@ class AzureARMNodeDriver(NodeDriver):
     def _default_path_prefix(self):
         """Everything starts with the subscription prefix"""
         return '/subscriptions/%s/' % self.subscription_id
+
+    def _perform_put(self, path, body, api_version=None):
+        request = AzureHTTPRequest()
+        request.method = 'PUT'
+        request.host = AZURE_RESOURCE_MANAGEMENT_HOST
+        request.path = path
+        request.body = ensure_string(self._get_request_body(body))
+        request.path, request.query = self._update_request_uri_query(request, api_version)
+        return self._perform_request(request)
+
+    def _get_request_body(self, request_body):
+        if request_body is None:
+            return b''
+
+        if isinstance(request_body, dict):
+            return json.dumps(request_body)
+
+        if isinstance(request_body, bytes):
+            return request_body
+
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        request_body = str(request_body)
+        if isinstance(request_body, _unicode_type):
+            return request_body.encode('utf-8')
+
+        return request_body
 
     def _perform_get(self, path, api_version=None):
         request = AzureHTTPRequest()
