@@ -54,7 +54,13 @@ class AzureARMNodeDriver(NodeDriver):
         raw_data = json_response.parse_body()
         return [self._to_size(x) for x in raw_data['value']]
 
-    # def list_nodes(self, resource_group)
+    def list_nodes(self, resource_group):
+        path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualmachines' % \
+               (self._default_path_prefix, resource_group)
+        json_response = self._perform_get(path, api_version='2016-03-30')
+        raw_data = json_response.parse_body()
+        return [self._to_node(x) for x in raw_data['value']]
+
     # def create_node(self, resource_group)
 
     def _to_location(self, location_data):
