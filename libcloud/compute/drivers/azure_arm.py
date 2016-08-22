@@ -207,9 +207,9 @@ class AzureARMNodeDriver(NodeDriver):
         public_ips = []
         private_ips = []
         for network_interface_url in network_interface_urls:
-            public_ip, private_ip = self._get_public_and_private_ips(network_interface_url)
-            public_ips.append(public_ip)
-            private_ips.append(private_ip)
+            public_ips, private_ips = self._get_public_and_private_ips(network_interface_url)
+            public_ips.extend(public_ips)
+            private_ips.extend(private_ips)
 
         return Node(
             id=node_data.get('name'),
@@ -226,9 +226,13 @@ class AzureARMNodeDriver(NodeDriver):
     def _get_public_and_private_ips(self, network_interace_url):
         json_response = self._perform_get(network_interace_url)
         raw_data = json_response.parse_body()
-        public_ip = raw_data['properties']['ipConfigurations']['publicIPAddress']
-        private_ip = raw_data['properties']['ipConfigurations']['privateIPAddress']
-        return public_ip, private_ip
+        ip_configurations = raw_data.get('properties', {}).get('ipConfigurations', [])
+        public_ips = []
+        private_ips = []
+        for ip_configuration in ip_configurations:
+            public_ips.append(ip_configuration['publicIPAddress'])
+            private_ips.append(ip_configuration['privateIPAddress'])
+        return public_ips, private_ips
 
     def _to_location(self, location_data):
         """
