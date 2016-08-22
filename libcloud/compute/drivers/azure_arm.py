@@ -82,8 +82,8 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_virtual_network_name,
                     ex_subnet_name,
                     ex_admin_username,
-                    ex_public_key=None,
-                    ex_marketplace_plan=None):
+                    ex_marketplace_image,
+                    ex_public_key=None):
 
         # Create the public IP address
         public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location.id)
@@ -101,9 +101,6 @@ class AzureARMNodeDriver(NodeDriver):
             'location': location.id,
         }
 
-        if ex_marketplace_plan:
-            node_payload['plan'] = ex_marketplace_plan
-
         os_disk_name = '%s-os-disk' % name
 
         node_payload['properties'] = {
@@ -111,6 +108,7 @@ class AzureARMNodeDriver(NodeDriver):
                 'vmSize': node_size.id
             },
             'storageProfile': {
+                'imageReference': ex_marketplace_image,
                 'osDisk': {
                     'name': os_disk_name,
                     'vhd': {
