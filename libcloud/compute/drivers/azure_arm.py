@@ -211,10 +211,13 @@ class AzureARMNodeDriver(NodeDriver):
             public_ips.extend(_public_ips)
             private_ips.extend(_private_ips)
 
+        provisioning_state = node_data.get('properties', {}).get('provisioningState')
+        node_state = NodeState.RUNNING if provisioning_state == 'Succeeded' else NodeState.PENDING
+
         return Node(
             id=node_data.get('name'),
             name=node_data.get('name'),
-            state=NodeState.UNKNOWN,
+            state=node_state,
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self.connection.driver,
