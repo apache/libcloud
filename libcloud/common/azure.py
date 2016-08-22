@@ -570,7 +570,7 @@ class AzureResourceManagerConnection(Connection):
     rawResponseCls = AzureRawResponse
     name = 'Azure Resource Manager API Connection'
     host = 'management.azure.com'
-    token = ""
+    token = ''
 
     def __init__(self, subscription_id, token, *args, **kwargs):
         """
@@ -593,5 +593,5 @@ class AzureResourceManagerConnection(Connection):
         @inherits: :class:`Connection.add_default_headers`
         """
         headers['Content-Type'] = 'application/json'
-        headers['Authorization'] = self.token
+        headers['Authorization'] = 'Bearer %s' % self.token
         return headers
