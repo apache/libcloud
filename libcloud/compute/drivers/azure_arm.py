@@ -231,7 +231,7 @@ class AzureARMNodeDriver(NodeDriver):
         private_ips = []
         for ip_configuration in ip_configurations:
             private_ips.append(ip_configuration['properties']['privateIPAddress'])
-            public_ips.append(self._get_public_ip(ip_configuration['properties']['publicIPAddress']))
+            public_ips.append(self._get_public_ip(ip_configuration['properties']['publicIPAddress']['id']))
         return public_ips, private_ips
 
     def _get_public_ip(self, public_ip_url):
