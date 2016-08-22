@@ -52,7 +52,7 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
         json_response = self._perform_get(path, api_version='2016-03-30')
         raw_data = json_response.parse_body()
-        return [self._to_size(x) for x in raw_data]
+        return [self._to_size(x) for x in raw_data['value']]
 
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
@@ -64,7 +64,7 @@ class AzureARMNodeDriver(NodeDriver):
         """
         return NodeLocation(
             id=location_data.get('name'),
-            name=location_data.get('display_name'),
+            name=location_data.get('name'),
             country=location_data.get('display_name'),
             driver=self.connection.driver,
             # available_services=data.available_services,
@@ -129,13 +129,14 @@ class AzureARMNodeDriver(NodeDriver):
 
         # Add the API version
         if not api_version:
-            api_version_header = ('api-version', DEFAULT_API_VERSION)
+            api_version_query = ('api-version', DEFAULT_API_VERSION)
         else:
-            api_version_header = ('api-version', api_version)
+            api_version_query = ('api-version', api_version)
+
         if request.query:
-            request.query.append(api_version_header)
+            request.query.append(api_version_query)
         else:
-            request.query = [api_version_header]
+            request.query = [api_version_query]
 
         # add encoded queries to request.path.
         request.path += '?'
