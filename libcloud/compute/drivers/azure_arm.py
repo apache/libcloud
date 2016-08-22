@@ -55,6 +55,9 @@ class AzureARMNodeDriver(NodeDriver):
         return [self._to_size(x) for x in raw_data['value']]
 
     def list_nodes(self, resource_group):
+        """
+        List all nodes in a resource group
+        """
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualmachines' % \
                (self._default_path_prefix, resource_group)
         json_response = self._perform_get(path, api_version='2016-03-30')
