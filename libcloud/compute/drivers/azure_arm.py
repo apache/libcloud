@@ -147,7 +147,7 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
                (self._default_path_prefix, ex_resource_group_name, name)
 
-        output = self._perform_put(path, node_payload, api_version='2016-03-30')
+        self._perform_put(path, node_payload, api_version='2016-03-30')
         return Node(
             id=name,
             name=name,
@@ -214,7 +214,7 @@ class AzureARMNodeDriver(NodeDriver):
         return Node(
             id=node_data.get('name'),
             name=node_data.get('name'),
-            state=NodeState.UKNOWN,
+            state=NodeState.UNKNOWN,
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self.connection.driver,
