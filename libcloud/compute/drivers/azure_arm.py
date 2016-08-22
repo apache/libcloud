@@ -2,7 +2,7 @@ import json
 import sys
 
 from libcloud.common.azure import AzureResourceManagerConnection, AzureRedirectException
-from libcloud.compute.base import NodeDriver, NodeLocation
+from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
 from libcloud.compute.types import Provider
@@ -71,6 +71,31 @@ class AzureARMNodeDriver(NodeDriver):
             driver=self.connection.driver,
             # available_services=data.available_services,
             # virtual_machine_role_sizes=vm_role_sizes
+        )
+
+    def _to_size(self, size_data):
+        """
+        Convert the data from a Azure response object into a size
+
+        Sample raw data:
+        {
+            'maxDataDiskCount': 32,
+            'memoryInMB': 114688,
+            'name': 'Standard_D14',
+            'numberOfCores': 16,
+            'osDiskSizeInMB': 1047552,
+            'resourceDiskSizeInMB': 819200
+        }
+        """
+        return NodeSize(
+            id=size_data.get('name'),
+            name=size_data.get('name'),
+            ram=size_data.get('memoryInMB'),
+            disk=size_data.get('osDiskSizeInMB'),
+            driver=self,
+            price=-1,
+            bandwidth=-1,
+            extra=size_data
         )
 
     @property
