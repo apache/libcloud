@@ -171,7 +171,7 @@ class AzureARMNodeDriver(NodeDriver):
                             'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s' %
                                   (self.subscription_id, resource_group_name, virtual_network_name, subnet_name)
                         },
-                        'privateIPAllocationMethod': 'Dynamic',
+                        'privateIPAllocationMethod': 'Static',
                         'publicIPAddress': {
                             'id': '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' %
                                   (self.subscription_id, resource_group_name, public_ip_address_name)
@@ -190,7 +190,7 @@ class AzureARMNodeDriver(NodeDriver):
         payload = {
             'location': location,
             'properties': {
-                'publicIPAllocationMethod': 'Dynamic',
+                'publicIPAllocationMethod': 'Static',
                 'publicIPAddressVersion': "IPv4",
                 'idleTimeoutInMinutes': 5
             }
