@@ -148,8 +148,14 @@ class AzureARMNodeDriver(NodeDriver):
                (self._default_path_prefix, ex_resource_group_name, name)
 
         output = self._perform_put(path, node_payload, api_version='2016-03-30')
-        node_data = output.parse_body()
-        return self._to_node(node_data)
+        return Node(
+            id=name,
+            name=name,
+            state=NodeState.PENDING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.connection.driver,
+        )
 
     def _create_network_interface(self, node_name, resource_group_name, location,
                                   virtual_network_name, subnet_name,
