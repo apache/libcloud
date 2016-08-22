@@ -83,7 +83,7 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_subnet_name,
                     ex_admin_username,
                     ex_public_key=None,
-                    ex_market_place_plan=None):
+                    ex_marketplace_plan=None):
 
         # Create the public IP address
         public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location.id)
@@ -101,8 +101,8 @@ class AzureARMNodeDriver(NodeDriver):
             'location': location.id,
         }
 
-        if ex_market_place_plan:
-            node_payload['plan'] = ex_market_place_plan
+        if ex_marketplace_plan:
+            node_payload['plan'] = ex_marketplace_plan
 
         os_disk_name = '%s-os-disk' % name
 
@@ -149,7 +149,8 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
                (self._default_path_prefix, ex_resource_group_name, name)
 
-        return self._perform_put(path, node_payload)
+        output = self._perform_put(path, node_payload, api_version='2016-03-30')
+        return output.parse_body()
 
     def _create_network_interface(self, node_name, resource_group_name, location,
                                   virtual_network_name, subnet_name,
