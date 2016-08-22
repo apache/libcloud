@@ -64,7 +64,58 @@ class AzureARMNodeDriver(NodeDriver):
         raw_data = json_response.parse_body()
         return [self._to_node(x) for x in raw_data['value']]
 
-    # def create_node(self, resource_group)
+    def create_node(self, name, location, node_size, disk_size,
+                    ex_storage_account_name, ex_admin_username,
+                    ex_public_key=None,
+                    ex_market_place_plan=None):
+        # Create the virtual network if necessary
+        # Create the public IP address
+        # Create the network interface card with that public IP address
+
+        # Create the machine
+        # - name
+        # - location
+        # - "plan": Marketplace image reference
+        node_payload = {
+            'name': name,
+            'location': location.id,
+        }
+
+        if ex_market_place_plan:
+            node_payload['plan'] = ex_market_place_plan
+
+        os_disk_name = '%s-os-disk' % name
+
+        node_payload['properties'] = {
+            'hardwareProfile': {
+                'vmSize': node_size.id
+            },
+            'storageProfile': {
+                'osDisk': {
+                    'name': os_disk_name,
+                    'vhd': {
+                        'uri": "http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
+                    },
+                    'createOption': 'fromImage',
+                    'diskSizeGB': disk_size
+                }
+            },
+            'osProfile': {
+                'computerName': name,
+                'adminUsername': ex_admin_username,
+                'linuxConfiguration': {
+                    'disablePasswordAuthentication': True,
+                    'ssh': {
+                        'publicKeys': [
+                            {
+                                'path': '/home/%s/.ssh/id_rsa.pub' % ex_admin_username,
+                                'keyData': ex_public_key
+                            }
+                        ]
+                    }
+               }
+            }
+        }
 
     def _to_location(self, location_data):
         """
