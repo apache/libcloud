@@ -10,7 +10,7 @@ from libcloud.compute.types import Provider
 from libcloud.utils.py3 import urlquote as url_quote
 
 AZURE_RESOURCE_MANAGEMENT_HOST = 'management.azure.com'
-API_VERSION = '2016-03-30'
+DEFAULT_API_VERSION = '2016-07-01'
 
 
 class AzureARMNodeDriver(NodeDriver):
@@ -43,15 +43,16 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%slocations' % self._default_path_prefix
         json_response = self._perform_get(path)
         raw_data = json_response.parse_body()
-
-        return [self._to_location(l) for l in raw_data]
+        return [self._to_location(x) for x in raw_data['value']]
 
     def list_sizes(self, location):
+        """
+        List all image sizes available for location
+        """
         path = '%sproviders/Microsoft.Compute/locations/%s/vmSizes' % (self._default_path_prefix, location)
-        json_response = self._perform_get(path)
+        json_response = self._perform_get(path, api_version='2016-03-30')
         raw_data = json_response.parse_body()
-
-        return raw_data
+        return [self._to_size(x) for x in raw_data]
 
     # def list_nodes(self, resource_group)
     # def create_node(self, resource_group)
@@ -61,13 +62,10 @@ class AzureARMNodeDriver(NodeDriver):
         Convert the data from a Azure response object into a location. Commented out
         code is from the classic Azure driver, not sure if we need those fields.
         """
-        raw_data = location_data.get['value']
-        # vm_role_sizes = data.compute_capabilities.virtual_machines_role_sizes
-
         return NodeLocation(
-            id=raw_data.get('name', None),
-            name=raw_data.get('display_name', None),
-            country=raw_data.get('display_name', None),
+            id=location_data.get('name'),
+            name=location_data.get('display_name'),
+            country=location_data.get('display_name'),
             driver=self.connection.driver,
             # available_services=data.available_services,
             # virtual_machine_role_sizes=vm_role_sizes
@@ -103,15 +101,15 @@ class AzureARMNodeDriver(NodeDriver):
         """Everything starts with the subscription prefix"""
         return '/subscriptions/%s/' % self.subscription_id
 
-    def _perform_get(self, path):
+    def _perform_get(self, path, api_version=None):
         request = AzureHTTPRequest()
         request.method = 'GET'
         request.host = AZURE_RESOURCE_MANAGEMENT_HOST
         request.path = path
-        request.path, request.query = self._update_request_uri_query(request)
+        request.path, request.query = self._update_request_uri_query(request, api_version)
         return self._perform_request(request)
 
-    def _update_request_uri_query(self, request):
+    def _update_request_uri_query(self, request, api_version=None):
         """
         pulls the query string out of the URI and moves it into
         the query portion of the request object.  If there are already
@@ -130,11 +128,14 @@ class AzureARMNodeDriver(NodeDriver):
         request.path = url_quote(request.path, '/()$=\',')
 
         # Add the API version
-        api_version = ('api-version', API_VERSION)
-        if request.query:
-            request.query.append(api_version)
+        if not api_version:
+            api_version_header = ('api-version', DEFAULT_API_VERSION)
         else:
-            request.query = [api_version]
+            api_version_header = ('api-version', api_version)
+        if request.query:
+            request.query.append(api_version_header)
+        else:
+            request.query = [api_version_header]
 
         # add encoded queries to request.path.
         request.path += '?'
