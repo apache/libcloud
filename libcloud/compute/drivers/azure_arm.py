@@ -148,7 +148,8 @@ class AzureARMNodeDriver(NodeDriver):
                (self._default_path_prefix, ex_resource_group_name, name)
 
         output = self._perform_put(path, node_payload, api_version='2016-03-30')
-        return output.parse_body()
+        node_data = output.parse_body()
+        return self._to_node(node_data)
 
     def _create_network_interface(self, node_name, resource_group_name, location,
                                   virtual_network_name, subnet_name,
@@ -195,7 +196,7 @@ class AzureARMNodeDriver(NodeDriver):
         return output.parse_body()
 
     def _to_node(self, node_data):
-        network_interface_urls = node_data['properties'].get('networkProfile', {}).get('networkInterfaces', [])
+        network_interface_urls = node_data.get('properties', {}).get('networkProfile', {}).get('networkInterfaces', [])
         public_ips = []
         private_ips = []
         for network_interface_url in network_interface_urls:
@@ -211,7 +212,7 @@ class AzureARMNodeDriver(NodeDriver):
             private_ips=private_ips,
             driver=self.connection.driver,
             extra={
-                'provisioningState': node_data['properties']['provisioningState']
+                'provisioningState': node_data.get('properties', {}).get('provisioningState')
             }
         )
 
