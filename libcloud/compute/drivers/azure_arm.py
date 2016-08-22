@@ -231,11 +231,13 @@ class AzureARMNodeDriver(NodeDriver):
         private_ips = []
         for ip_configuration in ip_configurations:
             private_ips.append(ip_configuration['properties']['privateIPAddress'])
-
-            # Make another API call for public IP address:
-
-
+            public_ips.append(self._get_public_ip(ip_configuration['properties']['publicIPAddress']))
         return public_ips, private_ips
+
+    def _get_public_ip(self, public_ip_url):
+        json_response = self._perform_get(public_ip_url)
+        raw_data = json_response.parse_body()
+        return raw_data.get('properties', {}).get('ipAddress', None)
 
     def _to_location(self, location_data):
         """
