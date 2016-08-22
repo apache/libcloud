@@ -216,6 +216,9 @@ class AzureARMNodeDriver(NodeDriver):
         return output.parse_body()
 
     def _to_node(self, node_data):
+        """
+        Take the azure raw data and turn into a Node class
+        """
         network_interfaces = node_data.get('properties', {}).get('networkProfile', {}).get('networkInterfaces', [])
         network_interface_urls = ['%s' % x.get('id') for x in network_interfaces if x.get('id')]
         public_ips = []
@@ -241,6 +244,11 @@ class AzureARMNodeDriver(NodeDriver):
         )
 
     def _get_public_and_private_ips(self, network_interace_url):
+        """
+        Get public and and private ips of the virtual machine by following the urls provided.
+        :param network_interace_url:
+        :return:
+        """
         json_response = self._perform_get(network_interace_url)
         raw_data = json_response.parse_body()
         ip_configurations = raw_data.get('properties', {}).get('ipConfigurations', [])
@@ -252,6 +260,9 @@ class AzureARMNodeDriver(NodeDriver):
         return public_ips, private_ips
 
     def _get_public_ip(self, public_ip_url):
+        """
+        Using the public ip url we can query the azure api and get the public ip adrewss
+        """
         json_response = self._perform_get(public_ip_url)
         raw_data = json_response.parse_body()
         return raw_data.get('properties', {}).get('ipAddress', None)
