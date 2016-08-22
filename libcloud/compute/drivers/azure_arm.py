@@ -147,7 +147,12 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
                (self._default_path_prefix, ex_resource_group_name, name)
 
-        self._perform_put(path, node_payload, api_version='2016-03-30')
+        output = self._perform_put(path, node_payload, api_version='2016-03-30')
+        output = output.parse_body()
+
+        if 'error' in output:
+            raise Exception('Error encountered: %s' % output['error'])
+
         return Node(
             id=name,
             name=name,
