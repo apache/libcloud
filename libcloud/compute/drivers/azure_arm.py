@@ -82,14 +82,14 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_virtual_network_name,
                     ex_subnet_name,
                     ex_admin_username,
-                    ex_public_key=None,
-                    ex_market_place_plan=None):
+                    ex_marketplace_image,
+                    ex_public_key=None):
 
         # Create the public IP address
-        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location)
+        public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location.id)
 
         # Create the network interface card with that public IP address
-        nic = self._create_network_interface(name, ex_resource_group_name, location,
+        nic = self._create_network_interface(name, ex_resource_group_name, location.id,
                                              ex_virtual_network_name, ex_subnet_name,
                                              public_ip_address['name'])
         # Create the machine
@@ -101,9 +101,6 @@ class AzureARMNodeDriver(NodeDriver):
             'location': location.id,
         }
 
-        if ex_market_place_plan:
-            node_payload['plan'] = ex_market_place_plan
-
         os_disk_name = '%s-os-disk' % name
 
         node_payload['properties'] = {
@@ -111,10 +108,11 @@ class AzureARMNodeDriver(NodeDriver):
                 'vmSize': node_size.id
             },
             'storageProfile': {
+                'imageReference': ex_marketplace_image,
                 'osDisk': {
                     'name': os_disk_name,
                     'vhd': {
-                        'uri": "http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
+                        'uri': 'http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
                     },
                     'createOption': 'fromImage',
                     'diskSizeGB': disk_size
@@ -128,7 +126,7 @@ class AzureARMNodeDriver(NodeDriver):
                     'ssh': {
                         'publicKeys': [
                             {
-                                'path': '/home/%s/.ssh/id_rsa.pub' % ex_admin_username,
+                                'path': '/home/%s/.ssh/authorized_keys' % ex_admin_username,
                                 'keyData': ex_public_key
                             }
                         ]
@@ -149,7 +147,8 @@ class AzureARMNodeDriver(NodeDriver):
         path = '%sresourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s' % \
                (self._default_path_prefix, ex_resource_group_name, name)
 
-        return self._perform_put(path, node_payload)
+        output = self._perform_put(path, node_payload, api_version='2016-03-30')
+        return output.parse_body()
 
     def _create_network_interface(self, node_name, resource_group_name, location,
                                   virtual_network_name, subnet_name,
