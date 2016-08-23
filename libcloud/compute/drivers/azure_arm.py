@@ -151,7 +151,7 @@ class AzureARMNodeDriver(NodeDriver):
         if ex_data_disk_size:
             data_disk_name = '%s-data-disk' % name
             # Attach an empty data disk if value this is given
-            node_payload['storageProfile']['dataDisks'] = [
+            node_payload['properties']['storageProfile']['dataDisks'] = [
                 {
                     'name': data_disk_name,
                     'diskSizeGB': ex_data_disk_size,
