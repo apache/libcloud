@@ -206,7 +206,10 @@ class AzureARMNodeDriver(NodeDriver):
             'properties': {
                 'publicIPAllocationMethod': 'Dynamic',
                 'publicIPAddressVersion': "IPv4",
-                'idleTimeoutInMinutes': 5
+                'idleTimeoutInMinutes': 5,
+                "dnsSettings": {
+                    "domainNameLabel": node_name
+                }
             }
         }
         path = '%sresourceGroups/%s/providers/Microsoft.Network/publicIPAddresses/%s' % \
