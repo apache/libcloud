@@ -83,6 +83,7 @@ class AzureARMNodeDriver(NodeDriver):
                     ex_subnet_name,
                     ex_admin_username,
                     ex_marketplace_image,
+                    ex_data_disk_size=None,
                     ex_availability_set=None,
                     ex_public_key=None):
 
@@ -145,6 +146,21 @@ class AzureARMNodeDriver(NodeDriver):
                 ]
             }
         }
+
+        if ex_data_disk_size:
+            data_disk_name = '%s-data-disk' % name
+            # Attach an empty data disk if value this is given
+            node_payload['storageProfile']['dataDisks'] = [
+                {
+                    'name': data_disk_name,
+                    'diskSizeGB': ex_data_disk_size,
+                    'lun': 0,
+                    'vhd': {
+                        'uri': 'http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, data_disk_name)
+                    },
+                    'createOption': 'empty'
+                }
+            ]
 
         if ex_availability_set:
             availability_set_id = '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/availabilitySets/%s' % \
