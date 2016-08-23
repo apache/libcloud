@@ -116,6 +116,7 @@ class AzureARMNodeDriver(NodeDriver):
                     'vhd': {
                         'uri': 'http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, os_disk_name)
                     },
+                    'caching': 'ReadWrite',
                     'createOption': 'fromImage',
                     'diskSizeGB': disk_size
                 }
@@ -158,6 +159,7 @@ class AzureARMNodeDriver(NodeDriver):
                     'vhd': {
                         'uri': 'http://%s.blob.core.windows.net/vhds/%s.vhd' % (ex_storage_account_name, data_disk_name)
                     },
+                    'caching': 'ReadWrite',
                     'createOption': 'empty'
                 }
             ]
