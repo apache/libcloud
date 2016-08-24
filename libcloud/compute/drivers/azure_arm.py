@@ -430,7 +430,7 @@ class AzureARMNodeDriver(NodeDriver):
             request.host = parsed_url.netloc
             return self._perform_request(request)
         except RateLimitReachedError as e:
-            if e.retry_after:
+            if e.retry_after is not None:
                 time.sleep(e.retry_after)
                 # Redo the request but with retries value incremented
                 self._perform_request(request, retries=retries+1)
