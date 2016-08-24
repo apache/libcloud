@@ -1,7 +1,10 @@
 import json
 import sys
 
+import time
+
 from libcloud.common.azure import AzureResourceManagerConnection, AzureRedirectException
+from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize, Node
 from libcloud.compute.drivers.azure import AzureHTTPRequest
 from libcloud.compute.drivers.vcloud import urlparse
@@ -11,7 +14,7 @@ from libcloud.utils.py3 import urlquote as url_quote, ensure_string
 
 AZURE_RESOURCE_MANAGEMENT_HOST = 'management.azure.com'
 DEFAULT_API_VERSION = '2016-07-01'
-
+MAX_RETRIES = 5
 if sys.version_info < (3,):
     _unicode_type = unicode
 
@@ -410,7 +413,10 @@ class AzureARMNodeDriver(NodeDriver):
 
         return request.path, request.query
 
-    def _perform_request(self, request):
+    def _perform_request(self, request, retries=0):
+        if retries > MAX_RETRIES:
+            # We have retried more than enough, let's quit
+            raise Exception('Maximum retries (%d) reached. Please try again later' % MAX_RETRIES)
         try:
             return self.connection.request(
                 action=request.path,
@@ -423,5 +429,12 @@ class AzureARMNodeDriver(NodeDriver):
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
+        except RateLimitReachedError as e:
+            if e.retry_after:
+                time.sleep(e.retry_after)
+                # Redo the request but with retries value incremented
+                self._perform_request(request, retries=retries+1)
+            else:
+                raise e
         except Exception as e:
             raise e
