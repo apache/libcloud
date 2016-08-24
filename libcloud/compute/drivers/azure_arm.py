@@ -79,17 +79,89 @@ class AzureARMNodeDriver(NodeDriver):
         raw_data = json_response.parse_body()
         return [self._to_node(x) for x in raw_data['value']]
 
-    def create_node(self, name, location, node_size, disk_size,
+    def create_node(self, name, location, node_size,
                     ex_resource_group_name,
                     ex_storage_account_name,
                     ex_virtual_network_name,
                     ex_subnet_name,
                     ex_admin_username,
                     ex_marketplace_image,
+                    ex_os_disk_size=30,
                     ex_data_disk_size=None,
                     ex_availability_set=None,
                     ex_public_key=None):
+        """
+        Create Azure Virtual Machine using Resource Management model.
 
+        For now this only creates a Linux machine, always default to public IP address, and only support 1 data disk.
+
+        It also assumes you have created these things:
+        - A resource group
+        - A storage account
+        - A virtual network
+        - A valid subnet inside the virtual network
+
+        @inherits: :class:`NodeDriver.create_node`
+
+        :keyword     name: Required. The name given to this node
+        :type        name:  `str`
+
+        :keyword     location: Required.  The location of the node to create
+        :type        location: `NodeLocation`
+
+        :keyword     node_size: Required.  The size of the node to create
+        :type        node_size: `NodeSize`
+
+        :keyword     ex_resource_group_name: Required.
+                     The name of the resource group the node belongs to
+        :type        ex_resource_group_name: `str`
+
+        :keyword     ex_storage_account_name: Required.
+                     The name of the storage account the disks on the node
+                                              belongs to
+        :type        ex_storage_account_name: `str`
+
+        :keyword     ex_virtual_network_name: Required.
+                     The name of the virtual network the node would be connected to
+        :type        ex_virtual_network_name: `str`
+
+        :keyword     ex_subnet_name: Required.
+                     The name of the subnet inside `ex_virtual_network_name` the node would
+                     be connected to
+        :type        ex_subnet_name: `str`
+
+        :keyword     ex_admin_username: Required.
+                     The name of the default admin user on the node
+        :type        ex_admin_username: `str`
+
+        :keyword     ex_marketplace_image: Required.
+                     The image from market place to be used for setting up the OS disk. For example:
+                     ```
+                     ubuntu_image = {
+                         'sku': '14.04.5-LTS',
+                         'publisher': 'canonical',
+                         'offer': 'ubuntuserver',
+                         'version': '14.04.201608091'
+                     }
+                     ```
+        :type        ex_marketplace_image: `dict`
+
+        :keyword     ex_os_disk_size: Optional.
+                     The size of the OS disk to be attached in GB. Defaults to 30
+        :type        ex_os_disk_size: `int`
+
+        :keyword     ex_data_disk_size: Optional.
+                     The size of the data disk to be attached in GB. Will not be created if passed nothing
+        :type        ex_data_disk_size: `int`
+
+        :keyword     ex_availability_set: Optional.
+                     The availability set that the node lives in
+        :type        ex_availability_set: `int`
+
+        :keyword     ex_public_key: Optional.
+                     The content of the SSH public key to be deployed on the box
+        :type        ex_public_key: `str`
+        """
         # Create the public IP address
         public_ip_address = self._create_public_ip_address(name, ex_resource_group_name, location.id)
 
@@ -98,9 +170,6 @@ class AzureARMNodeDriver(NodeDriver):
                                              ex_virtual_network_name, ex_subnet_name,
                                              public_ip_address['name'])
         # Create the machine
-        # - name
-        # - location
-        # - "plan": Marketplace image reference
         node_payload = {
             'name': name,
             'location': location.id,
@@ -121,7 +190,7 @@ class AzureARMNodeDriver(NodeDriver):
                     },
                     'caching': 'ReadWrite',
                     'createOption': 'fromImage',
-                    'diskSizeGB': disk_size
+                    'diskSizeGB': ex_os_disk_size
                 }
             },
             'osProfile': {
