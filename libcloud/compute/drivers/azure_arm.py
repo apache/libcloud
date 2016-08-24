@@ -433,7 +433,7 @@ class AzureARMNodeDriver(NodeDriver):
             if e.retry_after is not None:
                 time.sleep(e.retry_after)
                 # Redo the request but with retries value incremented
-                self._perform_request(request, retries=retries+1)
+                return self._perform_request(request, retries=retries+1)
             else:
                 raise e
         except Exception as e:
