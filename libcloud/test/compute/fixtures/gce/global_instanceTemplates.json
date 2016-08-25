@@ -1,0 +1,67 @@
+{
+    "id": "projects/supertom-graphite/global/instanceTemplates",
+    "items": [
+        {
+            "creationTimestamp": "2016-07-18T09:53:22.323-07:00",
+            "description": "",
+            "id": "8161922600535111533",
+            "kind": "compute#instanceTemplate",
+            "name": "my-instance-template1",
+            "properties": {
+                "canIpForward": false,
+                "disks": [
+                    {
+                        "autoDelete": true,
+                        "boot": true,
+                        "deviceName": "my-instance-template1",
+                        "initializeParams": {
+                            "diskSizeGb": "10",
+                            "diskType": "pd-standard",
+                            "sourceImage": "projects/supertom-graphite/global/images/my-new-image1"
+                        },
+                        "kind": "compute#attachedDisk",
+                        "mode": "READ_WRITE",
+                        "type": "PERSISTENT"
+                    }
+                ],
+                "machineType": "n1-standard-1",
+                "metadata": {
+                    "fingerprint": "Jt9ALJ07B8Q=",
+                    "kind": "compute#metadata"
+                },
+                "networkInterfaces": [
+                    {
+                        "accessConfigs": [
+                            {
+                                "kind": "compute#accessConfig",
+                                "name": "External NAT",
+                                "type": "ONE_TO_ONE_NAT"
+                            }
+                        ],
+                        "network": "https://content.googleapis.com/compute/v1/projects/supertom-graphite/global/networks/default"
+                    }
+                ],
+                "scheduling": {
+                    "automaticRestart": true,
+                    "onHostMaintenance": "MIGRATE",
+                    "preemptible": false
+                },
+                "serviceAccounts": [
+                    {
+                        "email": "default",
+                        "scopes": [
+                            "https://www.googleapis.com/auth/devstorage.read_only",
+                            "https://www.googleapis.com/auth/logging.write",
+                            "https://www.googleapis.com/auth/monitoring.write",
+                            "https://www.googleapis.com/auth/servicecontrol",
+                            "https://www.googleapis.com/auth/service.management"
+                        ]
+                    }
+                ]
+            },
+            "selfLink": "https://content.googleapis.com/compute/v1/projects/supertom-graphite/global/instanceTemplates/my-instance-template1"
+        }
+    ],
+    "kind": "compute#instanceTemplateList",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/supertom-graphite/global/instanceTemplates"
+}
