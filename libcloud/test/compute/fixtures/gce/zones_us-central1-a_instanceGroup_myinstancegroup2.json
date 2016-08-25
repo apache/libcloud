@@ -1,0 +1,14 @@
+{
+
+    "kind": "compute#instanceGroup",
+    "id": "1968709502073089768",
+    "creationTimestamp": "2016-08-26T16:53:42.413-07:00",
+    "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+    "name": "myinstancegroup2",
+    "description": "myinstancegroup2",
+    "network": "https://content.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+    "fingerprint": "42WmSpB8rSN=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myinstancegroup2",
+    "size": 4,
+    "subnetwork": "https://content.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112"
+}

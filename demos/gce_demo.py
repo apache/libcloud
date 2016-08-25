@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # This example performs several tasks on Google Compute Platform.  It can be
 # run directly or can be imported into an interactive python session.  This
 # can also serve as live integration tests.
@@ -66,8 +65,8 @@ except ImportError:
     sys.exit(1)
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                 os.path.pardir)))
+sys.path.append(
+    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -92,6 +91,7 @@ DEMO_BASE_NAME = 'lct'
 
 # Datacenter to create resources in
 DATACENTER = 'us-central1-f'
+BACKUP_DATACENTER = 'us-east1-c'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
@@ -134,6 +134,46 @@ def get_dns_driver(gce_driver=None):
     else:
         driver = get_driver_dns(Provider_dns.GOOGLE)(*args, **kwargs)
     return driver
+
+
+def create_mig(gce, mig_base_name, zone, template, postfix, num_instances=2):
+    """
+    Creates MIG, sets named ports, modifies various text with 'postfix'.
+
+    :param  gce: An initalized GCE driver.
+    :type   gce: :class`GCENodeDriver`
+
+    :param  zone: Zone to create Managed Instance Group in.
+    :type   zone: :class:`GCEZone` or ``str``
+
+    :param  template: Instance Template to use in creating MIG.
+    :type   template: :class:`GCEInstanceTemplate`
+
+    :param  postfix: string to append to mig name, etc.  Example: 'east',
+                     'central'
+    :type   postfix: ``str``
+
+    :param  num_instances: number of instances to create in MIG.  Default is 2.
+    :type   num_instances: ``int``
+
+    :returns: initialized Managed Instance Group.
+    :rtype: :class:`GCEInstanceGroupManager`
+    """
+    mig_name = '%s-%s' % (mig_base_name, postfix)
+    mig = gce.ex_create_instancegroupmanager(
+        mig_name, zone, template, num_instances, base_instance_name=mig_name,
+        description='Demo for %s' % postfix)
+    display('    Managed Instance Group [%s] "%s" created' % (postfix.upper(),
+                                                              mig.name))
+    display('    ... MIG instances created: %s' %
+            ','.join([x['name'] for x in mig.list_managed_instances()]))
+
+    # set the named_ports on the Instance Group.
+    named_ports = [{'name': '%s-http' % DEMO_BASE_NAME, 'port': 80}]
+    mig.set_named_ports(named_ports=named_ports)
+    display('    ... MIG ports set: %s' % named_ports)
+
+    return mig
 
 
 def display(title, resource_list=[]):
@@ -214,8 +254,32 @@ def cleanup_only():
     snapshots = gce.ex_list_snapshots()
     display('Snapshots:', snapshots)
 
+    gfrs = gce.ex_list_forwarding_rules(global_rules=True)
+    display("Global Forwarding Rules", gfrs)
+    targetproxies = gce.ex_list_targethttpproxies()
+    display("Target HTTP Proxies", targetproxies)
+    urlmaps = gce.ex_list_urlmaps()
+    display("URLMaps", urlmaps)
+    bes = gce.ex_list_backendservices()
+    display("Backend Services", bes)
+    migs = gce.ex_list_instancegroupmanagers(zone='all')
+    display("Instance Group Managers", migs)
+    its = gce.ex_list_instancetemplates()
+    display("Instance Templates", its)
+    hcs = gce.ex_list_healthchecks()
+    display("Health Checks", hcs)
+
     # == Clean up any old demo resources ==
     display('Cleaning up any "%s" resources' % DEMO_BASE_NAME)
+    clean_up(gce, DEMO_BASE_NAME, None,
+             gfrs + targetproxies + urlmaps + bes + hcs + migs + its)
+
+    # == Pause to let cleanup occur and repopulate volume and node lists ==
+    if len(migs):
+        time.sleep(10)
+        all_volumes = gce.list_volumes(ex_zone='all')
+        all_nodes = gce.list_nodes(ex_zone='all')
+
     clean_up(gce, DEMO_BASE_NAME, all_nodes,
              all_addresses + all_volumes + firewalls + networks + snapshots)
     volumes = gce.list_volumes()
@@ -260,6 +324,8 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
         if resrc.name.startswith(base_name):
             try:
                 resrc.destroy()
+                class_name = resrc.__class__.__name__
+                display('   Deleted %s (%s)' % (resrc.name, class_name))
             except ResourceNotFoundError:
                 display('   Not found: %s (%s)' % (resrc.name,
                                                    resrc.__class__.__name__))
@@ -380,8 +446,7 @@ def main_compute():
     name = '%s-subnet-node' % DEMO_BASE_NAME
     node_1 = gce.create_node(name, 'g1-small', 'debian-8',
                              ex_disk_auto_delete=True,
-                             ex_network=network_custom,
-                             ex_subnetwork=subnet)
+                             ex_network=network_custom, ex_subnetwork=subnet)
     display('  Node %s created' % name)
 
     # == Destroy instance in custom subnetwork ==
@@ -424,8 +489,7 @@ def main_compute():
                 },
                 "boot": True,
                 "autoDelete": True
-            },
-            {
+            }, {
                 "type": "SCRATCH",
                 "deviceName": '%s-gstruct-lssd' % DEMO_BASE_NAME,
                 "initializeParams": {
@@ -452,7 +516,7 @@ def main_compute():
         display('Stopping node, setting custom size, starting node:')
         name = '%s-np-node' % DEMO_BASE_NAME
         gce.ex_stop_node(node_1)
-        gce.ex_set_machine_type(node_1, 'custom-2-4096')   # 2 vCPU, 4GB RAM
+        gce.ex_set_machine_type(node_1, 'custom-2-4096')  # 2 vCPU, 4GB RAM
         gce.ex_start_node(node_1)
         node_1 = gce.ex_get_node(name)
         display('  %s: state=%s, size=%s' % (name, node_1.extra['status'],
@@ -471,8 +535,7 @@ def main_compute():
         if CLEANUP:
             # == Detach the disk ==
             if gce.detach_volume(volume, ex_node=node_1):
-                display('  Detached %s from %s' % (volume.name,
-                                                   node_1.name))
+                display('  Detached %s from %s' % (volume.name, node_1.name))
 
     # == Create Snapshot ==
     display('Creating a snapshot from existing disk:')
@@ -499,8 +562,7 @@ def main_compute():
     display('  Created %s from snapshot' % volume.name)
     # Create Node with Disk
     node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
-                             ex_boot_disk=volume,
-                             ex_disk_auto_delete=False)
+                             ex_boot_disk=volume, ex_disk_auto_delete=False)
     display('  Node %s created with attached disk %s' % (node_2.name,
                                                          volume.name))
 
@@ -525,10 +587,9 @@ def main_compute():
     number = MAX_NODES - 2
     if number > 0:
         display('Creating Multiple Nodes (%s):' % number)
-        multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
-                                                   number,
-                                                   ex_tags=['libcloud'],
-                                                   ex_disk_auto_delete=True)
+        multi_nodes = gce.ex_create_multiple_nodes(
+            base_name, size, image, number, ex_tags=['libcloud'],
+            ex_disk_auto_delete=True)
         for node in multi_nodes:
             display('  Node %s created' % node.name)
 
@@ -542,8 +603,7 @@ def main_compute():
     # == Create a Firewall ==
     display('Creating a Firewall:')
     name = '%s-firewall' % DEMO_BASE_NAME
-    allowed = [{'IPProtocol': 'tcp',
-                'ports': ['3141']}]
+    allowed = [{'IPProtocol': 'tcp', 'ports': ['3141']}]
     firewall_1 = gce.ex_create_firewall(name, allowed, network=network_1,
                                         source_tags=['libcloud'])
     display('  Firewall %s created' % firewall_1.name)
@@ -629,20 +689,16 @@ def main_load_balancer():
     size = gce.ex_get_size('n1-standard-1')
     number = 3
     display('Creating %d nodes' % number)
-    metadata = {'items': [{'key': 'startup-script',
-                           'value': startup_script}]}
-    lb_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
-                                            number, ex_tags=[tag],
-                                            ex_metadata=metadata,
-                                            ex_disk_auto_delete=True,
-                                            ignore_errors=False)
+    metadata = {'items': [{'key': 'startup-script', 'value': startup_script}]}
+    lb_nodes = gce.ex_create_multiple_nodes(
+        base_name, size, image, number, ex_tags=[tag], ex_metadata=metadata,
+        ex_disk_auto_delete=True, ignore_errors=False)
     display('Created Nodes', lb_nodes)
 
     # == Create a Firewall for instances ==
     display('Creating a Firewall')
     name = '%s-firewall' % DEMO_BASE_NAME
-    allowed = [{'IPProtocol': 'tcp',
-                'ports': ['80']}]
+    allowed = [{'IPProtocol': 'tcp', 'ports': ['80']}]
     firewall = gce.ex_create_firewall(name, allowed, target_tags=[tag])
     display('    Firewall %s created' % firewall.name)
 
@@ -652,10 +708,9 @@ def main_load_balancer():
 
     # These are all the default values, but listed here as an example.  To
     # create a healthcheck with the defaults, only name is required.
-    hc = gcelb.ex_create_healthcheck(name, host=None, path='/', port='80',
-                                     interval=5, timeout=5,
-                                     unhealthy_threshold=2,
-                                     healthy_threshold=2)
+    hc = gcelb.ex_create_healthcheck(
+        name, host=None, path='/', port='80', interval=5, timeout=5,
+        unhealthy_threshold=2, healthy_threshold=2)
     display('Healthcheck %s created' % hc.name)
 
     # == Create Load Balancer ==
@@ -739,6 +794,114 @@ def main_load_balancer():
     display('Total runtime: %s' % str(end_time - start_time))
 
 
+# ==== BACKEND SERVICE LOAD BALANCER CODE STARTS HERE ====
+def main_backend_service():
+    start_time = datetime.datetime.now()
+    display('Backend Service w/Global Forwarding Rule demo/test start time: %s'
+            % str(start_time))
+    gce = get_gce_driver()
+    # Get project info and print name
+    project = gce.ex_get_project()
+    display('Project: %s' % project.name)
+
+    # Based on the instructions at:
+    # https://cloud.google.com/compute/docs/load-balancing/http/#overview
+
+    zone_central = DATACENTER
+    zone_east = BACKUP_DATACENTER
+    it_name = '%s-instancetemplate' % DEMO_BASE_NAME
+    mig_name = '%s-mig' % DEMO_BASE_NAME
+    hc_name = '%s-healthcheck' % DEMO_BASE_NAME
+    bes_name = '%s-bes' % DEMO_BASE_NAME
+    urlmap_name = '%s-urlmap' % DEMO_BASE_NAME
+    targethttpproxy_name = '%s-httptargetproxy' % DEMO_BASE_NAME
+    address_name = '%s-address' % DEMO_BASE_NAME
+    gfr_name = '%s-gfr' % DEMO_BASE_NAME
+    firewall_name = '%s-firewall' % DEMO_BASE_NAME
+
+    startup_script = ('apt-get -y update && '
+                      'apt-get -y install apache2 && '
+                      'echo "$(hostname)" > /var/www/html/index.html')
+    tag = '%s-mig-www' % DEMO_BASE_NAME
+    metadata = {'items': [{'key': 'startup-script', 'value': startup_script}]}
+
+    mig_central = None
+    mig_east = None
+    bes = None
+    urlmap = None
+    tp = None
+    address = None
+    gfr = None
+    firewall = None
+
+    display('Create a BackendService')
+    # == Create an Instance Template ==
+    it = gce.ex_create_instancetemplate(it_name, size='n1-standard-1',
+                                        image='debian-8', network='default',
+                                        metadata=metadata, tags=[tag])
+    display('    InstanceTemplate "%s" created' % it.name)
+
+    # == Create a MIG ==
+    mig_central = create_mig(gce, mig_name, zone_central, it, 'central')
+    mig_east = create_mig(gce, mig_name, zone_east, it, 'east')
+
+    # == Create a Health Check ==
+    hc = gce.ex_create_healthcheck(hc_name, host=None, path='/', port='80',
+                                   interval=30, timeout=10,
+                                   unhealthy_threshold=10, healthy_threshold=1)
+    display('    Healthcheck %s created' % hc.name)
+
+    # == Create a Backend Service ==
+    be_central = gce.ex_create_backend(
+        instance_group=mig_central.instance_group)
+    be_east = gce.ex_create_backend(instance_group=mig_east.instance_group)
+    bes = gce.ex_create_backendservice(
+        bes_name, [hc], backends=[be_central, be_east], port_name='%s-http' %
+        DEMO_BASE_NAME, protocol='HTTP', description='%s bes desc' %
+        DEMO_BASE_NAME, timeout_sec=60, enable_cdn=False)
+    display('    Backend Service "%s" created' % bes.name)
+
+    # == Create a URLMap ==
+    urlmap = gce.ex_create_urlmap(urlmap_name, default_service=bes)
+    display('    URLMap "%s" created' % urlmap.name)
+
+    # == Create a Target (HTTP) Proxy ==
+    tp = gce.ex_create_targethttpproxy(targethttpproxy_name, urlmap)
+    display('    TargetProxy "%s" created' % tp.name)
+
+    # == Create a Static Address ==
+    address = gce.ex_create_address(address_name, region='global')
+    display('    Address "%s" created with IP "%s"' % (address.name,
+                                                       address.address))
+    # == Create a Global Forwarding Rule ==
+    gfr = gce.ex_create_forwarding_rule(
+        gfr_name, target=tp, address=address, port_range='80',
+        description='%s libcloud forwarding rule http test' % DEMO_BASE_NAME,
+        global_rule=True)
+    display('    Global Forwarding Rule "%s" created' % (gfr.name))
+
+    # == Create a Firewall for instances ==
+    allowed = [{'IPProtocol': 'tcp', 'ports': ['80']}]
+    firewall = gce.ex_create_firewall(firewall_name, allowed,
+                                      target_tags=[tag])
+    display('    Firewall %s created' % firewall.name)
+
+    # TODO(supertom): launch instances to demostrate that it works
+    # take backends out of service.  Adding in this functionality
+    # will also add 10-15 minutes to the demo.
+    #    display("Sleeping for 10 minutes, starting at %s" %
+    #            str(datetime.datetime.now()))
+    #    time.sleep(600)
+
+    if CLEANUP:
+        display('Cleaning up %s resources created' % DEMO_BASE_NAME)
+        clean_up(gce, DEMO_BASE_NAME, None,
+                 resource_list=[firewall, gfr, address, tp, urlmap, bes, hc,
+                                mig_central, mig_east, it])
+    end_time = datetime.datetime.now()
+    display('Total runtime: %s' % str(end_time - start_time))
+
+
 # ==== GOOGLE DNS CODE STARTS HERE ====
 def main_dns():
     start_time = datetime.datetime.now()
@@ -768,17 +931,19 @@ def main_dns():
     end_time = datetime.datetime.now()
     display('Total runtime: %s' % str(end_time - start_time))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Google Cloud Platform Demo / Live Test Script')
-    parser.add_argument("--compute",
-                        help="perform compute demo / live tests",
+    parser.add_argument("--compute", help="perform compute demo / live tests",
                         dest="compute", action="store_true")
     parser.add_argument("--load-balancer",
                         help="perform load-balancer demo / live tests",
                         dest="lb", action="store_true")
-    parser.add_argument("--dns",
-                        help="perform DNS demo / live tests",
+    parser.add_argument("--backend-service",
+                        help="perform backend-service demo / live tests",
+                        dest="bes", action="store_true")
+    parser.add_argument("--dns", help="perform DNS demo / live tests",
                         dest="dns", action="store_true")
     parser.add_argument("--cleanup-only",
                         help="perform clean-up (skips all tests)",
@@ -794,3 +959,5 @@ if __name__ == '__main__':
             main_load_balancer()
         if cl_args.dns:
             main_dns()
+        if cl_args.bes:
+            main_backend_service()

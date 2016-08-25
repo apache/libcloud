@@ -7,7 +7,7 @@
     "name": "myinstancegroup",
     "description": "my description for myinstancegroup",
     "instanceTemplate": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1",
-    "instanceGroup": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroups/myinstancegroup",
+    "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroups/myinstancegroup",
     "baseInstanceName": "base-foo",
     "fingerprint": "Q21hYveq9do=",
     "currentActions": {
@@ -20,5 +20,5 @@
 	"refreshing": 0
     },
     "targetSize": 4,
-    "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroupManagers/myinstancegroup"
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroupManagers/myinstancegroup"
 }
