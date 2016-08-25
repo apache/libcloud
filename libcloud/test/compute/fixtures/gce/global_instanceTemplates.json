@@ -1,5 +1,5 @@
 {
-    "id": "projects/supertom-graphite/global/instanceTemplates",
+    "id": "projects/project_name/global/instanceTemplates",
     "items": [
         {
             "creationTimestamp": "2016-07-18T09:53:22.323-07:00",
@@ -17,7 +17,7 @@
                         "initializeParams": {
                             "diskSizeGb": "10",
                             "diskType": "pd-standard",
-                            "sourceImage": "projects/supertom-graphite/global/images/my-new-image1"
+                            "sourceImage": "projects/project_name/global/images/my-new-image1"
                         },
                         "kind": "compute#attachedDisk",
                         "mode": "READ_WRITE",
@@ -38,7 +38,7 @@
                                 "type": "ONE_TO_ONE_NAT"
                             }
                         ],
-                        "network": "https://content.googleapis.com/compute/v1/projects/supertom-graphite/global/networks/default"
+                        "network": "https://content.googleapis.com/compute/v1/projects/project_name/global/networks/default"
                     }
                 ],
                 "scheduling": {
@@ -59,9 +59,9 @@
                     }
                 ]
             },
-            "selfLink": "https://content.googleapis.com/compute/v1/projects/supertom-graphite/global/instanceTemplates/my-instance-template1"
+            "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1"
         }
     ],
     "kind": "compute#instanceTemplateList",
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/supertom-graphite/global/instanceTemplates"
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates"
 }
