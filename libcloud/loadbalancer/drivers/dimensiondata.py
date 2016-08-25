@@ -693,26 +693,45 @@ class DimensionDataLBDriver(Driver):
             status=State.RUNNING
         )
 
+<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
     def ex_get_pools(self, ex_network_domain_id=None):
+=======
+    def ex_get_pools(self, network_id=None):
+>>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
         """
         Get all of the pools inside the current geography or
         in given network.
 
+<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
         :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
         :type  ex_network_domain_id: ``str``
+=======
+        :param network_id: UUID of Network Domain
+               if not None returns only balancers in the given network
+               if None then returns all pools for the organization
+        :type  network_id: ``str``
+>>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
 
         :return: Returns a ``list`` of type ``DimensionDataPool``
         :rtype: ``list`` of ``DimensionDataPool``
         """
         params = None
+<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
         if ex_network_domain_id is not None:
             params = {"networkDomainId": ex_network_domain_id}
 
         pools = self.connection \
             .request_with_orgId_api_2('networkDomainVip/pool', \
             params=params).object
+=======
+        if ( network_id is not None ):
+            params = { "networkDomainId": network_id }
+
+        pools = self.connection \
+            .request_with_orgId_api_2('networkDomainVip/pool', params=params).object
+>>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
         return self._to_pools(pools)
 
     def ex_get_pool(self, pool_id):
@@ -871,6 +890,7 @@ class DimensionDataLBDriver(Driver):
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node', \
             params=params).object
+
         return self._to_nodes(nodes)
 
     def ex_get_node(self, node_id):
