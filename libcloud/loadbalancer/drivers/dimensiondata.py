@@ -173,22 +173,22 @@ class DimensionDataLBDriver(Driver):
                    'listener_ip_address': ex_listener_ip_address}
         )
 
-    def list_balancers(self, network_id=None):
+    def list_balancers(self, ex_network_domain_id=None):
         """
         List all loadbalancers inside a geography or in given network.
 
         In Dimension Data terminology these are known as virtual listeners
 
-        :param network_id: UUID of Network Domain
+        :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
-        :type  network_id: ``str``
+        :type  ex_network_domain_id: ``str``
 
         :rtype: ``list`` of :class:`LoadBalancer`
         """
         params = None
-        if ( network_id is not None ):
-            params = { "networkDomainId": network_id }
+        if ex_network_domain_id is not None:
+            params = { "networkDomainId": ex_network_domain_id }
 
         return self._to_balancers(
             self.connection
@@ -693,22 +693,22 @@ class DimensionDataLBDriver(Driver):
             status=State.RUNNING
         )
 
-    def ex_get_pools(self, network_id=None):
+    def ex_get_pools(self, ex_network_domain_id=None):
         """
         Get all of the pools inside the current geography or
         in given network.
 
-        :param network_id: UUID of Network Domain
+        :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
-        :type  network_id: ``str``
+        :type  ex_network_domain_id: ``str``
 
         :return: Returns a ``list`` of type ``DimensionDataPool``
         :rtype: ``list`` of ``DimensionDataPool``
         """
         params = None
-        if ( network_id is not None ):
-            params = { "networkDomainId": network_id }
+        if ex_network_domain_id is not None:
+            params = { "networkDomainId": ex_network_domain_id }
 
         pools = self.connection \
             .request_with_orgId_api_2('networkDomainVip/pool', params=params).object
@@ -851,21 +851,21 @@ class DimensionDataLBDriver(Driver):
             response_code = findtext(result, 'responseCode', TYPES_URN)
             return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_get_nodes(self, network_id=None):
+    def ex_get_nodes(self, ex_network_domain_id=None):
         """
         Get the nodes within this geography or in given network.
 
-        :param network_id: UUID of Network Domain
+        :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
-        :type  network_id: ``str``
+        :type  ex_network_domain_id: ``str``
 
         :return: Returns an ``list`` of ``DimensionDataVIPNode``
         :rtype: ``list`` of ``DimensionDataVIPNode``
         """
         params = None
-        if ( network_id is not None ):
-            params = { "networkDomainId": network_id }
+        if ex_network_domain_id is not None:
+            params = { "networkDomainId": ex_network_domain_id }
 
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node', params=params).object
