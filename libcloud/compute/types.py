@@ -106,6 +106,7 @@ class Provider(Type):
     ALIYUN_ECS = 'aliyun_ecs'
     AURORACOMPUTE = 'aurora_compute'
     AZURE = 'azure'
+    AZURE_ARM = 'azure_arm'
     BLUEBOX = 'bluebox'
     BRIGHTBOX = 'brightbox'
     BSNL = 'bsnl'

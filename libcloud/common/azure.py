@@ -20,6 +20,7 @@ import base64
 import hmac
 
 from hashlib import sha256
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
@@ -31,7 +32,7 @@ except ImportError:
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
+from libcloud.common.base import ConnectionUserAndKey, RawResponse, Connection, JsonResponse
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
@@ -40,6 +41,258 @@ API_VERSION = '2012-02-12'
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
+
+
+"""
+Sizes must be hardcoded because Microsoft doesn't provide an API to fetch them
+From http://msdn.microsoft.com/en-us/library/windowsazure/dn197896.aspx
+
+Prices are for Linux instances in East US data center. To see what pricing will
+actually be, visit:
+http://azure.microsoft.com/en-gb/pricing/details/virtual-machines/
+"""
+AZURE_COMPUTE_INSTANCE_TYPES = {
+    'A0': {
+        'id': 'ExtraSmall',
+        'name': 'Extra Small Instance',
+        'ram': 768,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.0211',
+        'max_data_disks': 1,
+        'cores': 'Shared'
+    },
+    'A1': {
+        'id': 'Small',
+        'name': 'Small Instance',
+        'ram': 1792,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.0633',
+        'max_data_disks': 2,
+        'cores': 1
+    },
+    'A2': {
+        'id': 'Medium',
+        'name': 'Medium Instance',
+        'ram': 3584,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.1266',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'A3': {
+        'id': 'Large',
+        'name': 'Large Instance',
+        'ram': 7168,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.2531',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'A4': {
+        'id': 'ExtraLarge',
+        'name': 'Extra Large Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.5062',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A5': {
+        'id': 'A5',
+        'name': 'Memory Intensive Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.2637',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'A6': {
+        'id': 'A6',
+        'name': 'A6 Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.5273',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'A7': {
+        'id': 'A7',
+        'name': 'A7 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.0545',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A8': {
+        'id': 'A8',
+        'name': 'A8 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.0774',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A9': {
+        'id': 'A9',
+        'name': 'A9 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '4.7137',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'A10': {
+        'id': 'A10',
+        'name': 'A10 Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.2233',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'A11': {
+        'id': 'A11',
+        'name': 'A11 Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '2.1934',
+        'max_data_disks': 16,
+        'cores': 16
+    },
+    'D1': {
+        'id': 'Standard_D1',
+        'name': 'D1 Faster Compute Instance',
+        'ram': 3584,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.0992',
+        'max_data_disks': 2,
+        'cores': 1
+    },
+    'D2': {
+        'id': 'Standard_D2',
+        'name': 'D2 Faster Compute Instance',
+        'ram': 7168,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.1983',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D3': {
+        'id': 'Standard_D3',
+        'name': 'D3 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.3965',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D4': {
+        'id': 'Standard_D4',
+        'name': 'D4 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.793',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D11': {
+        'id': 'Standard_D11',
+        'name': 'D11 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.251',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'D12': {
+        'id': 'Standard_D12',
+        'name': 'D12 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.502',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'D13': {
+        'id': 'Standard_D13',
+        'name': 'D13 Faster Compute Instance',
+        'ram': 57344,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '0.9038',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'D14': {
+        'id': 'Standard_D14',
+        'name': 'D14 Faster Compute Instance',
+        'ram': 114688,
+        'disk': 127,
+        'bandwidth': None,
+        'price': '1.6261',
+        'max_data_disks': 32,
+        'cores': 16
+    },
+    'Standard_D2_v2': {
+        'id': 'Standard_D2_v2',
+        'name': 'D2 v2 Faster Compute Instance',
+        'ram': 7168,
+        'disk': 100,
+        'bandwidth': None,
+        'price': '0.16',
+        'max_data_disks': 4,
+        'cores': 2
+    },
+    'Standard_D3_v2': {
+        'id': 'Standard_D3_v2',
+        'name': 'D3 v2 Faster Compute Instance',
+        'ram': 14336,
+        'disk': 200,
+        'bandwidth': None,
+        'price': '0.319',
+        'max_data_disks': 8,
+        'cores': 4
+    },
+    'Standard_D4_v2': {
+        'id': 'Standard_D4_v2',
+        'name': 'D4 v2 Faster Compute Instance',
+        'ram': 28672,
+        'disk': 400,
+        'bandwidth': None,
+        'price': '0.672',
+        'max_data_disks': 16,
+        'cores': 8
+    },
+    'Standard_D5_v2': {
+        'id': 'Standard_D5_v2',
+        'name': 'D5 v2 Faster Compute Instance',
+        'ram': 57344,
+        'disk': 800,
+        'bandwidth': None,
+        'price': '1.277',
+        'max_data_disks': 32,
+        'cores': 16
+    }
+}
 
 
 class AzureRedirectException(Exception):
@@ -292,4 +545,53 @@ class AzureServiceManagementConnection(CertificateConnection):
         headers['x-ms-version'] = "2014-05-01"
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
         #  headers['host'] = self.host
+        return headers
+
+
+class AzureARMResponse(JsonResponse):
+
+    valid_response_codes = [
+        httplib.NOT_FOUND,
+        httplib.CONFLICT,
+        httplib.BAD_REQUEST,
+        httplib.TEMPORARY_REDIRECT
+        # added TEMPORARY_REDIRECT as this can sometimes be
+        # sent by azure instead of a success or fail response
+    ]
+
+    def success(self):
+        i = int(self.status)
+        return 200 <= i <= 299 or i in self.valid_response_codes
+
+
+class AzureResourceManagerConnection(Connection):
+    driver = AzureBaseDriver
+    responseCls = AzureARMResponse
+    rawResponseCls = AzureRawResponse
+    name = 'Azure Resource Manager API Connection'
+    host = 'management.azure.com'
+    token = ''
+
+    def __init__(self, subscription_id, token, *args, **kwargs):
+        """
+        :param  subscription_id: Azure subscription ID.
+        :type   subscription_id: ``str``
+
+        :param  token: JSON web token to authenticate with Azure Active Directory
+        :type   token: ``str``
+        """
+
+        super(AzureResourceManagerConnection, self).__init__(
+            *args,
+            **kwargs
+        )
+        self.subscription_id = subscription_id
+        self.token = token
+
+    def add_default_headers(self, headers):
+        """
+        @inherits: :class:`Connection.add_default_headers`
+        """
+        headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = 'Bearer %s' % self.token
         return headers
