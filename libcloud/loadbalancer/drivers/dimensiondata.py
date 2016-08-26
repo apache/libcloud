@@ -188,12 +188,12 @@ class DimensionDataLBDriver(Driver):
         """
         params = None
         if ex_network_domain_id is not None:
-            params = { "networkDomainId": ex_network_domain_id }
+            params = {"networkDomainId": ex_network_domain_id}
 
         return self._to_balancers(
             self.connection
-            .request_with_orgId_api_2('networkDomainVip/virtualListener', params=params)
-            .object)
+            .request_with_orgId_api_2('networkDomainVip/virtualListener', \
+            params=params).object)
 
     def get_balancer(self, balancer_id):
         """
@@ -708,10 +708,11 @@ class DimensionDataLBDriver(Driver):
         """
         params = None
         if ex_network_domain_id is not None:
-            params = { "networkDomainId": ex_network_domain_id }
+            params = {"networkDomainId": ex_network_domain_id}
 
         pools = self.connection \
-            .request_with_orgId_api_2('networkDomainVip/pool', params=params).object
+            .request_with_orgId_api_2('networkDomainVip/pool', \
+            params=params).object
         return self._to_pools(pools)
 
     def ex_get_pool(self, pool_id):
@@ -865,10 +866,11 @@ class DimensionDataLBDriver(Driver):
         """
         params = None
         if ex_network_domain_id is not None:
-            params = { "networkDomainId": ex_network_domain_id }
+            params = {"networkDomainId": ex_network_domain_id}
 
         nodes = self.connection \
-            .request_with_orgId_api_2('networkDomainVip/node', params=params).object
+            .request_with_orgId_api_2('networkDomainVip/node', \
+            params=params).object
         return self._to_nodes(nodes)
 
     def ex_get_node(self, node_id):
