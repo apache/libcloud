@@ -780,8 +780,8 @@ class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
             self.auth_user_info = None
 
             if not self.auth_token:
-                raise MalformedResponseError('Missing X-Auth-Token in \
-                                              response headers')
+                raise MalformedResponseError('Missing X-Auth-Token in'
+                                             ' response headers')
 
         return self
 
