@@ -41,6 +41,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
     ObjectDoesNotExistError
 
 
+
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
