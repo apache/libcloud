@@ -2194,5 +2194,10 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
         )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cleanServer(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'caas_2_1_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cleanServer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
