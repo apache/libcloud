@@ -698,7 +698,6 @@ class DimensionDataLBDriver(Driver):
         Get all of the pools inside the current geography or
         in given network.
 
-
         :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
@@ -870,7 +869,6 @@ class DimensionDataLBDriver(Driver):
         params = None
         if ex_network_domain_id is not None:
             params = {"networkDomainId": ex_network_domain_id}
-
 
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node',
