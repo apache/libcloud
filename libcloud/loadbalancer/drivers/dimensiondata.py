@@ -188,11 +188,7 @@ class DimensionDataLBDriver(Driver):
         """
         params = None
         if ex_network_domain_id is not None:
-<<<<<<< 32cfa2e7584562b19a0e4c9f464e82d5f8600e21
             params = {"networkDomainId": ex_network_domain_id}
-=======
-            params = { "networkDomainId": ex_network_domain_id }
->>>>>>> Uptdating based on comments on pull request: https://github.com/apache/libcloud/pull/855
 
         return self._to_balancers(
             self.connection
@@ -697,61 +693,29 @@ class DimensionDataLBDriver(Driver):
             status=State.RUNNING
         )
 
-<<<<<<< 32cfa2e7584562b19a0e4c9f464e82d5f8600e21
-<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
     def ex_get_pools(self, ex_network_domain_id=None):
-=======
-    def ex_get_pools(self, network_id=None):
->>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
-=======
-    def ex_get_pools(self, ex_network_domain_id=None):
->>>>>>> Uptdating based on comments on pull request: https://github.com/apache/libcloud/pull/855
         """
         Get all of the pools inside the current geography or
         in given network.
 
-<<<<<<< 32cfa2e7584562b19a0e4c9f464e82d5f8600e21
-<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
+
         :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
                if None then returns all pools for the organization
         :type  ex_network_domain_id: ``str``
-=======
-        :param network_id: UUID of Network Domain
-               if not None returns only balancers in the given network
-               if None then returns all pools for the organization
-        :type  network_id: ``str``
->>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
-=======
-        :param ex_network_domain_id: UUID of Network Domain
-               if not None returns only balancers in the given network
-               if None then returns all pools for the organization
-        :type  ex_network_domain_id: ``str``
->>>>>>> Uptdating based on comments on pull request: https://github.com/apache/libcloud/pull/855
 
         :return: Returns a ``list`` of type ``DimensionDataPool``
         :rtype: ``list`` of ``DimensionDataPool``
         """
         params = None
-<<<<<<< 32cfa2e7584562b19a0e4c9f464e82d5f8600e21
-<<<<<<< 37bb40852e0cb0946edb77027adeffe8c9ea654d
+
         if ex_network_domain_id is not None:
             params = {"networkDomainId": ex_network_domain_id}
 
         pools = self.connection \
             .request_with_orgId_api_2('networkDomainVip/pool', \
             params=params).object
-=======
-        if ( network_id is not None ):
-            params = { "networkDomainId": network_id }
-=======
-        if ex_network_domain_id is not None:
-            params = { "networkDomainId": ex_network_domain_id }
->>>>>>> Uptdating based on comments on pull request: https://github.com/apache/libcloud/pull/855
 
-        pools = self.connection \
-            .request_with_orgId_api_2('networkDomainVip/pool', params=params).object
->>>>>>> Enhance get_list_of_xx calls by allowing for filter by network id
         return self._to_pools(pools)
 
     def ex_get_pool(self, pool_id):
@@ -905,11 +869,8 @@ class DimensionDataLBDriver(Driver):
         """
         params = None
         if ex_network_domain_id is not None:
-<<<<<<< 32cfa2e7584562b19a0e4c9f464e82d5f8600e21
             params = {"networkDomainId": ex_network_domain_id}
-=======
-            params = { "networkDomainId": ex_network_domain_id }
->>>>>>> Uptdating based on comments on pull request: https://github.com/apache/libcloud/pull/855
+
 
         nodes = self.connection \
             .request_with_orgId_api_2('networkDomainVip/node', \
