@@ -206,12 +206,16 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             'display_name': name,
             'display_description': name,
             'size': size,
-            'volume_type': ex_volume_type,
             'metadata': {
                 'contents': name,
             },
-            'availability_zone': location
         }
+
+        if ex_volume_type:
+            volume['volume_type'] = ex_volume_type
+
+        if location:
+            volume['availability_zone'] = location
 
         if snapshot:
             volume['snapshot_id'] = snapshot.id

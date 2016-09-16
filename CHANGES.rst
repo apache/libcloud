@@ -1,6 +1,18 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 1.2.2
+
+Compute
+~~~~~~~
+
+- When creating volumes on OpenStack with defaults for `location` or `volume_type`,
+  newer OpenStack versions would throw errors. The OpenStack driver will now only
+  post those arguments if non-`NoneType`.
+  (GITHUB-857)
+  [Allard Hoeve]
+
+
 Changes in Apache Libcloud 1.2.1
 --------------------------------
 
