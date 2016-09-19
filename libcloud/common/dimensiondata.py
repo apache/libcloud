@@ -479,20 +479,23 @@ class DimensionDataConnection(ConnectionUserAndKey):
             params = {}
         params['pageSize'] = page_size
 
-        paged_resp = self.request_with_orgId_api_2(action, params,
-                                                   data, headers,
-                                                   method).object
-        yield paged_resp
-        if len(paged_resp) <= 0:
+        resp = self.request_with_orgId_api_2(action, params,
+                                             data, headers,
+                                             method).object
+        yield resp
+        if len(resp) <= 0:
             raise StopIteration
 
-        while int(paged_resp.get('pageCount')) >= \
-                int(paged_resp.get('pageSize')):
-            params['pageNumber'] = int(paged_resp.get('pageNumber')) + 1
-            paged_resp = self.request_with_orgId_api_2(action, params,
-                                                       data, headers,
-                                                       method).object
-            yield paged_resp
+        pcount = resp.get('pageCount')  # pylint: disable=no-member
+        psize = resp.get('pageSize')  # pylint: disable=no-member
+        pnumber = resp.get('pageNumber')  # pylint: disable=no-member
+
+        while int(pcount) >= int(psize):
+            params['pageNumber'] = int(pnumber) + 1
+            resp = self.request_with_orgId_api_2(action, params,
+                                                 data, headers,
+                                                 method).object
+            yield resp
 
     def get_resource_path_api_1(self):
         """
