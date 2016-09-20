@@ -99,6 +99,7 @@ preparing a release.
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
+* Remove leftover builds from previous releases. ``rm -f dist/apache*``
 
 2. Update JIRA
 ~~~~~~~~~~~~~~
