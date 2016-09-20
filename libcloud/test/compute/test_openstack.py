@@ -984,6 +984,30 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(volume.name, 'test')
         self.assertEqual(volume.size, 1)
 
+    def test_create_volume_passes_location_to_request_only_if_not_none(self):
+        with patch.object(self.driver.connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test', location='mylocation')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(kwargs["data"]["volume"]["availability_zone"], "mylocation")
+
+    def test_create_volume_does_not_pass_location_to_request_if_none(self):
+        with patch.object(self.driver.connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("availability_zone" in kwargs["data"]["volume"])
+
+    def test_create_volume_passes_volume_type_to_request_only_if_not_none(self):
+        with patch.object(self.driver.connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test', ex_volume_type='myvolumetype')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(kwargs["data"]["volume"]["volume_type"], "myvolumetype")
+
+    def test_create_volume_does_not_pass_volume_type_to_request_if_none(self):
+        with patch.object(self.driver.connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("volume_type" in kwargs["data"]["volume"])
+
     def test_destroy_volume(self):
         volume = self.driver.ex_get_volume(
             'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
