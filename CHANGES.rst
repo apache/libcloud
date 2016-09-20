@@ -1,6 +1,16 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 1.2.1
+--------------------------------
+
+Backup
+~~~~~~
+
+- Fix issue enabling backups on Dimension Data driver
+  (GITHUB-858)
+  [Mark Maglana][Jeff Dunham][Anthony Shaw]
+
 Changes in Apache Libcloud 1.2.0
 --------------------------------
 
