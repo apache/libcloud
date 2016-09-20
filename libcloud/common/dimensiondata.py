@@ -495,6 +495,9 @@ class DimensionDataConnection(ConnectionUserAndKey):
             resp = self.request_with_orgId_api_2(action, params,
                                                  data, headers,
                                                  method).object
+            pcount = resp.get('pageCount')  # pylint: disable=no-member
+            psize = resp.get('pageSize')  # pylint: disable=no-member
+            pnumber = resp.get('pageNumber')  # pylint: disable=no-member
             yield resp
 
     def get_resource_path_api_1(self):
