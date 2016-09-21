@@ -1330,6 +1330,9 @@
    "guestOsFeatures": [
     {
       "type": "VIRTIO_SCSI_MULTIQUEUE"
+    },
+    {
+      "type": "WINDOWS"
     }
    ],
    "sourceType": "RAW",

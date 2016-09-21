@@ -453,8 +453,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         description = 'CoreOS beta 522.3.0'
         name = 'coreos'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
-        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+        expected_features = [
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'},
+            {'type': 'WINDOWS'}]
         mock_request = mock.Mock()
         mock_request.side_effect = self.driver.connection.async_request
         self.driver.connection.async_request = mock_request
@@ -482,8 +484,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
         description = 'CoreOS beta 522.3.0'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
-        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+        expected_features = [
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'},
+            {'type': 'WINDOWS'}]
         image = self.driver.ex_copy_image(name, url, description=description,
                                           family=family,
                                           guest_os_features=guest_os_features)
