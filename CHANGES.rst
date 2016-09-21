@@ -1,7 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 1.2.2
+Changes in current version of Apache Libcloud
+---------------------------------------------
 
 Compute
 ~~~~~~~
