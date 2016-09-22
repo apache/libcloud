@@ -1,0 +1,28 @@
+{
+  "value": [
+    {
+      "name": "Standard_A0",
+      "numberOfCores": 1,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 20480,
+      "memoryInMB": 768,
+      "maxDataDiskCount": 1
+    },
+    {
+      "name": "Standard_A1",
+      "numberOfCores": 1,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 71680,
+      "memoryInMB": 1792,
+      "maxDataDiskCount": 2
+    },
+    {
+      "name": "Standard_A2",
+      "numberOfCores": 2,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 138240,
+      "memoryInMB": 3584,
+      "maxDataDiskCount": 4
+    }
+  ]
+}
