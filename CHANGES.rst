@@ -13,6 +13,13 @@ Compute
   (GITHUB-857)
   [Allard Hoeve]
 
+Container
+~~~~~~~~~
+
+- Fixed bug in Docker util library for fetching images from the docker hub API. API
+  was returning 301 and redirects were not being followed.
+  (GITHUB-862)
+  [Anthony Shaw]
 
 Changes in Apache Libcloud 1.2.1
 --------------------------------
