@@ -16,6 +16,9 @@ Compute
 - When fetching the node details of a non-existing node, OpenStack would raise a
   `BaseHTTPError` instead of returning `None`, as was intended. Fixed tests and code.
   (GITHUB-864)
+
+- Added `ex_stop_node` to the OpenStack driver.
+  (GITHUB-865)
   [Allard Hoeve]
 
 Container

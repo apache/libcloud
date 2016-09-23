@@ -1437,6 +1437,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_unpause_node(node)
         self.assertTrue(ret is True)
 
+    def test_ex_stop_node(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ips=None, private_ips=None, driver=self.driver,
+        )
+        ret = self.driver.ex_stop_node(node)
+        self.assertTrue(ret is True)
+
     def test_ex_suspend_node(self):
         node = Node(
             id='12063', name=None, state=None,
