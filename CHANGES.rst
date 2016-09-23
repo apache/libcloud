@@ -19,6 +19,11 @@ Compute
 
 - Added `ex_stop_node` to the OpenStack driver.
   (GITHUB-865)
+
+- When creating volume snapshot, the arguments `name` and `description` are truely
+  optional when working with newer OpenStack versions. The OpenStack driver will now
+  only post thost arguments if they are non-`NoneType`.
+  (GITHUB-866)
   [Allard Hoeve]
 
 Container
