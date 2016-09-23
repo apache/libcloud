@@ -710,7 +710,8 @@ class GCESnapshot(VolumeSnapshot):
     def __init__(self, id, name, size, status, driver, extra=None,
                  created=None):
         self.status = status
-        super(GCESnapshot, self).__init__(id, driver, size, extra, created, name=name)
+        super(GCESnapshot, self).__init__(id, driver, size, extra,
+                                          created, name=name)
 
 
 class GCETargetHttpProxy(UuidMixin):
