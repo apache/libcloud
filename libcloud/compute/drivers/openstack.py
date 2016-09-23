@@ -2427,6 +2427,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request(uri, method='POST', data={action: None})
         return resp.status == httplib.ACCEPTED
 
+
 class OpenStack_1_1_FloatingIpPool(object):
     """
     Floating IP Pool info.
