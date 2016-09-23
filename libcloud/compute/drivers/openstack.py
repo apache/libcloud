@@ -2427,7 +2427,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :param str action: the action to call
         :return `bool`: a boolean that indicates success
         """
-        uri = '/servers/{}/action'.format(node.id)
+        uri = '/servers/{node_id}/action'.format(node_id=node.id)
         resp = self.connection.request(uri, method='POST', data={action: None})
         return resp.status == httplib.ACCEPTED
 
