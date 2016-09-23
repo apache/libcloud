@@ -1049,6 +1049,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         snapshot_name = 'lcsnapshot'
         volume = self.driver.ex_get_volume('lcdisk')
         snapshot = volume.snapshot(snapshot_name)
+
         self.assertEqual(snapshot.name, snapshot_name)
         self.assertEqual(snapshot.size, '10')
 

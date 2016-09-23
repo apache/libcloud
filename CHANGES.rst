@@ -13,6 +13,13 @@ Compute
   (GITHUB-857)
   [Allard Hoeve]
 
+- StorageVolumeSnapshot now has an attribute `name` that has the name of the snapshot
+  if the provider supports it. This used to be `.extra['name']`, but that is inconsistent
+  with `Node` and `StorageVolume`. The `extra` dict still holds `name` for backwards
+  compatibility.
+  (GITHUB-867)
+  [Allard Hoeve]
+
 Container
 ~~~~~~~~~
 

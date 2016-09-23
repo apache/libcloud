@@ -242,7 +242,8 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
                                   size=api_node['size'],
                                   extra=extra,
                                   created=created_td,
-                                  state=state)
+                                  state=state,
+                                  name=api_node['displayName'])
         return snapshot
 
     def _ex_connection_class_kwargs(self):
