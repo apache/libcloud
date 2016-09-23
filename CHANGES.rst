@@ -13,6 +13,10 @@ Compute
   (GITHUB-857)
   [Allard Hoeve]
 
+- Added `ex_stop_node` to the OpenStack driver.
+  (GITHUB-865)
+  [Allard Hoeve]
+
 Container
 ~~~~~~~~~
 

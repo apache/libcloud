@@ -2403,27 +2403,28 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return node.extra['metadata']
 
     def ex_pause_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'pause': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'pause')
 
     def ex_unpause_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'unpause': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'unpause')
+
+    def ex_stop_node(self, node):
+        return self._post_simple_node_action(node, 'os-stop')
 
     def ex_suspend_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'suspend': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'suspend')
 
     def ex_resume_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'resume': None}
-        resp = self.connection.request(uri, method='POST', data=data)
+        return self._post_simple_node_action(node, 'resume')
+
+    def _post_simple_node_action(self, node, action):
+        """ Post a simple, data-less action to the OS node action endpoint
+        :param `Node` node:
+        :param str action: the action to call
+        :return `bool`: a boolean that indicates success
+        """
+        uri = '/servers/{node_id}/action'.format(node_id=node.id)
+        resp = self.connection.request(uri, method='POST', data={action: None})
         return resp.status == httplib.ACCEPTED
 
 
