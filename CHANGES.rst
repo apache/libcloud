@@ -13,6 +13,12 @@ Compute
   (GITHUB-857)
   [Allard Hoeve]
 
+- When creating volume snapshot, the arguments `name` and `description` are truely
+  optional when working with newer OpenStack versions. The OpenStack driver will now
+  only post thost arguments if they are non-`NoneType`.
+  (GITHUB-866)
+  [Allard Hoeve]
+
 Container
 ~~~~~~~~~
 
