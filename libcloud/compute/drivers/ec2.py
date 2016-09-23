@@ -5601,7 +5601,8 @@ class BaseEC2NodeDriver(NodeDriver):
                               driver=self,
                               extra=extra,
                               created=created,
-                              state=state)
+                              state=state,
+                              name=name)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
