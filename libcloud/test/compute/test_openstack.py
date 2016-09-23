@@ -1129,6 +1129,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '12064')
         self.assertEqual(node.name, 'lc-test')
 
+    def test_ex_get_node_details_returns_none_if_node_does_not_exist(self):
+        node = self.driver.ex_get_node_details('does-not-exist')
+        self.assertIsNone(node)
+
     def test_ex_get_size(self):
         size_id = '7'
         size = self.driver.ex_get_size(size_id)
@@ -1561,6 +1565,9 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_servers_detail_ERROR_STATE_NO_IMAGE_ID(self, method, url, body, headers):
         body = self.fixtures.load('_servers_detail_ERROR_STATE.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_servers_does_not_exist(self, *args, **kwargs):
+        return httplib.NOT_FOUND, None, {}, httplib.responses[httplib.NOT_FOUND]
 
     def _v1_1_slug_flavors_detail(self, method, url, body, headers):
         body = self.fixtures.load('_flavors_detail.json')
