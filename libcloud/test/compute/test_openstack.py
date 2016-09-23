@@ -1509,6 +1509,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                                              force=True)
         self.assertEqual(ret.id, '3fbbcccf-d058-4502-8844-6feeffdf4cb5')
 
+    def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
+        volume = self.driver.list_volumes()[0]
+        with patch.object(self.driver, '_to_snapshot'):
+            with patch.object(self.driver.connection, 'request') as mock_request:
+                self.driver.create_volume_snapshot(volume,
+                                                   name=None,
+                                                   ex_description=None,
+                                                   ex_force=True)
+
+        name, args, kwargs = mock_request.mock_calls[0]
+        self.assertFalse("display_name" in kwargs["data"]["snapshot"])
+        self.assertFalse("display_description" in kwargs["data"]["snapshot"])
+
     def test_destroy_volume_snapshot(self):
         if self.driver_type.type == 'rackspace':
             self.conn_classes[0].type = 'RACKSPACE'

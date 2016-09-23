@@ -1668,10 +1668,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type  volume: `StorageVolume`
 
         :param name: Name of snapshot (optional)
-        :type  name: `str`
+        :type  name: `str` | `NoneType`
 
         :param ex_description: Description of the snapshot (optional)
-        :type  ex_description: `str`
+        :type  ex_description: `str` | `NoneType`
 
         :param ex_force: Specifies if we create a snapshot that is not in
                          state `available`. For example `in-use`. Defaults
@@ -1680,10 +1680,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`VolumeSnapshot`
         """
-        data = {'snapshot': {'display_name': name,
-                             'display_description': ex_description,
-                             'volume_id': volume.id,
-                             'force': ex_force}}
+        data = {'snapshot': {'volume_id': volume.id, 'force': ex_force}}
+
+        if name is not None:
+            data['snapshot']['display_name'] = name
+
+        if ex_description is not None:
+            data['snapshot']['display_description'] = ex_description
 
         return self._to_snapshot(self.connection.request('/os-snapshots',
                                                          method='POST',
