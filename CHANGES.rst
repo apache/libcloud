@@ -13,6 +13,11 @@ Compute
   (GITHUB-857)
   [Allard Hoeve]
 
+- When fetching the node details of a non-existing node, OpenStack would raise a
+  `BaseHTTPError` instead of returning `None`, as was intended. Fixed tests and code.
+  (GITHUB-864)
+  [Allard Hoeve]
+
 Container
 ~~~~~~~~~
 

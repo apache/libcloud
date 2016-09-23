@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.iso8601 import parse_date
 
 try:
@@ -322,9 +323,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             node_id = node_id.id
 
         uri = '/servers/%s' % (node_id)
-        resp = self.connection.request(uri, method='GET')
-        if resp.status == httplib.NOT_FOUND:
-            return None
+        try:
+            resp = self.connection.request(uri, method='GET')
+        except BaseHTTPError as e:
+            if e.code == httplib.NOT_FOUND:
+                return None
+            raise
 
         return self._to_node_from_obj(resp.object)
 
