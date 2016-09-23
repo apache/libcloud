@@ -2198,7 +2198,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         snapshot = VolumeSnapshot(id=data['id'], driver=self,
                                   size=data['size'], extra=extra,
-                                  created=created_dt, state=state)
+                                  created=created_dt, state=state,
+                                  name=display_name)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):

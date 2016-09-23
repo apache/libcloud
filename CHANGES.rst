@@ -28,6 +28,12 @@ Compute
   optional when working with newer OpenStack versions. The OpenStack driver will now
   only post thost arguments if they are non-`NoneType`.
   (GITHUB-866)
+
+- StorageVolumeSnapshot now has an attribute `name` that has the name of the snapshot
+  if the provider supports it. This used to be `.extra['name']`, but that is inconsistent
+  with `Node` and `StorageVolume`. The `extra` dict still holds `name` for backwards
+  compatibility.
+  (GITHUB-867)
   [Allard Hoeve]
 
 Container
