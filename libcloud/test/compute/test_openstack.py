@@ -1131,7 +1131,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_get_node_details_returns_none_if_node_does_not_exist(self):
         node = self.driver.ex_get_node_details('does-not-exist')
-        self.assertIsNone(node)
+        self.assertTrue(node is None)
 
     def test_ex_get_size(self):
         size_id = '7'
