@@ -1,5 +1,4 @@
 import base64
-import shlex
 
 try:
     import simplejson as json
@@ -157,10 +156,10 @@ class RancherContainerDriver(ContainerDriver):
         return result['data']
 
     def ex_deploy_stack(self, name, description=None, dockercompose=None,
-                              environment=None, externalid=None, outputs=None,
-                              previousenvironment=None,
-                              previousexternalid=None, ranchercompose=None,
-                              start=True):
+                        environment=None, externalid=None, outputs=None,
+                        previousenvironment=None,
+                        previousexternalid=None, ranchercompose=None,
+                        start=True):
         """
         Deploy a new stack.
 
@@ -305,25 +304,24 @@ class RancherContainerDriver(ContainerDriver):
                           metadata=None, retainip=None, scale=None,
                           scalepolicy=None, secondarylaunchconfigs=None,
                           selectorcontainer=None, selectorlink=None,
-                          vip=None, datavolumesfromlaunchconfigs=None,
-                          disks=None, kind=None, memorymb=None,
-                          networklaunchconfig=None, requsetedipaddress=None,
-                          userdata=None, vcpu=None, **kwargs):
+                          vip=None, **kwargs):
         """
         Deploy a Rancher Service under a stack.
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/service/#create
 
-        :param name: The desired name of the service.
+        *Any further configuration passed applies to the ``launchConfig``*
+
+        :param name: The desired name of the service. (required)
         :type name: ``str``
 
-        :param image: The Image object to deploy.
+        :param image: The Image object to deploy. (required)
         :type image: :class:`libcloud.container.base.ContainerImage`
 
-        :param environmentid: The environment/stack ID this service is tied to.
+        :param environmentid: The stack ID this service is tied to. (required)
         :type environmentid: ``str``
 
-        :param start: Whether to start the service/container on creation.
+        :param start: Whether to start the service on creation.
         :type start: ``bool``
 
         :param assignserviceipaddress: The IP address to assign the service.
@@ -359,193 +357,21 @@ class RancherContainerDriver(ContainerDriver):
         :param vip: The VIP to assign to this service.
         :type vip: ``str``
 
-        :param datavolumesfromlaunchconfigs: The dataVolumesFromLaunchConfigs.
-        :type datavolumesfromlaunchconfigs: ``list``
-
-        :param disks: The disks to associate with this container/service.
-        :type disks: ``list``
-
-        :param kind: The kind of object to deploy.
-        :type kind: ``str``
-
-        :param memorymb: The memoryMb to allow this container/service.
-        :type memorymb: ``int``
-
-        :param networklaunchconfig: The networkLaunchConfig for this container.
-        :type networklaunchconfig: ``str``
-
-        :param requsetedipaddress: The requested IP address for this container.
-        :type requsetedipaddress: ``str``
-
-        :param userdata: User data to associate with this container.
-        :type userdata: ``str``
-
-        :param vcpu: Virtual host cpu's to assign to allow this container.
-        :type vcpu: ``int``
-
-        :param blkiodeviceoptions: The blkioDeviceOptions for the container.
-        :type blkiodeviceoptions: ``dict``
-
-        :param build: Build details for the container.
-        :type build: ``dict``
-
-        :param capadd: Linux Capabilities to enable for this container.
-        :type capadd: ``list``
-
-        :param capdrop: Linux capabilities to disable for this container.
-        :type capdrop: ``list``
-
-        :param command: The command to execute when this container is run.
-        :type command: ``list``
-
-        :param count: The number of containers of this nature to launch.
-        :type count: ``int``
-
-        :param cpuset: Memory nodes in which to allow execution.
-        :type cpuset: ``str``
-
-        :param cpushares: Relative weight cpu shares to allow.
-        :type cpushares: ``int``
-
-        :param datavolumemounts: Data volume mountes this container should have
-        :type datavolumemounts: ``dict``
-
-        :param datavolumes: Data volumes to associate with this container.
-        :type datavolumes: ``list``
-
-        :param datavolumesfrom: Data volumes to inherit.
-        :type datavolumesfrom: ``list``
-
-        :param description: Description for this container.
-        :type description: ``str``
-
-        :param devices: Devices inside the container without privliged mode.
-        :type devices: ``list``
-
-        :param dns: DNS servers the container should utilize.
-        :type dns: ``list``
-
-        :param dnssearch: DNS search domains the container should utilize.
-        :type dnssearch: ``list``
-
-        :param domainname: The domain name the container should have.
-        :type domainname: ``str``
-
-        :param entrypoint: The entrypoint the container should have.
-        :type entrypoint: ``list``
-
-        :param environment: Environment variables the container should have.
-        :type environment: ``dict``
-
-        :param expose: Ports which should be exposed in the container.
-        :type expose: ``list``
-
-        :param extrahosts: Extra hosts file entries this container should have.
-        :type extrahosts: ``list``
-
-        :param healthcheck: Health check parameters for this container.
-        :type healthcheck: ``dict``
-
-        :param hostname: The hostname this container should have.
-        :type hostname: ``str``
-
-        :param instancelinks: Instance links the container should have.
-        :type instancelinks: ``dict``
-
-        :param labels: Labels to associate with this container.
-        :type labels: ``dict``
-
-        :param logconfig: Log configuration for this container.
-        :type logconfig: ``dict``
-
-        :param lxcconf: lxcConf specific to this container.
-        :type lxcconf: ``dict``
-
-        :param memory: The memory limit for this container.
-        :type memory: ``int``
-
-        :param memoryswap: Total memory limit for this container.
-        :type memoryswap: ``int``
-
-        :param networkcontainerrid: A Network container Id for this container.
-        :type networkcontainerrid: ``dict``
-
-        :param networkids: NetworkIds this container should contain.
-        :type networkids: ``list``
-
-        :param networkmode: The networkMode to enable for this container.
-        :type networkmode: ``str``
-
-        :param pidmode: The pidMode for this container.
-        :type pidmode: ``str``
-
-        :param ports: The ports to publicize for this container.
-        :type ports: ``list``
-
-        :param privileged: Whether to enable privileged mode for this container
-        :type privileged: ``bool``
-
-        :param publishallports: Publish all ports in container.
-        :type publishallports: ``bool``
-
-        :param readonly: Whether this container should be readOnly.
-        :type readonly: ``bool``
-
-        :param registrycredentialid: Registry credentials to use.
-        :type registrycredentialid: ``dict``
-
-        :param requestedhostid: Id of the requested host to run this container.
-        :type requestedhostid: ``dict``
-
-        :param restartpolicy: The container restart policy.
-        :type restartpolicy: ``dict``
-
-        :param securityopt: Security options to provide for this container.
-        :type securityopt: ``list``
-
-        :param stdinopen: Whether to keep stdin open.
-        :type stdinopen: ``bool``
-
-        :param tty: Enable a tty for this container.
-        :type tty: ``bool``
-
-        :param user: User this container should be tied to.
-        :type user: ``str``
-
-        :param volumedriver: The volume driver to use for this container.
-        :type volumedriver: ``str``
-
-        :param workingdir: The workingDir this container should start in.
-        :type workingdir: ``str``
-
         :return: The newly created service.
         :rtype: ``dict``
         """
 
-        service_specific_container_config = {
-            "dataVolumesFromLaunchConfigs": datavolumesfromlaunchconfigs,
-            "disks": disks,
-            "kind": kind,
-            "memoryMb": memorymb,
-            "networkLaunchConfig": networklaunchconfig,
-            "requestedIpAddress": requsetedipaddress,
-            "userdata": userdata,
-            "vcpu": vcpu
+        launchconfig = {
+            "imageUuid": self._degen_image(image),
+            **kwargs
         }
 
-        # Build the de-facto container payload
-        # Note that we don't need to remove "name" since its None by default.
-        launchconfig = self._build_payload(image, start, **kwargs)
-        # Add in extra service configuration
-        launchconfig.update(service_specific_container_config)
-        launchconfig = json.dumps({k: v for k, v in launchconfig.items()
-                                   if v is not None})
         service_payload = {
             "assignServiceIpAddress": assignserviceipaddress,
             "description": service_description,
             "environmentId": environmentid,
             "externalId": externalid,
-            "launchConfig": json.loads(launchconfig),
+            "launchConfig": launchconfig,
             "metadata": metadata,
             "name": name,
             "retainIp": retainip,
@@ -662,174 +488,48 @@ class RancherContainerDriver(ContainerDriver):
         - ``path`` = ``<hostname>:<port>/<namespace>/<imagename>``
         - ``version`` = ``<version>``
 
-        :param name: The desired name of the container.
+        *Any extra configuration can also be passed i.e. "environment"*
+
+        :param name: The desired name of the container. (required)
         :type name: ``str``
 
-        :param image: The Image object to deploy.
+        :param image: The Image object to deploy. (required)
         :type image: :class:`libcloud.container.base.ContainerImage`
 
         :param parameters: Container Image parameters (unused)
         :type  parameters: ``str``
 
-        :param start: Whether to start the container on creation.
+        :param start: Whether to start the container on creation(startOnCreate)
         :type start: ``bool``
-
-        :param blkiodeviceoptions: The blkioDeviceOptions for the container.
-        :type blkiodeviceoptions: ``dict``
-
-        :param build: Build details for the container.
-        :type build: ``dict``
-
-        :param capadd: Linux Capabilities to enable for this container.
-        :type capadd: ``list``
-
-        :param capdrop: Linux capabilities to disable for this container.
-        :type capdrop: ``list``
-
-        :param command: The command to execute when this container is run.
-        :type command: ``list``
-
-        :param count: The number of containers of this nature to launch.
-        :type count: ``int``
-
-        :param cpuset: Memory nodes in which to allow execution.
-        :type cpuset: ``str``
-
-        :param cpushares: Relative weight cpu shares to allow.
-        :type cpushares: ``int``
-
-        :param datavolumemounts: Data volume mountes this container should have
-        :type datavolumemounts: ``dict``
-
-        :param datavolumes: Data volumes to associate with this container.
-        :type datavolumes: ``list``
-
-        :param datavolumesfrom: Data volumes to inherit.
-        :type datavolumesfrom: ``list``
-
-        :param description: Description for this container.
-        :type description: ``str``
-
-        :param devices: Devices inside the container without privliged mode.
-        :type devices: ``list``
-
-        :param dns: DNS servers the container should utilize.
-        :type dns: ``list``
-
-        :param dnssearch: DNS search domains the container should utilize.
-        :type dnssearch: ``list``
-
-        :param domainname: The domain name the container should have.
-        :type domainname: ``str``
-
-        :param entrypoint: The entrypoint the container should have.
-        :type entrypoint: ``list``
-
-        :param environment: Environment variables the container should have.
-        :type environment: ``dict``
-
-        :param expose: Ports which should be exposed in the container.
-        :type expose: ``list``
-
-        :param extrahosts: Extra hosts file entries this container should have.
-        :type extrahosts: ``list``
-
-        :param healthcheck: Health check parameters for this container.
-        :type healthcheck: ``dict``
-
-        :param hostname: The hostname this container should have.
-        :type hostname: ``str``
-
-        :param instancelinks: Instance links the container should have.
-        :type instancelinks: ``dict``
-
-        :param labels: Labels to associate with this container.
-        :type labels: ``dict``
-
-        :param logconfig: Log configuration for this container.
-        :type logconfig: ``dict``
-
-        :param lxcconf: lxcConf specific to this container.
-        :type lxcconf: ``dict``
-
-        :param memory: The memory limit for this container.
-        :type memory: ``int``
-
-        :param memoryswap: Total memory limit for this container.
-        :type memoryswap: ``int``
-
-        :param networkcontainerrid: A Network container Id for this container.
-        :type networkcontainerrid: ``dict``
-
-        :param networkids: NetworkIds this container should contain.
-        :type networkids: ``list``
-
-        :param networkmode: The networkMode to enable for this container.
-        :type networkmode: ``str``
-
-        :param pidmode: The pidMode for this container.
-        :type pidmode: ``str``
-
-        :param ports: The ports to publicize for this container.
-        :type ports: ``list``
-
-        :param privileged: Whether to enable privileged mode for this container
-        :type privileged: ``bool``
-
-        :param publishallports: Publish all ports in container.
-        :type publishallports: ``bool``
-
-        :param readonly: Whether this container should be readOnly.
-        :type readonly: ``bool``
-
-        :param registrycredentialid: Registry credentials to use.
-        :type registrycredentialid: ``dict``
-
-        :param requestedhostid: Id of the requested host to run this container.
-        :type requestedhostid: ``dict``
-
-        :param restartpolicy: The container restart policy.
-        :type restartpolicy: ``dict``
-
-        :param securityopt: Security options to provide for this container.
-        :type securityopt: ``list``
-
-        :param stdinopen: Whether to keep stdin open.
-        :type stdinopen: ``bool``
-
-        :param tty: Enable a tty for this container.
-        :type tty: ``bool``
-
-        :param user: User this container should be tied to.
-        :type user: ``str``
-
-        :param volumedriver: The volume driver to use for this container.
-        :type volumedriver: ``str``
-
-        :param workingdir: The workingDir this container should start in.
-        :type workingdir: ``str``
 
         :rtype: :class:`Container`
         """
-        payload = self._build_payload(name, image, start, **kwargs)
-        data = json.dumps({k: v for k, v in payload.items() if v is not None})
+
+        payload = {
+            "name": name,
+            "imageUuid": self._degen_image(image),
+            "startOnCreate": start,
+            **kwargs
+        }
+
+        data = json.dumps(payload)
 
         result = self.connection.request('%s/containers' % self.baseuri,
                                          data=data, method='POST').object
 
         return self._to_container(result)
 
-    def get_container(self, id):
+    def get_container(self, con_id):
         """
         Get a container by ID
 
-        :param id: The ID of the container to get
-        :type  id: ``str``
+        :param con_id: The ID of the container to get
+        :type  con_id: ``str``
 
         :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request("%s/containers/%s" %
-                                         (self.baseuri, id)).object
+                                         (self.baseuri, con_id)).object
 
         return self._to_container(result)
 
@@ -913,6 +613,22 @@ class RancherContainerDriver(ContainerDriver):
             }
         )
 
+    def _degen_image(self, image):
+        """
+        Take in an image object to break down into an ``imageUuid``
+
+        :param image:
+        :return:
+        """
+
+        # Only supporting docker atm
+        image_type = "docker"
+
+        if image.version is not None:
+            return image_type + ':' + image.path + ':' + image.version
+        else:
+            return image_type + ':' + image.path
+
     def _to_container(self, data):
         """
         Convert container in proper Container instance object
@@ -936,7 +652,7 @@ class RancherContainerDriver(ContainerDriver):
             # A Removed container is purged after x amt of time.
             # Both of these render the container dead (can't be started later)
             state = ContainerState.TERMINATED
-        elif rancher_state.endswith('ing'):
+        elif data['transitioning'] == 'yes':
             # Best we can do for current actions
             state = ContainerState.PENDING
         else:
@@ -953,236 +669,3 @@ class RancherContainerDriver(ContainerDriver):
             state=state,
             driver=self.connection.driver,
             extra=extra)
-
-    def _build_payload(self, image, start=True, name=None, image_type="docker",
-                       blkiodeviceoptions=None, build=None,
-                       capadd=None,
-                       capdrop=None, command=None,
-                       count=None, cpuset=None, cpushares=None,
-                       datavolumemounts=None, datavolumes=None,
-                       datavolumesfrom=None, description=None, devices=None,
-                       dns=None, dnssearch=None, domainname=None,
-                       entrypoint=None, environment=None, expose=None,
-                       extrahosts=None, healthcheck=None, hostname=None,
-                       instancelinks=None, labels=None, logconfig=None,
-                       lxcconf=None, memory=None, memoryswap=None,
-                       networkcontainerrid=None, networkids=None,
-                       networkmode=None, pidmode=None, ports=None,
-                       privileged=None, publishallports=None,
-                       readonly=None, registrycredentialid=None,
-                       requestedhostid=None, restartpolicy=None,
-                       securityopt=None,
-                       stdinopen=None, tty=None, user=None,
-                       volumedriver=None, workingdir=None):
-        """
-
-        :param image: The Image object to deploy.
-        :type image: :class:`libcloud.container.base.ContainerImage`
-
-        :param start: Whether to start the container on creation.
-        :type start: ``bool``
-
-        :param name: The desired name of the container.
-        :type name: ``str``
-
-        :param image_type: The image format of the desired image to deploy.
-        :type image_type: ``str``
-
-        :param blkiodeviceoptions: The blkioDeviceOptions for the container.
-        :type blkiodeviceoptions: ``dict``
-
-        :param build: Build details for the container.
-        :type build: ``dict``
-
-        :param capadd: Linux Capabilities to enable for this container.
-        :type capadd: ``list``
-
-        :param capdrop: Linux capabilities to disable for this container.
-        :type capdrop: ``list``
-
-        :param command: The command to execute when this container is run.
-        :type command: ``list``
-
-        :param count: The number of containers of this nature to launch.
-        :type count: ``int``
-
-        :param cpuset: Memory nodes in which to allow execution.
-        :type cpuset: ``str``
-
-        :param cpushares: Relative weight cpu shares to allow.
-        :type cpushares: ``int``
-
-        :param datavolumemounts: Data volume mountes this container should have
-        :type datavolumemounts: ``dict``
-
-        :param datavolumes: Data volumes to associate with this container.
-        :type datavolumes: ``list``
-
-        :param datavolumesfrom: Data volumes to inherit.
-        :type datavolumesfrom: ``list``
-
-        :param description: Description for this container.
-        :type description: ``str``
-
-        :param devices: Devices inside the container without privliged mode.
-        :type devices: ``list``
-
-        :param dns: DNS servers the container should utilize.
-        :type dns: ``list``
-
-        :param dnssearch: DNS search domains the container should utilize.
-        :type dnssearch: ``list``
-
-        :param domainname: The domain name the container should have.
-        :type domainname: ``str``
-
-        :param entrypoint: The entrypoint the container should have.
-        :type entrypoint: ``list``
-
-        :param environment: Environment variables the container should have.
-        :type environment: ``dict``
-
-        :param expose: Ports which should be exposed in the container.
-        :type expose: ``list``
-
-        :param extrahosts: Extra hosts file entries this container should have.
-        :type extrahosts: ``list``
-
-        :param healthcheck: Health check parameters for this container.
-        :type healthcheck: ``dict``
-
-        :param hostname: The hostname this container should have.
-        :type hostname: ``str``
-
-        :param instancelinks: Instance links the container should have.
-        :type instancelinks: ``dict``
-
-        :param labels: Labels to associate with this container.
-        :type labels: ``dict``
-
-        :param logconfig: Log configuration for this container.
-        :type logconfig: ``dict``
-
-        :param lxcconf: lxcConf specific to this container.
-        :type lxcconf: ``dict``
-
-        :param memory: The memory limit for this container.
-        :type memory: ``int``
-
-        :param memoryswap: Total memory limit for this container.
-        :type memoryswap: ``int``
-
-        :param networkcontainerrid: A Network container Id for this container.
-        :type networkcontainerrid: ``dict``
-
-        :param networkids: NetworkIds this container should contain.
-        :type networkids: ``list``
-
-        :param networkmode: The networkMode to enable for this container.
-        :type networkmode: ``str``
-
-        :param pidmode: The pidMode for this container.
-        :type pidmode: ``str``
-
-        :param ports: The ports to publicize for this container.
-        :type ports: ``list``
-
-        :param privileged: Whether to enable privileged mode for this container
-        :type privileged: ``bool``
-
-        :param publishallports: Publish all ports in container.
-        :type publishallports: ``bool``
-
-        :param readonly: Whether this container should be readOnly.
-        :type readonly: ``bool``
-
-        :param registrycredentialid: Registry credentials to use.
-        :type registrycredentialid: ``dict``
-
-        :param requestedhostid: Id of the requested host to run this container.
-        :type requestedhostid: ``dict``
-
-        :param restartpolicy: The container restart policy.
-        :type restartpolicy: ``dict``
-
-        :param securityopt: Security options to provide for this container.
-        :type securityopt: ``list``
-
-        :param stdinopen: Whether to keep stdin open.
-        :type stdinopen: ``bool``
-
-        :param tty: Enable a tty for this container.
-        :type tty: ``bool``
-
-        :param user: User this container should be tied to.
-        :type user: ``str``
-
-        :param volumedriver: The volume driver to use for this container.
-        :type volumedriver: ``str``
-
-        :param workingdir: The workingDir this container should start in.
-        :type workingdir: ``str``
-
-        :return:
-        """
-
-        if command is not None:
-            command = shlex.split(str(command))
-
-        if image.version is not None:
-            imageuuid = image_type + ':' + image.path + ':' + image.version
-        else:
-            imageuuid = image_type + ':' + image.path
-
-        payload = {
-            "blkioDeviceOptions": blkiodeviceoptions,
-            "build": build,
-            "capAdd": capadd,
-            "capDrop": capdrop,
-            "command": command,
-            "count": count,
-            "cpuSet": cpuset,
-            "cpuShares": cpushares,
-            "dataVolumeMounts": datavolumemounts,
-            "dataVolumes": datavolumes,
-            "dataVolumesFrom": datavolumesfrom,
-            "description": description,
-            "devices": devices,
-            "dns": dns,
-            "dnsSearch": dnssearch,
-            "domainName": domainname,
-            "entryPoint": entrypoint,
-            "environment": environment,
-            "expose": expose,
-            "extraHosts": extrahosts,
-            "healthCheck": healthcheck,
-            "hostname": hostname,
-            "imageUuid": imageuuid,
-            "instanceLinks": instancelinks,
-            "labels": labels,
-            "logConfig": logconfig,
-            "lxcConf": lxcconf,
-            "memory": memory,
-            "memorySwap": memoryswap,
-            "name": name,
-            "networkContainerId": networkcontainerrid,
-            "networkIds": networkids,
-            "networkMode": networkmode,
-            "pidMode": pidmode,
-            "ports": ports,
-            "privileged": privileged,
-            "publishAllPorts": publishallports,
-            "readOnly": readonly,
-            "registryCredentialId": registrycredentialid,
-            "requestedHostId": requestedhostid,
-            "restartPolicy": restartpolicy,
-            "securityOpt": securityopt,
-            "startOnCreate": start,
-            "stdinOpen": stdinopen,
-            "tty": tty,
-            "user": user,
-            "volumeDriver": volumedriver,
-            "workingdir": workingdir
-        }
-
-        return payload
