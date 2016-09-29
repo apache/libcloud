@@ -1175,32 +1175,8 @@ class RancherContainerDriver(ContainerDriver):
         else:
             state = ContainerState.UNKNOWN
 
-        # Includes the most used items atm. Eventually, everything ;)
-        extra = {
-            "state": rancher_state,
-            "command": data['command'],
-            "created": data['created'],
-            "dataVolumes": data['dataVolumes'],
-            "dns": data['dns'],
-            "dnsSearch": data['dnsSearch'],
-            "domainName": data['domainName'],
-            "entryPoint": data['entryPoint'],
-            "environment": data['environment'],
-            "expose": data['expose'],
-            "healthState": data['healthState'],
-            "hostId": data['hostId'],
-            "hostname": data['hostname'],
-            "labels": data['labels'],
-            "networkMode": data['networkMode'],
-            "ports": data['ports'],
-            "primaryIpAddress": data['primaryIpAddress'],
-            "privileged": data['privileged'],
-            "restartPolicy": data['restartPolicy'],
-            "stdinOpen": data['stdinOpen'],
-            "tty": data['tty'],
-            "uuid": data['uuid'],
-            "workingDir": data['workingDir']
-        }
+        # Everything contained in the json response is dumped in extra
+        extra = data
 
         return Container(
             id=data['id'],
