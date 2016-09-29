@@ -143,9 +143,9 @@ class RancherContainerDriver(ContainerDriver):
         # self.baseuri = "/v%s/projects/%s" % (self.version, project_id)
         self.baseuri = "/v%s" % self.version
 
-    def ex_list_environments(self):
+    def ex_list_stacks(self):
         """
-        List all Rancher Environments (called "Stacks" in the UI)
+        List all Rancher Stacks
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/
 
@@ -156,32 +156,32 @@ class RancherContainerDriver(ContainerDriver):
             "%s/environments" % self.baseuri).object
         return result['data']
 
-    def ex_deploy_environment(self, name, description=None, dockercompose=None,
+    def ex_deploy_stack(self, name, description=None, dockercompose=None,
                               environment=None, externalid=None, outputs=None,
                               previousenvironment=None,
                               previousexternalid=None, ranchercompose=None,
                               start=True):
         """
-        Deploy a new environment ("Stack" in the UI)
+        Deploy a new stack.
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/#create
 
-        :param name: The desired name of the environment.
+        :param name: The desired name of the stack.
         :type name: ``str``
 
-        :param description: A desired description for the environment.
+        :param description: A desired description for the stack.
         :type description: ``str``
 
         :param dockercompose: The Docker Compose configuration to use.
         :type dockercompose: ``str``
 
-        :param environment: Environment K/V specific to this environment.
+        :param environment: Environment K/V specific to this stack.
         :type environment: ``dict``
 
-        :param externalid: The externalId of the environment.
+        :param externalid: The externalId of the stack.
         :type externalid: ``str``
 
-        :param outputs: Any outputs the environment should contain.
+        :param outputs: Any outputs the stack should contain.
         :type outputs: ``dict``
 
         :param previousenvironment: The previousEnvironment for this env.
@@ -193,10 +193,10 @@ class RancherContainerDriver(ContainerDriver):
         :param ranchercompose: The Rancher Compose configuration for this env.
         :type ranchercompose: ``str``
 
-        :param start: Whether to start this environment on creation.
+        :param start: Whether to start this stack on creation.
         :type start: ``bool``
 
-        :return: The newly created environment.
+        :return: The newly created stack.
         :rtype: ``dict``
         """
 
@@ -219,11 +219,11 @@ class RancherContainerDriver(ContainerDriver):
 
         return result
 
-    def ex_get_environment(self, env_id):
+    def ex_get_stack(self, env_id):
         """
-        Get an environment by ID
+        Get a stack by ID
 
-        :param env_id: The environment to be obtained.
+        :param env_id: The stack to be obtained.
         :type env_id: ``str``
 
         :rtype: ``dict``
@@ -233,13 +233,13 @@ class RancherContainerDriver(ContainerDriver):
 
         return result
 
-    def ex_destroy_environment(self, env_id):
+    def ex_destroy_stack(self, env_id):
         """
-        Destroy an environment by ID
+        Destroy a stack by ID
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/#delete
 
-        :param env_id: The environment to be destroyed.
+        :param env_id: The stack to be destroyed.
         :type env_id: ``str``
 
         :return: True if destroy was successful, False otherwise.
@@ -250,13 +250,13 @@ class RancherContainerDriver(ContainerDriver):
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
 
-    def ex_activate_environment(self, env_id):
+    def ex_activate_stack(self, env_id):
         """
-        Activate Services for a environment.
+        Activate Services for a stack.
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/#activateservices
 
-        :param env_id: The environment to activate services for.
+        :param env_id: The stack to activate services for.
         :type env_id: ``str``
 
         :return: True if activate was successful, False otherwise.
@@ -268,13 +268,13 @@ class RancherContainerDriver(ContainerDriver):
         )
         return result.status in VALID_RESPONSE_CODES
 
-    def ex_deactivate_environment(self, env_id):
+    def ex_deactivate_stack(self, env_id):
         """
-        Deactivate Services for a environment.
+        Deactivate Services for a stack.
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/#deactivateservices
 
-        :param env_id: The environment to deactivate services for.
+        :param env_id: The stack to deactivate services for.
         :type env_id: ``str``
 
         :return: True if deactivate was successful, False otherwise.
