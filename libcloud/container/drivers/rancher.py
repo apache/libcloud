@@ -87,7 +87,7 @@ class RancherContainerDriver(ContainerDriver):
     # As in the /v1/
     version = '1'
 
-    def __init__(self, key, secret, secure=False, host='localhost', port=80):
+    def __init__(self, key, secret, secure=True, host='localhost', port=443):
         """
         Rancher Container driver class.
 
@@ -126,8 +126,8 @@ class RancherContainerDriver(ContainerDriver):
         super(RancherContainerDriver, self).__init__(key=key, secret=secret,
                                                      secure=secure, host=host,
                                                      port=port)
-        if host.startswith('https://'):
-            secure = True
+        if host.startswith('http://'):
+            secure = False
 
         # strip the prefix
         prefixes = ['http://', 'https://']
