@@ -23,15 +23,6 @@ VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
 
 class RancherResponse(JsonResponse):
 
-    def parse_body(self):
-        if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body
-        valid_content_types = ['application/json',
-                               'application/json; charset=utf-8']
-        content_type = self.headers.get('content-type')
-        if content_type in valid_content_types:
-            return json.loads(self.body)
-
     def parse_error(self):
         if self.status == 401:
             raise InvalidCredsError('Invalid credentials')
@@ -133,10 +124,6 @@ class RancherContainerDriver(ContainerDriver):
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.strip(prefix)
-
-        self.connection.host = host
-        self.connection.port = port
-        self.connection.secure = secure
 
         # We only support environment api keys, meaning none of this:
         # self.baseuri = "/v%s/projects/%s" % (self.version, project_id)
