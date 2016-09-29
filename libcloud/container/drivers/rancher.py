@@ -89,14 +89,29 @@ class RancherContainerDriver(ContainerDriver):
 
     def __init__(self, key, secret, secure=False, host='localhost', port=80):
         """
+        Rancher Container driver class.
+
+        Example:
+
+        >>> from libcloud.container.providers import get_driver
+        >>> from libcloud.container.types import Provider
+
+        >>> driver = get_driver(Provider.RANCHER)
+        >>> connection = driver(key="ACCESS_KEY_HERE",
+        secret="SECRET_KEY_HERE", host="172.30.0.100", port=8080)
+
+        >>> image = ContainerImage("hastebin", "hastebin", "rlister/hastebin",
+        "latest", driver=None)
+        >>> newcontainer = connection.deploy_container("myawesomepastebin",
+        image, environment={"STORAGE_TYPE": "file"})
+
         :param    key: API key or username to used (required)
         :type     key: ``str``
 
         :param    secret: Secret password to be used (required)
         :type     secret: ``str``
 
-        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
-                only support HTTPS, and it is on by default.
+        :param    secure: Whether to use HTTPS or HTTP.
         :type     secure: ``bool``
 
         :param    host: Override hostname used for connections.
@@ -867,6 +882,19 @@ class RancherContainerDriver(ContainerDriver):
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/container/#create
 
+        **The following is the Image format used for ``ContainerImage``**
+
+        *For a ``imageuuid``*:
+
+        - ``docker:<hostname>:<port>/<namespace>/<imagename>:<version>``
+
+        *The following applies*:
+
+        - ``id`` = ``<imagename>``
+        - ``name`` = ``<imagename>``
+        - ``path`` = ``<hostname>:<port>/<namespace>/<imagename>``
+        - ``version`` = ``<version>``
+
         :param name: The desired name of the container.
         :type name: ``str``
 
@@ -1076,14 +1104,7 @@ class RancherContainerDriver(ContainerDriver):
         image object. Only supports docker based images hence `docker:` must
         prefix!!
 
-        For a ``imageuuid``:
-            ``docker:<hostname>:<port>/<namespace>/<imagename>:<version>``
-
-        The following applies:
-            ``id`` = ``<imagename>``
-            ``name`` = ``<imagename>``
-            ``path`` = ``<hostname>:<port>/<namespace>/<imagename>``
-            ``version`` = ``<version>``
+        Please see the deploy_container() for details on the format.
 
         :param imageuuid: A valid Rancher image string
             i.e. ``docker:rlister/hastebin:8.0``
