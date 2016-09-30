@@ -152,7 +152,7 @@ class RancherContainerDriver(ContainerDriver):
 
         http://docs.rancher.com/rancher/v1.2/en/api/api-resources/environment/#create
 
-        :param name: The desired name of the stack.
+        :param name: The desired name of the stack. (required)
         :type name: ``str``
 
         :param description: A desired description for the stack.
