@@ -44,6 +44,13 @@ Container
   (GITHUB-862)
   [Anthony Shaw]
 
+Load Balancer
+~~~~~~~~~~~~~
+
+- Added fetch tags support in elb driver
+  (GITHUB-848)
+  [Anton Kozyrev]
+
 Changes in Apache Libcloud 1.2.1
 --------------------------------
 
