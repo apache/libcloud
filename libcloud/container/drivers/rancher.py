@@ -142,11 +142,9 @@ class RancherContainerDriver(ContainerDriver):
             "%s/environments" % self.baseuri).object
         return result['data']
 
-    def ex_deploy_stack(self, name, description=None, dockercompose=None,
-                        environment=None, externalid=None, outputs=None,
-                        previousenvironment=None,
-                        previousexternalid=None, ranchercompose=None,
-                        start=True):
+    def ex_deploy_stack(self, name, description=None, docker_compose=None,
+                        environment=None, external_id=None,
+                        rancher_compose=None, start=True):
         """
         Deploy a new stack.
 
@@ -158,26 +156,17 @@ class RancherContainerDriver(ContainerDriver):
         :param description: A desired description for the stack.
         :type description: ``str``
 
-        :param dockercompose: The Docker Compose configuration to use.
-        :type dockercompose: ``str``
+        :param docker_compose: The Docker Compose configuration to use.
+        :type docker_compose: ``str``
 
         :param environment: Environment K/V specific to this stack.
         :type environment: ``dict``
 
-        :param externalid: The externalId of the stack.
-        :type externalid: ``str``
+        :param external_id: The externalId of the stack.
+        :type external_id: ``str``
 
-        :param outputs: Any outputs the stack should contain.
-        :type outputs: ``dict``
-
-        :param previousenvironment: The previousEnvironment for this env.
-        :type previousenvironment: ``dict``
-
-        :param previousexternalid: The previousExternalId for this env.
-        :type previousexternalid: ``str``
-
-        :param ranchercompose: The Rancher Compose configuration for this env.
-        :type ranchercompose: ``str``
+        :param rancher_compose: The Rancher Compose configuration for this env.
+        :type rancher_compose: ``str``
 
         :param start: Whether to start this stack on creation.
         :type start: ``bool``
@@ -188,14 +177,11 @@ class RancherContainerDriver(ContainerDriver):
 
         payload = {
             "description": description,
-            "dockerCompose": dockercompose,
+            "dockerCompose": docker_compose,
             "environment": environment,
-            "externalId": externalid,
+            "externalId": external_id,
             "name": name,
-            "outputs": outputs,
-            "previousEnvironment": previousenvironment,
-            "previousExternalId": previousexternalid,
-            "rancherCompose": ranchercompose,
+            "rancherCompose": rancher_compose,
             "startOnCreate": start
         }
         data = json.dumps({k: v for k, v in payload.items() if v is not None})
@@ -285,12 +271,12 @@ class RancherContainerDriver(ContainerDriver):
         result = self.connection.request("%s/services" % self.baseuri).object
         return result['data']
 
-    def ex_deploy_service(self, name, image, environmentid,
-                          start=True, assignserviceipaddress=None,
-                          service_description=None, externalid=None,
-                          metadata=None, retainip=None, scale=None,
-                          scalepolicy=None, secondarylaunchconfigs=None,
-                          selectorcontainer=None, selectorlink=None,
+    def ex_deploy_service(self, name, image, environment_id,
+                          start=True, assign_service_ip_address=None,
+                          service_description=None, external_id=None,
+                          metadata=None, retain_ip=None, scale=None,
+                          scale_policy=None, secondary_launch_configs=None,
+                          selector_container=None, selector_link=None,
                           vip=None, **kwargs):
         """
         Deploy a Rancher Service under a stack.
@@ -305,41 +291,41 @@ class RancherContainerDriver(ContainerDriver):
         :param image: The Image object to deploy. (required)
         :type image: :class:`libcloud.container.base.ContainerImage`
 
-        :param environmentid: The stack ID this service is tied to. (required)
-        :type environmentid: ``str``
+        :param environment_id: The stack ID this service is tied to. (required)
+        :type environment_id: ``str``
 
         :param start: Whether to start the service on creation.
         :type start: ``bool``
 
-        :param assignserviceipaddress: The IP address to assign the service.
-        :type assignserviceipaddress: ``bool``
+        :param assign_service_ip_address: The IP address to assign the service.
+        :type assign_service_ip_address: ``bool``
 
         :param service_description: The service description.
         :type service_description: ``str``
 
-        :param externalid: The externalId for this service.
-        :type externalid: ``str``
+        :param external_id: The externalId for this service.
+        :type external_id: ``str``
 
         :param metadata: K/V Metadata for this service.
         :type metadata: ``dict``
 
-        :param retainip: Whether this service should retain its IP.
-        :type retainip: ``bool``
+        :param retain_ip: Whether this service should retain its IP.
+        :type retain_ip: ``bool``
 
         :param scale: The scale of containers in this service.
         :type scale: ``int``
 
-        :param scalepolicy: The scaling policy for this service.
-        :type scalepolicy: ``dict``
+        :param scale_policy: The scaling policy for this service.
+        :type scale_policy: ``dict``
 
-        :param secondarylaunchconfigs: Secondary container launch configs.
-        :type secondarylaunchconfigs: ``list``
+        :param secondary_launch_configs: Secondary container launch configs.
+        :type secondary_launch_configs: ``list``
 
-        :param selectorcontainer: The selectorContainer for this service.
-        :type selectorcontainer: ``str``
+        :param selector_container: The selectorContainer for this service.
+        :type selector_container: ``str``
 
-        :param selectorlink: The selectorLink for this service.
-        :type selectorlink: ``type``
+        :param selector_link: The selectorLink for this service.
+        :type selector_link: ``type``
 
         :param vip: The VIP to assign to this service.
         :type vip: ``str``
@@ -354,19 +340,19 @@ class RancherContainerDriver(ContainerDriver):
         }
 
         service_payload = {
-            "assignServiceIpAddress": assignserviceipaddress,
+            "assignServiceIpAddress": assign_service_ip_address,
             "description": service_description,
-            "environmentId": environmentid,
-            "externalId": externalid,
+            "environmentId": environment_id,
+            "externalId": external_id,
             "launchConfig": launchconfig,
             "metadata": metadata,
             "name": name,
-            "retainIp": retainip,
+            "retainIp": retain_ip,
             "scale": scale,
-            "scalePolicy": scalepolicy,
-            "secondaryLaunchConfigs": secondarylaunchconfigs,
-            "selectorContainer": selectorcontainer,
-            "selectorLink": selectorlink,
+            "scalePolicy": scale_policy,
+            "secondary_launch_configs": secondary_launch_configs,
+            "selectorContainer": selector_container,
+            "selectorLink": selector_link,
             "startOnCreate": start,
             "vip": vip
         }
