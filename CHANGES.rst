@@ -51,6 +51,13 @@ Load Balancer
   (GITHUB-848)
   [Anton Kozyrev]
 
+Storage
+~~~~~~~
+
+- Added storage permissions for Google Cloud Storage
+  (GITHUB-860)
+  [Scott Crunkleton]
+
 Changes in Apache Libcloud 1.2.1
 --------------------------------
 

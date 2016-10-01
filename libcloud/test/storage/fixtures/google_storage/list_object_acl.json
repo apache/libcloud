@@ -1,0 +1,86 @@
+{
+    "kind": "storage#objectAccessControls",
+    "items": [
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/project-owners-123",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/project-owners-123  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "project-owners-123",
+            "role": "OWNER",
+            "projectTeam": {
+                "projectNumber": "123",
+                "team": "owners"
+            },
+            "etag": "etag"
+        },
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/project-editors-123",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/project-editors-123  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "project-editors-123",
+            "role": "OWNER",
+            "projectTeam": {
+                "projectNumber": "123",
+                "team": "editors"
+            },
+            "etag": "etag"
+        },
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/project-viewers-123",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/project-viewers-123  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "project-viewers-123",
+            "role": "READER",
+            "projectTeam": {
+                "projectNumber": "123",
+                "team": "viewers"
+            },
+            "etag": "etag"
+        },
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/user-test@test.com",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/user-test@test.com  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "user-test@test.com",
+            "role": "OWNER",
+            "email": "test@test.com",
+            "etag": "etag"
+        },
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/domain-test.com",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/domain-test.com  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "domain-test.com",
+            "role": "OWNER",
+            "domain": "test.com",
+            "etag": "etag"
+        },
+        {
+            "kind": "storage#objectAccessControl",
+            "id": "test-bucket/test-object/12345/group-test-group@google.com",
+            "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object/acl/group-test-group@google.com  ",
+            "bucket": "test-bucket",
+            "object": "test-object",
+            "generation": "12345",
+            "entity": "group-test-group@google.com",
+            "role": "OWNER",
+            "email": "test-group@google.com",
+            "etag": "etag"
+        }
+    ]
+}
