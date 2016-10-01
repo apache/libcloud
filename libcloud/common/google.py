@@ -113,6 +113,9 @@ def _utcnow():
 
 
 def _utc_timestamp(datetime_obj):
+    """
+    Return string of datetime_obj in the UTC Timestamp Format
+    """
     return datetime_obj.strftime(UTC_TIMESTAMP_FORMAT)
 
 
