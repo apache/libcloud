@@ -338,6 +338,9 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         super(GoogleBaseAuthConnection, self).__init__(user_id, key, **kwargs)
 
     def add_default_headers(self, headers):
+        """
+        Add defaults for 'Content-Type' and 'Host' headers.
+        """
         headers['Content-Type'] = "application/x-www-form-urlencoded"
         headers['Host'] = self.host
         return headers
