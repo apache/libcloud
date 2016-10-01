@@ -120,6 +120,9 @@ def _utc_timestamp(datetime_obj):
 
 
 def _from_utc_timestamp(timestamp):
+    """
+    Return datetime obj where date and time are pulled from timestamp string.
+    """
     return datetime.datetime.strptime(timestamp, UTC_TIMESTAMP_FORMAT)
 
 
