@@ -199,7 +199,7 @@ class ScalewayNodeDriver(NodeDriver):
                     name=server['name'],
                     state=NodeState.fromstring(server['state']),
                     public_ips=[public_ip['address']] if public_ip else [],
-                    private_ips=[private_ip['address']] if private_ip else [],
+                    private_ips=[private_ip] if private_ip else [],
                     driver=self,
                     extra={'volumes': server['volumes']},
                     created_at=parse_date(server['creation_date']))
