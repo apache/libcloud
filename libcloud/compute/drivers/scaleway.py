@@ -291,5 +291,5 @@ class ScalewayNodeDriver(NodeDriver):
                                        method='DELETE').success()
 
     def destroy_volume_snapshot(self, snapshot):
-        return self.connection.request('/snapshots//%s' % snapshot.id,
+        return self.connection.request('/snapshots/%s' % snapshot.id,
                                        method='DELETE').success()
