@@ -1795,5 +1795,30 @@ class OutscaleTests(EC2Tests):
         self.assertTrue('m1.xlarge' in ids)
 
 
+class FCUMockHttp(EC2MockHttp):
+    fixtures = ComputeFileFixtures('fcu')
+
+    def _DescribeQuota(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_quota.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class OutscaleFCUTests(LibcloudTestCase):
+
+    def setUp(self):
+        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, FCUMockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
+                                            secret=EC2_PARAMS[1],
+                                            host='some.fcucloud.com')
+
+    def test_ex_describe_quota(self):
+        is_truncated, quota = self.driver.ex_describe_quota()
+        self.assertTrue(is_truncated == 'true')
+        self.assertTrue('global' in quota.keys())
+        self.assertTrue('vpc-00000000' in quota.keys())
+
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
