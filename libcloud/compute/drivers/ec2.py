@@ -6811,6 +6811,31 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
+    def ex_modify_instance_keypair(self, instance_id, key_name=None):
+        """
+        Modifies the keypair associated with a specified instance.
+        Once the modification done, you must restart the instance.
+
+        :param      instance_id: The ID of the instance
+        :type       instance_id: ``string``
+
+        :param      key_name: The name of the keypair
+        :type       key_name: ``string``
+        """
+
+        params = {'Action': 'ModifyInstanceKeypair'}
+
+        params.update({'instanceId': instance_id})
+
+        if key_name is not None:
+            params.update({'keyName': key_name})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        return (findtext(element=response, xpath='return',
+                         namespace=OUTSCALE_NAMESPACE) == 'true')
+
     def _to_quota(self, elem):
         """
         To Quota
