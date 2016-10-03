@@ -6563,6 +6563,7 @@ class OutscaleConnection(EC2Connection):
     Connection class for Outscale
     """
 
+    version = DEFAULT_OUTSCALE_API_VERSION
     host = None
 
 
@@ -6809,6 +6810,103 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
+
+    def _to_quota(self, elem):
+        """
+        To Quota
+        """
+
+        quota = {}
+        for reference_quota_item in findall(element=elem,
+                                            xpath='referenceQuotaSet/item',
+                                            namespace=OUTSCALE_NAMESPACE):
+            reference = findtext(element=reference_quota_item,
+                                 xpath='reference',
+                                 namespace=OUTSCALE_NAMESPACE)
+            quota_set = []
+            for quota_item in findall(element=reference_quota_item,
+                                      xpath='quotaSet/item',
+                                      namespace=OUTSCALE_NAMESPACE):
+                ownerId = findtext(element=quota_item,
+                                   xpath='ownerId',
+                                   namespace=OUTSCALE_NAMESPACE)
+                name = findtext(element=quota_item,
+                                xpath='name',
+                                namespace=OUTSCALE_NAMESPACE)
+                displayName = findtext(element=quota_item,
+                                       xpath='displayName',
+                                       namespace=OUTSCALE_NAMESPACE)
+                description = findtext(element=quota_item,
+                                       xpath='description',
+                                       namespace=OUTSCALE_NAMESPACE)
+                groupName = findtext(element=quota_item,
+                                     xpath='groupName',
+                                     namespace=OUTSCALE_NAMESPACE)
+                maxQuotaValue = findtext(element=quota_item,
+                                         xpath='maxQuotaValue',
+                                         namespace=OUTSCALE_NAMESPACE)
+                usedQuotaValue = findtext(element=quota_item,
+                                          xpath='usedQuotaValue',
+                                          namespace=OUTSCALE_NAMESPACE)
+                quota_set.append({'ownerId': ownerId,
+                                  'name': name,
+                                  'displayName': displayName,
+                                  'description': description,
+                                  'groupName': groupName,
+                                  'maxQuotaValue': maxQuotaValue,
+                                  'usedQuotaValue': usedQuotaValue})
+            quota[reference] = quota_set
+
+        return quota
+
+    def ex_describe_quota(self, dry_run=False, filters=None,
+                          max_results=None, marker=None):
+        """
+        Describes one or more of your quotas.
+
+        :param      dry_run: dry_run
+        :type       dry_run: ``bool``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain quotas
+        :type       filters: ``dict``
+
+        :param      max_results: The maximum number of items that can be
+                                 returned in a single page (by default, 100)
+        :type       max_results: ``int``
+
+        :param      marker: Set quota marker
+        :type       marker: ``string``
+
+        :return:    (is_truncated, quota) tuple
+        :rtype:     ``(bool, dict)``
+        """
+
+        if filters:
+            raise NotImplementedError(
+                'quota filters are not implemented')
+
+        if marker:
+            raise NotImplementedError(
+                'quota marker is not implemented')
+
+        params = {'Action': 'DescribeQuota'}
+
+        if dry_run:
+            params.update({'DryRun': dry_run})
+
+        if max_results:
+            params.update({'MaxResults': max_results})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        quota = self._to_quota(response)
+
+        is_truncated = findtext(element=response, xpath='isTruncated',
+                                namespace=OUTSCALE_NAMESPACE)
+
+        return is_truncated, quota
 
 
 class OutscaleSASNodeDriver(OutscaleNodeDriver):
