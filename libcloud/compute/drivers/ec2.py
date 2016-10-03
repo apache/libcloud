@@ -6908,6 +6908,43 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         return is_truncated, quota
 
+    def _to_product_type(self, elem):
+
+        productTypeId = findtext(element=elem, xpath='productTypeId',
+                                 namespace=OUTSCALE_NAMESPACE)
+        description = findtext(element=elem, xpath='description',
+                               namespace=OUTSCALE_NAMESPACE)
+
+        return {'productTypeId': productTypeId,
+                'description': description}
+
+    def ex_get_product_type(self, image_id, snapshot_id=None):
+        """
+        Get the product type of a specified OMI or snapshot.
+
+        :param      image_id: The ID of the OMI
+        :type       image_id: ``string``
+
+        :param      snapshot_id: The ID of the snapshot
+        :type       snapshot_id: ``string``
+
+        :return:    A product type
+        :rtype:     ``dict``
+        """
+
+        params = {'Action': 'GetProductType'}
+
+        params.update({'ImageId': image_id})
+        if snapshot_id is not None:
+            params.update({'SnapshotId': snapshot_id})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        product_type = self._to_product_type(response)
+
+        return product_type
+
     def _to_product_types(self, elem):
 
         product_types = []
