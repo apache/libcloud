@@ -86,6 +86,10 @@ NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 DEFAULT_EUCA_API_VERSION = '3.3.0'
 EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 
+# Outscale Constants
+DEFAULT_OUTSCALE_API_VERSION = '2016-04-01'
+OUTSCALE_NAMESPACE = 'http://api.outscale.com/wsdl/fcuext/2014-04-15/'
+
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
