@@ -62,7 +62,7 @@ CA_CERTS_PATH = [
     '/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt',
 
     # opensuse/sles: openssl
-    '/etc/ssl/certs/YaST-CA.pem',
+    '/etc/ssl/ca-bundle.pem',
 ]
 
 # Insert certifi CA bundle path to the front of Libcloud CA bundle search
