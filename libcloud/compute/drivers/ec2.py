@@ -6908,6 +6908,47 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         return is_truncated, quota
 
+    def _to_product_types(self, elem):
+
+        product_types = []
+        for product_types_item in findall(element=elem,
+                                          xpath='productTypeSet/item',
+                                          namespace=OUTSCALE_NAMESPACE):
+            productTypeId = findtext(element=product_types_item,
+                                     xpath='productTypeId',
+                                     namespace=OUTSCALE_NAMESPACE)
+            description = findtext(element=product_types_item,
+                                   xpath='description',
+                                   namespace=OUTSCALE_NAMESPACE)
+            product_types.append({'productTypeId': productTypeId,
+                                  'description': description})
+
+        return product_types
+
+    def ex_describe_product_types(self, filters=None):
+        """
+        Describes Product Types.
+
+        :param      filters: The filters so that the response includes
+                             information for only certain quotas
+        :type       filters: ``dict``
+
+        :return:    A product types list
+        :rtype:     ``list``
+        """
+
+        params = {'Action': 'DescribeProductTypes'}
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        product_types = self._to_product_types(response)
+
+        return product_types
+
 
 class OutscaleSASNodeDriver(OutscaleNodeDriver):
     """
