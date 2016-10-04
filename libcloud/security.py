@@ -63,6 +63,9 @@ CA_CERTS_PATH = [
 
     # opensuse/sles: openssl
     '/etc/ssl/ca-bundle.pem',
+
+    # SLES11 imported CA certificate
+    '/etc/ssl/certs/YaST-CA.pem',
 ]
 
 # Insert certifi CA bundle path to the front of Libcloud CA bundle search
