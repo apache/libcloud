@@ -1814,6 +1814,10 @@ class FCUMockHttp(EC2MockHttp):
         body = self.fixtures.load('ex_get_product_type.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ModifyInstanceKeypair(self, method, url, body, headers):
+        body = self.fixtures.load('ex_modify_instance_keypair.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class OutscaleFCUTests(LibcloudTestCase):
 
@@ -1854,6 +1858,10 @@ class OutscaleFCUTests(LibcloudTestCase):
         product_type = self.driver.ex_get_product_type('ami-29ab9e54')
         self.assertTrue(product_type['productTypeId'] == '0002')
         self.assertTrue(product_type['description'] == 'Windows')
+
+    def test_ex_modify_instance_keypair(self):
+        r = self.driver.ex_modify_instance_keypair('i-57292bc5', 'key_name')
+        self.assertTrue(r)
 
 
 if __name__ == '__main__':
