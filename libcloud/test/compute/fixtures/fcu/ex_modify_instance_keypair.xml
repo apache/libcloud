@@ -1,0 +1,5 @@
+<ModifyInstanceKeypairResponse
+    xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
+    <requestId>9be5a40b-5f0a-4761-89fb-770eada0c865</requestId>
+    <return>true</return>
+</ModifyInstanceKeypairResponse>
