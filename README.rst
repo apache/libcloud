@@ -31,9 +31,8 @@ Apache Libcloud - a unified interface into the cloud
 .. image:: https://coveralls.io/repos/github/apache/libcloud/badge.svg?branch=trunk
         :target: https://coveralls.io/github/apache/libcloud?branch=trunk
 
-Apache Libcloud is a Python library which hides differences between different
-cloud provider APIs and allows you to manage different cloud resources
-through a unified and easy to use API.
+Apache Libcloud is a Python library which abstracts many different
+cloud provider APIs into a unified API.
 
 Resources you can manage with Libcloud are divided into the following categories:
 
