@@ -1810,6 +1810,10 @@ class FCUMockHttp(EC2MockHttp):
         body = self.fixtures.load('ex_describe_instance_types.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _GetProductType(self, method, url, body, headers):
+        body = self.fixtures.load('ex_get_product_type.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class OutscaleFCUTests(LibcloudTestCase):
 
@@ -1845,6 +1849,11 @@ class OutscaleFCUTests(LibcloudTestCase):
         self.assertTrue('oc2.8xlarge' in it.keys())
         self.assertTrue('68718428160' in it.values())
         self.assertTrue(it['m3.large'] == '8050966528')
+
+    def test_ex_get_product_type(self):
+        product_type = self.driver.ex_get_product_type('ami-29ab9e54')
+        self.assertTrue(product_type['productTypeId'] == '0002')
+        self.assertTrue(product_type['description'] == 'Windows')
 
 
 if __name__ == '__main__':
