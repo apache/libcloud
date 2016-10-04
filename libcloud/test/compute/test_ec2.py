@@ -1806,6 +1806,10 @@ class FCUMockHttp(EC2MockHttp):
         body = self.fixtures.load('ex_describe_product_types.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _DescribeInstanceTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_instance_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class OutscaleFCUTests(LibcloudTestCase):
 
@@ -1831,6 +1835,16 @@ class OutscaleFCUTests(LibcloudTestCase):
         self.assertTrue('0001' in pt.keys())
         self.assertTrue('MapR' in pt.values())
         self.assertTrue(pt['0002'] == 'Windows')
+
+    def test_ex_describe_instance_instance_types(self):
+        instance_types = self.driver.ex_describe_instance_types()
+        it = {}
+        for e in instance_types:
+            it[e['name']] = e['memory']
+        self.assertTrue('og4.4xlarge' in it.keys())
+        self.assertTrue('oc2.8xlarge' in it.keys())
+        self.assertTrue('68718428160' in it.values())
+        self.assertTrue(it['m3.large'] == '8050966528')
 
 
 if __name__ == '__main__':
