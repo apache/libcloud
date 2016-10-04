@@ -1802,6 +1802,10 @@ class FCUMockHttp(EC2MockHttp):
         body = self.fixtures.load('ex_describe_quota.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _DescribeProductTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_product_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class OutscaleFCUTests(LibcloudTestCase):
 
@@ -1818,6 +1822,15 @@ class OutscaleFCUTests(LibcloudTestCase):
         self.assertTrue(is_truncated == 'true')
         self.assertTrue('global' in quota.keys())
         self.assertTrue('vpc-00000000' in quota.keys())
+
+    def test_ex_describe_product_types(self):
+        product_types = self.driver.ex_describe_product_types()
+        pt = {}
+        for e in product_types:
+            pt[e['productTypeId']] = e['description']
+        self.assertTrue('0001' in pt.keys())
+        self.assertTrue('MapR' in pt.values())
+        self.assertTrue(pt['0002'] == 'Windows')
 
 
 if __name__ == '__main__':
