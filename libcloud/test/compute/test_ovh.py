@@ -18,46 +18,50 @@ from mock import patch
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.compute.drivers.runabove import RunAboveNodeDriver
+from libcloud.compute.drivers.ovh import OvhNodeDriver
 
-from libcloud.test.common.test_runabove import BaseRunAboveMockHttp
-from libcloud.test.secrets import RUNABOVE_PARAMS
+from libcloud.test.common.test_ovh import BaseOvhMockHttp
+from libcloud.test.secrets import OVH_PARAMS
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class RunAboveMockHttp(BaseRunAboveMockHttp):
+class OvhMockHttp(BaseOvhMockHttp):
     """Fixtures needed for tests related to rating model"""
-    fixtures = ComputeFileFixtures('runabove')
+    fixtures = ComputeFileFixtures('ovh')
 
     def _json_1_0_auth_time_get(self, method, url, body, headers):
         body = self.fixtures.load('auth_time_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_region_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_region_get(self, method, url, body, headers):
         body = self.fixtures.load('region_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_flavor_foo_id_get(self, method, url, body, headers):
-        body = self.fixtures.load('flavor_get_detail.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _json_1_0_flavor_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_flavor_get(self, method, url, body, headers):
         body = self.fixtures.load('flavor_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_image_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_flavor_region_SBG1_get(self, method, url, body, headers):
+        body = self.fixtures.load('flavor_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_flavor_foo_id_get(self, method, url, body, headers):
+        body = self.fixtures.load('flavor_get_detail.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_image_get(self, method, url, body, headers):
         body = self.fixtures.load('image_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_image_foo_id_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_image_foo_id_get(self, method, url, body, headers):
         body = self.fixtures.load('image_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_ssh_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_sshkey_region_SBG1_get(self, method, url, body, headers):
         body = self.fixtures.load('ssh_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_ssh_post(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_sshkey_post(self, method, url, body, headers):
         body = self.fixtures.load('ssh_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -65,52 +69,52 @@ class RunAboveMockHttp(BaseRunAboveMockHttp):
         body = self.fixtures.load('ssh_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_instance_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_instance_get(self, method, url, body, headers):
         body = self.fixtures.load('instance_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_instance_foo_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_instance_foo_get(self, method, url, body, headers):
         body = self.fixtures.load('instance_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_instance_foo_delete(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_instance_foo_delete(self, method, url, body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_instance_post(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_instance_post(self, method, url, body, headers):
         body = self.fixtures.load('instance_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_get(self, method, url, body, headers):
         body = self.fixtures.load('volume_get.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_post(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_post(self, method, url, body, headers):
         body = self.fixtures.load('volume_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_foo_get(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_foo_get(self, method, url, body, headers):
         body = self.fixtures.load('volume_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_foo_delete(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_foo_delete(self, method, url, body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_foo_attach_post(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_foo_attach_post(self, method, url, body, headers):
         body = self.fixtures.load('volume_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_volume_foo_detach_post(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_foo_detach_post(self, method, url, body, headers):
         body = self.fixtures.load('volume_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-@patch('libcloud.common.runabove.RunAboveConnection._timedelta', 42)
-class RunAboveTests(unittest.TestCase):
+@patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
+class OvhTests(unittest.TestCase):
     def setUp(self):
-        RunAboveNodeDriver.connectionCls.conn_classes = (
-            RunAboveMockHttp, RunAboveMockHttp)
-        RunAboveMockHttp.type = None
-        self.driver = RunAboveNodeDriver(*RUNABOVE_PARAMS)
+        OvhNodeDriver.connectionCls.conn_classes = (
+            OvhMockHttp, OvhMockHttp)
+        OvhMockHttp.type = None
+        self.driver = OvhNodeDriver(*OVH_PARAMS)
 
     def test_list_locations(self):
         images = self.driver.list_locations()
@@ -153,15 +157,15 @@ class RunAboveTests(unittest.TestCase):
 
     def test_get_node(self):
         node = self.driver.ex_get_node('foo')
-        self.assertEqual(node.name, 'testvm')
+        self.assertEqual(node.name, 'test_vm')
 
     def test_create_node(self):
         location = self.driver.list_locations()[0]
         image = self.driver.list_sizes(location)[0]
         size = self.driver.list_sizes(location)[0]
-        node = self.driver.create_node(name='testvm', image=image, size=size,
+        node = self.driver.create_node(name='test_vm', image=image, size=size,
                                        location=location)
-        self.assertEqual(node.name, 'testvm')
+        self.assertEqual(node.name, 'test_vm')
 
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]

@@ -1,0 +1,1 @@
+[{"id":"foo-id","disk":80,"name":"ovh.intel.ha.l","ram":8192,"vcpus":2,"region":"SBG1","type":"ovh.ceph.eg","inboundBandwidth":511,"osType":"Linux"},{"id":"bar-id","disk":80,"name":"ovh.intel.ha.l","ram":8192,"vcpus":2,"region":"SBG1","type":"ovh.ceph.eg", "outboundBandwidth": 511,"inboundBandwidth": 511,"osType":"Linux"}]
