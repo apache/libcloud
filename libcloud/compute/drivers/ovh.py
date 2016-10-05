@@ -64,6 +64,10 @@ class OvhNodeDriver(NodeDriver):
         self.consumer_key = ex_consumer_key
         NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key)
 
+    def _get_project_action(self, suffix):
+        base_url = '%s/cloud/project/%s/' % (API_ROOT, self.project_id)
+        return base_url + suffix
+
     def list_nodes(self, location=None):
         """
         List all nodes.
@@ -74,7 +78,7 @@ class OvhNodeDriver(NodeDriver):
         :return: List of node objects
         :rtype: ``list`` of :class:`Node`
         """
-        action = '%s/cloud/project/%s/instance' % (API_ROOT, self.project_id)
+        action = self._get_project_action('instance')
         data = {}
         if location:
             data['region'] = location.id
@@ -91,8 +95,7 @@ class OvhNodeDriver(NodeDriver):
         :return: Created node
         :rtype  : :class:`Node`
         """
-        action = '%s/cloud/project/%s/instance/%s' % (
-            API_ROOT, self.project_id, node_id)
+        action = self._get_project_action('instance/%s' % node_id)
         response = self.connection.request(action, method='GET')
         return self._to_node(response.object)
 
@@ -118,7 +121,7 @@ class OvhNodeDriver(NodeDriver):
         :return: Created node
         :rtype : :class:`Node`
         """
-        action = '%s/cloud/project/%s/instance' % (API_ROOT, self.project_id)
+        action = self._get_project_action('instance')
         data = {
             'name': name,
             'imageId': image.id,
@@ -132,13 +135,12 @@ class OvhNodeDriver(NodeDriver):
         return self._to_node(response.object)
 
     def destroy_node(self, node):
-        action = '%s/cloud/project/%s/instance/%s' % (
-            API_ROOT, self.project_id, node.id)
+        action = self._get_project_action('instance/%s' % node.id)
         self.connection.request(action, method='DELETE')
         return True
 
     def list_sizes(self, location=None):
-        action = '%s/cloud/project/%s/flavor' % (API_ROOT, self.project_id)
+        action = self._get_project_action('flavor')
         params = {}
         if location:
             params['region'] = location.id
@@ -155,8 +157,7 @@ class OvhNodeDriver(NodeDriver):
         :return: Size
         :rtype: :class:`NodeSize`
         """
-        action = '%s/cloud/project/%s/flavor/%s' % (
-            API_ROOT, self.project_id, size_id)
+        action = self._get_project_action('flavor/%s' % size_id)
         response = self.connection.request(action)
         return self._to_size(response.object)
 
@@ -173,7 +174,7 @@ class OvhNodeDriver(NodeDriver):
         :return: List of images
         :rtype  : ``list`` of :class:`NodeImage`
         """
-        action = '%s/cloud/project/%s/image' % (API_ROOT, self.project_id)
+        action = self._get_project_action('image')
         params = {}
         if location:
             params['region'] = location.id
@@ -183,13 +184,12 @@ class OvhNodeDriver(NodeDriver):
         return self._to_images(response.object)
 
     def get_image(self, image_id):
-        action = '%s/cloud/project/%s/image/%s' % (
-            API_ROOT, self.project_id, image_id)
+        action = self._get_project_action('image/%s' % image_id)
         response = self.connection.request(action)
         return self._to_image(response.object)
 
     def list_locations(self):
-        action = '%s/cloud/project/%s/region' % (API_ROOT, self.project_id)
+        action = self._get_project_action('region')
         data = self.connection.request(action)
         return self._to_locations(data.object)
 
@@ -203,7 +203,7 @@ class OvhNodeDriver(NodeDriver):
         :return: Public keys
         :rtype: ``list``of :class:`KeyPair`
         """
-        action = '%s/cloud/project/%s/sshkey' % (API_ROOT, self.project_id)
+        action = self._get_project_action('sshkey')
         params = {}
         if location:
             params['region'] = location.id
@@ -243,27 +243,14 @@ class OvhNodeDriver(NodeDriver):
         :return: Imported key pair object.
         :rtype: :class:`KeyPair`
         """
-        action = '%s/cloud/project/%s/sshkey' % (API_ROOT, self.project_id)
+        action = self._get_project_action('sshkey')
         data = {'name': name, 'publicKey': key_material, 'region': location.id}
         response = self.connection.request(action, data=data, method='POST')
         return self._to_key_pair(response.object)
 
-    def delete_key_pair(self, name, location):
-        """
-        Delete an existing key pair.
-
-        :param name: Key pair name.
-        :type name: ``str``
-
-        :keyword location: Key's region
-        :type location: :class:`NodeLocation`
-
-        :return:   True of False based on success of Keypair deletion
-        :rtype:    ``bool``
-        """
-        action = '%s/cloud/project/%s/sshkey/%s' % (
-            API_ROOT, self.project_id, name)
-        params = {'name': name, 'region': location.id}
+    def delete_key_pair(self, key_pair):
+        action = self._get_project_action('sshkey/%s' % key_pair.extra['id'])
+        params = {'keyId': key_pair.extra['id']}
         self.connection.request(action, params=params, method='DELETE')
         return True
 
@@ -290,7 +277,7 @@ class OvhNodeDriver(NodeDriver):
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
-        action = '%s/cloud/project/%s/volume' % (API_ROOT, self.project_id)
+        action = self._get_project_action('volume')
         data = {
             'region': location.id,
             'size': size,
@@ -304,8 +291,7 @@ class OvhNodeDriver(NodeDriver):
         return self._to_volume(response.object)
 
     def destroy_volume(self, volume):
-        action = '%s/cloud/project/%s/volume/%s' % (
-            API_ROOT, self.project_id, volume.id)
+        action = self._get_project_action('volume/%s' % volume.id)
         self.connection.request(action, method='DELETE')
         return True
 
@@ -319,7 +305,7 @@ class OvhNodeDriver(NodeDriver):
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        action = '%s/cloud/project/%s/volume' % (API_ROOT, self.project_id)
+        action = self._get_project_action('volume')
         data = {}
         if location:
             data['region'] = location.id
@@ -336,8 +322,7 @@ class OvhNodeDriver(NodeDriver):
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`
         """
-        action = '%s/cloud/project/%s/volume/%s' % (
-            API_ROOT, self.project_id, volume_id)
+        action = self._get_project_action('volume/%s' % volume_id)
         response = self.connection.request(action)
         return self._to_volume(response.object)
 
@@ -356,8 +341,7 @@ class OvhNodeDriver(NodeDriver):
         :return: True or False representing operation successful
         :rtype:   ``bool``
         """
-        action = '%s/cloud/project/%s/volume/%s/attach' % (
-            API_ROOT, self.project_id, volume.id)
+        action = self._get_project_action('volume/%s/attach' % volume.id)
         data = {'instanceId': node.id, 'volumeId': volume.id}
         self.connection.request(action, data=data, method='POST')
         return True
@@ -379,8 +363,7 @@ class OvhNodeDriver(NodeDriver):
         :raises: Exception: If ``ex_node`` is not provided and more than one
                             node is attached to the volume
         """
-        action = '%s/cloud/project/%s/volume/%s/detach' % (
-            API_ROOT, self.project_id, volume.id)
+        action = self._get_project_action('volume/%s/detach' % volume.id)
         if ex_node is None:
             if len(volume.extra['attachedTo']) != 1:
                 err_msg = "Volume '%s' has more or less than one attached" \

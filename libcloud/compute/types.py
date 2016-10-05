@@ -150,6 +150,7 @@ class Provider(Type):
     RACKSPACE = 'rackspace'
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     RIMUHOSTING = 'rimuhosting'
+    RUNABOVE = 'runabove'
     SERVERLOVE = 'serverlove'
     SKALICLOUD = 'skalicloud'
     SOFTLAYER = 'softlayer'
