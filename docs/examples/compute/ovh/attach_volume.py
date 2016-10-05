@@ -1,10 +1,10 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-RunAbove = get_driver(Provider.RUNABOVE)
-driver = RunAbove('yourAppKey', 'yourAppSecret', 'YourConsumerKey')
+Ovh = get_driver(Provider.OVH)
+driver = Ovh('yourAppKey', 'yourAppSecret', 'youProjectId', 'yourConsumerKey')
 
-location = [l for l in driver.list_locations() if l.id == 'SBG-1'][0]
+location = [l for l in driver.list_locations() if l.id == 'SBG1'][0]
 node = driver.list_nodes()[0]
 
 volume = driver.create_volume(size=10, location=location)
