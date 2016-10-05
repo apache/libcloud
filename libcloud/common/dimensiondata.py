@@ -672,9 +672,9 @@ class DimensionDataNetworkDomain(object):
 
     def __repr__(self):
         return (('<DimensionDataNetworkDomain: id=%s, name=%s, '
-                 'description=%s, location=%s, status=%s>')
+                 'description=%s, location=%s, status=%s, plan=%s>')
                 % (self.id, self.name, self.description, self.location,
-                   self.status))
+                   self.status, self.plan))
 
 
 class DimensionDataPublicIpBlock(object):
