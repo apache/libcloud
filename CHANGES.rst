@@ -4,6 +4,13 @@
 Changes in current version of Apache Libcloud
 ---------------------------------------------
 
+General
+~~~~~~~
+
+- Added certificate path for SLES12/OpenSUSE12
+  (GITHUB-884)
+  [Michael Calmer]
+
 Compute
 ~~~~~~~
 
