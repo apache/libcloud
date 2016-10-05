@@ -124,8 +124,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
     Provider.ONAPP:
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
-    Provider.RUNABOVE:
-    ('libcloud.compute.drivers.runabove', 'RunAboveNodeDriver'),
+    Provider.OVH:
+    ('libcloud.compute.drivers.ovh', 'OvhNodeDriver'),
     Provider.INTERNETSOLUTIONS:
     ('libcloud.compute.drivers.internetsolutions',
      'InternetSolutionsNodeDriver'),

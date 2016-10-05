@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-RunAbove driver
+Ovh driver
 """
-from libcloud.common.runabove import API_ROOT, RunAboveConnection
+from libcloud.common.ovh import API_ROOT, OvhConnection
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeImage, StorageVolume
 from libcloud.compute.types import Provider, StorageVolumeState
@@ -23,25 +23,25 @@ from libcloud.compute.drivers.openstack import OpenStackNodeDriver
 from libcloud.compute.drivers.openstack import OpenStackKeyPair
 
 
-class RunAboveNodeDriver(NodeDriver):
+class OvhNodeDriver(NodeDriver):
     """
-    Libcloud driver for the RunAbove API
+    Libcloud driver for the Ovh API
 
-    For more information on the RunAbove API, read the official reference:
+    For more information on the Ovh API, read the official reference:
 
-        https://api.runabove.com/console/
+        https://api.ovh.com/console/
     """
-    type = Provider.RUNABOVE
-    name = "RunAbove"
-    website = 'https://www.runabove.com/'
-    connectionCls = RunAboveConnection
+    type = Provider.OVH
+    name = "Ovh"
+    website = 'https://www.ovh.com/'
+    connectionCls = OvhConnection
     features = {'create_node': ['ssh_key']}
-    api_name = 'runabove'
+    api_name = 'ovh'
 
     NODE_STATE_MAP = OpenStackNodeDriver.NODE_STATE_MAP
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
 
-    def __init__(self, key, secret, ex_consumer_key=None):
+    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None):
         """
         Instantiate the driver with the given API credentials.
 
@@ -51,12 +51,16 @@ class RunAboveNodeDriver(NodeDriver):
         :param secret: Your application secret (required)
         :type secret: ``str``
 
+        :param ex_project_id: Your project ID
+        :type ex_project_id: ``str``
+
         :param ex_consumer_key: Your consumer key (required)
         :type ex_consumer_key: ``str``
 
         :rtype: ``None``
         """
         self.datacenter = None
+        self.project_id = ex_project_id
         self.consumer_key = ex_consumer_key
         NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key)
 
@@ -70,7 +74,7 @@ class RunAboveNodeDriver(NodeDriver):
         :return: List of node objects
         :rtype: ``list`` of :class:`Node`
         """
-        action = API_ROOT + '/instance'
+        action = '%s/cloud/project/%s/instance' % (API_ROOT, self.project_id)
         data = {}
         if location:
             data['region'] = location.id
@@ -87,7 +91,8 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Created node
         :rtype  : :class:`Node`
         """
-        action = API_ROOT + '/instance/' + node_id
+        action = '%s/cloud/project/%s/instance/%s' % (
+            API_ROOT, self.project_id, node_id)
         response = self.connection.request(action, method='GET')
         return self._to_node(response.object)
 
@@ -113,7 +118,7 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Created node
         :rtype : :class:`Node`
         """
-        action = API_ROOT + '/instance'
+        action = '%s/cloud/project/%s/instance' % (API_ROOT, self.project_id)
         data = {
             'name': name,
             'imageId': image.id,
@@ -121,21 +126,23 @@ class RunAboveNodeDriver(NodeDriver):
             'region': location.id,
         }
         if ex_keyname:
-            data['sshKeyName'] = ex_keyname
+            key_id = self.get_key_pair(ex_keyname, location).extra['id']
+            data['sshKeyId'] = key_id
         response = self.connection.request(action, data=data, method='POST')
         return self._to_node(response.object)
 
     def destroy_node(self, node):
-        action = API_ROOT + '/instance/' + node.id
+        action = '%s/cloud/project/%s/instance/%s' % (
+            API_ROOT, self.project_id, node.id)
         self.connection.request(action, method='DELETE')
         return True
 
     def list_sizes(self, location=None):
-        action = API_ROOT + '/flavor'
-        data = {}
+        action = '%s/cloud/project/%s/flavor' % (API_ROOT, self.project_id)
+        params = {}
         if location:
-            data['region'] = location.id
-        response = self.connection.request(action, data=data)
+            params['region'] = location.id
+        response = self.connection.request(action, params=params)
         return self._to_sizes(response.object)
 
     def ex_get_size(self, size_id):
@@ -148,7 +155,8 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Size
         :rtype: :class:`NodeSize`
         """
-        action = API_ROOT + '/flavor/' + size_id
+        action = '%s/cloud/project/%s/flavor/%s' % (
+            API_ROOT, self.project_id, size_id)
         response = self.connection.request(action)
         return self._to_size(response.object)
 
@@ -165,22 +173,23 @@ class RunAboveNodeDriver(NodeDriver):
         :return: List of images
         :rtype  : ``list`` of :class:`NodeImage`
         """
-        action = API_ROOT + '/image'
-        data = {}
+        action = '%s/cloud/project/%s/image' % (API_ROOT, self.project_id)
+        params = {}
         if location:
-            data['region'] = location.id
+            params['region'] = location.id
         if ex_size:
-            data['flavorId'] = ex_size.id
-        response = self.connection.request(action, data=data)
+            params['flavorId'] = ex_size.id
+        response = self.connection.request(action, params=params)
         return self._to_images(response.object)
 
     def get_image(self, image_id):
-        action = API_ROOT + '/image/' + image_id
+        action = '%s/cloud/project/%s/image/%s' % (
+            API_ROOT, self.project_id, image_id)
         response = self.connection.request(action)
         return self._to_image(response.object)
 
     def list_locations(self):
-        action = API_ROOT + '/region'
+        action = '%s/cloud/project/%s/region' % (API_ROOT, self.project_id)
         data = self.connection.request(action)
         return self._to_locations(data.object)
 
@@ -194,11 +203,11 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Public keys
         :rtype: ``list``of :class:`KeyPair`
         """
-        action = API_ROOT + '/ssh'
-        data = {}
+        action = '%s/cloud/project/%s/sshkey' % (API_ROOT, self.project_id)
+        params = {}
         if location:
-            data['region'] = location.id
-        response = self.connection.request(action, data=data)
+            params['region'] = location.id
+        response = self.connection.request(action, params=params)
         return self._to_key_pairs(response.object)
 
     def get_key_pair(self, name, location):
@@ -214,10 +223,12 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Public key
         :rtype: :class:`KeyPair`
         """
-        action = API_ROOT + '/ssh/' + name
-        data = {'region': location.id}
-        response = self.connection.request(action, data=data)
-        return self._to_key_pair(response.object)
+        # Keys are indexed with ID
+        keys = [key for key in self.list_key_pairs(location)
+                if key.name == name]
+        if not keys:
+            raise Exception("No key named '%s'" % name)
+        return keys[0]
 
     def import_key_pair_from_string(self, name, key_material, location):
         """
@@ -232,7 +243,7 @@ class RunAboveNodeDriver(NodeDriver):
         :return: Imported key pair object.
         :rtype: :class:`KeyPair`
         """
-        action = API_ROOT + '/ssh'
+        action = '%s/cloud/project/%s/sshkey' % (API_ROOT, self.project_id)
         data = {'name': name, 'publicKey': key_material, 'region': location.id}
         response = self.connection.request(action, data=data, method='POST')
         return self._to_key_pair(response.object)
@@ -250,9 +261,10 @@ class RunAboveNodeDriver(NodeDriver):
         :return:   True of False based on success of Keypair deletion
         :rtype:    ``bool``
         """
-        action = API_ROOT + '/ssh/' + name
-        data = {'name': name, 'region': location.id}
-        self.connection.request(action, data=data, method='DELETE')
+        action = '%s/cloud/project/%s/sshkey/%s' % (
+            API_ROOT, self.project_id, name)
+        params = {'name': name, 'region': location.id}
+        self.connection.request(action, params=params, method='DELETE')
         return True
 
     def create_volume(self, size, location, name=None,
@@ -278,10 +290,10 @@ class RunAboveNodeDriver(NodeDriver):
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
-        action = API_ROOT + '/volume'
+        action = '%s/cloud/project/%s/volume' % (API_ROOT, self.project_id)
         data = {
             'region': location.id,
-            'size': str(size),
+            'size': size,
             'type': ex_volume_type,
         }
         if name:
@@ -292,7 +304,8 @@ class RunAboveNodeDriver(NodeDriver):
         return self._to_volume(response.object)
 
     def destroy_volume(self, volume):
-        action = API_ROOT + '/volume/' + volume.id
+        action = '%s/cloud/project/%s/volume/%s' % (
+            API_ROOT, self.project_id, volume.id)
         self.connection.request(action, method='DELETE')
         return True
 
@@ -306,7 +319,7 @@ class RunAboveNodeDriver(NodeDriver):
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        action = API_ROOT + '/volume'
+        action = '%s/cloud/project/%s/volume' % (API_ROOT, self.project_id)
         data = {}
         if location:
             data['region'] = location.id
@@ -323,7 +336,8 @@ class RunAboveNodeDriver(NodeDriver):
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`
         """
-        action = API_ROOT + '/volume/' + volume_id
+        action = '%s/cloud/project/%s/volume/%s' % (
+            API_ROOT, self.project_id, volume_id)
         response = self.connection.request(action)
         return self._to_volume(response.object)
 
@@ -342,8 +356,9 @@ class RunAboveNodeDriver(NodeDriver):
         :return: True or False representing operation successful
         :rtype:   ``bool``
         """
-        action = '%s/volume/%s/attach' % (API_ROOT, volume.id)
-        data = {'instanceId': node.id}
+        action = '%s/cloud/project/%s/volume/%s/attach' % (
+            API_ROOT, self.project_id, volume.id)
+        data = {'instanceId': node.id, 'volumeId': volume.id}
         self.connection.request(action, data=data, method='POST')
         return True
 
@@ -364,11 +379,12 @@ class RunAboveNodeDriver(NodeDriver):
         :raises: Exception: If ``ex_node`` is not provided and more than one
                             node is attached to the volume
         """
-        action = '%s/volume/%s/detach' % (API_ROOT, volume.id)
+        action = '%s/cloud/project/%s/volume/%s/detach' % (
+            API_ROOT, self.project_id, volume.id)
         if ex_node is None:
             if len(volume.extra['attachedTo']) != 1:
-                err_msg = "Volume '%s' has more or less than one attached \
-                    nodes, you must specify one."
+                err_msg = "Volume '%s' has more or less than one attached" \
+                    "nodes, you must specify one."
                 raise Exception(err_msg)
             ex_node = self.ex_get_node(volume.extra['attachedTo'][0])
         data = {'instanceId': ex_node.id}
@@ -397,14 +413,11 @@ class RunAboveNodeDriver(NodeDriver):
 
     def _to_node(self, obj):
         extra = obj.copy()
-        if 'flavorId' in extra:
-            public_ips = [obj.pop('ip')]
-        else:
-            ip = extra.pop('ipv4')
-            public_ips = [ip] if ip else []
-        del extra['instanceId']
+        if 'ipAddresses' in extra:
+            public_ips = [ip['ip'] for ip in extra['ipAddresses']]
+        del extra['id']
         del extra['name']
-        return Node(id=obj['instanceId'], name=obj['name'],
+        return Node(id=obj['id'], name=obj['name'],
                     state=self.NODE_STATE_MAP[obj['status']],
                     public_ips=public_ips, private_ips=[], driver=self,
                     extra=extra)
@@ -423,8 +436,7 @@ class RunAboveNodeDriver(NodeDriver):
         return [self._to_size(obj) for obj in objs]
 
     def _to_image(self, obj):
-        extra = {'region': obj['region'], 'visibility': obj['visibility'],
-                 'deprecated': obj['deprecated']}
+        extra = {'region': obj['region'], 'visibility': obj['visibility']}
         return NodeImage(id=obj['id'], name=obj['name'], driver=self,
                          extra=extra)
 
@@ -432,22 +444,12 @@ class RunAboveNodeDriver(NodeDriver):
         return [self._to_image(obj) for obj in objs]
 
     def _to_key_pair(self, obj):
-        extra = {'region': obj['region']}
+        extra = {'regions': obj['regions'], 'id': obj['id']}
         return OpenStackKeyPair(name=obj['name'], public_key=obj['publicKey'],
-                                driver=self, fingerprint=obj['fingerPrint'],
-                                extra=extra)
+                                driver=self, fingerprint=None, extra=extra)
 
     def _to_key_pairs(self, objs):
         return [self._to_key_pair(obj) for obj in objs]
 
     def _ex_connection_class_kwargs(self):
         return {'ex_consumer_key': self.consumer_key}
-
-    def _add_required_headers(self, headers, method, action, data, timestamp):
-        timestamp = self.connection.get_timestamp()
-        signature = self.connection.make_signature(method, action, data,
-                                                   str(timestamp))
-        headers.update({
-            'X-Ra-Timestamp': timestamp,
-            'X-Ra-Signature': signature
-        })
