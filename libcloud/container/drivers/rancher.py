@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import base64
 
 try:
@@ -205,6 +220,26 @@ class RancherContainerDriver(ContainerDriver):
 
         return result
 
+    def ex_search_stacks(self, search_params):
+        """
+        Search for stacks matching certain filters
+
+        i.e. ``{ "name": "awesomestack"}``
+
+        :param search_params: A collection of search parameters to use.
+        :type search_params: ``dict``
+
+        :rtype: ``list``
+        """
+        search_list = []
+        for f, v in search_params.items():
+            search_list.append(f + '=' + v)
+        search_items = '&'.join(search_list)
+        result = self.connection.request("%s/environments?%s" % (
+            self.baseuri, search_items)).object
+
+        return result['data']
+
     def ex_destroy_stack(self, env_id):
         """
         Destroy a stack by ID
@@ -377,6 +412,26 @@ class RancherContainerDriver(ContainerDriver):
                                          (self.baseuri, service_id)).object
 
         return result
+
+    def ex_search_services(self, search_params):
+        """
+        Search for services matching certain filters
+
+        i.e. ``{ "name": "awesomesause", "environmentId": "1e2"}``
+
+        :param search_params: A collection of search parameters to use.
+        :type search_params: ``dict``
+
+        :rtype: ``list``
+        """
+        search_list = []
+        for f, v in search_params.items():
+            search_list.append(f + '=' + v)
+        search_items = '&'.join(search_list)
+        result = self.connection.request("%s/services?%s" % (
+            self.baseuri, search_items)).object
+
+        return result['data']
 
     def ex_destroy_service(self, service_id):
         """
