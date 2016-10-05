@@ -312,7 +312,7 @@ class RancherContainerDriver(ContainerDriver):
                           metadata=None, retain_ip=None, scale=None,
                           scale_policy=None, secondary_launch_configs=None,
                           selector_container=None, selector_link=None,
-                          vip=None, **kwargs):
+                          vip=None, **launch_conf):
         """
         Deploy a Rancher Service under a stack.
 
@@ -369,17 +369,14 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``dict``
         """
 
-        launchconfig = {
-            "imageUuid": self._degen_image(image),
-            **kwargs
-        }
+        launch_conf['imageUuid'] = self._degen_image(image),
 
         service_payload = {
             "assignServiceIpAddress": assign_service_ip_address,
             "description": service_description,
             "environmentId": environment_id,
             "externalId": external_id,
-            "launchConfig": launchconfig,
+            "launchConfig": launch_conf,
             "metadata": metadata,
             "name": name,
             "retainIp": retain_ip,
@@ -497,7 +494,7 @@ class RancherContainerDriver(ContainerDriver):
         return containers
 
     def deploy_container(self, name, image, parameters=None, start=True,
-                         **kwargs):
+                         **config):
         """
         Deploy a new container.
 
@@ -537,10 +534,10 @@ class RancherContainerDriver(ContainerDriver):
             "name": name,
             "imageUuid": self._degen_image(image),
             "startOnCreate": start,
-            **kwargs
         }
+        config.update(payload)
 
-        data = json.dumps(payload)
+        data = json.dumps(config)
 
         result = self.connection.request('%s/containers' % self.baseuri,
                                          data=data, method='POST').object
