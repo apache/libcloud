@@ -26,6 +26,7 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
+from libcloud.common.digitalocean import DigitalOcean_v1_Error
 from libcloud.compute.base import NodeImage
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
@@ -43,6 +44,10 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
             (None, DigitalOceanMockHttp)
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v2_PARAMS)
+
+    def test_v1_Error(self):
+        self.assertRaises(DigitalOcean_v1_Error, DigitalOceanNodeDriver,
+                          *DIGITALOCEAN_v1_PARAMS, api_version='v1')
 
     def test_v2_uses_v1_key(self):
         self.assertRaises(InvalidCredsError, DigitalOceanNodeDriver,
