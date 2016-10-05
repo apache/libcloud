@@ -38,8 +38,11 @@ class DigitalOcean_v1_Error(LibcloudError):
     supported.
     """
 
-    def __init__(self, value=('Version 1 of the DigitalOcean API reached end'
-                 ' of life on November 9, 2015. Please use the v2 driver.'),
+    def __init__(self,
+                 value=('Driver no longer supported: Version 1 of the '
+                        'DigitalOcean API reached end of life on November 9, '
+                        '2015. Use the v2 driver. Please visit: '
+                        'https://developers.digitalocean.com/documentation/changelog/api-v1/sunsetting-api-v1/'),  # noqa: E501
                  driver=None):
         super(DigitalOcean_v1_Error, self).__init__(value, driver=driver)
 
