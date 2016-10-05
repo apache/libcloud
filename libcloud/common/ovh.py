@@ -29,15 +29,16 @@ from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 __all__ = [
-    'RunAboveResponse',
-    'RunAboveConnection'
+    'OvhResponse',
+    'OvhConnection'
 ]
 
-API_HOST = 'api.runabove.com'
+API_HOST = 'api.ovh.com'
 API_ROOT = '/1.0'
 LOCATIONS = {
-    'SBG-1': {'id': 'SBG-1', 'name': 'Strasbourg 1', 'country': 'FR'},
-    'BHS-1': {'id': 'BHS-1', 'name': 'Montreal 1', 'country': 'CA'}
+    'SBG1': {'id': 'SBG1', 'name': 'Strasbourg 1', 'country': 'FR'},
+    'BHS1': {'id': 'BHS1', 'name': 'Montreal 1', 'country': 'CA'},
+    'GRA1': {'id': 'GRA1', 'name': 'Gravelines 1', 'country': 'FR'}
 }
 DEFAULT_ACCESS_RULES = [
     {'method': 'GET', 'path': '/*'},
@@ -47,13 +48,13 @@ DEFAULT_ACCESS_RULES = [
 ]
 
 
-class RunAboveException(Exception):
+class OvhException(Exception):
     pass
 
 
-class RunAboveResponse(JsonResponse):
+class OvhResponse(JsonResponse):
     def parse_error(self):
-        response = super(RunAboveResponse, self).parse_body()
+        response = super(OvhResponse, self).parse_body()
         response = response or {}
 
         if response.get('errorCode', None) == 'INVALID_SIGNATURE':
@@ -63,16 +64,16 @@ class RunAboveResponse(JsonResponse):
         return self.body
 
 
-class RunAboveConnection(ConnectionUserAndKey):
+class OvhConnection(ConnectionUserAndKey):
     """
-    A connection to the RunAbove API
+    A connection to the Ovh API
 
-    Wraps SSL connections to the RunAbove API, automagically injecting the
+    Wraps SSL connections to the Ovh API, automagically injecting the
     parameters that the API needs for each request.
     """
     host = API_HOST
     request_path = API_ROOT
-    responseCls = RunAboveResponse
+    responseCls = OvhResponse
     timestamp = None
     ua = []
     LOCATIONS = LOCATIONS
@@ -88,18 +89,18 @@ class RunAboveConnection(ConnectionUserAndKey):
                    "go to '%(validationUrl)s' for valid it. After instantiate "
                    "your driver with \"ex_consumer_key='%(consumerKey)s'\"." %
                    consumer_key_json)
-            raise RunAboveException(msg)
-        super(RunAboveConnection, self).__init__(user_id, *args, **kwargs)
+            raise OvhException(msg)
+        super(OvhConnection, self).__init__(user_id, *args, **kwargs)
 
     def request_consumer_key(self, user_id):
         action = self.request_path + '/auth/credential'
         data = json.dumps({
             'accessRules': DEFAULT_ACCESS_RULES,
-            'redirection': 'http://runabove.com',
+            'redirection': 'http://ovh.com',
         })
         headers = {
             'Content-Type': 'application/json',
-            'X-Ra-Application': user_id,
+            'X-Ovh-Application': user_id,
         }
         httpcon = LibcloudHTTPSConnection(self.host)
         httpcon.request(method='POST', url=action, body=data, headers=headers)
@@ -115,17 +116,23 @@ class RunAboveConnection(ConnectionUserAndKey):
 
     def get_timestamp(self):
         if not self._timedelta:
-            url = 'https://%s/%s/auth/time' % (API_HOST, API_ROOT)
+            url = 'https://%s%s/auth/time' % (API_HOST, API_ROOT)
             response = get_response_object(url=url, method='GET', headers={})
             if not response or not response.body:
-                raise Exception('Failed to get current time from RunAbove API')
+                raise Exception('Failed to get current time from Ovh API')
 
             timestamp = int(response.body)
             self._timedelta = timestamp - int(time.time())
         return int(time.time()) + self._timedelta
 
-    def make_signature(self, method, action, data, timestamp):
+    def make_signature(self, method, action, params, data, timestamp):
         full_url = 'https://%s%s' % (API_HOST, action)
+        if params:
+            full_url += '?'
+            for key, value in params.items():
+                full_url += '%s=%s&' % (key, value)
+            else:
+                full_url = full_url[:-1]
         sha1 = hashlib.sha1()
         base_signature = "+".join([
             self.key,
@@ -144,8 +151,8 @@ class RunAboveConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers.update({
-            'X-Ra-Application': self.user_id,
-            'X-Ra-Consumer': self.consumer_key,
+            'X-Ovh-Application': self.user_id,
+            'X-Ovh-Consumer': self.consumer_key,
             'Content-type': 'application/json',
         })
         return headers
@@ -154,12 +161,13 @@ class RunAboveConnection(ConnectionUserAndKey):
                 method='GET', raw=False):
         data = json.dumps(data) if data else None
         timestamp = self.get_timestamp()
-        signature = self.make_signature(method, action, data, timestamp)
+        signature = self.make_signature(method, action, params, data,
+                                        timestamp)
         headers = headers or {}
         headers.update({
-            'X-Ra-Timestamp': timestamp,
-            'X-Ra-Signature': signature
+            'X-Ovh-Timestamp': timestamp,
+            'X-Ovh-Signature': signature
         })
-        return super(RunAboveConnection, self)\
+        return super(OvhConnection, self)\
             .request(action, params=params, data=data, headers=headers,
                      method=method, raw=raw)
