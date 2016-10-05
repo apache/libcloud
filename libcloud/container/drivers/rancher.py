@@ -579,6 +579,26 @@ class RancherContainerDriver(ContainerDriver):
         else:
             raise RancherException(result.status, 'failed to stop container')
 
+    def ex_search_containers(self, search_params):
+        """
+        Search for containers matching certain filters
+
+        i.e. ``{ "imageUuid": "docker:mysql", "state": "running"}``
+
+        :param search_params: A collection of search parameters to use.
+        :type search_params: ``dict``
+
+        :rtype: ``list``
+        """
+        search_list = []
+        for f, v in search_params.items():
+            search_list.append(f + '=' + v)
+        search_items = '&'.join(search_list)
+        result = self.connection.request("%s/containers?%s" % (
+            self.baseuri, search_items)).object
+
+        return result['data']
+
     def destroy_container(self, container):
         """
         Remove a container
