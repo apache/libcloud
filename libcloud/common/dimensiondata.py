@@ -1633,7 +1633,7 @@ class DimensionDataPortList(object):
     """
 
     def __init__(self, id, name, description, port_collection,
-                 child_port_list_lists,
+                 child_portlist_list,
                  state, create_time):
         """"
         Initialize an instance of :class:`DimensionDataPortList`
@@ -1650,8 +1650,8 @@ class DimensionDataPortList(object):
         :param port_collection: Collection of DimensionDataPort
         :type  port_collection: ``List``
 
-        :param child_port_list_lists: Collection of DimensionDataChildPort
-        :type  child_port_list_lists: ``List``
+        :param child_portlist_list: Collection of DimensionDataChildPort
+        :type  child_portlist_list: ``List``
 
         :param state: Port list state
         :type  state: ``str``
@@ -1663,16 +1663,17 @@ class DimensionDataPortList(object):
         self.name = name
         self.description = description
         self.port_collection = port_collection
-        self.child_port_list_lists = child_port_list_lists
+        self.child_portlist_list = child_portlist_list
         self.state = state
         self.create_time = create_time
 
     def __repr__(self):
         return (
             "<DimensionDataPortList: id=%s, name=%s, description=%s, "
-            "port_collection=%s, child_port_list=%s, state=%s, create_time=%s>"
+            "port_collection=%s, child_portlist_list=%s, state=%s, "
+            "create_time=%s>"
             % (self.id, self.name, self.description,
-               self.port_collection, self.child_port_list, self.state,
+               self.port_collection, self.child_portlist_list, self.state,
                self.create_time))
 
 

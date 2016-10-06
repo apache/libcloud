@@ -3416,9 +3416,9 @@ class DimensionDataNodeDriver(NodeDriver):
         for port in findall(element, 'port', TYPES_URN):
             ports.append(self._to_port(element=port))
 
-        child_port_list_lists = []
+        child_portlist_list = []
         for child in findall(element, 'childPortList', TYPES_URN):
-            child_port_list_lists.append(
+            child_portlist_list.append(
                 self._to_child_port_list(element=child))
 
         return DimensionDataPortList(
@@ -3426,7 +3426,7 @@ class DimensionDataNodeDriver(NodeDriver):
             name=findtext(element, 'name', TYPES_URN),
             description=findtext(element, 'description', TYPES_URN),
             port_collection=ports,
-            child_port_list_lists=child_port_list_lists,
+            child_portlist_list=child_portlist_list,
             state=findtext(element, 'state', TYPES_URN),
             create_time=findtext(element, 'createTime', TYPES_URN)
         )
