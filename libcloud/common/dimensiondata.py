@@ -833,11 +833,20 @@ class DimensionDataFirewallAddress(object):
         self.any_ip = any_ip
         self.ip_address = ip_address
         self.ip_prefix_size = ip_prefix_size
+        self.port_list_id = port_list_id
         self.port_begin = port_begin
         self.port_end = port_end
         self.address_list_id = address_list_id
         self.port_list_id = port_list_id
 
+    def __repr__(self):
+        return (
+            '<DimensionDataFirewallAddress: any_ip=%s, ip_address=%s, '
+            'ip_prefix_size=%s, port_begin=%s, port_end=%s, '
+            'address_list_id=%s, port_list_id=%s>'
+            % (self.any_ip, self.ip_address, self.ip_prefix_size,
+               self.port_begin, self.port_end, self.address_list_id,
+               self.port_list_id))
 
 class DimensionDataNatRule(object):
     """
