@@ -26,6 +26,9 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.dimensiondata import DimensionDataAPIException, NetworkDomainServicePlan
 from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification, DimensionDataServerDisk, DimensionDataServerVMWareTools
 from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
+from libcloud.common.dimensiondata import DimensionDataIpAddress, \
+    DimensionDataIpAddressList, DimensionDataChildIpAddressList, \
+    DimensionDataPortList, DimensionDataPort, DimensionDataChildPortList
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
@@ -33,7 +36,7 @@ from libcloud.test import MockHttp, unittest, MockRawResponse, StorageMockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
-from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.xml import fixxpath, findtext, findall
 
 
 class DimensionDataTests(unittest.TestCase, TestCaseMixin):
@@ -745,6 +748,48 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_create_firewall_rule(net, specific_source_ip_rule, 'FIRST')
         self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
 
+    def test_ex_create_firewall_rule_with_source_ip(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = \
+            list(filter(lambda x: x.name == 'SpecificSourceIP',
+                        rules))[0]
+        specific_source_ip_rule.source.any_ip = False
+        specific_source_ip_rule.source.ip_address = '10.0.0.1'
+        specific_source_ip_rule.source.ip_prefix_size = '15'
+        rule = self.driver.ex_create_firewall_rule(net,
+                                                   specific_source_ip_rule,
+                                                   'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_with_any_ip(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rules = self.driver.ex_list_firewall_rules(net)
+        specific_source_ip_rule = \
+            list(filter(lambda x: x.name == 'SpecificSourceIP',
+                        rules))[0]
+        specific_source_ip_rule.source.any_ip = True
+        rule = self.driver.ex_create_firewall_rule(net,
+                                                   specific_source_ip_rule,
+                                                   'FIRST')
+        self.assertEqual(rule.id, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+
+    def test_ex_create_firewall_rule_ip_prefix_size(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.address_list_id = None
+        rule.source.any_ip = False
+        rule.source.ip_address = '10.2.1.1'
+        rule.source.ip_prefix_size = '10'
+        rule.destination.address_list_id = None
+        rule.destination.any_ip = False
+        rule.destination.ip_address = '10.0.0.1'
+        rule.destination.ip_prefix_size = '20'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
     def test_ex_create_firewall_rule_address_list(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
         rule = self.driver.ex_list_firewall_rules(net)[0]
@@ -757,6 +802,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_list_firewall_rules(net)[0]
         rule.source.port_list_id = '12345'
         rule.destination.port_list_id = '12345'
+        self.driver.ex_create_firewall_rule(net, rule, 'LAST')
+
+    def test_ex_create_firewall_rule_port(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_list_firewall_rules(net)[0]
+        rule.source.port_list_id = None
+        rule.source.port_begin = '8000'
+        rule.source.port_end = '8005'
+        rule.destination.port_list_id = None
+        rule.destination.port_begin = '7000'
+        rule.destination.port_end = '7005'
         self.driver.ex_create_firewall_rule(net, rule, 'LAST')
 
     def test_ex_create_firewall_rule_ALL_VALUES(self):
@@ -805,6 +862,146 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_get_firewall_rule(net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
         result = self.driver.ex_delete_firewall_rule(rule)
         self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.source.any_ip = True
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_source_ipaddresslist(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.source.address_list_id = '802abc9f-45a7-4efb-9d5a-810082368222'
+        rule.source.any_ip = False
+        rule.source.ip_address = '10.0.0.1'
+        rule.source.ip_prefix_size = 10
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_destination_ipaddresslist(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.destination.address_list_id = '802abc9f-45a7-4efb-9d5a-810082368222'
+        rule.destination.any_ip = False
+        rule.destination.ip_address = '10.0.0.1'
+        rule.destination.ip_prefix_size = 10
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_destination_ipaddress(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.source.address_list_id = None
+        rule.source.any_ip = False
+        rule.source.ip_address = '10.0.0.1'
+        rule.source.ip_prefix_size = '10'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_source_ipaddress(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.destination.address_list_id = None
+        rule.destination.any_ip = False
+        rule.destination.ip_address = '10.0.0.1'
+        rule.destination.ip_prefix_size = '10'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_with_relative_rule(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        placement_rule = self.driver.ex_list_firewall_rules(
+            network_domain=net)[-1]
+        result = self.driver.ex_edit_firewall_rule(
+            rule=rule, position='BEFORE',
+            relative_rule_for_position=placement_rule)
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_with_relative_rule_by_name(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        placement_rule = self.driver.ex_list_firewall_rules(
+            network_domain=net)[-1]
+        result = self.driver.ex_edit_firewall_rule(
+            rule=rule, position='BEFORE',
+            relative_rule_for_position=placement_rule.name)
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_source_portlist(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.source.port_list_id = '802abc9f-45a7-4efb-9d5a-810082368222'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_source_port(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.source.port_list_id = None
+        rule.source.port_begin = '3'
+        rule.source.port_end = '10'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_destination_portlist(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.destination.port_list_id = '802abc9f-45a7-4efb-9d5a-810082368222'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_destination_port(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        rule.destination.port_list_id = None
+        rule.destination.port_begin = '3'
+        rule.destination.port_end = '10'
+        result = self.driver.ex_edit_firewall_rule(rule=rule, position='LAST')
+        self.assertTrue(result)
+
+    def test_ex_edit_firewall_rule_invalid_position_fail(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        with self.assertRaises(ValueError):
+            self.driver.ex_edit_firewall_rule(rule=rule, position='BEFORE')
+
+    def test_ex_edit_firewall_rule_invalid_position_relative_rule_fail(self):
+        net = self.driver.ex_get_network_domain(
+            '8cdfd607-f429-4df6-9352-162cfc0891be')
+        rule = self.driver.ex_get_firewall_rule(
+            net, 'd0a20f59-77b9-4f28-a63b-e58496b73a6c')
+        relative_rule = self.driver.ex_list_firewall_rules(
+            network_domain=net)[-1]
+        with self.assertRaises(ValueError):
+            self.driver.ex_edit_firewall_rule(rule=rule, position='FIRST',
+                                              relative_rule_for_position=relative_rule)
 
     def test_ex_create_nat_rule(self):
         net = self.driver.ex_get_network_domain('8cdfd607-f429-4df6-9352-162cfc0891be')
@@ -1184,6 +1381,370 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         report_content = report
         self.assertEqual(len(report_content), 42)
         self.assertEqual(len(report_content[0]), 4)
+
+    def test_ex_list_ip_address_list(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        ip_list = self.driver.ex_list_ip_address_list(
+            ex_network_domain=net_domain)
+        self.assertTrue(isinstance(ip_list, list))
+        self.assertEqual(len(ip_list), 4)
+        self.assertTrue(isinstance(ip_list[0].name, str))
+        self.assertTrue(isinstance(ip_list[0].description, str))
+        self.assertTrue(isinstance(ip_list[0].ip_version, str))
+        self.assertTrue(isinstance(ip_list[0].state, str))
+        self.assertTrue(isinstance(ip_list[0].create_time, str))
+        self.assertTrue(isinstance(ip_list[0].child_ip_address_lists, list))
+        self.assertEqual(len(ip_list[1].child_ip_address_lists), 1)
+        self.assertTrue(isinstance(ip_list[1].child_ip_address_lists[0].name,
+                                   str))
+
+    def test_ex_get_ip_address_list(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        DimensionDataMockHttp.type = 'FILTERBYNAME'
+        ip_list = self.driver.ex_get_ip_address_list(
+            ex_network_domain=net_domain.id,
+            ex_ip_address_list_name='Test_IP_Address_List_3')
+        self.assertTrue(isinstance(ip_list, list))
+        self.assertEqual(len(ip_list), 1)
+        self.assertTrue(isinstance(ip_list[0].name, str))
+        self.assertTrue(isinstance(ip_list[0].description, str))
+        self.assertTrue(isinstance(ip_list[0].ip_version, str))
+        self.assertTrue(isinstance(ip_list[0].state, str))
+        self.assertTrue(isinstance(ip_list[0].create_time, str))
+        ips = ip_list[0].ip_address_collection
+        self.assertEqual(len(ips), 3)
+        self.assertTrue(isinstance(ips[0].begin, str))
+        self.assertTrue(isinstance(ips[0].prefix_size, str))
+        self.assertTrue(isinstance(ips[2].end, str))
+
+    def test_ex_create_ip_address_list_FAIL(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        with self.assertRaises(TypeError):
+            self.driver.ex_create_ip_address_list(
+                ex_network_domain=net_domain.id)
+
+    def test_ex_create_ip_address_list(self):
+        name = "Test_IP_Address_List_3"
+        description = "Test Description"
+        ip_version = "IPV4"
+        child_ip_address_list_id = '0291ef78-4059-4bc1-b433-3f6ad698dc41'
+        child_ip_address_list = DimensionDataChildIpAddressList(
+            id=child_ip_address_list_id,
+            name="test_child_ip_addr_list")
+        net_domain = self.driver.ex_list_network_domains()[0]
+        ip_address_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        ip_address_2 = DimensionDataIpAddress(begin='190.2.2.106',
+                                              end='190.2.2.108')
+        ip_address_3 = DimensionDataIpAddress(begin='190.2.2.0',
+                                              prefix_size='24')
+        ip_address_collection = {ip_address_1, ip_address_2,
+                                 ip_address_3}
+
+        # Create IP Address List
+        success = self.driver.ex_create_ip_address_list(
+            ex_network_domain=net_domain, name=name,
+            ip_version=ip_version, description=description,
+            ip_address_collection=ip_address_collection,
+            child_ip_address_list=child_ip_address_list)
+
+        self.assertTrue(success)
+
+    def test_ex_create_ip_address_list_STR(self):
+        name = "Test_IP_Address_List_3"
+        description = "Test Description"
+        ip_version = "IPV4"
+        child_ip_address_list_id = '0291ef78-4059-4bc1-b433-3f6ad698dc41'
+        net_domain = self.driver.ex_list_network_domains()[0]
+        ip_address_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        ip_address_2 = DimensionDataIpAddress(begin='190.2.2.106',
+                                              end='190.2.2.108')
+        ip_address_3 = DimensionDataIpAddress(begin='190.2.2.0',
+                                              prefix_size='24')
+        ip_address_collection = {ip_address_1, ip_address_2,
+                                 ip_address_3}
+
+        # Create IP Address List
+        success = self.driver.ex_create_ip_address_list(
+            ex_network_domain=net_domain.id, name=name,
+            ip_version=ip_version, description=description,
+            ip_address_collection=ip_address_collection,
+            child_ip_address_list=child_ip_address_list_id)
+
+        self.assertTrue(success)
+
+    def test_ex_edit_ip_address_list(self):
+        ip_address_1 = DimensionDataIpAddress(begin='190.2.2.111')
+        ip_address_collection = {ip_address_1}
+
+        child_ip_address_list = DimensionDataChildIpAddressList(
+            id='2221ef78-4059-4bc1-b433-3f6ad698dc41',
+            name="test_child_ip_address_list edited")
+
+        ip_address_list = DimensionDataIpAddressList(
+            id='1111ef78-4059-4bc1-b433-3f6ad698d111',
+            name="test ip address list edited",
+            ip_version="IPv4", description="test",
+            ip_address_collection=ip_address_collection,
+            child_ip_address_lists=child_ip_address_list,
+            state="NORMAL",
+            create_time='2015-09-29T02:49:45'
+        )
+
+        success = self.driver.ex_edit_ip_address_list(
+            ex_ip_address_list=ip_address_list,
+            description="test ip address list",
+            ip_address_collection=ip_address_collection,
+            child_ip_address_lists=child_ip_address_list
+        )
+
+        self.assertTrue(success)
+
+    def test_ex_edit_ip_address_list_STR(self):
+        ip_address_1 = DimensionDataIpAddress(begin='190.2.2.111')
+        ip_address_collection = {ip_address_1}
+
+        child_ip_address_list = DimensionDataChildIpAddressList(
+            id='2221ef78-4059-4bc1-b433-3f6ad698dc41',
+            name="test_child_ip_address_list edited")
+
+        success = self.driver.ex_edit_ip_address_list(
+            ex_ip_address_list='84e34850-595d- 436e-a885-7cd37edb24a4',
+            description="test ip address list",
+            ip_address_collection=ip_address_collection,
+            child_ip_address_lists=child_ip_address_list
+        )
+
+        self.assertTrue(success)
+
+    def test_ex_delete_ip_address_list(self):
+        child_ip_address_list = DimensionDataChildIpAddressList(
+            id='2221ef78-4059-4bc1-b433-3f6ad698dc41',
+            name="test_child_ip_address_list edited")
+
+        ip_address_list = DimensionDataIpAddressList(
+            id='1111ef78-4059-4bc1-b433-3f6ad698d111',
+            name="test ip address list edited",
+            ip_version="IPv4", description="test",
+            ip_address_collection=None,
+            child_ip_address_lists=child_ip_address_list,
+            state="NORMAL",
+            create_time='2015-09-29T02:49:45'
+        )
+
+        success = self.driver.ex_delete_ip_address_list(
+            ex_ip_address_list=ip_address_list)
+        self.assertTrue(success)
+
+    def test_ex_delete_ip_address_list_STR(self):
+        success = self.driver.ex_delete_ip_address_list(
+            ex_ip_address_list='111ef78-4059-4bc1-b433-3f6ad698d111')
+        self.assertTrue(success)
+
+    def test_ex_list_port_lists(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        port_list = self.driver.ex_list_port_list(
+            ex_network_domain=net_domain)
+        self.assertTrue(isinstance(port_list, list))
+        self.assertEqual(len(port_list), 3)
+        self.assertTrue(isinstance(port_list[0].name, str))
+        self.assertTrue(isinstance(port_list[0].description, str))
+        self.assertTrue(isinstance(port_list[0].state, str))
+        self.assertTrue(isinstance(port_list[0].port_collection, list))
+        self.assertTrue(isinstance(port_list[0].port_collection[0].begin, str))
+        self.assertTrue(isinstance(port_list[0].port_collection[0].end, str))
+        self.assertTrue(isinstance(port_list[0].child_port_list_lists, list))
+        self.assertTrue(isinstance(port_list[0].child_port_list_lists[0].id,
+                                   str))
+        self.assertTrue(isinstance(port_list[0].child_port_list_lists[0].name,
+                                   str))
+        self.assertTrue(isinstance(port_list[0].create_time, str))
+
+    def test_ex_get_port_list(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        port_list = self.driver.ex_list_port_list(
+            ex_network_domain=net_domain)[0]
+
+        port_list = self.driver.ex_get_port_list(
+            ex_port_list=port_list)
+        self.assertTrue(isinstance(port_list, DimensionDataPortList))
+
+        self.assertTrue(isinstance(port_list.name, str))
+        self.assertTrue(isinstance(port_list.description, str))
+        self.assertTrue(isinstance(port_list.state, str))
+        self.assertTrue(isinstance(port_list.port_collection, list))
+        self.assertTrue(isinstance(port_list.port_collection[0].begin, str))
+        self.assertTrue(isinstance(port_list.port_collection[0].end, str))
+        self.assertTrue(isinstance(port_list.child_port_list_lists, list))
+        self.assertTrue(isinstance(port_list.child_port_list_lists[0].id,
+                                   str))
+        self.assertTrue(isinstance(port_list.child_port_list_lists[0].name,
+                                   str))
+        self.assertTrue(isinstance(port_list.create_time, str))
+
+    def test_ex_get_port_list_STR(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        port_list = self.driver.ex_list_port_list(
+            ex_network_domain=net_domain)[0]
+
+        port_list = self.driver.ex_get_port_list(
+            ex_port_list=port_list.id)
+        self.assertTrue(isinstance(port_list, DimensionDataPortList))
+
+        self.assertTrue(isinstance(port_list.name, str))
+        self.assertTrue(isinstance(port_list.description, str))
+        self.assertTrue(isinstance(port_list.state, str))
+        self.assertTrue(isinstance(port_list.port_collection, list))
+        self.assertTrue(isinstance(port_list.port_collection[0].begin, str))
+        self.assertTrue(isinstance(port_list.port_collection[0].end, str))
+        self.assertTrue(isinstance(port_list.child_port_list_lists, list))
+        self.assertTrue(isinstance(port_list.child_port_list_lists[0].id,
+                                   str))
+        self.assertTrue(isinstance(port_list.child_port_list_lists[0].name,
+                                   str))
+        self.assertTrue(isinstance(port_list.create_time, str))
+
+    def test_ex_create_port_list_NOCHILDPORTLIST(self):
+        name = "Test_Port_List"
+        description = "Test Description"
+
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        port_1 = DimensionDataPort(begin='8080')
+        port_2 = DimensionDataIpAddress(begin='8899',
+                                              end='9023')
+        port_collection = {port_1, port_2}
+
+        # Create IP Address List
+        success = self.driver.ex_create_port_list(
+            ex_network_domain=net_domain, name=name,
+            description=description,
+            port_collection=port_collection
+        )
+
+        self.assertTrue(success)
+
+    def test_ex_create_port_list(self):
+        name = "Test_Port_List"
+        description = "Test Description"
+
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        port_1 = DimensionDataPort(begin='8080')
+        port_2 = DimensionDataIpAddress(begin='8899',
+                                              end='9023')
+        port_collection = {port_1, port_2}
+
+        child_port_1 = DimensionDataChildPortList(
+            id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
+        child_port_2 = DimensionDataChildPortList(
+            id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
+        child_ports = {child_port_1, child_port_2}
+
+        # Create IP Address List
+        success = self.driver.ex_create_port_list(
+            ex_network_domain=net_domain, name=name,
+            description=description,
+            port_collection=port_collection,
+            child_port_list_lists=child_ports
+        )
+
+        self.assertTrue(success)
+
+    def test_ex_create_port_list_STR(self):
+        name = "Test_Port_List"
+        description = "Test Description"
+
+        net_domain = self.driver.ex_list_network_domains()[0]
+
+        port_1 = DimensionDataPort(begin='8080')
+        port_2 = DimensionDataIpAddress(begin='8899',
+                                              end='9023')
+        port_collection = {port_1, port_2}
+
+        child_port_1 = DimensionDataChildPortList(
+            id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
+        child_port_2 = DimensionDataChildPortList(
+            id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
+        child_ports_ids = {child_port_1.id, child_port_2.id}
+
+        # Create IP Address List
+        success = self.driver.ex_create_port_list(
+            ex_network_domain=net_domain.id, name=name,
+            description=description,
+            port_collection=port_collection,
+            child_port_list_lists=child_ports_ids
+        )
+
+        self.assertTrue(success)
+
+    def test_ex_edit_port_list(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        port_list = self.driver.ex_list_port_list(net_domain)[0]
+
+        description = "Test Description"
+
+        port_1 = DimensionDataPort(begin='8080')
+        port_2 = DimensionDataIpAddress(begin='8899',
+                                        end='9023')
+        port_collection = {port_1, port_2}
+
+        child_port_1 = DimensionDataChildPortList(
+            id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
+        child_port_2 = DimensionDataChildPortList(
+            id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
+        child_ports = {child_port_1.id, child_port_2.id}
+
+        # Create IP Address List
+        success = self.driver.ex_edit_port_list(
+            ex_port_list=port_list,
+            description=description,
+            port_collection=port_collection,
+            child_port_list_lists=child_ports
+        )
+        self.assertTrue(success)
+
+    def test_ex_edit_port_list_STR(self):
+        port_list_id = "484174a2-ae74-4658-9e56-50fc90e086cf"
+        description = "Test Description"
+
+        port_1 = DimensionDataPort(begin='8080')
+        port_2 = DimensionDataIpAddress(begin='8899',
+                                        end='9023')
+        port_collection = {port_1, port_2}
+
+        child_port_1 = DimensionDataChildPortList(
+            id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
+        child_port_2 = DimensionDataChildPortList(
+            id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
+        child_ports_ids = {child_port_1.id, child_port_2.id}
+
+        # Create IP Address List
+        success = self.driver.ex_edit_port_list(
+            ex_port_list=port_list_id,
+            description=description,
+            port_collection=port_collection,
+            child_port_list_lists=child_ports_ids
+        )
+        self.assertTrue(success)
+
+    def test_ex_delete_port_list(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        port_list = self.driver.ex_list_port_list(net_domain)[0]
+
+        success = self.driver.ex_delete_port_list(
+            ex_port_list=port_list)
+        self.assertTrue(success)
+
+    def test_ex_delete_port_list_STR(self):
+        net_domain = self.driver.ex_list_network_domains()[0]
+        port_list = self.driver.ex_list_port_list(net_domain)[0]
+
+        success = self.driver.ex_delete_port_list(
+            ex_port_list=port_list.id)
+        self.assertTrue(success)
 
 
 class InvalidRequestError(Exception):
@@ -2233,6 +2794,196 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             'tag_tag_list.xml'
         )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_ipAddressList(
+            self, method, url, body, headers):
+        body = self.fixtures.load('ip_address_lists.xml')
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_ipAddressList_FILTERBYNAME(
+            self, method, url, body, headers):
+        body = self.fixtures.load('ip_address_lists_FILTERBYNAME.xml')
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createIpAddressList(
+            self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "createIpAddressList":
+            raise InvalidRequestError(request.tag)
+
+        net_domain = findtext(request, 'networkDomainId', TYPES_URN)
+        if net_domain is None:
+            raise ValueError("Network Domain should not be empty")
+
+        name = findtext(request, 'name', TYPES_URN)
+        if name is None:
+            raise ValueError("Name should not be empty")
+
+        ip_version = findtext(request, 'ipVersion', TYPES_URN)
+        if ip_version is None:
+            raise ValueError("IP Version should not be empty")
+
+        ip_address_col_required = findall(request, 'ipAddress', TYPES_URN)
+        child_ip_address_required = findall(request, 'childIpAddressListId',
+                                            TYPES_URN)
+
+        if 0 == len(ip_address_col_required) and \
+                0 == len(child_ip_address_required):
+            raise ValueError("At least one ipAddress element or "
+                             "one childIpAddressListId element must be "
+                             "provided.")
+
+        if ip_address_col_required[0].get('begin') is None:
+            raise ValueError("IP Address should not be empty")
+
+        body = self.fixtures.load(
+            'ip_address_list_create.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editIpAddressList(
+            self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "editIpAddressList":
+            raise InvalidRequestError(request.tag)
+
+        ip_address_list = request.get('id')
+        if ip_address_list is None:
+            raise ValueError("IpAddressList ID should not be empty")
+
+        name = findtext(request, 'name', TYPES_URN)
+        if name is not None:
+            raise ValueError("Name should not exists in request")
+
+        ip_version = findtext(request, 'ipVersion', TYPES_URN)
+        if ip_version is not None:
+            raise ValueError("IP Version should not exists in request")
+
+        ip_address_col_required = findall(request, 'ipAddress', TYPES_URN)
+        child_ip_address_required = findall(request, 'childIpAddressListId',
+                                            TYPES_URN)
+
+        if 0 == len(ip_address_col_required) and \
+                0 == len(child_ip_address_required):
+            raise ValueError("At least one ipAddress element or "
+                             "one childIpAddressListId element must be "
+                             "provided.")
+
+        if ip_address_col_required[0].get('begin') is None:
+            raise ValueError("IP Address should not be empty")
+
+        body = self.fixtures.load(
+            'ip_address_list_edit.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteIpAddressList(
+            self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "deleteIpAddressList":
+            raise InvalidRequestError(request.tag)
+
+        ip_address_list = request.get('id')
+        if ip_address_list is None:
+            raise ValueError("IpAddressList ID should not be empty")
+
+        body = self.fixtures.load(
+            'ip_address_list_delete.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_portList(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'port_list_lists.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_portList_c8c92ea3_2da8_4d51_8153_f39bec794d69(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'port_list_get.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createPortList(
+            self, method, url, body, headers):
+
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "createPortList":
+            raise InvalidRequestError(request.tag)
+
+        net_domain = findtext(request, 'networkDomainId', TYPES_URN)
+        if net_domain is None:
+            raise ValueError("Network Domain should not be empty")
+
+        ports_required = findall(request, 'port', TYPES_URN)
+        child_port_list_required = findall(request, 'childPortListId',
+                                           TYPES_URN)
+
+        if 0 == len(ports_required) and \
+                0 == len(child_port_list_required):
+            raise ValueError("At least one port element or one "
+                             "childPortListId element must be provided")
+
+        if ports_required[0].get('begin') is None:
+            raise ValueError("PORT begin value should not be empty")
+
+        body = self.fixtures.load(
+            'port_list_create.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editPortList(
+            self, method, url, body, headers):
+
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "editPortList":
+            raise InvalidRequestError(request.tag)
+
+        ports_required = findall(request, 'port', TYPES_URN)
+        child_port_list_required = findall(request, 'childPortListId',
+                                           TYPES_URN)
+
+        if 0 == len(ports_required) and \
+                0 == len(child_port_list_required):
+            raise ValueError("At least one port element or one "
+                             "childPortListId element must be provided")
+
+        if ports_required[0].get('begin') is None:
+            raise ValueError("PORT begin value should not be empty")
+
+        body = self.fixtures.load(
+            'port_list_edit.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deletePortList(
+            self, method, url, body, headers):
+        request = ET.fromstring(body)
+        if request.tag != "{urn:didata.com:api:cloud:types}" \
+                          "deletePortList":
+            raise InvalidRequestError(request.tag)
+
+        port_list = request.get('id')
+        if port_list is None:
+            raise ValueError("Port List ID should not be empty")
+
+        body = self.fixtures.load(
+            'ip_address_list_delete.xml'
+        )
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
