@@ -39,18 +39,15 @@ class DigitalOceanNodeDriver(NodeDriver):
     """
     DigitalOcean NodeDriver defaulting to using APIv2.
 
-    :keyword    key: Required for authentication. Used in both ``v1`` and
-                     ``v2`` implementations.
+    :keyword    key: Personal Access Token required for authentication.
     :type       key: ``str``
 
-    :keyword    secret: Used in driver authentication with key. Defaults to
-                        None and when set, will cause driver to use ``v1`` for
-                        connection and response. (optional)
+    :keyword    secret: Previously used with API version ``v1``. (deprecated)
     :type       secret: ``str``
 
-    :keyword    api_version: Specifies the API version to use. ``v1`` and
-                             ``v2`` are the only valid options. Defaults to
-                             using ``v2`` (optional)
+    :keyword    api_version: Specifies the API version to use. Defaults to
+                             using ``v2``, currently the only valid option.
+                             (optional)
     :type       api_version: ``str``
     """
     type = Provider.DIGITAL_OCEAN
