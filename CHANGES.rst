@@ -11,6 +11,15 @@ General
   (GITHUB-884)
   [Michael Calmer]
 
+- Deprecate DigitalOcean v1 API support in favour of v2 API
+  (GITHUB-889)(GITHUB-892)
+  [Andrew Starr-Bochicchio]
+
+- Deprecate RunAbove cloud drivers in favour of new OVH cloud driver
+  (GITHUB-891)
+  [Anthony Monthe]
+
+
 Compute
 ~~~~~~~
 
