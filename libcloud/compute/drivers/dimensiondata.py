@@ -44,7 +44,6 @@ from libcloud.common.dimensiondata import DimensionDataIpAddress
 from libcloud.common.dimensiondata import DimensionDataPortList
 from libcloud.common.dimensiondata import DimensionDataPort
 from libcloud.common.dimensiondata import DimensionDataChildPortList
-from libcloud.common.dimensiondata import DimensionDataNic
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
 from libcloud.common.dimensiondata import DimensionDataTagKey
 from libcloud.common.dimensiondata import DimensionDataTag
