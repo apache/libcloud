@@ -201,7 +201,8 @@ class RancherContainerDriver(ContainerDriver):
             "rancherCompose": rancher_compose,
             "startOnCreate": start
         }
-        data = json.dumps({k: v for k, v in payload.items() if v is not None})
+        data = json.dumps(dict((k,v) for (k,v) in payload.items()
+                               if v is not None))
         result = self.connection.request('%s/environments' %
                                          self.baseuri, data=data,
                                          method='POST').object
@@ -391,8 +392,8 @@ class RancherContainerDriver(ContainerDriver):
             "vip": vip
         }
 
-        data = json.dumps({k: v for k, v in service_payload.items()
-                           if v is not None})
+        data = json.dumps(dict((k,v) for (k,v) in service_payload.items()
+                               if v is not None))
         result = self.connection.request('%s/services' % self.baseuri,
                                          data=data, method='POST').object
 
