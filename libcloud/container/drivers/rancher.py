@@ -38,11 +38,6 @@ VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
 
 class RancherResponse(JsonResponse):
 
-    def parse_error(self):
-        if self.status == 401:
-            raise InvalidCredsError('Invalid credentials')
-        return super().parse_error()
-
     def success(self):
         return self.status in VALID_RESPONSE_CODES
 
