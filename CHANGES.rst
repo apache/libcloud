@@ -23,6 +23,10 @@ General
 Compute
 ~~~~~~~
 
+- Added FCU (Flexible Compute Unit) support to the Outscale driver.
+  (GITHUB-890)
+  [Javier M. Mellid]
+
 - [google compute] Add "WINDOWS" guestOsFeatures option.
   (GITHUB-861)
   [Max Illfelder]
