@@ -128,11 +128,13 @@ class RancherContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
+
+        if host.startswith('http://'):
+            secure = False
+
         super(RancherContainerDriver, self).__init__(key=key, secret=secret,
                                                      secure=secure, host=host,
                                                      port=port)
-        if host.startswith('http://'):
-            secure = False
 
         # strip the prefix
         prefixes = ['http://', 'https://']
