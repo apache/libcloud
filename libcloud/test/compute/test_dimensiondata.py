@@ -1541,56 +1541,56 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
             ex_ip_address_list='111ef78-4059-4bc1-b433-3f6ad698d111')
         self.assertTrue(success)
 
-    def test_ex_list_port_lists(self):
+    def test_ex_list_portlist(self):
         net_domain = self.driver.ex_list_network_domains()[0]
-        port_list = self.driver.ex_list_port_list(
+        portlist = self.driver.ex_list_portlist(
             ex_network_domain=net_domain)
-        self.assertTrue(isinstance(port_list, list))
-        self.assertEqual(len(port_list), 3)
-        self.assertTrue(isinstance(port_list[0].name, str))
-        self.assertTrue(isinstance(port_list[0].description, str))
-        self.assertTrue(isinstance(port_list[0].state, str))
-        self.assertTrue(isinstance(port_list[0].port_collection, list))
-        self.assertTrue(isinstance(port_list[0].port_collection[0].begin, str))
-        self.assertTrue(isinstance(port_list[0].port_collection[0].end, str))
-        self.assertTrue(isinstance(port_list[0].child_port_list_lists, list))
-        self.assertTrue(isinstance(port_list[0].child_port_list_lists[0].id,
+        self.assertTrue(isinstance(portlist, list))
+        self.assertEqual(len(portlist), 3)
+        self.assertTrue(isinstance(portlist[0].name, str))
+        self.assertTrue(isinstance(portlist[0].description, str))
+        self.assertTrue(isinstance(portlist[0].state, str))
+        self.assertTrue(isinstance(portlist[0].port_collection, list))
+        self.assertTrue(isinstance(portlist[0].port_collection[0].begin, str))
+        self.assertTrue(isinstance(portlist[0].port_collection[0].end, str))
+        self.assertTrue(isinstance(portlist[0].child_portlist_list, list))
+        self.assertTrue(isinstance(portlist[0].child_portlist_list[0].id,
                                    str))
-        self.assertTrue(isinstance(port_list[0].child_port_list_lists[0].name,
+        self.assertTrue(isinstance(portlist[0].child_portlist_list[0].name,
                                    str))
-        self.assertTrue(isinstance(port_list[0].create_time, str))
+        self.assertTrue(isinstance(portlist[0].create_time, str))
 
     def test_ex_get_port_list(self):
         net_domain = self.driver.ex_list_network_domains()[0]
 
-        port_list = self.driver.ex_list_port_list(
-            ex_network_domain=net_domain)[0]
+        portlist_id = self.driver.ex_list_portlist(
+            ex_network_domain=net_domain)[0].id
 
-        port_list = self.driver.ex_get_port_list(
-            ex_port_list=port_list)
-        self.assertTrue(isinstance(port_list, DimensionDataPortList))
+        portlist = self.driver.ex_get_portlist(
+            ex_portlist_id=portlist_id)
+        self.assertTrue(isinstance(portlist, DimensionDataPortList))
 
-        self.assertTrue(isinstance(port_list.name, str))
-        self.assertTrue(isinstance(port_list.description, str))
-        self.assertTrue(isinstance(port_list.state, str))
-        self.assertTrue(isinstance(port_list.port_collection, list))
-        self.assertTrue(isinstance(port_list.port_collection[0].begin, str))
-        self.assertTrue(isinstance(port_list.port_collection[0].end, str))
-        self.assertTrue(isinstance(port_list.child_port_list_lists, list))
-        self.assertTrue(isinstance(port_list.child_port_list_lists[0].id,
+        self.assertTrue(isinstance(portlist.name, str))
+        self.assertTrue(isinstance(portlist.description, str))
+        self.assertTrue(isinstance(portlist.state, str))
+        self.assertTrue(isinstance(portlist.port_collection, list))
+        self.assertTrue(isinstance(portlist.port_collection[0].begin, str))
+        self.assertTrue(isinstance(portlist.port_collection[0].end, str))
+        self.assertTrue(isinstance(portlist.child_portlist_list, list))
+        self.assertTrue(isinstance(portlist.child_portlist_list[0].id,
                                    str))
-        self.assertTrue(isinstance(port_list.child_port_list_lists[0].name,
+        self.assertTrue(isinstance(portlist.child_portlist_list[0].name,
                                    str))
-        self.assertTrue(isinstance(port_list.create_time, str))
+        self.assertTrue(isinstance(portlist.create_time, str))
 
-    def test_ex_get_port_list_STR(self):
+    def test_ex_get_portlist_STR(self):
         net_domain = self.driver.ex_list_network_domains()[0]
 
-        port_list = self.driver.ex_list_port_list(
+        portlist = self.driver.ex_list_portlist(
             ex_network_domain=net_domain)[0]
 
-        port_list = self.driver.ex_get_port_list(
-            ex_port_list=port_list.id)
+        port_list = self.driver.ex_get_portlist(
+            ex_portlist_id=portlist.id)
         self.assertTrue(isinstance(port_list, DimensionDataPortList))
 
         self.assertTrue(isinstance(port_list.name, str))
@@ -1599,14 +1599,14 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(isinstance(port_list.port_collection, list))
         self.assertTrue(isinstance(port_list.port_collection[0].begin, str))
         self.assertTrue(isinstance(port_list.port_collection[0].end, str))
-        self.assertTrue(isinstance(port_list.child_port_list_lists, list))
-        self.assertTrue(isinstance(port_list.child_port_list_lists[0].id,
+        self.assertTrue(isinstance(port_list.child_portlist_list, list))
+        self.assertTrue(isinstance(port_list.child_portlist_list[0].id,
                                    str))
-        self.assertTrue(isinstance(port_list.child_port_list_lists[0].name,
+        self.assertTrue(isinstance(port_list.child_portlist_list[0].name,
                                    str))
         self.assertTrue(isinstance(port_list.create_time, str))
 
-    def test_ex_create_port_list_NOCHILDPORTLIST(self):
+    def test_ex_create_portlist_NOCHILDPORTLIST(self):
         name = "Test_Port_List"
         description = "Test Description"
 
@@ -1618,7 +1618,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_collection = {port_1, port_2}
 
         # Create IP Address List
-        success = self.driver.ex_create_port_list(
+        success = self.driver.ex_create_portlist(
             ex_network_domain=net_domain, name=name,
             description=description,
             port_collection=port_collection
@@ -1626,7 +1626,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
         self.assertTrue(success)
 
-    def test_ex_create_port_list(self):
+    def test_ex_create_portlist(self):
         name = "Test_Port_List"
         description = "Test Description"
 
@@ -1644,16 +1644,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         child_ports = {child_port_1, child_port_2}
 
         # Create IP Address List
-        success = self.driver.ex_create_port_list(
+        success = self.driver.ex_create_portlist(
             ex_network_domain=net_domain, name=name,
             description=description,
             port_collection=port_collection,
-            child_port_list_lists=child_ports
+            child_portlist_list=child_ports
         )
 
         self.assertTrue(success)
 
-    def test_ex_create_port_list_STR(self):
+    def test_ex_create_portlist_STR(self):
         name = "Test_Port_List"
         description = "Test Description"
 
@@ -1671,18 +1671,18 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         child_ports_ids = {child_port_1.id, child_port_2.id}
 
         # Create IP Address List
-        success = self.driver.ex_create_port_list(
+        success = self.driver.ex_create_portlist(
             ex_network_domain=net_domain.id, name=name,
             description=description,
             port_collection=port_collection,
-            child_port_list_lists=child_ports_ids
+            child_portlist_list=child_ports_ids
         )
 
         self.assertTrue(success)
 
-    def test_ex_edit_port_list(self):
+    def test_ex_edit_portlist(self):
         net_domain = self.driver.ex_list_network_domains()[0]
-        port_list = self.driver.ex_list_port_list(net_domain)[0]
+        portlist = self.driver.ex_list_portlist(net_domain)[0]
 
         description = "Test Description"
 
@@ -1698,16 +1698,16 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         child_ports = {child_port_1.id, child_port_2.id}
 
         # Create IP Address List
-        success = self.driver.ex_edit_port_list(
-            ex_port_list=port_list,
+        success = self.driver.ex_edit_portlist(
+            ex_portlist=portlist,
             description=description,
             port_collection=port_collection,
-            child_port_list_lists=child_ports
+            child_portlist_list=child_ports
         )
         self.assertTrue(success)
 
-    def test_ex_edit_port_list_STR(self):
-        port_list_id = "484174a2-ae74-4658-9e56-50fc90e086cf"
+    def test_ex_edit_portlist_STR(self):
+        portlist_id = "484174a2-ae74-4658-9e56-50fc90e086cf"
         description = "Test Description"
 
         port_1 = DimensionDataPort(begin='8080')
@@ -1722,28 +1722,28 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         child_ports_ids = {child_port_1.id, child_port_2.id}
 
         # Create IP Address List
-        success = self.driver.ex_edit_port_list(
-            ex_port_list=port_list_id,
+        success = self.driver.ex_edit_portlist(
+            ex_portlist=portlist_id,
             description=description,
             port_collection=port_collection,
-            child_port_list_lists=child_ports_ids
+            child_portlist_list=child_ports_ids
         )
         self.assertTrue(success)
 
-    def test_ex_delete_port_list(self):
+    def test_ex_delete_portlist(self):
         net_domain = self.driver.ex_list_network_domains()[0]
-        port_list = self.driver.ex_list_port_list(net_domain)[0]
+        portlist = self.driver.ex_list_portlist(net_domain)[0]
 
-        success = self.driver.ex_delete_port_list(
-            ex_port_list=port_list)
+        success = self.driver.ex_delete_portlist(
+            ex_portlist=portlist)
         self.assertTrue(success)
 
-    def test_ex_delete_port_list_STR(self):
+    def test_ex_delete_portlist_STR(self):
         net_domain = self.driver.ex_list_network_domains()[0]
-        port_list = self.driver.ex_list_port_list(net_domain)[0]
+        portlist = self.driver.ex_list_portlist(net_domain)[0]
 
-        success = self.driver.ex_delete_port_list(
-            ex_port_list=port_list.id)
+        success = self.driver.ex_delete_portlist(
+            ex_portlist=portlist.id)
         self.assertTrue(success)
 
 

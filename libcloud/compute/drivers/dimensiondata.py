@@ -1481,6 +1481,44 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Edit a firewall rule
 
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> # driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>>
+        >>> # List firewall rules
+        >>> firewall_rules = driver.ex_list_firewall_rules(my_network_domain)
+        >>>
+        >>> # Get Firewall Rule by name
+        >>> pprint("List specific firewall rule by name")
+        >>> fire_rule_under_test = (list(filter(lambda x: x.name ==
+                                   'My_New_Firewall_Rule', firewall_rules))[0])
+        >>> pprint(fire_rule_under_test.source)
+        >>> pprint(fire_rule_under_test.destination)
+        >>>
+        >>> # Edit Firewall
+        >>> fire_rule_under_test.destination.address_list_id =
+                '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> fire_rule_under_test.destination.port_list_id =
+                'b6557c5a-45fa-4138-89bd-8fe68392691b'
+        >>> result = driver.ex_edit_firewall_rule(fire_rule_under_test, 'LAST')
+        >>> pprint(result)
+
         :param rule: (required) The rule in which to create
         :type  rule: :class:`DimensionDataFirewallRule`
 
@@ -2496,6 +2534,30 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         List IP Address List by network domain ID specified
 
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # List IP Address List of network domain
+        >>> ipaddresslist_list = driver.ex_list_ip_address_list(
+        >>>     ex_network_domain=my_network_domain)
+        >>> pprint(ipaddresslist_list)
+
         :param  ex_network_domain: The network domain or network domain ID
         :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
 
@@ -2512,6 +2574,32 @@ class DimensionDataNodeDriver(NodeDriver):
                                ex_ip_address_list_name):
         """
         Get IP Address List by name in network domain specified
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # Get IP Address List by Name
+        >>> ipaddresslist_list_by_name = driver.ex_get_ip_address_list(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     ex_ip_address_list_name='My_IP_AddressList_1')
+        >>> pprint(ipaddresslist_list_by_name)
+
 
         :param  ex_network_domain: (required) The network domain or network
                                    domain ID in which ipaddresslist resides.
@@ -2535,6 +2623,47 @@ class DimensionDataNodeDriver(NodeDriver):
                                   child_ip_address_list=None):
         """
         Create IP Address List. IP Address list.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # IP Address collection
+        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+                                                 end='190.2.2.108')
+        >>> ipAddress_3 = DimensionDataIpAddress(begin='190.2.2.0',
+                                                 prefix_size='24')
+        >>> ip_address_collection = {ipAddress_1, ipAddress_2, ipAddress_3}
+        >>>
+        >>> # Create IPAddressList
+        >>> result = driver.ex_create_ip_address_list(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     name='My_IP_AddressList_2',
+        >>>     ip_version='IPV4',
+        >>>     description='Test only',
+        >>>     ip_address_collection=ip_address_collection,
+        >>>     child_ip_address_list='08468e26-eeb3-4c3d-8ff2-5351fa6d8a04'
+        >>> )
+        >>>
+        >>> pprint(result)
+
 
         :param  ex_network_domain: The network domain or network domain ID
         :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
@@ -2628,6 +2757,35 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Edit IP Address List. IP Address list.
 
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # IP Address collection
+        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+        >>>                                      end='190.2.2.108')
+        >>> ipAddress_3 = DimensionDataIpAddress(
+        >>>                   begin='190.2.2.0', prefix_size='24')
+        >>> ip_address_collection = {ipAddress_1, ipAddress_2, ipAddress_3}
+        >>>
+        >>> # Edit IP Address List
+        >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> result = driver.ex_edit_ip_address_list(
+        >>>      ex_ip_address_list=ip_address_list_id,
+        >>>      description="Edit Test",
+        >>>      ip_address_collection=ip_address_collection,
+        >>>      child_ip_address_lists=None
+        >>>      )
+        >>> pprint(result)
+
         :param    ex_ip_address_list:  (required) IpAddressList object or
                                        IpAddressList ID
         :type     ex_ip_address_list: :class:'DimensionDataIpAddressList'
@@ -2700,8 +2858,22 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Delete IP Address List by ID
 
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> result = driver.ex_delete_ip_address_list(ip_address_list_id)
+        >>> pprint(result)
+
         :param    ex_ip_address_list:  IP Address List object or IP Address
-        List ID (required)
+                                        List ID (required)
         :type     ex_ip_address_list: :class:'DimensionDataIpAddressList'
                     or ``str``
 
@@ -2721,9 +2893,34 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_list_port_list(self, ex_network_domain):
+    def ex_list_portlist(self, ex_network_domain):
         """
-        List Port List by network domain ID specified
+        List Portlist by network domain ID specified
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+        >>>                                               networkDomainName][0]
+        >>>
+        >>> # List portlist
+        >>> portLists = driver.ex_list_portlist(
+        >>>     ex_network_domain=my_network_domain)
+        >>> pprint(portLists)
+        >>>
 
         :param  ex_network_domain: The network domain or network domain ID
         :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
@@ -2737,27 +2934,76 @@ class DimensionDataNodeDriver(NodeDriver):
             'network/portList', params=params).object
         return self._to_port_lists(response)
 
-    def ex_get_port_list(self, ex_port_list):
+    def ex_get_portlist(self, ex_portlist_id):
         """
         Get Port List
 
-        :param  ex_port_list: The ex_port_list or ex_port_list ID
-        :type   ex_port_list: :class:`DimensionDataNetworkDomain` or 'str'
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get specific portlist by ID
+        >>> portlist_id = '27dd8c66-80ff-496b-9f54-2a3da2fe679e'
+        >>> portlist = driver.ex_get_portlist(portlist_id)
+        >>> pprint(portlist)
+
+        :param  ex_portlist_id: The ex_port_list or ex_port_list ID
+        :type   ex_portlist_id: :class:`DimensionDataNetworkDomain` or 'str'
 
         :return:  DimensionDataPortList object
         :rtype:  :class:`DimensionDataPort`
         """
 
-        url_path = ('network/portList/%s' % self._port_list_to_port_list_id(
-            ex_port_list))
+        url_path = ('network/portList/%s' % ex_portlist_id)
         response = self.connection.request_with_orgId_api_2(
             url_path).object
         return self._to_port_list(response)
 
-    def ex_create_port_list(self, ex_network_domain, name, description,
-                            port_collection, child_port_list_lists=None):
+    def ex_create_portlist(self, ex_network_domain, name, description,
+                           port_collection, child_portlist_list=None):
         """
         Create Port List.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # Port Collection
+        >>> port_1 = DimensionDataPort(begin='1000')
+        >>> port_2 = DimensionDataPort(begin='1001', end='1003')
+        >>> port_collection = {port_1, port_2}
+        >>>
+        >>> # Create Port List
+        >>> new_portlist = driver.ex_create_portlist(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     name='MyPortListX',
+        >>>     description="Test only",
+        >>>     port_collection=port_collection,
+        >>>     child_portlist_list={'a9cd4984-6ff5-4f93-89ff-8618ab642bb9'}
+        >>>     )
+        >>> pprint(new_portlist)
 
         :param    ex_network_domain:  (required) The network domain in
                                        which to create PortList. Provide
@@ -2773,9 +3019,9 @@ class DimensionDataNodeDriver(NodeDriver):
         :param    port_collection:  List of Port Address
         :type     port_collection: :``str``
 
-        :param    child_port_list_lists:  Child Port List to be included in
-                                          this Port List
-        :type     child_port_list_lists: :``str`` or ''list of
+        :param    child_portlist_list:  List of Child Portlist to be
+                                        included in this Port List
+        :type     child_portlist_list: :``str`` or ''list of
                                          :class:'DimensionDataChildPortList'
 
         :return: result of operation
@@ -2807,8 +3053,8 @@ class DimensionDataNodeDriver(NodeDriver):
             if port.end:
                 p.set('end', port.end)
 
-        if child_port_list_lists is not None:
-            for child in child_port_list_lists:
+        if child_portlist_list is not None:
+            for child in child_portlist_list:
                 ET.SubElement(
                     new_port_list,
                     'childPortListId'
@@ -2822,24 +3068,52 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_edit_port_list(self, ex_port_list, description,
-                          port_collection, child_port_list_lists=None):
+    def ex_edit_portlist(self, ex_portlist, description,
+                         port_collection, child_portlist_list=None):
         """
         Edit Port List.
 
-        :param    ex_port_list:  Port List to be edited
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Port Collection
+        >>> port_1 = DimensionDataPort(begin='4200')
+        >>> port_2 = DimensionDataPort(begin='4201', end='4210')
+        >>> port_collection = {port_1, port_2}
+        >>>
+        >>> # Edit Port List
+        >>> editPortlist = driver.ex_get_portlist(
+            '27dd8c66-80ff-496b-9f54-2a3da2fe679e')
+        >>>
+        >>> result = driver.ex_edit_portlist(
+        >>>     ex_portlist=editPortlist.id,
+        >>>     description="Make Changes in portlist",
+        >>>     port_collection=port_collection,
+        >>>     child_portlist_list={'a9cd4984-6ff5-4f93-89ff-8618ab642bb9'}
+        >>> )
+        >>> pprint(result)
+
+        :param    ex_portlist:  Port List to be edited
                                         (required)
-        :type      ex_port_list: :``str`` or :class:'DimensionDataPortList'
+        :type      ex_portlist: :``str`` or :class:'DimensionDataPortList'
 
         :param    description:  Port List Description
         :type      description: :``str``
 
-        :param    port_collection:  List of Port Address
+        :param    port_collection:  List of Ports
         :type      port_collection: :``str``
 
-        :param    child_port_list_lists:  Child Port List to be included in
+        :param    child_portlist_list:  Child PortList to be included in
                                           this IP Address List
-        :type      child_port_list_lists: :``list`` of
+        :type      child_portlist_list: :``list`` of
                                           :class'DimensionDataChildPortList'
                                           or ''str''
 
@@ -2850,7 +3124,7 @@ class DimensionDataNodeDriver(NodeDriver):
         existing_port_address_list = ET.Element(
             'editPortList',
             {
-                "id": self._port_list_to_port_list_id(ex_port_list),
+                "id": self._port_list_to_port_list_id(ex_portlist),
                 'xmlns': TYPES_URN,
                 'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
             })
@@ -2870,8 +3144,8 @@ class DimensionDataNodeDriver(NodeDriver):
             if port.end:
                 p.set('end', port.end)
 
-        if child_port_list_lists is not None:
-            for child in child_port_list_lists:
+        if child_portlist_list is not None:
+            for child in child_portlist_list:
                 ET.SubElement(
                     existing_port_address_list,
                     'childPortListId'
@@ -2891,11 +3165,27 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_delete_port_list(self, ex_port_list):
+    def ex_delete_portlist(self, ex_portlist):
         """
         Delete Port List
-        :param    ex_port_list:  Port List to be deleted
-        :type     ex_port_list: :``str`` or :class:'DimensionDataPortList'
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Delete Port List
+        >>> portlist_id = '157531ce-77d4-493c-866b-d3d3fc4a912a'
+        >>> response = driver.ex_delete_portlist(portlist_id)
+        >>> pprint(response)
+
+        :param    ex_portlist:  Port List to be deleted
+        :type     ex_portlist: :``str`` or :class:'DimensionDataPortList'
 
         :rtype: ``bool``
         """
@@ -2903,7 +3193,7 @@ class DimensionDataNodeDriver(NodeDriver):
         delete_port_list = ET.Element(
             'deletePortList',
             {'xmlns': TYPES_URN,
-             'id': self._port_list_to_port_list_id(ex_port_list)})
+             'id': self._port_list_to_port_list_id(ex_portlist)})
 
         response = self.connection.request_with_orgId_api_2(
             'network/deletePortList',
