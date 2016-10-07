@@ -38,6 +38,10 @@ VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
 
 class RancherResponse(JsonResponse):
 
+    def parse_error(self):
+        parsed = super(RancherResponse, self).parse_error()
+        return "%s - %s" % (parsed['message'], parsed['detail'])
+
     def success(self):
         return self.status in VALID_RESPONSE_CODES
 
@@ -606,7 +610,10 @@ class RancherContainerDriver(ContainerDriver):
         """
         result = self.connection.request('%s/containers/%s' % (self.baseuri,
                                          container.id), method='DELETE')
-        return result.status in VALID_RESPONSE_CODES
+        if result.status in VALID_RESPONSE_CODES:
+            return self.get_container(container.id)
+        else:
+            raise RancherException(result.status, 'failed to stop container')
 
     def _gen_image(self, imageuuid):
         """
