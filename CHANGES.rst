@@ -59,6 +59,10 @@ Compute
 Container
 ~~~~~~~~~
 
+- Introduced new Racher driver
+  (GITHUB-876)
+  [Mario Loria]
+
 - Fixed bug in Docker util library for fetching images from the docker hub API. API
   was returning 301 and redirects were not being followed.
   (GITHUB-862)
