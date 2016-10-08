@@ -1,0 +1,52 @@
+{
+  "id": "1e1",
+  "type": "environment",
+  "links": {
+    "self": "http://172.30.0.100:8080/v1/environments/1e1",
+    "account": "http://172.30.0.100:8080/v1/environments/1e1/account",
+    "services": "http://172.30.0.100:8080/v1/environments/1e1/services",
+    "composeConfig": "http://172.30.0.100:8080/v1/environments/1e1/composeconfig"
+  },
+  "actions": {
+    "upgrade": "http://172.30.0.100:8080/v1/environments/1e1/?action=upgrade",
+    "update": "http://172.30.0.100:8080/v1/environments/1e1/?action=update",
+    "remove": "http://172.30.0.100:8080/v1/environments/1e1/?action=remove",
+    "addoutputs": "http://172.30.0.100:8080/v1/environments/1e1/?action=addoutputs",
+    "activateservices": "http://172.30.0.100:8080/v1/environments/1e1/?action=activateservices",
+    "deactivateservices": "http://172.30.0.100:8080/v1/environments/1e1/?action=deactivateservices",
+    "exportconfig": "http://172.30.0.100:8080/v1/environments/1e1/?action=exportconfig"
+  },
+  "name": "Concrete5",
+  "state": "active",
+  "accountId": "1a5",
+  "created": "2016-09-22T17:58:53Z",
+  "createdTS": 1474567133000,
+  "description": null,
+  "dockerCompose": "CMSMysql:\r\n    environment:\r\n        MYSQL_ROOT_PASSWORD: ${root_password}\r\n        MYSQL_DATABASE: ${db_name}\r\n        MYSQL_USER: ${db_username}\r\n        MYSQL_PASSWORD: ${db_password}\r\n    labels:\r\n        io.rancher.container.pull_image: always\r\n    tty: true\r\n    image: mysql\r\n    volumes:\r\n    - ${db_data_location}:/var/lib/mysql\r\n    stdin_open: true\r\n    volume_driver: ${volume_driver}\r\n\r\nCMSConfig:\r\n    image: opensaas/concrete5\r\n    tty: true\r\n    stdin_open: true\r\n    links:\r\n    - CMSMysql:mysql\r\n    volumes:\r\n    - ${cms_application_data}:/var/www/html/application\r\n    - ${cms_packages_data}:/var/www/html/packages\r\n    labels:\r\n        io.rancher.container.hostname_override: container_name\r\n        io.rancher.container.start_once: true\r\n    volume_driver: ${volume_driver}\r\n    command: bash -c \"chown -R www-data. application; chown -R www-data. packages; sleep 2m; php -f concrete/bin/concrete5.php c5:install --db-server=mysql --db-username=${db_username} --db-password=${db_password} --db-database=${db_name} --site=${cms_sitename} --admin-email=${cms_admin_email} --admin-password=${cms_admin_password} -n -vvv\"\r\n\r\nConcrete5App:\r\n    labels:\r\n        io.rancher.container.pull_image: always\r\n        io.rancher.sidekicks: CMSConfig\r\n    tty: true\r\n    links:\r\n    - CMSMysql:mysql\r\n    image: opensaas/concrete5\r\n    volumes:\r\n    - ${cms_application_data}:/var/www/html/application\r\n    - ${cms_packages_data}:/var/www/html/packages\r\n    volume_driver: ${volume_driver}\r\n    stdin_open: true",
+  "environment": {
+    "root_password": "password",
+    "db_name": "CMS_DB",
+    "db_username": "CMS_USER",
+    "db_password": "password",
+    "db_data_location": "CMS_DB_DATA",
+    "volume_driver": "",
+    "cms_application_data": "CMS_APP_DATA",
+    "cms_packages_data": "CMS_PACK_DATA",
+    "cms_admin_email": "admin@example.com",
+    "cms_admin_password": "password",
+    "cms_sitename": "MySite"
+  },
+  "externalId": "catalog://community:Concrete5:1",
+  "healthState": "unhealthy",
+  "kind": "environment",
+  "outputs": null,
+  "previousEnvironment": null,
+  "previousExternalId": null,
+  "rancherCompose": ".catalog:\r\n    name: \"Concrete5\"\r\n    version: \"v0.2\"\r\n    description: \"Concrete5 CMS\"\r\n    uuid: Concrete5-1\r\n    minimum_rancher_version: v0.51.0\r\n    questions:\r\n        - variable: root_password\r\n          description: \"MySQL root password - keep this password complex and secure\"\r\n          label: \"MySQL Root Password\"\r\n          required: true\r\n          default: \"password\"\r\n          type: \"string\"\r\n        - variable: db_name\r\n          description: \"MySQL Database Name - to use in the Concrete5 setup\"\r\n          label: \"MySQL Database Name\"\r\n          required: true\r\n          default: \"CMS_DB\"\r\n          type: \"string\"\r\n        - variable: db_username\r\n          description: \"MySQL Username - to use in the Concrete5 setup\"\r\n          label: \"MySQL Username\"\r\n          required: true\r\n          default: \"CMS_USER\"\r\n          type: \"string\"\r\n        - variable: db_password\r\n          description: \"MySQL password for the above user - to use in the Concrete5 setup\"\r\n          label: \"MySQL Password\"\r\n          required: true\r\n          default: \"password\"\r\n          type: \"string\"\r\n        - variable: db_data_location\r\n          description: \"Location on the host for the database files\"\r\n          label: \"DB Data Location\"\r\n          required: true\r\n          default: \"CMS_DB_DATA\"\r\n          type: \"string\"\r\n        - variable: volume_driver\r\n          description: \"Volume Driver for the persistant data locations requires docker 1.7\"\r\n          label: \"Volume Driver\"\r\n          type: \"string\"\r\n        - variable: cms_application_data\r\n          description: \"Concrcte5 application folder for persistant data storage\"\r\n          label: \"Application Folder\"\r\n          required: true\r\n          default: \"CMS_APP_DATA\"\r\n          type: \"string\"\r\n        - variable: cms_packages_data\r\n          description: \"Concrcte5 packages folder for persistant data storage\"\r\n          label: \"Packages Folder\"\r\n          required: true\r\n          default: \"CMS_PACK_DATA\"\r\n          type: \"string\"\r\n        - variable: cms_admin_email\r\n          description: \"Concrcete5 admin email address\"\r\n          label: \"Admin Email\"\r\n          required: true\r\n          default: \"admin@example.com\"\r\n          type: \"string\"\r\n        - variable: cms_admin_password\r\n          description: \"Concrcete5 admin password\"\r\n          label: \"Admin Password\"\r\n          required: true\r\n          default: \"password\"\r\n          type: \"string\"\r\n        - variable: cms_sitename\r\n          description: \"Concrcete5 Sitename\"\r\n          label: \"Sitename\"\r\n          required: true\r\n          default: \"MySite\"\r\n          type: \"string\"\r\nCMSMysql:\r\n    scale: 1\r\nConcrete5App:\r\n    scale: 1\r\n\r\n",
+  "removed": null,
+  "startOnCreate": true,
+  "transitioning": "no",
+  "transitioningMessage": null,
+  "transitioningProgress": null,
+  "uuid": "e129ed27-3823-4e2e-af62-4565d68995d4"
+}
