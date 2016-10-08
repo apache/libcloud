@@ -21,13 +21,6 @@ Here are some notes around this driver:
 - ``launchConfig`` options for ``ex_deploy_service`` can all be defined at the
   top level then get slipstreamed appropriately.
 - Passing your own cert/key of any sort for SSL/TLS is not presently supported.
-- For SSL/TLS (https) support with newer versions of OpenSSL, the following
-  is necessary (in your own code):
-
-  .. code::
-    import ssl
-    import libcloud.security
-    libcloud.security.SSL_VERSION = ssl.PROTOCOL_TLSv1_2
 
 To enable API access, obtain an Environment API Key from your Rancher Server
 for the specific environment you want to control.
