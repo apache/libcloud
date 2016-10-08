@@ -56,13 +56,11 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(stack['environment']['root_password'], "password")
 
     def test_ex_search_stacks(self):
-        # also uses ex_list_stacks.json
         stacks = self.driver.ex_search_stacks({"healthState": "healthy"})
         self.assertEqual(len(stacks), 6)
         self.assertEqual(stacks[0]['healthState'], "healthy")
 
     def test_ex_destroy_stack(self):
-        # Not sure how to do these with returns in mockhttp
         response = self.driver.ex_destroy_stack("1e10")
         self.assertEqual(response, True)
 
