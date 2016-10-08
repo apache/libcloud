@@ -24,7 +24,6 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError
 
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage)
@@ -200,7 +199,7 @@ class RancherContainerDriver(ContainerDriver):
             "rancherCompose": rancher_compose,
             "startOnCreate": start
         }
-        data = json.dumps(dict((k,v) for (k,v) in payload.items()
+        data = json.dumps(dict((k, v) for (k, v) in payload.items()
                                if v is not None))
         result = self.connection.request('%s/environments' %
                                          self.baseuri, data=data,
@@ -391,7 +390,7 @@ class RancherContainerDriver(ContainerDriver):
             "vip": vip
         }
 
-        data = json.dumps(dict((k,v) for (k,v) in service_payload.items()
+        data = json.dumps(dict((k, v) for (k, v) in service_payload.items()
                                if v is not None))
         result = self.connection.request('%s/services' % self.baseuri,
                                          data=data, method='POST').object
