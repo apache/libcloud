@@ -129,101 +129,101 @@ class DockerMockHttp(MockHttp):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_images_search(
+    def _vlinux_121_images_search(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/search.json'), {}, httplib.responses[httplib.OK])
 
-    def vmac_124_images_search(
+    def _vmac_124_images_search(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/search.json'), {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_images_json(
+    def _vlinux_121_images_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/images.json'), {}, httplib.responses[httplib.OK])
 
-    def vmac_124_images_json(
+    def _vmac_124_images_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/images.json'), {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_images_create(
+    def _vlinux_121_images_create(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/create_image.json'), {'Content-Type': 'application/json'},
                 httplib.responses[httplib.OK])
 
-    def vmac_124_images_create(
+    def _vmac_124_images_create(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/create_image.json'), {'Content-Type': 'application/json'},
                 httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_json(
+    def _vlinux_121_containers_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/containers.json'), {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_json(
+    def _vmac_124_containers_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/containers.json'), {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_create(
+    def _vlinux_121_containers_create(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/create_container.json'), {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_create(
+    def _vmac_124_containers_create(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/create_container.json'), {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/container_a68.json'), {}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/container_a68.json'), {}, httplib.responses[httplib.OK])
 
-    def vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
+    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
 
-    def vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
+    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_121/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
 
