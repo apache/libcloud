@@ -218,9 +218,9 @@ class RancherMockHttp(MockHttp):
 
     def _v1_containers(self, method, url, body, headers):
         if '?state=running' in url:
-            return (httplib.OK, self.fixtures.load(
-                'ex_search_containers.json'), {}, httplib.responses[httplib.OK]
-                    )
+            return (httplib.OK,
+                    self.fixtures.load('ex_search_containers.json'), {},
+                    httplib.responses[httplib.OK])
         elif method == 'POST':
             return (httplib.OK, self.fixtures.load('deploy_container.json'),
                     {}, httplib.responses[httplib.OK])
