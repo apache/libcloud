@@ -1,5 +1,6 @@
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
+from libcloud.container.base import ContainerImage
 
 driver = get_driver(Provider.RANCHER)
 
@@ -14,4 +15,3 @@ new_service = connection.ex_deploy_service(name="excitingservice", image=image,
                                            environment={
                                                "STORAGE_TYPE": "file"
                                            })
-
