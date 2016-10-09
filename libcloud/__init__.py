@@ -26,7 +26,6 @@ from libcloud.base import DriverTypeFactoryMap  # NOQA
 from libcloud.base import get_driver  # NOQA
 
 
-
 try:
     import paramiko
     have_paramiko = True
