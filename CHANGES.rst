@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 General
 ~~~~~~~
 
+- Introduced new base API for instantiating drivers
+  (GITHUB-822)
+  [Anthony Shaw]
+
 - Added certificate path for SLES12/OpenSUSE12
   (GITHUB-884)
   [Michael Calmer]
