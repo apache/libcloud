@@ -66,7 +66,8 @@ class Provider(Type):
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
-    :cvar AZURE: Azure driver.
+    :cvar AZURE: Azure (classic) driver.
+    :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSTACK: CloudStack
@@ -101,6 +102,8 @@ class Provider(Type):
     :cvar VPSNET: VPS.net
     :cvar VULTR: vultr driver.
     """
+    AZURE = 'azure'
+    AZURE_ARM = 'azure_arm'
     DUMMY = 'dummy'
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
