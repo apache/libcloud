@@ -19,6 +19,7 @@ import mock
 
 from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
 from libcloud.compute.drivers.libvirt_driver import have_libvirt
+from libcloud.utils.py3 import PY3
 
 from libcloud.test import unittest
 
@@ -42,6 +43,11 @@ class LibvirtNodeDriverTestCase(unittest.TestCase):
 1.2.10.33 dev br0 lladdr 52:54:00:04:89:51 REACHABLE
 1.2.10.97 dev br0 lladdr
 1.2.10.40 dev br0 lladdr 52:54:00:77:1c:83 STALE"""
+    if PY3:
+        from libcloud.utils.py3 import b
+        arp_output_str = b(arp_output_str)
+        ip_output_str = b(ip_output_str)
+        bad_output_str = b(bad_output_str)
 
     def _assert_arp_table(self, arp_table):
         self.assertIn('52:54:00:bc:f9:6c', arp_table)
