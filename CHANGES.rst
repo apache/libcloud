@@ -23,6 +23,10 @@ General
 Compute
 ~~~~~~~
 
+- Bugfix - Fixed listing nodes issue in Python 3
+  (LIBCLOUD-858, GITHUB-894)
+  [Fahri Cihan Demirci]
+
 - Added FCU (Flexible Compute Unit) support to the Outscale driver.
   (GITHUB-890)
   [Javier M. Mellid]
