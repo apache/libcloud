@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
+from libcloud.utils.py3 import ensure_string
 
 try:
     import libvirt
@@ -428,7 +429,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
-        lines = cmd_output.split('\n')
+        lines = ensure_string(cmd_output).split('\n')
 
         arp_table = defaultdict(list)
         for line in lines:
