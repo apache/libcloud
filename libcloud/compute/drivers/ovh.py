@@ -15,10 +15,12 @@
 """
 Ovh driver
 """
+from libcloud.utils.py3 import httplib
 from libcloud.common.ovh import API_ROOT, OvhConnection
-from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.types import Provider, StorageVolumeState
+from libcloud.compute.base import (NodeDriver, NodeSize, Node, NodeLocation,
+                                   NodeImage, StorageVolume, VolumeSnapshot)
+from libcloud.compute.types import (Provider, StorageVolumeState,
+                                    VolumeSnapshotState)
 from libcloud.compute.drivers.openstack import OpenStackNodeDriver
 from libcloud.compute.drivers.openstack import OpenStackKeyPair
 
@@ -40,6 +42,7 @@ class OvhNodeDriver(NodeDriver):
 
     NODE_STATE_MAP = OpenStackNodeDriver.NODE_STATE_MAP
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
+    SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
     def __init__(self, key, secret, ex_project_id, ex_consumer_key=None):
         """
@@ -374,6 +377,56 @@ class OvhNodeDriver(NodeDriver):
         self.connection.request(action, data=data, method='POST')
         return True
 
+    def ex_list_snapshots(self, location=None):
+        action = self._get_project_action('volume/snapshot')
+        params = {}
+        if location:
+            params['region'] = location.id
+        response = self.connection.request(action, params=params)
+        return self._to_snapshots(response.object)
+
+    def ex_get_volume_snapshot(self, snapshot_id):
+        action = self._get_project_action('volume/snapshot/%s' % snapshot_id)
+        response = self.connection.request(action)
+        return self._to_snapshot(response.object)
+
+    def list_volume_snapshots(self, volume):
+        action = self._get_project_action('volume/snapshot')
+        params = {'region': volume.extra['region']}
+        response = self.connection.request(action, params=params)
+        snapshots = self._to_snapshots(response.object)
+        return [snap for snap in snapshots
+                if snap.extra['volume_id'] == volume.id]
+
+    def create_volume_snapshot(self, volume, name=None, ex_description=None):
+        """
+        Create snapshot from volume
+
+        :param volume: Instance of `StorageVolume`
+        :type  volume: `StorageVolume`
+
+        :param name: Name of snapshot (optional)
+        :type  name: `str` | `NoneType`
+
+        :param ex_description: Description of the snapshot (optional)
+        :type  ex_description: `str` | `NoneType`
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        action = self._get_project_action('volume/%s/snapshot/' % volume.id)
+        data = {}
+        if name:
+            data['name'] = name
+        if ex_description:
+            data['description'] = ex_description
+        response = self.connection.request(action, data=data, method='POST')
+        return self._to_snapshot(response.object)
+
+    def destroy_volume_snapshot(self, snapshot):
+        action = self._get_project_action('volume/snapshot/%s' % snapshot.id)
+        response = self.connection.request(action, method='DELETE')
+        return response.status == httplib.OK
+
     def _to_volume(self, obj):
         extra = obj.copy()
         extra.pop('id')
@@ -433,6 +486,24 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_key_pairs(self, objs):
         return [self._to_key_pair(obj) for obj in objs]
+
+    def _to_snapshot(self, obj):
+        extra = {
+            'volume_id': obj['volumeId'],
+            'region': obj['region'],
+            'description': obj['description'],
+            'status': obj['status'],
+        }
+        state = self.SNAPSHOT_STATE_MAP.get(obj['status'],
+                                            VolumeSnapshotState.UNKNOWN)
+        snapshot = VolumeSnapshot(id=obj['id'], driver=self,
+                                  size=obj['size'], extra=extra,
+                                  created=obj['creationDate'], state=state,
+                                  name=obj['name'])
+        return snapshot
+
+    def _to_snapshots(self, objs):
+        return [self._to_snapshot(obj) for obj in objs]
 
     def _ex_connection_class_kwargs(self):
         return {'ex_consumer_key': self.consumer_key}
