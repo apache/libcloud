@@ -473,7 +473,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request('/v%s/containers/%s' % (self.version,
-                                                                container.id),
+                                                                 container.id),
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
 
@@ -535,8 +535,8 @@ class DockerContainerDriver(ContainerDriver):
             logs = result
         else:
             result = self.connection.request(
-                "/v%s/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
-                (self.version, container.id, str(stream)),
+                "/v%s/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1"
+                % (self.version, container.id, str(stream)),
                 method='POST',
                 data=data)
             logs = result.body
@@ -592,7 +592,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request('/v%s/images/%s' % (self.version,
-                                                            image.name),
+                                                             image.name),
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
 
