@@ -205,7 +205,7 @@ class DockerContainerDriver(ContainerDriver):
         }
         data = json.dumps(payload)
 
-        result = self.connection.request('v%s/images/create?fromImage=%s' %
+        result = self.connection.request('/v%s/images/create?fromImage=%s' %
                                          (self.version, path), data=data,
                                          method='POST')
         if "errorDetail" in result.body:
@@ -235,7 +235,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
-        result = self.connection.request('v%s/images/json' %
+        result = self.connection.request('/v%s/images/json' %
                                          (self.version)).object
         images = []
         for image in result:
@@ -276,7 +276,7 @@ class DockerContainerDriver(ContainerDriver):
             ex = ''
         try:
             result = self.connection.request(
-                "v%s/containers/json%s" % (self.version, ex)).object
+                "/v%s/containers/json%s" % (self.version, ex)).object
         except Exception as exc:
             errno = getattr(exc, 'errno', None)
             if errno == 111:
@@ -355,7 +355,7 @@ class DockerContainerDriver(ContainerDriver):
 
         data = json.dumps(payload)
         try:
-            result = self.connection.request('v%s/containers/create'
+            result = self.connection.request('/v%s/containers/create'
                                              % (self.version),
                                              data=data,
                                              params=params, method='POST')
@@ -377,7 +377,7 @@ class DockerContainerDriver(ContainerDriver):
         data = json.dumps(payload)
         if start:
             result = self.connection.request(
-                'v%s/containers/%s/start' %
+                '/v%s/containers/%s/start' %
                 (self.version, id_), data=data,
                 method='POST')
 
@@ -392,7 +392,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("v%s/containers/%s/json" %
+        result = self.connection.request("/v%s/containers/%s/json" %
                                          (self.version, id)).object
 
         return self._to_container(result)
@@ -413,7 +413,7 @@ class DockerContainerDriver(ContainerDriver):
         }
         data = json.dumps(payload)
         result = self.connection.request(
-            'v%s/containers/%s/start' %
+            '/v%s/containers/%s/start' %
             (self.version, container.id),
             method='POST', data=data)
         if result.status in VALID_RESPONSE_CODES:
@@ -432,7 +432,7 @@ class DockerContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request('v%s/containers/%s/stop' %
+        result = self.connection.request('/v%s/containers/%s/stop' %
                                          (self.version, container.id),
                                          method='POST')
         if result.status in VALID_RESPONSE_CODES:
@@ -453,7 +453,7 @@ class DockerContainerDriver(ContainerDriver):
         """
         data = json.dumps({'t': 10})
         # number of seconds to wait before killing the container
-        result = self.connection.request('v%s/containers/%s/restart' %
+        result = self.connection.request('/v%s/containers/%s/restart' %
                                          (self.version, container.id),
                                          data=data, method='POST')
         if result.status in VALID_RESPONSE_CODES:
@@ -472,7 +472,7 @@ class DockerContainerDriver(ContainerDriver):
         :return: True if the destroy was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('v%s/containers/%s' % (self.version,
+        result = self.connection.request('/v%s/containers/%s' % (self.version,
                                                                 container.id),
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
@@ -486,7 +486,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: ``str``
         """
-        result = self.connection.request("v%s/containers/%s/top" %
+        result = self.connection.request("/v%s/containers/%s/top" %
                                          (self.version, container.id)).object
 
         return result
@@ -503,7 +503,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request('v%s/containers/%s/rename?name=%s'
+        result = self.connection.request('/v%s/containers/%s/rename?name=%s'
                                          % (self.version, container.id, name),
                                          method='POST')
         if result.status in VALID_RESPONSE_CODES:
@@ -530,12 +530,12 @@ class DockerContainerDriver(ContainerDriver):
 
         if float(self._get_api_version()) > 1.10:
             result = self.connection.request(
-                "v%s/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
+                "/v%s/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
                 (self.version, container.id, str(stream))).object
             logs = result
         else:
             result = self.connection.request(
-                "v%s/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
+                "/v%s/containers/%s/attach?logs=1&stream=%s&stdout=1&stderr=1" %
                 (self.version, container.id, str(stream)),
                 method='POST',
                 data=data)
@@ -560,7 +560,7 @@ class DockerContainerDriver(ContainerDriver):
         """
 
         term = term.replace(' ', '+')
-        result = self.connection.request('v%s/images/search?term=%s' %
+        result = self.connection.request('/v%s/images/search?term=%s' %
                                          (self.version, term)).object
         images = []
         for image in result:
@@ -591,7 +591,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: ``bool``
         """
-        result = self.connection.request('v%s/images/%s' % (self.version,
+        result = self.connection.request('/v%s/images/%s' % (self.version,
                                                             image.name),
                                          method='DELETE')
         return result.status in VALID_RESPONSE_CODES
