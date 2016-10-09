@@ -833,10 +833,20 @@ class DimensionDataFirewallAddress(object):
         self.any_ip = any_ip
         self.ip_address = ip_address
         self.ip_prefix_size = ip_prefix_size
+        self.port_list_id = port_list_id
         self.port_begin = port_begin
         self.port_end = port_end
         self.address_list_id = address_list_id
         self.port_list_id = port_list_id
+
+    def __repr__(self):
+        return (
+            '<DimensionDataFirewallAddress: any_ip=%s, ip_address=%s, '
+            'ip_prefix_size=%s, port_begin=%s, port_end=%s, '
+            'address_list_id=%s, port_list_id=%s>'
+            % (self.any_ip, self.ip_address, self.ip_prefix_size,
+               self.port_begin, self.port_end, self.address_list_id,
+               self.port_list_id))
 
 
 class DimensionDataNatRule(object):
@@ -1510,3 +1520,234 @@ class DimensionDataTagKey(object):
     def __repr__(self):
         return (('<DimensionDataTagKey: name=%s>')
                 % (self.name))
+
+
+class DimensionDataIpAddressList(object):
+    """
+    DimensionData IP Address list
+    """
+
+    def __init__(self, id, name, description, ip_version,
+                 ip_address_collection,
+                 state, create_time, child_ip_address_lists=None):
+        """"
+        Initialize an instance of :class:`DimensionDataIpAddressList`
+
+        :param id: GUID of the IP Address List key
+        :type  id: ``str``
+
+        :param name: Name of the IP Address List
+        :type  name: ``str``
+
+        :param description: Description of the IP Address List
+        :type  description: ``str``
+
+        :param ip_version: IP version. E.g. IPV4, IPV6
+        :type  ip_version: ``str``
+
+        :param ip_address_collection: Collection of DimensionDataIpAddress
+        :type  ip_address_collection: ``List``
+
+        :param state: IP Address list state
+        :type  state: ``str``
+
+        :param create_time: IP Address List created time
+        :type  create_time: ``date time``
+
+        :param child_ip_address_lists: List of IP address list to be included
+        :type  child_ip_address_lists: List
+        of :class:'DimensionDataIpAddressList'
+        """
+        self.id = id
+        self.name = name
+        self.description = description
+        self.ip_version = ip_version
+        self.ip_address_collection = ip_address_collection
+        self.state = state
+        self.create_time = create_time
+        self.child_ip_address_lists = child_ip_address_lists
+
+    def __repr__(self):
+        return ('<DimensionDataIpAddressList: id=%s, name=%s, description=%s, '
+                'ip_version=%s, ip_address_collection=%s, state=%s, '
+                'create_time=%s, child_ip_address_lists=%s>'
+                % (self.id, self.name, self.description, self.ip_version,
+                   self.ip_address_collection, self.state, self.create_time,
+                   self.child_ip_address_lists))
+
+
+class DimensionDataChildIpAddressList(object):
+    """
+    DimensionData Child IP Address list
+    """
+
+    def __init__(self, id, name):
+        """"
+        Initialize an instance of :class:`DimensionDataChildIpAddressList`
+
+        :param id: GUID of the IP Address List key
+        :type  id: ``str``
+
+        :param name: Name of the IP Address List
+        :type  name: ``str``
+
+        """
+        self.id = id
+        self.name = name
+
+    def __repr__(self):
+        return ('<DimensionDataChildIpAddressList: id=%s, name=%s>'
+                % (self.id, self.name))
+
+
+class DimensionDataIpAddress(object):
+    """
+    A representation of IP Address in Dimension Data
+    """
+
+    def __init__(self, begin, end=None, prefix_size=None):
+        """
+        Initialize an instance of :class:`DimensionDataIpAddress`
+
+        :param begin: IP Address Begin
+        :type  begin: ``str``
+
+        :param end: IP Address end
+        :type  end: ``str``
+
+        :param prefixSize: IP Address prefix size
+        :type  prefixSize: ``int``
+        """
+        self.begin = begin
+        self.end = end
+        self.prefix_size = prefix_size
+
+    def __repr__(self):
+        return ('<DimensionDataIpAddress: begin=%s, end=%s, prefix_size=%s>'
+                % (self.begin, self.end, self.prefix_size))
+
+
+class DimensionDataPortList(object):
+    """
+    DimensionData Port list
+    """
+
+    def __init__(self, id, name, description, port_collection,
+                 child_portlist_list,
+                 state, create_time):
+        """"
+        Initialize an instance of :class:`DimensionDataPortList`
+
+        :param id: GUID of the Port List key
+        :type  id: ``str``
+
+        :param name: Name of the Port List
+        :type  name: ``str``
+
+        :param description: Description of the Port List
+        :type  description: ``str``
+
+        :param port_collection: Collection of DimensionDataPort
+        :type  port_collection: ``List``
+
+        :param child_portlist_list: Collection of DimensionDataChildPort
+        :type  child_portlist_list: ``List``
+
+        :param state: Port list state
+        :type  state: ``str``
+
+        :param create_time: Port List created time
+        :type  create_time: ``date time``
+        """
+        self.id = id
+        self.name = name
+        self.description = description
+        self.port_collection = port_collection
+        self.child_portlist_list = child_portlist_list
+        self.state = state
+        self.create_time = create_time
+
+    def __repr__(self):
+        return (
+            "<DimensionDataPortList: id=%s, name=%s, description=%s, "
+            "port_collection=%s, child_portlist_list=%s, state=%s, "
+            "create_time=%s>"
+            % (self.id, self.name, self.description,
+               self.port_collection, self.child_portlist_list, self.state,
+               self.create_time))
+
+
+class DimensionDataChildPortList(object):
+    """
+    DimensionData Child Port list
+    """
+
+    def __init__(self, id, name):
+        """"
+        Initialize an instance of :class:`DimensionDataChildIpAddressList`
+
+        :param id: GUID of the child port list key
+        :type  id: ``str``
+
+        :param name: Name of the child port List
+        :type  name: ``str``
+
+        """
+        self.id = id
+        self.name = name
+
+    def __repr__(self):
+        return ('<DimensionDataChildPortList: id=%s, name=%s>'
+                % (self.id, self.name))
+
+
+class DimensionDataPort(object):
+    """
+    A representation of Port in Dimension Data
+    """
+
+    def __init__(self, begin, end=None):
+        """
+        Initialize an instance of :class:`DimensionDataPort`
+
+        :param begin: Port Number Begin
+        :type  begin: ``str``
+
+        :param end: Port Number end
+        :type  end: ``str``
+        """
+        self.begin = begin
+        self.end = end
+
+    def __repr__(self):
+        return ('<DimensionDataPort: begin=%s, end=%s>'
+                % (self.begin, self.end))
+
+
+class DimensionDataNic(object):
+    """
+    A representation of Network Adapter in Dimension Data
+    """
+
+    def __init__(self, private_ip_v4=None, vlan=None,
+                 network_adapter_name=None):
+        """
+        Initialize an instance of :class:`DimensionDataNic`
+
+        :param private_ip_v4: IPv4
+        :type  private_ip_v4: ``str``
+
+        :param vlan: Network VLAN
+        :type  vlan: class: DimensionDataVlan or ``str``
+
+        :param network_adapter_name: Network Adapter Name
+        :type  network_adapter_name: ``str``
+        """
+        self.private_ip_v4 = private_ip_v4
+        self.vlan = vlan
+        self.network_adapter_name = network_adapter_name
+
+    def __repr__(self):
+        return ('<DimensionDataNic: private_ip_v4=%s, vlan=%s,'
+                'network_adapter_name=%s>'
+                % (self.private_ip_v4, self.vlan, self.network_adapter_name))
