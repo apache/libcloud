@@ -24,7 +24,9 @@ try:
 except ImportError:
     have_paramiko = False
 
+import libcloud
 from libcloud import _init_once
+from libcloud.base import DriverTypeNotFoundError
 from libcloud.common.base import LoggingHTTPConnection
 from libcloud.common.base import LoggingHTTPSConnection
 
@@ -56,6 +58,13 @@ class TestUtils(unittest.TestCase):
             paramiko_log_level = logger.getEffectiveLevel()
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
+    def test_factory(self):
+        driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2)
+        self.assertEqual(driver.__name__, 'EC2NodeDriver')
+
+    def test_raises_error(self):
+        with self.assertRaises(DriverTypeNotFoundError):
+            libcloud.get_driver('potato', 'potato')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -18,10 +18,14 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
-
-
 import os
 import codecs
+
+from libcloud.base import DriverType  # NOQA
+from libcloud.base import DriverTypeFactoryMap  # NOQA
+from libcloud.base import get_driver  # NOQA
+
+
 
 try:
     import paramiko
