@@ -1489,7 +1489,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
-        >>> # driver = cls('myusername','mypassword', region='dd-au')
+        >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
         >>> location = driver.ex_get_location_by_id(id='AU9')
@@ -2650,7 +2650,7 @@ class DimensionDataNodeDriver(NodeDriver):
                                                  end='190.2.2.108')
         >>> ipAddress_3 = DimensionDataIpAddress(begin='190.2.2.0',
                                                  prefix_size='24')
-        >>> ip_address_collection = {ipAddress_1, ipAddress_2, ipAddress_3}
+        >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
         >>>
         >>> # Create IPAddressList
         >>> result = driver.ex_create_ip_address_list(
@@ -2774,7 +2774,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>                                      end='190.2.2.108')
         >>> ipAddress_3 = DimensionDataIpAddress(
         >>>                   begin='190.2.2.0', prefix_size='24')
-        >>> ip_address_collection = {ipAddress_1, ipAddress_2, ipAddress_3}
+        >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
         >>>
         >>> # Edit IP Address List
         >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
@@ -2993,7 +2993,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> # Port Collection
         >>> port_1 = DimensionDataPort(begin='1000')
         >>> port_2 = DimensionDataPort(begin='1001', end='1003')
-        >>> port_collection = {port_1, port_2}
+        >>> port_collection = [port_1, port_2]
         >>>
         >>> # Create Port List
         >>> new_portlist = driver.ex_create_portlist(
@@ -3087,7 +3087,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> # Port Collection
         >>> port_1 = DimensionDataPort(begin='4200')
         >>> port_2 = DimensionDataPort(begin='4201', end='4210')
-        >>> port_collection = {port_1, port_2}
+        >>> port_collection = [port_1, port_2]
         >>>
         >>> # Edit Port List
         >>> editPortlist = driver.ex_get_portlist(

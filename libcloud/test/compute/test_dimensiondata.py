@@ -1438,8 +1438,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                               end='190.2.2.108')
         ip_address_3 = DimensionDataIpAddress(begin='190.2.2.0',
                                               prefix_size='24')
-        ip_address_collection = {ip_address_1, ip_address_2,
-                                 ip_address_3}
+        ip_address_collection = [ip_address_1, ip_address_2,
+                                 ip_address_3]
 
         # Create IP Address List
         success = self.driver.ex_create_ip_address_list(
@@ -1461,8 +1461,8 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                               end='190.2.2.108')
         ip_address_3 = DimensionDataIpAddress(begin='190.2.2.0',
                                               prefix_size='24')
-        ip_address_collection = {ip_address_1, ip_address_2,
-                                 ip_address_3}
+        ip_address_collection = [ip_address_1, ip_address_2,
+                                 ip_address_3]
 
         # Create IP Address List
         success = self.driver.ex_create_ip_address_list(
@@ -1475,7 +1475,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_edit_ip_address_list(self):
         ip_address_1 = DimensionDataIpAddress(begin='190.2.2.111')
-        ip_address_collection = {ip_address_1}
+        ip_address_collection = [ip_address_1]
 
         child_ip_address_list = DimensionDataChildIpAddressList(
             id='2221ef78-4059-4bc1-b433-3f6ad698dc41',
@@ -1502,7 +1502,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_edit_ip_address_list_STR(self):
         ip_address_1 = DimensionDataIpAddress(begin='190.2.2.111')
-        ip_address_collection = {ip_address_1}
+        ip_address_collection = [ip_address_1]
 
         child_ip_address_list = DimensionDataChildIpAddressList(
             id='2221ef78-4059-4bc1-b433-3f6ad698dc41',
@@ -1615,7 +1615,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_1 = DimensionDataPort(begin='8080')
         port_2 = DimensionDataIpAddress(begin='8899',
                                               end='9023')
-        port_collection = {port_1, port_2}
+        port_collection = [port_1, port_2]
 
         # Create IP Address List
         success = self.driver.ex_create_portlist(
@@ -1635,13 +1635,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_1 = DimensionDataPort(begin='8080')
         port_2 = DimensionDataIpAddress(begin='8899',
                                               end='9023')
-        port_collection = {port_1, port_2}
+        port_collection = [port_1, port_2]
 
         child_port_1 = DimensionDataChildPortList(
             id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
         child_port_2 = DimensionDataChildPortList(
             id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
-        child_ports = {child_port_1, child_port_2}
+        child_ports = [child_port_1, child_port_2]
 
         # Create IP Address List
         success = self.driver.ex_create_portlist(
@@ -1662,13 +1662,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_1 = DimensionDataPort(begin='8080')
         port_2 = DimensionDataIpAddress(begin='8899',
                                               end='9023')
-        port_collection = {port_1, port_2}
+        port_collection = [port_1, port_2]
 
         child_port_1 = DimensionDataChildPortList(
             id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
         child_port_2 = DimensionDataChildPortList(
             id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
-        child_ports_ids = {child_port_1.id, child_port_2.id}
+        child_ports_ids = [child_port_1.id, child_port_2.id]
 
         # Create IP Address List
         success = self.driver.ex_create_portlist(
@@ -1689,13 +1689,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_1 = DimensionDataPort(begin='8080')
         port_2 = DimensionDataIpAddress(begin='8899',
                                         end='9023')
-        port_collection = {port_1, port_2}
+        port_collection = [port_1, port_2]
 
         child_port_1 = DimensionDataChildPortList(
             id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
         child_port_2 = DimensionDataChildPortList(
             id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
-        child_ports = {child_port_1.id, child_port_2.id}
+        child_ports = [child_port_1.id, child_port_2.id]
 
         # Create IP Address List
         success = self.driver.ex_edit_portlist(
@@ -1713,13 +1713,13 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         port_1 = DimensionDataPort(begin='8080')
         port_2 = DimensionDataIpAddress(begin='8899',
                                         end='9023')
-        port_collection = {port_1, port_2}
+        port_collection = [port_1, port_2]
 
         child_port_1 = DimensionDataChildPortList(
             id="333174a2-ae74-4658-9e56-50fc90e086cf", name='test port 1')
         child_port_2 = DimensionDataChildPortList(
             id="311174a2-ae74-4658-9e56-50fc90e04444", name='test port 2')
-        child_ports_ids = {child_port_1.id, child_port_2.id}
+        child_ports_ids = [child_port_1.id, child_port_2.id]
 
         # Create IP Address List
         success = self.driver.ex_edit_portlist(
