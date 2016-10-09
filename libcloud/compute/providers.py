@@ -135,8 +135,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.medone', 'MedOneNodeDriver'),
     Provider.BSNL:
     ('libcloud.compute.drivers.bsnl', 'BSNLNodeDriver'),
-    Provider.CISCOCCS:
-    ('libcloud.compute.drivers.ciscoccs', 'CiscoCCSNodeDriver'),
     Provider.NTTA:
     ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
     Provider.ALIYUN_ECS:
