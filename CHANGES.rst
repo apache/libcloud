@@ -27,6 +27,10 @@ General
 Compute
 ~~~~~~~
 
+- Added edit firewall functionality to Dimension Data driver
+  (GITHUB-893)
+  [Samuel Chong]
+
 - Bugfix - Fixed listing nodes issue in Python 3
   (LIBCLOUD-858, GITHUB-894)
   [Fahri Cihan Demirci]
