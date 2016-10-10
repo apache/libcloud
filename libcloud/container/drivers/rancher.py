@@ -39,7 +39,12 @@ class RancherResponse(JsonResponse):
 
     def parse_error(self):
         parsed = super(RancherResponse, self).parse_error()
-        return "%s - %s" % (parsed['message'], parsed['detail'])
+        if 'fieldName' in parsed:
+            return "Field %s is %s: %s - %s" % (parsed['fieldName'], parsed['code'],
+                                          parsed['message'], parsed['detail'])
+        else:
+            return "%%s - %s" % (parsed['message'],
+                                    parsed['detail'])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
