@@ -1,0 +1,43 @@
+{
+    "id": "locations",
+    "type": "collection",
+    "href": "/cloudapi/v3/locations",
+    "items": [
+        {
+            "id": "de/fkb",
+            "type": "location",
+            "href": "/cloudapi/v3/locations/de/fkb",
+            "properties": {
+                "name": "karlsruhe",
+                "features": [
+                    "SSD",
+                    "MULTIPLE_CPU"
+                ]
+            }
+        },
+        {
+            "id": "de/fra",
+            "type": "location",
+            "href": "/cloudapi/v3/locations/de/fra",
+            "properties": {
+                "name": "frankfurt",
+                "features": [
+                    "SSD",
+                    "MULTIPLE_CPU"
+                ]
+            }
+        },
+        {
+            "id": "us/las",
+            "type": "location",
+            "href": "/cloudapi/v3/locations/us/las",
+            "properties": {
+                "name": "lasvegas",
+                "features": [
+                    "SSD",
+                    "MULTIPLE_CPU"
+                ]
+            }
+        }
+    ]
+}
