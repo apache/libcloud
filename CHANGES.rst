@@ -27,6 +27,10 @@ General
 Compute
 ~~~~~~~
 
+- Fix reporting function for detailed admin logs in Dimension Data Driver
+  (GITHUB-898)
+  [Anthony Shaw]
+
 - Added edit firewall functionality to Dimension Data driver
   (GITHUB-893)
   [Samuel Chong]
