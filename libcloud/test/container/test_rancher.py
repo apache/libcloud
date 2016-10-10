@@ -157,6 +157,10 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(container.extra['environment'],
                          {'STORAGE_TYPE': 'file'})
 
+    def test_start_container(self):
+        container = self.driver.get_container("1i31")
+        container.start()
+
     def test_stop_container(self):
         container = self.driver.get_container("1i31")
         container.stop()
