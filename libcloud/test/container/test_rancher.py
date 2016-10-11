@@ -160,10 +160,14 @@ class RancherContainerDriverTestCase(unittest.TestCase):
     def test_start_container(self):
         container = self.driver.get_container("1i31")
         container.start()
+        self.assertEqual(container.id, "1i31")
+        self.assertEqual(container.name, "newcontainer")
 
     def test_stop_container(self):
         container = self.driver.get_container("1i31")
         container.stop()
+        self.assertEqual(container.id, "1i31")
+        self.assertEqual(container.name, "newcontainer")
 
     def test_ex_search_containers(self):
         containers = self.driver.ex_search_containers({"state": "running"})
@@ -172,6 +176,8 @@ class RancherContainerDriverTestCase(unittest.TestCase):
     def test_destroy_container(self):
         container = self.driver.get_container("1i31")
         container.destroy()
+        self.assertEqual(container.id, "1i31")
+        self.assertEqual(container.name, "newcontainer")
 
 
 class RancherMockHttp(MockHttp):
