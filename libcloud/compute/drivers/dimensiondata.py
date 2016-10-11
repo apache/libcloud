@@ -316,8 +316,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
-        >>> driver = cls('schong_platcaas', 'T3stst@r!', region='dd-au')
-        >>> # driver = cls('myusername','mypassword', region='dd-au')
+        >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Password
         >>> root_pw = NodeAuthPassword('password123')
