@@ -28,12 +28,27 @@ from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 from libcloud.storage.drivers.s3 import S3RawResponse
 from libcloud.storage.drivers.s3 import S3Response
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlquote
 
 # Docs are a lie. Actual namespace returned is different that the one listed
 # in the docs.
 SIGNATURE_IDENTIFIER = 'GOOG1'
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://doc.s3.amazonaws.com/%s' % (API_VERSION)
+
+
+def _clean_object_name(name):
+    """
+    Return the URL encoded name. name=None returns None. Useful for input
+    checking without having to check for None first.
+
+    :param name: The object name
+    :type name: ``str`` or ``None``
+
+    :return: The url-encoded object name or None if name=None.
+    :rtype ``str`` or ``None``
+    """
+    return urlquote(name, safe='') if name else None
 
 
 class ContainerPermissions(object):
@@ -298,6 +313,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             authenticated user, if using an OAuth2 authentication scheme.
         :type entity: ``str`` or ``None``
         """
+        object_name = _clean_object_name(object_name)
         if not entity:
             user_id = self._get_user()
             if not user_id:
@@ -330,6 +346,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         :rtype: ``tuple`` of (``int``, ``int`` or ``None``) from
             ContainerPermissions and ObjectPermissions, respectively.
         """
+        object_name = _clean_object_name(object_name)
         obj_perms = self._get_object_permissions(
             container_name, object_name) if object_name else None
         return self._get_container_permissions(container_name), obj_perms
@@ -358,6 +375,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         :raises ValueError: If no entity was given, but was required. Or if
             the role isn't valid for the bucket or object.
         """
+        object_name = _clean_object_name(object_name)
         if isinstance(role, int):
             perms = ObjectPermissions if object_name else ContainerPermissions
             try:
