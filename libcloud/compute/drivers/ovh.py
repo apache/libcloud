@@ -15,10 +15,12 @@
 """
 Ovh driver
 """
+from libcloud.utils.py3 import httplib
 from libcloud.common.ovh import API_ROOT, OvhConnection
-from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.types import Provider, StorageVolumeState
+from libcloud.compute.base import (NodeDriver, NodeSize, Node, NodeLocation,
+                                   NodeImage, StorageVolume, VolumeSnapshot)
+from libcloud.compute.types import (Provider, StorageVolumeState,
+                                    VolumeSnapshotState)
 from libcloud.compute.drivers.openstack import OpenStackNodeDriver
 from libcloud.compute.drivers.openstack import OpenStackKeyPair
 
@@ -40,6 +42,7 @@ class OvhNodeDriver(NodeDriver):
 
     NODE_STATE_MAP = OpenStackNodeDriver.NODE_STATE_MAP
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
+    SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
     def __init__(self, key, secret, ex_project_id, ex_consumer_key=None):
         """
@@ -193,44 +196,44 @@ class OvhNodeDriver(NodeDriver):
         data = self.connection.request(action)
         return self._to_locations(data.object)
 
-    def list_key_pairs(self, location=None):
+    def list_key_pairs(self, ex_location=None):
         """
         List available SSH public keys.
 
-        :keyword location: Location (region) used as filter
-        :type    location: :class:`NodeLocation`
+        :keyword ex_location: Location (region) used as filter
+        :type    ex_location: :class:`NodeLocation`
 
         :return: Public keys
         :rtype: ``list``of :class:`KeyPair`
         """
         action = self._get_project_action('sshkey')
         params = {}
-        if location:
-            params['region'] = location.id
+        if ex_location:
+            params['region'] = ex_location.id
         response = self.connection.request(action, params=params)
         return self._to_key_pairs(response.object)
 
-    def get_key_pair(self, name, location):
+    def get_key_pair(self, name, ex_location=None):
         """
         Get an individual SSH public key by its name and location.
 
-        :keyword name: SSH key name
-        :type name: str
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
 
-        :keyword location: Key's region
-        :type location: :class:`NodeLocation`
+        :keyword ex_location: Key's region
+        :type ex_location: :class:`NodeLocation`
 
         :return: Public key
         :rtype: :class:`KeyPair`
         """
         # Keys are indexed with ID
-        keys = [key for key in self.list_key_pairs(location)
+        keys = [key for key in self.list_key_pairs(ex_location)
                 if key.name == name]
         if not keys:
             raise Exception("No key named '%s'" % name)
         return keys[0]
 
-    def import_key_pair_from_string(self, name, key_material, location):
+    def import_key_pair_from_string(self, name, key_material, ex_location):
         """
         Import a new public key from string.
 
@@ -240,11 +243,18 @@ class OvhNodeDriver(NodeDriver):
         :param key_material: Public key material.
         :type key_material: ``str``
 
+        :param ex_location: Location where to store the key
+        :type ex_location: :class:`NodeLocation`
+
         :return: Imported key pair object.
         :rtype: :class:`KeyPair`
         """
         action = self._get_project_action('sshkey')
-        data = {'name': name, 'publicKey': key_material, 'region': location.id}
+        data = {
+            'name': name,
+            'publicKey': key_material,
+            'region': ex_location.id
+        }
         response = self.connection.request(action, data=data, method='POST')
         return self._to_key_pair(response.object)
 
@@ -254,7 +264,7 @@ class OvhNodeDriver(NodeDriver):
         self.connection.request(action, params=params, method='DELETE')
         return True
 
-    def create_volume(self, size, location, name=None,
+    def create_volume(self, size, name, location, snapshot=None,
                       ex_volume_type='classic', ex_description=None):
         """
         Create a volume.
@@ -265,8 +275,12 @@ class OvhNodeDriver(NodeDriver):
         :param name: Name of volume to create
         :type name: ``str``
 
-        :keyword location: Location to create the volume in
+        :param location: Location to create the volume in
         :type location: :class:`NodeLocation` or ``None``
+
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot: :class:`.VolumeSnapshot`
 
         :keyword ex_volume_type: ``'classic'`` or ``'high-speed'``
         :type ex_volume_type: ``str``
@@ -279,12 +293,11 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action('volume')
         data = {
+            'name': name,
             'region': location.id,
             'size': size,
             'type': ex_volume_type,
         }
-        if name:
-            data['name'] = name
         if ex_description:
             data['description'] = ex_description
         response = self.connection.request(action, data=data, method='POST')
@@ -295,20 +308,20 @@ class OvhNodeDriver(NodeDriver):
         self.connection.request(action, method='DELETE')
         return True
 
-    def list_volumes(self, location=None):
+    def list_volumes(self, ex_location=None):
         """
         Return a list of volumes.
 
-        :keyword location: Location use for filter
-        :type location: :class:`NodeLocation` or ``None``
+        :keyword ex_location: Location used to filter
+        :type ex_location: :class:`NodeLocation` or ``None``
 
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
         action = self._get_project_action('volume')
         data = {}
-        if location:
-            data['region'] = location.id
+        if ex_location:
+            data['region'] = ex_location.id
         response = self.connection.request(action, data=data)
         return self._to_volumes(response.object)
 
@@ -374,6 +387,73 @@ class OvhNodeDriver(NodeDriver):
         self.connection.request(action, data=data, method='POST')
         return True
 
+    def ex_list_snapshots(self, location=None):
+        """
+        List all snapshots.
+
+        :keyword location: Location used to filter
+        :type location: :class:`NodeLocation` or ``None``
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        action = self._get_project_action('volume/snapshot')
+        params = {}
+        if location:
+            params['region'] = location.id
+        response = self.connection.request(action, params=params)
+        return self._to_snapshots(response.object)
+
+    def ex_get_volume_snapshot(self, snapshot_id):
+        """
+        Returns a single volume snapshot.
+
+        :param snapshot_id: Node to run the task on.
+        :type snapshot_id: ``str``
+
+        :rtype :class:`.VolumeSnapshot`:
+        :return: Volume snapshot.
+        """
+        action = self._get_project_action('volume/snapshot/%s' % snapshot_id)
+        response = self.connection.request(action)
+        return self._to_snapshot(response.object)
+
+    def list_volume_snapshots(self, volume):
+        action = self._get_project_action('volume/snapshot')
+        params = {'region': volume.extra['region']}
+        response = self.connection.request(action, params=params)
+        snapshots = self._to_snapshots(response.object)
+        return [snap for snap in snapshots
+                if snap.extra['volume_id'] == volume.id]
+
+    def create_volume_snapshot(self, volume, name=None, ex_description=None):
+        """
+        Create snapshot from volume
+
+        :param volume: Instance of `StorageVolume`
+        :type  volume: `StorageVolume`
+
+        :param name: Name of snapshot (optional)
+        :type  name: `str` | `NoneType`
+
+        :param ex_description: Description of the snapshot (optional)
+        :type  ex_description: `str` | `NoneType`
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        action = self._get_project_action('volume/%s/snapshot/' % volume.id)
+        data = {}
+        if name:
+            data['name'] = name
+        if ex_description:
+            data['description'] = ex_description
+        response = self.connection.request(action, data=data, method='POST')
+        return self._to_snapshot(response.object)
+
+    def destroy_volume_snapshot(self, snapshot):
+        action = self._get_project_action('volume/snapshot/%s' % snapshot.id)
+        response = self.connection.request(action, method='DELETE')
+        return response.status == httplib.OK
+
     def _to_volume(self, obj):
         extra = obj.copy()
         extra.pop('id')
@@ -433,6 +513,24 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_key_pairs(self, objs):
         return [self._to_key_pair(obj) for obj in objs]
+
+    def _to_snapshot(self, obj):
+        extra = {
+            'volume_id': obj['volumeId'],
+            'region': obj['region'],
+            'description': obj['description'],
+            'status': obj['status'],
+        }
+        state = self.SNAPSHOT_STATE_MAP.get(obj['status'],
+                                            VolumeSnapshotState.UNKNOWN)
+        snapshot = VolumeSnapshot(id=obj['id'], driver=self,
+                                  size=obj['size'], extra=extra,
+                                  created=obj['creationDate'], state=state,
+                                  name=obj['name'])
+        return snapshot
+
+    def _to_snapshots(self, objs):
+        return [self._to_snapshot(obj) for obj in objs]
 
     def _ex_connection_class_kwargs(self):
         return {'ex_consumer_key': self.consumer_key}
