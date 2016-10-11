@@ -1779,6 +1779,7 @@ class DimensionDataMockRawResponse(MockRawResponse):
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
+
 class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     fixtures = ComputeFileFixtures('dimensiondata')
