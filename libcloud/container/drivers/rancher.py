@@ -39,7 +39,13 @@ class RancherResponse(JsonResponse):
 
     def parse_error(self):
         parsed = super(RancherResponse, self).parse_error()
-        return "%s - %s" % (parsed['message'], parsed['detail'])
+        if 'fieldName' in parsed:
+            return "Field %s is %s: %s - %s" % (parsed['fieldName'],
+                                                parsed['code'],
+                                                parsed['message'],
+                                                parsed['detail'])
+        else:
+            return "%s - %s" % (parsed['message'], parsed['detail'])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
@@ -558,6 +564,24 @@ class RancherContainerDriver(ContainerDriver):
                                          (self.baseuri, con_id)).object
 
         return self._to_container(result)
+
+    def start_container(self, container):
+        """
+        Start a container
+
+        :param container: The container to be started
+        :type  container: :class:`libcloud.container.base.Container`
+
+        :return: The container refreshed with current data
+        :rtype: :class:`libcloud.container.base.Container`
+        """
+        result = self.connection.request('%s/containers/%s?action=start' %
+                                         (self.baseuri, container.id),
+                                         method='POST')
+        if result.status in VALID_RESPONSE_CODES:
+            return self.get_container(container.id)
+        else:
+            raise RancherException(result.status, 'failed to start container')
 
     def stop_container(self, container):
         """
