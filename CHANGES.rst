@@ -1,8 +1,19 @@
 ﻿Changelog
 =========
 
+
 Changes in current version of Apache Libcloud
 ---------------------------------------------
+
+Compute
+~~~~~~~
+
+- Added snapshot management to OVH compute
+  (GITHUB-897)
+  [Anthony Monthe]
+
+Changes in Apache Libcloud 1.3.0
+--------------------------------
 
 General
 ~~~~~~~
