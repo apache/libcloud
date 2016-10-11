@@ -45,8 +45,7 @@ class RancherResponse(JsonResponse):
                                                 parsed['message'],
                                                 parsed['detail'])
         else:
-            return "%%s - %s" % (parsed['message'],
-                                 parsed['detail'])
+            return "%s - %s" % (parsed['message'], parsed['detail'])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
