@@ -31,6 +31,7 @@ from libcloud.common.dimensiondata import DimensionDataIpAddress, \
     DimensionDataPortList, DimensionDataPort, DimensionDataChildPortList
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
+from libcloud.compute.drivers.dimensiondata import DimensionDataNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 from libcloud.test import MockHttp, unittest, MockRawResponse, StorageMockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -245,7 +246,28 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
-    def test_create_node_response_no_pass_random_gen(self):
+    def test_create_mcp1_node_optional_param(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        network = self.driver.ex_list_networks()[0]
+        cpu_spec = DimensionDataServerCpuSpecification(cpu_count='4',
+                                                       cores_per_socket='2',
+                                                       performance='STANDARD')
+        disks = [DimensionDataServerDisk(scsi_id='0', speed='HIGHPERFORMANCE')]
+        node = self.driver.create_node(name='test2', image=image, auth=root_pw,
+                                       ex_description='test2 node',
+                                       ex_network=network,
+                                       ex_is_started=False,
+                                       ex_memory_gb=8,
+                                       ex_disks=disks,
+                                       ex_cpu_specification=cpu_spec,
+                                       ex_primary_dns='10.0.0.5',
+                                       ex_secondary_dns='10.0.0.6'
+                                       )
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_mcp1_node_response_no_pass_random_gen(self):
         image = self.driver.list_images()[0]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=None,
@@ -255,7 +277,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
         self.assertTrue('password' in node.extra)
 
-    def test_create_node_response_no_pass_customer_windows(self):
+    def test_create_mcp1_node_response_no_pass_customer_windows(self):
         image = self.driver.ex_list_customer_images()[1]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=None,
@@ -265,7 +287,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
         self.assertTrue('password' in node.extra)
 
-    def test_create_node_response_no_pass_customer_windows_STR(self):
+    def test_create_mcp1_node_response_no_pass_customer_windows_STR(self):
         image = self.driver.ex_list_customer_images()[1].id
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=None,
@@ -275,7 +297,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
         self.assertTrue('password' in node.extra)
 
-    def test_create_node_response_no_pass_customer_linux(self):
+    def test_create_mcp1_node_response_no_pass_customer_linux(self):
         image = self.driver.ex_list_customer_images()[0]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=None,
@@ -285,7 +307,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
         self.assertTrue('password' not in node.extra)
 
-    def test_create_node_response_no_pass_customer_linux_STR(self):
+    def test_create_mcp1_node_response_no_pass_customer_linux_STR(self):
         image = self.driver.ex_list_customer_images()[0].id
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=None,
@@ -295,7 +317,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
         self.assertTrue('password' not in node.extra)
 
-    def test_create_node_response_STR(self):
+    def test_create_mcp1_node_response_STR(self):
         rootPw = 'pass123'
         image = self.driver.list_images()[0].id
         network = self.driver.ex_list_networks()[0].id
@@ -345,10 +367,10 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
 
-    def test_create_node_no_network(self):
+    def test_create_mcp1_node_no_network(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidRequestError):
             self.driver.create_node(name='test2',
                                     image=image,
                                     auth=rootPw,
@@ -363,6 +385,7 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                        image=image,
                                        auth=rootPw,
                                        ex_description='test2 node',
+                                       ex_network='fakenetwork',
                                        ex_primary_ipv4='10.0.0.1',
                                        ex_is_started=False)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
@@ -417,22 +440,222 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_network_domain='fake_network_domain',
                                     ex_is_started=False)
 
-    def test_create_node_mcp2_additional_nics(self):
+    def test_create_node_response(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        additional_vlans = ['fakevlan1', 'fakevlan2']
-        additional_ipv4 = ['10.0.0.2', '10.0.0.3']
+        node = self.driver.create_node(
+            name='test3',
+            image=image,
+            auth=rootPw,
+            ex_network_domain='fakenetworkdomain',
+            ex_primary_nic_vlan='fakevlan'
+        )
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_ms_time_zone(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(
+            name='test3',
+            image=image,
+            auth=rootPw,
+            ex_network_domain='fakenetworkdomain',
+            ex_primary_nic_vlan='fakevlan',
+            ex_microsoft_time_zone='040'
+        )
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_ambigious_mcps_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(
+                name='test3',
+                image=image,
+                auth=rootPw,
+                ex_network_domain='fakenetworkdomain',
+                ex_network='fakenetwork',
+                ex_primary_nic_vlan='fakevlan'
+            )
+
+    def test_create_node_no_network_domain_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(
+                name='test3',
+                image=image,
+                auth=rootPw,
+                ex_primary_nic_vlan='fakevlan'
+            )
+
+    def test_create_node_no_primary_nic_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(
+                name='test3',
+                image=image,
+                auth=rootPw,
+                ex_network_domain='fakenetworkdomain'
+            )
+
+    def test_create_node_primary_vlan_nic(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(
+            name='test3',
+            image=image,
+            auth=rootPw,
+            ex_network_domain='fakenetworkdomain',
+            ex_primary_nic_vlan='fakevlan',
+            ex_primary_nic_network_adapter='v1000'
+        )
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_primary_ipv4(self):
+        rootPw = 'pass123'
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(
+            name='test3',
+            image=image,
+            auth=rootPw,
+            ex_network_domain='fakenetworkdomain',
+            ex_primary_nic_private_ipv4='10.0.0.1'
+        )
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_both_primary_nic_and_vlan_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(
+                name='test3',
+                image=image,
+                auth=rootPw,
+                ex_network_domain='fakenetworkdomain',
+                ex_primary_nic_private_ipv4='10.0.0.1',
+                ex_primary_nic_vlan='fakevlan'
+            )
+
+    def test_create_node_cpu_specification(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        cpu_spec = DimensionDataServerCpuSpecification(cpu_count='4',
+                                                       cores_per_socket='2',
+                                                       performance='STANDARD')
         node = self.driver.create_node(name='test2',
                                        image=image,
                                        auth=rootPw,
                                        ex_description='test2 node',
                                        ex_network_domain='fakenetworkdomain',
-                                       ex_primary_ipv4='10.0.0.1',
-                                       ex_additional_nics_vlan=additional_vlans,
-                                       ex_additional_nics_ipv4=additional_ipv4,
-                                       ex_is_started=False)
+                                       ex_primary_nic_private_ipv4='10.0.0.1',
+                                       ex_is_started=False,
+                                       ex_cpu_specification=cpu_spec)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
         self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_memory(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_nic_private_ipv4='10.0.0.1',
+                                       ex_is_started=False,
+                                       ex_memory_gb=8)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_disks(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        disks = [DimensionDataServerDisk(scsi_id='0', speed='HIGHPERFORMANCE')]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_nic_private_ipv4='10.0.0.1',
+                                       ex_is_started=False,
+                                       ex_disks=disks)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_disks_fail(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        disks = 'blah'
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=root_pw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fakenetworkdomain',
+                                    ex_primary_nic_private_ipv4='10.0.0.1',
+                                    ex_is_started=False,
+                                    ex_disks=disks)
+
+    def test_create_node_ipv4_gateway(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=rootPw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_nic_private_ipv4='10.0.0.1',
+                                       ex_is_started=False,
+                                       ex_ipv4_gateway='10.2.2.2')
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_network_domain_no_vlan_no_ipv4_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_is_started=False)
+
+    def test_create_node_mcp2_additional_nics_legacy(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        additional_vlans = ['fakevlan1', 'fakevlan2']
+        additional_ipv4 = ['10.0.0.2', '10.0.0.3']
+        node = self.driver.create_node(
+            name='test2',
+            image=image,
+            auth=rootPw,
+            ex_description='test2 node',
+            ex_network_domain='fakenetworkdomain',
+            ex_primary_ipv4='10.0.0.1',
+            ex_additional_nics_vlan=additional_vlans,
+            ex_additional_nics_ipv4=additional_ipv4,
+            ex_is_started=False)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_network_domain_no_vlan_no_ipv4_fail(self):
+        rootPw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=rootPw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fake_network_domain',
+                                    ex_is_started=False)
 
     def test_create_node_bad_additional_nics_ipv4(self):
         rootPw = NodeAuthPassword('pass123')
@@ -445,6 +668,77 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
                                     ex_network_domain='fake_network_domain',
                                     ex_vlan='fake_vlan',
                                     ex_additional_nics_ipv4='badstring',
+                                    ex_is_started=False)
+
+    def test_create_node_additional_nics(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        nic1 = DimensionDataNic(vlan='fake_vlan',
+                                network_adapter_name='v1000')
+        nic2 = DimensionDataNic(private_ip_v4='10.1.1.2',
+                                network_adapter_name='v1000')
+        additional_nics = [nic1, nic2]
+
+        node = self.driver.create_node(name='test2',
+                                       image=image,
+                                       auth=root_pw,
+                                       ex_description='test2 node',
+                                       ex_network_domain='fakenetworkdomain',
+                                       ex_primary_nic_private_ipv4='10.0.0.1',
+                                       ex_additional_nics=additional_nics,
+                                       ex_is_started=False)
+
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+        self.assertEqual(node.extra['status'].action, 'DEPLOY_SERVER')
+
+    def test_create_node_additional_nics_vlan_ipv4_coexist_fail(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        nic1 = DimensionDataNic(private_ip_v4='10.1.1.1', vlan='fake_vlan',
+                                network_adapter_name='v1000')
+        nic2 = DimensionDataNic(private_ip_v4='10.1.1.2', vlan='fake_vlan2',
+                                network_adapter_name='v1000')
+        additional_nics = [nic1, nic2]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=root_pw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fakenetworkdomain',
+                                    ex_primary_nic_private_ipv4='10.0.0.1',
+                                    ex_additional_nics=additional_nics,
+                                    ex_is_started=False
+                                    )
+
+    def test_create_node_additional_nics_invalid_input_fail(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        additional_nics = 'blah'
+        with self.assertRaises(TypeError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=root_pw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fakenetworkdomain',
+                                    ex_primary_nic_private_ipv4='10.0.0.1',
+                                    ex_additional_nics=additional_nics,
+                                    ex_is_started=False
+                                    )
+
+    def test_create_node_additional_nics_vlan_ipv4_not_exist_fail(self):
+        root_pw = NodeAuthPassword('pass123')
+        image = self.driver.list_images()[0]
+        nic1 = DimensionDataNic(network_adapter_name='v1000')
+        nic2 = DimensionDataNic(network_adapter_name='v1000')
+        additional_nics = [nic1, nic2]
+        with self.assertRaises(ValueError):
+            self.driver.create_node(name='test2',
+                                    image=image,
+                                    auth=root_pw,
+                                    ex_description='test2 node',
+                                    ex_network_domain='fakenetworkdomain',
+                                    ex_primary_nic_private_ipv4='10.0.0.1',
+                                    ex_additional_nics=additional_nics,
                                     ex_is_started=False)
 
     def test_create_node_bad_additional_nics_vlan(self):
