@@ -162,6 +162,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         started = container.start()
         self.assertEqual(started.id, "1i31")
         self.assertEqual(started.name, "newcontainer")
+        self.assertEqual(started.state, "pending")
         self.assertEqual(started.extra['state'], "starting")
 
     def test_stop_container(self):
@@ -169,6 +170,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         stopped = container.stop()
         self.assertEqual(stopped.id, "1i31")
         self.assertEqual(stopped.name, "newcontainer")
+        self.assertEqual(stopped.state, "pending")
         self.assertEqual(stopped.extra['state'], "stopping")
 
     def test_ex_search_containers(self):
@@ -180,6 +182,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         destroyed = container.destroy()
         self.assertEqual(destroyed.id, "1i31")
         self.assertEqual(destroyed.name, "newcontainer")
+        self.assertEqual(destroyed.state, "pending")
         self.assertEqual(destroyed.extra['state'], "stopping")
 
 
