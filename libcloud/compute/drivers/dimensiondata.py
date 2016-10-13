@@ -298,7 +298,8 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> images = driver.list_images(location=location)
         >>> image = images[0]
         >>>
-        >>> node = driver.create_node(name='test_blah_2', image=image, auth=root_pw,
+        >>> node = driver.create_node(name='test_blah_2', image=image,
+        >>>                           auth=root_pw,
         >>>                           ex_description='test3 node',
         >>>                           ex_network=my_network,
         >>>                           ex_is_started=False)
@@ -603,13 +604,13 @@ class DimensionDataNodeDriver(NodeDriver):
                                                    'additionalNic')
 
                     if (nic.private_ip_v4 is None and
-                                nic.vlan is None):
+                            nic.vlan is None):
                         raise ValueError("Either a vlan or private_ip_v4 "
                                          "must be specified for each "
                                          "additional nic.")
 
                     if (nic.private_ip_v4 is not None and
-                                nic.vlan is not None):
+                            nic.vlan is not None):
                         raise ValueError("Either a vlan or private_ip_v4 "
                                          "must be specified for each "
                                          "additional nic. Not both.")
