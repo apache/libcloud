@@ -577,11 +577,9 @@ class RancherContainerDriver(ContainerDriver):
         """
         result = self.connection.request('%s/containers/%s?action=start' %
                                          (self.baseuri, container.id),
-                                         method='POST')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise RancherException(result.status, 'failed to start container')
+                                         method='POST').object
+
+        return self._to_container(result)
 
     def stop_container(self, container):
         """
@@ -595,11 +593,9 @@ class RancherContainerDriver(ContainerDriver):
         """
         result = self.connection.request('%s/containers/%s?action=stop' %
                                          (self.baseuri, container.id),
-                                         method='POST')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise RancherException(result.status, 'failed to stop container')
+                                         method='POST').object
+
+        return self._to_container(result)
 
     def ex_search_containers(self, search_params):
         """
@@ -632,11 +628,9 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request('%s/containers/%s' % (self.baseuri,
-                                         container.id), method='DELETE')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise RancherException(result.status, 'failed to stop container')
+                                         container.id), method='DELETE').object
+
+        return self._to_container(result)
 
     def _gen_image(self, imageuuid):
         """
