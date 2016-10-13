@@ -707,6 +707,11 @@ class RancherContainerDriver(ContainerDriver):
 
         """
         rancher_state = data['state']
+
+        # A Removed container is purged after x amt of time.
+        # Both of these render the container dead (can't be started later)
+        terminate_condition = ["removed", "purged"]
+
         if 'running' in rancher_state:
             state = ContainerState.RUNNING
         elif 'stopped' in rancher_state:
@@ -715,9 +720,7 @@ class RancherContainerDriver(ContainerDriver):
             state = ContainerState.REBOOTING
         elif 'error' in rancher_state:
             state = ContainerState.ERROR
-        elif 'removed' or 'purged' in rancher_state:
-            # A Removed container is purged after x amt of time.
-            # Both of these render the container dead (can't be started later)
+        elif any(x in rancher_state for x in terminate_condition):
             state = ContainerState.TERMINATED
         elif data['transitioning'] == 'yes':
             # Best we can do for current actions
