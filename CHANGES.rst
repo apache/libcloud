@@ -1,8 +1,19 @@
 ﻿Changelog
 =========
 
+
 Changes in current version of Apache Libcloud
 ---------------------------------------------
+
+Compute
+~~~~~~~
+
+- Added snapshot management to OVH compute
+  (GITHUB-897)
+  [Anthony Monthe]
+
+Changes in Apache Libcloud 1.3.0
+--------------------------------
 
 General
 ~~~~~~~
@@ -26,6 +37,14 @@ General
 
 Compute
 ~~~~~~~
+
+- Fix reporting function for detailed admin logs in Dimension Data Driver
+  (GITHUB-898)
+  [Anthony Shaw]
+
+- Added edit firewall functionality to Dimension Data driver
+  (GITHUB-893)
+  [Samuel Chong]
 
 - Bugfix - Fixed listing nodes issue in Python 3
   (LIBCLOUD-858, GITHUB-894)

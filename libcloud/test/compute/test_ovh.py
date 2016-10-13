@@ -107,6 +107,25 @@ class OvhMockHttp(BaseOvhMockHttp):
         body = self.fixtures.load('volume_get_detail.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_1_0_cloud_project_project_id_volume_snapshot_region_SBG_1_get(self, method, url, body, headers):
+        body = self.fixtures.load('volume_snapshot_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_volume_snapshot_get(self, method, url, body, headers):
+        body = self.fixtures.load('volume_snapshot_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_get(self, method, url, body, headers):
+        body = self.fixtures.load('volume_snapshot_get_details.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_snap_delete(self, method, url, body, headers):
+        return (httplib.OK, None, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_volume_foo_snapshot__post(self, method, url, body, headers):
+        body = self.fixtures.load('volume_snapshot_get_details.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 @patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
 class OvhTests(unittest.TestCase):
@@ -200,6 +219,25 @@ class OvhTests(unittest.TestCase):
         volume = self.driver.ex_get_volume('foo')
         response = self.driver.detach_volume(ex_node=node, volume=volume)
         self.assertTrue(response)
+
+    def test_ex_list_snapshots(self):
+        self.driver.ex_list_snapshots()
+
+    def test_ex_get_volume_snapshot(self):
+        self.driver.ex_get_volume_snapshot('foo')
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.ex_get_volume('foo')
+        self.driver.list_volume_snapshots(volume)
+
+    def test_create_volume_snapshot(self):
+        volume = self.driver.ex_get_volume('foo')
+        self.driver.create_volume_snapshot(volume)
+
+    def test_destroy_volume_snapshot(self):
+        snapshot = self.driver.ex_get_volume_snapshot('foo')
+        result = self.driver.destroy_volume_snapshot(snapshot)
+        self.assertTrue(result)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

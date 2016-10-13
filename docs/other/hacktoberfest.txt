@@ -7,3 +7,4 @@ Accounts raising spam pull requests as part of hacktoberfest:
 @JurgensSmit
 @MattG401
 @go4st
+@ShyamW

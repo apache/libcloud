@@ -157,9 +157,17 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(container.extra['environment'],
                          {'STORAGE_TYPE': 'file'})
 
+    def test_start_container(self):
+        container = self.driver.get_container("1i31")
+        started = container.start()
+        self.assertEqual(started.id, "1i31")
+        self.assertEqual(started.name, "newcontainer")
+
     def test_stop_container(self):
         container = self.driver.get_container("1i31")
-        container.stop()
+        stopped = container.stop()
+        self.assertEqual(stopped.id, "1i31")
+        self.assertEqual(stopped.name, "newcontainer")
 
     def test_ex_search_containers(self):
         containers = self.driver.ex_search_containers({"state": "running"})
@@ -167,7 +175,9 @@ class RancherContainerDriverTestCase(unittest.TestCase):
 
     def test_destroy_container(self):
         container = self.driver.get_container("1i31")
-        container.destroy()
+        destroyed = container.destroy()
+        self.assertEqual(destroyed.id, "1i31")
+        self.assertEqual(destroyed.name, "newcontainer")
 
 
 class RancherMockHttp(MockHttp):
