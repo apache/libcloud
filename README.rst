@@ -1,4 +1,4 @@
-Apache Libcloud - a unified interface into the cloud
+Apache Libcloud - a unified interface for the cloud
 ====================================================
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
