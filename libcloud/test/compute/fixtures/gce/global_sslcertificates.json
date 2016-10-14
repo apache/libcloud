@@ -1,0 +1,16 @@
+{
+ "kind": "compute#sslCertificateList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/sslCertificates",
+ "id": "projects/project_name/global/sslCertificates",
+ "items": [
+  {
+   "kind": "compute#sslCertificate",
+   "id": "2064539516762881220",
+   "creationTimestamp": "2016-08-30T10:28:11.926-07:00",
+   "name": "example",
+   "description": "my example ssl cert.",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/sslCertificates/example-cert",
+   "certificate": "-----BEGIN CERTIFICATE-----\nfoobar==\n-----END CERTIFICATE-----\n"
+  }
+ ]
+}

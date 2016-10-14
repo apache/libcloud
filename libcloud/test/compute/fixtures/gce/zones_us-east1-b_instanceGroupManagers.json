@@ -11,7 +11,7 @@
    "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b",
    "name": "myinstancegroup",
    "instanceTemplate": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1",
-   "instanceGroup": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroups/myinstancegroup",
+   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroups/myinstancegroup",
    "baseInstanceName": "myinstancegroup",
    "fingerprint": "5bKcxzAnGOg=",
    "currentActions": {
@@ -24,7 +24,7 @@
     "refreshing": 0
    },
    "targetSize": 2,
-   "selfLink": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroupManagers/myinstancegroup"
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroupManagers/myinstancegroup"
   }
  ]
 }

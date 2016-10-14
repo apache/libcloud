@@ -12,6 +12,17 @@ Compute
   (GITHUB-897)
   [Anthony Monthe]
 
+- [GCE] Support for HTTP(S) proxies with BackendServices
+  (GITHUB-856
+  [Tom Melendez]
+
+Storage
+~~~~~~~
+
+- [GCS] Fixed some google_storage.py URL cleaning
+  (GITHUB-901)
+  [Scott Crunkleton]
+
 Changes in Apache Libcloud 1.3.0
 --------------------------------
 

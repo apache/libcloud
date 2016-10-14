@@ -22,7 +22,7 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (
-    GCENodeDriver, API_VERSION, timestamp_to_datetime, GCEAddress,
+    GCENodeDriver, API_VERSION, timestamp_to_datetime, GCEAddress, GCEBackend,
     GCEBackendService, GCEFirewall, GCEForwardingRule, GCEHealthCheck,
     GCENetwork, GCENodeImage, GCERoute, GCERegion, GCETargetHttpProxy,
     GCEUrlMap, GCEZone, GCESubnetwork)
@@ -107,6 +107,125 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
         image = self.driver._match_images(project, 'backports')
         self.assertEqual(image.name, 'backports-debian-7-wheezy-v20131127')
+
+    def test_build_disk_gce_struct(self):
+        device_name = 'disk_name'
+        disk_name = None
+        source = self.driver.ex_get_volume('lcdisk')
+        is_boot = True
+        # source as input
+        d = self.driver._build_disk_gce_struct(
+            device_name=device_name, source=source, disk_name=disk_name,
+            is_boot=is_boot)
+        self.assertEqual(source.extra['selfLink'], d['source'])
+        self.assertTrue(d['boot'])
+        self.assertTrue(d['autoDelete'])
+        self.assertEqual('READ_WRITE', d['mode'])
+        self.assertFalse('initializeParams' in d)
+
+        # image as input
+        device_name = 'disk_name'
+        disk_type = self.driver.ex_get_disktype('pd-ssd', 'us-central1-a')
+        image = self.driver.ex_get_image('debian-7')
+        source = None
+        is_boot = True
+        d = self.driver._build_disk_gce_struct(device_name=device_name,
+                                               disk_type=disk_type,
+                                               image=image, is_boot=is_boot)
+        self.assertEqual('READ_WRITE', d['mode'])
+        self.assertEqual('PERSISTENT', d['type'])
+        self.assertTrue('initializeParams' in d and
+                        isinstance(d['initializeParams'], dict))
+        self.assertTrue(
+            all(k in d['initializeParams']
+                for k in ['sourceImage', 'diskType', 'diskName']))
+        self.assertTrue(d['initializeParams']['sourceImage'].startswith(
+            'https://'))
+        self.assertTrue(d['autoDelete'])
+        self.assertTrue(d['boot'])
+
+    def test_build_network_gce_struct(self):
+        network = self.driver.ex_get_network('lcnetwork')
+        address = self.driver.ex_get_address('lcaddress')
+        subnetwork_name = 'cf-972cf02e6ad49112'
+        subnetwork = self.driver.ex_get_subnetwork(subnetwork_name)
+        d = self.driver._build_network_gce_struct(network, subnetwork, address)
+        self.assertTrue('network' in d)
+        self.assertTrue('subnetwork' in d)
+        self.assertTrue('kind' in d and
+                        d['kind'] == 'compute#instanceNetworkInterface')
+
+        network = self.driver.ex_get_network('default')
+        d = self.driver._build_network_gce_struct(network)
+        self.assertTrue('network' in d)
+        self.assertFalse('subnetwork' in d)
+        self.assertTrue('kind' in d and
+                        d['kind'] == 'compute#instanceNetworkInterface')
+
+    def test_build_scheduling_gce_struct(self):
+        self.assertFalse(
+            self.driver._build_scheduling_gce_struct(None, None, None))
+        # on_host_maintenance bad value should raise a Valueerror
+        self.assertRaises(ValueError,
+                          self.driver._build_service_account_gce_struct,
+                          'on_host_maintenance="foobar"')
+        # on_host_maintenance is 'MIGRATE' and prempt is True
+        self.assertRaises(ValueError,
+                          self.driver._build_service_account_gce_struct,
+                          'on_host_maintenance="MIGRATE"', 'preemptible=True')
+        # automatic_restart is True and prempt is  True
+        self.assertRaises(ValueError,
+                          self.driver._build_service_account_gce_struct,
+                          'automatic_restart="True"', 'preemptible=True')
+
+        actual = self.driver._build_scheduling_gce_struct('TERMINATE', True,
+                                                          False)
+        self.assertTrue('automaticRestart' in actual and
+                        actual['automaticRestart'] is True)
+        self.assertTrue('onHostMaintenance' in actual and
+                        actual['onHostMaintenance'] == 'TERMINATE')
+        self.assertTrue('preemptible' in actual)
+        self.assertFalse(actual['preemptible'])
+
+    def test_build_service_account_gce_struct(self):
+        self.assertRaises(ValueError,
+                          self.driver._build_service_account_gce_struct, None)
+        input = {'scopes': ['compute-ro']}
+        actual = self.driver._build_service_account_gce_struct(input)
+        self.assertTrue('email' in actual)
+        self.assertTrue('scopes' in actual)
+
+    def test_build_service_account_gce_list(self):
+        # ensure we have a list
+        self.assertRaises(ValueError,
+                          self.driver._build_service_accounts_gce_list, 'foo')
+        # no input
+        actual = self.driver._build_service_accounts_gce_list()
+        self.assertTrue(len(actual) == 1)
+        self.assertTrue('email' in actual[0])
+        self.assertTrue('scopes' in actual[0])
+
+    def test_get_selflink_or_name(self):
+        network = self.driver.ex_get_network('lcnetwork')
+
+        # object as input
+        actual = self.driver._get_selflink_or_name(network, False, 'network')
+        self.assertEqual('lcnetwork', actual)
+        actual = self.driver._get_selflink_or_name(network, True, 'network')
+        self.assertTrue(actual.startswith('https://'))
+
+        # name-only as input
+        actual = self.driver._get_selflink_or_name('lcnetwork', True,
+                                                   'network')
+        self.assertTrue(actual.startswith('https://'))
+
+        actual = self.driver._get_selflink_or_name('lcnetwork', False,
+                                                   'network')
+        self.assertTrue('lcnetwork', actual)
+
+        # if selflinks is true, we need objname
+        self.assertRaises(ValueError, self.driver._get_selflink_or_name,
+                          'lcnetwork', True)
 
     def test_ex_get_serial_output(self):
         self.assertRaises(ValueError, self.driver.ex_get_serial_output, 'foo')
@@ -213,6 +332,86 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(local_images[0].name, 'aws-ubuntu')
         self.assertEqual(debian_images[1].name, 'debian-7-wheezy-v20131120')
 
+    def test_ex_destroy_instancegroup(self):
+        name = 'myname'
+        zone = 'us-central1-a'
+        uig = self.driver.ex_get_instancegroup(name, zone)
+        self.assertTrue(self.driver.ex_destroy_instancegroup(uig))
+
+    def test_ex_get_instancegroup(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        actual = self.driver.ex_get_instancegroup(name, loc)
+        self.assertEqual(actual.name, name)
+        self.assertEqual(actual.zone.name, loc)
+
+    def test_ex_create_instancegroup(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        actual = self.driver.ex_create_instancegroup(name, loc)
+        self.assertEqual(actual.name, name)
+        self.assertEqual(actual.zone.name, loc)
+
+    def test_ex_list_instancegroups(self):
+        loc = 'us-central1-a'
+        actual = self.driver.ex_list_instancegroups(loc)
+        self.assertTrue(len(actual) == 2)
+        self.assertEqual(actual[0].name, 'myname')
+        self.assertEqual(actual[1].name, 'myname2')
+
+    def test_ex_instancegroup_list_instances(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        gceobj = self.driver.ex_get_instancegroup(name, loc)
+        actual = self.driver.ex_instancegroup_list_instances(gceobj)
+        self.assertTrue(len(actual) == 2)
+        for node in actual:
+            self.assertTrue(isinstance(node, Node))
+            self.assertEqual(loc, node.extra['zone'].name)
+
+    def test_ex_instancegroup_add_instances(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        gceobj = self.driver.ex_get_instancegroup(name, loc)
+        node_name = self.driver.ex_get_node('node-name', loc)
+        lcnode = self.driver.ex_get_node('lcnode-001', loc)
+        node_list = [node_name, lcnode]
+        self.assertTrue(
+            self.driver.ex_instancegroup_add_instances(gceobj, node_list))
+
+    def test_ex_instancegroup_remove_instances(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        gceobj = self.driver.ex_get_instancegroup(name, loc)
+        node_name = self.driver.ex_get_node('node-name', loc)
+        lcnode = self.driver.ex_get_node('lcnode-001', loc)
+        node_list = [node_name, lcnode]
+        self.assertTrue(
+            self.driver.ex_instancegroup_remove_instances(gceobj, node_list))
+
+    def test_ex_instancegroup_set_named_ports(self):
+        name = 'myname'
+        loc = 'us-central1-a'
+        gceobj = self.driver.ex_get_instancegroup(name, loc)
+        named_ports = [{'name': 'foo', 'port': 4444}]
+        # base case
+        self.assertTrue(
+            self.driver.ex_instancegroup_set_named_ports(gceobj, named_ports))
+        # specify nothing, default is empty list
+        self.assertTrue(self.driver.ex_instancegroup_set_named_ports(gceobj))
+        # specify empty list
+        self.assertTrue(
+            self.driver.ex_instancegroup_set_named_ports(gceobj, []))
+        # raise valueerror if string is passed in
+        self.assertRaises(ValueError,
+                          self.driver.ex_instancegroup_set_named_ports, gceobj,
+                          'foobar')
+        # raise valueerror if dictionary is passed in
+        self.assertRaises(ValueError,
+                          self.driver.ex_instancegroup_set_named_ports, gceobj,
+                          {'name': 'foo',
+                           'port': 4444})
+
     def test_ex_create_instancegroupmanager(self):
         name = 'myinstancegroup'
         zone = 'us-central1-a'
@@ -226,6 +425,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(mig.size, size)
         self.assertEqual(mig.zone.name, zone)
 
+    def test_ex_create_instancetemplate(self):
+        name = 'my-instance-template1'
+        actual = self.driver.ex_create_instancetemplate(
+            name, size='n1-standard-1', image='debian-7', network='default')
+        self.assertEqual(actual.name, name)
+        self.assertEqual(actual.extra['properties']['machineType'],
+                         'n1-standard-1')
+
     def test_list_locations(self):
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 6)
@@ -236,6 +443,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(routes), 3)
         self.assertTrue('lcdemoroute' in [route.name for route in routes])
 
+    def test_ex_list_sslcertificate(self):
+        ssl_name = 'example'
+        certs = self.driver.ex_list_sslcertificates()
+        self.assertEqual(certs[0].name, ssl_name)
+        self.assertTrue(len(certs) == 1)
+
     def test_ex_list_subnetworks(self):
         subnetworks = self.driver.ex_list_subnetworks()
         self.assertEqual(len(subnetworks), 1)
@@ -243,6 +456,15 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(subnetworks[0].cidr, '10.128.0.0/20')
         subnetworks = self.driver.ex_list_subnetworks('all')
         self.assertEqual(len(subnetworks), 4)
+
+    def test_ex_create_sslcertificate(self):
+        ssl_name = 'example'
+        private_key = '-----BEGIN RSA PRIVATE KEY-----\nfoobar==\n-----END RSA PRIVATE KEY-----\n'
+        certificate = '-----BEGIN CERTIFICATE-----\nfoobar==\n-----END CERTIFICATE-----\n'
+        ssl = self.driver.ex_create_sslcertificate(
+            ssl_name, certificate=certificate, private_key=private_key)
+        self.assertEqual(ssl_name, ssl.name)
+        self.assertEqual(certificate, ssl.certificate)
 
     def test_ex_create_subnetwork(self):
         name = 'cf-972cf02e6ad49112'
@@ -277,6 +499,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(self.driver.ex_destroy_subnetwork(name, region_name))
         # delete with region object
         self.assertTrue(self.driver.ex_destroy_subnetwork(name, region))
+
+    def test_ex_get_sslcertificate(self):
+        ssl_name = 'example'
+        ssl = self.driver.ex_get_sslcertificate(ssl_name)
+        self.assertEqual(ssl.name, ssl_name)
+        self.assertTrue(hasattr(ssl, 'certificate'))
+        self.assertTrue(len(ssl.certificate))
 
     def test_ex_get_subnetwork(self):
         name = 'cf-972cf02e6ad49112'
@@ -403,7 +632,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         instances = mig.list_managed_instances()
         self.assertTrue(all([x['currentAction'] == 'NONE' for x in instances]))
         self.assertTrue('base-foo-2vld' in [x['name'] for x in instances])
-        self.assertEquals(len(instances), 4)
+        self.assertEqual(len(instances), 4)
 
     def test_ex_list_instancetemplates(self):
         instancetemplates = self.driver.ex_list_instancetemplates()
@@ -453,12 +682,40 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
 
+    def test_ex_create_backend(self):
+        # Note: this is an internal object, no API call is made
+        # and no fixture is needed specifically for GCEBackend, however
+        # it does rely on an InstanceGroup object.
+        ig = self.driver.ex_get_instancegroup('myinstancegroup',
+                                              'us-central1-a')
+
+        backend = self.driver.ex_create_backend(ig)
+
+        self.assertTrue(isinstance(backend, GCEBackend))
+        self.assertEqual(backend.name,
+                         '%s/instanceGroups/%s' % (ig.zone.name, ig.name))
+        self.assertEqual(backend.instance_group.name, ig.name)
+        self.assertEqual(backend.balancing_mode, 'UTILIZATION')
+
     def test_ex_create_backendservice(self):
         backendservice_name = 'web-service'
+
+        ig1 = self.driver.ex_get_instancegroup('myinstancegroup',
+                                               'us-central1-a')
+        backend1 = self.driver.ex_create_backend(ig1)
+        ig2 = self.driver.ex_get_instancegroup('myinstancegroup2',
+                                               'us-central1-a')
+        backend2 = self.driver.ex_create_backend(ig2)
+
         backendservice = self.driver.ex_create_backendservice(
-            name=backendservice_name, healthchecks=['lchealthcheck'])
+            name=backendservice_name, healthchecks=['lchealthcheck'],
+            backends=[backend1, backend2])
         self.assertTrue(isinstance(backendservice, GCEBackendService))
         self.assertEqual(backendservice.name, backendservice_name)
+        self.assertEqual(len(backendservice.backends), 2)
+        ig_links = [ig1.extra['selfLink'], ig2.extra['selfLink']]
+        for be in backendservice.backends:
+            self.assertTrue(be['group'] in ig_links)
 
     def test_ex_create_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
@@ -486,8 +743,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         family = 'coreos'
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
         expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'},
-            {'type': 'WINDOWS'}]
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'}
+        ]
         mock_request = mock.Mock()
         mock_request.side_effect = self.driver.connection.async_request
         self.driver.connection.async_request = mock_request
@@ -516,8 +773,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         family = 'coreos'
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
         expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'},
-            {'type': 'WINDOWS'}]
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'}
+        ]
         image = self.driver.ex_copy_image(name, url, description=description,
                                           family=family,
                                           guest_os_features=guest_os_features)
@@ -676,6 +933,9 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(node_data['serviceAccounts'][0]['email'], 'default')
         self.assertIsInstance(node_data['serviceAccounts'][0]['scopes'], list)
         self.assertEqual(len(node_data['serviceAccounts'][0]['scopes']), 1)
+        self.assertEqual(len(node_data['networkInterfaces']), 1)
+        self.assertTrue(node_data['networkInterfaces'][0][
+            'network'].startswith('https://'))
 
     def test_create_node_network_opts(self):
         node_name = 'node-name'
@@ -2206,6 +2466,12 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_urlMaps_web_map.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _regions_us_east1_subnetworks_cf_972cf02e6ad49113(self, method, url,
+                                                          body, headers):
+        body = self.fixtures.load(
+            'regions_us-east1_subnetworks_cf_972cf02e6ad49113.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_subnetworks_cf_972cf02e6ad49112(self, method, url,
                                                              body, headers):
         body = self.fixtures.load(
@@ -2939,6 +3205,12 @@ class GCEMockHttp(MockHttpTestCase):
             'zones_us-central1-a_instanceGroup_myinstancegroup.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_instanceGroups_myinstancegroup2(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instanceGroup_myinstancegroup2.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_b_instanceGroups_myinstancegroup(self, method, url,
                                                             body, headers):
         body = self.fixtures.load(
@@ -2975,7 +3247,6 @@ class GCEMockHttp(MockHttpTestCase):
             'zones_us-east1-b_instanceGroupManagers.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    # TODO(supertom): this one
     def _zones_us_central1_a_instanceGroupManagers(self, method, url, body,
                                                    headers):
         # do an insert.  Returns an operations link, which then
@@ -2995,7 +3266,19 @@ class GCEMockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_instanceTemplates(self, method, url, body, headers):
-        body = self.fixtures.load('global_instanceTemplates.json')
+        if method == 'POST':
+            # insert
+            body = self.fixtures.load('global_instanceTemplates_insert.json')
+        else:
+            # get or list call
+            body = self.fixtures.load('global_instanceTemplates.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_instanceTemplates_my_instance_template1_insert(
+            self, method, url, body, headers):
+        """ Redirects from _global_instanceTemplates """
+        body = self.fixtures.load(
+            'operations_operation_global_instanceTemplates_insert.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_instanceTemplates_my_instance_template1(self, method, url,
@@ -3006,6 +3289,109 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _aggregated_autoscalers(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_autoscalers.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_sslCertificates(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('global_sslcertificates_post.json')
+        else:
+            body = self.fixtures.load('global_sslcertificates.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_sslCertificates_example(self, method, url, body, headers):
+        body = self.fixtures.load('global_sslcertificates_example.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_sslcertificates_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_sslcertificates_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_myname(self, method, url, body,
+                                                   headers):
+        if method == 'DELETE':
+            # delete
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups_myname_delete.json')
+        else:
+            # get or list call
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups_myname.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_delete(
+            self, method, url, body, headers):
+        """ Redirects from _zones_us_central1_a_instanceGroups_myname """
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_instanceGroups_myname_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups(self, method, url, body, headers):
+        if method == 'POST':
+            # insert
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups_insert.json')
+        else:
+            # get or list call
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_insert(
+            self, method, url, body, headers):
+        """ Redirects from _zones_us_central1_a_instanceGroups """
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_instanceGroups_insert.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_myname_listInstances(
+            self, method, url, body, headers):
+        # POST
+        body = self.fixtures.load(
+            'zones_us_central1_a_instanceGroups_myname_listInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_myname_addInstances(
+            self, method, url, body, headers):
+        # POST
+        body = self.fixtures.load(
+            'zones_us_central1_a_instanceGroups_myname_addInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_addInstances(
+            self, method, url, body, headers):
+        """ Redirects from _zones_us_central1_a_instanceGroups_myname_addInstances """
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_instanceGroups_myname_addInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_myname_removeInstances(
+            self, method, url, body, headers):
+        # POST
+        body = self.fixtures.load(
+            'zones_us_central1_a_instanceGroups_myname_removeInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_removeInstances(
+            self, method, url, body, headers):
+        """ Redirects from _zones_us_central1_a_instanceGroups_myname_removeInstances """
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_instanceGroups_myname_removeInstances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_myname_setNamedPorts(
+            self, method, url, body, headers):
+        # POST
+        body = self.fixtures.load(
+            'zones_us_central1_a_instanceGroups_myname_setNamedPorts.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_setNamedPorts(
+            self, method, url, body, headers):
+        """ Redirects from _zones_us_central1_a_instanceGroups_myname_setNamedPorts """
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_instanceGroups_myname_setNamedPorts.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
 

@@ -1,0 +1,12 @@
+{
+    "status": "DONE", 
+    "kind": "compute#operation", 
+    "name": "my_instance_template1", 
+    "insertTime": "2016-09-02T09:31:52.285-07:00", 
+    "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my_instance_template1", 
+    "operationType": "compute.instanceTemplates.insert", 
+    "progress": 100, 
+    "id": 123456, 
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation-global_instanceTemplates_my_instance_template1_insert", 
+    "user": "1264195755357-compute@developer.gserviceaccount.com"
+}

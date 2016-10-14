@@ -1,0 +1,13 @@
+{
+    "status": "DONE", 
+    "kind": "compute#operation", 
+    "name": "myname", 
+    "zone": "us-central1-a", 
+    "insertTime": "2016-09-02T09:31:52.285-07:00", 
+    "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myname", 
+    "operationType": "compute.instanceGroups.removeInstances", 
+    "progress": 100, 
+    "id": 123456, 
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us_central1_a_instanceGroups_myname_removeInstances", 
+    "user": "1264195755357-compute@developer.gserviceaccount.com"
+}
