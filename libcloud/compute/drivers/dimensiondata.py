@@ -2504,7 +2504,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
-            'report/auditlog?startDate=%s&endDate=%s' % (
+            'auditlog?startDate=%s&endDate=%s' % (
                 start_date, end_date))
         return self._format_csv(result.response)
 

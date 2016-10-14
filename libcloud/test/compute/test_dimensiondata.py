@@ -1382,6 +1382,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(report_content), 42)
         self.assertEqual(len(report_content[0]), 4)
 
+    def test_audit_log_report(self):
+        report = self.driver.ex_audit_log_report('2016-06-01', '2016-06-30')
+        report_content = report
+        self.assertEqual(len(report_content), 25)
+        self.assertEqual(report_content[2][2], 'OEC_SYSTEM')
+
     def test_ex_list_ip_address_list(self):
         net_domain = self.driver.ex_list_network_domains()[0]
         ip_list = self.driver.ex_list_ip_address_list(
@@ -1764,6 +1770,12 @@ class DimensionDataMockRawResponse(MockRawResponse):
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usageDetailed(self, method, url, body, headers):
         body = self.fixtures.load(
             'detailed_usage_report.csv'
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_auditlog(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'audit_log.csv'
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
