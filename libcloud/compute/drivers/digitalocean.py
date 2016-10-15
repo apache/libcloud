@@ -27,7 +27,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
 from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import StorageVolume
+from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 __all__ = [
     'DigitalOceanNodeDriver',
@@ -398,6 +398,49 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         return all([r.status == httplib.ACCEPTED for r in responses])
 
+    def create_volume_snapshot(self, volume, name):
+        """
+        Create a new volume snapshot.
+
+        :param volume: Volume to create a snapshot for
+        :type volume: class:`StorageVolume`
+
+        :return: The newly created volume snapshot.
+        :rtype: :class:`VolumeSnapshot`
+        """
+        attr = {'name': name}
+        res = self.connection.request('/v2/volumes/%s/snapshots' % (
+            volume.id), data=json.dumps(attr), method='POST')
+        data = res.object['snapshot']
+        return self._to_volume_snapshot(data=data)
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a volume.
+
+        :param volume: Volume to list snapshots for
+        :type volume: class:`StorageVolume`
+
+        :return: List of volume snapshots.
+        :rtype: ``list`` of :class: `StorageVolume`
+        """
+        data = self._paginated_request('/v2/volumes/%s/snapshots' %
+                                       (volume.id), 'snapshots')
+        return list(map(self._to_volume_snapshot, data))
+
+    def delete_volume_snapshot(self, snapshot):
+        """
+        Delete a volume snapshot
+
+        :param snapshot: volume snapshot to delete
+        :type snapshot: class:`VolumeSnapshot`
+
+        :rtype: ``bool``
+        """
+        res = self.connection.request('v2/snapshots/%s' % (snapshot.id),
+                                      method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
@@ -467,3 +510,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                        private_key=None,
                        driver=self,
                        extra=extra)
+
+    def _to_volume_snapshot(self, data):
+        extra = {'created_at': data['created_at'],
+                 'resource_id': data['resource_id'],
+                 'regions': data['regions'],
+                 'min_disk_size': data['min_disk_size']}
+        return VolumeSnapshot(id=data['id'], name=data['name'],
+                              size=data['size_gigabytes'],
+                              driver=self, extra=extra)
