@@ -46,31 +46,31 @@ Resources you can manage with Libcloud are divided into the following categories
 * **Container** - Container virtualization services (``libcloud.container.*``)
 
 
-Apache Libcloud is an Apache project, see <http://libcloud.apache.org> for
+Apache Libcloud is an Apache project, see [Apache Project](http://libcloud.apache.org) for
 more information.
 
 Documentation
 =============
 
-Documentation can be found at <https://libcloud.readthedocs.org>.
+Documentation can be found at [docs](https://libcloud.readthedocs.org).
 
 Feedback
 ========
 
-Please send feedback to the mailing list at <dev@libcloud.apache.org>,
-or the JIRA at <https://issues.apache.org/jira/browse/LIBCLOUD>.
+Please send feedback to the [mailing list at] (dev@libcloud.apache.org),
+or the [JIRA at] (https://issues.apache.org/jira/browse/LIBCLOUD).
 
 Contributing
 ============
 
 For information on how to contribute, please see the Contributing
 chapter in our documentation
-<https://libcloud.readthedocs.org/en/latest/development.html#contributing>
+[How to Contribute](https://libcloud.readthedocs.org/en/latest/development.html#contributing)
 
 License
 =======
 
 Apache Libcloud is licensed under the Apache 2.0 license. For more information, please see LICENSE_ and NOTICE_  file.
 
-.. _LICENSE: https://github.com/apache/libcloud/blob/trunk/LICENSE
-.. _NOTICE: https://github.com/apache/libcloud/blob/trunk/NOTICE
+.. [LICENSE](https://github.com/apache/libcloud/blob/trunk/LICENSE)
+.. [NOTICE] (https://github.com/apache/libcloud/blob/trunk/NOTICE)
