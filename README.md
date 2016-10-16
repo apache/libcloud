@@ -1,7 +1,7 @@
 Apache Libcloud - a unified interface into the cloud
 ====================================================
 
-[!(https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://libcloud.readthedocs.org)
+[![docs](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://libcloud.readthedocs.org)
 
 [!(https://img.shields.io/pypi/v/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
 
