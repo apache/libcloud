@@ -21,6 +21,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.dimensiondata import dd_object_to_id
@@ -638,12 +639,25 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         request_elm = ET.Element('powerOffServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
-        body = self.connection.request_with_orgId_api_2(
-            'server/powerOffServer',
-            method='POST',
-            data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'responseCode', TYPES_URN)
-        return response_code in ['IN_PROGRESS', 'OK']
+
+        response_code = None
+
+        try:
+            body = self.connection.request_with_orgId_api_2(
+                'server/powerOffServer',
+                method='POST',
+                data=ET.tostring(request_elm)).object
+            response_code = findtext(body, 'responseCode', TYPES_URN)
+        except (DimensionDataAPIException, NameError, BaseHTTPError):
+            r = self.ex_wait_for_state(
+                state='stopped',
+                func=self.ex_get_node_by_id,
+                id=node.id,
+                timeout=1)
+            if r is not None:
+                response_code = r.state.upper()
+            pass
+        return response_code in ['IN_PROGRESS', 'OK', 'STOPPED, STOPPING']
 
     def ex_reset(self, node):
         """
@@ -991,10 +1005,10 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_list_network_domains(self, location=None, name=None,
                                 service_plan=None, state=None):
         """
-        List networks domains deployed across all data center locations
-        for your organization.
-        The response includes the location of each network domain.
+        List networks domains deployed across all data center locations domain.
 
+        for your organization.
+        The response includes the location of each network
         :param      location: Only network domains in the location (optional)
         :type       location: :class:`NodeLocation` or ``str``
 
