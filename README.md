@@ -3,23 +3,23 @@ Apache Libcloud - a unified interface into the cloud
 
 [![docs](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://libcloud.readthedocs.org)
 
-[!(https://img.shields.io/pypi/v/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
+[![pypi](https://img.shields.io/pypi/v/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
 
-[!(https://img.shields.io/pypi/dm/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
+[![downloads](https://img.shields.io/pypi/dm/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
 
-[!(https://img.shields.io/travis/apache/libcloud/trunk.svg)](http://travis-ci.org/apache/libcloud)
+[![build](https://img.shields.io/travis/apache/libcloud/trunk.svg)](http://travis-ci.org/apache/libcloud)
 
-[!(https://img.shields.io/pypi/pyversions/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
+[![python](https://img.shields.io/pypi/pyversions/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
 
-[!(https://img.shields.io/pypi/wheel/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
+[![wheel](https://img.shields.io/pypi/wheel/apache-libcloud.svg)](https://pypi.python.org/pypi/apache-libcloud/)
 
-[!(https://img.shields.io/github/license/apache/libcloud.svg)](https://github.com/apache/libcloud/blob/trunk/LICENSE)
+[![license](https://img.shields.io/github/license/apache/libcloud.svg)](https://github.com/apache/libcloud/blob/trunk/LICENSE)
 
-[!(https://img.shields.io/irc/%23libcloud.png)](http://webchat.freenode.net/?channels=libcloud)
+[![irc](https://img.shields.io/irc/%23libcloud.png)](http://webchat.freenode.net/?channels=libcloud)
 
-[!(https://bestpractices.coreinfrastructure.org/projects/152/badge)](https://bestpractices.coreinfrastructure.org/projects/152)
+[![cii best practices](https://bestpractices.coreinfrastructure.org/projects/152/badge)](https://bestpractices.coreinfrastructure.org/projects/152)
 
-[!(https://coveralls.io/repos/github/apache/libcloud/badge.svg?branch=trunk)](https://coveralls.io/github/apache/libcloud?branch=trunk)
+[![coverage](https://coveralls.io/repos/github/apache/libcloud/badge.svg?branch=trunk)](https://coveralls.io/github/apache/libcloud?branch=trunk)
 
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
