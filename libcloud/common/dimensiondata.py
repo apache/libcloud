@@ -549,6 +549,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :return: Result from the calling function.
         """
         cnt = 0
+        result = None
+        object_state = None
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
             if isinstance(result, Node):
@@ -561,7 +563,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
             sleep(poll_interval)
             cnt += 1
 
-        msg = 'Status check for object %s timed out' % (result)
+        msg = 'Status check for object %s timed out' % result
         raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
                                         driver=self.driver)
