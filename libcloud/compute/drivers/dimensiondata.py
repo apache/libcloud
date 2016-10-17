@@ -657,7 +657,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if r is not None:
                 response_code = r.state.upper()
             pass
-        return response_code in ['IN_PROGRESS', 'OK', 'STOPPED, STOPPING']
+        return response_code in ['IN_PROGRESS', 'OK', 'STOPPED', 'STOPPING']
 
     def ex_reset(self, node):
         """
