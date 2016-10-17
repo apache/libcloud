@@ -640,8 +640,6 @@ class DimensionDataNodeDriver(NodeDriver):
         request_elm = ET.Element('powerOffServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
 
-        response_code = None
-
         try:
             body = self.connection.request_with_orgId_api_2(
                 'server/powerOffServer',
@@ -649,14 +647,9 @@ class DimensionDataNodeDriver(NodeDriver):
                 data=ET.tostring(request_elm)).object
             response_code = findtext(body, 'responseCode', TYPES_URN)
         except (DimensionDataAPIException, NameError, BaseHTTPError):
-            r = self.ex_wait_for_state(
-                state='stopped',
-                func=self.ex_get_node_by_id,
-                id=node.id,
-                timeout=1)
-            if r is not None:
-                response_code = r.state.upper()
-            pass
+            r = self.ex_get_node_by_id(node.id)
+            response_code = r.state.upper()
+
         return response_code in ['IN_PROGRESS', 'OK', 'STOPPED', 'STOPPING']
 
     def ex_reset(self, node):
