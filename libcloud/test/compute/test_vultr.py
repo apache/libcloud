@@ -79,6 +79,14 @@ class VultrTests(LibcloudTestCase):
         result = self.driver.reboot_node(node)
         self.assertTrue(result)
 
+    def test_create_node_success(self):
+        test_size = self.driver.list_sizes()[0]
+        test_image = self.driver.list_images()[0]
+        test_location = self.driver.list_locations()[0]
+        created_node = self.driver.create_node('test-node', test_size,
+                                               test_image, test_location)
+        self.assertEqual(created_node.id, "1")
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         result = self.driver.destroy_node(node)
@@ -119,6 +127,10 @@ class VultrMockHttp(MockHttpTestCase):
 
     def _v1_server_list(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_server_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_server_destroy(self, method, url, body, headers):
