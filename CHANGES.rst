@@ -114,7 +114,7 @@ Compute
 Container
 ~~~~~~~~~
 
-- Introduced new Racher driver
+- Introduced new Rancher driver
   (GITHUB-876)
   [Mario Loria]
 
