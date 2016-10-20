@@ -563,7 +563,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
             sleep(poll_interval)
             cnt += 1
 
-        msg = 'Status check for object %s timed out' % result
+        msg = 'Status check for object %s timed out' % (result)
         raise DimensionDataAPIException(code=object_state,
                                         msg=msg,
                                         driver=self.driver)
