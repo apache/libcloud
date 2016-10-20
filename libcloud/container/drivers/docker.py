@@ -54,7 +54,11 @@ class DockerResponse(JsonResponse):
             # an error, but response status could still be 200
             content_type = self.headers.get('content-type', 'application/json')
             if content_type == 'application/json' or content_type == '':
-                body = json.loads(self.body)
+                if self.headers.get('transfer-encoding') == 'chunked':
+                    body = [json.loads(chunk) for chunk in
+                            self.body.strip().replace('\r', '').split('\n')]
+                else:
+                    body = json.loads(self.body)
             else:
                 body = self.body
         except ValueError:
@@ -210,14 +214,20 @@ class DockerContainerDriver(ContainerDriver):
                                          method='POST')
         if "errorDetail" in result.body:
             raise DockerException(None, result.body)
-        try:
-            # get image id
-            image_id = re.findall(
-                r'{"status":"Download complete"'
-                r',"progressDetail":{},"id":"\w+"}',
-                result.body)[-1]
-            image_id = json.loads(image_id).get('id')
-        except:
+        image_id = None
+
+        # the response is slightly different if the image is already present
+        # and it's not downloaded. both messages below indicate that the image
+        # is available for use to the daemon
+        if re.search(r'Downloaded newer image', result.body) or \
+                re.search(r'"Status: Image is up to date', result.body):
+            if re.search(r'sha256:(?P<id>[a-z0-9]{64})', result.body):
+                image_id = re.findall(r'sha256:(?P<id>[a-z0-9]{64})',
+                                      result.body)[-1]
+
+        # if there is a failure message or if there is not an image id in the
+        # response then throw an exception.
+        if image_id is None:
             raise DockerException(None, 'failed to install image')
 
         image = ContainerImage(
