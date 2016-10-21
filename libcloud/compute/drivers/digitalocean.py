@@ -256,6 +256,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
+    def ex_hard_reboot(self, node):
+        attr = {'type': 'power_cycle'}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def ex_power_on_node(self, node):
         attr = {'type': 'power_on'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),

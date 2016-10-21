@@ -148,6 +148,12 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.ex_shutdown_node(node)
         self.assertTrue(result)
 
+    def test_ex_hard_reboot_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'POWERCYCLE'
+        result = self.driver.ex_hard_reboot(node)
+        self.assertTrue(result)
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'DESTROY'
@@ -302,6 +308,12 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         # ex_shutdown_node
         body = self.fixtures.load('ex_shutdown_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_droplets_3164444_actions_POWERCYCLE(self, method, url,
+                                                body, headers):
+        # ex_hard_reboot
+        body = self.fixtures.load('ex_hard_reboot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
 
     def _v2_account_keys(self, method, url, body, headers):
         body = self.fixtures.load('list_key_pairs.json')
