@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [digital ocean] add ex_hard_reboot in DigitalOcean_v2 driver
+  (GITHUB-920)
+  [Rick van de Loo]
+
 - [openstack] add ex_start_node for the openstack driver
   (GITHUB-919)
   [Rick van de Loo]
