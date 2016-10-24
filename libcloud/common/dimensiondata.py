@@ -732,7 +732,8 @@ class DimensionDataServerDisk(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id, scsi_id, size_gb, speed, state):
+    def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None,
+                 state=None):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
 
