@@ -37,6 +37,17 @@ Compute
   (GITHUB-856
   [Tom Melendez]
 
+Container
+~~~~~~~~~
+
+- [docker] As reported in the corresponding bug, the docker daemon will respond in an install_image call with all the messages
+  produced during the procedure parsed as json docs. In that case the response headers also contain the value 'transfer-encoding':'chunked'.
+  That kind of response can now be parsed properly by the DockerResponse parse_body method. Also, another small change is that previously
+  the id of the new image was marked in the json document as id, but now it's marked as sha256, so the regex used to discover the id
+  has been updated.
+  (GITHUB-918)
+  [Pavlos Tzianos]
+
 Storage
 ~~~~~~~
 
