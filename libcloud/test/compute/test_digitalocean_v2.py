@@ -160,6 +160,12 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.destroy_node(node)
         self.assertTrue(result)
 
+    def test_ex_change_kernel_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'KERNELCHANGE'
+        result = self.driver.ex_change_kernel(node, 7515)
+        self.assertTrue(result)
+
     def test_ex_rename_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'RENAME'
@@ -300,6 +306,11 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         # destroy_node
         return (httplib.NO_CONTENT, body, {},
                 httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_droplets_3164444_actions_KERNELCHANGE(self, method, url, body, headers):
+        # change_kernel
+        body = self.fixtures.load('ex_change_kernel.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
     def _v2_droplets_3164444_actions_RENAME(self, method, url, body, headers):
         # rename_node

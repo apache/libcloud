@@ -244,6 +244,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/images/%s' % (image_id), 'image')
         return self._to_image(data)
 
+    def ex_change_kernel(self, node, kernel_id):
+        attr = {'type': 'change_kernel', 'kernel': kernel_id}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def ex_rename_node(self, node, name):
         attr = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
