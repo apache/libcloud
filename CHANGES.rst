@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [openstack] add ex_start_node for the openstack driver
+  (GITHUB-919)
+  [Rick van de Loo]
+
 - [vultr] Extra Attributes for Node Creation on Vultr
   (GITHUB-917)
   [Fahri Cihan Demirci]
