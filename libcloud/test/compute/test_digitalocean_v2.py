@@ -236,6 +236,30 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         resp = self.driver.destroy_volume(volume)
         self.assertTrue(resp)
 
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 3)
+        snapshot1, snapshot2, snapshot3 = snapshots
+        self.assertEqual(snapshot1.id, "c0def940-9324-11e6-9a56-000f533176b1")
+        self.assertEqual(snapshot2.id, "c2036724-9343-11e6-aef4-000f53315a41")
+        self.assertEqual(snapshot3.id, "d347e033-9343-11e6-9a56-000f533176b1")
+
+    def test_create_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'CREATE'
+        snapshot = self.driver.create_volume_snapshot(volume, 'test-snapshot')
+        self.assertEqual(snapshot.id, "c0def940-9324-11e6-9a56-000f533176b1")
+        self.assertEqual(snapshot.name, 'test-snapshot')
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_delete_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        snapshot = self.driver.list_volume_snapshots(volume)[0]
+        DigitalOceanMockHttp.type = 'DELETE'
+        result = self.driver.delete_volume_snapshot(snapshot)
+        self.assertTrue(result)
+
 
 class DigitalOceanMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -352,6 +376,22 @@ class DigitalOceanMockHttp(MockHttpTestCase):
                                                                  headers):
         return (httplib.NO_CONTENT, None, {},
                 httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_snapshots_CREATE(
+            self, method, url, body, headers):
+        body = self.fixtures.load('create_volume_snapshot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_snapshots(
+            self, method, url, body, headers):
+        body = self.fixtures.load('list_volume_snapshots.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_snapshots_c0def940_9324_11e6_9a56_000f533176b1_DELETE(
+            self, method, url, body, headers):
+        return (httplib.NO_CONTENT, None, {},
+                httplib.responses[httplib.NO_CONTENT])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
