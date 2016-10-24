@@ -8,6 +8,15 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [dimension data] Refactor create_node for MCP2 to support CaaS API 2.3 feature.
+  Can now specify Network Adapter Name for primary and additional NIC. Parameters in create_node function is tailored for MCP2.
+  (GITHUB-902)
+  [Samuel Chong]
+
+- Volume snapshot operations, i.e. creating, listing and deleting volume snapshots, for the Digital Ocean driver.
+  (LIBCLOUD-861, GITHUB-909)
+  [Fahri Cihan Demirci]
+
 - Added snapshot management to OVH compute
   (GITHUB-897)
   [Anthony Monthe]
