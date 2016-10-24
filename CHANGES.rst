@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [dimension data] No longer throw error when powering off a node that is already stopped.
+  (GITHUB-912)
+  [Samuel Chong]
+
 - [dimension data] Refactor create_node for MCP2 to support CaaS API 2.3 feature.
   Can now specify Network Adapter Name for primary and additional NIC. Parameters in create_node function is tailored for MCP2.
   (GITHUB-902)
