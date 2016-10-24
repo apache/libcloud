@@ -104,6 +104,35 @@ class VultrNodeDriver(NodeDriver):
         """
         return self._list_resources('/v1/sshkey/list', self._to_ssh_key)
 
+    def create_key_pair(self, name, public_key=''):
+        """
+        Create a new SSH key.
+        :param name: Name of the new SSH key
+        :type name: ``str``
+
+        :key public_key: Public part of the new SSH key
+        :type name: ``str``
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+        params = {'name': name, 'ssh_key': public_key}
+        res = self.connection.post('/v1/sshkey/create', params)
+        return res.status == httplib.OK
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete an SSH key.
+        :param key_pair: The SSH key to delete
+        :type key_pair: :class:`SSHKey`
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+        params = {'SSHKEYID': key_pair.id}
+        res = self.connection.post('/v1/sshkey/destroy', params)
+        return res.status == httplib.OK
+
     def list_locations(self):
         return self._list_resources('/v1/regions/list', self._to_location)
 

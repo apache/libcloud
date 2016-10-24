@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [vultr] Implement SSH Key Create/Delete Methods for Vultr
+  (GITHUB-914)
+  [Fahri Cihan Demirci]
+
 - [dimension data] No longer throw error when powering off a node that is already stopped.
   (GITHUB-912)
   [Samuel Chong]
