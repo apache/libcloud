@@ -1,0 +1,12 @@
+{
+  "action": {
+    "id": 36077295,
+    "status": "in-progress",
+    "type": "kernel_change",
+    "started_at": "2014-11-04T17:08:03Z",
+    "completed_at": null,
+    "resource_id": 3067650,
+    "resource_type": "droplet",
+    "region": "ams2"
+  }
+}
