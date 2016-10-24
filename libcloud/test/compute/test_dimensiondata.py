@@ -789,8 +789,9 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_power_off_INPROGRESS(self):
         DimensionDataMockHttp.type = 'INPROGRESS'
-        node = Node(id='11', name=None, state=None,
+        node = Node(id='11', name=None, state='STOPPING',
                     public_ips=None, private_ips=None, driver=self.driver)
+
         with self.assertRaises(DimensionDataAPIException):
             self.driver.ex_power_off(node)
 
@@ -2455,6 +2456,11 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             raise InvalidRequestError(request.tag)
         body = self.fixtures.load(
             'server_powerOffServer_INPROGRESS.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_11_INPROGRESS(
+            self, method, url, body, headers):
+        body = self.fixtures.load('server_GetServer.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain(self, method, url, body, headers):

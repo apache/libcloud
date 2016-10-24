@@ -549,6 +549,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
         :return: Result from the calling function.
         """
         cnt = 0
+        result = None
+        object_state = None
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
             if isinstance(result, Node):
