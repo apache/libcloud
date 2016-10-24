@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [vultr] Extra Attributes for Node Creation on Vultr
+  (GITHUB-917)
+  [Fahri Cihan Demirci]
+
 - [vultr] Implement SSH Key Create/Delete Methods for Vultr
   (GITHUB-914)
   [Fahri Cihan Demirci]
