@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [digital ocean] add ex_change_kernel in DigitalOcean_v2 driver
+  (GITHUB-922)
+  [Rick van de Loo]
+
 - [digital ocean] add ex_hard_reboot in DigitalOcean_v2 driver
   (GITHUB-920)
   [Rick van de Loo]
