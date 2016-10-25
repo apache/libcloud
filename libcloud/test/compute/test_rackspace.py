@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
-from libcloud.compute.providers import DEPRECATED_RACKSPACE_PROVIDERS
+from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
@@ -28,6 +28,12 @@ from libcloud.pricing import clear_pricing_data
 
 from libcloud.test.secrets import RACKSPACE_NOVA_PARAMS
 from libcloud.test.secrets import RACKSPACE_PARAMS
+
+DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
+                                  Provider.RACKSPACE_NOVA_BETA,
+                                  Provider.RACKSPACE_NOVA_DFW,
+                                  Provider.RACKSPACE_NOVA_LON,
+                                  Provider.RACKSPACE_NOVA_ORD]
 
 
 class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):

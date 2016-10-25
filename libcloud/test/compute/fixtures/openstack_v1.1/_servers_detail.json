@@ -58,6 +58,28 @@
                         "addr": "10.3.3.3",
                         "version": 4
                     }
+                ],
+                "pubnet": [
+                    {
+                        "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:79:90:aa",
+                        "OS-EXT-IPS:type": "fixed",
+                        "addr": "1.1.1.1",
+                        "version": 4
+                    },
+                    {
+                        "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:79:90:aa",
+                        "OS-EXT-IPS:type": "floating",
+                        "addr": "2.2.2.2",
+                        "version": 4
+                    }
+                ],
+                "privnet": [
+                    {
+                        "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:79:90:aa",
+                        "OS-EXT-IPS:type": "floating",
+                        "addr": "172.16.1.1",
+                        "version": 4
+                    }
                 ]
             },
             "tenant_id": "rs-reach-project",

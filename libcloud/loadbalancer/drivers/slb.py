@@ -97,7 +97,7 @@ ALGORITHM_TO_SLB_SCHEDULER = {
 
 
 class SLBConnection(SignedAliyunConnection):
-    version = SLB_API_VERSION
+    api_version = SLB_API_VERSION
     host = SLB_API_HOST
     responseCls = AliyunXmlResponse
     service_name = 'slb'

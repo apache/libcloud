@@ -80,7 +80,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         pairs = []
         for pair in signature:
             key = urlquote(str(pair[0]), safe='[]')
-            value = urlquote(str(pair[1]), safe='[]')
+            value = urlquote(str(pair[1]), safe='[]*')
             item = '%s=%s' % (key, value)
             pairs .append(item)
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<response requestId="na9_20160321T074626030-0400_7e9fffe7-190b-46f2-9107 © 2016 Dimension Data Cloud Solutions 260 9d52fe57d0ad" xmlns="urn:didata.com:api:cloud:types">
+    <operation>ADD_DISK</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>The request to add a 20 GB Standard Speed Disk on Server 'SERVER-1' has been accepted and is being processed.</message>
+    <info name="diskId" value="9e6b496d-5261-4542-91aa-b50c7f569c54" />
+    <info name="scsiId" value="4" />
+    <info name="speed" value="STANDARD" />
+</response>

@@ -31,7 +31,8 @@ from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.common.openstack_identity import get_class_for_auth_version
 
 # Imports for backward compatibility reasons
-from libcloud.common.openstack_identity import OpenStackServiceCatalog
+from libcloud.common.openstack_identity import (OpenStackServiceCatalog,
+                                                OpenStackIdentityTokenScope)
 
 
 try:
@@ -94,6 +95,17 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                 ex_force_base_url must also be provided.
     :type ex_force_auth_token: ``str``
 
+    :param token_scope: Whether to scope a token to a "project", a
+                        "domain" or "unscoped".
+    :type token_scope: ``str``
+
+    :param ex_domain_name: When authenticating, provide this domain name to
+                           the identity service.  A scoped token will be
+                           returned. Some cloud providers require the domain
+                           name to be provided at authentication time. Others
+                           will use a default domain if none is provided.
+    :type ex_domain_name: ``str``
+
     :param ex_tenant_name: When authenticating, provide this tenant name to the
                            identity service. A scoped token will be returned.
                            Some cloud providers require the tenant name to be
@@ -125,6 +137,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_type = None
     service_name = None
     service_region = None
+    accept_format = None
     _auth_version = None
 
     def __init__(self, user_id, key, secure=True,
@@ -133,6 +146,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
                  ex_force_auth_token=None,
+                 ex_token_scope=OpenStackIdentityTokenScope.PROJECT,
+                 ex_domain_name='Default',
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,
@@ -148,6 +163,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._ex_force_auth_token = ex_force_auth_token
+        self._ex_token_scope = ex_token_scope
+        self._ex_domain_name = ex_domain_name
         self._ex_tenant_name = ex_tenant_name
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
@@ -185,6 +202,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                             user_id=self.user_id,
                             key=self.key,
                             tenant_name=self._ex_tenant_name,
+                            domain_name=self._ex_domain_name,
+                            token_scope=self._ex_token_scope,
                             timeout=self.timeout,
                             parent_conn=self)
 
@@ -399,6 +418,8 @@ class OpenStackDriverMixin(object):
         self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
         self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
+        self._ex_token_scope = kwargs.get('ex_token_scope', None)
+        self._ex_domain_name = kwargs.get('ex_domain_name', None)
         self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
         self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
         self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
@@ -419,6 +440,10 @@ class OpenStackDriverMixin(object):
             rv['ex_force_auth_url'] = self._ex_force_auth_url
         if self._ex_force_auth_version:
             rv['ex_force_auth_version'] = self._ex_force_auth_version
+        if self._ex_token_scope:
+            rv['ex_token_scope'] = self._ex_token_scope
+        if self._ex_domain_name:
+            rv['ex_domain_name'] = self._ex_domain_name
         if self._ex_tenant_name:
             rv['ex_tenant_name'] = self._ex_tenant_name
         if self._ex_force_service_type:

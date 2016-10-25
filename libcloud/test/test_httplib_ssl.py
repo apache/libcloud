@@ -16,7 +16,9 @@
 import os
 import sys
 import os.path
-
+import ssl
+import socket
+import mock
 from mock import patch
 
 import libcloud.security
@@ -84,6 +86,113 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
 
+        # verify = True, no CA certs are available, exception should be thrown
+        libcloud.security.CA_CERTS_PATH = []
+
+        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+        self.assertRaisesRegexp(RuntimeError, expected_msg,
+                                self.httplib_object._setup_ca_cert)
+
+    @mock.patch('socket.create_connection', mock.MagicMock())
+    @mock.patch('socket.socket', mock.MagicMock())
+    def test_connect_throws_friendly_error_message_on_ssl_wrap_connection_reset_by_peer(self):
+
+        mock_wrap_socket = None
+
+        if getattr(ssl, 'HAS_SNI', False):
+            ssl.SSLContext.wrap_socket = mock.MagicMock()
+            mock_wrap_socket = ssl.SSLContext.wrap_socket
+        else:
+            ssl.wrap_socket = mock.MagicMock()
+            mock_wrap_socket = ssl.wrap_socket
+
+        # Test that we re-throw a more friendly error message in case
+        # "connection reset by peer" error occurs when trying to establish a
+        # SSL connection
+        libcloud.security.VERIFY_SSL_CERT = True
+        self.httplib_object.verify = True
+        self.httplib_object.http_proxy_used = False
+
+        # No connection reset by peer, original exception should be thrown
+        mock_wrap_socket.side_effect = Exception('foo bar fail')
+
+        expected_msg = 'foo bar fail'
+        self.assertRaisesRegexp(Exception, expected_msg,
+                                self.httplib_object.connect)
+
+        # Connection reset by peer, wrapped exception with friendly error
+        # message should be thrown
+        mock_wrap_socket.side_effect = socket.error('Connection reset by peer')
+
+        expected_msg = 'Failed to establish SSL / TLS connection'
+        self.assertRaisesRegexp(socket.error, expected_msg,
+                                self.httplib_object.connect)
+
+        # Same error but including errno
+        with self.assertRaises(socket.error) as cm:
+            mock_wrap_socket.side_effect = socket.error(104, 'Connection reset by peer')
+            self.httplib_object.connect()
+
+        e = cm.exception
+        self.assertEqual(e.errno, 104)
+        self.assertTrue(expected_msg in str(e))
+
+        # Test original exception is propagated correctly on non reset by peer
+        # error
+        with self.assertRaises(socket.error) as cm:
+            mock_wrap_socket.side_effect = socket.error(105, 'Some random error')
+            self.httplib_object.connect()
+
+        e = cm.exception
+        self.assertEqual(e.errno, 105)
+        self.assertTrue('Some random error' in str(e))
+
+    def test_certifi_ca_bundle_in_search_path(self):
+        mock_certifi_ca_bundle_path = '/certifi/bundle/path'
+
+        # Certifi not available
+        import libcloud.security
+        reload(libcloud.security)
+
+        original_length = len(libcloud.security.CA_CERTS_PATH)
+
+        self.assertTrue(mock_certifi_ca_bundle_path not in
+                        libcloud.security.CA_CERTS_PATH)
+
+        # Certifi is available
+        mock_certifi = mock.Mock()
+        mock_certifi.where.return_value = mock_certifi_ca_bundle_path
+        sys.modules['certifi'] = mock_certifi
+
+        # Certifi CA bundle path should be injected at the begining of search list
+        import libcloud.security
+        reload(libcloud.security)
+
+        self.assertEqual(libcloud.security.CA_CERTS_PATH[0],
+                         mock_certifi_ca_bundle_path)
+        self.assertEqual(len(libcloud.security.CA_CERTS_PATH),
+                         (original_length + 1))
+
+        # Certifi is available, but USE_CERTIFI is set to False
+        os.environ['LIBCLOUD_SSL_USE_CERTIFI'] = 'false'
+
+        import libcloud.security
+        reload(libcloud.security)
+
+        self.assertTrue(mock_certifi_ca_bundle_path not in
+                        libcloud.security.CA_CERTS_PATH)
+        self.assertEqual(len(libcloud.security.CA_CERTS_PATH), original_length)
+
+        # And enabled
+        os.environ['LIBCLOUD_SSL_USE_CERTIFI'] = 'true'
+
+        import libcloud.security
+        reload(libcloud.security)
+
+        self.assertEqual(libcloud.security.CA_CERTS_PATH[0],
+                         mock_certifi_ca_bundle_path)
+        self.assertEqual(len(libcloud.security.CA_CERTS_PATH),
+                         (original_length + 1))
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

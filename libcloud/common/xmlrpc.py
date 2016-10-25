@@ -85,6 +85,7 @@ class XMLRPCConnection(Connection):
     """
 
     responseCls = XMLRPCResponse
+    endpoint = None
 
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'text/xml'

@@ -65,6 +65,8 @@ class ZonomiResponse(XmlResponse):
         data = []
         errors = []
         xml_body = super(ZonomiResponse, self).parse_body()
+
+        # pylint: disable=no-member
         # Error handling
         if xml_body.text is not None and xml_body.tag == 'error':
             error_dict['ERRORCODE'] = self.status

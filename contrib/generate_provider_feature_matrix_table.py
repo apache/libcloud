@@ -219,7 +219,6 @@ IGNORED_PROVIDERS = [
 
     # Deprecated constants
     'cloudsigma_us',
-
     'cloudfiles_swift'
 ]
 
@@ -275,8 +274,9 @@ def generate_providers_table(api):
 
         try:
             cls = get_driver_method(enum)
-        except:
+        except Exception:
             # Deprecated providers throw an exception
+            print('Ignoring deprecated constant "%s"' % (enum))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
@@ -307,6 +307,7 @@ def generate_providers_table(api):
         result[name] = {'name': cls.name, 'website': cls.website,
                         'constant': name, 'module': drivers[enum][0],
                         'class': drivers[enum][1],
+                        'cls': cls,
                         'methods': {}}
 
         for method_name in base_api_methods:
@@ -389,8 +390,8 @@ def generate_supported_methods_table(api, provider_matrix):
 
 def generate_supported_providers_table(api, provider_matrix):
     data = []
-    header = ['Provider', 'Documentation', 'Provider constant', 'Module',
-              'Class Name']
+    header = ['Provider', 'Documentation', 'Provider Constant',
+              'Supported Regions', 'Module', 'Class Name']
 
     data.append(header)
     for provider, values in sorted(provider_matrix.items()):
@@ -408,7 +409,16 @@ def generate_supported_providers_table(api, provider_matrix):
         else:
             docs_link = ''
 
-        row = [name_str, docs_link, values['constant'], module_str, class_str]
+        cls = values['cls']
+        supported_regions = cls.list_regions()
+
+        if supported_regions:
+            supported_regions = ', '.join(supported_regions)
+        else:
+            supported_regions = 'single region driver'
+
+        row = [name_str, docs_link, values['constant'], supported_regions,
+               module_str, class_str]
         data.append(row)
 
     result = generate_rst_table(data)

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<BackupClientTypes xmlns="http://oec.api.opsource.net/schemas/backup">
+ <!--Zero or more repetitions, all attributes mandatory -->
+ <backupClientType type="FA.Linux" isFileSystem="true" description="Linux
+File system"/>
+</BackupClientTypes>

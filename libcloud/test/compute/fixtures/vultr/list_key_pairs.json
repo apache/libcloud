@@ -1,0 +1,8 @@
+{
+    "5806a8ef2a0c6": {
+        "SSHKEYID": "5806a8ef2a0c6",
+        "date_created": "2016-10-18 18:57:51",
+        "name": "test-key-pair",
+        "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYMivN4KqJZ3dNEWeH20PUeB2ZnZRkk91K5SgxWrEotgpX4pMVM/9oxkh4bKw5CBzT6KAOghzLcBViFpNVjDyyet9wwVcy6cjuUynx63UtbTLB+r4D+bD/+/9rQTeckvGYg9Y8xIKL/oaVeCcdBM8JhSQZbZ/aARi2K79FWGH61azAqc/JCHT63f3FhspjdVpcVoVOjsZG3WG6Vymys2cXH1PM5qMgBbmp+5LkSv0LvUULyxcrtKkUyntPr1BvIFSNbo2lhXLwnM4DXONP6U/yMFte+ZwiajF7pUCdB9HqvXVU+IfswYSDuhHzL9j8+ZLQ2enF/lkkYxpMHE2t215 tester@test"
+    }
+}

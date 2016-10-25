@@ -397,7 +397,7 @@ class DurableDNSDriver(DNSDriver):
 
     def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
         """
-        Update en existing zone.
+        Update an existing zone.
 
         :param zone: Zone to update.
         :type  zone: :class:`Zone`

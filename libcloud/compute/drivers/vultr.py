@@ -93,6 +93,26 @@ class VultrNodeDriver(NodeDriver):
     NODE_STATE_MAP = {'pending': NodeState.PENDING,
                       'active': NodeState.RUNNING}
 
+    EX_CREATE_YES_NO_ATTRIBUTES = ['enable_ipv6',
+                                   'enable_private_network',
+                                   'auto_backups',
+                                   'notify_activate',
+                                   'ddos_protection']
+
+    EX_CREATE_ID_ATTRIBUTES = {'iso_id': 'ISOID',
+                               'script_id': 'SCRIPTID',
+                               'snapshot_id': 'SNAPSHOTID',
+                               'app_id': 'APPID'}
+
+    EX_CREATE_ATTRIBUTES = ['ipxe_chain_url',
+                            'label',
+                            'userdata',
+                            'reserved_ip_v4',
+                            'hostname',
+                            'tag']
+    EX_CREATE_ATTRIBUTES.extend(EX_CREATE_YES_NO_ATTRIBUTES)
+    EX_CREATE_ATTRIBUTES.extend(EX_CREATE_ID_ATTRIBUTES.keys())
+
     def list_nodes(self):
         return self._list_resources('/v1/server/list', self._to_node)
 
@@ -104,6 +124,35 @@ class VultrNodeDriver(NodeDriver):
         """
         return self._list_resources('/v1/sshkey/list', self._to_ssh_key)
 
+    def create_key_pair(self, name, public_key=''):
+        """
+        Create a new SSH key.
+        :param name: Name of the new SSH key
+        :type name: ``str``
+
+        :key public_key: Public part of the new SSH key
+        :type name: ``str``
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+        params = {'name': name, 'ssh_key': public_key}
+        res = self.connection.post('/v1/sshkey/create', params)
+        return res.status == httplib.OK
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete an SSH key.
+        :param key_pair: The SSH key to delete
+        :type key_pair: :class:`SSHKey`
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+        params = {'SSHKEYID': key_pair.id}
+        res = self.connection.post('/v1/sshkey/destroy', params)
+        return res.status == httplib.OK
+
     def list_locations(self):
         return self._list_resources('/v1/regions/list', self._to_location)
 
@@ -113,12 +162,74 @@ class VultrNodeDriver(NodeDriver):
     def list_images(self):
         return self._list_resources('/v1/os/list', self._to_image)
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
+                    ex_create_attr=None):
+        """
+        Create a node
+
+        :param name: Name for the new node
+        :type name: ``str``
+
+        :param size: Size of the new node
+        :type size: :class:`NodeSize`
+
+        :param image: Image for the new node
+        :type image: :class:`NodeImage`
+
+        :param location: Location of the new node
+        :type location: :class:`NodeLocation`
+
+        :param ex_ssh_key_ids: IDs of the SSH keys to initialize
+        :type ex_sshkeyid: ``list`` of ``str``
+
+        :param ex_create_attr: Extra attributes for node creation
+        :type ex_create_attr: ``dict``
+
+        The `ex_create_attr` parameter can include the following dictionary
+        key and value pairs:
+
+        * `ipxe_chain_url`: ``str`` for specifying URL to boot via IPXE
+        * `iso_id`: ``str`` the ID of a specific ISO to mount,
+          only meaningful with the `Custom` `NodeImage`
+        * `script_id`: ``int`` ID of a startup script to execute on boot,
+          only meaningful when the `NodeImage` is not `Custom`
+        * 'snapshot_id`: ``str`` Snapshot ID to restore for the initial
+          installation, only meaningful with the `Snapshot` `NodeImage`
+        * `enable_ipv6`: ``bool`` Whether an IPv6 subnet should be assigned
+        * `enable_private_network`: ``bool`` Whether private networking
+          support should be added
+        * `label`: ``str`` Text label to be shown in the control panel
+        * `auto_backups`: ``bool`` Whether automatic backups should be enabled
+        * `app_id`: ``int`` App ID to launch if launching an application,
+          only meaningful when the `NodeImage` is `Application`
+        * `userdata`: ``str`` Base64 encoded cloud-init user-data
+        * `notify_activate`: ``bool`` Whether an activation email should be
+          sent when the server is ready
+        * `ddos_protection`: ``bool`` Whether DDOS protection should be enabled
+        * `reserved_ip_v4`: ``str`` IP address of the floating IP to use as
+          the main IP of this server
+        * `hostname`: ``str`` The hostname to assign to this server
+        * `tag`: ``str`` The tag to assign to this server
+
+        :return: The newly created node.
+        :rtype: :class:`Node`
+
+        """
         params = {'DCID': location.id, 'VPSPLANID': size.id,
                   'OSID': image.id, 'label': name}
 
         if ex_ssh_key_ids is not None:
             params['SSHKEYID'] = ','.join(ex_ssh_key_ids)
+
+        ex_create_attr = ex_create_attr or {}
+        for key, value in ex_create_attr.items():
+            if key in self.EX_CREATE_ATTRIBUTES:
+                if key in self.EX_CREATE_YES_NO_ATTRIBUTES:
+                    params[key] = 'yes' if value else 'no'
+                else:
+                    if key in self.EX_CREATE_ID_ATTRIBUTES:
+                        key = self.EX_CREATE_ID_ATTRIBUTES[key]
+                    params[key] = value
 
         result = self.connection.post('/v1/server/create', params)
         if result.status != httplib.OK:

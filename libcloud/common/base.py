@@ -249,10 +249,14 @@ class XmlResponse(Response):
 
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body if self.body is not None else ''
+            return self.body
 
         try:
-            body = ET.XML(self.body)
+            try:
+                body = ET.XML(self.body)
+            except ValueError:
+                # lxml wants a bytes and tests are basically hard-coded to str
+                body = ET.XML(self.body.encode('utf-8'))
         except:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
@@ -308,8 +312,9 @@ class Connection(object):
     """
     A Base Connection class to derive from.
     """
-    # conn_class = LoggingHTTPSConnection
     conn_class = LibcloudConnection
+    # backward compat to pre 1.3
+    conn_classes = (conn_class, conn_class)
 
     responseCls = Response
     rawResponseCls = RawResponse

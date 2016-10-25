@@ -28,8 +28,9 @@ try:
 except ImportError:
     has_epydoc = False
 
-import libcloud.utils
-from libcloud.utils.dist import get_packages, get_data_files
+
+import libcloud.utils  # NOQA
+from libcloud.utils.dist import get_packages, get_data_files  # NOQA
 
 libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
@@ -284,7 +285,7 @@ setup(
     },
     zip_safe=False,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',

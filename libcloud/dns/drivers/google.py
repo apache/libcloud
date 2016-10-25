@@ -294,6 +294,7 @@ class GoogleDNSDriver(DNSDriver):
         request = '/managedZones/%s/changes' % (zone.id)
         response = self.connection.request(request, method='POST',
                                            data=records).object
+        response = response or {}
 
         response_data = {
             'additions': self._to_records(response.get('additions', []), zone),

@@ -1,0 +1,65 @@
+{
+ "kind": "compute#region",
+ "id": "1000",
+ "creationTimestamp": "2014-05-30T18:35:16.413-07:00",
+ "name": "us-central1",
+ "description": "us-central1",
+ "status": "UP",
+ "zones": [
+  "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+  "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b"
+ ],
+ "quotas": [
+  {
+   "metric": "CPUS",
+   "limit": 1050.0,
+   "usage": 30.0
+  },
+  {
+   "metric": "DISKS_TOTAL_GB",
+   "limit": 20000.0,
+   "usage": 344.0
+  },
+  {
+   "metric": "STATIC_ADDRESSES",
+   "limit": 10.0,
+   "usage": 2.0
+  },
+  {
+   "metric": "IN_USE_ADDRESSES",
+   "limit": 1050.0,
+   "usage": 11.0
+  },
+  {
+   "metric": "SSD_TOTAL_GB",
+   "limit": 2048.0,
+   "usage": 500.0
+  },
+  {
+   "metric": "LOCAL_SSD_TOTAL_GB",
+   "limit": 10240.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCE_GROUPS",
+   "limit": 100.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCE_GROUP_MANAGERS",
+   "limit": 50.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCES",
+   "limit": 10500.0,
+   "usage": 11.0
+  },
+  {
+   "metric": "AUTOSCALERS",
+   "limit": 50.0,
+   "usage": 0.0
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1"
+}

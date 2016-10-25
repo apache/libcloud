@@ -176,11 +176,12 @@ class LiquidWebDNSDriver(DNSDriver):
         https://www.liquidweb.com/storm/api/docs/v1/Network/DNS/Zone.html
         """
         action = '/v1/Network/DNS/Zone/create'
-        data = json.dumps({'params': {'name': domain}})
+        data = {'params': {'name': domain}}
+
         if extra is not None:
-            params = data.get('params')
-            params.update(extra)
+            data['params'].update(extra)
         try:
+            data = json.dumps(data)
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)

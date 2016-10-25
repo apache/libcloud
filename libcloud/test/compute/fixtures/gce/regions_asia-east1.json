@@ -1,0 +1,65 @@
+{
+ "kind": "compute#region",
+ "id": "1220",
+ "creationTimestamp": "2014-05-30T18:35:16.514-07:00",
+ "name": "asia-east1",
+ "description": "asia-east1",
+ "status": "UP",
+ "zones": [
+  "https://www.googleapis.com/compute/v1/projects/project_name/zones/asia-east1-a",
+  "https://www.googleapis.com/compute/v1/projects/project_name/zones/asia-east1-b"
+ ],
+ "quotas": [
+  {
+   "metric": "CPUS",
+   "limit": 24.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "DISKS_TOTAL_GB",
+   "limit": 10240.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "STATIC_ADDRESSES",
+   "limit": 7.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "IN_USE_ADDRESSES",
+   "limit": 23.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "SSD_TOTAL_GB",
+   "limit": 2048.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "LOCAL_SSD_TOTAL_GB",
+   "limit": 10240.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCE_GROUPS",
+   "limit": 100.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCE_GROUP_MANAGERS",
+   "limit": 50.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCES",
+   "limit": 240.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "AUTOSCALERS",
+   "limit": 50.0,
+   "usage": 0.0
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/asia-east1"
+}

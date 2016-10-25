@@ -293,12 +293,9 @@ class EBSBackupDriver(BackupDriver):
         return self._to_job(findall(element=data,
                                     xpath=xpath, namespace=NS)[0])
 
-    def resume_target_job(self, target, job):
+    def resume_target_job(self, job):
         """
         Resume a suspended backup job on a target
-
-        :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
 
         :param job: Backup target job to resume
         :type  job: Instance of :class:`BackupTargetJob`
@@ -308,12 +305,9 @@ class EBSBackupDriver(BackupDriver):
         raise NotImplementedError(
             'resume_target_job not supported for this driver')
 
-    def suspend_target_job(self, target, job):
+    def suspend_target_job(self, job):
         """
         Suspend a running backup job on a target
-
-        :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
 
         :param job: Backup target job to suspend
         :type  job: Instance of :class:`BackupTargetJob`
@@ -323,12 +317,9 @@ class EBSBackupDriver(BackupDriver):
         raise NotImplementedError(
             'suspend_target_job not supported for this driver')
 
-    def cancel_target_job(self, target, job):
+    def cancel_target_job(self, job):
         """
         Cancel a backup job on a target
-
-        :param target: Backup target with the backup data
-        :type  target: Instance of :class:`BackupTarget`
 
         :param job: Backup target job to cancel
         :type  job: Instance of :class:`BackupTargetJob`

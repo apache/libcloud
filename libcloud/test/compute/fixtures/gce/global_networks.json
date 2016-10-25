@@ -1,34 +1,43 @@
 {
-  "id": "projects/project_name/global/networks",
-  "items": [
-    {
-      "IPv4Range": "10.240.0.0/16",
-      "creationTimestamp": "2013-06-19T12:37:13.233-07:00",
-      "gatewayIPv4": "10.240.0.1",
-      "id": "08257021638942464470",
-      "kind": "compute#network",
-      "name": "default",
-      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default"
-    },
-    {
-      "IPv4Range": "10.10.0.0/16",
-      "creationTimestamp": "2013-06-26T09:51:34.018-07:00",
-      "gatewayIPv4": "10.10.0.1",
-      "id": "13254259054875092094",
-      "kind": "compute#network",
-      "name": "libcloud-demo-europe-network",
-      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/libcloud-demo-europe-network"
-    },
-    {
-      "IPv4Range": "10.10.0.0/16",
-      "creationTimestamp": "2013-06-26T09:48:15.703-07:00",
-      "gatewayIPv4": "10.10.0.1",
-      "id": "17172579178188075621",
-      "kind": "compute#network",
-      "name": "libcloud-demo-network",
-      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/libcloud-demo-network"
-    }
-  ],
-  "kind": "compute#networkList",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks"
+ "kind": "compute#networkList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks",
+ "id": "projects/project_name/global/networks",
+ "items": [
+  {
+   "kind": "compute#network",
+   "id": "5125152985904090792",
+   "creationTimestamp": "2016-03-25T05:34:15.077-07:00",
+   "name": "cf",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/cf",
+   "autoCreateSubnetworks": true,
+   "subnetworks": [
+    "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112",
+    "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-east1/subnetworks/cf-daf1e2124a902a47",
+    "https://www.googleapis.com/compute/v1/projects/project_name/regions/asia-east1/subnetworks/cf-4c2da366a0381eb9",
+    "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1/subnetworks/cf-df1837b06a6f927b"
+   ]
+  },
+  {
+   "kind": "compute#network",
+   "id": "7887441312352916157",
+   "creationTimestamp": "2016-04-30T10:33:06.252-07:00",
+   "name": "custom",
+   "description": "Custom network",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/custom",
+   "autoCreateSubnetworks": false,
+   "subnetworks": [
+    "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/subnet1"
+   ]
+  },
+  {
+   "kind": "compute#network",
+   "id": "2672023774255449680",
+   "creationTimestamp": "2014-01-21T10:30:55.392-08:00",
+   "name": "default",
+   "description": "Default network for the project",
+   "IPv4Range": "10.240.0.0/16",
+   "gatewayIPv4": "10.240.0.1",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default"
+  }
+ ]
 }

@@ -24,7 +24,8 @@ Example 1 - listing records for a zone with a known id
 .. literalinclude:: /examples/dns/list_zone_records.py
    :language: python
 
-In this example, :func:`driver.get_zone` method call results in an HTTP call.
+In this example, the :func:`driver.get_zone` method call results in an HTTP
+call.
 
 Example 2 - creating an EC2 instance with a known ``NodeSize`` and ``NodeImage`` id
 -----------------------------------------------------------------------------------
@@ -32,8 +33,8 @@ Example 2 - creating an EC2 instance with a known ``NodeSize`` and ``NodeImage``
 .. literalinclude:: /examples/compute/create_ec2_node.py
    :language: python
 
-In this example, both :func:`driver.list_sizes` an :func:`driver.list_images`
-method calls result in an HTTP call.
+In this example, both the :func:`driver.list_sizes` and
+:func:`driver.list_images` method calls result in HTTP calls.
 
 As you can see above, most of those getter methods retrieve extra information
 about the resource from the provider API and result in an HTTP request.

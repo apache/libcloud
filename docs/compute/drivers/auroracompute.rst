@@ -11,6 +11,7 @@ The datacenters / availability zones are located in:
 - Miami (US)
 - Los Angelos (US)
 - Tokyo (JP)
+- Barcelona (ES)
 
 
 .. figure:: /_static/images/provider_logos/pcextreme.png
@@ -38,6 +39,20 @@ your users.
 With these credentials you can instantiate a driver:
 
 .. literalinclude:: /examples/compute/auroracompute/instantiate_driver.py
+   :language: python
+
+
+Create a Virtual Machine (node)
+-------------------------------
+
+Creating a Virtual Machine on AuroraCompute using libcloud works the same as on any
+other platform. This example is just to show exactly that.
+
+This example will create a Virtual Machine in Amsterdam. Should you want to create
+one in one of our other regions you should take a look at the example below which
+shows how to use our different regions.
+
+.. literalinclude:: /examples/compute/auroracompute/create_node.py
    :language: python
 
 

@@ -1,0 +1,277 @@
+{
+ "kind": "compute#instanceGroupManagerAggregatedList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/aggregated/instanceGroupManagers",
+ "items": {
+  "regions/us-central1": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'regions/us-central1' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "regions/us-central1"
+     }
+    ]
+   }
+  },
+  "regions/europe-west1": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'regions/europe-west1' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "regions/europe-west1"
+     }
+    ]
+   }
+  },
+  "regions/us-west1": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'regions/us-west1' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "regions/us-west1"
+     }
+    ]
+   }
+  },
+  "regions/asia-east1": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'regions/asia-east1' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "regions/asia-east1"
+     }
+    ]
+   }
+  },
+  "regions/us-east1": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'regions/us-east1' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "regions/us-east1"
+     }
+    ]
+   }
+  },
+  "zones/us-central1-a": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-central1-a' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-central1-a"
+     }
+    ]
+   }
+  },
+  "zones/us-central1-b": {
+   "instanceGroupManagers": [
+    {
+
+     "kind": "compute#instanceGroupManager",
+     "id": "8604381270851510464",
+     "creationTimestamp": "2016-07-18T15:54:39.153-07:00",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b",
+     "name": "myinstancegroup",
+     "description": "my description for myinstancegroup",
+     "instanceTemplate": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1",
+     "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroups/myinstancegroup",
+     "baseInstanceName": "base-foo",
+     "fingerprint": "Q21hYveq9do=",
+     "currentActions": {
+      "none": 4,
+      "creating": 0,
+      "recreating": 0,
+      "deleting": 0,
+      "abandoning": 0,
+      "restarting": 0,
+      "refreshing": 0
+     },
+     "targetSize": 4,
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b/instanceGroupManagers/myinstancegroup"
+    }
+   ]
+  },
+  "zones/us-central1-c": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-central1-c' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-central1-c"
+     }
+    ]
+   }
+  },
+  "zones/us-central1-f": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-central1-f' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-central1-f"
+     }
+    ]
+   }
+  },
+  "zones/europe-west1-b": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/europe-west1-b' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/europe-west1-b"
+     }
+    ]
+   }
+  },
+  "zones/europe-west1-c": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/europe-west1-c' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/europe-west1-c"
+     }
+    ]
+   }
+  },
+  "zones/europe-west1-d": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/europe-west1-d' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/europe-west1-d"
+     }
+    ]
+   }
+  },
+  "zones/us-west1-a": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-west1-a' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-west1-a"
+     }
+    ]
+   }
+  },
+  "zones/us-west1-b": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-west1-b' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-west1-b"
+     }
+    ]
+   }
+  },
+  "zones/asia-east1-a": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/asia-east1-a' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/asia-east1-a"
+     }
+    ]
+   }
+  },
+  "zones/asia-east1-b": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/asia-east1-b' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/asia-east1-b"
+     }
+    ]
+   }
+  },
+  "zones/asia-east1-c": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/asia-east1-c' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/asia-east1-c"
+     }
+    ]
+   }
+  },
+  "zones/us-east1-b": {
+   "instanceGroupManagers": [
+    {
+
+     "kind": "compute#instanceGroupManager",
+     "id": "8588434319274454491",
+     "creationTimestamp": "2016-07-18T10:34:44.679-07:00",
+     "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b",
+     "name": "myinstancegroup",
+     "instanceTemplate": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1",
+     "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroups/myinstancegroup",
+     "baseInstanceName": "myinstancegroup",
+     "fingerprint": "5bKcxzAnGOg=",
+     "currentActions": {
+      "none": 2,
+      "creating": 0,
+      "recreating": 0,
+      "deleting": 0,
+      "abandoning": 0,
+      "restarting": 0,
+      "refreshing": 0
+     },
+     "targetSize": 2,
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroupManagers/myinstancegroup"
+    }
+   ]
+  },
+  "zones/us-east1-c": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-east1-c' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-east1-c"
+     }
+    ]
+   }
+  },
+  "zones/us-east1-d": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-east1-d' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-east1-d"
+     }
+    ]
+   }
+  }
+ }
+}

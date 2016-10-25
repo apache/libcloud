@@ -1327,6 +1327,14 @@
    "name": "coreos-beta-522-3-0-v20141226",
    "description": "CoreOS beta 522.3.0",
    "family": "coreos",
+   "guestOsFeatures": [
+    {
+      "type": "VIRTIO_SCSI_MULTIQUEUE"
+    },
+    {
+      "type": "WINDOWS"
+    }
+   ],
    "sourceType": "RAW",
    "rawDisk": {
     "source": "",

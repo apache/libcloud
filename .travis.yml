@@ -18,13 +18,41 @@ addons:
   apt:
     packages:
       - graphviz
+      - libvirt
 
 matrix:
   fast_finish: true
   include:
+    - env: ENV=2.6-lxml
+      python: 2.6
+      before_script: TOX_ENV=py2.6-lxml
+    - env: ENV=2.7-lxml
+      python: 2.7
+      before_script: TOX_ENV=py2.7-lxml
+    - env: ENV=3.2-lxml
+      python: 3.2
+      before_script: TOX_ENV=py3.2-lxml
+    - env: ENV=3.3-lxml
+      python: 3.3
+      before_script: TOX_ENV=py3.3-lxml
+    - env: ENV=3.4-lxml
+      python: 3.4
+      before_script: TOX_ENV=py3.4-lxml
+    - env: ENV=3.5-lxml
+      python: 3.5
+      before_script: TOX_ENV=py3.5-lxml
+    - env: ENV=pypy-lxml
+      python: pypy
+      before_script: TOX_ENV=pypypy-lxml
+    - env: ENV=pypy3-lxml
+      python: pypy3
+      before_script: TOX_ENV=pypypy3-lxml
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
+    - env: ENV=pylint
+      python: 2.7
+      before_script: TOX_ENV=pylint
     - env: ENV=docs
       python: 2.7
       before_script: TOX_ENV=docs-travis
@@ -34,6 +62,18 @@ matrix:
           packages:
             - graphviz
             - gcc
+            - libvirt
+  # For now allow failures of all the builds which use lxml
+  allow_failures:
+    - env: ENV=2.6-lxml
+    - env: ENV=2.7-lxml
+    - env: ENV=pypy-lxml
+    - env: ENV=pypy3-lxml
+    - env: ENV=py3.2-lxml
+    - env: ENV=3.2-lxml
+    - env: ENV=3.3-lxml
+    - env: ENV=3.4-lxml
+    - env: ENV=3.5-lxml
       # Trigger ReadTheDocs build
       after_success: ./contrib/trigger_rtd_build.py 8284
 

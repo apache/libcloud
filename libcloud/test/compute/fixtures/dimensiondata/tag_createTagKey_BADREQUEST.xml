@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T171806338-0400_7606f82d-900e-41a7-864d-de4412c38eaf">
+  <operation>CREATE_TAG_KEY</operation>
+  <responseCode>NAME_NOT_UNIQUE</responseCode>
+  <message>Another Tag Key named 'MyTestKey' already exists.</message>
+</response>

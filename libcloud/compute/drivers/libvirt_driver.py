@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
+from libcloud.utils.py3 import ensure_string
 
 try:
     import libvirt
@@ -63,18 +64,57 @@ class LibvirtNodeDriver(NodeDriver):
         7: NodeState.UNKNOWN,  # domain is suspended by guest power management
     }
 
-    def __init__(self, uri):
+    def __init__(self, uri, key=None, secret=None):
         """
         :param  uri: Hypervisor URI (e.g. vbox:///session, qemu:///system,
                      etc.).
         :type   uri: ``str``
+
+        :param  key: the username for a remote libvirtd server
+        :type   key: ``str``
+
+        :param  secret: the password for a remote libvirtd server
+        :type   key: ``str``
         """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
                                'package')
 
         self._uri = uri
-        self.connection = libvirt.open(uri)
+        self._key = key
+        self._secret = secret
+        if uri is not None and '+tcp' in self._uri:
+            if key is None and secret is None:
+                raise RuntimeError('The remote Libvirt instance requires ' +
+                                   'authentication, please set \'key\' and ' +
+                                   '\'secret\' parameters')
+            auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
+                    self._cred_callback, None]
+            self.connection = libvirt.openAuth(uri, auth, 0)
+        else:
+            self.connection = libvirt.open(uri)
+        if uri is None:
+            self._uri = self.connection.getInfo()
+
+    def _cred_callback(self, cred, user_data):
+        """
+        Callback for the authentication scheme, which will provide username
+        and password for the login. Reference: ( http://bit.ly/1U5yyQg )
+
+        :param  cred: The credentials requested and the return
+        :type   cred: ``list``
+
+        :param  user_data: Custom data provided to the authentication routine
+        :type   user_data: ``list``
+
+        :rtype: ``int``
+        """
+        for credential in cred:
+            if credential[0] == libvirt.VIR_CRED_AUTHNAME:
+                credential[4] = self._key
+            elif credential[0] == libvirt.VIR_CRED_PASSPHRASE:
+                credential[4] = self._secret
+        return 0
 
     def list_nodes(self):
         domains = self.connection.listAllDomains()
@@ -138,6 +178,28 @@ class LibvirtNodeDriver(NodeDriver):
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0
+
+    def ex_get_node_by_uuid(self, uuid):
+        """
+        Retrieve Node object for a domain with a provided uuid.
+
+        :param  uuid: Uuid of the domain.
+        :type   uuid: ``str``
+        """
+        domain = self._get_domain_for_uuid(uuid=uuid)
+        node = self._to_node(domain=domain)
+        return node
+
+    def ex_get_node_by_name(self, name):
+        """
+        Retrieve Node object for a domain with a provided name.
+
+        :param  name: Name of the domain.
+        :type   name: ``str``
+        """
+        domain = self._get_domain_for_name(name=name)
+        node = self._to_node(domain=domain)
+        return node
 
     def ex_take_node_screenshot(self, node, directory, screen=0):
         """
@@ -257,13 +319,26 @@ class LibvirtNodeDriver(NodeDriver):
             # Only Linux is supported atm
             return result
 
+        if '///' not in self._uri:
+            # Only local libvirtd is supported atm
+            return result
+
         mac_addresses = self._get_mac_addresses_for_domain(domain=domain)
 
-        cmd = ['arp', '-an']
-        child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-        stdout, _ = child.communicate()
-        arp_table = self._parse_arp_table(arp_output=stdout)
+        arp_table = {}
+        try:
+            cmd = ['arp', '-an']
+            child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+            stdout, _ = child.communicate()
+            arp_table = self._parse_ip_table_arp(arp_output=stdout)
+        except OSError as e:
+            if e.errno == 2:
+                cmd = ['ip', 'neigh']
+                child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
+                stdout, _ = child.communicate()
+                arp_table = self._parse_ip_table_neigh(arp_output=stdout)
 
         for mac_address in mac_addresses:
             if mac_address in arp_table:
@@ -294,6 +369,20 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self.connection.lookupByUUIDString(node.uuid)
         return domain
 
+    def _get_domain_for_uuid(self, uuid):
+        """
+        Return libvirt domain object for the provided uuid.
+        """
+        domain = self.connection.lookupByUUIDString(uuid)
+        return domain
+
+    def _get_domain_for_name(self, name):
+        """
+        Return libvirt domain object for the provided name.
+        """
+        domain = self.connection.lookupByName(name)
+        return domain
+
     def _get_entries(self, element):
         """
         Parse entries dictionary.
@@ -310,19 +399,41 @@ class LibvirtNodeDriver(NodeDriver):
 
         return result
 
-    def _parse_arp_table(self, arp_output):
+    def _parse_ip_table_arp(self, arp_output):
         """
-        Parse arp command output and return a dictionary which maps mac address
+        Sets up the regexp for parsing out IP addresses from the 'arp -an'
+        command and pass it along to the parser function.
+
+        :return: Dictionary from the parsing funtion
+        :rtype: ``dict``
+        """
+        arp_regex = re.compile('.*?\((.*?)\) at (.*?)\s+')
+        return self._parse_mac_addr_table(arp_output, arp_regex)
+
+    def _parse_ip_table_neigh(self, ip_output):
+        """
+        Sets up the regexp for parsing out IP addresses from the 'ip neighbor'
+        command and pass it along to the parser function.
+
+        :return: Dictionary from the parsing funtion
+        :rtype: ``dict``
+        """
+        ip_regex = re.compile('(.*?)\s+.*lladdr\s+(.*?)\s+')
+        return self._parse_mac_addr_table(ip_output, ip_regex)
+
+    def _parse_mac_addr_table(self, cmd_output, mac_regex):
+        """
+        Parse the command output and return a dictionary which maps mac address
         to an IP address.
 
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
-        lines = arp_output.split('\n')
+        lines = ensure_string(cmd_output).split('\n')
 
         arp_table = defaultdict(list)
         for line in lines:
-            match = re.match('.*?\((.*?)\) at (.*?)\s+', line)
+            match = mac_regex.match(line)
 
             if not match:
                 continue

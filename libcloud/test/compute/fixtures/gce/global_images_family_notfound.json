@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": 404,
+    "errors": [
+      {
+        "domain": "global",
+        "message": "The resource 'projects/project-name/global/images/family/coreos' was not found",
+        "reason": "notFound"
+      }
+    ],
+    "message": "The resource 'projects/project-name/global/images/family/coreos' was not found"
+  }
+}

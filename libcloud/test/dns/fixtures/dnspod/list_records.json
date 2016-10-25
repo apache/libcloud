@@ -1,0 +1,93 @@
+{
+  "status": {
+         "code": "1",
+         "message": "Action completed successful",
+         "created_at": "2014-06-05 09:58:40"
+     },
+     "domain": {
+         "id": "9",
+         "name": "dnspod.com",
+         "punycode": "dnspod.com",
+         "grade": "DP_Free",
+         "owner": "yizerowu@dnspod.com"
+     },
+     "info": {
+         "sub_domains": "5",
+         "record_total": "5"
+     },
+     "records": [
+         {
+             "id": "50",
+             "name": "@",
+             "line": "Default",
+             "type": "A",
+             "ttl": "600",
+             "value": "96.126.115.73",
+             "mx": "0",
+             "enabled": "1",
+             "status": "enabled",
+             "monitor_status": "",
+             "remark": "",
+             "updated_on": "2014-06-05 09:47:59"
+         },
+         {
+             "id": "49",
+             "name": "@",
+             "line": "Default",
+             "type": "MX",
+             "ttl": "600",
+             "value": "cloudmx.qq.com.",
+             "mx": "5",
+             "enabled": "1",
+             "status": "enabled",
+             "monitor_status": "",
+             "remark": "",
+             "updated_on": "2014-06-05 09:47:59"
+         },
+         {
+             "id": "46",
+             "name": "@",
+             "line": "Default",
+             "type": "NS",
+             "ttl": "600",
+             "value": "a.dnspod.com.",
+             "mx": "0",
+             "enabled": "1",
+             "status": "enabled",
+             "monitor_status": "",
+             "remark": "",
+             "updated_on": "2014-06-05 09:47:40",
+             "hold": "hold"
+         },
+         {
+             "id": "47",
+             "name": "@",
+             "line": "Default",
+             "type": "NS",
+             "ttl": "600",
+             "value": "b.dnspod.com.",
+             "mx": "0",
+             "enabled": "1",
+             "status": "enabled",
+             "monitor_status": "",
+             "remark": "",
+             "updated_on": "2014-06-05 09:47:40",
+             "hold": "hold"
+         },
+         {
+             "id": "48",
+             "name": "@",
+             "line": "Default",
+             "type": "NS",
+             "ttl": "600",
+             "value": "c.dnspod.com.",
+             "mx": "0",
+             "enabled": "1",
+             "status": "enabled",
+             "monitor_status": "",
+             "remark": "",
+             "updated_on": "2014-06-05 09:47:40",
+             "hold": "hold"
+         }
+     ]
+ }

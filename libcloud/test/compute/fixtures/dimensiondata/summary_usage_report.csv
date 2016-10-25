@@ -1,0 +1,13 @@
+DAY,Location,CPU Hours,RAM Hours,Storage Hours,Performance Storage
+Hours,Bandwidth In,Bandwidth Out,Sub-Admin Hours,Network Hours,Public IP
+Hours,Cloud Files Account Hours,Cloud Files (GB Days),Software
+Units,Essentials Client Days,Advanced Client Days,Enterprise Client
+Days,Essentials Backups (GB),Advanced Backups (GB),Enterprise Backups (GB)
+01/01/2013,NA1,144,288,3360,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+02/01/2013,NA1,144,288,3360,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+03/01/2013,NA1,144,288,3360,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+04/01/2013,NA1,144,288,3360,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+05/01/2013,NA1,144,288,3360,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+06/01/2013,NA1,172,344,3958,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+07/01/2013,NA1,205,410,4783,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0
+08/01/2013,NA1,216,432,5136,264,0,0,72,24,0,0,0,0,0,0,0,0,0,0

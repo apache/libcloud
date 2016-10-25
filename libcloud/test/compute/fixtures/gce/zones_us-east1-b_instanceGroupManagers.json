@@ -1,0 +1,30 @@
+{
+ "kind": "compute#instanceGroupManagerList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroupManagers",
+ "id": "projects/project_name/zones/us-east1-b/instanceGroupManagers",
+ "items": [
+  {
+
+   "kind": "compute#instanceGroupManager",
+   "id": "8588434319274454491",
+   "creationTimestamp": "2016-07-18T10:34:44.679-07:00",
+   "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b",
+   "name": "myinstancegroup",
+   "instanceTemplate": "https://content.googleapis.com/compute/v1/projects/project_name/global/instanceTemplates/my-instance-template1",
+   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroups/myinstancegroup",
+   "baseInstanceName": "myinstancegroup",
+   "fingerprint": "5bKcxzAnGOg=",
+   "currentActions": {
+    "none": 2,
+    "creating": 0,
+    "recreating": 0,
+    "deleting": 0,
+    "abandoning": 0,
+    "restarting": 0,
+    "refreshing": 0
+   },
+   "targetSize": 2,
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-east1-b/instanceGroupManagers/myinstancegroup"
+  }
+ ]
+}

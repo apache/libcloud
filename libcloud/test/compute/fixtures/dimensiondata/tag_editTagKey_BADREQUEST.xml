@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T192212756-0400_1439e70b-a681-4d5b-939d-dc4264f0f66d">
+  <operation>EDIT_TAG_KEY</operation>
+  <responseCode>NO_CHANGE</responseCode>
+  <message>At least one of name, description, valueRequired or displayOnReport must be changed from its current value.</message>
+</response>

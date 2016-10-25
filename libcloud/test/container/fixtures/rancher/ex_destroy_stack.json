@@ -1,0 +1,40 @@
+{
+  "id": "1e10",
+  "type": "environment",
+  "links": {
+    "self": "http://172.30.0.100:8080/v1/environments/1e10",
+    "account": "http://172.30.0.100:8080/v1/environments/1e10/account",
+    "services": "http://172.30.0.100:8080/v1/environments/1e10/services",
+    "composeConfig": "http://172.30.0.100:8080/v1/environments/1e10/composeconfig"
+  },
+  "actions": {
+    "addoutputs": "http://172.30.0.100:8080/v1/environments/1e10/?action=addoutputs",
+    "activateservices": "http://172.30.0.100:8080/v1/environments/1e10/?action=activateservices",
+    "deactivateservices": "http://172.30.0.100:8080/v1/environments/1e10/?action=deactivateservices",
+    "exportconfig": "http://172.30.0.100:8080/v1/environments/1e10/?action=exportconfig"
+  },
+  "name": "newstack1",
+  "state": "removing",
+  "accountId": "1a5",
+  "created": "2016-10-06T14:15:41Z",
+  "createdTS": 1475763341000,
+  "description": null,
+  "dockerCompose": null,
+  "environment": {
+    "root_password": "password"
+  },
+  "externalId": null,
+  "healthState": "healthy",
+  "kind": "environment",
+  "outputs": null,
+  "previousEnvironment": null,
+  "previousExternalId": null,
+  "rancherCompose": null,
+  "removed": "2016-10-06T14:56:16Z",
+  "removedTS": 1475765776000,
+  "startOnCreate": true,
+  "transitioning": "no",
+  "transitioningMessage": null,
+  "transitioningProgress": null,
+  "uuid": "289f380f-d00a-4faf-b69f-53a559dbfd05"
+}

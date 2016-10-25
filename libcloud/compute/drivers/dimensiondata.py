@@ -21,6 +21,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.dimensiondata import dd_object_to_id
@@ -38,11 +39,20 @@ from libcloud.common.dimensiondata import DimensionDataFirewallRule
 from libcloud.common.dimensiondata import DimensionDataFirewallAddress
 from libcloud.common.dimensiondata import DimensionDataNatRule
 from libcloud.common.dimensiondata import DimensionDataAntiAffinityRule
+from libcloud.common.dimensiondata import DimensionDataIpAddressList
+from libcloud.common.dimensiondata import DimensionDataChildIpAddressList
+from libcloud.common.dimensiondata import DimensionDataIpAddress
+from libcloud.common.dimensiondata import DimensionDataPortList
+from libcloud.common.dimensiondata import DimensionDataPort
+from libcloud.common.dimensiondata import DimensionDataChildPortList
+from libcloud.common.dimensiondata import DimensionDataNic
 from libcloud.common.dimensiondata import NetworkDomainServicePlan
+from libcloud.common.dimensiondata import DimensionDataTagKey
+from libcloud.common.dimensiondata import DimensionDataTag
 from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
-from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
@@ -73,6 +83,14 @@ NODE_STATE_MAP = {
         NodeState.RECONFIGURING,
 }
 
+OBJECT_TO_TAGGING_ASSET_TYPE_MAP = {
+    'Node': 'SERVER',
+    'NodeImage': 'CUSTOMER_IMAGE',
+    'DimensionDataNetworkDomain': 'NETWORK_DOMAIN',
+    'DimensionDataVlan': 'VLAN',
+    'DimensionDataPublicIpBlock': 'PUBLIC_IP_BLOCK'
+}
+
 
 class DimensionDataNodeDriver(NodeDriver):
     """
@@ -90,10 +108,11 @@ class DimensionDataNodeDriver(NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
-        if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
-
-        self.selected_region = API_ENDPOINTS[region]
+        if region not in API_ENDPOINTS and host is None:
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
+        if region is not None:
+            self.selected_region = API_ENDPOINTS[region]
 
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
@@ -112,74 +131,61 @@ class DimensionDataNodeDriver(NodeDriver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_node(self, name, image, auth, ex_description,
-                    ex_network=None, ex_network_domain=None,
-                    ex_vlan=None, ex_primary_ipv4=None,
-                    ex_memory_gb=None,
-                    ex_cpu_specification=None,
-                    ex_is_started=True, ex_additional_nics_vlan=None,
-                    ex_additional_nics_ipv4=None, **kwargs):
+    def _create_node_mcp1(self, name, image, auth, ex_description,
+                          ex_network=None,
+                          ex_memory_gb=None,
+                          ex_cpu_specification=None,
+                          ex_is_started=True,
+                          ex_primary_dns=None,
+                          ex_secondary_dns=None, **kwargs):
         """
-        Create a new DimensionData node
+            Create a new DimensionData node
 
-        :keyword    name:   String with a name for this new node (required)
-        :type       name:   ``str``
+            :keyword    name:   String with a name for this new node (required)
+            :type       name:   ``str``
 
-        :keyword    image:  OS Image to boot on node. (required)
-        :type       image:  :class:`NodeImage` or ``str``
+            :keyword    image:  OS Image to boot on node. (required)
+            :type       image:  :class:`NodeImage` or ``str``
 
-        :keyword    auth:   Initial authentication information for the
-                            node. (If this is a customer LINUX
-                            image auth will be ignored)
-        :type       auth:   :class:`NodeAuthPassword` or ``str`` or ``None``
+            :keyword    auth:   Initial authentication information for the
+                                node. (If this is a customer LINUX
+                                image auth will be ignored)
+            :type       auth:   :class:`NodeAuthPassword` or ``str`` or
+                                ``None``
 
-        :keyword    ex_description:  description for this node (required)
-        :type       ex_description:  ``str``
+            :keyword    ex_description:  description for this node (required)
+            :type       ex_description:  ``str``
 
-        :keyword    ex_network:  Network to create the node within
-                                 (required unless using ex_network_domain
-                                 or ex_primary_ipv4)
+            :keyword    ex_network:  Network to create the node within
+                                     (required unless using ex_network_domain
+                                     or ex_primary_ipv4)
 
-        :type       ex_network: :class:`DimensionDataNetwork` or ``str``
+            :type       ex_network: :class:`DimensionDataNetwork` or ``str``
 
-        :keyword    ex_network_domain:  Network Domain to create the node
-                                        (required unless using network
-                                        or ex_primary_ipv4)
-        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
-                                        or ``str``
+            :keyword    ex_memory_gb:  The amount of memory in GB for the
+                                       server
+            :type       ex_memory_gb: ``int``
 
-        :keyword    ex_primary_ipv4: Primary nics IPv4 Address
-                                     MCP1: (required unless ex_network)
-                                     MCP2: (required unless ex_vlan)
-        :type       ex_primary_ipv4: ``str``
+            :keyword    ex_cpu_specification: The spec of CPU to deploy (
+                                              optional)
+            :type       ex_cpu_specification:
+                            :class:`DimensionDataServerCpuSpecification`
 
-        :keyword    ex_vlan:  VLAN to create the node within
-                              (required unless using network)
-        :type       ex_vlan: :class:`DimensionDataVlan` or ``str``
+            :keyword    ex_is_started:  Start server after creation? default
+                                        true (required)
+            :type       ex_is_started:  ``bool``
 
-        :keyword    ex_memory_gb:  The amount of memory in GB for the server
-        :type       ex_memory_gb: ``int``
+            :keyword    ex_primary_dns: The node's primary DNS
 
-        :keyword    ex_cpu_specification: The spec of CPU to deploy (optional)
-        :type       ex_cpu_specification:
-            :class:`DimensionDataServerCpuSpecification`
+            :type       ex_primary_dns: ``str``
 
-        :keyword    ex_is_started:  Start server after creation? default
-                                   true (required)
-        :type       ex_is_started:  ``bool``
+            :keyword    ex_secondary_dns: The node's secondary DNS
 
-        :keyword    ex_additional_nics_vlan: (MCP2 Only) List of additional
-                                              nics to add by vlan
-        :type       ex_additional_nics_vlan: ``list`` of
-            :class:`DimensionDataVlan` or ``list`` of ``str``
+            :type       ex_secondary_dns: ``str``
 
-        :keyword    ex_additional_nics_ipv4: (MCP2 Only) List of additional
-                                              nics to add by ipv4 address
-        :type       ex_additional_nics_ipv4: ``list`` of ``str``
-
-        :return: The newly created :class:`Node`.
-        :rtype: :class:`Node`
-        """
+            :return: The newly created :class:`Node`.
+            :rtype: :class:`Node`
+            """
         password = None
         image_needs_auth = self._image_needs_auth(image)
         if image_needs_auth:
@@ -190,20 +196,16 @@ class DimensionDataNodeDriver(NodeDriver):
                 auth_obj = self._get_and_check_auth(auth)
                 password = auth_obj.password
 
-        if (ex_network_domain is None and
-                ex_network is None and
-                ex_primary_ipv4 is None):
-            raise ValueError("One of ex_network_domain, ex_network, "
-                             "or ex_ipv6_primary must be specified")
-
         server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
         ET.SubElement(server_elm, "name").text = name
         ET.SubElement(server_elm, "description").text = ex_description
         image_id = self._image_to_image_id(image)
         ET.SubElement(server_elm, "imageId").text = image_id
-        ET.SubElement(server_elm, "start").text = str(ex_is_started).lower()
+        ET.SubElement(server_elm, "start").text = str(
+            ex_is_started).lower()
         if password is not None:
-            ET.SubElement(server_elm, "administratorPassword").text = password
+            ET.SubElement(server_elm,
+                          "administratorPassword").text = password
 
         if ex_cpu_specification is not None:
             cpu = ET.SubElement(server_elm, "cpu")
@@ -219,43 +221,14 @@ class DimensionDataNodeDriver(NodeDriver):
             network_elm = ET.SubElement(server_elm, "network")
             network_id = self._network_to_network_id(ex_network)
             ET.SubElement(network_elm, "networkId").text = network_id
-        elif ex_network_domain is None and ex_primary_ipv4 is not None:
-            network_elm = ET.SubElement(server_elm, "network")
-            ET.SubElement(network_elm, "privateIpv4").text = ex_primary_ipv4
-        elif ex_network_domain is not None:
-            net_domain_id = self._network_domain_to_network_domain_id(
-                ex_network_domain)
-            network_inf_elm = ET.SubElement(
-                server_elm, "networkInfo",
-                {'networkDomainId': net_domain_id}
-            )
 
-            if ex_vlan is not None:
-                vlan_id = self._vlan_to_vlan_id(ex_vlan)
-                pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
-                ET.SubElement(pri_nic, "vlanId").text = vlan_id
-            elif ex_primary_ipv4 is not None:
-                pri_nic = ET.SubElement(network_inf_elm, "primaryNic")
-                ET.SubElement(pri_nic, "privateIpv4").text = ex_primary_ipv4
-            else:
-                raise ValueError("One of ex_vlan or ex_primary_ipv4 "
-                                 "must be specified")
+        if ex_primary_dns:
+            dns_elm = ET.SubElement(server_elm, "primaryDns")
+            dns_elm.text = ex_primary_dns
 
-            if isinstance(ex_additional_nics_ipv4, (list, tuple)):
-                for ipv4_nic in ex_additional_nics_ipv4:
-                    add_nic = ET.SubElement(network_inf_elm, "additionalNic")
-                    ET.SubElement(add_nic, "privateIpv4").text = ipv4_nic
-            elif ex_additional_nics_ipv4 is not None:
-                raise TypeError("ex_additional_nics_ipv4 must "
-                                "be None or a tuple/list")
-
-            if isinstance(ex_additional_nics_vlan, (list, tuple)):
-                for vlan_nic in ex_additional_nics_vlan:
-                    add_nic = ET.SubElement(network_inf_elm, "additionalNic")
-                    ET.SubElement(add_nic, "vlanId").text = vlan_nic
-            elif ex_additional_nics_vlan is not None:
-                raise TypeError("ex_additional_nics_vlan"
-                                "must be None or tuple/list")
+        if ex_secondary_dns:
+            dns_elm = ET.SubElement(server_elm, "secondaryDns")
+            dns_elm.text = ex_secondary_dns
 
         response = self.connection.request_with_orgId_api_2(
             'server/deployServer',
@@ -274,6 +247,432 @@ class DimensionDataNodeDriver(NodeDriver):
                 node.extra['password'] = auth_obj.password
 
         return node
+
+    def create_node(self, name,
+                    image,
+                    auth,
+                    ex_network_domain=None,
+                    ex_primary_nic_private_ipv4=None,
+                    ex_primary_nic_vlan=None,
+                    ex_primary_nic_network_adapter=None,
+                    ex_additional_nics=None,
+                    ex_description=None,
+                    ex_disks=None,
+                    ex_cpu_specification=None,
+                    ex_memory_gb=None,
+                    ex_is_started=True,
+                    ex_primary_dns=None,
+                    ex_secondary_dns=None,
+                    ex_ipv4_gateway=None,
+                    ex_microsoft_time_zone=None,
+                    **kwargs
+                    ):
+        """
+        Create a new DimensionData node in MCP2. However, it is still
+        backward compatible for MCP1 for a limited time. Please consider
+        using MCP2 datacenter as MCP1 will phase out soon.
+
+        Legacy Create Node for MCP1 datacenter
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.base import NodeAuthPassword
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = False
+        >>> DimensionData = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Password
+        >>> root_pw = NodeAuthPassword('password123')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU1')
+        >>>
+        >>> # Get network by location
+        >>> my_network = driver.list_networks(location=location)[0]
+        >>> pprint(my_network)
+        >>>
+        >>> # Get Image
+        >>> images = driver.list_images(location=location)
+        >>> image = images[0]
+        >>>
+        >>> node = driver.create_node(name='test_blah_2', image=image,
+        >>>                           auth=root_pw,
+        >>>                           ex_description='test3 node',
+        >>>                           ex_network=my_network,
+        >>>                           ex_is_started=False)
+        >>> pprint(node)
+
+
+        Create Node in MCP2 Data Center
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.base import NodeAuthPassword
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Password
+        >>> root_pw = NodeAuthPassword('password123')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> vlan = driver.ex_list_vlans(location=location,
+        >>>                             network_domain=my_network_domain)[0]
+        >>> pprint(vlan)
+        >>>
+        >>> # Get Image
+        >>> images = driver.list_images(location=location)
+        >>> image = images[0]
+        >>>
+        >>> # Create node using vlan instead of private IPv4
+        >>> node = driver.create_node(name='test_server_01', image=image,
+        >>>                           auth=root_pw,
+        >>>                           ex_description='test2 node',
+        >>>                           ex_network_domain=my_network_domain,
+        >>>                           ex_primary_nic_vlan=vlan,
+        >>>                           ex_is_started=False)
+        >>>
+        >>> # Option: Create node using private IPv4 instead of vlan
+        >>> # node = driver.create_node(name='test_server_02', image=image,
+        >>> #                           auth=root_pw,
+        >>> #                           ex_description='test2 node',
+        >>> #                           ex_network_domain=my_network_domain,
+        >>> #                           ex_primary_nic_private_ipv4='10.1.1.7',
+        >>> #                           ex_is_started=False)
+        >>>
+        >>> # Option: Create node using by specifying Network Adapter
+        >>> # node = driver.create_node(name='test_server_03', image=image,
+        >>> #                           auth=root_pw,
+        >>> #                           ex_description='test2 node',
+        >>> #                           ex_network_domain=my_network_domain,
+        >>> #                           ex_primary_nic_vlan=vlan,
+        >>> #                           ex_primary_nic_network_adapter='E1000',
+        >>> #                           ex_is_started=False)
+        >>>
+        >>> pprint(node)
+
+        :keyword    name:   (required) String with a name for this new node
+        :type       name:   ``str``
+
+        :keyword    image:  (required) OS Image to boot on node.
+        :type       image:  :class:`NodeImage` or ``str``
+
+        :keyword    auth:   Initial authentication information for the
+                            node. (If this is a customer LINUX
+                            image auth will be ignored)
+        :type       auth:   :class:`NodeAuthPassword` or ``str`` or ``None``
+
+        :keyword    ex_description:  (optional) description for this node
+        :type       ex_description:  ``str``
+
+
+        :keyword    ex_network_domain:  (required) Network Domain or Network
+                                        Domain ID to create the node
+        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+                                        or ``str``
+
+        :keyword    ex_primary_nic_private_ipv4:  Provide private IPv4. Ignore
+                                                  if ex_primary_nic_vlan is
+                                                  provided. Use one or the
+                                                  other. Not both.
+        :type       ex_primary_nic_private_ipv4: :``str``
+
+        :keyword    ex_primary_nic_vlan:  Provide VLAN for the node if
+                                          ex_primary_nic_private_ipv4 NOT
+                                          provided. One or the other. Not both.
+        :type       ex_primary_nic_vlan: :class: DimensionDataVlan or ``str``
+
+        :keyword    ex_primary_nic_network_adapter: (Optional) Default value
+                                                    for the Operating System
+                                                    will be used if leave
+                                                    empty. Example: "E1000".
+        :type       ex_primary_nic_network_adapter: :``str``
+
+        :keyword    ex_additional_nics: (optional) List
+                                        :class:'DimensionDataNic' or None
+        :type       ex_additional_nics: ``list`` of :class:'DimensionDataNic'
+                                        or ``str``
+
+        :keyword    ex_memory_gb:  (optional) The amount of memory in GB for
+                                   the server Can be used to override the
+                                   memory value inherited from the source
+                                   Server Image.
+        :type       ex_memory_gb: ``int``
+
+        :keyword    ex_cpu_specification: (optional) The spec of CPU to deploy
+        :type       ex_cpu_specification:
+                        :class:`DimensionDataServerCpuSpecification`
+
+        :keyword    ex_is_started: (required) Start server after creation.
+                                   Default is set to true.
+        :type       ex_is_started:  ``bool``
+
+        :keyword    ex_primary_dns: (Optional) The node's primary DNS
+        :type       ex_primary_dns: ``str``
+
+        :keyword    ex_secondary_dns: (Optional) The node's secondary DNS
+        :type       ex_secondary_dns: ``str``
+
+        :keyword    ex_ipv4_gateway: (Optional) IPv4 address in dot-decimal
+                                     notation, which will be used as the
+                                     Primary NIC gateway instead of the default
+                                     gateway assigned by the system. If
+                                     ipv4Gateway is provided it does not have
+                                     to be on the VLAN of the Primary NIC
+                                     but MUST be reachable or the Guest OS
+                                     will not be configured correctly.
+        :type       ex_ipv4_gateway: ``str``
+
+        :keyword    ex_disks: (optional) Dimensiondata disks. Optional disk
+                            elements can be used to define the disk speed
+                            that each disk on the Server; inherited from the
+                            source Server Image will be deployed to. It is
+                            not necessary to include a diskelement for every
+                            disk; only those that you wish to set a disk
+                            speed value for. Note that scsiId 7 cannot be
+                            used.Up to 13 disks can be present in addition to
+                            the required OS disk on SCSI ID 0. Refer to
+                            https://docs.mcp-services.net/x/UwIu for disk
+
+        :type       ex_disks: List or tuple of :class:'DimensionDataServerDisk`
+
+        :keyword    ex_microsoft_time_zone: (optional) For use with
+                    Microsoft Windows source Server Images only. For the exact
+                    value to use please refer to the table of time zone
+                    indexes in the following Microsoft Technet
+                    documentation. If none is supplied, the default time
+                    zone for the data center geographic region will be used.
+        :type       ex_microsoft_time_zone: `str``
+
+
+        :return: The newly created :class:`Node`.
+        :rtype: :class:`Node`
+        """
+
+        # Neither legacy MCP1 network nor MCP2 network domain provided
+        if ex_network_domain is None and 'ex_network' not in kwargs:
+            raise ValueError('You must provide either ex_network_domain '
+                             'for MCP2 or ex_network for legacy MCP1')
+
+        # Ambiguous parameter provided. Can't determine if it is MCP 1 or 2.
+        if ex_network_domain is not None and 'ex_network' in kwargs:
+            raise ValueError('You can only supply either '
+                             'ex_network_domain '
+                             'for MCP2 or ex_network for legacy MCP1')
+
+        # Handle MCP1 legacy
+        if 'ex_network' in kwargs:
+            new_node = self._create_node_mcp1(
+                name=name, image=image, auth=auth,
+                ex_network=kwargs.get("ex_network"),
+                ex_description=ex_description,
+                ex_memory_gb=ex_memory_gb,
+                ex_cpu_specification=ex_cpu_specification,
+                ex_is_started=ex_is_started,
+                ex_primary_ipv4=ex_primary_nic_private_ipv4,
+                ex_disks=ex_disks,
+                ex_additional_nics_vlan=kwargs.get("ex_additional_nics_vlan"),
+                ex_additional_nics_ipv4=kwargs.get("ex_additional_nics_ipv4"),
+                ex_primary_dns=ex_primary_dns,
+                ex_secondary_dns=ex_secondary_dns
+            )
+        else:
+            # Handle MCP2 legacy. CaaS api 2.2 or earlier
+            if 'ex_vlan' in kwargs:
+                ex_primary_nic_vlan = kwargs.get('ex_vlan')
+
+            if 'ex_primary_ipv4' in kwargs:
+                ex_primary_nic_private_ipv4 = kwargs.get(
+                    'ex_primary_ipv4')
+
+            additional_nics = []
+
+            if 'ex_additional_nics_vlan' in kwargs:
+                vlans = kwargs.get('ex_additional_nics_vlan')
+                if isinstance(vlans, (list, tuple)):
+                    for v in vlans:
+                        add_nic = DimensionDataNic(vlan=v)
+                        additional_nics.append(add_nic)
+                else:
+                    raise TypeError("ex_additional_nics_vlan must "
+                                    "be None or a tuple/list")
+
+            if 'ex_additional_nics_ipv4' in kwargs:
+                ips = kwargs.get('ex_additional_nics_ipv4')
+
+                if isinstance(ips, (list, tuple)):
+                    for ip in ips:
+                        add_nic = DimensionDataNic(private_ip_v4=ip)
+                        additional_nics.append(add_nic)
+                else:
+                    if ips is not None:
+                        raise TypeError("ex_additional_nics_ipv4 must "
+                                        "be None or a tuple/list")
+
+            if ('ex_additional_nics_vlan' in kwargs or
+                    'ex_additional_nics_ipv4' in kwargs):
+                ex_additional_nics = additional_nics
+
+            # Handle MCP2 latest. CaaS API 2.3 onwards
+            if ex_network_domain is None:
+                raise ValueError("ex_network_domain must be specified")
+
+            password = None
+            image_needs_auth = self._image_needs_auth(image)
+            if image_needs_auth:
+                if isinstance(auth, basestring):
+                    auth_obj = NodeAuthPassword(password=auth)
+                    password = auth
+                else:
+                    auth_obj = self._get_and_check_auth(auth)
+                    password = auth_obj.password
+
+            server_elm = ET.Element('deployServer', {'xmlns': TYPES_URN})
+            ET.SubElement(server_elm, "name").text = name
+            ET.SubElement(server_elm, "description").text = ex_description
+            image_id = self._image_to_image_id(image)
+            ET.SubElement(server_elm, "imageId").text = image_id
+            ET.SubElement(server_elm, "start").text = str(
+                ex_is_started).lower()
+            if password is not None:
+                ET.SubElement(server_elm,
+                              "administratorPassword").text = password
+
+            if ex_cpu_specification is not None:
+                cpu = ET.SubElement(server_elm, "cpu")
+                cpu.set('speed', ex_cpu_specification.performance)
+                cpu.set('count', str(ex_cpu_specification.cpu_count))
+                cpu.set('coresPerSocket',
+                        str(ex_cpu_specification.cores_per_socket))
+
+            if ex_memory_gb is not None:
+                ET.SubElement(server_elm, "memoryGb").text = str(ex_memory_gb)
+
+            if (ex_primary_nic_private_ipv4 is None and
+                    ex_primary_nic_vlan is None):
+                raise ValueError("Missing argument. Either "
+                                 "ex_primary_nic_private_ipv4 or "
+                                 "ex_primary_nic_vlan "
+                                 "must be specified.")
+
+            if (ex_primary_nic_private_ipv4 is not None and
+                    ex_primary_nic_vlan is not None):
+                raise ValueError("Either ex_primary_nic_private_ipv4 or "
+                                 "ex_primary_nic_vlan "
+                                 "be specified. Not both.")
+
+            network_elm = ET.SubElement(server_elm, "networkInfo")
+
+            net_domain_id = self._network_domain_to_network_domain_id(
+                ex_network_domain)
+
+            network_elm.set('networkDomainId', net_domain_id)
+
+            pri_nic = ET.SubElement(network_elm, 'primaryNic')
+
+            if ex_primary_nic_private_ipv4 is not None:
+                ET.SubElement(pri_nic,
+                              'privateIpv4').text = ex_primary_nic_private_ipv4
+
+            if ex_primary_nic_vlan is not None:
+                vlan_id = self._vlan_to_vlan_id(ex_primary_nic_vlan)
+                ET.SubElement(pri_nic, 'vlanId').text = vlan_id
+
+            if ex_primary_nic_network_adapter is not None:
+                ET.SubElement(pri_nic,
+                              "networkAdapter").text = \
+                    ex_primary_nic_network_adapter
+
+            if isinstance(ex_additional_nics, (list, tuple)):
+                for nic in ex_additional_nics:
+                    additional_nic = ET.SubElement(network_elm,
+                                                   'additionalNic')
+
+                    if (nic.private_ip_v4 is None and
+                            nic.vlan is None):
+                        raise ValueError("Either a vlan or private_ip_v4 "
+                                         "must be specified for each "
+                                         "additional nic.")
+
+                    if (nic.private_ip_v4 is not None and
+                            nic.vlan is not None):
+                        raise ValueError("Either a vlan or private_ip_v4 "
+                                         "must be specified for each "
+                                         "additional nic. Not both.")
+
+                    if nic.private_ip_v4 is not None:
+                        ET.SubElement(additional_nic,
+                                      'privateIpv4').text = nic.private_ip_v4
+
+                    if nic.vlan is not None:
+                        vlan_id = self._vlan_to_vlan_id(nic.vlan)
+                        ET.SubElement(additional_nic, 'vlanId').text = vlan_id
+
+                    if nic.network_adapter_name is not None:
+                        ET.SubElement(additional_nic,
+                                      "networkAdapter").text = \
+                            nic.network_adapter_name
+            elif ex_additional_nics is not None:
+                raise TypeError(
+                    "ex_additional_NICs must be None or tuple/list")
+
+            if ex_primary_dns:
+                dns_elm = ET.SubElement(server_elm, "primaryDns")
+                dns_elm.text = ex_primary_dns
+
+            if ex_secondary_dns:
+                dns_elm = ET.SubElement(server_elm, "secondaryDns")
+                dns_elm.text = ex_secondary_dns
+
+            if ex_ipv4_gateway:
+                ET.SubElement(server_elm, "ipv4Gateway").text = ex_ipv4_gateway
+
+            if isinstance(ex_disks, (list, tuple)):
+                for disk in ex_disks:
+                    disk_elm = ET.SubElement(server_elm, 'disk')
+                    disk_elm.set('scsiId', disk.scsi_id)
+                    disk_elm.set('speed', disk.speed)
+            elif ex_disks is not None:
+                raise TypeError("ex_disks must be None or tuple/list")
+
+            if ex_microsoft_time_zone:
+                ET.SubElement(server_elm,
+                              "microsoftTimeZone").text = \
+                    ex_microsoft_time_zone
+
+            response = self.connection.request_with_orgId_api_2(
+                'server/deployServer',
+                method='POST',
+                data=ET.tostring(server_elm)).object
+
+            node_id = None
+            for info in findall(response, 'info', TYPES_URN):
+                if info.get('name') == 'serverId':
+                    node_id = info.get('value')
+
+            new_node = self.ex_get_node_by_id(node_id)
+
+            if image_needs_auth:
+                if getattr(auth_obj, "generated", False):
+                    new_node.extra['password'] = auth_obj.password
+
+        return new_node
 
     def destroy_node(self, node):
         """
@@ -603,12 +1002,18 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         request_elm = ET.Element('powerOffServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
-        body = self.connection.request_with_orgId_api_2(
-            'server/powerOffServer',
-            method='POST',
-            data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'responseCode', TYPES_URN)
-        return response_code in ['IN_PROGRESS', 'OK']
+
+        try:
+            body = self.connection.request_with_orgId_api_2(
+                'server/powerOffServer',
+                method='POST',
+                data=ET.tostring(request_elm)).object
+            response_code = findtext(body, 'responseCode', TYPES_URN)
+        except (DimensionDataAPIException, NameError, BaseHTTPError):
+            r = self.ex_get_node_by_id(node.id)
+            response_code = r.state.upper()
+
+        return response_code in ['IN_PROGRESS', 'OK', 'STOPPED', 'STOPPING']
 
     def ex_reset(self, node):
         """
@@ -794,17 +1199,24 @@ class DimensionDataNodeDriver(NodeDriver):
             rules.extend(self._to_anti_affinity_rules(result))
         return rules
 
-    def ex_attach_node_to_vlan(self, node, vlan):
+    def ex_attach_node_to_vlan(self, node, vlan=None, private_ipv4=None):
         """
         Attach a node to a VLAN by adding an additional NIC to
         the node on the target VLAN. The IP will be automatically
-        assigned based on the VLAN IP network space.
+        assigned based on the VLAN IP network space. Alternatively, provide
+        a private IPv4 address instead of VLAN information, and this will
+        be assigned to the node on corresponding NIC.
 
         :param      node: Node which should be used
         :type       node: :class:`Node`
 
         :param      vlan: VLAN to attach the node to
+                          (required unless private_ipv4)
         :type       vlan: :class:`DimensionDataVlan`
+
+        :keyword    private_ipv4: Private nic IPv4 Address
+                                  (required unless vlan)
+        :type       private_ipv4: ``str``
 
         :rtype: ``bool``
         """
@@ -812,7 +1224,14 @@ class DimensionDataNodeDriver(NodeDriver):
                              {'xmlns': TYPES_URN})
         ET.SubElement(request, 'serverId').text = node.id
         nic = ET.SubElement(request, 'nic')
-        ET.SubElement(nic, 'vlanId').text = vlan.id
+
+        if vlan is not None:
+            ET.SubElement(nic, 'vlanId').text = vlan.id
+        elif private_ipv4 is not None:
+            ET.SubElement(nic, 'privateIpv4').text = private_ipv4
+        else:
+            raise ValueError("One of vlan or primary_ipv4 "
+                             "must be specified")
 
         response = self.connection.request_with_orgId_api_2(
             'server/addNic',
@@ -942,10 +1361,10 @@ class DimensionDataNodeDriver(NodeDriver):
     def ex_list_network_domains(self, location=None, name=None,
                                 service_plan=None, state=None):
         """
-        List networks domains deployed across all data center locations
-        for your organization.
-        The response includes the location of each network domain.
+        List networks domains deployed across all data center locations domain.
 
+        for your organization.
+        The response includes the location of each network
         :param      location: Only network domains in the location (optional)
         :type       location: :class:`NodeLocation` or ``str``
 
@@ -1351,13 +1770,22 @@ class DimensionDataNodeDriver(NodeDriver):
         ET.SubElement(create_node, "protocol").text = rule.protocol
         # Setup source port rule
         source = ET.SubElement(create_node, "source")
-        source_ip = ET.SubElement(source, 'ip')
-        if rule.source.any_ip:
-            source_ip.set('address', 'ANY')
+        if rule.source.address_list_id is not None:
+            source_ip = ET.SubElement(source, 'ipAddressListId')
+            source_ip.text = rule.source.address_list_id
         else:
-            source_ip.set('address', rule.source.ip_address)
-            if rule.source.ip_prefix_size is not None:
-                source_ip.set('prefixSize', str(rule.source.ip_prefix_size))
+            source_ip = ET.SubElement(source, 'ip')
+            if rule.source.any_ip:
+                source_ip.set('address', 'ANY')
+            else:
+                source_ip.set('address', rule.source.ip_address)
+                if rule.source.ip_prefix_size is not None:
+                    source_ip.set('prefixSize',
+                                  str(rule.source.ip_prefix_size))
+        if rule.source.port_list_id is not None:
+            source_port = ET.SubElement(source, 'portListId')
+            source_port.text = rule.source.port_list_id
+        else:
             if rule.source.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
                 source_port.set('begin', rule.source.port_begin)
@@ -1365,21 +1793,28 @@ class DimensionDataNodeDriver(NodeDriver):
                 source_port.set('end', rule.source.port_end)
         # Setup destination port rule
         dest = ET.SubElement(create_node, "destination")
-        dest_ip = ET.SubElement(dest, 'ip')
-        if rule.destination.any_ip:
-            dest_ip.set('address', 'ANY')
+        if rule.destination.address_list_id is not None:
+            dest_ip = ET.SubElement(dest, 'ipAddressListId')
+            dest_ip.text = rule.destination.address_list_id
         else:
-            dest_ip.set('address', rule.destination.ip_address)
-            if rule.destination.ip_prefix_size is not None:
-                dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+            dest_ip = ET.SubElement(dest, 'ip')
+            if rule.destination.any_ip:
+                dest_ip.set('address', 'ANY')
+            else:
+                dest_ip.set('address', rule.destination.ip_address)
+                if rule.destination.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+        if rule.destination.port_list_id is not None:
+            dest_port = ET.SubElement(dest, 'portListId')
+            dest_port.text = rule.destination.port_list_id
+        else:
             if rule.destination.port_begin is not None:
                 dest_port = ET.SubElement(dest, 'port')
                 dest_port.set('begin', rule.destination.port_begin)
             if rule.destination.port_end is not None:
                 dest_port.set('end', rule.destination.port_end)
-        ET.SubElement(create_node, "enabled").text = rule.enabled
-
         # Set up positioning of rule
+        ET.SubElement(create_node, "enabled").text = str(rule.enabled).lower()
         placement = ET.SubElement(create_node, "placement")
         if position_relative_to_rule is not None:
             if position not in positions_with_rule:
@@ -1410,6 +1845,151 @@ class DimensionDataNodeDriver(NodeDriver):
                 rule_id = info.get('value')
         rule.id = rule_id
         return rule
+
+    def ex_edit_firewall_rule(self, rule, position,
+                              relative_rule_for_position=None):
+        """
+        Edit a firewall rule
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>>
+        >>> # List firewall rules
+        >>> firewall_rules = driver.ex_list_firewall_rules(my_network_domain)
+        >>>
+        >>> # Get Firewall Rule by name
+        >>> pprint("List specific firewall rule by name")
+        >>> fire_rule_under_test = (list(filter(lambda x: x.name ==
+                                   'My_New_Firewall_Rule', firewall_rules))[0])
+        >>> pprint(fire_rule_under_test.source)
+        >>> pprint(fire_rule_under_test.destination)
+        >>>
+        >>> # Edit Firewall
+        >>> fire_rule_under_test.destination.address_list_id =
+                '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> fire_rule_under_test.destination.port_list_id =
+                'b6557c5a-45fa-4138-89bd-8fe68392691b'
+        >>> result = driver.ex_edit_firewall_rule(fire_rule_under_test, 'LAST')
+        >>> pprint(result)
+
+        :param rule: (required) The rule in which to create
+        :type  rule: :class:`DimensionDataFirewallRule`
+
+        :param position: (required) There are two types of positions
+                         with position_relative_to_rule arg and without it
+                         With: 'BEFORE' or 'AFTER'
+                         Without: 'FIRST' or 'LAST'
+        :type  position: ``str``
+
+        :param relative_rule_for_position: (optional) The rule or rule name in
+                                           which to decide the relative rule
+                                           for positioning.
+        :type  relative_rule_for_position:
+            :class:`DimensionDataFirewallRule` or ``str``
+
+        :rtype: ``bool``
+        """
+
+        positions_without_rule = ('FIRST', 'LAST')
+        positions_with_rule = ('BEFORE', 'AFTER')
+
+        edit_node = ET.Element('editFirewallRule',
+                               {'xmlns': TYPES_URN, 'id': rule.id})
+        ET.SubElement(edit_node, "action").text = rule.action
+        ET.SubElement(edit_node, "protocol").text = rule.protocol
+
+        # Source address
+        source = ET.SubElement(edit_node, "source")
+        if rule.source.address_list_id is not None:
+            source_ip = ET.SubElement(source, 'ipAddressListId')
+            source_ip.text = rule.source.address_list_id
+        else:
+            source_ip = ET.SubElement(source, 'ip')
+            if rule.source.any_ip:
+                source_ip.set('address', 'ANY')
+            else:
+                source_ip.set('address', rule.source.ip_address)
+                if rule.source.ip_prefix_size is not None:
+                    source_ip.set('prefixSize',
+                                  str(rule.source.ip_prefix_size))
+
+        # Setup source port rule
+        if rule.source.port_list_id is not None:
+            source_port = ET.SubElement(source, 'portListId')
+            source_port.text = rule.source.port_list_id
+        else:
+            if rule.source.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', rule.source.port_begin)
+            if rule.source.port_end is not None:
+                source_port.set('end', rule.source.port_end)
+        # Setup destination port rule
+        dest = ET.SubElement(edit_node, "destination")
+        if rule.destination.address_list_id is not None:
+            dest_ip = ET.SubElement(dest, 'ipAddressListId')
+            dest_ip.text = rule.destination.address_list_id
+        else:
+            dest_ip = ET.SubElement(dest, 'ip')
+            if rule.destination.any_ip:
+                dest_ip.set('address', 'ANY')
+            else:
+                dest_ip.set('address', rule.destination.ip_address)
+                if rule.destination.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+        if rule.destination.port_list_id is not None:
+            dest_port = ET.SubElement(dest, 'portListId')
+            dest_port.text = rule.destination.port_list_id
+        else:
+            if rule.destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', rule.destination.port_begin)
+            if rule.destination.port_end is not None:
+                dest_port.set('end', rule.destination.port_end)
+        # Set up positioning of rule
+        ET.SubElement(edit_node, "enabled").text = str(rule.enabled).lower()
+        placement = ET.SubElement(edit_node, "placement")
+        if relative_rule_for_position is not None:
+            if position not in positions_with_rule:
+                raise ValueError("When position_relative_to_rule is specified"
+                                 " position must be %s"
+                                 % ', '.join(positions_with_rule))
+            if isinstance(relative_rule_for_position,
+                          DimensionDataFirewallRule):
+                rule_name = relative_rule_for_position.name
+            else:
+                rule_name = relative_rule_for_position
+            placement.set('relativeToRule', rule_name)
+        else:
+            if position not in positions_without_rule:
+                raise ValueError("When position_relative_to_rule is not"
+                                 " specified position must be %s"
+                                 % ', '.join(positions_without_rule))
+        placement.set('position', position)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/editFirewallRule',
+            method='POST',
+            data=ET.tostring(edit_node)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_get_firewall_rule(self, network_domain, rule_id):
         locations = self.list_locations()
@@ -1661,7 +2241,8 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_storage_to_node(self, node, amount, speed='STANDARD'):
+    def ex_add_storage_to_node(self, node, amount,
+                               speed='STANDARD', scsi_id=None):
         """
         Add storage to the node
 
@@ -1674,15 +2255,43 @@ class DimensionDataNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
+        :param  scsi_id: The target SCSI ID (optional)
+        :type   scsi_id: ``int``
+
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s?addLocalStorage&amount=%s&speed=%s' %
-            (node.id, amount, speed)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        update_node = ET.Element('addDisk',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('id', node.id)
+        ET.SubElement(update_node, 'sizeGb').text = str(amount)
+        ET.SubElement(update_node, 'speed').text = speed.upper()
+        if scsi_id is not None:
+            ET.SubElement(update_node, 'scsiId').text = str(scsi_id)
 
-    def ex_remove_storage_from_node(self, node, disk_id):
+        result = self.connection.request_with_orgId_api_2(
+            'server/addDisk',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_storage_from_node(self, node, scsi_id):
+        """
+        Remove storage from a node
+
+        :param  node: The server to add storage to
+        :type   node: :class:`Node`
+
+        :param  scsi_id: The ID of the disk to remove
+        :type   scsi_id: ``str``
+
+        :rtype: ``bool``
+        """
+        disk = [disk for disk in node.extra['disks']
+                if disk.scsi_id == scsi_id][0]
+        return self.ex_remove_storage(disk.id)
+
+    def ex_remove_storage(self, disk_id):
         """
         Remove storage from a node
 
@@ -1694,11 +2303,15 @@ class DimensionDataNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s/disk/%s?delete' %
-            (node.id, disk_id)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        remove_disk = ET.Element('removeDisk',
+                                 {'xmlns': TYPES_URN})
+        remove_disk.set('id', disk_id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/removeDisk',
+            method='POST',
+            data=ET.tostring(remove_disk)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_change_storage_speed(self, node, disk_id, speed):
         """
@@ -1813,6 +2426,23 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
+    def ex_clean_failed_deployment(self, node):
+        """
+        Removes a node that has failed to deploy
+
+        :param  node: The failed node to clean
+        :type   node: :class:`Node` or ``str``
+        """
+        node_id = self._node_to_node_id(node)
+        request_elm = ET.Element('cleanServer',
+                                 {'xmlns': TYPES_URN, 'id': node_id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/cleanServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_list_customer_images(self, location=None):
         """
         Return a list of customer imported images
@@ -1879,9 +2509,1128 @@ class DimensionDataNodeDriver(NodeDriver):
                 raise e
         return self.ex_get_customer_image_by_id(id)
 
+    def ex_create_tag_key(self, name, description=None,
+                          value_required=True, display_on_report=True):
+        """
+        Creates a tag key in the Dimension Data Cloud
+
+        :param name: The name of the tag key (required)
+        :type  name: ``str``
+
+        :param description: The description of the tag key
+        :type  description: ``str``
+
+        :param value_required: If a value is required for the tag
+                               Tags themselves can be just a tag,
+                               or be a key/value pair
+        :type  value_required: ``bool``
+
+        :param display_on_report: Should this key show up on the usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``bool``
+        """
+        create_tag_key = ET.Element('createTagKey', {'xmlns': TYPES_URN})
+        ET.SubElement(create_tag_key, 'name').text = name
+        if description is not None:
+            ET.SubElement(create_tag_key, 'description').text = description
+        ET.SubElement(create_tag_key, 'valueRequired').text = \
+            str(value_required).lower()
+        ET.SubElement(create_tag_key, 'displayOnReport').text = \
+            str(display_on_report).lower()
+        response = self.connection.request_with_orgId_api_2(
+            'tag/createTagKey',
+            method='POST',
+            data=ET.tostring(create_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_tag_keys(self, id=None, name=None,
+                         value_required=None, display_on_report=None):
+        """
+        List tag keys in the Dimension Data Cloud
+
+        :param id: Filter the list to the id of the tag key
+        :type  id: ``str``
+
+        :param name: Filter the list to the name of the tag key
+        :type  name: ``str``
+
+        :param value_required: Filter the list to if a value is required
+                               for a tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: Filter the list to if the tag key should
+                                  show up on usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``list`` of :class:`DimensionDataTagKey`
+        """
+        params = {}
+        if id is not None:
+            params['id'] = id
+        if name is not None:
+            params['name'] = name
+        if value_required is not None:
+            params['valueRequired'] = str(value_required).lower()
+        if display_on_report is not None:
+            params['displayOnReport'] = str(display_on_report).lower()
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'tag/tagKey',
+            method='GET',
+            params=params
+        )
+
+        tag_keys = []
+        for result in paged_result:
+            tag_keys.extend(self._to_tag_keys(result))
+        return tag_keys
+
+    def ex_get_tag_key_by_id(self, id):
+        """
+        Get a specific tag key by ID
+
+        :param id: ID of the tag key you want (required)
+        :type  id: ``str``
+
+        :rtype: :class:`DimensionDataTagKey`
+        """
+        tag_key = self.connection.request_with_orgId_api_2(
+            'tag/tagKey/%s' % id).object
+        return self._to_tag_key(tag_key)
+
+    def ex_get_tag_key_by_name(self, name):
+        """
+        Get a specific tag key by Name
+
+        :param name: Name of the tag key you want (required)
+        :type  name: ``str``
+
+        :rtype: :class:`DimensionDataTagKey`
+        """
+        tag_keys = self.ex_list_tag_keys(name=name)
+        if len(tag_keys) != 1:
+            raise ValueError("No tags found with name %s" % name)
+        return tag_keys[0]
+
+    def ex_modify_tag_key(self, tag_key, name=None, description=None,
+                          value_required=None, display_on_report=None):
+
+        """
+        Modify a specific tag key
+
+        :param tag_key: The tag key you want to modify (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :param name: Set to modifiy the name of the tag key
+        :type  name: ``str``
+
+        :param description: Set to modify the description of the tag key
+        :type  description: ``str``
+
+        :param value_required: Set to modify if a value is required for
+                               the tag key
+        :type  value_required: ``bool``
+
+        :param display_on_report: Set to modify if this tag key should display
+                                  on the usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``bool``
+        """
+        tag_key_id = self._tag_key_to_tag_key_id(tag_key)
+        modify_tag_key = ET.Element('editTagKey',
+                                    {'xmlns': TYPES_URN, 'id': tag_key_id})
+        if name is not None:
+            ET.SubElement(modify_tag_key, 'name').text = name
+        if description is not None:
+            ET.SubElement(modify_tag_key, 'description').text = description
+        if value_required is not None:
+            ET.SubElement(modify_tag_key, 'valueRequired').text = \
+                str(value_required).lower()
+        if display_on_report is not None:
+            ET.SubElement(modify_tag_key, 'displayOnReport').text = \
+                str(display_on_report).lower()
+
+        response = self.connection.request_with_orgId_api_2(
+            'tag/editTagKey',
+            method='POST',
+            data=ET.tostring(modify_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_tag_key(self, tag_key):
+        """
+        Modify a specific tag key
+
+        :param tag_key: The tag key you want to remove (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :rtype: ``bool``
+        """
+        tag_key_id = self._tag_key_to_tag_key_id(tag_key)
+        remove_tag_key = ET.Element('deleteTagKey',
+                                    {'xmlns': TYPES_URN, 'id': tag_key_id})
+        response = self.connection.request_with_orgId_api_2(
+            'tag/deleteTagKey',
+            method='POST',
+            data=ET.tostring(remove_tag_key)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_apply_tag_to_asset(self, asset, tag_key, value=None):
+        """
+        Apply a tag to a Dimension Data Asset
+
+        :param asset: The asset to apply a tag to. (required)
+        :type  asset: :class:`Node` or :class:`NodeImage` or
+                      :class:`DimensionDataNewtorkDomain` or
+                      :class:`DimensionDataVlan` or
+                      :class:`DimensionDataPublicIpBlock`
+
+        :param tag_key: The tag_key to apply to the asset. (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :param value: The value to be assigned to the tag key
+                      This is only required if the :class:`DimensionDataTagKey`
+                      requires it
+        :type  value: ``str``
+
+        :rtype: ``bool``
+        """
+        asset_type = self._get_tagging_asset_type(asset)
+        tag_key_name = self._tag_key_to_tag_key_name(tag_key)
+
+        apply_tags = ET.Element('applyTags', {'xmlns': TYPES_URN})
+        ET.SubElement(apply_tags, 'assetType').text = asset_type
+        ET.SubElement(apply_tags, 'assetId').text = asset.id
+
+        tag_ele = ET.SubElement(apply_tags, 'tag')
+        ET.SubElement(tag_ele, 'tagKeyName').text = tag_key_name
+        if value is not None:
+            ET.SubElement(tag_ele, 'value').text = value
+
+        response = self.connection.request_with_orgId_api_2(
+            'tag/applyTags',
+            method='POST',
+            data=ET.tostring(apply_tags)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_tag_from_asset(self, asset, tag_key):
+        """
+        Remove a tag from an asset
+
+        :param asset: The asset to remove a tag from. (required)
+        :type  asset: :class:`Node` or :class:`NodeImage` or
+                      :class:`DimensionDataNewtorkDomain` or
+                      :class:`DimensionDataVlan` or
+                      :class:`DimensionDataPublicIpBlock`
+
+        :param tag_key: The tag key you want to remove (required)
+        :type  tag_key: :class:`DimensionDataTagKey` or ``str``
+
+        :rtype: ``bool``
+        """
+        asset_type = self._get_tagging_asset_type(asset)
+        tag_key_name = self._tag_key_to_tag_key_name(tag_key)
+
+        apply_tags = ET.Element('removeTags', {'xmlns': TYPES_URN})
+        ET.SubElement(apply_tags, 'assetType').text = asset_type
+        ET.SubElement(apply_tags, 'assetId').text = asset.id
+        ET.SubElement(apply_tags, 'tagKeyName').text = tag_key_name
+        response = self.connection.request_with_orgId_api_2(
+            'tag/removeTags',
+            method='POST',
+            data=ET.tostring(apply_tags)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_tags(self, asset_id=None, asset_type=None, location=None,
+                     tag_key_name=None, tag_key_id=None, value=None,
+                     value_required=None, display_on_report=None):
+        """
+        List tags in the Dimension Data Cloud
+
+        :param asset_id: Filter the list by asset id
+        :type  asset_id: ``str``
+
+        :param asset_type: Filter the list by asset type
+        :type  asset_type: ``str``
+
+        :param location: Filter the list by the assets location
+        :type  location: :class:``NodeLocation`` or ``str``
+
+        :param tag_key_name: Filter the list by a tag key name
+        :type  tag_key_name: ``str``
+
+        :param tag_key_id: Filter the list by a tag key id
+        :type  tag_key_id: ``str``
+
+        :param value: Filter the list by a tag value
+        :type  value: ``str``
+
+        :param value_required: Filter the list to if a value is required
+                               for a tag
+        :type  value_required: ``bool``
+
+        :param display_on_report: Filter the list to if the tag should
+                                  show up on usage reports
+        :type  display_on_report: ``bool``
+
+        :rtype: ``list`` of :class:`DimensionDataTag`
+        """
+        params = {}
+        if asset_id is not None:
+            params['assetId'] = asset_id
+        if asset_type is not None:
+            params['assetType'] = asset_type
+        if location is not None:
+            params['datacenterId'] = self._location_to_location_id(location)
+        if tag_key_name is not None:
+            params['tagKeyName'] = tag_key_name
+        if tag_key_id is not None:
+            params['tagKeyId'] = tag_key_id
+        if value is not None:
+            params['value'] = value
+        if value_required is not None:
+            params['valueRequired'] = str(value_required).lower()
+        if display_on_report is not None:
+            params['displayOnReport'] = str(display_on_report).lower()
+
+        paged_result = self.connection.paginated_request_with_orgId_api_2(
+            'tag/tag',
+            method='GET',
+            params=params
+        )
+
+        tags = []
+        for result in paged_result:
+            tags.extend(self._to_tags(result))
+        return tags
+
+    def ex_summary_usage_report(self, start_date, end_date):
+        """
+        Get summary usage information
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usage?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_detailed_usage_report(self, start_date, end_date):
+        """
+        Get detailed usage information
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usageDetailed?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_software_usage_report(self, start_date, end_date):
+        """
+        Get detailed software usage reports
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_audit_log_report(self, start_date, end_date):
+        """
+        Get audit log report
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :rtype: ``list`` of ``list``
+        """
+        result = self.connection.raw_request_with_orgId_api_1(
+            'auditlog?startDate=%s&endDate=%s' % (
+                start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_backup_usage_report(self, start_date, end_date, location):
+        """
+        Get audit log report
+
+        :param start_date: Start date for the report
+        :type  start_date: ``str`` in format YYYY-MM-DD
+
+        :param end_date: End date for the report
+        :type  end_date: ``str`` in format YYYY-MM-DD
+
+        :keyword location: Filters the node list to nodes that are
+                           located in this location
+        :type    location: :class:`NodeLocation` or ``str``
+
+        :rtype: ``list`` of ``list``
+        """
+        datacenter_id = self._location_to_location_id(location)
+        result = self.connection.raw_request_with_orgId_api_1(
+            'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s'
+            % (datacenter_id, start_date, end_date))
+        return self._format_csv(result.response)
+
+    def ex_list_ip_address_list(self, ex_network_domain):
+        """
+        List IP Address List by network domain ID specified
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # List IP Address List of network domain
+        >>> ipaddresslist_list = driver.ex_list_ip_address_list(
+        >>>     ex_network_domain=my_network_domain)
+        >>> pprint(ipaddresslist_list)
+
+        :param  ex_network_domain: The network domain or network domain ID
+        :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
+
+        :return: a list of DimensionDataIpAddressList objects
+        :rtype: ``list`` of :class:`DimensionDataIpAddressList`
+        """
+        params = {'networkDomainId': self._network_domain_to_network_domain_id(
+            ex_network_domain)}
+        response = self.connection.request_with_orgId_api_2(
+            'network/ipAddressList', params=params).object
+        return self._to_ip_address_lists(response)
+
+    def ex_get_ip_address_list(self, ex_network_domain,
+                               ex_ip_address_list_name):
+        """
+        Get IP Address List by name in network domain specified
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # Get IP Address List by Name
+        >>> ipaddresslist_list_by_name = driver.ex_get_ip_address_list(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     ex_ip_address_list_name='My_IP_AddressList_1')
+        >>> pprint(ipaddresslist_list_by_name)
+
+
+        :param  ex_network_domain: (required) The network domain or network
+                                   domain ID in which ipaddresslist resides.
+        :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
+
+        :param    ex_ip_address_list_name: (required) Get 'IP Address List' by
+                                            name
+        :type     ex_ip_address_list_name: :``str``
+
+        :return: a list of DimensionDataIpAddressList objects
+        :rtype: ``list`` of :class:`DimensionDataIpAddressList`
+        """
+
+        ip_address_lists = self.ex_list_ip_address_list(ex_network_domain)
+        return list(filter(lambda x: x.name == ex_ip_address_list_name,
+                           ip_address_lists))
+
+    def ex_create_ip_address_list(self, ex_network_domain, name,
+                                  description,
+                                  ip_version, ip_address_collection,
+                                  child_ip_address_list=None):
+        """
+        Create IP Address List. IP Address list.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # IP Address collection
+        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+                                                 end='190.2.2.108')
+        >>> ipAddress_3 = DimensionDataIpAddress(begin='190.2.2.0',
+                                                 prefix_size='24')
+        >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
+        >>>
+        >>> # Create IPAddressList
+        >>> result = driver.ex_create_ip_address_list(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     name='My_IP_AddressList_2',
+        >>>     ip_version='IPV4',
+        >>>     description='Test only',
+        >>>     ip_address_collection=ip_address_collection,
+        >>>     child_ip_address_list='08468e26-eeb3-4c3d-8ff2-5351fa6d8a04'
+        >>> )
+        >>>
+        >>> pprint(result)
+
+
+        :param  ex_network_domain: The network domain or network domain ID
+        :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
+
+        :param    name:  IP Address List Name (required)
+        :type      name: :``str``
+
+        :param    description:  IP Address List Description (optional)
+        :type      description: :``str``
+
+        :param    ip_version:  IP Version of ip address (required)
+        :type      ip_version: :``str``
+
+        :param    ip_address_collection:  List of IP Address. At least one
+                                          ipAddress element or one
+                                          childIpAddressListId element must
+                                          be provided.
+        :type      ip_address_collection: :``str``
+
+        :param    child_ip_address_list:  Child IP Address List or id to be
+                                          included in this IP Address List.
+                                          At least one ipAddress or
+                                          one childIpAddressListId
+                                          must be provided.
+        :type     child_ip_address_list:
+                        :class:'DimensionDataChildIpAddressList` or `str``
+
+        :return: a list of DimensionDataIpAddressList objects
+        :rtype: ``list`` of :class:`DimensionDataIpAddressList`
+        """
+        if (ip_address_collection is None and
+                child_ip_address_list is None):
+            raise ValueError("At least one ipAddress element or one "
+                             "childIpAddressListId element must be "
+                             "provided.")
+
+        create_ip_address_list = ET.Element('createIpAddressList',
+                                            {'xmlns': TYPES_URN})
+        ET.SubElement(
+            create_ip_address_list,
+            'networkDomainId'
+        ).text = self._network_domain_to_network_domain_id(ex_network_domain)
+
+        ET.SubElement(
+            create_ip_address_list,
+            'name'
+        ).text = name
+
+        ET.SubElement(
+            create_ip_address_list,
+            'description'
+        ).text = description
+
+        ET.SubElement(
+            create_ip_address_list,
+            'ipVersion'
+        ).text = ip_version
+
+        for ip in ip_address_collection:
+            ip_address = ET.SubElement(
+                create_ip_address_list,
+                'ipAddress',
+            )
+            ip_address.set('begin', ip.begin)
+
+            if ip.end:
+                ip_address.set('end', ip.end)
+
+            if ip.prefix_size:
+                ip_address.set('prefixSize', ip.prefix_size)
+
+        if child_ip_address_list is not None:
+            ET.SubElement(
+                create_ip_address_list,
+                'childIpAddressListId'
+            ).text = \
+                self._child_ip_address_list_to_child_ip_address_list_id(
+                    child_ip_address_list)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/createIpAddressList',
+            method='POST',
+            data=ET.tostring(create_ip_address_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_edit_ip_address_list(self, ex_ip_address_list, description,
+                                ip_address_collection,
+                                child_ip_address_lists=None):
+        """
+        Edit IP Address List. IP Address list.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # IP Address collection
+        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+        >>>                                      end='190.2.2.108')
+        >>> ipAddress_3 = DimensionDataIpAddress(
+        >>>                   begin='190.2.2.0', prefix_size='24')
+        >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
+        >>>
+        >>> # Edit IP Address List
+        >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> result = driver.ex_edit_ip_address_list(
+        >>>      ex_ip_address_list=ip_address_list_id,
+        >>>      description="Edit Test",
+        >>>      ip_address_collection=ip_address_collection,
+        >>>      child_ip_address_lists=None
+        >>>      )
+        >>> pprint(result)
+
+        :param    ex_ip_address_list:  (required) IpAddressList object or
+                                       IpAddressList ID
+        :type     ex_ip_address_list: :class:'DimensionDataIpAddressList'
+                    or ``str``
+
+        :param    description:  IP Address List Description
+        :type      description: :``str``
+
+        :param    ip_address_collection:  List of IP Address
+        :type     ip_address_collection: ''list'' of
+                                         :class:'DimensionDataIpAddressList'
+
+        :param   child_ip_address_lists:  Child IP Address List or id to be
+                                          included in this IP Address List
+        :type    child_ip_address_lists:  ``list`` of
+                                    :class:'DimensionDataChildIpAddressList'
+                                    or ``str``
+
+        :return: a list of DimensionDataIpAddressList objects
+        :rtype: ``list`` of :class:`DimensionDataIpAddressList`
+        """
+        edit_ip_address_list = ET.Element(
+            'editIpAddressList',
+            {'xmlns': TYPES_URN,
+             "id": self._ip_address_list_to_ip_address_list_id(
+                 ex_ip_address_list),
+             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
+             })
+
+        ET.SubElement(
+            edit_ip_address_list,
+            'description'
+        ).text = description
+
+        for ip in ip_address_collection:
+            ip_address = ET.SubElement(
+                edit_ip_address_list,
+                'ipAddress',
+            )
+            ip_address.set('begin', ip.begin)
+
+            if ip.end:
+                ip_address.set('end', ip.end)
+
+            if ip.prefix_size:
+                ip_address.set('prefixSize', ip.prefix_size)
+
+        if child_ip_address_lists is not None:
+            ET.SubElement(
+                edit_ip_address_list,
+                'childIpAddressListId'
+            ).text = self._child_ip_address_list_to_child_ip_address_list_id(
+                child_ip_address_lists)
+        else:
+            ET.SubElement(
+                edit_ip_address_list,
+                'childIpAddressListId',
+                {'xsi:nil': 'true'}
+            )
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/editIpAddressList',
+            method='POST',
+            data=ET.tostring(edit_ip_address_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_delete_ip_address_list(self, ex_ip_address_list):
+        """
+        Delete IP Address List by ID
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
+        >>> result = driver.ex_delete_ip_address_list(ip_address_list_id)
+        >>> pprint(result)
+
+        :param    ex_ip_address_list:  IP Address List object or IP Address
+                                        List ID (required)
+        :type     ex_ip_address_list: :class:'DimensionDataIpAddressList'
+                    or ``str``
+
+        :rtype: ``bool``
+        """
+
+        delete_ip_address_list = \
+            ET.Element('deleteIpAddressList', {'xmlns': TYPES_URN, 'id': self
+                       ._ip_address_list_to_ip_address_list_id(
+                           ex_ip_address_list)})
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deleteIpAddressList',
+            method='POST',
+            data=ET.tostring(delete_ip_address_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_portlist(self, ex_network_domain):
+        """
+        List Portlist by network domain ID specified
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+        >>>                                               networkDomainName][0]
+        >>>
+        >>> # List portlist
+        >>> portLists = driver.ex_list_portlist(
+        >>>     ex_network_domain=my_network_domain)
+        >>> pprint(portLists)
+        >>>
+
+        :param  ex_network_domain: The network domain or network domain ID
+        :type   ex_network_domain: :class:`DimensionDataNetworkDomain` or 'str'
+
+        :return: a list of DimensionDataPortList objects
+        :rtype: ``list`` of :class:`DimensionDataPortList`
+        """
+        params = {'networkDomainId':
+                  self._network_domain_to_network_domain_id(ex_network_domain)}
+        response = self.connection.request_with_orgId_api_2(
+            'network/portList', params=params).object
+        return self._to_port_lists(response)
+
+    def ex_get_portlist(self, ex_portlist_id):
+        """
+        Get Port List
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get specific portlist by ID
+        >>> portlist_id = '27dd8c66-80ff-496b-9f54-2a3da2fe679e'
+        >>> portlist = driver.ex_get_portlist(portlist_id)
+        >>> pprint(portlist)
+
+        :param  ex_portlist_id: The ex_port_list or ex_port_list ID
+        :type   ex_portlist_id: :class:`DimensionDataNetworkDomain` or 'str'
+
+        :return:  DimensionDataPortList object
+        :rtype:  :class:`DimensionDataPort`
+        """
+
+        url_path = ('network/portList/%s' % ex_portlist_id)
+        response = self.connection.request_with_orgId_api_2(
+            url_path).object
+        return self._to_port_list(response)
+
+    def ex_create_portlist(self, ex_network_domain, name, description,
+                           port_collection, child_portlist_list=None):
+        """
+        Create Port List.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Get location
+        >>> location = driver.ex_get_location_by_id(id='AU9')
+        >>>
+        >>> # Get network domain by location
+        >>> networkDomainName = "Baas QA"
+        >>> network_domains = driver.ex_list_network_domains(location=location)
+        >>> my_network_domain = [d for d in network_domains if d.name ==
+                              networkDomainName][0]
+        >>>
+        >>> # Port Collection
+        >>> port_1 = DimensionDataPort(begin='1000')
+        >>> port_2 = DimensionDataPort(begin='1001', end='1003')
+        >>> port_collection = [port_1, port_2]
+        >>>
+        >>> # Create Port List
+        >>> new_portlist = driver.ex_create_portlist(
+        >>>     ex_network_domain=my_network_domain,
+        >>>     name='MyPortListX',
+        >>>     description="Test only",
+        >>>     port_collection=port_collection,
+        >>>     child_portlist_list={'a9cd4984-6ff5-4f93-89ff-8618ab642bb9'}
+        >>>     )
+        >>> pprint(new_portlist)
+
+        :param    ex_network_domain:  (required) The network domain in
+                                       which to create PortList. Provide
+                                       networkdomain object or its id.
+        :type      ex_network_domain: :``str``
+
+        :param    name:  Port List Name
+        :type     name: :``str``
+
+        :param    description:  IP Address List Description
+        :type     description: :``str``
+
+        :param    port_collection:  List of Port Address
+        :type     port_collection: :``str``
+
+        :param    child_portlist_list:  List of Child Portlist to be
+                                        included in this Port List
+        :type     child_portlist_list: :``str`` or ''list of
+                                         :class:'DimensionDataChildPortList'
+
+        :return: result of operation
+        :rtype: ``bool``
+        """
+        new_port_list = ET.Element('createPortList', {'xmlns': TYPES_URN})
+        ET.SubElement(
+            new_port_list,
+            'networkDomainId'
+        ).text = self._network_domain_to_network_domain_id(ex_network_domain)
+
+        ET.SubElement(
+            new_port_list,
+            'name'
+        ).text = name
+
+        ET.SubElement(
+            new_port_list,
+            'description'
+        ).text = description
+
+        for port in port_collection:
+            p = ET.SubElement(
+                new_port_list,
+                'port'
+            )
+            p.set('begin', port.begin)
+
+            if port.end:
+                p.set('end', port.end)
+
+        if child_portlist_list is not None:
+            for child in child_portlist_list:
+                ET.SubElement(
+                    new_port_list,
+                    'childPortListId'
+                ).text = self._child_port_list_to_child_port_list_id(child)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/createPortList',
+            method='POST',
+            data=ET.tostring(new_port_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_edit_portlist(self, ex_portlist, description,
+                         port_collection, child_portlist_list=None):
+        """
+        Edit Port List.
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Port Collection
+        >>> port_1 = DimensionDataPort(begin='4200')
+        >>> port_2 = DimensionDataPort(begin='4201', end='4210')
+        >>> port_collection = [port_1, port_2]
+        >>>
+        >>> # Edit Port List
+        >>> editPortlist = driver.ex_get_portlist(
+            '27dd8c66-80ff-496b-9f54-2a3da2fe679e')
+        >>>
+        >>> result = driver.ex_edit_portlist(
+        >>>     ex_portlist=editPortlist.id,
+        >>>     description="Make Changes in portlist",
+        >>>     port_collection=port_collection,
+        >>>     child_portlist_list={'a9cd4984-6ff5-4f93-89ff-8618ab642bb9'}
+        >>> )
+        >>> pprint(result)
+
+        :param    ex_portlist:  Port List to be edited
+                                        (required)
+        :type      ex_portlist: :``str`` or :class:'DimensionDataPortList'
+
+        :param    description:  Port List Description
+        :type      description: :``str``
+
+        :param    port_collection:  List of Ports
+        :type      port_collection: :``str``
+
+        :param    child_portlist_list:  Child PortList to be included in
+                                          this IP Address List
+        :type      child_portlist_list: :``list`` of
+                                          :class'DimensionDataChildPortList'
+                                          or ''str''
+
+        :return: a list of DimensionDataPortList objects
+        :rtype: ``list`` of :class:`DimensionDataPortList`
+        """
+
+        existing_port_address_list = ET.Element(
+            'editPortList',
+            {
+                "id": self._port_list_to_port_list_id(ex_portlist),
+                'xmlns': TYPES_URN,
+                'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
+            })
+
+        ET.SubElement(
+            existing_port_address_list,
+            'description'
+        ).text = description
+
+        for port in port_collection:
+            p = ET.SubElement(
+                existing_port_address_list,
+                'port'
+            )
+            p.set('begin', port.begin)
+
+            if port.end:
+                p.set('end', port.end)
+
+        if child_portlist_list is not None:
+            for child in child_portlist_list:
+                ET.SubElement(
+                    existing_port_address_list,
+                    'childPortListId'
+                ).text = self._child_port_list_to_child_port_list_id(child)
+        else:
+            ET.SubElement(
+                existing_port_address_list,
+                'childPortListId',
+                {'xsi:nil': 'true'}
+            )
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/editPortList',
+            method='POST',
+            data=ET.tostring(existing_port_address_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_delete_portlist(self, ex_portlist):
+        """
+        Delete Port List
+
+        >>> from pprint import pprint
+        >>> from libcloud.compute.types import Provider
+        >>> from libcloud.compute.providers import get_driver
+        >>> import libcloud.security
+        >>>
+        >>> # Get dimension data driver
+        >>> libcloud.security.VERIFY_SSL_CERT = True
+        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> driver = cls('myusername','mypassword', region='dd-au')
+        >>>
+        >>> # Delete Port List
+        >>> portlist_id = '157531ce-77d4-493c-866b-d3d3fc4a912a'
+        >>> response = driver.ex_delete_portlist(portlist_id)
+        >>> pprint(response)
+
+        :param    ex_portlist:  Port List to be deleted
+        :type     ex_portlist: :``str`` or :class:'DimensionDataPortList'
+
+        :rtype: ``bool``
+        """
+
+        delete_port_list = ET.Element(
+            'deletePortList',
+            {'xmlns': TYPES_URN,
+             'id': self._port_list_to_port_list_id(ex_portlist)})
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/deletePortList',
+            method='POST',
+            data=ET.tostring(delete_port_list)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def _format_csv(self, http_response):
+        text = http_response.read()
+        lines = str.splitlines(ensure_string(text))
+        return [line.split(',') for line in lines]
+
+    @staticmethod
+    def _get_tagging_asset_type(asset):
+        objecttype = type(asset)
+        if objecttype.__name__ in OBJECT_TO_TAGGING_ASSET_TYPE_MAP:
+            return OBJECT_TO_TAGGING_ASSET_TYPE_MAP[objecttype.__name__]
+        raise TypeError("Asset type %s cannot be tagged" % objecttype.__name__)
+
     def _list_nodes_single_page(self, params={}):
         return self.connection.request_with_orgId_api_2(
             'server/server', params=params).object
+
+    def _to_tags(self, object):
+        tags = []
+        for element in object.findall(fixxpath('tag', TYPES_URN)):
+            tags.append(self._to_tag(element))
+        return tags
+
+    def _to_tag(self, element):
+        tag_key = self._to_tag_key(element, from_tag_api=True)
+        return DimensionDataTag(
+            asset_type=findtext(element, 'assetType', TYPES_URN),
+            asset_id=findtext(element, 'assetId', TYPES_URN),
+            asset_name=findtext(element, 'assetName', TYPES_URN),
+            datacenter=findtext(element, 'datacenterId', TYPES_URN),
+            key=tag_key,
+            value=findtext(element, 'value', TYPES_URN)
+        )
+
+    def _to_tag_keys(self, object):
+        keys = []
+        for element in object.findall(fixxpath('tagKey', TYPES_URN)):
+            keys.append(self._to_tag_key(element))
+        return keys
+
+    def _to_tag_key(self, element, from_tag_api=False):
+        if from_tag_api:
+            id = findtext(element, 'tagKeyId', TYPES_URN)
+            name = findtext(element, 'tagKeyName', TYPES_URN)
+        else:
+            id = element.get('id')
+            name = findtext(element, 'name', TYPES_URN)
+
+        return DimensionDataTagKey(
+            id=id,
+            name=name,
+            description=findtext(element, 'description', TYPES_URN),
+            value_required=self._str2bool(
+                findtext(element, 'valueRequired', TYPES_URN)
+            ),
+            display_on_report=self._str2bool(
+                findtext(element, 'displayOnReport', TYPES_URN)
+            )
+        )
 
     def _to_images(self, object, el_name='osImage'):
         images = []
@@ -1985,13 +3734,30 @@ class DimensionDataNodeDriver(NodeDriver):
     def _to_firewall_address(self, element):
         ip = element.find(fixxpath('ip', TYPES_URN))
         port = element.find(fixxpath('port', TYPES_URN))
-        return DimensionDataFirewallAddress(
-            any_ip=ip.get('address') == 'ANY',
-            ip_address=ip.get('address'),
-            ip_prefix_size=ip.get('prefixSize'),
-            port_begin=port.get('begin') if port is not None else None,
-            port_end=port.get('end') if port is not None else None
-        )
+        port_list = element.find(fixxpath('portList', TYPES_URN))
+        address_list = element.find(fixxpath('ipAddressList', TYPES_URN))
+        if address_list is None:
+            return DimensionDataFirewallAddress(
+                any_ip=ip.get('address') == 'ANY',
+                ip_address=ip.get('address'),
+                ip_prefix_size=ip.get('prefixSize'),
+                port_begin=port.get('begin') if port is not None else None,
+                port_end=port.get('end') if port is not None else None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
+        else:
+            return DimensionDataFirewallAddress(
+                any_ip=False,
+                ip_address=None,
+                ip_prefix_size=None,
+                port_begin=None,
+                port_end=None,
+                port_list_id=port_list.get('id', None)
+                if port_list is not None else None,
+                address_list_id=address_list.get('id')
+                if address_list is not None else None)
 
     def _to_ip_blocks(self, object):
         blocks = []
@@ -2214,6 +3980,10 @@ class DimensionDataNodeDriver(NodeDriver):
                  state=node_state,
                  public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=[private_ip] if private_ip is not None else [],
+                 size=self.list_sizes()[0],
+                 image=NodeImage(extra['sourceImageId'],
+                                 extra['OS_displayName'],
+                                 self.connection.driver),
                  driver=self.connection.driver,
                  extra=extra)
         return n
@@ -2252,12 +4022,95 @@ class DimensionDataNodeDriver(NodeDriver):
                                     TYPES_URN))
         return s
 
+    def _to_ip_address_lists(self, object):
+        ip_address_lists = []
+        for element in findall(object, 'ipAddressList', TYPES_URN):
+            ip_address_lists.append(self._to_ip_address_list(element))
+
+        return ip_address_lists
+
+    def _to_ip_address_list(self, element):
+        ipAddresses = []
+        for ip in findall(element, 'ipAddress', TYPES_URN):
+            ipAddresses.append(self._to_ip_address(ip))
+
+        child_ip_address_lists = []
+        for child_ip_list in findall(element, 'childIpAddressList',
+                                     TYPES_URN):
+            child_ip_address_lists.append(self
+                                          ._to_child_ip_list(child_ip_list))
+
+        return DimensionDataIpAddressList(
+            id=element.get('id'),
+            name=findtext(element, 'name', TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),
+            ip_version=findtext(element, 'ipVersion', TYPES_URN),
+            ip_address_collection=ipAddresses,
+            state=findtext(element, 'state', TYPES_URN),
+            create_time=findtext(element, 'createTime', TYPES_URN),
+            child_ip_address_lists=child_ip_address_lists
+        )
+
+    def _to_child_ip_list(self, element):
+        return DimensionDataChildIpAddressList(
+            id=element.get('id'),
+            name=element.get('name')
+        )
+
+    def _to_ip_address(self, element):
+        return DimensionDataIpAddress(
+            begin=element.get('begin'),
+            end=element.get('end'),
+            prefix_size=element.get('prefixSize')
+        )
+
+    def _to_port_lists(self, object):
+        port_lists = []
+        for element in findall(object, 'portList', TYPES_URN):
+            port_lists.append(self._to_port_list(element))
+
+        return port_lists
+
+    def _to_port_list(self, element):
+        ports = []
+        for port in findall(element, 'port', TYPES_URN):
+            ports.append(self._to_port(element=port))
+
+        child_portlist_list = []
+        for child in findall(element, 'childPortList', TYPES_URN):
+            child_portlist_list.append(
+                self._to_child_port_list(element=child))
+
+        return DimensionDataPortList(
+            id=element.get('id'),
+            name=findtext(element, 'name', TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),
+            port_collection=ports,
+            child_portlist_list=child_portlist_list,
+            state=findtext(element, 'state', TYPES_URN),
+            create_time=findtext(element, 'createTime', TYPES_URN)
+        )
+
     def _image_needs_auth(self, image):
         if not isinstance(image, NodeImage):
             image = self.ex_get_image_by_id(image)
         if image.extra['isCustomerImage'] and image.extra['OS_type'] == 'UNIX':
             return False
         return True
+
+    @staticmethod
+    def _to_port(element):
+        return DimensionDataPort(
+            begin=element.get('begin'),
+            end=element.get('end')
+        )
+
+    @staticmethod
+    def _to_child_port_list(element):
+        return DimensionDataChildPortList(
+            id=element.get('id'),
+            name=element.get('name')
+        )
 
     @staticmethod
     def _get_node_state(state, started, action):
@@ -2296,3 +4149,37 @@ class DimensionDataNodeDriver(NodeDriver):
     @staticmethod
     def _network_domain_to_network_domain_id(network_domain):
         return dd_object_to_id(network_domain, DimensionDataNetworkDomain)
+
+    @staticmethod
+    def _tag_key_to_tag_key_id(tag_key):
+        return dd_object_to_id(tag_key, DimensionDataTagKey)
+
+    @staticmethod
+    def _tag_key_to_tag_key_name(tag_key):
+        return dd_object_to_id(tag_key, DimensionDataTagKey, id_value='name')
+
+    @staticmethod
+    def _ip_address_list_to_ip_address_list_id(ip_addr_list):
+        return dd_object_to_id(ip_addr_list, DimensionDataIpAddressList,
+                               id_value='id')
+
+    @staticmethod
+    def _child_ip_address_list_to_child_ip_address_list_id(child_ip_addr_list):
+        return dd_object_to_id(child_ip_addr_list,
+                               DimensionDataChildIpAddressList,
+                               id_value='id')
+
+    @staticmethod
+    def _port_list_to_port_list_id(port_list):
+        return dd_object_to_id(port_list, DimensionDataPortList,
+                               id_value='id')
+
+    @staticmethod
+    def _child_port_list_to_child_port_list_id(child_port_list):
+        return dd_object_to_id(child_port_list,
+                               DimensionDataChildPortList,
+                               id_value='id')
+
+    @staticmethod
+    def _str2bool(string):
+        return string.lower() in ("true")

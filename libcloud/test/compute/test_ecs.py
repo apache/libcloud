@@ -903,6 +903,29 @@ class ECSMockHttp(MockHttpTestCase):
         self.assertUrlContainsQueryParams(url, params)
         return self._DescribeSecurityGroups(method, url, body, headers)
 
+    def _create_sg_CreateSecurityGroup(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'Description': 'description',
+                  'ClientToken': 'clientToken'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('create_security_group.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _delete_sg_by_id_DeleteSecurityGroup(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'SecurityGroupId': 'sg-fakeSecurityGroupId'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('delete_security_group_by_id.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _list_sgas_DescribeSecurityGroupAttributes(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'SecurityGroupId': 'sg-fakeSecurityGroupId',
+                  'NicType': 'internet'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('describe_security_group_attributes.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
     def _DescribeZones(self, method, url, body, headers):
         resp_body = self.fixtures.load('describe_zones.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])

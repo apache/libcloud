@@ -1,0 +1,11 @@
+{
+ "kind": "compute#subnetwork",
+ "id": "4297043163355844284",
+ "creationTimestamp": "2016-03-25T05:34:27.209-07:00",
+ "gatewayAddress": "10.128.0.1",
+ "name": "cf-972cf02e6ad49112",
+ "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/cf",
+ "ipCidrRange": "10.128.0.0/20",
+ "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112"
+}

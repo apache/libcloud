@@ -180,9 +180,13 @@ class AliyunConnection(ConnectionUserAndKey):
 
 
 class SignedAliyunConnection(AliyunConnection):
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None, retry_delay=None,
-                 backoff=None, signature_version=DEFAULT_SIGNATURE_VERSION):
+
+    api_version = None
+
+    def __init__(self, user_id, key, secure=True, host=None,
+                 port=None, url=None, timeout=None, proxy_url=None,
+                 retry_delay=None, backoff=None, api_version=None,
+                 signature_version=DEFAULT_SIGNATURE_VERSION):
         super(SignedAliyunConnection, self).__init__(user_id=user_id, key=key,
                                                      secure=secure,
                                                      host=host, port=port,
@@ -190,6 +194,7 @@ class SignedAliyunConnection(AliyunConnection):
                                                      proxy_url=proxy_url,
                                                      retry_delay=retry_delay,
                                                      backoff=backoff)
+
         self.signature_version = str(signature_version)
 
         if self.signature_version == '1.0':
@@ -198,9 +203,15 @@ class SignedAliyunConnection(AliyunConnection):
             raise ValueError('Unsupported signature_version: %s' %
                              signature_version)
 
+        if api_version is not None:
+            self.api_version = str(api_version)
+        else:
+            if self.api_version is None:
+                raise ValueError('Unsupported null api_version')
+
         self.signer = signer_cls(access_key=self.user_id,
                                  access_secret=self.key,
-                                 version=self.version)
+                                 version=self.api_version)
 
     def add_default_params(self, params):
         params = self.signer.get_request_params(params=params,

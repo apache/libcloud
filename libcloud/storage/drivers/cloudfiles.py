@@ -265,6 +265,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                                       port=port, region=region,
                                                       **kwargs)
 
+    @classmethod
+    def list_regions(cls):
+        return ['ord', 'dfw', 'iad', 'lon', 'hkg', 'syd']
+
     def iterate_containers(self):
         response = self.connection.request('')
 
@@ -885,19 +889,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return kwargs
 
 
-class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
-    """
-    Cloudfiles storage driver for the US endpoint.
-    """
-
-    type = Provider.CLOUDFILES_US
-    name = 'CloudFiles (US)'
-
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'ord'
-        super(CloudFilesUSStorageDriver, self).__init__(*args, **kwargs)
-
-
 class OpenStackSwiftStorageDriver(CloudFilesStorageDriver):
     """
     Storage driver for the OpenStack Swift.
@@ -917,19 +908,6 @@ class OpenStackSwiftStorageDriver(CloudFilesStorageDriver):
                                                           port=port,
                                                           region=region,
                                                           **kwargs)
-
-
-class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
-    """
-    Cloudfiles storage driver for the UK endpoint.
-    """
-
-    type = Provider.CLOUDFILES_UK
-    name = 'CloudFiles (UK)'
-
-    def __init__(self, *args, **kwargs):
-        kwargs['region'] = 'lon'
-        super(CloudFilesUKStorageDriver, self).__init__(*args, **kwargs)
 
 
 class FileChunkReader(object):

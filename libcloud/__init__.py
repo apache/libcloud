@@ -18,18 +18,25 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
-
-__all__ = ['__version__', 'enable_debug']
-__version__ = '1.0.0-pre1'
-
 import os
 import codecs
+
+from libcloud.base import DriverType  # NOQA
+from libcloud.base import DriverTypeFactoryMap  # NOQA
+from libcloud.base import get_driver  # NOQA
+
 
 try:
     import paramiko
     have_paramiko = True
 except ImportError:
     have_paramiko = False
+
+__all__ = [
+    '__version__',
+    'enable_debug'
+]
+__version__ = '1.3.0'
 
 
 def enable_debug(fo):

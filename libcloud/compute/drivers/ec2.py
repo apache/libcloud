@@ -86,6 +86,10 @@ NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 DEFAULT_EUCA_API_VERSION = '3.3.0'
 EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 
+# Outscale Constants
+DEFAULT_OUTSCALE_API_VERSION = '2016-04-01'
+OUTSCALE_NAMESPACE = 'http://api.outscale.com/wsdl/fcuext/2014-04-15/'
+
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
@@ -640,6 +644,16 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 2
         }
+    },
+    'x1.32xlarge': {
+        'id': 'x1.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo Extra Large instance',
+        'ram': GiB(1952),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
     }
 }
 
@@ -704,7 +718,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # US West (Northern California) Region
@@ -818,7 +833,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # EU (Ireland) Region
@@ -878,7 +894,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # EU (Frankfurt) Region
@@ -923,7 +940,45 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
+        ]
+    },
+    # Asia Pacific (Mumbai, India) Region
+    'ap-south-1': {
+        'endpoint': 'ec2.ap-south-1.amazonaws.com',
+        'api_name': 'ec2_ap_south_1',
+        'country': 'India',
+        'signature_version': '4',
+        'instance_types': [
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge'
         ]
     },
     # Asia Pacific (Singapore) Region
@@ -975,7 +1030,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1034,7 +1090,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1071,7 +1128,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     # South America (Sao Paulo) Region
@@ -1155,7 +1213,8 @@ REGION_DETAILS = {
             't2.micro',
             't2.small',
             't2.medium',
-            't2.large'
+            't2.large',
+            'x1.32xlarge'
         ]
     },
     'us-gov-west-1': {
@@ -4255,7 +4314,8 @@ class BaseEC2NodeDriver(NodeDriver):
                   'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
-            params['Tag.%d.Value' % i] = tags[key]
+            if tags[key] is not None:
+                params['Tag.%d.Value' % i] = tags[key]
 
         res = self.connection.request(self.path,
                                       params=params.copy()).object
@@ -5380,7 +5440,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
-        kwargs['signature_version'] = self.signature_version
+        if hasattr(self, 'token') and self.token is not None:
+            kwargs['token'] = self.token
+            # Force signature_version 4 for tokens or auth breaks
+            kwargs['signature_version'] = '4'
+        else:
+            kwargs['signature_version'] = self.signature_version
+
         return kwargs
 
     def _to_nodes(self, object, xpath):
@@ -5539,7 +5605,8 @@ class BaseEC2NodeDriver(NodeDriver):
                               driver=self,
                               extra=extra,
                               created=created,
-                              state=state)
+                              state=state,
+                              name=name)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
@@ -6317,15 +6384,17 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='us-east-1', **kwargs):
+                 region='us-east-1', token=None, **kwargs):
         if hasattr(self, '_region'):
             region = self._region
 
-        if region not in VALID_EC2_REGIONS:
+        valid_regions = self.list_regions()
+        if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
         details = REGION_DETAILS[region]
         self.region_name = region
+        self.token = token
         self.api_name = details['api_name']
         self.country = details['country']
         self.signature_version = details.get('signature_version',
@@ -6337,6 +6406,10 @@ class EC2NodeDriver(BaseEC2NodeDriver):
                                             secure=secure, host=host,
                                             port=port, **kwargs)
 
+    @classmethod
+    def list_regions(cls):
+        return VALID_EC2_REGIONS
+
 
 class IdempotentParamError(LibcloudError):
     """
@@ -6346,73 +6419,6 @@ class IdempotentParamError(LibcloudError):
 
     def __str__(self):
         return repr(self.value)
-
-
-class EC2EUNodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Western Europe Region.
-    """
-    name = 'Amazon EC2 (eu-west-1)'
-    _region = 'eu-west-1'
-
-
-class EC2USWestNodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Western US Region
-    """
-    name = 'Amazon EC2 (us-west-1)'
-    _region = 'us-west-1'
-
-
-class EC2USWestOregonNodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the US West Oregon region.
-    """
-    name = 'Amazon EC2 (us-west-2)'
-    _region = 'us-west-2'
-
-
-class EC2APSENodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Southeast Asia Pacific Region.
-    """
-    name = 'Amazon EC2 (ap-southeast-1)'
-    _region = 'ap-southeast-1'
-
-
-class EC2APNE1NodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Northeast Asia Pacific 1(Tokyo) Region.
-    """
-    name = 'Amazon EC2 (ap-northeast-1)'
-    _region = 'ap-northeast-1'
-
-
-EC2APNENodeDriver = EC2APNE1NodeDriver  # fallback
-
-
-class EC2APNE2NodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Northeast Asia Pacific 2(Seoul) Region.
-    """
-    name = 'Amazon EC2 (ap-northeast-2)'
-    _region = 'ap-northeast-2'
-
-
-class EC2SAEastNodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the South America (Sao Paulo) Region.
-    """
-    name = 'Amazon EC2 (sa-east-1)'
-    _region = 'sa-east-1'
-
-
-class EC2APSESydneyNodeDriver(EC2NodeDriver):
-    """
-    Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
-    """
-    name = 'Amazon EC2 (ap-southeast-2)'
-    _region = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):
@@ -6557,6 +6563,7 @@ class OutscaleConnection(EC2Connection):
     Connection class for Outscale
     """
 
+    version = DEFAULT_OUTSCALE_API_VERSION
     host = None
 
 
@@ -6803,6 +6810,268 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
+
+    def ex_modify_instance_keypair(self, instance_id, key_name=None):
+        """
+        Modifies the keypair associated with a specified instance.
+        Once the modification done, you must restart the instance.
+
+        :param      instance_id: The ID of the instance
+        :type       instance_id: ``string``
+
+        :param      key_name: The name of the keypair
+        :type       key_name: ``string``
+        """
+
+        params = {'Action': 'ModifyInstanceKeypair'}
+
+        params.update({'instanceId': instance_id})
+
+        if key_name is not None:
+            params.update({'keyName': key_name})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        return (findtext(element=response, xpath='return',
+                         namespace=OUTSCALE_NAMESPACE) == 'true')
+
+    def _to_quota(self, elem):
+        """
+        To Quota
+        """
+
+        quota = {}
+        for reference_quota_item in findall(element=elem,
+                                            xpath='referenceQuotaSet/item',
+                                            namespace=OUTSCALE_NAMESPACE):
+            reference = findtext(element=reference_quota_item,
+                                 xpath='reference',
+                                 namespace=OUTSCALE_NAMESPACE)
+            quota_set = []
+            for quota_item in findall(element=reference_quota_item,
+                                      xpath='quotaSet/item',
+                                      namespace=OUTSCALE_NAMESPACE):
+                ownerId = findtext(element=quota_item,
+                                   xpath='ownerId',
+                                   namespace=OUTSCALE_NAMESPACE)
+                name = findtext(element=quota_item,
+                                xpath='name',
+                                namespace=OUTSCALE_NAMESPACE)
+                displayName = findtext(element=quota_item,
+                                       xpath='displayName',
+                                       namespace=OUTSCALE_NAMESPACE)
+                description = findtext(element=quota_item,
+                                       xpath='description',
+                                       namespace=OUTSCALE_NAMESPACE)
+                groupName = findtext(element=quota_item,
+                                     xpath='groupName',
+                                     namespace=OUTSCALE_NAMESPACE)
+                maxQuotaValue = findtext(element=quota_item,
+                                         xpath='maxQuotaValue',
+                                         namespace=OUTSCALE_NAMESPACE)
+                usedQuotaValue = findtext(element=quota_item,
+                                          xpath='usedQuotaValue',
+                                          namespace=OUTSCALE_NAMESPACE)
+                quota_set.append({'ownerId': ownerId,
+                                  'name': name,
+                                  'displayName': displayName,
+                                  'description': description,
+                                  'groupName': groupName,
+                                  'maxQuotaValue': maxQuotaValue,
+                                  'usedQuotaValue': usedQuotaValue})
+            quota[reference] = quota_set
+
+        return quota
+
+    def ex_describe_quota(self, dry_run=False, filters=None,
+                          max_results=None, marker=None):
+        """
+        Describes one or more of your quotas.
+
+        :param      dry_run: dry_run
+        :type       dry_run: ``bool``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain quotas
+        :type       filters: ``dict``
+
+        :param      max_results: The maximum number of items that can be
+                                 returned in a single page (by default, 100)
+        :type       max_results: ``int``
+
+        :param      marker: Set quota marker
+        :type       marker: ``string``
+
+        :return:    (is_truncated, quota) tuple
+        :rtype:     ``(bool, dict)``
+        """
+
+        if filters:
+            raise NotImplementedError(
+                'quota filters are not implemented')
+
+        if marker:
+            raise NotImplementedError(
+                'quota marker is not implemented')
+
+        params = {'Action': 'DescribeQuota'}
+
+        if dry_run:
+            params.update({'DryRun': dry_run})
+
+        if max_results:
+            params.update({'MaxResults': max_results})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        quota = self._to_quota(response)
+
+        is_truncated = findtext(element=response, xpath='isTruncated',
+                                namespace=OUTSCALE_NAMESPACE)
+
+        return is_truncated, quota
+
+    def _to_product_type(self, elem):
+
+        productTypeId = findtext(element=elem, xpath='productTypeId',
+                                 namespace=OUTSCALE_NAMESPACE)
+        description = findtext(element=elem, xpath='description',
+                               namespace=OUTSCALE_NAMESPACE)
+
+        return {'productTypeId': productTypeId,
+                'description': description}
+
+    def ex_get_product_type(self, image_id, snapshot_id=None):
+        """
+        Get the product type of a specified OMI or snapshot.
+
+        :param      image_id: The ID of the OMI
+        :type       image_id: ``string``
+
+        :param      snapshot_id: The ID of the snapshot
+        :type       snapshot_id: ``string``
+
+        :return:    A product type
+        :rtype:     ``dict``
+        """
+
+        params = {'Action': 'GetProductType'}
+
+        params.update({'ImageId': image_id})
+        if snapshot_id is not None:
+            params.update({'SnapshotId': snapshot_id})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        product_type = self._to_product_type(response)
+
+        return product_type
+
+    def _to_product_types(self, elem):
+
+        product_types = []
+        for product_types_item in findall(element=elem,
+                                          xpath='productTypeSet/item',
+                                          namespace=OUTSCALE_NAMESPACE):
+            productTypeId = findtext(element=product_types_item,
+                                     xpath='productTypeId',
+                                     namespace=OUTSCALE_NAMESPACE)
+            description = findtext(element=product_types_item,
+                                   xpath='description',
+                                   namespace=OUTSCALE_NAMESPACE)
+            product_types.append({'productTypeId': productTypeId,
+                                  'description': description})
+
+        return product_types
+
+    def ex_describe_product_types(self, filters=None):
+        """
+        Describes Product Types.
+
+        :param      filters: The filters so that the response includes
+                             information for only certain quotas
+        :type       filters: ``dict``
+
+        :return:    A product types list
+        :rtype:     ``list``
+        """
+
+        params = {'Action': 'DescribeProductTypes'}
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        product_types = self._to_product_types(response)
+
+        return product_types
+
+    def _to_instance_types(self, elem):
+
+        instance_types = []
+        for instance_types_item in findall(element=elem,
+                                           xpath='instanceTypeSet/item',
+                                           namespace=OUTSCALE_NAMESPACE):
+            name = findtext(element=instance_types_item,
+                            xpath='name',
+                            namespace=OUTSCALE_NAMESPACE)
+            vcpu = findtext(element=instance_types_item,
+                            xpath='vcpu',
+                            namespace=OUTSCALE_NAMESPACE)
+            memory = findtext(element=instance_types_item,
+                              xpath='memory',
+                              namespace=OUTSCALE_NAMESPACE)
+            storageSize = findtext(element=instance_types_item,
+                                   xpath='storageSize',
+                                   namespace=OUTSCALE_NAMESPACE)
+            storageCount = findtext(element=instance_types_item,
+                                    xpath='storageCount',
+                                    namespace=OUTSCALE_NAMESPACE)
+            maxIpAddresses = findtext(element=instance_types_item,
+                                      xpath='maxIpAddresses',
+                                      namespace=OUTSCALE_NAMESPACE)
+            ebsOptimizedAvailable = findtext(element=instance_types_item,
+                                             xpath='ebsOptimizedAvailable',
+                                             namespace=OUTSCALE_NAMESPACE)
+            d = {'name': name,
+                 'vcpu': vcpu,
+                 'memory': memory,
+                 'storageSize': storageSize,
+                 'storageCount': storageCount,
+                 'maxIpAddresses': maxIpAddresses,
+                 'ebsOptimizedAvailable': ebsOptimizedAvailable}
+            instance_types.append(d)
+
+        return instance_types
+
+    def ex_describe_instance_types(self, filters=None):
+        """
+        Describes Instance Types.
+
+        :param      filters: The filters so that the response includes
+                             information for only instance types
+        :type       filters: ``dict``
+
+        :return:    A instance types list
+        :rtype:     ``list``
+        """
+
+        params = {'Action': 'DescribeInstanceTypes'}
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        instance_types = self._to_instance_types(response)
+
+        return instance_types
 
 
 class OutscaleSASNodeDriver(OutscaleNodeDriver):

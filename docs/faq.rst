@@ -55,7 +55,7 @@ I want do add a new provider driver what should I do?
 For now the best thing to do is to look at an existing driver and test cases
 for examples.
 
-Libcloud currently supports more than 25 different providers. This means we
+Libcloud currently supports more than 60 different providers. This means we
 have a broad range of examples of different APIs and authentication methods.
 APIs range from simple JSON based REST APIs to SOAP APIs. Authentication
 methods range from simple shared token and digest auth to HMAC signed requests.
