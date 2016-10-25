@@ -1822,7 +1822,7 @@ class FCUMockHttp(EC2MockHttp):
 class OutscaleFCUTests(LibcloudTestCase):
 
     def setUp(self):
-        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, FCUMockHttp)
+        OutscaleSASNodeDriver.connectionCls.conn_class = FCUMockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],

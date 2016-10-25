@@ -302,8 +302,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
 
     def setUp(self):
         super(GoogleStorageTests, self).setUp()
-        self.driver_type.jsonConnectionCls.conn_classes = (
-            None, GoogleStorageJSONMockHttp)
+        self.driver_type.jsonConnectionCls.conn_class = GoogleStorageJSONMockHttp
 
     def test_billing_not_enabled(self):
         # TODO

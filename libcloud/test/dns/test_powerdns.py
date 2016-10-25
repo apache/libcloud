@@ -30,8 +30,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 class PowerDNSTestCase(LibcloudTestCase):
 
     def setUp(self):
-        PowerDNSDriver.connectionCls.conn_classes = (PowerDNSMockHttp,
-                                                     PowerDNSMockHttp)
+        PowerDNSDriver.connectionCls.conn_class = PowerDNSMockHttp
         PowerDNSMockHttp.type = None
         self.driver = PowerDNSDriver('testsecret')
 

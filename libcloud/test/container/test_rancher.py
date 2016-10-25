@@ -29,8 +29,7 @@ from libcloud.test import MockHttp
 class RancherContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        RancherContainerDriver.connectionCls.conn_classes = (
-            RancherMockHttp, RancherMockHttp)
+        RancherContainerDriver.connectionCls.conn_class = RancherMockHttp
         RancherMockHttp.type = None
         RancherMockHttp.use_param = 'a'
         self.driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER)
