@@ -3179,7 +3179,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-        valid_volume_types = ['standard', 'io1', 'gp2']
+        valid_volume_types = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
         params = {
             'Action': 'CreateVolume',
