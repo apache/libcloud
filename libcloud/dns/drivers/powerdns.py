@@ -431,9 +431,12 @@ class PowerDNSDriver(DNSDriver):
                 'changetype': 'REPLACE',
                 'ttl'       : extra['ttl'],
                 'records'   : [updated_record],
-                'comments'  : [comment],
             }]
         }
+        
+        if (comment):
+            payload["rrsets"][0]["comments"] = [comment]
+            
         try:
             self.connection.request(action = action, data = json.dumps(payload),
                                     method = 'PATCH')
