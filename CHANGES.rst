@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [ec2] Add st1 and sc1 volume types to valid types
+  (GITHUB-925)
+  [Sean Goller]
+
 - [digital ocean] add ex_change_kernel in DigitalOcean_v2 driver
   (GITHUB-922)
   [Rick van de Loo]
