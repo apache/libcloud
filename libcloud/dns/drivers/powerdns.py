@@ -144,7 +144,8 @@ class PowerDNSDriver(DNSDriver):
                                              host=host, port=port,
                                              **kwargs)
 
-    def create_record(self, name, zone, type, data, disabled=False, comment=None, extra=None):
+    def create_record(self, name, zone, type, data, disabled=False,
+                      comment=None, extra=None):
         """
         Create a new record.
 
@@ -212,7 +213,7 @@ class PowerDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
+                    raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
             raise e
         return Record(id=None, name=name, data=data,
@@ -264,7 +265,7 @@ class PowerDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith("Domain '%s' already exists" % domain):
-                raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
+                    raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
                                              value=e.message)
             raise e
         return Zone(id=zone_id, domain=domain, type=None, ttl=None,
@@ -373,7 +374,7 @@ class PowerDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
+                    raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
             raise e
         return self._to_records(response, zone)
@@ -388,7 +389,8 @@ class PowerDNSDriver(DNSDriver):
         response = self.connection.request(action=action, method='GET')
         return self._to_zones(response)
 
-    def update_record(self, record, name, type, data, disabled=False, comment=None, extra=None):
+    def update_record(self, record, name, type, data, disabled=False,
+                      comment=None, extra=None):
         """
         Update an existing record.
 
@@ -403,13 +405,13 @@ class PowerDNSDriver(DNSDriver):
 
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
-        
+
         :param disabled: Flag to disable/enable the record
         :type  disabled: Boolean, default False
-        
+
         :param comment: Comments to add to the record
         :type  comment: ``dict`` . 3 keys are allowed: account, content, modified_at
-        
+
         :param extra: (optional) Extra attributes (driver specific).
         :type  extra: ``dict``
 
@@ -444,7 +446,7 @@ class PowerDNSDriver(DNSDriver):
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=record.zone.id,
+                    raise ZoneDoesNotExistError(zone_id=record.zone.id,
                                             driver=self, value=e.message)
             raise e
         return Record(id=None, name=name, data=data, type=type,
