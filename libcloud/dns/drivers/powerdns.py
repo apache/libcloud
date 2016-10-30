@@ -170,10 +170,10 @@ class PowerDNSDriver(DNSDriver):
 
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
-        
+
         :param disabled: Flag to enable/disable the record
         :type  disabled: ``Boolean``. Default False
-        
+
         :param comment: comment to attach to the record
         :type  comment: ``dict``
 
@@ -214,7 +214,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
                     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+                                                value=e.message)
             raise e
         return Record(id=None, name=name, data=data,
                       type=type, zone=zone, driver=self, ttl=extra['ttl'])
@@ -266,7 +266,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith("Domain '%s' already exists" % domain):
                     raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
-                                             value=e.message)
+                                                 value=e.message)
             raise e
         return Zone(id=zone_id, domain=domain, type=None, ttl=None,
                     driver=self, extra=extra)
@@ -375,7 +375,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
                     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+                                                value=e.message)
             raise e
         return self._to_records(response, zone)
 
@@ -410,7 +410,8 @@ class PowerDNSDriver(DNSDriver):
         :type  disabled: Boolean, default False
 
         :param comment: Comments to add to the record
-        :type  comment: ``dict`` . 3 keys are allowed: account, content, modified_at
+        :type  comment: ``dict`` . 3 keys are allowed: account, content,
+                                    modified_at
 
         :param extra: (optional) Extra attributes (driver specific).
         :type  extra: ``dict``
@@ -447,7 +448,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                 e.message.startswith('Could not find domain'):
                     raise ZoneDoesNotExistError(zone_id=record.zone.id,
-                                            driver=self, value=e.message)
+                                                driver=self, value=e.message)
             raise e
         return Record(id=None, name=name, data=data, type=type,
                       zone=record.zone, driver=self, ttl=extra['ttl'])
