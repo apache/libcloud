@@ -148,7 +148,7 @@ class ApplicationLBDriver(Driver):
         return tags
 
     def _to_rule(self, el):
-        def __to_bool(val):
+        def __to_bool__(val):
             return val.lower() in ("yes", "true", "t", "1")
 
         id = findtext(element=el, xpath='RuleArn', namespace=NS)
@@ -165,7 +165,7 @@ class ApplicationLBDriver(Driver):
 
         rule = {
             'id': id,
-            'is_default': __to_bool(is_default),
+            'is_default': __to_bool__(is_default),
             'priority': priority,
             'target_group': target_group,
             'conditions': conditions
