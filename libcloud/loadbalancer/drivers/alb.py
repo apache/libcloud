@@ -17,7 +17,6 @@ __all__ = [
     'ApplicationLBDriver'
 ]
 
-from libcloud.utils.py3 import httplib
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
@@ -54,7 +53,9 @@ class ApplicationLBDriver(Driver):
 
     def __init__(self, access_id, secret, region, token=None):
         self.token = token
-        super(ApplicationLBDriver, self).__init__(access_id, secret, token=token)
+        super(ApplicationLBDriver, self).__init__(
+            access_id, secret, token=token
+        )
         self.region = region
         self.region_name = region
         self.connection.host = HOST % (region)
@@ -83,7 +84,9 @@ class ApplicationLBDriver(Driver):
 
     def _to_listeners(self, data):
         xpath = 'DescribeListenersResult/Listeners/member'
-        return [self._to_listener(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
+        return [self._to_listener(el) for el in findall(
+            element=data, xpath=xpath, namespace=NS
+        )]
 
     def _to_listener(self, el):
         listener_arn = findtext(element=el, xpath='ListenerArn', namespace=NS)
@@ -97,10 +100,16 @@ class ApplicationLBDriver(Driver):
 
     def _to_targets(self, data):
         xpath = 'DefaultActions/member'
-        return [self._to_target(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
+        return [self._to_target(el) for el in findall(
+            element=data, xpath=xpath, namespace=NS
+        )]
 
     def _to_target(self, el):
-        return findtext(element=el, xpath='DefaultActions/member/TargetGroupArn', namespace=NS)
+        return findtext(
+            element=el,
+            xpath='DefaultActions/member/TargetGroupArn',
+            namespace=NS
+        )
 
     def _to_balancer(self, el):
         name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
@@ -122,7 +131,10 @@ class ApplicationLBDriver(Driver):
             'tags': self._ex_get_balancer_tags(balancer)
         }
         balancer.extra = extra
-        balancer.port = extra['listeners'][0]['port'] if len(extra['listeners']) > 0 else None
+        if len(extra['listeners']) > 0:
+            balancer.port = extra['listeners'][0]['port']
+        else:
+            balancer.port = None
         balancer._members = self._ex_get_balancer_memebers(balancer)
 
         return balancer
@@ -154,13 +166,22 @@ class ApplicationLBDriver(Driver):
         id = findtext(element=el, xpath='RuleArn', namespace=NS)
         is_default = findtext(element=el, xpath='IsDefault', namespace=NS)
         priority = findtext(element=el, xpath='Priority', namespace=NS)
-        target_group = findtext(element=el, xpath='Actions/member/TargetGroupArn', namespace=NS)
+        target_group = findtext(
+            element=el,
+            xpath='Actions/member/TargetGroupArn',
+            namespace=NS
+        )
         conditions = {}
-
-        for cond_member in findall(element=el, xpath='Conditions/member', namespace=NS):
+        cond_members = findall(
+            element=el, xpath='Conditions/member', namespace=NS
+        )
+        for cond_member in cond_members:
             field = findtext(element=cond_member, xpath='Field', namespace=NS)
             conditions[field] = []
-            for value_member in findall(element=cond_member, xpath='Values/member', namespace=NS):
+            value_members = findall(
+                element=cond_member, xpath='Values/member', namespace=NS
+            )
+            for value_member in value_members:
                 conditions[field].append(value_member.text)
 
         rule = {
@@ -184,7 +205,9 @@ class ApplicationLBDriver(Driver):
                 for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_target_group(self, el):
-        target_group_arn = findtext(element=el, xpath='TargetGroupArn', namespace=NS)
+        target_group_arn = findtext(
+            element=el, xpath='TargetGroupArn', namespace=NS
+        )
         name = findtext(element=el, xpath='TargetGroupName', namespace=NS)
         members = self._ex_get_target_group_members(target_group_arn)
 
@@ -198,7 +221,9 @@ class ApplicationLBDriver(Driver):
     def _to_target_group_member(self, el):
         id = findtext(element=el, xpath='Target/Id', namespace=NS)
         port = findtext(element=el, xpath='Target/Port', namespace=NS)
-        health = findtext(element=el, xpath='TargetHealth/State', namespace=NS)
+        health = findtext(
+            element=el, xpath='TargetHealth/State', namespace=NS
+        )
 
         return {'id': id, 'port': port, 'health': health}
 
@@ -277,7 +302,8 @@ class ApplicationLBDriver(Driver):
         return self._to_rules(data)
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(ApplicationLBDriver, self)._ex_connection_class_kwargs()
+        pdriver = super(ApplicationLBDriver, self)
+        kwargs = pdriver._ex_connection_class_kwargs()
         if hasattr(self, 'token') and self.token is not None:
             kwargs['token'] = self.token
             kwargs['signature_version'] = '4'

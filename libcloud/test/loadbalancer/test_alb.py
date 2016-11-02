@@ -126,6 +126,7 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertTrue(('target_group' in listener_rules[0]), 'Rule is missing "target_group" field')
         self.assertTrue(('conditions' in listener_rules[0]), 'Rule is missing "conditions" field')
 
+
 class ApplicationLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('alb')
 
