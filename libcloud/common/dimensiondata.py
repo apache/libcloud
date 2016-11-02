@@ -83,6 +83,11 @@ API_ENDPOINTS = {
         'host': 'api-canada.dimensiondata.com',
         'vendor': 'DimensionData'
     },
+    'dd-qa': {
+        'name': 'Test (QA)',
+        'host': 'apiqa1geo1.itaas.dimensiondata.com',
+        'vendor': 'DimensionData'
+    },
     'is-na': {
         'name': 'North America (NA)',
         'host': 'usapi.cloud.is.co.za',
@@ -382,7 +387,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
     allow_insecure = False
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None, **conn_kwargs):
+                 url=None, timeout=None, proxy_url=None,
+                 api_version=None, **conn_kwargs):
         super(DimensionDataConnection, self).__init__(
             user_id=user_id,
             key=key,
@@ -393,6 +399,10 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
         if conn_kwargs['region']:
             self.host = conn_kwargs['region']['host']
+
+        if api_version:
+            if api_version.startswith('2'):
+                self.api_version_2 = api_version
 
     def add_default_headers(self, headers):
         headers['Authorization'] = \

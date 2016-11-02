@@ -114,6 +114,9 @@ class DimensionDataNodeDriver(NodeDriver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
+        if api_version is not None:
+            self.api_version = api_version
+
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
                                                       port=port,
@@ -129,6 +132,7 @@ class DimensionDataNodeDriver(NodeDriver):
         kwargs = super(DimensionDataNodeDriver,
                        self)._ex_connection_class_kwargs()
         kwargs['region'] = self.selected_region
+        kwargs['api_version'] = self.api_version
         return kwargs
 
     def _create_node_mcp1(self, name, image, auth, ex_description,
