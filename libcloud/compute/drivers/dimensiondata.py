@@ -369,7 +369,6 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> #                           ex_primary_nic_network_adapter='E1000',
         >>> #                           ex_is_started=False)
         >>>
-        >>> pprint(node)
 
         :keyword    name:   (required) String with a name for this new node
         :type       name:   ``str``
