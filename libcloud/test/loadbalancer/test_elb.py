@@ -36,6 +36,19 @@ class ElasticLBTests(unittest.TestCase):
 
         self.driver = ElasticLBDriver(*LB_ELB_PARAMS)
 
+    def test_instantiate_driver_with_token(self):
+        token = 'temporary_credentials_token'
+        driver = ElasticLBDriver(*LB_ELB_PARAMS, **{'token': token})
+        self.assertTrue(hasattr(driver, 'token'), 'Driver has no attribute token')
+        self.assertEquals(token, driver.token, "Driver token does not match with provided token")
+
+    def test_driver_with_token_signature_version(self):
+        token = 'temporary_credentials_token'
+        driver = ElasticLBDriver(*LB_ELB_PARAMS, **{'token': token})
+        kwargs = driver._ex_connection_class_kwargs()
+        self.assertTrue(('signature_version' in kwargs), 'Driver has no attribute signature_version')
+        self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
+
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
 
@@ -50,12 +63,44 @@ class ElasticLBTests(unittest.TestCase):
         self.assertEqual(balancers[0].id, 'tests')
         self.assertEqual(balancers[0].name, 'tests')
 
+    def test_list_balancers_with_tags(self):
+        balancers = self.driver.list_balancers(ex_fetch_tags=True)
+
+        self.assertEqual(len(balancers), 1)
+        self.assertEqual(balancers[0].id, 'tests')
+        self.assertEqual(balancers[0].name, 'tests')
+        self.assertTrue(('tags' in balancers[0].extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancers[0].extra['tags']['project'], 'lima')
+
+    def test_list_balancer_tags(self):
+        tags = self.driver._ex_list_balancer_tags('tests')
+
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags['project'], 'lima')
+
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
 
         self.assertEqual(balancer.id, 'tests')
         self.assertEqual(balancer.name, 'tests')
         self.assertEqual(balancer.state, State.UNKNOWN)
+
+    def test_get_balancer_with_tags(self):
+        balancer = self.driver.get_balancer(balancer_id='tests', ex_fetch_tags=True)
+
+        self.assertEqual(balancer.id, 'tests')
+        self.assertEqual(balancer.name, 'tests')
+        self.assertTrue(('tags' in balancer.extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancer.extra['tags']['project'], 'lima')
+
+    def test_populate_balancer_tags(self):
+        balancer = self.driver.get_balancer(balancer_id='tests')
+        balancer = self.driver._ex_populate_balancer_tags(balancer)
+
+        self.assertEqual(balancer.id, 'tests')
+        self.assertEqual(balancer.name, 'tests')
+        self.assertTrue(('tags' in balancer.extra), 'No tags dict found in balancer.extra')
+        self.assertEqual(balancer.extra['tags']['project'], 'lima')
 
     def test_destroy_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
@@ -138,6 +183,10 @@ class ElasticLBMockHttp(MockHttpTestCase):
 
     def _2012_06_01_DescribeLoadBalancers(self, method, url, body, headers):
         body = self.fixtures.load('describe_load_balancers.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _2012_06_01_DescribeTags(self, method, url, body, headers):
+        body = self.fixtures.load('describe_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_06_01_CreateLoadBalancer(self, method, url, body, headers):

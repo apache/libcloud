@@ -13,7 +13,7 @@ configuration management tool (such as Puppet, Chef, or cfengine) on it.
 Besides managing cloud and virtual servers, compute component also allows you
 to manage cloud block storage (not to be confused with cloud object storage)
 for providers which support it.
-Block storage management is lives under compute API, because it is in most cases
+Block storage management lives under compute API, because it is in most cases
 tightly coupled with compute resources.
 
 Terminology

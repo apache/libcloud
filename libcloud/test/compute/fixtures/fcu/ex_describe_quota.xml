@@ -1,0 +1,53 @@
+<DescribeQuotaResponse
+    xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
+    <requestId>31ef7689-2521-445f-b634-2a5e3e66f699</requestId>
+    <isTruncated>true</isTruncated>
+    <referenceQuotaSet>
+        <item>
+            <reference>global</reference>
+            <quotaSet>
+                <item>
+                    <ownerId>366866344682</ownerId>
+                    <name>vm_limit</name>
+                    <displayName>VM Limit</displayName>
+                    <description>Maximum number of VM this user can own</description>
+                    <groupName>Compute</groupName>
+                    <maxQuotaValue>20</maxQuotaValue>
+                    <usedQuotaValue>1</usedQuotaValue>
+                </item>
+                <item>
+                    <ownerId>366866344682</ownerId>
+                    <name>core_limit</name>
+                    <displayName>Core Limit</displayName>
+                    <description>Maximum number of total cores (virtual core)</description>
+                    <groupName>Compute</groupName>
+                    <maxQuotaValue>800</maxQuotaValue>
+                    <usedQuotaValue>2</usedQuotaValue>
+                </item>
+                <item>
+                    <ownerId>366866344682</ownerId>
+                    <name>memory_limit</name>
+                    <displayName>Memory Limit</displayName>
+                    <description>Maximum number of total memory (GiB)</description>
+                    <groupName>Compute</groupName>
+                    <maxQuotaValue>4880</maxQuotaValue>
+                    <usedQuotaValue>7</usedQuotaValue>
+                </item>
+            </quotaSet>
+        </item>
+        <item>
+            <reference>vpc-00000000</reference>
+            <quotaSet>
+                <item>
+                    <ownerId>366866344682</ownerId>
+                    <name>sg_limit</name>
+                    <displayName>Security Groups Limit</displayName>
+                    <description>Maximum number of security groups</description>
+                    <groupName>Security Groups</groupName>
+                    <maxQuotaValue>100</maxQuotaValue>
+                    <usedQuotaValue>2</usedQuotaValue>
+                </item>
+            </quotaSet>
+        </item>
+    </referenceQuotaSet>
+</DescribeQuotaResponse>

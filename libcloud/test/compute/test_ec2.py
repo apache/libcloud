@@ -682,6 +682,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         self.driver.ex_delete_tags(node, {'sample': 'tag'})
 
+    def test_ex_delete_tags2(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        self.driver.ex_create_tags(node, {'sample': 'another tag'})
+        self.driver.ex_delete_tags(node, {'sample': None})
+
     def test_ex_describe_addresses_for_node(self):
         node1 = Node('i-4382922a', None, None, None, None, self.driver)
         ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
@@ -898,6 +903,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('Daily Backup', snaps[0].extra['description'])
 
         self.assertEqual('snap-18349159', snaps[1].id)
+        self.assertEqual('DB Backup 1', snaps[1].name)
         self.assertEqual(VolumeSnapshotState.AVAILABLE, snaps[1].state)
         self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
         self.assertEqual(15, snaps[1].size)
@@ -1787,6 +1793,75 @@ class OutscaleTests(EC2Tests):
         self.assertTrue('m1.small' in ids)
         self.assertTrue('m1.large' in ids)
         self.assertTrue('m1.xlarge' in ids)
+
+
+class FCUMockHttp(EC2MockHttp):
+    fixtures = ComputeFileFixtures('fcu')
+
+    def _DescribeQuota(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_quota.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeProductTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_product_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeInstanceTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_instance_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _GetProductType(self, method, url, body, headers):
+        body = self.fixtures.load('ex_get_product_type.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifyInstanceKeypair(self, method, url, body, headers):
+        body = self.fixtures.load('ex_modify_instance_keypair.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class OutscaleFCUTests(LibcloudTestCase):
+
+    def setUp(self):
+        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, FCUMockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
+                                            secret=EC2_PARAMS[1],
+                                            host='some.fcucloud.com')
+
+    def test_ex_describe_quota(self):
+        is_truncated, quota = self.driver.ex_describe_quota()
+        self.assertTrue(is_truncated == 'true')
+        self.assertTrue('global' in quota.keys())
+        self.assertTrue('vpc-00000000' in quota.keys())
+
+    def test_ex_describe_product_types(self):
+        product_types = self.driver.ex_describe_product_types()
+        pt = {}
+        for e in product_types:
+            pt[e['productTypeId']] = e['description']
+        self.assertTrue('0001' in pt.keys())
+        self.assertTrue('MapR' in pt.values())
+        self.assertTrue(pt['0002'] == 'Windows')
+
+    def test_ex_describe_instance_instance_types(self):
+        instance_types = self.driver.ex_describe_instance_types()
+        it = {}
+        for e in instance_types:
+            it[e['name']] = e['memory']
+        self.assertTrue('og4.4xlarge' in it.keys())
+        self.assertTrue('oc2.8xlarge' in it.keys())
+        self.assertTrue('68718428160' in it.values())
+        self.assertTrue(it['m3.large'] == '8050966528')
+
+    def test_ex_get_product_type(self):
+        product_type = self.driver.ex_get_product_type('ami-29ab9e54')
+        self.assertTrue(product_type['productTypeId'] == '0002')
+        self.assertTrue(product_type['description'] == 'Windows')
+
+    def test_ex_modify_instance_keypair(self):
+        r = self.driver.ex_modify_instance_keypair('i-57292bc5', 'key_name')
+        self.assertTrue(r)
 
 
 if __name__ == '__main__':

@@ -144,6 +144,7 @@ class Provider(Type):
     OPSOURCE = 'opsource'
     OUTSCALE_INC = 'outscale_inc'
     OUTSCALE_SAS = 'outscale_sas'
+    OVH = 'ovh'
     PACKET = 'packet'
     PROFIT_BRICKS = 'profitbricks'
     RACKSPACE = 'rackspace'
@@ -271,6 +272,7 @@ class NodeState(Type):
     ERROR = 'error'
     PAUSED = 'paused'
     RECONFIGURING = 'reconfiguring'
+    MIGRATING = 'migrating'
 
 
 class StorageVolumeState(Type):
@@ -286,6 +288,7 @@ class StorageVolumeState(Type):
     BACKUP = 'backup'
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
+    MIGRATING = 'migrating'
 
 
 class VolumeSnapshotState(Type):

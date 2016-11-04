@@ -53,8 +53,9 @@ class ElasticLBDriver(Driver):
     connectionCls = ELBConnection
     signature_version = '4'
 
-    def __init__(self, access_id, secret, region):
-        super(ElasticLBDriver, self).__init__(access_id, secret)
+    def __init__(self, access_id, secret, region, token=None):
+        self.token = token
+        super(ElasticLBDriver, self).__init__(access_id, secret, token=token)
         self.region = region
         self.region_name = region
         self.connection.host = HOST % (region)
@@ -62,10 +63,16 @@ class ElasticLBDriver(Driver):
     def list_protocols(self):
         return ['tcp', 'ssl', 'http', 'https']
 
-    def list_balancers(self):
+    def list_balancers(self, ex_fetch_tags=False):
         params = {'Action': 'DescribeLoadBalancers'}
         data = self.connection.request(ROOT, params=params).object
-        return self._to_balancers(data)
+        balancers = self._to_balancers(data)
+
+        if ex_fetch_tags:
+            for balancer in balancers:
+                self._ex_populate_balancer_tags(balancer)
+
+        return balancers
 
     def create_balancer(self, name, port, protocol, algorithm, members,
                         ex_members_availability_zones=None):
@@ -106,13 +113,18 @@ class ElasticLBDriver(Driver):
         self.connection.request(ROOT, params=params)
         return True
 
-    def get_balancer(self, balancer_id):
+    def get_balancer(self, balancer_id, ex_fetch_tags=False):
         params = {
             'Action': 'DescribeLoadBalancers',
             'LoadBalancerNames.member.1': balancer_id
         }
         data = self.connection.request(ROOT, params=params).object
-        return self._to_balancers(data)[0]
+        balancer = self._to_balancers(data)[0]
+
+        if ex_fetch_tags:
+            balancer = self._ex_populate_balancer_tags(balancer)
+
+        return balancer
 
     def balancer_attach_compute_node(self, balancer, node):
         params = {
@@ -342,6 +354,20 @@ class ElasticLBDriver(Driver):
 
         return balancer
 
+    def _to_tags(self, data):
+        """
+        return tags dict
+        """
+        tags = {}
+        xpath = 'DescribeTagsResult/TagDescriptions/member/Tags/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            key = findtext(element=el, xpath='Key', namespace=NS)
+            value = findtext(element=el, xpath='Value', namespace=NS)
+            if key:
+                tags[key] = value
+
+        return tags
+
     def _create_list_params(self, params, items, label):
         """
         return parameter list
@@ -354,5 +380,26 @@ class ElasticLBDriver(Driver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(ElasticLBDriver, self)._ex_connection_class_kwargs()
-        kwargs['signature_version'] = self.signature_version
+        if hasattr(self, 'token') and self.token is not None:
+            kwargs['token'] = self.token
+            kwargs['signature_version'] = '4'
+        else:
+            kwargs['signature_version'] = self.signature_version
+
         return kwargs
+
+    def _ex_list_balancer_tags(self, balancer_id):
+        params = {
+            'Action': 'DescribeTags',
+            'LoadBalancerNames.member.1': balancer_id
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_tags(data)
+
+    def _ex_populate_balancer_tags(self, balancer):
+        tags = balancer.extra.get('tags', {})
+        tags.update(self._ex_list_balancer_tags(balancer.id))
+        if tags:
+            balancer.extra['tags'] = tags
+
+        return balancer

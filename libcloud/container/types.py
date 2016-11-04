@@ -51,6 +51,7 @@ class Provider(object):
     ECS = 'ecs'
     JOYENT = 'joyent'
     KUBERNETES = 'kubernetes'
+    RANCHER = 'rancher'
 
 
 class ContainerState(Type):

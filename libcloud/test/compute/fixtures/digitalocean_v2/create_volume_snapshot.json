@@ -1,0 +1,14 @@
+{
+  "snapshot": {
+    "id": "c0def940-9324-11e6-9a56-000f533176b1",
+    "name": "test-snapshot",
+    "regions": [
+      "nyc1"
+    ],
+    "created_at": "2016-10-15T22:14:34Z",
+    "resource_id": "8371d4fe-92b0-11e6-9a56-000f533176b1",
+    "resource_type": "volume",
+    "min_disk_size": 1,
+    "size_gigabytes": 0
+  }
+}

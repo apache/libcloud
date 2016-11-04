@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+        requestId="na9_20160321T074626030-0400_7e9fffe7-190b-46f2-9107- 9d52fe57d0ad"
+        xmlns="urn:didata.com:api:cloud:types">
+    <operation>CREATE_PORT_LIST</operation>
+    <responseCode>OK</responseCode>
+    <message>Port List 'MyPortList' has been created.</message>
+    <info name="portListId" value="9e6b496d-5261-4542-91aa-b50c7f569c54"/>
+</response>

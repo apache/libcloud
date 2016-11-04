@@ -99,6 +99,7 @@ preparing a release.
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
+* Remove leftover builds from previous releases. ``rm -f dist/apache*``
 
 2. Update JIRA
 ~~~~~~~~~~~~~~
@@ -181,21 +182,13 @@ key.
 7. Publishing package to PyPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**For consistency and security reasons packages are always uploaded to PyPi
-manually using the web interface and not using the setup.py upload
-command.**
+We have a script that runs uploads the signed Python source files to PyPi. It uses twine, so ensure
+you have twine available in your path `which twine` before running. Twine can be downloaded from https://pypi.python.org/pypi/twine
 
-* Run ``python setup.py register`` command. This will register a new
-  version on PyPi, but it won't upload the actual release artifacts.
+.. sourcecode:: bash
 
-* Go to the `PyPi release management page`_, find a new release and click on
-  "files" link.
-
-* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz,
-  .zip, and .whl). For ``File Type`` select ``Source`` (except for ``.whl``
-  file where you should select ``Python Wheel``) and for ``Python Version``
-  select ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
-  signature for each file (``PGP signature (.asc)`` field).
+    cd dist
+    ./deploy.sh
 
 Once all the files have been uploaded, the page should look similar to the
 screenshot below.

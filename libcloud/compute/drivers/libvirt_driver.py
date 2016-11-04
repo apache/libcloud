@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
+from libcloud.utils.py3 import ensure_string
 
 try:
     import libvirt
@@ -82,16 +83,18 @@ class LibvirtNodeDriver(NodeDriver):
         self._uri = uri
         self._key = key
         self._secret = secret
-        try:
-            self.connection = libvirt.open(uri)
-        except libvirt.libvirtError:
-            if key is None or secret is None:
+        if uri is not None and '+tcp' in self._uri:
+            if key is None and secret is None:
                 raise RuntimeError('The remote Libvirt instance requires ' +
                                    'authentication, please set \'key\' and ' +
                                    '\'secret\' parameters')
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
                     self._cred_callback, None]
             self.connection = libvirt.openAuth(uri, auth, 0)
+        else:
+            self.connection = libvirt.open(uri)
+        if uri is None:
+            self._uri = self.connection.getInfo()
 
     def _cred_callback(self, cred, user_data):
         """
@@ -426,7 +429,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
-        lines = cmd_output.split('\n')
+        lines = ensure_string(cmd_output).split('\n')
 
         arp_table = defaultdict(list)
         for line in lines:

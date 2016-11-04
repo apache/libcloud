@@ -133,6 +133,12 @@ class DimensionDataTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(client.alert.notify_list), 2)
         self.assertTrue(isinstance(client.alert.notify_list, list))
 
+    def test_ex_get_backup_details_for_target_NOBACKUP(self):
+        target = self.driver.list_targets()[0].address
+        DimensionDataMockHttp.type = 'NOBACKUP'
+        response = self.driver.ex_get_backup_details_for_target(target)
+        self.assertTrue(response is None)
+
     def test_ex_cancel_target_job(self):
         target = self.driver.list_targets()[0]
         response = self.driver.ex_get_backup_details_for_target(target)
@@ -313,32 +319,32 @@ class DimensionDataMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOCLIENT(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOCLIENT(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOJOB(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOJOB(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DISABLED(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DISABLED(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_2_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
         body = self.fixtures.load(
             'server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -425,6 +431,12 @@ class DimensionDataMockHttp(MockHttp):
 
         else:
             raise ValueError("Unknown Method {0}".format(method))
+
+    def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOBACKUP(
+            self, method, url, body, headers):
+        assert(method == 'GET')
+        body = self.fixtures.load('server_server_NOBACKUP.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_EXISTS(
             self, method, url, body, headers):

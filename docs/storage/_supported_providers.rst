@@ -8,7 +8,7 @@ Provider                      Documentation                                   Pr
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       single region driver         :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `Backblaze B2`_               :doc:`Click </storage/drivers/backblaze_b2>`    BACKBLAZE_B2      single region driver         :mod:`libcloud.storage.drivers.backblaze_b2`   :class:`BackblazeB2StorageDriver`   
 `CloudFiles`_                                                                 CLOUDFILES        ord, dfw, iad, lon, hkg, syd :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
-`Google Storage`_             :doc:`Click </storage/drivers/google_storage>`  GOOGLE_STORAGE    single region driver         :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`        
+`Google Cloud Storage`_       :doc:`Click </storage/drivers/google_storage>`  GOOGLE_STORAGE    single region driver         :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`        
 `KTUCloud Storage`_                                                           KTUCLOUD          ord, dfw, iad, lon, hkg, syd :mod:`libcloud.storage.drivers.ktucloud`       :class:`KTUCloudStorageDriver`      
 `Nimbus.io`_                                                                  NIMBUS            single region driver         :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`        
 `Ninefold`_                                                                   NINEFOLD          single region driver         :mod:`libcloud.storage.drivers.ninefold`       :class:`NinefoldStorageDriver`      
@@ -32,7 +32,7 @@ Provider                      Documentation                                   Pr
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
-.. _`Google Storage`: http://cloud.google.com/
+.. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/

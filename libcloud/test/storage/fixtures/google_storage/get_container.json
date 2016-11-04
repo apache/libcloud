@@ -1,0 +1,13 @@
+{
+    "kind": "storage#bucket",
+    "id": "test-bucket",
+    "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket",
+    "projectNumber": "123",
+    "name": "test-bucket",
+    "timeCreated": "2015-12-17T21:38:31.413Z",
+    "updated": "2015-12-17T21:38:31.413Z",
+    "metageneration": "123",
+    "location": "US",
+    "storageClass": "STANDARD",
+    "etag": "etag"
+}
