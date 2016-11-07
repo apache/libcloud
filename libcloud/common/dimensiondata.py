@@ -268,6 +268,11 @@ API_ENDPOINTS = {
         'host': 'afapi.bsnlcloud.com',
         'vendor': 'BSNL'
     },
+    'dd-qa': {
+        'name': 'Test(QA)',
+        'host': 'apiqa1geo1.itaas.dimensiondata.com',
+        'vendor': 'DimensionData'
+    }
 }
 
 # Default API end-point for the base connection class.
@@ -373,7 +378,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     api_path_version_1 = '/oec'
     api_path_version_2 = '/caas'
     api_version_1 = '0.9'
-    api_version_2 = '2.3'
+    api_version_2 = '2.4'
 
     _orgId = None
     responseCls = DimensionDataResponse
@@ -446,7 +451,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def request_with_orgId_api_2(self, action, params=None, data='',
                                  headers=None, method='GET'):
         action = "%s/%s" % (self.get_resource_path_api_2(), action)
-
+        print(action)
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,

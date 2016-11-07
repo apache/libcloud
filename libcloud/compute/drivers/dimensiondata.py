@@ -3651,8 +3651,10 @@ class DimensionDataNodeDriver(NodeDriver):
             locations = self.list_locations(location_id)
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
+
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-        os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+        os_el = element.find(fixxpath('guest/operatingSystem', TYPES_URN))
+
         if element.tag.endswith('customerImage'):
             is_customer_image = True
         else:
