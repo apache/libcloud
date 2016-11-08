@@ -95,6 +95,7 @@ OBJECT_TO_TAGGING_ASSET_TYPE_MAP = {
 class DimensionDataNodeDriver(NodeDriver):
     """
     DimensionData node driver.
+    Default api_version is used unless specified.
     """
 
     selected_region = None
