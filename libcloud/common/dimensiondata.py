@@ -377,8 +377,16 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
     api_path_version_1 = '/oec'
     api_path_version_2 = '/caas'
-    api_version_1 = '0.9'
-    api_version_2 = '2.3'
+    api_version_1 = 0.9
+
+    # Earliest version supported
+    oldest_api_version = 2.2
+
+    # Latest version supported
+    latest_api_version = 2.3
+
+    # Default api version
+    active_api_version = 2.3
 
     _orgId = None
     responseCls = DimensionDataResponse
@@ -401,8 +409,27 @@ class DimensionDataConnection(ConnectionUserAndKey):
             self.host = conn_kwargs['region']['host']
 
         if api_version:
-            if api_version.startswith('2'):
-                self.api_version_2 = api_version
+            if float(api_version) < self.oldest_api_version:
+                msg = 'API Version specified is too old. No longer ' \
+                      'supported. Please upgrade to the latest version {}' \
+                    .format(self.active_api_version)
+
+                raise DimensionDataAPIException(code=None,
+                                                msg=msg,
+                                                driver=self.driver)
+            elif float(api_version) > self.latest_api_version:
+                msg = 'Unsupported API Version. The version specified is ' \
+                      'not release yet. Please use the latest supported ' \
+                      'version {}' \
+                    .format(self.active_api_version)
+
+                raise DimensionDataAPIException(code=None,
+                                                msg=msg,
+                                                driver=self.driver)
+
+            else:
+                # Overwrite default version using the version user specified
+                self.active_api_version = api_version
 
     def add_default_headers(self, headers):
         headers['Authorization'] = \
@@ -424,7 +451,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def request_api_2(self, path, action, params=None, data='',
                       headers=None, method='GET'):
         action = "%s/%s/%s/%s" % (self.api_path_version_2,
-                                  self.api_version_2, path, action)
+                                  self.active_api_version, path, action)
 
         return super(DimensionDataConnection, self).request(
             action=action,
@@ -525,7 +552,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
         resources that require a full path instead of just an ID, such as
         networks, and customer snapshots.
         """
-        return ("%s/%s/%s" % (self.api_path_version_2, self.api_version_2,
+        return ("%s/%s/%s" % (self.api_path_version_2, self.active_api_version,
                               self._get_orgId()))
 
     def wait_for_state(self, state, func, poll_interval=2, timeout=60, *args,
