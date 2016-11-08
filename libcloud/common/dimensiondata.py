@@ -383,7 +383,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     oldest_api_version = 2.2
 
     # Latest version supported
-    latest_api_version = 2.3
+    latest_api_version = 2.4
 
     # Default api version
     active_api_version = 2.3

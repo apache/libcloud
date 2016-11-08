@@ -787,7 +787,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         Note:  Currently only returns the default 'base OS images'
                provided by DimensionData. Customer images (snapshots)
-               are not yet supported.
+               use ex_list_customer_images
 
         :keyword ex_location: Filters the node list to nodes that are
                               located in this location
@@ -800,11 +800,19 @@ class DimensionDataNodeDriver(NodeDriver):
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
 
-        return self._to_images(
+        # return self._to_images(
+        #     self.connection.request_with_orgId_api_2(
+        #         'image/osImage',
+        #         params=params)
+        #     .object)
+
+        images = self._to_images(
             self.connection.request_with_orgId_api_2(
                 'image/osImage',
                 params=params)
             .object)
+
+        return images
 
     def list_sizes(self, location=None):
         """
@@ -3653,7 +3661,11 @@ class DimensionDataNodeDriver(NodeDriver):
                                locations))[0]
 
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-        os_el = element.find(fixxpath('guest/operatingSystem', TYPES_URN))
+
+        if float(self.connection.active_api_version) > 2.3:
+            os_el = element.find(fixxpath('guest/operatingSystem', TYPES_URN))
+        else:
+            os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
 
         if element.tag.endswith('customerImage'):
             is_customer_image = True
