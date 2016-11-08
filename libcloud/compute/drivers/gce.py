@@ -7326,16 +7326,18 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images = self.list_images(ex_project=project,
-                                          ex_include_deprecated=True)
+        project_images_pages = self.ex_list(
+            self.list_images, ex_project=project, ex_include_deprecated=True)
         partial_match = []
-        for image in project_images:
-            if image.name == partial_name:
-                return image
-            if image.name.startswith(partial_name):
-                ts = timestamp_to_datetime(image.extra['creationTimestamp'])
-                if not partial_match or partial_match[0] < ts:
-                    partial_match = [ts, image]
+        for page in project_images_pages:
+            for image in page:
+                if image.name == partial_name:
+                    return image
+                if image.name.startswith(partial_name):
+                    ts = timestamp_to_datetime(
+                        image.extra['creationTimestamp'])
+                    if not partial_match or partial_match[0] < ts:
+                        partial_match = [ts, image]
 
         if partial_match:
             return partial_match[1]
