@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [google] Prevent GCE auth to hide S3 auth
+  (GITHUB-921)
+  [Quentin Pradet]
+
 - [ec2] Add st1 and sc1 volume types to valid types
   (GITHUB-925)
   [Sean Goller]
