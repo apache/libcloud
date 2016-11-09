@@ -800,19 +800,11 @@ class DimensionDataNodeDriver(NodeDriver):
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
 
-        # return self._to_images(
-        #     self.connection.request_with_orgId_api_2(
-        #         'image/osImage',
-        #         params=params)
-        #     .object)
-
-        images = self._to_images(
+        return self._to_images(
             self.connection.request_with_orgId_api_2(
                 'image/osImage',
                 params=params)
             .object)
-
-        return images
 
     def list_sizes(self, location=None):
         """
