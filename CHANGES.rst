@@ -12,6 +12,10 @@ Compute
   (GITHUB-921)
   [Quentin Pradet]
 
+- [google compute] List images fix for projects > 500 images.
+  (GITHUB-939)
+  [Scott Crunkleton]
+
 - [ec2] Add st1 and sc1 volume types to valid types
   (GITHUB-925)
   [Sean Goller]
