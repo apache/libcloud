@@ -4448,7 +4448,8 @@ class GCENodeDriver(NodeDriver):
             ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
-            ex_automatic_restart=None, ex_image_family=None):
+            ex_automatic_restart=None, ex_image_family=None,
+            ex_preemptible=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4581,6 +4582,12 @@ class GCENodeDriver(NodeDriver):
 
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
+
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                        (If not supplied, the instance will
+                                         not be preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
+
         """
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
@@ -4627,7 +4634,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_disks_gce_struct': ex_disks_gce_struct,
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
-                      'ex_automatic_restart': ex_automatic_restart}
+                      'ex_automatic_restart': ex_automatic_restart,
+                      'ex_preemptible': ex_preemptible}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7639,7 +7647,8 @@ class GCENodeDriver(NodeDriver):
             ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
             ex_automatic_restart=node_attrs['ex_automatic_restart'],
-            ex_subnetwork=node_attrs['subnetwork'])
+            ex_subnetwork=node_attrs['subnetwork'],
+            ex_preemptible=node_attrs['ex_preemptible'])
 
         try:
             node_res = self.connection.request(request, method='POST',
