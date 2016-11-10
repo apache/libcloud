@@ -72,6 +72,13 @@ Container
   (GITHUB-918)
   [Pavlos Tzianos]
 
+Load Balancing
+~~~~~~~~~~~~~~
+
+- Introduce AWS Application Load Balancer (ALB) driver
+  (LIBCLOUD-869, GITHUB-936)
+  [Anton Kozyrev]
+
 Storage
 ~~~~~~~
 
