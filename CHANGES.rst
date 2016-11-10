@@ -12,10 +12,6 @@ Compute
   (GITHUB-942)
   [Kamil Chmielewski]
 
-- [google] Prevent GCE auth to hide S3 auth
-  (GITHUB-921)
-  [Quentin Pradet]
-
 - [google compute] List images fix for projects > 500 images.
   (GITHUB-939)
   [Scott Crunkleton]
@@ -85,6 +81,10 @@ Load Balancing
 
 Storage
 ~~~~~~~
+
+- [google] Prevent GCE auth to hide S3 auth
+  (GITHUB-921)
+  [Quentin Pradet]
 
 - [GCS] Fixed some google_storage.py URL cleaning
   (GITHUB-901)
