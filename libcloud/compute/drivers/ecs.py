@@ -675,9 +675,9 @@ class ECSDriver(NodeDriver):
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
-            if not isinstance(optimized, bool):
-                optimized = str(optimized).lower() == 'true'
-            params['IoOptimized'] = 'true' if optimized else 'false'
+            if isinstance(optimized, bool):
+                optimized = 'optimized' if optimized else 'none'
+            params['IoOptimized'] = optimized
 
         if ex_system_disk:
             system_disk = self._get_system_disk(ex_system_disk)
