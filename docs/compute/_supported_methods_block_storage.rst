@@ -13,7 +13,7 @@ Provider                              list volumes create volume destroy volume 
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
 `Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
-`DigitalOcean`_                       yes          yes           yes            yes           yes           no             no             
+`DigitalOcean`_                       yes          yes           yes            yes           yes           yes            yes            
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Enomaly Elastic Computing Platform`_ no           no            no             no            no            no             no             
@@ -41,7 +41,7 @@ Provider                              list volumes create volume destroy volume 
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
-`Ovh`_                                yes          yes           yes            yes           yes           no             no             
+`Ovh`_                                yes          yes           yes            yes           yes           yes            yes            
 `Packet`_                             no           no            no             no            no            no             no             
 `ProfitBricks`_                       yes          yes           yes            yes           yes           no             no             
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
