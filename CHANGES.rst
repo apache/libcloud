@@ -8,6 +8,14 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [cloudsigma] Added Warsaw (waw) region
+  (GITHUB-942)
+  [Kamil Chmielewski]
+
+- [google compute] List images fix for projects > 500 images.
+  (GITHUB-939)
+  [Scott Crunkleton]
+
 - [ec2] Add st1 and sc1 volume types to valid types
   (GITHUB-925)
   [Sean Goller]
@@ -64,8 +72,19 @@ Container
   (GITHUB-918)
   [Pavlos Tzianos]
 
+Load Balancing
+~~~~~~~~~~~~~~
+
+- Introduce AWS Application Load Balancer (ALB) driver
+  (LIBCLOUD-869, GITHUB-936)
+  [Anton Kozyrev]
+
 Storage
 ~~~~~~~
+
+- [google] Prevent GCE auth to hide S3 auth
+  (GITHUB-921)
+  [Quentin Pradet]
 
 - [GCS] Fixed some google_storage.py URL cleaning
   (GITHUB-901)

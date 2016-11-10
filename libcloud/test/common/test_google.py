@@ -223,16 +223,19 @@ class GoogleInstalledAppAuthConnectionTest(GoogleTestCase):
 class GoogleAuthTypeTest(GoogleTestCase):
 
     def test_guess(self):
-        self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS[0]),
-                         GoogleAuthType.SA)
         self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_IA[0]),
                          GoogleAuthType.IA)
         with mock.patch.object(GoogleAuthType, '_is_gce', return_value=True):
+            # Since _is_gce currently depends on the environment, not on
+            # parameters, other auths should override GCE. It does not make
+            # sense for IA auth to happen on GCE, which is why it's left out.
+            self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS[0]),
+                             GoogleAuthType.SA)
+            self.assertEqual(
+                GoogleAuthType.guess_type(GCS_S3_PARAMS[0]),
+                GoogleAuthType.GCS_S3)
             self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
                              GoogleAuthType.GCE)
-        self.assertEqual(
-            GoogleAuthType.guess_type(GCS_S3_PARAMS[0]),
-            GoogleAuthType.GCS_S3)
 
 
 class GoogleOAuth2CredentialTest(GoogleTestCase):
