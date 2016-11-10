@@ -989,13 +989,13 @@ class S3APSEStorageDriver(S3StorageDriver):
 
 
 class S3APSE2Connection(S3Connection):
-     host = S3_AP_SOUTHEAST2_HOST
+    host = S3_AP_SOUTHEAST2_HOST
 
 
 class S3APSE2StorageDriver(S3StorageDriver):
-     name = 'Amazon S3 (ap-southeast-2)'
-     connectionCls = S3APSE2Connection
-     ex_location_name = 'ap-southeast-2'
+    name = 'Amazon S3 (ap-southeast-2)'
+    connectionCls = S3APSE2Connection
+    ex_location_name = 'ap-southeast-2'
 
 
 class S3APNE1Connection(S3Connection):
