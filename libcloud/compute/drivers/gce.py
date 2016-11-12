@@ -1645,7 +1645,8 @@ class GCENodeDriver(NodeDriver):
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
-    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
+                         'MULTI_IP_SUBNET']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
@@ -3117,8 +3118,9 @@ class GCENodeDriver(NodeDriver):
 
         :keywork  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only. Possible
-                                     values include \'VIRTIO_SCSI_MULTIQUEUE\'
-                                     and \'WINDOWS\' if specified.
+                                     values include \'VIRTIO_SCSI_MULTIQUEUE\',
+                                     \'WINDOWS\', \'MULTI_IP_SUBNET\' if
+                                     specified.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
