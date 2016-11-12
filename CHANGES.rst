@@ -10,6 +10,10 @@ Compute
 
 - Added new CloudScale.ch driver
 
+- [google compute] Add "MULTI_IP_SUBNET" guestOsFeatures option.
+  (GITHUB-956)
+  [Max Illfelder]
+
 - [dimensiondata] Added support for 2.4 API, added support for image import, cloning. Add feature for changing NIC VLANs, add feature for changing
   NIC order for a server.
   (GITHUB-953)
