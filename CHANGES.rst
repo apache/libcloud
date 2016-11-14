@@ -82,6 +82,8 @@ Load Balancing
 Storage
 ~~~~~~~
 
+- [s3] Add AP-Southeast2 as region
+
 - [google] Prevent GCE auth to hide S3 auth
   (GITHUB-921)
   [Quentin Pradet]
