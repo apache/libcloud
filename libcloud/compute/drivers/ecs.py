@@ -477,7 +477,6 @@ class ECSDriver(NodeDriver):
     Used for Aliyun ECS service.
 
     TODO:
-    Create public IP address
     Get guest OS root password
     Adjust internet bandwidth settings
     Manage security groups and rules
@@ -1272,6 +1271,23 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         image_id = findtext(resp.object, 'ImageId', namespace=self.namespace)
         return self.get_image(image_id=image_id)
+
+    def create_public_ip(self, instance_id):
+            """
+            Create public ip.
+
+            :keyword instance_id: instance id for allocating public ip.
+            :type    instance_id: ``str``
+
+            :return public ip
+            :rtype ``str``
+            """
+            params = {'Action': 'AllocatePublicIpAddress',
+                      'InstanceId': instance_id}
+
+            resp = self.connection.request(self.path, params=params)
+            return findtext(resp.object, 'IpAddress',
+                            namespace=self.namespace)
 
     def _to_nodes(self, object):
         """
