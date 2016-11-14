@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [ec2] Fix the bug that created the node at ecs driver and implement the method for creating public ip
+  (GITHUB-943)
+  [watermelo]
+
 - [profitbricks] changes to the ProfitBricks compute driver to drop support for the old SOAP api (now end of life) and provide support for v3 of the REST api.
   (GITHUB-938)
   [Matt Finucane]
