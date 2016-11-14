@@ -579,7 +579,7 @@ class ECSMockHttp(MockHttpTestCase):
                   'InternetMaxBandwidthIn': '200',
                   'HostName': 'hostname',
                   'Password': 'password',
-                  'IoOptimized': 'true',
+                  'IoOptimized': 'optimized',
                   'SystemDisk.Category': 'cloud',
                   'SystemDisk.DiskName': 'root',
                   'SystemDisk.Description': 'sys',
