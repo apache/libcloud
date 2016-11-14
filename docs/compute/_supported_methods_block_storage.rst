@@ -43,7 +43,7 @@ Provider                              list volumes create volume destroy volume 
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
 `Ovh`_                                yes          yes           yes            yes           yes           yes            yes            
 `Packet`_                             no           no            no             no            no            no             no             
-`ProfitBricks`_                       yes          yes           yes            yes           yes           no             no             
+`ProfitBricks`_                       yes          yes           yes            yes           yes           no             yes            
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
