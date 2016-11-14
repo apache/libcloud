@@ -26,7 +26,6 @@ from libcloud.base import DriverTypeFactoryMap  # NOQA
 from libcloud.base import get_driver  # NOQA
 
 
-
 try:
     import paramiko
     have_paramiko = True
@@ -37,7 +36,7 @@ __all__ = [
     '__version__',
     'enable_debug'
 ]
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 
 def enable_debug(fo):

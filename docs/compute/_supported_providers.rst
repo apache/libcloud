@@ -10,7 +10,6 @@ Provider                              Documentation                             
 `Bluebox Blocks`_                                                                       BLUEBOX             single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.bluebox`           :class:`BlueboxNodeDriver`          
 `Brightbox`_                                                                            BRIGHTBOX           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.brightbox`         :class:`BrightboxNodeDriver`        
 `BSNL`_                               :doc:`Click </compute/drivers/bsnl>`              BSNL                single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.bsnl`              :class:`BSNLNodeDriver`             
-`CiscoCCS`_                                                                             CISCOCCS            single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.ciscoccs`          :class:`CiscoCCSNodeDriver`         
 `CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`        CLOUDSIGMA          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudsigma`        :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`        CLOUDSTACK          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudstack`        :class:`CloudStackNodeDriver`       
 `Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`         CLOUDWATT           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudwatt`         :class:`CloudwattNodeDriver`        
@@ -42,12 +41,12 @@ Provider                              Documentation                             
 `OpenStack`_                          :doc:`Click </compute/drivers/openstack>`         OPENSTACK           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.openstack`         :class:`OpenStackNodeDriver`        
 `Outscale INC`_                       :doc:`Click </compute/drivers/outscale_inc>`      OUTSCALE_INC        single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.ec2`               :class:`OutscaleINCNodeDriver`      
 `Outscale SAS`_                       :doc:`Click </compute/drivers/outscale_sas>`      OUTSCALE_SAS        single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.ec2`               :class:`OutscaleSASNodeDriver`      
+`Ovh`_                                :doc:`Click </compute/drivers/ovh>`               OVH                 single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.ovh`               :class:`OvhNodeDriver`              
 `Packet`_                             :doc:`Click </compute/drivers/packet>`            PACKET              single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.packet`            :class:`PacketNodeDriver`           
 `ProfitBricks`_                                                                         PROFIT_BRICKS       single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.profitbricks`      :class:`ProfitBricksNodeDriver`     
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`         RACKSPACE           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.rackspace`         :class:`RackspaceNodeDriver`        
 `Rackspace Cloud (First Gen)`_                                                          RACKSPACE_FIRST_GEN single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.rackspace`         :class:`RackspaceFirstGenNodeDriver`
 `RimuHosting`_                                                                          RIMUHOSTING         single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.rimuhosting`       :class:`RimuHostingNodeDriver`      
-`RunAbove`_                           :doc:`Click </compute/drivers/runabove>`          RUNABOVE            single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.runabove`          :class:`RunAboveNodeDriver`         
 `ServerLove`_                                                                           SERVERLOVE          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.serverlove`        :class:`ServerLoveNodeDriver`       
 `skalicloud`_                                                                           SKALICLOUD          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.skalicloud`        :class:`SkaliCloudNodeDriver`       
 `SoftLayer`_                                                                            SOFTLAYER           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.softlayer`         :class:`SoftLayerNodeDriver`        
@@ -67,7 +66,6 @@ Provider                              Documentation                             
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
-.. _`CiscoCCS`: http://www.cisco.com/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -99,12 +97,12 @@ Provider                              Documentation                             
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Ovh`: https://www.ovh.com/
 .. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
-.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

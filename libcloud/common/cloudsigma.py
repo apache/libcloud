@@ -70,6 +70,11 @@ API_ENDPOINTS_2_0 = {
         'name': 'Manila, Philippines',
         'country': 'Philippines',
         'host': 'mnl.cloudsigma.com'
+    },
+    'waw': {
+        'name': 'Warsaw, Poland',
+        'country': 'Poland',
+        'host': 'waw.cloudsigma.com'
     }
 }
 

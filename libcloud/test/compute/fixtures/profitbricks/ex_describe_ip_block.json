@@ -1,0 +1,21 @@
+{
+    "id": "ipb-2",
+    "type": "ipblock",
+    "href": "/cloudapi/v3/ipblocks/ipb-2",
+    "metadata": {
+        "createdDate": "2016-10-26T15:05:12Z",
+        "createdBy": "test@test.te",
+        "etag": "43e05b766899950bc8a5aeee0fd89b05",
+        "lastModifiedDate": "2016-10-26T15:05:12Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "AVAILABLE"
+    },
+    "properties": {
+        "ips": [
+            "78.137.101.250"
+        ],
+        "location": "de/fkb",
+        "size": 1,
+        "name": "Test IP Block One"
+    }
+}

@@ -79,10 +79,35 @@ class VultrTests(LibcloudTestCase):
         result = self.driver.reboot_node(node)
         self.assertTrue(result)
 
+    def test_create_node_success(self):
+        test_size = self.driver.list_sizes()[0]
+        test_image = self.driver.list_images()[0]
+        test_location = self.driver.list_locations()[0]
+        created_node = self.driver.create_node('test-node', test_size,
+                                               test_image, test_location)
+        self.assertEqual(created_node.id, "1")
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         result = self.driver.destroy_node(node)
         self.assertTrue(result)
+
+    def test_list_key_pairs_success(self):
+        key_pairs = self.driver.list_key_pairs()
+        self.assertEqual(len(key_pairs), 1)
+        key_pair = key_pairs[0]
+        self.assertEqual(key_pair.id, '5806a8ef2a0c6')
+        self.assertEqual(key_pair.name, 'test-key-pair')
+
+    def test_create_key_pair_success(self):
+        res = self.driver.create_key_pair('test-key-pair')
+        self.assertTrue(res)
+
+    def test_delete_key_pair_success(self):
+        key_pairs = self.driver.list_key_pairs()
+        key_pair = key_pairs[0]
+        res = self.driver.delete_key_pair(key_pair)
+        self.assertTrue(res)
 
 
 class VultrMockHttp(MockHttpTestCase):
@@ -104,11 +129,26 @@ class VultrMockHttp(MockHttpTestCase):
         body = self.fixtures.load('list_nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _v1_server_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _v1_server_destroy(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
     def _v1_server_reboot(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
+
+    def _v1_sshkey_list(self, method, url, body, headers):
+        body = self.fixtures.load('list_key_pairs.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_sshkey_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_key_pair.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_sshkey_destroy(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

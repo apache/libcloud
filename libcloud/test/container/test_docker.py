@@ -31,7 +31,7 @@ class DockerContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         # Create a test driver for each version
-        versions = ('linux_121', 'mac_124')
+        versions = ('linux_124', 'mac_124')
         self.drivers = []
         for version in versions:
             DockerContainerDriver.connectionCls.conn_classes = (
@@ -55,7 +55,7 @@ class DockerContainerDriverTestCase(unittest.TestCase):
         for driver in self.drivers:
             image = driver.install_image('ubuntu:12.04')
             self.assertTrue(image is not None)
-            self.assertEqual(image.id, 'cf55d61f5307b7a18a45980971d6cfd40b737dd661879c4a6b3f2aecc3bc37b0')
+            self.assertEqual(image.id, '992069aee4016783df6345315302fa59681aae51a8eeb2f889dea59290f21787')
 
     def test_list_containers(self):
         for driver in self.drivers:
@@ -124,54 +124,54 @@ class DockerMockHttp(MockHttp):
     def _version(
             self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('linux_121/version.json')
+            body = self.fixtures.load('linux_124/version.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_images_search(
+    def _vlinux_124_images_search(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/search.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/search.json'), {}, httplib.responses[httplib.OK])
 
     def _vmac_124_images_search(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/search.json'), {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_images_json(
+    def _vlinux_124_images_json(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/images.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/images.json'), {}, httplib.responses[httplib.OK])
 
     def _vmac_124_images_json(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/images.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/images.json'), {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_images_create(
+    def _vlinux_124_images_create(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/create_image.json'), {'Content-Type': 'application/json'},
+        return (httplib.OK, self.fixtures.load('linux_124/create_image.txt'), {'Content-Type': 'application/json', 'transfer-encoding': 'chunked'},
                 httplib.responses[httplib.OK])
 
     def _vmac_124_images_create(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('mac_124/create_image.json'), {'Content-Type': 'application/json'},
+        return (httplib.OK, self.fixtures.load('mac_124/create_image.txt'), {'Content-Type': 'application/json', 'transfer-encoding': 'chunked'},
                 httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_json(
+    def _vlinux_124_containers_json(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/containers.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/containers.json'), {}, httplib.responses[httplib.OK])
 
     def _vmac_124_containers_json(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/containers.json'), {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_create(
+    def _vlinux_124_containers_create(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/create_container.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/create_container.json'), {}, httplib.responses[httplib.OK])
 
     def _vmac_124_containers_create(
             self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('mac_124/create_container.json'), {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
@@ -179,7 +179,7 @@ class DockerMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
@@ -187,7 +187,7 @@ class DockerMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
@@ -195,7 +195,7 @@ class DockerMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
@@ -203,7 +203,7 @@ class DockerMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
@@ -211,21 +211,21 @@ class DockerMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/container_a68.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/container_a68.json'), {}, httplib.responses[httplib.OK])
 
     def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/container_a68.json'), {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/container_a68.json'), {}, httplib.responses[httplib.OK])
 
-    def _vlinux_121_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
 
     def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
             self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_121/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('linux_124/logs.txt'), {'content-type': 'text/plain'}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

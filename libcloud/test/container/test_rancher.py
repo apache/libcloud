@@ -157,9 +157,21 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(container.extra['environment'],
                          {'STORAGE_TYPE': 'file'})
 
+    def test_start_container(self):
+        container = self.driver.get_container("1i31")
+        started = container.start()
+        self.assertEqual(started.id, "1i31")
+        self.assertEqual(started.name, "newcontainer")
+        self.assertEqual(started.state, "pending")
+        self.assertEqual(started.extra['state'], "starting")
+
     def test_stop_container(self):
         container = self.driver.get_container("1i31")
-        container.stop()
+        stopped = container.stop()
+        self.assertEqual(stopped.id, "1i31")
+        self.assertEqual(stopped.name, "newcontainer")
+        self.assertEqual(stopped.state, "pending")
+        self.assertEqual(stopped.extra['state'], "stopping")
 
     def test_ex_search_containers(self):
         containers = self.driver.ex_search_containers({"state": "running"})
@@ -167,7 +179,11 @@ class RancherContainerDriverTestCase(unittest.TestCase):
 
     def test_destroy_container(self):
         container = self.driver.get_container("1i31")
-        container.destroy()
+        destroyed = container.destroy()
+        self.assertEqual(destroyed.id, "1i31")
+        self.assertEqual(destroyed.name, "newcontainer")
+        self.assertEqual(destroyed.state, "pending")
+        self.assertEqual(destroyed.extra['state'], "stopping")
 
 
 class RancherMockHttp(MockHttp):
@@ -233,6 +249,9 @@ class RancherMockHttp(MockHttp):
                     {}, httplib.responses[httplib.OK])
         elif method == 'DELETE' or '?action=stop' in url:
             return (httplib.OK, self.fixtures.load('stop_container.json'), {},
+                    httplib.responses[httplib.OK])
+        elif '?action=start' in url:
+            return (httplib.OK, self.fixtures.load('start_container.json'), {},
                     httplib.responses[httplib.OK])
         else:
             return (httplib.OK, self.fixtures.load('deploy_container.json'),

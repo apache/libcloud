@@ -39,7 +39,13 @@ class RancherResponse(JsonResponse):
 
     def parse_error(self):
         parsed = super(RancherResponse, self).parse_error()
-        return "%s - %s" % (parsed['message'], parsed['detail'])
+        if 'fieldName' in parsed:
+            return "Field %s is %s: %s - %s" % (parsed['fieldName'],
+                                                parsed['code'],
+                                                parsed['message'],
+                                                parsed['detail'])
+        else:
+            return "%s - %s" % (parsed['message'], parsed['detail'])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
@@ -559,6 +565,22 @@ class RancherContainerDriver(ContainerDriver):
 
         return self._to_container(result)
 
+    def start_container(self, container):
+        """
+        Start a container
+
+        :param container: The container to be started
+        :type  container: :class:`libcloud.container.base.Container`
+
+        :return: The container refreshed with current data
+        :rtype: :class:`libcloud.container.base.Container`
+        """
+        result = self.connection.request('%s/containers/%s?action=start' %
+                                         (self.baseuri, container.id),
+                                         method='POST').object
+
+        return self._to_container(result)
+
     def stop_container(self, container):
         """
         Stop a container
@@ -571,11 +593,9 @@ class RancherContainerDriver(ContainerDriver):
         """
         result = self.connection.request('%s/containers/%s?action=stop' %
                                          (self.baseuri, container.id),
-                                         method='POST')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise RancherException(result.status, 'failed to stop container')
+                                         method='POST').object
+
+        return self._to_container(result)
 
     def ex_search_containers(self, search_params):
         """
@@ -608,11 +628,9 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request('%s/containers/%s' % (self.baseuri,
-                                         container.id), method='DELETE')
-        if result.status in VALID_RESPONSE_CODES:
-            return self.get_container(container.id)
-        else:
-            raise RancherException(result.status, 'failed to stop container')
+                                         container.id), method='DELETE').object
+
+        return self._to_container(result)
 
     def _gen_image(self, imageuuid):
         """
@@ -689,6 +707,11 @@ class RancherContainerDriver(ContainerDriver):
 
         """
         rancher_state = data['state']
+
+        # A Removed container is purged after x amt of time.
+        # Both of these render the container dead (can't be started later)
+        terminate_condition = ["removed", "purged"]
+
         if 'running' in rancher_state:
             state = ContainerState.RUNNING
         elif 'stopped' in rancher_state:
@@ -697,9 +720,7 @@ class RancherContainerDriver(ContainerDriver):
             state = ContainerState.REBOOTING
         elif 'error' in rancher_state:
             state = ContainerState.ERROR
-        elif 'removed' or 'purged' in rancher_state:
-            # A Removed container is purged after x amt of time.
-            # Both of these render the container dead (can't be started later)
+        elif any(x in rancher_state for x in terminate_condition):
             state = ContainerState.TERMINATED
         elif data['transitioning'] == 'yes':
             # Best we can do for current actions

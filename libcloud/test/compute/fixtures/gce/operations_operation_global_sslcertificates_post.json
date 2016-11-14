@@ -1,0 +1,13 @@
+{
+ "kind": "compute#operation",
+ "id": "5564862567931215044",
+ "name": "operation-1472578091714-53b4d4e0f85d1-cf587a68-9d7a9200",
+ "operationType": "insert",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/sslCertificates/example",
+ "targetId": "2064539516762881220",
+ "status": "DONE",
+ "user": "1294195755358-compute@developer.gserviceaccount.com",
+ "progress": 100,
+ "insertTime": "2016-08-30T10:28:11.948-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/operations/operation_global_sslcertificates_post"
+}

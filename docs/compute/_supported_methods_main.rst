@@ -10,7 +10,6 @@ Provider                              list nodes create node reboot node destroy
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          yes         yes        no         
 `BSNL`_                               yes        yes         yes         yes          yes         yes        yes        
-`CiscoCCS`_                           yes        yes         yes         yes          yes         yes        yes        
 `CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
 `Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
@@ -42,12 +41,12 @@ Provider                              list nodes create node reboot node destroy
 `OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
+`Ovh`_                                yes        yes         no          yes          yes         yes        yes        
 `Packet`_                             yes        yes         yes         yes          yes         yes        no         
 `ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
-`RunAbove`_                           yes        yes         no          yes          yes         yes        yes        
 `ServerLove`_                         yes        yes         yes         yes          yes         yes        yes        
 `skalicloud`_                         yes        yes         yes         yes          yes         yes        yes        
 `SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
@@ -67,7 +66,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
-.. _`CiscoCCS`: http://www.cisco.com/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -99,12 +97,12 @@ Provider                              list nodes create node reboot node destroy
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Ovh`: https://www.ovh.com/
 .. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
-.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

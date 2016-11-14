@@ -1,8 +1,103 @@
 ﻿Changelog
 =========
 
+
 Changes in current version of Apache Libcloud
 ---------------------------------------------
+
+Compute
+~~~~~~~
+
+- [profitbricks] changes to the ProfitBricks compute driver to drop support for the old SOAP api (now end of life) and provide support for v3 of the REST api.
+  (GITHUB-938)
+  [Matt Finucane]
+
+- [cloudsigma] Added Warsaw (waw) region
+  (GITHUB-942)
+  [Kamil Chmielewski]
+
+- [google compute] List images fix for projects > 500 images.
+  (GITHUB-939)
+  [Scott Crunkleton]
+
+- [ec2] Add st1 and sc1 volume types to valid types
+  (GITHUB-925)
+  [Sean Goller]
+
+- [digital ocean] add ex_change_kernel in DigitalOcean_v2 driver
+  (GITHUB-922)
+  [Rick van de Loo]
+
+- [digital ocean] add ex_hard_reboot in DigitalOcean_v2 driver
+  (GITHUB-920)
+  [Rick van de Loo]
+
+- [openstack] add ex_start_node for the openstack driver
+  (GITHUB-919)
+  [Rick van de Loo]
+
+- [vultr] Extra Attributes for Node Creation on Vultr
+  (GITHUB-917)
+  [Fahri Cihan Demirci]
+
+- [vultr] Implement SSH Key Create/Delete Methods for Vultr
+  (GITHUB-914)
+  [Fahri Cihan Demirci]
+
+- [dimension data] No longer throw error when powering off a node that is already stopped.
+  (GITHUB-912)
+  [Samuel Chong]
+
+- [dimension data] Refactor create_node for MCP2 to support CaaS API 2.3 feature.
+  Can now specify Network Adapter Name for primary and additional NIC. Parameters in create_node function is tailored for MCP2.
+  (GITHUB-902)
+  [Samuel Chong]
+
+- Volume snapshot operations, i.e. creating, listing and deleting volume snapshots, for the Digital Ocean driver.
+  (LIBCLOUD-861, GITHUB-909)
+  [Fahri Cihan Demirci]
+
+- Added snapshot management to OVH compute
+  (GITHUB-897)
+  [Anthony Monthe]
+
+- [GCE] Support for HTTP(S) proxies with BackendServices
+  (GITHUB-856
+  [Tom Melendez]
+
+Container
+~~~~~~~~~
+
+- [docker] As reported in the corresponding bug, the docker daemon will respond in an install_image call with all the messages
+  produced during the procedure parsed as json docs. In that case the response headers also contain the value 'transfer-encoding':'chunked'.
+  That kind of response can now be parsed properly by the DockerResponse parse_body method. Also, another small change is that previously
+  the id of the new image was marked in the json document as id, but now it's marked as sha256, so the regex used to discover the id
+  has been updated.
+  (GITHUB-918)
+  [Pavlos Tzianos]
+
+Load Balancing
+~~~~~~~~~~~~~~
+
+- Introduce AWS Application Load Balancer (ALB) driver
+  (LIBCLOUD-869, GITHUB-936)
+  [Anton Kozyrev]
+
+Storage
+~~~~~~~
+
+- [s3] Add AP-Southeast2 as region
+
+- [google] Prevent GCE auth to hide S3 auth
+  (GITHUB-921)
+  [Quentin Pradet]
+
+- [GCS] Fixed some google_storage.py URL cleaning
+  (GITHUB-901)
+  [Scott Crunkleton]
+
+Changes in Apache Libcloud 1.3.0
+--------------------------------
 
 General
 ~~~~~~~
@@ -26,6 +121,14 @@ General
 
 Compute
 ~~~~~~~
+
+- Fix reporting function for detailed admin logs in Dimension Data Driver
+  (GITHUB-898)
+  [Anthony Shaw]
+
+- Added edit firewall functionality to Dimension Data driver
+  (GITHUB-893)
+  [Samuel Chong]
 
 - Bugfix - Fixed listing nodes issue in Python 3
   (LIBCLOUD-858, GITHUB-894)
@@ -67,7 +170,7 @@ Compute
 Container
 ~~~~~~~~~
 
-- Introduced new Racher driver
+- Introduced new Rancher driver
   (GITHUB-876)
   [Mario Loria]
 

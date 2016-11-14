@@ -2419,6 +2419,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def ex_stop_node(self, node):
         return self._post_simple_node_action(node, 'os-stop')
 
+    def ex_start_node(self, node):
+        return self._post_simple_node_action(node, 'os-start')
+
     def ex_suspend_node(self, node):
         return self._post_simple_node_action(node, 'suspend')
 

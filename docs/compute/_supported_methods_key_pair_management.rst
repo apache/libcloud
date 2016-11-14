@@ -10,7 +10,6 @@ Provider                              list key pairs get key pair create key pai
 `Bluebox Blocks`_                     no             no           no              no                            no                          no             
 `Brightbox`_                          no             no           no              no                            no                          no             
 `BSNL`_                               no             no           no              no                            no                          no             
-`CiscoCCS`_                           no             no           no              no                            no                          no             
 `CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
@@ -42,12 +41,12 @@ Provider                              list key pairs get key pair create key pai
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
 `Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
+`Ovh`_                                yes            yes          no              yes                           no                          yes            
 `Packet`_                             yes            no           yes             no                            no                          yes            
 `ProfitBricks`_                       no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
 `RimuHosting`_                        no             no           no              no                            no                          no             
-`RunAbove`_                           yes            yes          no              yes                           no                          yes            
 `ServerLove`_                         no             no           no              no                            no                          no             
 `skalicloud`_                         no             no           no              no                            no                          no             
 `SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
@@ -57,7 +56,7 @@ Provider                              list key pairs get key pair create key pai
 `Voxel VoxCLOUD`_                     no             no           no              no                            no                          no             
 `vps.net`_                            no             no           no              no                            no                          no             
 `VMware vSphere`_                     no             no           no              no                            no                          no             
-`Vultr`_                              yes            no           no              no                            no                          no             
+`Vultr`_                              yes            no           yes             no                            no                          yes            
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -67,7 +66,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
-.. _`CiscoCCS`: http://www.cisco.com/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -99,12 +97,12 @@ Provider                              list key pairs get key pair create key pai
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Ovh`: https://www.ovh.com/
 .. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
-.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

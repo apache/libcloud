@@ -1,0 +1,112 @@
+{
+    "id": "dc-1/volumes",
+    "type": "collection",
+    "href": "/cloudapi/v3/datacenters/dc-1/volumes",
+    "items": [
+        {
+            "id": "bvol-1",
+            "type": "volume",
+            "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+            "metadata": {
+                "createdDate": "2016-10-18T07:20:41Z",
+                "createdBy": "test@test.test",
+                "etag": "33f6b8d506e7ad756e8554b915f29c61",
+                "lastModifiedDate": "2016-10-18T07:20:41Z",
+                "lastModifiedBy": "test@test.test",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Test Volume",
+                "type": "HDD",
+                "size": 10,
+                "availabilityZone": "AUTO",
+                "image": "bvol-img",
+                "imagePassword": null,
+                "sshKeys": null,
+                "bus": "VIRTIO",
+                "licenceType": "LINUX",
+                "cpuHotPlug": true,
+                "cpuHotUnplug": false,
+                "ramHotPlug": true,
+                "ramHotUnplug": false,
+                "nicHotPlug": true,
+                "nicHotUnplug": true,
+                "discVirtioHotPlug": true,
+                "discVirtioHotUnplug": true,
+                "discScsiHotPlug": false,
+                "discScsiHotUnplug": false,
+                "deviceNumber": 1
+            }
+        },
+        {
+            "id": "d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
+            "type": "volume",
+            "href": "/cloudapi/v3/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
+            "metadata": {
+                "createdDate": "2016-10-17T13:13:36Z",
+                "createdBy": "test@test.test",
+                "etag": "c1800ce349033f9cd2c095ea1ea4976a",
+                "lastModifiedDate": "2016-10-17T13:47:52Z",
+                "lastModifiedBy": "test@test.test",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Updated storage name",
+                "type": "HDD",
+                "size": 40,
+                "availabilityZone": "AUTO",
+                "image": "bvol-img",
+                "imagePassword": null,
+                "sshKeys": null,
+                "bus": null,
+                "licenceType": "LINUX",
+                "cpuHotPlug": true,
+                "cpuHotUnplug": false,
+                "ramHotPlug": true,
+                "ramHotUnplug": false,
+                "nicHotPlug": true,
+                "nicHotUnplug": true,
+                "discVirtioHotPlug": true,
+                "discVirtioHotUnplug": true,
+                "discScsiHotPlug": false,
+                "discScsiHotUnplug": false,
+                "deviceNumber": null
+            }
+        },
+        {
+            "id": "21d7e7de-5054-4041-b691-717aa8b3c799",
+            "type": "volume",
+            "href": "/cloudapi/v3/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
+            "metadata": {
+                "createdDate": "2016-10-17T11:33:20Z",
+                "createdBy": "test@test.test",
+                "etag": "a9d0b923527efae5e7071e9118e9eece",
+                "lastModifiedDate": "2016-10-17T11:33:20Z",
+                "lastModifiedBy": "test@test.test",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Image and location and size. - volume",
+                "type": "HDD",
+                "size": 50,
+                "availabilityZone": "AUTO",
+                "image": "bvol-img",
+                "imagePassword": null,
+                "sshKeys": null,
+                "bus": "VIRTIO",
+                "licenceType": "LINUX",
+                "cpuHotPlug": true,
+                "cpuHotUnplug": false,
+                "ramHotPlug": true,
+                "ramHotUnplug": false,
+                "nicHotPlug": true,
+                "nicHotUnplug": true,
+                "discVirtioHotPlug": true,
+                "discVirtioHotUnplug": true,
+                "discScsiHotPlug": false,
+                "discScsiHotUnplug": false,
+                "deviceNumber": 1
+            }
+        }
+    ]
+}

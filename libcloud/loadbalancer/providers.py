@@ -35,6 +35,8 @@ DRIVERS = {
     ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
     Provider.ELB:
     ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
+    Provider.ALB:
+        ('libcloud.loadbalancer.drivers.alb', 'ApplicationLBDriver'),
     Provider.CLOUDSTACK:
     ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
     Provider.GCE:
