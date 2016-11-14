@@ -8,6 +8,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [profitbricks] changes to the ProfitBricks compute driver to drop support for the old SOAP api (now end of life) and provide support for v3 of the REST api.
+  (GITHUB-938)
+  [Matt Finucane]
+
 - [cloudsigma] Added Warsaw (waw) region
   (GITHUB-942)
   [Kamil Chmielewski]
