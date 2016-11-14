@@ -212,7 +212,7 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-        return self.status in [httplib.OK, httplib.CREATED]
+        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def _decompress_response(self, body, headers):
         """
