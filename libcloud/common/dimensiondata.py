@@ -17,6 +17,7 @@ Dimension Data Common Components
 """
 from base64 import b64encode
 from time import sleep
+from distutils.version import LooseVersion, StrictVersion
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
@@ -375,13 +376,13 @@ class DimensionDataConnection(ConnectionUserAndKey):
     api_version_1 = 0.9
 
     # Earliest version supported
-    oldest_api_version = 2.2
+    oldest_api_version = '2.2'
 
     # Latest version supported
-    latest_api_version = 2.3
+    latest_api_version = '2.3'
 
     # Default api version
-    active_api_version = 2.3
+    active_api_version = '2.3'
 
     _orgId = None
     responseCls = DimensionDataResponse
@@ -404,7 +405,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
             self.host = conn_kwargs['region']['host']
 
         if api_version:
-            if float(api_version) < self.oldest_api_version:
+            if LooseVersion(api_version) < LooseVersion(
+                    self.oldest_api_version):
                 msg = 'API Version specified is too old. No longer ' \
                       'supported. Please upgrade to the latest version {}' \
                     .format(self.active_api_version)
@@ -412,7 +414,8 @@ class DimensionDataConnection(ConnectionUserAndKey):
                 raise DimensionDataAPIException(code=None,
                                                 msg=msg,
                                                 driver=self.driver)
-            elif float(api_version) > self.latest_api_version:
+            elif LooseVersion(api_version) > LooseVersion(
+                    self.latest_api_version):
                 msg = 'Unsupported API Version. The version specified is ' \
                       'not release yet. Please use the latest supported ' \
                       'version {}' \
