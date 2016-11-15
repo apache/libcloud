@@ -1384,6 +1384,10 @@ class ECSDriver(NodeDriver):
                                          'mandatory for PayByTraffic internet'
                                          ' charge type.')
 
+        if ex_internet_max_bandwidth_out:
+            params['InternetMaxBandwidthOut'] = \
+                ex_internet_max_bandwidth_out
+
         if ex_internet_max_bandwidth_in:
             params['InternetMaxBandwidthIn'] = \
                 ex_internet_max_bandwidth_in
