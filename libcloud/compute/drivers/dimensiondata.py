@@ -21,6 +21,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
+from distutils.version import LooseVersion, StrictVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -2431,7 +2432,8 @@ class DimensionDataNodeDriver(NodeDriver):
         node_id = self._node_to_node_id(node)
 
         # Version 2.3 and lower
-        if float(self.connection.active_api_version) < 2.4:
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
             response = self.connection.request_with_orgId_api_1(
                 'server/%s?clone=%s&desc=%s' %
                 (node_id, image_name, image_description)).object
@@ -2469,7 +2471,8 @@ class DimensionDataNodeDriver(NodeDriver):
                 data=ET.tostring(clone_server_elem)).object
 
         # Version 2.3 and lower
-        if float(self.connection.active_api_version) < 2.4:
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
             response_code = findtext(response, 'result', GENERAL_NS)
         else:
             response_code = findtext(response, 'responseCode', TYPES_URN)
@@ -3628,7 +3631,8 @@ class DimensionDataNodeDriver(NodeDriver):
                      is_guest_os_customization=None,
                      tagkey_name_value_dictionaries=None):
         # Unsupported for version lower than 2.4
-        if float(self.connection.active_api_version) < 2.4:
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
             raise Exception("import image is feature is NOT supported in  " \
                             "api version earlier than 2.4")
         else:
@@ -3685,7 +3689,6 @@ class DimensionDataNodeDriver(NodeDriver):
 
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
-
 
     def _format_csv(self, http_response):
         text = http_response.read()
@@ -3764,7 +3767,8 @@ class DimensionDataNodeDriver(NodeDriver):
 
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
 
-        if float(self.connection.active_api_version) > 2.3:
+        if LooseVersion(self.connection.active_api_version) > LooseVersion(
+                '2.3'):
             os_el = element.find(fixxpath('guest/operatingSystem', TYPES_URN))
         else:
             os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
@@ -4052,7 +4056,8 @@ class DimensionDataNodeDriver(NodeDriver):
         disks = self._to_disks(element)
 
         # Version 2.3 or earlier
-        if float(self.connection.active_api_version) < 2.4:
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
             vmware_tools = self._to_vmware_tools(
                 element.find(fixxpath('vmwareTools', TYPES_URN)))
             operation_system = element.find(fixxpath(
