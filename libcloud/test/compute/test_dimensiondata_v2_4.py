@@ -40,7 +40,7 @@ from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 from libcloud.utils.xml import fixxpath, findtext, findall
 
 
-class DimensionDataTests(unittest.TestCase, TestCaseMixin):
+class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.4'
@@ -2262,18 +2262,18 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(self, method, url, body, headers):
         if url.endswith('datacenterId=NA3'):
             body = self.fixtures.load(
-                'server_server_NA3.xml')
+                '2.4/server_server_NA3.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         body = self.fixtures.load(
-            'server_server.xml')
+            '2.4/server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGESIZE50(self, method, url, body, headers):
         if not url.endswith('pageSize=50'):
             raise ValueError("pageSize is not set as expected")
         body = self.fixtures.load(
-            'server_server.xml')
+            '2.4/server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_EMPTY(self, method, url, body, headers):
@@ -2288,17 +2288,17 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
             body = self.fixtures.load(
-                'server_server_paginated.xml')
+                '2.4/server_server_paginated.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATED(self, method, url, body, headers):
         if 'pageNumber=2' in url:
             body = self.fixtures.load(
-                'server_server.xml')
+                '2.4/server_server.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
             body = self.fixtures.load(
-                'server_server_paginated.xml')
+                '2.4/server_server_paginated.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_PAGINATEDEMPTY(self, method, url, body, headers):
@@ -2336,7 +2336,7 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             else:
                 raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
         body = self.fixtures.load(
-            'server_server.xml')
+            '2.4/server_server.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule(self, method, url, body, headers):
@@ -2461,7 +2461,7 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_11_INPROGRESS(
             self, method, url, body, headers):
-        body = self.fixtures.load('server_GetServer.xml')
+        body = self.fixtures.load('2.4/server_GetServer.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain(self, method, url, body, headers):
@@ -2549,7 +2549,7 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(self, method, url, body, headers):
         body = self.fixtures.load(
-            'server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
+            '2.4/server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(self, method, url, body, headers):
@@ -2756,17 +2756,17 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_osImage.xml')
+            '2.4/image_osImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml')
+            '2.4/image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml')
+            '2.4/image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
@@ -2786,17 +2786,17 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_customerImage.xml')
+            '2.4/image_customerImage.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml')
+            '2.4/image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(self, method, url, body, headers):
         body = self.fixtures.load(
-            'image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml')
+            '2.4/image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_FAKE_IMAGE_ID(self, method, url, body, headers):
@@ -3276,6 +3276,13 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             'ip_address_list_delete.xml'
         )
 
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cloneServer(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            '2.4/server_clone_response.xml'
+        )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 if __name__ == '__main__':

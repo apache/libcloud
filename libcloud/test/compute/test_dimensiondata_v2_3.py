@@ -40,7 +40,7 @@ from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 from libcloud.utils.xml import fixxpath, findtext, findall
 
 
-class DimensionDataTests(unittest.TestCase, TestCaseMixin):
+class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.3'

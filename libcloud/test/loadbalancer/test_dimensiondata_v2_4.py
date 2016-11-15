@@ -29,7 +29,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
-class DimensionDataTests(unittest.TestCase):
+class DimensionData_v2_4_Tests(unittest.TestCase):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.4'

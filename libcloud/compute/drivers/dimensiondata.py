@@ -3703,8 +3703,9 @@ class DimensionDataNodeDriver(NodeDriver):
         raise TypeError("Asset type %s cannot be tagged" % objecttype.__name__)
 
     def _list_nodes_single_page(self, params={}):
-        return self.connection.request_with_orgId_api_2(
+        nodes = self.connection.request_with_orgId_api_2(
             'server/server', params=params).object
+        return nodes
 
     def _to_tags(self, object):
         tags = []
