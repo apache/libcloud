@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<customerImages xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="35" totalCount="35" pageSize="250">
+    <customerImage id="5234e5c7-01de-4411-8b6e-baeb8d91cf5d" datacenterId="NA9">
+        <name>ImportedCustomerImage</name>
+        <description />
+        <operatingSystem id="REDHAT664" displayName="REDHAT6/64" family="UNIX" />
+        <cpu count="4" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>2</memoryGb>
+        <disk id="1a82316f-23ed-4fe9-b6d8-6b92ac467423" scsiId="0" sizeGb="12" speed="STANDARD" />
+        <createTime>2015-11-19T14:29:02.000Z</createTime>
+        <source type="IMPORT">
+        <artifact type="MF" value="ImportedCustomerImage.mf" date="2015-1119T14:28:54.000Z" />
+        <artifact type="OVF" value="ImportedCustomerImage.ovf" date="2015-1119T14:28:05.000Z" />
+        <artifact type="VMDK" value="ImportedCustomerImage-disk1.vmdk" date="2015-11-19T12:22:31.000Z" /></source>
+        <state>NORMAL</state>
+        <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="NOT_RUNNING" apiVersion="8389" />
+        <virtualHardware version="vmx-10" upToDate="true" />
+    </customerImage>
+    <customerImage id="2ffa36c8-1848-49eb-b4fa-9d908775f68c" datacenterId="NA9">
+        <name>CustomerImageWithPricedSoftwareLabels</name>
+        <description />
+        <operatingSystem id="WIN2008S32" displayName="WIN2008S/32" family="WINDOWS" />
+        <cpu count="1" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>1</memoryGb>
+        <disk id="29455efc-51af-4b4d-91b3-d81ca0dff7d8" scsiId="0" sizeGb="50" speed="STANDARD" />
+        <softwareLabel>MSSQL2008R2S</softwareLabel>
+        <createTime>2015-11-03T15:25:34.000Z</createTime>
+        <source type="CLONE">
+            <artifact type="SERVER_ID" value="7c9c2551-269d-4274-a247126ba7c6215c" />
+        </source>
+        <state>NORMAL</state>
+        <vmwareTools versionStatus="CURRENT" runningStatus="NOT_RUNNING" />
+        <virtualHardware version="vmx-08" upToDate="false" />
+    </customerImage>
+    <customerImage id="1fc1844f-45d6-4364-b447-f7c7645b47de" datacenterId="NA9">
+        <name>CopiedCustomerImage</name>
+        <description />
+        <operatingSystem id="REDHAT664" displayName="REDHAT6/64" family="UNIX" />
+        <cpu count="1" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>2</memoryGb>
+        <disk id="42b20819-c161-4dec-aa94-73ec370a6e37" scsiId="0" sizeGb="10" speed="STANDARD" />
+        <createTime>2015-11-11T17:17:00.000Z</createTime>
+        <source type="COPY">
+            <artifact type="IMAGE_ID" value="0b8357b6-f156-4b27-b4fd-b81d09c15efc" />
+        </source>
+        <state>NORMAL</state>
+        <vmwareTools versionStatus="NEED_UPGRADE" runningStatus="NOT_RUNNING" apiVersion="9355" />
+        <virtualHardware version="vmx-10" upToDate="true" />
+    </customerImage>
+</customerImages>
