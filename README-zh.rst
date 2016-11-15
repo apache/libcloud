@@ -31,20 +31,20 @@ Apache Libcloud - a unified interface into the cloud
 .. image:: https://coveralls.io/repos/github/apache/libcloud/badge.svg?branch=trunk
         :target: https://coveralls.io/github/apache/libcloud?branch=trunk
 
-Apache Libcloud 是一个Python 的库，隐藏不同云端供着的应用程序接口（API's) 和允许您通过统一和易于使用的API和 Python library管理不同的云端资源。
+Apache Libcloud 是一个Python库，它隐蔽了不同云资源API层的差异并允许您通过统一且易于使用的API来管理不同的云资源。
 
 您可以使用Libcloud管理的资源分为以下类别：
 
-* **计算** - 云服务器和块存储 - 服务例子： Amazon EC2 and Rackspace
+* **计算** - 云服务器和块存储 - 服务例子： Amazon EC2 和 Rackspace
   Cloud Servers (``libcloud.compute.*``)
-* **存储** - 云对象存储 and 内容交付网络(CDN-Content Delivery Network ）  - 服务例子： Amazon S3 and Rackspace
+* **存储** - 云对象存储 and 内容交付网络(CDN-Content Delivery Network ）  - 服务例子： Amazon S3 和 Rackspace
   CloudFiles (``libcloud.storage.*``)
 * **负载平衡器** - 作为服务的负载平衡器, LBaaS (``libcloud.loadbalancer.*``)
 * **域名服务器 ( DNS - Domain name server )** - 作为服务的域名服务器, DNSaaS (``libcloud.dns.*``)
 * **容器** - 虚拟化服务容器 (``libcloud.container.*``)
 
 
-Apache Libcloud 是一个 Apache 的计划, 往 <http://libcloud.apache.org> 看以获得跟多资料
+Apache Libcloud 是一个 Apache 的计划, 往 <http://libcloud.apache.org> 看以获得更多资料
 
 文档
 ==
@@ -65,7 +65,7 @@ Apache Libcloud 是一个 Apache 的计划, 往 <http://libcloud.apache.org> 看
 执照
 ==
 
-Apache Libcloud是根据Apache 2.0被许可证授权的。 更多有关详情，请参阅 LICENSE_ 和 NOTICE_ 文件。
+Apache Libcloud是被Apache 2.0许可证授权的。 更多有关详情，请参阅 LICENSE_ 和 NOTICE_ 文件。
 
 .. _LICENSE: https://github.com/apache/libcloud/blob/trunk/LICENSE
 .. _NOTICE: https://github.com/apache/libcloud/blob/trunk/NOTICE
