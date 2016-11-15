@@ -179,6 +179,7 @@ class Provider(Type):
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
 
     EC2_US_EAST = 'ec2_us_east'
+    EC2_US_EAST_OHIO = 'ec2_us_east_ohio'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
     EC2_US_WEST = 'ec2_us_west'
@@ -221,6 +222,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 
     # AWS
     Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_US_EAST_OHIO: Provider.EC2,
     Provider.EC2_EU: Provider.EC2,
     Provider.EC2_EU_WEST: Provider.EC2,
     Provider.EC2_US_WEST: Provider.EC2,
