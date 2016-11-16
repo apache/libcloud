@@ -2,6 +2,16 @@
 =========
 
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Compute
+~~~~~~~
+
+- [ec2] Add US-EAST2 (Ohio)
+  (GITHUB-946)
+  [Matthew Harris]
+
 Changes in Apache Libcloud 1.4.0
 --------------------------------
 
