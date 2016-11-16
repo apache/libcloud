@@ -1,0 +1,18 @@
+<DescribeTagsResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/">
+    <DescribeTagsResult>
+        <TagDescriptions>
+            <member>
+                <ResourceArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/Test-ALB/111111111111</ResourceArn>
+                <Tags>
+                    <member>
+                        <Value>lima</Value>
+                        <Key>project</Key>
+                    </member>
+                </Tags>
+            </member>
+        </TagDescriptions>
+    </DescribeTagsResult>
+    <ResponseMetadata>
+        <RequestId>34cba10d-a040-11e6-9d2a-7fea45a4c556</RequestId>
+    </ResponseMetadata>
+</DescribeTagsResponse>

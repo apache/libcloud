@@ -58,6 +58,7 @@ class ECSDriverTestCase(LibcloudTestCase):
                                             driver=self.driver)
         self.fake_location = NodeLocation(id=self.region, name=self.region,
                                           country=None, driver=self.driver)
+        self.fake_instance_id = 'fake_instance_id'
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -245,6 +246,11 @@ class ECSDriverTestCase(LibcloudTestCase):
     def test_stop_node_with_ex_force_stop(self):
         ECSMockHttp.type = 'stop_node_force_stop'
         result = self.driver.ex_stop_node(self.fake_node, ex_force_stop=True)
+        self.assertTrue(result)
+
+    def test_create_public_ip(self):
+        ECSMockHttp.type = 'create_public_ip'
+        result = self.driver.create_public_ip(self.fake_instance_id)
         self.assertTrue(result)
 
     def test_list_volumes(self):
@@ -579,7 +585,7 @@ class ECSMockHttp(MockHttpTestCase):
                   'InternetMaxBandwidthIn': '200',
                   'HostName': 'hostname',
                   'Password': 'password',
-                  'IoOptimized': 'true',
+                  'IoOptimized': 'optimized',
                   'SystemDisk.Category': 'cloud',
                   'SystemDisk.DiskName': 'root',
                   'SystemDisk.Description': 'sys',
@@ -928,6 +934,10 @@ class ECSMockHttp(MockHttpTestCase):
 
     def _DescribeZones(self, method, url, body, headers):
         resp_body = self.fixtures.load('describe_zones.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _create_public_ip_AllocatePublicIpAddress(self, method, url, body, headers):
+        resp_body = self.fixtures.load('create_public_ip.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
 

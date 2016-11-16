@@ -13,6 +13,7 @@ platform, Amazon Web Services (AWS).
 It allows users to rent virtual servers in more than 9 regions such as:
 
 * US East (Northern Virginia) Region
+* US East (Ohio) Region
 * US West (Oregon) Region
 * US West (Northern California) Region
 * EU West (Ireland) Region

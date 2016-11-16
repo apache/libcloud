@@ -56,10 +56,12 @@ S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_CN_NORTH_HOST = 's3.cn-north-1.amazonaws.com.cn'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
+S3_AP_SOUTHEAST2_HOST = 's3-ap-southeast-2.amazonaws.com'
 S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
 S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
 S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
+S3_SA_SOUTHEAST2_HOST = 's3-sa-east-2.amazonaws.com'
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -984,6 +986,16 @@ class S3APSEStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (ap-southeast-1)'
     connectionCls = S3APSEConnection
     ex_location_name = 'ap-southeast-1'
+
+
+class S3APSE2Connection(S3Connection):
+    host = S3_AP_SOUTHEAST2_HOST
+
+
+class S3APSE2StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (ap-southeast-2)'
+    connectionCls = S3APSE2Connection
+    ex_location_name = 'ap-southeast-2'
 
 
 class S3APNE1Connection(S3Connection):

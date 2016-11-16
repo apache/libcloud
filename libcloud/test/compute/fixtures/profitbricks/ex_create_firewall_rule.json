@@ -1,0 +1,24 @@
+{
+    "id": "fwr-1",
+    "type": "firewall-rule",
+    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fwr-1",
+    "metadata": {
+        "createdDate": "2016-10-19T11:08:04Z",
+        "createdBy": "test@test.te",
+        "etag": "2a21551ba4adf85d9fb04b05a6938bcc",
+        "lastModifiedDate": "2016-10-19T11:08:04Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "BUSY"
+    },
+    "properties": {
+        "name": "Test created firewall rule",
+        "protocol": "TCP",
+        "sourceMac": null,
+        "sourceIp": null,
+        "targetIp": null,
+        "icmpCode": null,
+        "icmpType": null,
+        "portRangeStart": 80,
+        "portRangeEnd": 80
+    }
+}

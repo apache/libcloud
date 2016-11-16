@@ -1,0 +1,24 @@
+{
+    "id": "fw2",
+    "type": "firewall-rule",
+    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fw2",
+    "metadata": {
+        "createdDate": "2016-10-19T09:55:10Z",
+        "createdBy": "test@test.te",
+        "etag": "00bb5b86562db1ed19ca38697e485160",
+        "lastModifiedDate": "2016-10-19T09:55:10Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "AVAILABLE"
+    },
+    "properties": {
+        "name": "HTTPs (SSL)",
+        "protocol": "TCP",
+        "sourceMac": null,
+        "sourceIp": null,
+        "targetIp": null,
+        "icmpCode": null,
+        "icmpType": null,
+        "portRangeStart": 443,
+        "portRangeEnd": 443
+    }
+}

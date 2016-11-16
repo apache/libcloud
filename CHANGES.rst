@@ -8,6 +8,39 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [ec2] Add US-EAST2 (Ohio)
+  (GITHUB-946)
+  [Matthew Harris]
+
+Changes in Apache Libcloud 1.4.0
+--------------------------------
+
+Compute
+~~~~~~~
+
+- Introduce new Azure ARM driver
+  [Peter Amstulz]
+
+- [ec2] Fix the bug that created the node at ecs driver and implement the method for creating public ip
+  (GITHUB-943)
+  [watermelo]
+
+- [profitbricks] changes to the ProfitBricks compute driver to drop support for the old SOAP api (now end of life) and provide support for v3 of the REST api.
+  (GITHUB-938)
+  [Matt Finucane]
+
+- [cloudsigma] Added Warsaw (waw) region
+  (GITHUB-942)
+  [Kamil Chmielewski]
+
+- [google compute] List images fix for projects > 500 images.
+  (GITHUB-939)
+  [Scott Crunkleton]
+
+- [ec2] Add st1 and sc1 volume types to valid types
+  (GITHUB-925)
+  [Sean Goller]
+
 - [digital ocean] add ex_change_kernel in DigitalOcean_v2 driver
   (GITHUB-922)
   [Rick van de Loo]
@@ -60,8 +93,21 @@ Container
   (GITHUB-918)
   [Pavlos Tzianos]
 
+Load Balancing
+~~~~~~~~~~~~~~
+
+- Introduce AWS Application Load Balancer (ALB) driver
+  (LIBCLOUD-869, GITHUB-936)
+  [Anton Kozyrev]
+
 Storage
 ~~~~~~~
+
+- [s3] Add AP-Southeast2 as region
+
+- [google] Prevent GCE auth to hide S3 auth
+  (GITHUB-921)
+  [Quentin Pradet]
 
 - [GCS] Fixed some google_storage.py URL cleaning
   (GITHUB-901)
