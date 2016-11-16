@@ -8,6 +8,9 @@ Changes in Apache Libcloud 1.4.0
 Compute
 ~~~~~~~
 
+- Introduce new Azure ARM driver
+  [Peter Amstulz]
+
 - [ec2] Fix the bug that created the node at ecs driver and implement the method for creating public ip
   (GITHUB-943)
   [watermelo]
