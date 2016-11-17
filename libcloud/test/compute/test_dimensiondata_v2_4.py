@@ -2039,6 +2039,12 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             tagkey_name_value_dictionaries=tag_dictionaries)
         self.assertTrue(success)
 
+    def test_exchange_nic_vlans(self):
+        success = self.driver.ex_exchange_nic_vlans(
+                  nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
+                  nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
+        self.assertTrue(success)
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
@@ -3299,6 +3305,13 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/import_image_response.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_exchangeNicVlans(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            '2.4/exchange_nic_vlans_response.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
