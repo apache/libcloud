@@ -2045,6 +2045,12 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
                   nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
         self.assertTrue(success)
 
+    def test_change_nic_network_adapter(self):
+        success = self.driver.ex_change_nic_network_adapter(
+            nic_id='0c55c269-20a5-4fec-8054-22a245a48fe4',
+            network_adapter_name='E1000')
+        self.assertTrue(success)
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
@@ -3312,6 +3318,13 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/exchange_nic_vlans_response.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeNetworkAdapter(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            '2.4/change_nic_networkadapter_response.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 

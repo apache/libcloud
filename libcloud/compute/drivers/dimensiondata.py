@@ -3720,6 +3720,37 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
+    def ex_change_nic_network_adapter(self, nic_id, network_adapter_name):
+        """
+        Change network adapter of a NIC on a cloud server
+
+        :param    nic_id:  Nic ID
+        :type     nic_id: :``str``
+
+        :param    network_adapter_name:  Network adapter name
+        :type     network_adapter_name: :``str``
+
+        :rtype: ``bool``
+        """
+
+        change_elem = ET.Element(
+            'changeNetworkAdapter',
+            {
+                'nicId': nic_id,
+                'xmlns': TYPES_URN
+            })
+
+        ET.SubElement(change_elem, 'networkAdapter').text = \
+            network_adapter_name
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/changeNetworkAdapter',
+            method='POST',
+            data=ET.tostring(change_elem)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def _format_csv(self, http_response):
         text = http_response.read()
         lines = str.splitlines(ensure_string(text))
