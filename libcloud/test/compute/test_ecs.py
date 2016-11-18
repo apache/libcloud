@@ -63,7 +63,6 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.fake_ip_protocol = 'fake_ip_protocol'
         self.fake_port_range = 'fake_port_range'
 
-
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertIsNotNone(nodes)
@@ -957,12 +956,12 @@ class ECSMockHttp(MockHttpTestCase):
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_group_ingress_permission_AuthorizeSecurityGroup(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         resp_body = self.fixtures.load('security_group_ingress.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_group_egress_permission_AuthorizeSecurityGroupEgress(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         resp_body = self.fixtures.load('security_group_egress.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
