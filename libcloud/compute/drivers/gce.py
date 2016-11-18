@@ -4439,12 +4439,12 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_multiple_nodes(
             self, base_name, size, image, number, location=None,
-            ex_network='default', ex_tags=None, ex_metadata=None,
-            ignore_errors=True, use_existing_disk=True, poll_interval=2,
-            external_ip='ephemeral', ex_disk_type='pd-standard',
-            ex_disk_auto_delete=True, ex_service_accounts=None,
-            timeout=DEFAULT_TASK_COMPLETION_TIMEOUT, description=None,
-            ex_can_ip_forward=None, ex_disks_gce_struct=None,
+            ex_network='default', ex_subnetwork=None,ex_tags=None,
+            ex_metadata=None, ignore_errors=True, use_existing_disk=True,
+            poll_interval=2, external_ip='ephemeral',
+            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
+            description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None):
         """
