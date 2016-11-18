@@ -3,6 +3,7 @@
 ====================================== ================================================== ================= ============================ ================================================== ==============================
 Provider                               Documentation                                      Provider Constant Supported Regions            Module                                             Class Name                    
 ====================================== ================================================== ================= ============================ ================================================== ==============================
+`Amazon Application Load Balancing`_                                                      ALB               single region driver         :mod:`libcloud.loadbalancer.drivers.alb`           :class:`ApplicationLBDriver`  
 `Aliyun Server Load Balancer`_                                                            ALIYUN_SLB        single region driver         :mod:`libcloud.loadbalancer.drivers.slb`           :class:`SLBDriver`            
 `Brightbox`_                                                                              BRIGHTBOX         single region driver         :mod:`libcloud.loadbalancer.drivers.brightbox`     :class:`BrightboxLBDriver`    
 `CloudStack`_                                                                             CLOUDSTACK        single region driver         :mod:`libcloud.loadbalancer.drivers.cloudstack`    :class:`CloudStackLBDriver`   
@@ -15,6 +16,7 @@ Provider                               Documentation                            
 `Softlayer Load Balancing`_                                                               SOFTLAYER         single region driver         :mod:`libcloud.loadbalancer.drivers.softlayer`     :class:`SoftlayerLBDriver`    
 ====================================== ================================================== ================= ============================ ================================================== ==============================
 
+.. _`Amazon Application Load Balancing`: http://aws.amazon.com/elasticloadbalancing/
 .. _`Aliyun Server Load Balancer`: https://www.aliyun.com/product/slb
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudStack`: http://cloudstack.org/

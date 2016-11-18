@@ -583,10 +583,10 @@ class GoogleAuthType(object):
     def guess_type(cls, user_id):
         if cls._is_sa(user_id):
             return cls.SA
-        elif cls._is_gce():
-            return cls.GCE
         elif cls._is_gcs_s3(user_id):
             return cls.GCS_S3
+        elif cls._is_gce():
+            return cls.GCE
         else:
             return cls.IA
 

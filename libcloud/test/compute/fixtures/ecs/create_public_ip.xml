@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<AllocatePublicIpAddressResponse>
+    <RequestId>F2EF6A3B-E345-46B9-931E-0EA094818567</RequestId>
+    <IpAddress>10.1.149.159</IpAddress>
+</AllocatePublicIpAddressResponse>
+

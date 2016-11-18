@@ -56,7 +56,7 @@ Provider                              list key pairs get key pair create key pai
 `Voxel VoxCLOUD`_                     no             no           no              no                            no                          no             
 `vps.net`_                            no             no           no              no                            no                          no             
 `VMware vSphere`_                     no             no           no              no                            no                          no             
-`Vultr`_                              yes            no           no              no                            no                          no             
+`Vultr`_                              yes            no           yes             no                            no                          yes            
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/

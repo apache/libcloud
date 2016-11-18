@@ -66,7 +66,8 @@ class Provider(Type):
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
-    :cvar AZURE: Azure driver.
+    :cvar AZURE: Azure (classic) driver.
+    :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSTACK: CloudStack
@@ -101,6 +102,8 @@ class Provider(Type):
     :cvar VPSNET: VPS.net
     :cvar VULTR: vultr driver.
     """
+    AZURE = 'azure'
+    AZURE_ARM = 'azure_arm'
     DUMMY = 'dummy'
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
@@ -176,6 +179,7 @@ class Provider(Type):
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
 
     EC2_US_EAST = 'ec2_us_east'
+    EC2_US_EAST_OHIO = 'ec2_us_east_ohio'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
     EC2_US_WEST = 'ec2_us_west'
@@ -218,6 +222,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 
     # AWS
     Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_US_EAST_OHIO: Provider.EC2,
     Provider.EC2_EU: Provider.EC2,
     Provider.EC2_EU_WEST: Provider.EC2,
     Provider.EC2_US_WEST: Provider.EC2,

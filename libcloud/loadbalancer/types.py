@@ -42,6 +42,7 @@ class Provider(object):
 
     :cvar ALIYUN_SLB: Aliyun SLB loadbalancer driver
     """
+    ALB = 'alb'
     ALIYUN_SLB = 'aliyun_slb'
     BRIGHTBOX = 'brightbox'
     CLOUDSTACK = 'cloudstack'

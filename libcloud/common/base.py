@@ -118,6 +118,7 @@ class HTTPResponse(httplib.HTTPResponse):
     # In particular this happens on S3 when calls are made to get_object to
     # objects that don't exist.
     # This applies the behaviour from 2.7, fixing the hangs.
+
     def read(self, amt=None):
         if self.fp is None:
             return ''
@@ -212,7 +213,7 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-        return self.status in [httplib.OK, httplib.CREATED]
+        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def _decompress_response(self, body, headers):
         """
@@ -354,6 +355,7 @@ class LoggingConnection():
 
         # this is evil. laugh with me. ha arharhrhahahaha
         class fakesock(object):
+
             def __init__(self, s):
                 self.s = s
 
@@ -532,6 +534,8 @@ class Connection(object):
     retry_delay = None
 
     allow_insecure = True
+    skip_host = True
+    skip_accept_encoding = True
 
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None, proxy_url=None, retry_delay=None, backoff=None):
@@ -778,6 +782,9 @@ class Connection(object):
         else:
             headers.update({'Host': self.host})
 
+        skip_host = self.skip_host
+        skip_accept_encoding = self.skip_accept_encoding
+
         if data:
             data = self.encode_data(data)
             headers['Content-Length'] = str(len(data))
@@ -807,9 +814,11 @@ class Connection(object):
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
-                self.connection.putrequest(method, url,
-                                           skip_host=1,
-                                           skip_accept_encoding=1)
+                self.connection.putrequest(
+                    method,
+                    url,
+                    skip_host=skip_host,
+                    skip_accept_encoding=skip_accept_encoding)
 
                 for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
@@ -1052,6 +1061,7 @@ class ConnectionKey(Connection):
     """
     Base connection class which accepts a single ``key`` argument.
     """
+
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None, proxy_url=None, backoff=None, retry_delay=None):
         """
@@ -1071,6 +1081,7 @@ class CertificateConnection(Connection):
     """
     Base connection class which accepts a single ``cert_file`` argument.
     """
+
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
                  proxy_url=None, timeout=None, backoff=None, retry_delay=None):
         """

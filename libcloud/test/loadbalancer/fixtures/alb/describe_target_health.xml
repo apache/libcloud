@@ -1,0 +1,19 @@
+<DescribeTargetHealthResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/">
+    <DescribeTargetHealthResult>
+        <TargetHealthDescriptions>
+            <member>
+                <HealthCheckPort>3443</HealthCheckPort>
+                <TargetHealth>
+                    <State>healthy</State>
+                </TargetHealth>
+                <Target>
+                    <Port>3443</Port>
+                    <Id>i-01111111111111111</Id>
+                </Target>
+            </member>
+        </TargetHealthDescriptions>
+    </DescribeTargetHealthResult>
+    <ResponseMetadata>
+        <RequestId>3e63f250-a03f-11e6-b07a-97abc256eba0</RequestId>
+    </ResponseMetadata>
+</DescribeTargetHealthResponse>

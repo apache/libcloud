@@ -1,8 +1,10 @@
-Azure Compute Driver Documentation
-==================================
+Azure ASM Compute Driver Documentation
+======================================
 
 Azure driver allows you to integrate with Microsoft `Azure Virtual Machines`_
-service.
+service using the `Azure Service Management`_ (ASM) API.  This is the "Classic"
+API, please note that it is incompatible with the newer
+`Azure Resource Management`_ (ARM) API, which is provideb by the `azure_arm`_ driver.
 
 .. figure:: /_static/images/provider_logos/azure.jpg
     :align: center
@@ -61,3 +63,9 @@ API Docs
     :inherited-members:
 
 .. _`Azure Virtual Machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
+
+.. _`Azure Service Management`: https://msdn.microsoft.com/en-us/library/azure/dn948465.aspx
+
+.. _`Azure Resource Management`: https://msdn.microsoft.com/en-us/library/azure/Dn948464.aspx
+
+.. _`azure_arm`: azure_arm.html

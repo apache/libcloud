@@ -3,6 +3,7 @@
 ====================================== =============== ============== ============ ============= ============= ===================
 Provider                               create balancer list balancers list members attach member detach member attach compute node
 ====================================== =============== ============== ============ ============= ============= ===================
+`Amazon Application Load Balancing`_   no              yes            yes          no            no            no                 
 `Aliyun Server Load Balancer`_         yes             yes            yes          yes           yes           yes                
 `Brightbox`_                           yes             yes            yes          yes           yes           yes                
 `CloudStack`_                          yes             yes            yes          yes           yes           no                 
@@ -15,6 +16,7 @@ Provider                               create balancer list balancers list membe
 `Softlayer Load Balancing`_            no              yes            yes          yes           yes           no                 
 ====================================== =============== ============== ============ ============= ============= ===================
 
+.. _`Amazon Application Load Balancing`: http://aws.amazon.com/elasticloadbalancing/
 .. _`Aliyun Server Load Balancer`: https://www.aliyun.com/product/slb
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudStack`: http://cloudstack.org/

@@ -477,7 +477,6 @@ class ECSDriver(NodeDriver):
     Used for Aliyun ECS service.
 
     TODO:
-    Create public IP address
     Get guest OS root password
     Adjust internet bandwidth settings
     Manage security groups and rules
@@ -675,9 +674,9 @@ class ECSDriver(NodeDriver):
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
-            if not isinstance(optimized, bool):
-                optimized = str(optimized).lower() == 'true'
-            params['IoOptimized'] = 'true' if optimized else 'false'
+            if isinstance(optimized, bool):
+                optimized = 'optimized' if optimized else 'none'
+            params['IoOptimized'] = optimized
 
         if ex_system_disk:
             system_disk = self._get_system_disk(ex_system_disk)
@@ -1273,6 +1272,23 @@ class ECSDriver(NodeDriver):
         image_id = findtext(resp.object, 'ImageId', namespace=self.namespace)
         return self.get_image(image_id=image_id)
 
+    def create_public_ip(self, instance_id):
+            """
+            Create public ip.
+
+            :keyword instance_id: instance id for allocating public ip.
+            :type    instance_id: ``str``
+
+            :return public ip
+            :rtype ``str``
+            """
+            params = {'Action': 'AllocatePublicIpAddress',
+                      'InstanceId': instance_id}
+
+            resp = self.connection.request(self.path, params=params)
+            return findtext(resp.object, 'IpAddress',
+                            namespace=self.namespace)
+
     def _to_nodes(self, object):
         """
         Convert response to Node object list
@@ -1367,6 +1383,9 @@ class ECSDriver(NodeDriver):
                     raise AttributeError('ex_internet_max_bandwidth_out is '
                                          'mandatory for PayByTraffic internet'
                                          ' charge type.')
+            elif ex_internet_max_bandwidth_out:
+                params['InternetMaxBandwidthOut'] = \
+                    ex_internet_max_bandwidth_out
 
         if ex_internet_max_bandwidth_in:
             params['InternetMaxBandwidthIn'] = \
