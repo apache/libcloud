@@ -59,6 +59,10 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.fake_location = NodeLocation(id=self.region, name=self.region,
                                           country=None, driver=self.driver)
         self.fake_instance_id = 'fake_instance_id'
+        self.fake_group_id = 'fake_group_id'
+        self.fake_ip_protocol = 'fake_ip_protocol'
+        self.fake_port_range = 'fake_port_range'
+
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -251,6 +255,18 @@ class ECSDriverTestCase(LibcloudTestCase):
     def test_create_public_ip(self):
         ECSMockHttp.type = 'create_public_ip'
         result = self.driver.create_public_ip(self.fake_instance_id)
+        self.assertTrue(result)
+
+    def test_ex_security_group_ingress_permission(self):
+        ECSMockHttp.type = 'ex_security_group_ingress_permission'
+        result = self.driver.ex_security_group_ingress_permission(
+            self.fake_group_id, self.fake_ip_protocol, self.fake_port_range)
+        self.assertTrue(result)
+
+    def test_ex_security_group_egress_permission(self):
+        ECSMockHttp.type = 'ex_security_group_egress_permission'
+        result = self.driver.ex_security_group_egress_permission(
+            self.fake_group_id, self.fake_ip_protocol, self.fake_port_range)
         self.assertTrue(result)
 
     def test_list_volumes(self):
@@ -939,6 +955,20 @@ class ECSMockHttp(MockHttpTestCase):
     def _create_public_ip_AllocatePublicIpAddress(self, method, url, body, headers):
         resp_body = self.fixtures.load('create_public_ip.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _ex_security_group_ingress_permission_AuthorizeSecurityGroup(
+        self, method, url, body, headers):
+        resp_body = self.fixtures.load('security_group_ingress.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _ex_security_group_egress_permission_AuthorizeSecurityGroupEgress(
+        self, method, url, body, headers):
+        resp_body = self.fixtures.load('security_group_egress.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())
 
 
 if __name__ == '__main__':
