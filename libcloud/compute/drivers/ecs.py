@@ -1289,11 +1289,11 @@ class ECSDriver(NodeDriver):
             return findtext(resp.object, 'IpAddress',
                             namespace=self.namespace)
 
-    def ex_security_group_ingress_permission(self, group_id,
-                                             ip_protocol, portrange,
-                                             source_cidrip=None):
+    def ex_authorize_security_group_ingress(self, group_id,
+                                            ip_protocol, port_range,
+                                            source_cidrip='0.0.0.0/0'):
         """
-        Author security group access permission(ingress).
+        Authorize security group(ingress).
 
         :keyword group_id: Security group id.
         :type group_id: ``str``
@@ -1301,13 +1301,13 @@ class ECSDriver(NodeDriver):
         :keyword ip_protocol: tcp | udp | icmp | gre | all.
         :type ip_protocol: ``str``
 
-        :keyword portrange: If ip_protocol is tcp|udp, the port range is
-                            [1,65535] and the example value format is 1/200.
-                            It means port range[1,200]. If input is 200/1, an
-                            error will raise.
-                            If ip_protocol is icmp|gre|all port, value format
-                            is -1/-1.
-        :type portrange: ``str``
+        :keyword port_range: If ip_protocol is tcp|udp, the port range is
+                             [1,65535] and the example value format is 1/200.
+                             It means port range[1,200]. If input is 200/1, an
+                             error will raise.
+                             If ip_protocol is icmp|gre|all port, value format
+                             is -1/-1.
+        :type port_range: ``str``
 
         :keyword source_cidrip: Source ip range(cidr format), default is
                                 0.0.0.0/0(meaning unlimited). only surport
@@ -1324,24 +1324,22 @@ class ECSDriver(NodeDriver):
             raise AttributeError('group_id is required')
         if ip_protocol is None:
             raise AttributeError('ip_protocol is required')
-        if portrange is None:
-            raise AttributeError('portrange is required')
-        if source_cidrip is None:
-            source_cidrip = '0.0.0.0/0'
+        if port_range is None:
+            raise AttributeError('port_range is required')
 
         params['SecurityGroupId'] = group_id
         params['IpProtocol'] = ip_protocol
-        params['PortRange'] = portrange
+        params['PortRange'] = port_range
         params['SourceCidrIp'] = source_cidrip
 
         resp = self.connection.request(self.path, params)
         return resp.success()
 
-    def ex_security_group_egress_permission(self, group_id,
-                                            ip_protocol, portrange,
-                                            dest_cidrip=None):
+    def ex_authorize_security_group_egress(self, group_id,
+                                           ip_protocol, port_range,
+                                           dest_cidrip='0.0.0.0/0'):
         """
-        Author security group access permission(egress).
+        Authorize security group(egress).
 
         :keyword group_id: Security group id.
         :type ex_filters: ``str``
@@ -1349,13 +1347,13 @@ class ECSDriver(NodeDriver):
         :keyword ip_protocol: tcp | udp | icmp | gre | all.
         :type ip_protocol: ``str``
 
-        :keyword portrange: If ip_protocol is tcp|udp, the port range is
-                            [1,65535] and the example value format is 1/200,
-                            It means port range[1,200]. If input is 200/1, an
-                            error will raise.
-                            If ip_protocol is icmp|gre|all port, value format
-                            is -1/-1.
-        :type portrange: ``str``
+        :keyword port_range: If ip_protocol is tcp|udp, the port range is
+                             [1,65535] and the example value format is 1/200,
+                             It means port range[1,200]. If input is 200/1, an
+                             error will raise.
+                             If ip_protocol is icmp|gre|all port, value format
+                             is -1/-1.
+        :type port_range: ``str``
 
         :keyword dest_cidrip: Source ip range(cidr format), default is
                               0.0.0.0/0(meaning unlimited), only surport
@@ -1372,14 +1370,12 @@ class ECSDriver(NodeDriver):
             raise AttributeError('group_id is required')
         if ip_protocol is None:
             raise AttributeError('ip_protocol is required')
-        if portrange is None:
-            raise AttributeError('portrange is required')
-        if dest_cidrip is None:
-            dest_cidrip = '0.0.0.0/0'
+        if port_range is None:
+            raise AttributeError('port_range is required')
 
         params['SecurityGroupId'] = group_id
         params['IpProtocol'] = ip_protocol
-        params['PortRange'] = portrange
+        params['PortRange'] = port_range
         params['DestCidrIp'] = dest_cidrip
 
         resp = self.connection.request(self.path, params)

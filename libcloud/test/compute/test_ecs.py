@@ -256,15 +256,15 @@ class ECSDriverTestCase(LibcloudTestCase):
         result = self.driver.create_public_ip(self.fake_instance_id)
         self.assertTrue(result)
 
-    def test_ex_security_group_ingress_permission(self):
-        ECSMockHttp.type = 'ex_security_group_ingress_permission'
-        result = self.driver.ex_security_group_ingress_permission(
+    def test_ex_authorize_security_group_ingress(self):
+        ECSMockHttp.type = 'ex_authorize_security_group_ingress'
+        result = self.driver.ex_authorize_security_group_ingress(
             self.fake_group_id, self.fake_ip_protocol, self.fake_port_range)
         self.assertTrue(result)
 
-    def test_ex_security_group_egress_permission(self):
-        ECSMockHttp.type = 'ex_security_group_egress_permission'
-        result = self.driver.ex_security_group_egress_permission(
+    def test_ex_authorize_security_group_egress(self):
+        ECSMockHttp.type = 'ex_authorize_security_group_egress'
+        result = self.driver.ex_authorize_security_group_egress(
             self.fake_group_id, self.fake_ip_protocol, self.fake_port_range)
         self.assertTrue(result)
 
@@ -955,19 +955,15 @@ class ECSMockHttp(MockHttpTestCase):
         resp_body = self.fixtures.load('create_public_ip.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
-    def _ex_security_group_ingress_permission_AuthorizeSecurityGroup(
+    def _ex_authorize_security_group_ingress_AuthorizeSecurityGroup(
             self, method, url, body, headers):
         resp_body = self.fixtures.load('security_group_ingress.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
-    def _ex_security_group_egress_permission_AuthorizeSecurityGroupEgress(
+    def _ex_authorize_security_group_egress_AuthorizeSecurityGroupEgress(
             self, method, url, body, headers):
         resp_body = self.fixtures.load('security_group_egress.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
-
-
-if __name__ == '__main__':
-    sys.exit(unittest.main())
 
 
 if __name__ == '__main__':
