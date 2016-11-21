@@ -17,7 +17,7 @@ Dimension Data Common Components
 """
 from base64 import b64encode
 from time import sleep
-from distutils.version import LooseVersion, StrictVersion
+from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
