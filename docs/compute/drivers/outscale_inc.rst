@@ -7,7 +7,7 @@ This IaaS platform relies on TINA OS, its Cloud manager which purpose is to
 provide great performances on the Cloud.
 TINA OS is an own developed software with APIs compatible with AWS EC2 (TM).
 
-.. figure:: /_static/images/provider_logos/outscale.png
+.. figure:: /_static/images/provider_logos/outscale.jpg
     :align: center
     :width: 300
     :target: https://www.outscale.com/
