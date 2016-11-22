@@ -149,7 +149,10 @@ class CloudscaleNodeDriver(NodeDriver):
         return self._to_node(res.object)
 
     def destroy_node(self, node):
-        res = self.connection.request(self._get_server_url(node.id), method='DELETE')
+        res = self.connection.request(
+            self._get_server_url(node.id),
+            method='DELETE'
+        )
         return res.status == httplib.NO_CONTENT
 
     def _get_server_url(self, uuid):
