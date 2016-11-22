@@ -70,6 +70,7 @@ class Provider(Type):
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
+    :cvar CLOUDSCALE: cloudscale.ch
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
@@ -115,6 +116,7 @@ class Provider(Type):
     CISCOCCS = 'ciscoccs'
     CLOUDFRAMES = 'cloudframes'
     CLOUDSIGMA = 'cloudsigma'
+    CLOUDSCALE = 'cloudscale'
     CLOUDSTACK = 'cloudstack'
     CLOUDWATT = 'cloudwatt'
     DIGITAL_OCEAN = 'digitalocean'
