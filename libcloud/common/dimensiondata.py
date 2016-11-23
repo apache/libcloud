@@ -18,11 +18,14 @@ Dimension Data Common Components
 from base64 import b64encode
 from time import sleep
 
-from distutils.version import LooseVersion  # pylint: disable-msg=E0611
+try:
+    from distutils.version import LooseVersion  # pylint: disable=import-error
+except ImportError:
+    pass
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
-from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
