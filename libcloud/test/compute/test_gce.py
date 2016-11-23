@@ -3160,6 +3160,12 @@ class GCEMockHttp(MockHttpTestCase):
                 'zones_us-central1-a_instances_lcnode-001.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_b_instances_libcloud_lb_nopubip_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-b_instances_libcloud-lb-nopubip-001.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_b_instances_libcloud_lb_demo_www_000(
             self, method, url, body, headers):
         body = self.fixtures.load(
