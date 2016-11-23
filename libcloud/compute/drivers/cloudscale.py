@@ -48,7 +48,7 @@ class CloudscaleResponse(JsonResponse):
 
 class CloudscaleConnection(ConnectionKey):
     """
-    Connection class for the Vultr driver.
+    Connection class for the cloudscale.ch driver.
     """
     host = 'api.cloudscale.ch'
     responseCls = CloudscaleResponse

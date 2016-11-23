@@ -7,7 +7,8 @@ cls = libcloud.get_driver(
     libcloud.DriverType.COMPUTE.CLOUDSCALE
 )
 
-driver = cls('3pjzjh3h3rfynqa4iemvtvc33pyfzss2')
+TOKEN = '3pjzjh3h3rfynqa4iemvtvc33pyfzss2'
+driver = cls(TOKEN)
 
 sizes = driver.list_sizes()
 images = driver.list_images()

@@ -12,8 +12,8 @@ Cloudscale Compute Driver Documentation
 How to get an API Key
 ---------------------
 
-Simply visit `<https://control.cloudscale.ch/user/api-tokens>`_ and start
-having fun!
+Simply visit `<https://control.cloudscale.ch/user/api-tokens>`_ and generate
+your key.
 
 You can generate read and read/write API keys. These token types give you more
 access control. Revoking an API token is also possible.
@@ -37,14 +37,14 @@ In our :ref:`example <cloudscale-examples>` below you can see how you use
 ``ex_create_attr`` when creating servers. Possible dictionary entries in 
 ``ex_create_attr`` are:
 
-- ``ssh_keys``: ``list`` of ``strings``; A list of SSH public keys.
-- ``volume_size_gb``:  ``integer``; The size in GB of the root volume.
-- ``bulk_volume_size_gb``: ``integer``; The size in GB of the bulk storage volume.
-- ``use_public_network``: ``boolean`` Attaching/Detaching the public network interface.
-- ``use_private_network``: ``boolean`` Attaching/Detaching the private network interface.
-- ``use_ipv6``: ``boolean`` Enabling/Disabling IPv6.
-- ``anti_affinity_with``: ``string``; Pass the UUID of another server.
-- ``user_data``: ``string``; Cloud-init configuration (cloud-config). Provide YAML.
+- ``ssh_keys`` (``list`` of ``str``) - A list of SSH public keys.
+- ``volume_size_gb`` (``int``) - The size in GB of the root volume.
+- ``bulk_volume_size_gb`` (``int``) - The size in GB of the bulk storage volume.
+- ``use_public_network`` (``bool``) - Attaching/Detaching the public network interface.
+- ``use_private_network`` (``bool``) - Attaching/Detaching the private network interface.
+- ``use_ipv6`` (``bool``) - Enabling/Disabling IPv6.
+- ``anti_affinity_with`` (``str``) - Pass the UUID of another server.
+- ``user_data`` (``str``) - Cloud-init configuration (cloud-config). Provide YAML.
 
 
 There's more extensive documentation on these parameters in our
