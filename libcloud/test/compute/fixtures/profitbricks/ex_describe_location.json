@@ -1,0 +1,12 @@
+{
+    "id": "de/fkb",
+    "type": "location",
+    "href": "/cloudapi/v3/locations/de/fkb",
+    "properties": {
+        "name": "karlsruhe",
+        "features": [
+            "SSD",
+            "MULTIPLE_CPU"
+        ]
+    }
+}

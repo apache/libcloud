@@ -1,0 +1,37 @@
+{
+    "id": "srv-2",
+    "type": "server",
+    "href": "cloudapi/v3/datacenters/f3f7ca3c-6f3d-4a4d-b3d6-15853ae5ba78/servers/srv-2",
+    "metadata": {
+        "createdDate": "2016-10-19T13:25:19Z",
+        "createdBy": "test@test.te",
+        "etag": "9bea2412ac556b402a07260fc0d1603f",
+        "lastModifiedDate": "2016-10-19T13:25:19Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "BUSY"
+    },
+    "properties": {
+        "name": "Test",
+        "cores": 1,
+        "ram": 512,
+        "availabilityZone": "ZONE_1",
+        "vmState": null,
+        "bootCdrom": null,
+        "bootVolume": null,
+        "cpuFamily": "INTEL_XEON"
+    },
+    "entities": {
+        "volumes": {
+            "id": "srv-2/volumes",
+            "type": "collection",
+            "href": "/cloudapi/v3/datacenters/f3f7ca3c-6f3d-4a4d-b3d6-15853ae5ba78/servers/srv-2/volumes",
+            "items": [
+                {
+                    "id": "53abb4de-b37b-4025-b139-3e09141e20bb",
+                    "type": "volume",
+                    "href": "/cloudapi/v3/datacenters/srv-2/volumes/53abb4de-b37b-4025-b139-3e09141e20bb"
+                }
+            ]
+        }
+    }
+}

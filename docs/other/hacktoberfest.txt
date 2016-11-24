@@ -10,3 +10,10 @@ Accounts raising spam pull requests as part of hacktoberfest:
 @ShyamW
 @lin31504
 @blusoul12
+@ghost
+@thejonnyhall
+@bguru
+@haucke
+@vilnitskiy
+@htrueman
+@thomas104

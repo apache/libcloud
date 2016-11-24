@@ -7,7 +7,7 @@ Provider                            install image list images deploy container g
 `Amazon Elastic Container Service`_ no            yes         yes              yes           yes             yes            yes               yes               yes             no             yes            yes             yes          
 `Joyent Triton`_                    yes           yes         yes              yes           yes             yes            yes               yes               yes             no             no             no              no           
 `Kubernetes`_                       no            no          yes              yes           no              no             no                yes               yes             no             yes            yes             yes          
-`Rancher`_                          no            no          yes              yes           no              yes            no                yes               yes             no             no             no              no           
+`Rancher`_                          no            no          yes              yes           yes             yes            no                yes               yes             no             no             no              no           
 =================================== ============= =========== ================ ============= =============== ============== ================= ================= =============== ============== ============== =============== =============
 
 .. _`Docker`: http://docker.io
