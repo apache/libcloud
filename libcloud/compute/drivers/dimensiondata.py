@@ -869,6 +869,110 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
 
+    def import_image(self, ovf_package_name, name,
+                     cluster_id=None, datacenter_id=None, description=None,
+                     is_guest_os_customization=None,
+                     tagkey_name_value_dictionaries=None):
+        """
+        Import image
+
+        :param ovf_package_name: Image OVF package name
+        :type  ovf_package_name: ``str``
+
+        :param name: Image name
+        :type  name: ``str``
+
+        :param cluster_id: Provide either cluster_id or datacenter_id
+        :type  cluster_id: ``str``
+
+        :param datacenter_id: Provide either cluster_id or datacenter_id
+        :type  datacenter_id: ``str``
+
+        :param description: Optional. Description of image
+        :type  description: ``str``
+
+        :param is_guest_os_customization: Optional. true for NGOC image
+        :type  is_guest_os_customization: ``bool``
+
+        :param tagkey_name_value_dictionaries: Optional tagkey name value dict
+        :type  tagkey_name_value_dictionaries: dictionaries
+
+        :return: Return true if successful
+        :rtype:  ``bool``
+        """
+
+        # Unsupported for version lower than 2.4
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            raise Exception("import image is feature is NOT supported in  " \
+                            "api version earlier than 2.4")
+        elif cluster_id is None and datacenter_id is None:
+            raise ValueError("Either cluster_id or datacenter_id must be "
+                             "provided")
+        elif cluster_id is not None and datacenter_id is not None:
+            raise ValueError("Cannot accept both cluster_id and "
+                             "datacenter_id. Please provide either one")
+        else:
+            import_image_elem = ET.Element(
+                'urn:importImage',
+                {
+                    'xmlns:urn': TYPES_URN,
+                })
+
+            ET.SubElement(
+                import_image_elem,
+                'urn:ovfPackage'
+            ).text = ovf_package_name
+
+            ET.SubElement(
+                import_image_elem,
+                'urn:name'
+            ).text = name
+
+            if description is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:description'
+                ).text = description
+
+            if cluster_id is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:clusterId'
+                ).text = cluster_id
+            else:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:datacenterId'
+                ).text = datacenter_id
+
+            if is_guest_os_customization is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:guestOsCustomization'
+                ).text = is_guest_os_customization
+
+            if len(tagkey_name_value_dictionaries) > 0:
+                for k, v in tagkey_name_value_dictionaries.items():
+                    print(k, v)
+                    tag_elem = ET.SubElement(
+                        import_image_elem,
+                        'urn:tag')
+                    ET.SubElement(tag_elem,
+                                  'urn:tagKeyName').text = k
+
+                    if v is not None:
+                        ET.SubElement(tag_elem,
+                                      'urn:value').text = v
+
+        response = self.connection.request_with_orgId_api_2(
+            'image/importImage',
+            method='POST',
+            data=ET.tostring(import_image_elem)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_list_nodes_paginated(self, name=None, location=None,
                                 ipv6=None, ipv4=None, vlan=None,
                                 image=None, deployed=None, started=None,
@@ -3626,69 +3730,6 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def import_image(self, ovf_package_name, name,
-                     cluster_id, description=None,
-                     is_guest_os_customization=None,
-                     tagkey_name_value_dictionaries=None):
-        # Unsupported for version lower than 2.4
-        if LooseVersion(self.connection.active_api_version) < LooseVersion(
-                '2.4'):
-            raise Exception("import image is feature is NOT supported in  " \
-                            "api version earlier than 2.4")
-        else:
-            import_image_elem = ET.Element(
-                'urn:importImage',
-                {
-                    'xmlns:urn': TYPES_URN,
-                })
-
-            ET.SubElement(
-                import_image_elem,
-                'urn:ovfPackage'
-            ).text = ovf_package_name
-
-            ET.SubElement(
-                import_image_elem,
-                'urn:name'
-            ).text = name
-
-            if description is not None:
-                ET.SubElement(
-                    import_image_elem,
-                    'urn:description'
-                ).text = description
-
-            ET.SubElement(
-                import_image_elem,
-                'urn:clusterId'
-            ).text = cluster_id
-
-            if is_guest_os_customization is not None:
-                ET.SubElement(
-                    import_image_elem,
-                    'urn:guestOsCustomization'
-                ).text = is_guest_os_customization
-
-            if len(tagkey_name_value_dictionaries) > 0:
-                for k, v in tagkey_name_value_dictionaries.items():
-                    print(k, v)
-                    tag_elem = ET.SubElement(
-                        import_image_elem,
-                        'urn:tag')
-                    ET.SubElement(tag_elem,
-                                  'urn:tagKeyName').text = k
-
-                    if v is not None:
-                        ET.SubElement(tag_elem,
-                                      'urn:value').text = v
-
-        response = self.connection.request_with_orgId_api_2(
-            'image/importImage',
-            method='POST',
-            data=ET.tostring(import_image_elem)).object
-
-        response_code = findtext(response, 'responseCode', TYPES_URN)
-        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_exchange_nic_vlans(self, nic_id_1, nic_id_2):
         """

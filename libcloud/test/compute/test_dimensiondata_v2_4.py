@@ -2039,6 +2039,32 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             tagkey_name_value_dictionaries=tag_dictionaries)
         self.assertTrue(success)
 
+    def test_import_image_error_too_many_choice(self):
+        tag_dictionaries = {'tagkey1_name': 'dev test', 'tagkey2_name': None}
+
+        with self.assertRaises(ValueError):
+            success = self.driver.import_image(
+                ovf_package_name='aTestGocToNGoc2_export2.mf',
+                name='Libcloud NGOCImage_New 2',
+                description='test',
+                cluster_id='QA1_N2_VMWARE_1-01',
+                datacenter_id='QA1_N1_VMWARE_1',
+                is_guest_os_customization='false',
+                tagkey_name_value_dictionaries=tag_dictionaries)
+
+    def test_import_image_error_missing_choice(self):
+        tag_dictionaries = {'tagkey1_name': 'dev test', 'tagkey2_name': None}
+
+        with self.assertRaises(ValueError):
+            success = self.driver.import_image(
+                ovf_package_name='aTestGocToNGoc2_export2.mf',
+                name='Libcloud NGOCImage_New 2',
+                description='test',
+                cluster_id=None,
+                datacenter_id=None,
+                is_guest_os_customization='false',
+                tagkey_name_value_dictionaries=tag_dictionaries)
+
     def test_exchange_nic_vlans(self):
         success = self.driver.ex_exchange_nic_vlans(
                   nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
