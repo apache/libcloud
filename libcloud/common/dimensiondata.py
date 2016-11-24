@@ -17,18 +17,15 @@ Dimension Data Common Components
 """
 from base64 import b64encode
 from time import sleep
-
-try:
-    from distutils.version import LooseVersion  # pylint: disable=import-error
-except ImportError:
-    pass
-
+# TODO: use disutils.version when Travis CI fixed the pylint issue with version
+# from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
 from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
+from libcloud.compute.types import LibcloudError, InvalidCredsError
 
 # Roadmap / TODO:
 #
@@ -316,6 +313,12 @@ def dd_object_to_id(obj, obj_type, id_value='id'):
             "Invalid type %s looking for basestring or %s"
             % (type(obj).__name__, obj_type.__name__)
         )
+
+
+# TODO: use disutils.version when Travis CI fixed the pylint issue with version
+#       This is a temporary workaround.
+def LooseVersion(version):
+    return float(version)
 
 
 class NetworkDomainServicePlan(object):
