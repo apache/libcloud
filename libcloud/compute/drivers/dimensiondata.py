@@ -21,7 +21,7 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from distutils.version import LooseVersion, StrictVersion
+from libcloud.common.dimensiondata import LooseVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -904,7 +904,7 @@ class DimensionDataNodeDriver(NodeDriver):
         # Unsupported for version lower than 2.4
         if LooseVersion(self.connection.active_api_version) < LooseVersion(
                 '2.4'):
-            raise Exception("import image is feature is NOT supported in  " \
+            raise Exception("import image is feature is NOT supported in  "
                             "api version earlier than 2.4")
         elif cluster_id is None and datacenter_id is None:
             raise ValueError("Either cluster_id or datacenter_id must be "
@@ -2545,8 +2545,8 @@ class DimensionDataNodeDriver(NodeDriver):
         # Version 2.4 and higher
         else:
             clone_server_elem = ET.Element('cloneServer',
-                                             {'id': node_id,
-                                              'xmlns': TYPES_URN})
+                                           {'id': node_id,
+                                            'xmlns': TYPES_URN})
 
             ET.SubElement(clone_server_elem, 'imageName').text = image_name
 
@@ -3729,7 +3729,6 @@ class DimensionDataNodeDriver(NodeDriver):
 
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
-
 
     def ex_exchange_nic_vlans(self, nic_id_1, nic_id_2):
         """
