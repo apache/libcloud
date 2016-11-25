@@ -2067,8 +2067,8 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_exchange_nic_vlans(self):
         success = self.driver.ex_exchange_nic_vlans(
-                      nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
-                      nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
+            nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
+            nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
         self.assertTrue(success)
 
     def test_change_nic_network_adapter(self):
