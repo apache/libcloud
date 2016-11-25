@@ -269,11 +269,6 @@ API_ENDPOINTS = {
         'name': 'Africa (AF)',
         'host': 'afapi.bsnlcloud.com',
         'vendor': 'BSNL'
-    },
-    'dd-qa': {
-        'name': 'Test(QA)',
-        'host': 'apiqa1geo1.itaas.dimensiondata.com',
-        'vendor': 'DimensionData'
     }
 }
 
