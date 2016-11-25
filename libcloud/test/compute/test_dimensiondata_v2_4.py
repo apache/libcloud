@@ -2043,7 +2043,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
         tag_dictionaries = {'tagkey1_name': 'dev test', 'tagkey2_name': None}
 
         with self.assertRaises(ValueError):
-            success = self.driver.import_image(
+            self.driver.import_image(
                 ovf_package_name='aTestGocToNGoc2_export2.mf',
                 name='Libcloud NGOCImage_New 2',
                 description='test',
@@ -2056,7 +2056,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
         tag_dictionaries = {'tagkey1_name': 'dev test', 'tagkey2_name': None}
 
         with self.assertRaises(ValueError):
-            success = self.driver.import_image(
+            self.driver.import_image(
                 ovf_package_name='aTestGocToNGoc2_export2.mf',
                 name='Libcloud NGOCImage_New 2',
                 description='test',
@@ -2067,8 +2067,8 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_exchange_nic_vlans(self):
         success = self.driver.ex_exchange_nic_vlans(
-                  nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
-                  nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
+                      nic_id_1='a4b4b42b-ccb5-416f-b052-ce7cb7fdff12',
+                      nic_id_2='b39d09b8-ea65-424a-8fa6-c6f5a98afc69')
         self.assertTrue(success)
 
     def test_change_nic_network_adapter(self):
@@ -2076,6 +2076,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             nic_id='0c55c269-20a5-4fec-8054-22a245a48fe4',
             network_adapter_name='E1000')
         self.assertTrue(success)
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -3327,28 +3328,28 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_cloneServer(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/server_clone_response.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_importImage(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/import_image_response.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_exchangeNicVlans(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/exchange_nic_vlans_response.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_changeNetworkAdapter(
-        self, method, url, body, headers):
+            self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/change_nic_networkadapter_response.xml'
         )
