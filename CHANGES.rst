@@ -10,6 +10,10 @@ Compute
 
 - Added new CloudScale.ch driver
 
+- [google compute] Bug fix for ex_create_multiple_nodes Google Cloud disk auto delete
+  (GITHUB-955)
+  [John Baublitz]
+
 - [google compute] Add "MULTI_IP_SUBNET" guestOsFeatures option.
   (GITHUB-956)
   [Max Illfelder]
