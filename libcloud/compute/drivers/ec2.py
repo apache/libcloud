@@ -4367,8 +4367,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
                     [{'group_name': 'default', 'user_id': '1234567890'}]
 
-                    VPC example: To allow access from any system associated with
-                    security group sg-47ad482e on your own account
+                    VPC example: To allow access from any system associated
+                    with security group sg-47ad482e on your own account
 
                     [{'group_id': ' sg-47ad482e'}]
         :type       group_pairs: ``list`` of ``dict``
@@ -5203,7 +5203,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :return:    A dictionary with the following keys:
                     - instance_id (``str``)
-                    - timestamp (``datetime.datetime``) - timestamp of the last output
+                    - timestamp (``datetime.datetime``) - last output timestamp
                     - output (``str``) - console output
         :rtype:     ``dict``
         """
@@ -5431,10 +5431,12 @@ class BaseEC2NodeDriver(NodeDriver):
         @note: This is a non-standard extension API, and only works for EC2.
 
         :param      name: The name of the public key to import. This must be
-         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+                          unique, otherwise an InvalidKeyPair. Duplicate
+                          exception is raised.
         :type       name: ``str``
 
-        :param     keyfile: The filename with the path of the public key to import.
+        :param     keyfile: The filename with the path of the public key
+                            to import.
         :type      keyfile: ``str``
 
         :rtype: ``dict``
@@ -7046,7 +7048,8 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
     def create_node(self, **kwargs):
         """
-        Creates a new Outscale node. The ex_iamprofile keyword is not supported.
+        Creates a new Outscale node. The ex_iamprofile keyword
+        is not supported.
 
         @inherits: :class:`BaseEC2NodeDriver.create_node`
 
@@ -7060,7 +7063,8 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
                                         assign to the node.
         :type       ex_security_groups:   ``list``
 
-        :keyword    ex_metadata: The Key/Value metadata to associate with a node
+        :keyword    ex_metadata: The Key/Value metadata to associate
+                                 with a node.
         :type       ex_metadata: ``dict``
 
         :keyword    ex_mincount: The minimum number of nodes to launch
