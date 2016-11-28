@@ -7632,6 +7632,7 @@ class GCENodeDriver(NodeDriver):
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
             ex_can_ip_forward=node_attrs['ex_can_ip_forward'],
+            ex_disk_auto_delete=node_attrs['ex_disk_auto_delete'],
             ex_disks_gce_struct=node_attrs['ex_disks_gce_struct'],
             ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
