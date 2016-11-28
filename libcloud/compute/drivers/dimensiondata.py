@@ -3887,11 +3887,12 @@ class DimensionDataNodeDriver(NodeDriver):
         return locations
 
     def _to_location(self, element):
-        l = NodeLocation(id=element.get('id'),
-                         name=findtext(element, 'displayName', TYPES_URN),
-                         country=findtext(element, 'country', TYPES_URN),
-                         driver=self)
-        return l
+        networking = element.find(fixxpath('networking', TYPES_URN))
+        return NodeLocation(id=element.get('id'),
+                            name=findtext(element, 'displayName', TYPES_URN),
+                            country=findtext(element, 'country', TYPES_URN),
+                            driver=self,
+                            extra={'networking_type': networking.get('type')})
 
     def _to_cpu_spec(self, element):
         return DimensionDataServerCpuSpecification(
