@@ -5,7 +5,7 @@ Outscale SAS Driver Documentation
 developers to benefit from all the flexibility of the Cloud.
 This IaaS platform relies on TINA OS, its Cloud manager whose purpose is to
 provide great performances on the Cloud.
-TINA OS is a software developed by Outscale with APIs compatible with AWS EC2 (TM).
+TINA OS is software developed by Outscale with APIs compatible with AWS EC2 (TM).
 
 .. figure:: /_static/images/provider_logos/outscale.jpg
     :align: center
@@ -19,7 +19,7 @@ Outscale users can start virtual machines in the following regions:
 
 For other Regions, see the `Outscale Inc.`_ documentation.
 
-Outscale SAS is European company and uses prices in Euros.
+Outscale SAS is European company and is priced in Euros.
 
 API Documentation
 -----------------
