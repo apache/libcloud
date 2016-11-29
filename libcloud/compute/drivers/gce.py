@@ -4534,12 +4534,12 @@ class GCENodeDriver(NodeDriver):
         :type     description: ``str`` or ``None``
 
         :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
-                                  send/receive non-matching src/dst packets.
+                                     send/receive non-matching src/dst packets.
         :type     ex_can_ip_forward: ``bool`` or ``None``
 
         :keyword  ex_preemptible: Defines whether the instance is preemptible.
-                                        (If not supplied, the instance will
-                                         not be preemptible)
+                                  (If not supplied, the instance will
+                                  not be preemptible)
         :type     ex_preemptible: ``bool`` or ``None``
 
         :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
