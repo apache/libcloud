@@ -25,7 +25,7 @@ Most of the `cloudscale.ch` API is covered by the simple commands:
 
 - ``driver.list_sizes()``
 - ``driver.list_images()``
-- ``driver.list_sizes()``
+- ``driver.list_nodes()``
 - ``driver.reboot_node(node)``
 - ``driver.ex_start_node(node)``
 - ``driver.ex_stop_node(node)``
