@@ -10,6 +10,7 @@ Provider                              Documentation                             
 `Bluebox Blocks`_                                                                       BLUEBOX             single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.bluebox`           :class:`BlueboxNodeDriver`          
 `Brightbox`_                                                                            BRIGHTBOX           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.brightbox`         :class:`BrightboxNodeDriver`        
 `BSNL`_                               :doc:`Click </compute/drivers/bsnl>`              BSNL                single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.bsnl`              :class:`BSNLNodeDriver`             
+`cloudscale.ch`_                      :doc:`Click </compute/drivers/cloudscale`         CLOUDSCALE          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudscale`        :class:`CloudscaleNodeDriver`       
 `CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`        CLOUDSIGMA          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudsigma`        :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`        CLOUDSTACK          single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudstack`        :class:`CloudStackNodeDriver`       
 `Cloudwatt`_                          :doc:`Click </compute/drivers/cloudwatt>`         CLOUDWATT           single region driver                                                                                                                                           :mod:`libcloud.compute.drivers.cloudwatt`         :class:`CloudwattNodeDriver`        
@@ -66,6 +67,7 @@ Provider                              Documentation                             
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
+.. _`cloudscale.ch`: https://www.cloudscale.ch/
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
