@@ -483,7 +483,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     def request_with_orgId_api_2(self, action, params=None, data='',
                                  headers=None, method='GET'):
         action = "%s/%s" % (self.get_resource_path_api_2(), action)
-        print(action)
+
         return super(DimensionDataConnection, self).request(
             action=action,
             params=params, data=data,

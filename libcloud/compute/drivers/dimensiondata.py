@@ -954,7 +954,6 @@ class DimensionDataNodeDriver(NodeDriver):
 
             if len(tagkey_name_value_dictionaries) > 0:
                 for k, v in tagkey_name_value_dictionaries.items():
-                    print(k, v)
                     tag_elem = ET.SubElement(
                         import_image_elem,
                         'urn:tag')
