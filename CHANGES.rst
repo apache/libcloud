@@ -8,6 +8,11 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [dimensiondata] Added support for 2.4 API, added support for image import, cloning. Add feature for changing NIC VLANs, add feature for changing
+  NIC order for a server.
+  (GITHUB-953)
+  [Samuel Chong]
+
 - [ec2] Add US-EAST2 (Ohio)
   (GITHUB-946)
   [Matthew Harris]
