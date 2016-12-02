@@ -3726,12 +3726,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if ex_subnetwork:
-            if not hasattr(ex_subnetwork, 'name'):
-                ex_subnetwork = \
-                    self.ex_get_subnetwork(ex_subnetwork,
-                                           region=self._get_region_from_zone(
-                                               location))
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -4440,12 +4439,12 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_multiple_nodes(
             self, base_name, size, image, number, location=None,
-            ex_network='default', ex_tags=None, ex_metadata=None,
-            ignore_errors=True, use_existing_disk=True, poll_interval=2,
-            external_ip='ephemeral', ex_disk_type='pd-standard',
-            ex_disk_auto_delete=True, ex_service_accounts=None,
-            timeout=DEFAULT_TASK_COMPLETION_TIMEOUT, description=None,
-            ex_can_ip_forward=None, ex_disks_gce_struct=None,
+            ex_network='default', ex_subnetwork=None, ex_tags=None,
+            ex_metadata=None, ignore_errors=True, use_existing_disk=True,
+            poll_interval=2, external_ip='ephemeral',
+            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
+            description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None):
         """
@@ -4596,6 +4595,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -4607,6 +4611,7 @@ class GCENodeDriver(NodeDriver):
                       'image': image,
                       'location': location,
                       'network': ex_network,
+                      'subnetwork': ex_subnetwork,
                       'tags': ex_tags,
                       'metadata': ex_metadata,
                       'ignore_errors': ignore_errors,
@@ -7630,7 +7635,8 @@ class GCENodeDriver(NodeDriver):
             ex_disks_gce_struct=node_attrs['ex_disks_gce_struct'],
             ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
-            ex_automatic_restart=node_attrs['ex_automatic_restart'])
+            ex_automatic_restart=node_attrs['ex_automatic_restart'],
+            ex_subnetwork=node_attrs['subnetwork'])
 
         try:
             node_res = self.connection.request(request, method='POST',
