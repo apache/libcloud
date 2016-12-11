@@ -56,6 +56,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
                           "Standard_A1",
                           "Standard_A2"])
 
+    def test_ex_get_ratecard(self):
+        ratecard = self.driver.ex_get_ratecard('0026P')
+        self.assertEqual(set(ratecard.keys()),
+                         set(['Currency',
+                              'Locale',
+                              'IsTaxIncluded',
+                              'OfferTerms',
+                              'Meters']))
 
 class AzureMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('azure_arm')
