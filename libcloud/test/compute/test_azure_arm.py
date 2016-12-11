@@ -65,6 +65,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
                               'OfferTerms',
                               'Meters']))
 
+
 class AzureMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('azure_arm')
 
