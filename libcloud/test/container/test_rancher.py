@@ -26,13 +26,151 @@ from libcloud.test.file_fixtures import ContainerFileFixtures
 from libcloud.test import MockHttp
 
 
+# --------------------------------------------------------------------------- #
+# Mock Classes
+
+class RancherMockHttp(MockHttp):
+    fixtures = ContainerFileFixtures('rancher')
+
+    def _v1_environments(self, method, url, body, headers):
+        if method == 'GET':
+            return (httplib.OK, self.fixtures.load('ex_list_stacks.json'), {},
+                    httplib.responses[httplib.OK])
+        else:
+            return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
+                    httplib.responses[httplib.OK])
+
+    def _v1_environments_1e9(self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
+                httplib.responses[httplib.OK])
+
+    def _v1_environments_1e10(self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('ex_destroy_stack.json'), {},
+                httplib.responses[httplib.OK])
+
+    def _v1_environments_1e1(self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('ex_activate_stack.json'), {},
+                httplib.responses[httplib.OK])
+
+    def _v1_services(self, method, url, body, headers):
+        if '?healthState=healthy' in url:
+            return (httplib.OK, self.fixtures.load('ex_search_services.json'),
+                    {}, httplib.responses[httplib.OK])
+        elif method == 'GET':
+            return (httplib.OK, self.fixtures.load('ex_list_services.json'),
+                    {}, httplib.responses[httplib.OK])
+        else:
+            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
+                    {}, httplib.responses[httplib.OK])
+
+    def _v1_services_1s13(self, method, url, body, headers):
+        if method == 'GET':
+            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
+                    {}, httplib.responses[httplib.OK])
+        elif method == 'DELETE':
+            return (httplib.OK, self.fixtures.load('ex_destroy_service.json'),
+                    {}, httplib.responses[httplib.OK])
+
+    def _v1_services_1s6(self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('ex_activate_service.json'), {},
+                httplib.responses[httplib.OK])
+
+    def _v1_containers(self, method, url, body, headers):
+        if '?state=running' in url:
+            return (httplib.OK,
+                    self.fixtures.load('ex_search_containers.json'), {},
+                    httplib.responses[httplib.OK])
+        elif method == 'POST':
+            return (httplib.OK, self.fixtures.load('deploy_container.json'),
+                    {}, httplib.responses[httplib.OK])
+        return (httplib.OK, self.fixtures.load('list_containers.json'), {},
+                httplib.responses[httplib.OK])
+
+    def _v1_containers_1i31(self, method, url, body, headers):
+        if method == 'GET':
+            return (httplib.OK, self.fixtures.load('deploy_container.json'),
+                    {}, httplib.responses[httplib.OK])
+        elif method == 'DELETE' or '?action=stop' in url:
+            return (httplib.OK, self.fixtures.load('stop_container.json'), {},
+                    httplib.responses[httplib.OK])
+        elif '?action=start' in url:
+            return (httplib.OK, self.fixtures.load('start_container.json'), {},
+                    httplib.responses[httplib.OK])
+        else:
+            return (httplib.OK, self.fixtures.load('deploy_container.json'),
+                    {}, httplib.responses[httplib.OK])
+
+
+RancherContainerDriver.connectionCls.conn_classes = (
+    RancherMockHttp, RancherMockHttp
+)
+RancherMockHttp.type = None
+RancherMockHttp.use_param = 'a'
+
+
+# --------------------------------------------------------------------------- #
+# Test Cases
+
+
+class RancherContainerDriverInitTestCase(unittest.TestCase):
+    """
+    Tests for testing the different permutations of the driver initialization
+    string.
+    """
+
+    def test_full_url_string(self):
+        """
+        Test a 'full' URL string, which contains a scheme, port, and base path.
+        """
+        path = "http://myhostname:1234/base"
+        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path)
+
+        self.assertEqual(driver.secure, False)
+        self.assertEqual(driver.connection.host, "myhostname")
+        self.assertEqual(driver.connection.port, 1234)
+        self.assertEqual(driver.baseuri, "/base")
+
+    def test_url_string_no_port(self):
+        """
+        Test a partial URL string, which contains a scheme, and base path.
+        """
+        path = "http://myhostname/base"
+        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path,
+                                        port=1234)
+
+        self.assertEqual(driver.secure, False)
+        self.assertEqual(driver.connection.host, "myhostname")
+        self.assertEqual(driver.connection.port, 1234)
+        self.assertEqual(driver.baseuri, "/base")
+
+    def test_url_string_no_scheme(self):
+        """
+        Test a partial URL string, which contains a port, and base path.
+        """
+        path = "myhostname:1234/base"
+        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path)
+
+        self.assertEqual(driver.secure, True)
+        self.assertEqual(driver.connection.host, "myhostname")
+        self.assertEqual(driver.connection.port, 1234)
+        self.assertEqual(driver.baseuri, "/base")
+
+    def test_url_string_no_base_path(self):
+        """
+        Test a partial URL string, which contains a scheme, and a port.
+        """
+        path = "http://myhostname:1234"
+        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path)
+
+        self.assertEqual(driver.secure, False)
+        self.assertEqual(driver.connection.host, "myhostname")
+        self.assertEqual(driver.connection.port, 1234)
+        self.assertEqual(driver.baseuri, "/v%s" % driver.version)
+
+
 class RancherContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        RancherContainerDriver.connectionCls.conn_classes = (
-            RancherMockHttp, RancherMockHttp)
-        RancherMockHttp.type = None
-        RancherMockHttp.use_param = 'a'
         self.driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER)
 
     # Stacks
@@ -184,78 +322,6 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(destroyed.name, "newcontainer")
         self.assertEqual(destroyed.state, "pending")
         self.assertEqual(destroyed.extra['state'], "stopping")
-
-
-class RancherMockHttp(MockHttp):
-    fixtures = ContainerFileFixtures('rancher')
-
-    def _v1_environments(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_list_stacks.json'), {},
-                    httplib.responses[httplib.OK])
-        else:
-            return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
-                    httplib.responses[httplib.OK])
-
-    def _v1_environments_1e9(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
-                httplib.responses[httplib.OK])
-
-    def _v1_environments_1e10(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_destroy_stack.json'), {},
-                httplib.responses[httplib.OK])
-
-    def _v1_environments_1e1(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_activate_stack.json'), {},
-                httplib.responses[httplib.OK])
-
-    def _v1_services(self, method, url, body, headers):
-        if '?healthState=healthy' in url:
-            return (httplib.OK, self.fixtures.load('ex_search_services.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_list_services.json'),
-                    {}, httplib.responses[httplib.OK])
-        else:
-            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
-                    {}, httplib.responses[httplib.OK])
-
-    def _v1_services_1s13(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'DELETE':
-            return (httplib.OK, self.fixtures.load('ex_destroy_service.json'),
-                    {}, httplib.responses[httplib.OK])
-
-    def _v1_services_1s6(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_activate_service.json'), {},
-                httplib.responses[httplib.OK])
-
-    def _v1_containers(self, method, url, body, headers):
-        if '?state=running' in url:
-            return (httplib.OK,
-                    self.fixtures.load('ex_search_containers.json'), {},
-                    httplib.responses[httplib.OK])
-        elif method == 'POST':
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
-        return (httplib.OK, self.fixtures.load('list_containers.json'), {},
-                httplib.responses[httplib.OK])
-
-    def _v1_containers_1i31(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'DELETE' or '?action=stop' in url:
-            return (httplib.OK, self.fixtures.load('stop_container.json'), {},
-                    httplib.responses[httplib.OK])
-        elif '?action=start' in url:
-            return (httplib.OK, self.fixtures.load('start_container.json'), {},
-                    httplib.responses[httplib.OK])
-        else:
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
