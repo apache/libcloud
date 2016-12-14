@@ -457,17 +457,17 @@ class OpenStackIdentity_2_0_Connection_VOMSTests(unittest.TestCase):
         OpenStackIdentity_2_0_Connection_VOMS.conn_classes = (mock_cls, mock_cls)
 
         self.auth_instance = OpenStackIdentity_2_0_Connection_VOMS(auth_url='http://none',
-                                                                                user_id=None,
-                                                                                key='/tmp/proxy.pem',
-                                                                                tenant_name='VO')
+                                                                   user_id=None,
+                                                                   key='/tmp/proxy.pem',
+                                                                   tenant_name='VO')
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
         auth = OpenStackIdentity_2_0_Connection_VOMS(auth_url='http://none',
-                                                                  user_id=None,
-                                                                  key='/tmp/proxy.pem',
-                                                                  token_scope='test',
-                                                                  tenant_name="VO")
+                                                     user_id=None,
+                                                     key='/tmp/proxy.pem',
+                                                     token_scope='test',
+                                                     tenant_name="VO")
         auth.authenticate()
 
 
