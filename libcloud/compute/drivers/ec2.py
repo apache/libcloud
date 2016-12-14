@@ -6980,8 +6980,8 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         return quota
 
-    def ex_describe_quota(self, dry_run=False, filters=None,
-                          max_results=None, marker=None):
+    def ex_describe_quotas(self, dry_run=False, filters=None,
+                           max_results=None, marker=None):
         """
         Describes one or more of your quotas.
 
@@ -7011,7 +7011,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             raise NotImplementedError(
                 'quota marker is not implemented')
 
-        params = {'Action': 'DescribeQuota'}
+        params = {'Action': 'DescribeQuotas'}
 
         if dry_run:
             params.update({'DryRun': dry_run})
