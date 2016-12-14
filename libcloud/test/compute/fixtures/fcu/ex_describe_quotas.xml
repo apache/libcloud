@@ -1,4 +1,4 @@
-<DescribeQuotaResponse
+<DescribeQuotasResponse
     xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
     <requestId>31ef7689-2521-445f-b634-2a5e3e66f699</requestId>
     <isTruncated>true</isTruncated>
@@ -50,4 +50,4 @@
             </quotaSet>
         </item>
     </referenceQuotaSet>
-</DescribeQuotaResponse>
+</DescribeQuotasResponse>

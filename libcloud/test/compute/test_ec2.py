@@ -1798,8 +1798,8 @@ class OutscaleTests(EC2Tests):
 class FCUMockHttp(EC2MockHttp):
     fixtures = ComputeFileFixtures('fcu')
 
-    def _DescribeQuota(self, method, url, body, headers):
-        body = self.fixtures.load('ex_describe_quota.xml')
+    def _DescribeQuotas(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_quotas.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeProductTypes(self, method, url, body, headers):
@@ -1829,8 +1829,8 @@ class OutscaleFCUTests(LibcloudTestCase):
                                             secret=EC2_PARAMS[1],
                                             host='some.fcucloud.com')
 
-    def test_ex_describe_quota(self):
-        is_truncated, quota = self.driver.ex_describe_quota()
+    def test_ex_describe_quotas(self):
+        is_truncated, quota = self.driver.ex_describe_quotas()
         self.assertTrue(is_truncated == 'true')
         self.assertTrue('global' in quota.keys())
         self.assertTrue('vpc-00000000' in quota.keys())
