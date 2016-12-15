@@ -389,7 +389,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
     latest_api_version = '2.4'
 
     # Default api version
-    active_api_version = '2.3'
+    active_api_version = '2.4'
 
     _orgId = None
     responseCls = DimensionDataResponse
