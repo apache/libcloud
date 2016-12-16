@@ -481,6 +481,10 @@ class DimensionDataNodeDriver(NodeDriver):
                              'ex_network_domain '
                              'for MCP2 or ex_network for legacy MCP1')
 
+        # Set ex_is_started to False by default if none bool data type provided
+        if not isinstance(ex_is_started, bool):
+            ex_is_started = True
+
         # Handle MCP1 legacy
         if 'ex_network' in kwargs:
             new_node = self._create_node_mcp1(
