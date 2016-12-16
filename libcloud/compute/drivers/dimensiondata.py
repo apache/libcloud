@@ -62,10 +62,20 @@ from libcloud.compute.types import NodeState, Provider
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
 NODE_STATE_MAP = {
-    ('NORMAL', 'true', None):
-        NodeState.RUNNING,
     ('NORMAL', 'false', None):
         NodeState.STOPPED,
+    ('PENDING_CHANGE', 'false', None):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'false', 'CHANGE_NETWORK_ADAPTER'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'true', 'CHANGE_NETWORK_ADAPTER'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'false', 'EXCHANGE_NIC_VLANS'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'true', 'EXCHANGE_NIC_VLANS'):
+        NodeState.PENDING,
+    ('NORMAL', 'true', None):
+        NodeState.RUNNING,
     ('PENDING_CHANGE', 'true', 'START_SERVER'):
         NodeState.STARTING,
     ('PENDING_ADD', 'true', 'DEPLOY_SERVER'):
