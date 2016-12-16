@@ -1582,11 +1582,64 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
         if not self._is_authentication_needed(force=force):
             return self
 
-        data = {'auth': {"voms": True}}
-        if self.tenant_name:
-            data['auth']['tenantName'] = self.tenant_name
+        tenant = self.tenant_name
+        if not tenant:
+            # if the tenant name is not specified look for it
+            token = self._get_unscoped_token()
+            tenant = self._get_tenant_name(token)
+
+        data = {'auth': {'voms': True, 'tenantName': tenant}}
+
         reqbody = json.dumps(data)
         return self._authenticate_2_0_with_body(reqbody)
+
+    def _get_unscoped_token(self):
+        """
+        Get unscoped token from VOMS proxy
+        """
+        data = {'auth': {'voms': True}}
+        reqbody = json.dumps(data)
+
+        response = self.request('/v2.0/tokens', data=reqbody,
+                                headers={'Content-Type': 'application/json'},
+                                method='POST')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            try:
+                body = json.loads(response.body)
+                return body['access']['token']['id']
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
+
+    def _get_tenant_name(self, token):
+        """
+        Get the first available tenant name (usually there are only one)
+        """
+        headers = {'Accept': 'application/json',
+                   'Content-Type': 'application/json',
+                   'X-Auth-Token': token}
+        response = self.request('/v2.0/tenants', headers=headers, method='GET')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            try:
+                body = json.loads(response.body)
+                return body["tenants"][0]["name"]
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
 
     def _authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens', data=reqbody,
