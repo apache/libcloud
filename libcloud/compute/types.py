@@ -280,6 +280,7 @@ class NodeState(Type):
     PAUSED = 'paused'
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
+    NORMAL = 'normal'
 
 
 class StorageVolumeState(Type):
