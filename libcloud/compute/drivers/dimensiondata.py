@@ -1839,10 +1839,10 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_get_node_by_id(self, id, os_customization=True):
+    def ex_get_node_by_id(self, id):
         node = self.connection.request_with_orgId_api_2(
             'server/server/%s' % id).object
-        return self._to_node(node, os_customization)
+        return self._to_node(node)
 
     def ex_list_firewall_rules(self, network_domain, page_size=50,
                                page_number=1):
@@ -4092,7 +4092,7 @@ class DimensionDataNodeDriver(NodeDriver):
             if info.get('name') == 'serverId':
                 node_id = info.get('value')
 
-        new_node = self.ex_get_node_by_id(node_id, os_customization=False)
+        new_node = self.ex_get_node_by_id(node_id)
 
         return new_node
 
@@ -4428,10 +4428,22 @@ class DimensionDataNodeDriver(NodeDriver):
             performance=element.get('speed'))
 
     def _to_vmware_tools(self, element):
+        status = None
+        if hasattr(element, 'runningStatus'):
+            status = element.get('runningStatus')
+
+        version_status = None
+        if hasattr(element, 'version_status'):
+            version_status = element.get('version_status')
+
+        api_version = None
+        if hasattr(element, 'apiVersion'):
+            api_version = element.get('apiVersion')
+
         return DimensionDataServerVMWareTools(
-            status=element.get('runningStatus'),
-            version_status=element.get('versionStatus'),
-            api_version=element.get('apiVersion'))
+            status=status,
+            version_status=version_status,
+            api_version=api_version)
 
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
@@ -4450,7 +4462,7 @@ class DimensionDataNodeDriver(NodeDriver):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
         return [self._to_node(el) for el in node_elements]
 
-    def _to_node(self, element, os_customization=True):
+    def _to_node(self, element):
         started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
         dd_state = findtext(element, 'state', TYPES_URN)
@@ -4463,7 +4475,6 @@ class DimensionDataNodeDriver(NodeDriver):
         disks = self._to_disks(element)
 
         # Vmware Tools
-        vmware_tools = None
 
         # Version 2.3 or earlier
         if LooseVersion(self.connection.active_api_version) < LooseVersion(
@@ -4474,9 +4485,9 @@ class DimensionDataNodeDriver(NodeDriver):
                 'operatingSystem', TYPES_URN))
         # Version 2.4 or later
         else:
-            if os_customization:
-                vmware_tools = self._to_vmware_tools(
-                    element.find(fixxpath('guest/vmTools', TYPES_URN)))
+            vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
+            if vmtools_elm is not None:
+                vmware_tools = self._to_vmware_tools(vmtools_elm)
 
             operation_system = element.find(fixxpath(
                 'guest/operatingSystem', TYPES_URN))
