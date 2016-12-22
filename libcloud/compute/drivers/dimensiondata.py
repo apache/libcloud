@@ -4056,7 +4056,12 @@ class DimensionDataNodeDriver(NodeDriver):
                     "ex_tagid_value_pairs must be a dictionary."
                 )
 
-            for k, v in ex_tagid_value_pairs.items():
+            if sys.version_info[0] < 3:
+                tagid_items = ex_tagid_value_pairs.iteritems()
+            else:
+                tagid_items = ex_tagid_value_pairs.items()
+
+            for k, v in tagid_items:
                 tag_elem = ET.SubElement(server_uncustomized_elm, 'tagById')
                 ET.SubElement(tag_elem, 'tagKeyId').text = k
 
@@ -4069,7 +4074,12 @@ class DimensionDataNodeDriver(NodeDriver):
                     "ex_tagname_value_pairs must be a dictionary"
                 )
 
-            for k, v in ex_tagname_value_pairs.items():
+            if sys.version_info[0] < 3:
+                tags_items = ex_tagname_value_pairs.iteritems()
+            else:
+                tags_items = ex_tagname_value_pairs.items()
+
+            for k, v in tags_items:
                 tag_name_elem = ET.SubElement(server_uncustomized_elm, 'tag')
                 ET.SubElement(tag_name_elem, 'tagKeyName').text = k
 
