@@ -3944,9 +3944,10 @@ class DimensionDataNodeDriver(NodeDriver):
                   "to True")
 
         server_uncustomized_elm = ET.Element('deployUncustomizedServer',
-                                {'xmlns': TYPES_URN})
+                                             {'xmlns': TYPES_URN})
         ET.SubElement(server_uncustomized_elm, "name").text = name
-        ET.SubElement(server_uncustomized_elm, "description").text = ex_description
+        ET.SubElement(server_uncustomized_elm, "description").text = \
+            ex_description
         image_id = self._image_to_image_id(image)
         ET.SubElement(server_uncustomized_elm, "imageId").text = image_id
 
@@ -3966,7 +3967,8 @@ class DimensionDataNodeDriver(NodeDriver):
                     str(ex_cpu_specification.cores_per_socket))
 
         if ex_memory_gb is not None:
-            ET.SubElement(server_uncustomized_elm, "memoryGb").text = str(ex_memory_gb)
+            ET.SubElement(server_uncustomized_elm, "memoryGb").text = \
+                str(ex_memory_gb)
 
         if (ex_primary_nic_private_ipv4 is None and
                 ex_primary_nic_vlan is None):
