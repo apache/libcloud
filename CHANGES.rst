@@ -111,6 +111,10 @@ Load Balancing
   (LIBCLOUD-869, GITHUB-936)
   [Anton Kozyrev]
 
+- Fix bug where GCE Load balancer supposes that all VMs have public ips
+  (LIBCLOUD-879, GITHUB-952)
+  [Chris Walker]
+
 Storage
 ~~~~~~~
 
