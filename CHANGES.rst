@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ec2] Added m4 instances to us-gov and brazil, added m4.16xlarge to all
+  [GITHUB-964]
+  (Matthew Tyas)
+
 - Added new CloudScale.ch driver
 
 - [google compute] Bug fix for ex_create_multiple_nodes Google Cloud disk auto delete
