@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [gce] Allow multiple preemptible instances to be created
+  [GITHUB-954]
+  (John Baublitz)
+
 - [openstack] Add new Connection class to support VOMS proxys to keystone servers
   [GITHUB-959]
   (micafer)
