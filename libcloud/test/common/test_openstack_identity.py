@@ -33,6 +33,7 @@ from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection_OIDC_access_token
 from libcloud.common.openstack_identity import OpenStackIdentityUser
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
+from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection_VOMS
 
 from libcloud.test import unittest
 from libcloud.test import MockHttp
@@ -449,6 +450,27 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
         auth.authenticate()
 
 
+class OpenStackIdentity_2_0_Connection_VOMSTests(unittest.TestCase):
+    def setUp(self):
+        mock_cls = OpenStackIdentity_2_0_Connection_VOMSMockHttp
+        mock_cls.type = None
+        OpenStackIdentity_2_0_Connection_VOMS.conn_classes = (mock_cls, mock_cls)
+
+        self.auth_instance = OpenStackIdentity_2_0_Connection_VOMS(auth_url='http://none',
+                                                                   user_id=None,
+                                                                   key='/tmp/proxy.pem',
+                                                                   tenant_name='VO')
+        self.auth_instance.auth_token = 'mock'
+
+    def test_authenticate(self):
+        auth = OpenStackIdentity_2_0_Connection_VOMS(auth_url='http://none',
+                                                     user_id=None,
+                                                     key='/tmp/proxy.pem',
+                                                     token_scope='test',
+                                                     tenant_name="VO")
+        auth.authenticate()
+
+
 class OpenStackServiceCatalogTestCase(unittest.TestCase):
     fixtures = ComputeFileFixtures('openstack')
 
@@ -706,6 +728,31 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         if method == 'GET':
             # get user projects
             body = json.dumps({"projects": [{"id": "project_id"}]})
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+
+class OpenStackIdentity_2_0_Connection_VOMSMockHttp(MockHttp):
+    fixtures = ComputeFileFixtures('openstack_identity/v2')
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v2_0_tokens(self, method, url, body, headers):
+        if method == 'POST':
+            status = httplib.UNAUTHORIZED
+            data = json.loads(body)
+            if 'voms' in data['auth'] and data['auth']['voms'] is True:
+                status = httplib.OK
+
+            body = ComputeFileFixtures('openstack').load('_v2_0__auth.json')
+            headers = self.json_content_headers.copy()
+            headers['x-subject-token'] = '00000000000000000000000000000000'
+            return (status, body, headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_0_tenants(self, method, url, body, headers):
+        if method == 'GET':
+            # get user projects
+            body = json.dumps({"tenant": [{"name": "tenant_name"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 

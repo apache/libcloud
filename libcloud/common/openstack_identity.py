@@ -24,7 +24,8 @@ import datetime
 from libcloud.utils.py3 import httplib
 from libcloud.utils.iso8601 import parse_date
 
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import (ConnectionUserAndKey, Response,
+                                  CertificateConnection)
 from libcloud.compute.types import (LibcloudError, InvalidCredsError,
                                     MalformedResponseError)
 
@@ -41,6 +42,7 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0',
     '2.0_apikey',
     '2.0_password',
+    '2.0_voms',
     '3.0',
     '3.x_password',
     '3.x_oidc_access_token'
@@ -69,6 +71,7 @@ __all__ = [
     'OpenStackIdentity_1_0_Connection',
     'OpenStackIdentity_1_1_Connection',
     'OpenStackIdentity_2_0_Connection',
+    'OpenStackIdentity_2_0_Connection_VOMS',
     'OpenStackIdentity_3_0_Connection',
     'OpenStackIdentity_3_0_Connection_OIDC_access_token',
 
@@ -1536,6 +1539,139 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                                          driver=self.driver)
 
 
+class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
+                                            CertificateConnection):
+    """
+    Connection class for Keystone API v2.0. with VOMS proxy support
+    In this case the key parameter will be the path of the VOMS proxy file.
+    """
+
+    responseCls = OpenStackAuthResponse
+    name = 'OpenStack Identity API v2.0 VOMS support'
+    auth_version = '2.0'
+
+    def __init__(self, auth_url, user_id, key, tenant_name=None,
+                 domain_name='Default',
+                 token_scope=OpenStackIdentityTokenScope.PROJECT,
+                 timeout=None, parent_conn=None):
+        CertificateConnection.__init__(self, cert_file=key,
+                                       url=auth_url,
+                                       timeout=timeout)
+
+        self.parent_conn = parent_conn
+
+        # enable tests to use the same mock connection classes.
+        if parent_conn:
+            self.conn_classes = parent_conn.conn_classes
+            self.driver = parent_conn.driver
+        else:
+            self.driver = None
+
+        self.auth_url = auth_url
+        self.tenant_name = tenant_name
+        self.domain_name = domain_name
+        self.token_scope = token_scope
+        self.timeout = timeout
+
+        self.urls = {}
+        self.auth_token = None
+        self.auth_token_expires = None
+        self.auth_user_info = None
+
+    def authenticate(self, force=False):
+        if not self._is_authentication_needed(force=force):
+            return self
+
+        tenant = self.tenant_name
+        if not tenant:
+            # if the tenant name is not specified look for it
+            token = self._get_unscoped_token()
+            tenant = self._get_tenant_name(token)
+
+        data = {'auth': {'voms': True, 'tenantName': tenant}}
+
+        reqbody = json.dumps(data)
+        return self._authenticate_2_0_with_body(reqbody)
+
+    def _get_unscoped_token(self):
+        """
+        Get unscoped token from VOMS proxy
+        """
+        data = {'auth': {'voms': True}}
+        reqbody = json.dumps(data)
+
+        response = self.request('/v2.0/tokens', data=reqbody,
+                                headers={'Content-Type': 'application/json'},
+                                method='POST')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            try:
+                body = json.loads(response.body)
+                return body['access']['token']['id']
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
+
+    def _get_tenant_name(self, token):
+        """
+        Get the first available tenant name (usually there are only one)
+        """
+        headers = {'Accept': 'application/json',
+                   'Content-Type': 'application/json',
+                   'X-Auth-Token': token}
+        response = self.request('/v2.0/tenants', headers=headers, method='GET')
+
+        if response.status == httplib.UNAUTHORIZED:
+            # Invalid credentials
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            try:
+                body = json.loads(response.body)
+                return body["tenants"][0]["name"]
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+        else:
+            raise MalformedResponseError('Malformed response',
+                                         driver=self.driver)
+
+    def _authenticate_2_0_with_body(self, reqbody):
+        resp = self.request('/v2.0/tokens', data=reqbody,
+                            headers={'Content-Type': 'application/json'},
+                            method='POST')
+
+        if resp.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError()
+        elif resp.status not in [httplib.OK,
+                                 httplib.NON_AUTHORITATIVE_INFORMATION]:
+            body = 'code: %s body: %s' % (resp.status, resp.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
+        else:
+            body = resp.object
+
+            try:
+                access = body['access']
+                expires = access['token']['expires']
+
+                self.auth_token = access['token']['id']
+                self.auth_token_expires = parse_date(expires)
+                self.urls = access['serviceCatalog']
+                self.auth_user_info = access.get('user', {})
+            except KeyError:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Auth JSON response is \
+                                             missing required elements', e)
+
+        return self
+
+
 def get_class_for_auth_version(auth_version):
     """
     Retrieve class for the provided auth version.
@@ -1548,6 +1684,8 @@ def get_class_for_auth_version(auth_version):
         cls = OpenStackIdentity_2_0_Connection
     elif auth_version == '2.0_password':
         cls = OpenStackIdentity_2_0_Connection
+    elif auth_version == '2.0_voms':
+        cls = OpenStackIdentity_2_0_Connection_VOMS
     elif auth_version == '3.x_password':
         cls = OpenStackIdentity_3_0_Connection
     elif auth_version == '3.x_oidc_access_token':
