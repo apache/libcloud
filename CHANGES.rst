@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [outscale] Added support for changed API for describing quotas
+  [GITHUB-960]
+  (Javier M. Mellid)
+
 - [ec2] Added m4 instances to us-gov and brazil, added m4.16xlarge to all
   [GITHUB-964]
   (Matthew Tyas)
