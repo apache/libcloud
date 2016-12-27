@@ -53,7 +53,7 @@ if PY3:
     from io import FileIO as file
 
 
-def show_warning(msg, cat, fname, lno, line=None):
+def show_warning(msg, cat, fname, lno, file=None, line=None):
     WARNINGS_BUFFER.append((msg, cat, fname, lno))
 
 original_func = warnings.showwarning
