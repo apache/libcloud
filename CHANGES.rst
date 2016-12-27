@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [openstack] Add new Connection class to support VOMS proxys to keystone servers
+  [GITHUB-959]
+  (micafer)
+
 - [outscale] Added support for changed API for describing quotas
   [GITHUB-960]
   (Javier M. Mellid)
