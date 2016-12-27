@@ -5,6 +5,13 @@
 Changes in current version of Apache Libcloud
 ---------------------------------------------
 
+Common
+~~~~~~
+
+- Set Dimension Data compute, backup and load balancer to default to 2.4 API
+  [GITHUB-961]
+  [Samuel Chong]
+
 Compute
 ~~~~~~~
 
