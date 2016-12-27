@@ -50,6 +50,13 @@ Compute
   (GITHUB-949)
   [John Baublitz]
 
+Container
+~~~~~~~~~
+
+- [rancher] The scheme (secure) and port no longer need to be explicitly specified, allowing a user to simply copy in the string provided to them from Rancher.
+  [GITHUB-958]
+  (Matthew Ellison)
+
 Changes in Apache Libcloud 1.4.0
 --------------------------------
 
