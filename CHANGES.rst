@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [azure] New method for accessing rate cards
+  [GITHUB-957]
+  (Soren L. Hansen)
+
 - [gce] Allow multiple preemptible instances to be created
   [GITHUB-954]
   (John Baublitz)
