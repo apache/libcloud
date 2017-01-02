@@ -6529,7 +6529,10 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEDiskType`
         """
         zone = self._set_zone(zone)
-        request = '/zones/%s/diskTypes/%s' % (zone.name, name)
+        if zone is None:
+            request = '/aggregated/diskTypes/%s' % name
+        else:
+            request = '/zones/%s/diskTypes/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_disktype(response)
 
