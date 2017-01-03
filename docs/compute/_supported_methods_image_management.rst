@@ -7,9 +7,11 @@ Provider                              list images get image create image delete 
 `Aliyun ECS`_                         yes         yes       yes          yes          yes       
 `PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Azure Virtual machines`_             yes         no        no           no           no        
+`Azure Virtual machines`_             yes         yes       no           no           no        
 `Bluebox Blocks`_                     yes         no        no           no           no        
 `Brightbox`_                          yes         no        no           no           no        
 `BSNL`_                               yes         no        no           no           no        
+`Cloudscale`_                         yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
 `Cloudwatt`_                          yes         yes       yes          yes          no        
@@ -63,9 +65,11 @@ Provider                              list images get image create image delete 
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
+.. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/

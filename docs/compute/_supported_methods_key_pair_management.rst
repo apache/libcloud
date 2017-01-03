@@ -7,9 +7,11 @@ Provider                              list key pairs get key pair create key pai
 `Aliyun ECS`_                         no             no           no              no                            no                          no             
 `PCextreme AuroraCompute`_            yes            yes          yes             yes                           no                          yes            
 `Azure Virtual machines`_             no             no           no              no                            no                          no             
+`Azure Virtual machines`_             no             no           no              no                            no                          no             
 `Bluebox Blocks`_                     no             no           no              no                            no                          no             
 `Brightbox`_                          no             no           no              no                            no                          no             
 `BSNL`_                               no             no           no              no                            no                          no             
+`Cloudscale`_                         no             no           no              no                            no                          no             
 `CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
@@ -63,9 +65,11 @@ Provider                              list key pairs get key pair create key pai
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
+.. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
