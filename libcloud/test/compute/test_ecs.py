@@ -36,7 +36,7 @@ class ECSDriverTestCase(LibcloudTestCase):
 
     def setUp(self):
         ECSMockHttp.test = self
-        ECSDriver.connectionCls.conn_classes = (ECSMockHttp, ECSMockHttp)
+        ECSDriver.connectionCls.conn_class = ECSMockHttp
         ECSMockHttp.use_param = 'Action'
         ECSMockHttp.type = None
 

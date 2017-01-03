@@ -33,8 +33,7 @@ from libcloud.test.secrets import VULTR_PARAMS
 class VultrTests(LibcloudTestCase):
 
     def setUp(self):
-        VultrNodeDriver.connectionCls.conn_classes = \
-            (VultrMockHttp, VultrMockHttp)
+        VultrNodeDriver.connectionCls.conn_class = VultrMockHttp
         VultrMockHttp.type = None
         self.driver = VultrNodeDriver(*VULTR_PARAMS)
 

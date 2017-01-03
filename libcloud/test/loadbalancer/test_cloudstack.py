@@ -21,8 +21,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 class CloudStackLBTests(unittest.TestCase):
     def setUp(self):
-        CloudStackLBDriver.connectionCls.conn_classes = \
-            (None, CloudStackMockHttp)
+        CloudStackLBDriver.connectionCls.conn_class = CloudStackMockHttp
 
         CloudStackLBDriver.path = '/test/path'
         CloudStackLBDriver.type = -1

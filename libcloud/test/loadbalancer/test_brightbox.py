@@ -28,8 +28,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 class BrightboxLBTests(unittest.TestCase):
     def setUp(self):
-        BrightboxLBDriver.connectionCls.conn_classes = (None,
-                                                        BrightboxLBMockHttp)
+        BrightboxLBDriver.connectionCls.conn_class = BrightboxLBMockHttp
         BrightboxLBMockHttp.type = None
         self.driver = BrightboxLBDriver(*LB_BRIGHTBOX_PARAMS)
 
@@ -98,36 +97,38 @@ class BrightboxLBMockHttp(MockHttpTestCase):
 
     def _token(self, method, url, body, headers):
         if method == 'POST':
-            return self.response(httplib.OK, self.fixtures.load('token.json'))
+            return (httplib.OK, self.fixtures.load('token.json'), {'content-type': 'application/json'},
+                    httplib.responses[httplib.OK])
 
     def _1_0_load_balancers(self, method, url, body, headers):
         if method == 'GET':
-            return self.response(httplib.OK,
-                                 self.fixtures.load('load_balancers.json'))
+            return (httplib.OK, self.fixtures.load('load_balancers.json'), {'content-type': 'application/json'},
+                    httplib.responses[httplib.OK])
         elif method == 'POST':
             body = self.fixtures.load('load_balancers_post.json')
-            return self.response(httplib.ACCEPTED, body)
+            return (httplib.ACCEPTED, body, {'content-type': 'application/json'},
+                    httplib.responses[httplib.ACCEPTED])
 
     def _1_0_load_balancers_lba_1235f(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('load_balancers_lba_1235f.json')
-            return self.response(httplib.OK, body)
+            return (httplib.OK, body, {'content-type': 'application/json'},
+                    httplib.responses[httplib.OK])
         elif method == 'DELETE':
-            return self.response(httplib.ACCEPTED, '')
+            return (httplib.ACCEPTED, '', {'content-type': 'application/json'},
+                    httplib.responses[httplib.ACCEPTED])
 
     def _1_0_load_balancers_lba_1235f_add_nodes(self, method, url, body,
                                                 headers):
         if method == 'POST':
-            return self.response(httplib.ACCEPTED, '')
+            return (httplib.ACCEPTED, '', {'content-type': 'application/json'},
+                    httplib.responses[httplib.ACCEPTED])
 
     def _1_0_load_balancers_lba_1235f_remove_nodes(self, method, url, body,
                                                    headers):
         if method == 'POST':
-            return self.response(httplib.ACCEPTED, '')
-
-    def response(self, status, body):
-        return (status, body, {'content-type': 'application/json'},
-                httplib.responses[status])
+            return (httplib.ACCEPTED, '', {'content-type': 'application/json'},
+                    httplib.responses[httplib.ACCEPTED])
 
 
 if __name__ == "__main__":

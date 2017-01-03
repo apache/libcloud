@@ -107,8 +107,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
             return "https://servers.api.rackspacecloud.com/v1.0/slug"
         self.driver_klass.connectionCls.get_endpoint = get_endpoint
 
-        self.driver_klass.connectionCls.conn_classes = (OpenStackMockHttp,
-                                                        OpenStackMockHttp)
+        self.driver_klass.connectionCls.conn_class = OpenStackMockHttp
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
 
         OpenStackMockHttp.type = None
@@ -639,8 +638,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (
-            OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
+        self.driver_klass.connectionCls.conn_class = OpenStack_2_0_MockHttp
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
 
         OpenStackMockHttp.type = None
@@ -805,8 +803,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_list_nodes_no_image_id_attribute(self):
         # Regression test for LIBCLOD-455
-        self.driver_klass.connectionCls.conn_classes[0].type = 'ERROR_STATE_NO_IMAGE_ID'
-        self.driver_klass.connectionCls.conn_classes[1].type = 'ERROR_STATE_NO_IMAGE_ID'
+        self.driver_klass.connectionCls.conn_class.type = 'ERROR_STATE_NO_IMAGE_ID'
 
         nodes = self.driver.list_nodes()
         self.assertEqual(nodes[0].extra['imageId'], None)
@@ -1480,8 +1477,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_list_snapshots(self):
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         snapshots = self.driver.ex_list_snapshots()
         self.assertEqual(len(snapshots), 3)
@@ -1499,8 +1495,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         # rackspace needs a different mocked response for snapshots, but not for volumes
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         snapshots = self.driver.list_volume_snapshots(volume)
         self.assertEqual(len(snapshots), 1)
@@ -1509,8 +1504,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_create_volume_snapshot(self):
         volume = self.driver.list_volumes()[0]
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         ret = self.driver.create_volume_snapshot(volume,
                                                  'Test Volume',
@@ -1521,8 +1515,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_create_snapshot(self):
         volume = self.driver.list_volumes()[0]
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         ret = self.driver.ex_create_snapshot(volume,
                                              'Test Volume',
@@ -1545,8 +1538,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_destroy_volume_snapshot(self):
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         snapshot = self.driver.ex_list_snapshots()[0]
         ret = self.driver.destroy_volume_snapshot(snapshot)
@@ -1554,8 +1546,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_delete_snapshot(self):
         if self.driver_type.type == 'rackspace':
-            self.conn_classes[0].type = 'RACKSPACE'
-            self.conn_classes[1].type = 'RACKSPACE'
+            self.conn_class.type = 'RACKSPACE'
 
         snapshot = self.driver.ex_list_snapshots()[0]
         ret = self.driver.ex_delete_snapshot(snapshot)
@@ -1973,8 +1964,7 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     driver_kwargs = {'ex_force_auth_version': '2.0'}
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = \
-            (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
+        self.driver_klass.connectionCls.conn_class = OpenStack_2_0_MockHttp
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None

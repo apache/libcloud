@@ -40,7 +40,7 @@ from libcloud.test.file_fixtures import StorageFileFixtures
 class AtmosTests(unittest.TestCase):
 
     def setUp(self):
-        AtmosDriver.connectionCls.conn_classes = (None, AtmosMockHttp)
+        AtmosDriver.connectionCls.conn_class = AtmosMockHttp
         AtmosDriver.connectionCls.rawResponseCls = AtmosMockRawResponse
         AtmosDriver.path = ''
         AtmosMockHttp.type = None

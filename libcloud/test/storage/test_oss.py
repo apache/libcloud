@@ -418,8 +418,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         return self.driver_type(*self.driver_args)
 
     def setUp(self):
-        self.driver_type.connectionCls.conn_classes = (
-            None, self.mock_response_klass)
+        self.driver_type.connectionCls.conn_class = self.mock_response_klass
         self.driver_type.connectionCls.rawResponseCls = \
             self.mock_raw_response_klass
         self.mock_response_klass.type = None

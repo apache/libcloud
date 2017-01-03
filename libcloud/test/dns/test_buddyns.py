@@ -13,7 +13,7 @@ from libcloud.dns.base import Zone
 class BuddyNSDNSTests(unittest.TestCase):
     def setUp(self):
         BuddyNSMockHttp.type = None
-        BuddyNSDNSDriver.connectionCls.conn_classes = (None, BuddyNSMockHttp)
+        BuddyNSDNSDriver.connectionCls.conn_class = BuddyNSMockHttp
         self.driver = BuddyNSDNSDriver(*DNS_PARAMS_BUDDYNS)
         self.test_zone = Zone(id='test.com', type='master', ttl=None,
                               domain='test.com', extra={}, driver=self)

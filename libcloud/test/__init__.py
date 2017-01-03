@@ -15,13 +15,12 @@
 
 import sys
 import random
+import requests
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
-from libcloud.utils.py3 import u
 from libcloud.utils.py3 import unittest2_required
 
 if unittest2_required:
@@ -78,25 +77,26 @@ class MockResponse(object):
     A mock HTTPResponse
     """
     headers = {}
-    body = StringIO()
+    body = ''
     status = 0
     reason = ''
     version = 11
 
     def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(u(body)) if body else StringIO()
+        self.body = body
         self.headers = headers or self.headers
         self.reason = reason or self.reason
+        self.body_iter = iter(self.body) if self.body is not None else None
 
     def read(self, *args, **kwargs):
-        return self.body.read(*args, **kwargs)
+        return self.body
 
     def next(self):
         if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-            return self.body.next()
+            return self.body_iter.next()
         else:
-            return next(self.body)
+            return next(self.body_iter)
 
     def __next__(self):
         return self.next()
@@ -109,6 +109,17 @@ class MockResponse(object):
 
     def msg(self):
         raise NotImplemented
+
+    @property
+    def status_code(self):
+        return self.status
+
+    def raise_for_status(self):
+        raise requests.exceptions.HTTPError(self.status)
+
+    @property
+    def text(self):
+        return self.body
 
 
 class BaseMockHttpObject(object):
@@ -325,6 +336,11 @@ class MockRawResponse(BaseMockHttpObject):
     @property
     def status(self):
         self._get_response_if_not_available()
+        return self._status
+
+    @property
+    def status_code(self):
+        self._get_response_if_not_availale()
         return self._status
 
     @property

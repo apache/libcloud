@@ -60,7 +60,8 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
 TEST_REQUIREMENTS = [
-    'mock'
+    'mock',
+    'requests'
 ]
 
 if PY2_pre_279 or PY3_pre_32:
@@ -254,7 +255,7 @@ class CoverageCommand(Command):
 
 forbid_publish()
 
-install_requires = []
+install_requires = ['requests']
 if PY2_pre_26:
     install_requires.extend(['ssl', 'simplejson'])
 

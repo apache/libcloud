@@ -30,8 +30,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class NephoScaleTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        NephoscaleNodeDriver.connectionCls.conn_classes = (
-            NephoscaleMockHttp, NephoscaleMockHttp)
+        NephoscaleNodeDriver.connectionCls.conn_class = NephoscaleMockHttp
         self.driver = NephoscaleNodeDriver('user', 'password')
 
     def test_list_sizes(self):

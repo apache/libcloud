@@ -78,7 +78,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def setUp(self):
         EC2MockHttp.test = self
-        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2NodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
 
@@ -1621,7 +1621,7 @@ class EucMockHttp(EC2MockHttp):
 class NimbusTests(EC2Tests):
 
     def setUp(self):
-        NimbusNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        NimbusNodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = NimbusNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
@@ -1679,7 +1679,7 @@ class NimbusTests(EC2Tests):
 class EucTests(LibcloudTestCase, TestCaseMixin):
 
     def setUp(self):
-        EucNodeDriver.connectionCls.conn_classes = (None, EucMockHttp)
+        EucNodeDriver.connectionCls.conn_class = EucMockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EucNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
@@ -1708,7 +1708,7 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
 class OutscaleTests(EC2Tests):
 
     def setUp(self):
-        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        OutscaleSASNodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
@@ -1824,7 +1824,7 @@ class FCUMockHttp(EC2MockHttp):
 class OutscaleFCUTests(LibcloudTestCase):
 
     def setUp(self):
-        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, FCUMockHttp)
+        OutscaleSASNodeDriver.connectionCls.conn_class = FCUMockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],

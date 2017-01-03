@@ -44,8 +44,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
     driver_klass = CloudStackNodeDriver
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = \
-            (None, CloudStackMockHttp)
+        self.driver_klass.connectionCls.conn_class = CloudStackMockHttp
         self.driver = self.driver_klass('apikey', 'secret',
                                         path='/test/path',
                                         host='api.dummy.com')

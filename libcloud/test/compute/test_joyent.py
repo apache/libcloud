@@ -28,7 +28,7 @@ from libcloud.test.secrets import JOYENT_PARAMS
 class JoyentTestCase(unittest.TestCase):
 
     def setUp(self):
-        JoyentNodeDriver.connectionCls.conn_classes = (None, JoyentHttp)
+        JoyentNodeDriver.connectionCls.conn_class = JoyentHttp
         self.driver = JoyentNodeDriver(*JOYENT_PARAMS)
 
     def test_instantiate_multiple_drivers_with_different_region(self):

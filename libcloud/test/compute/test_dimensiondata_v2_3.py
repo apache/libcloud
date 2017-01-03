@@ -44,7 +44,7 @@ class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.3'
-        DimensionData.connectionCls.conn_classes = (None, DimensionDataMockHttp)
+        DimensionData.connectionCls.conn_class = DimensionDataMockHttp
         DimensionData.connectionCls.rawResponseCls = \
             DimensionDataMockRawResponse
         DimensionDataMockHttp.type = None

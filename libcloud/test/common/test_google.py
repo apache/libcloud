@@ -154,8 +154,7 @@ class GoogleBaseAuthConnectionTest(GoogleTestCase):
     """
 
     def setUp(self):
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         self.mock_scopes = ['foo', 'bar']
         kwargs = {'scopes': self.mock_scopes}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
@@ -191,8 +190,7 @@ class GoogleInstalledAppAuthConnectionTest(GoogleTestCase):
     """
 
     def setUp(self):
-        GoogleInstalledAppAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                         GoogleAuthMockHttp)
+        GoogleInstalledAppAuthConnection.conn_class = GoogleAuthMockHttp
         self.mock_scopes = ['https://www.googleapis.com/auth/foo']
         kwargs = {'scopes': self.mock_scopes}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
@@ -317,8 +315,7 @@ class GoogleBaseConnectionTest(GoogleTestCase):
     """
 
     def setUp(self):
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         self.mock_scopes = ['https://www.googleapis.com/auth/foo']
         kwargs = {'scopes': self.mock_scopes,
                   'auth_type': GoogleAuthType.IA}

@@ -36,7 +36,7 @@ class BaseStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.send_called = 0
-        StorageDriver.connectionCls.conn_classes = (None, StorageMockHttp)
+        StorageDriver.connectionCls.conn_class = StorageMockHttp
 
         self.driver1 = StorageDriver('username', 'key', host='localhost')
         self.driver1.supports_chunked_encoding = True

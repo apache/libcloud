@@ -32,8 +32,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 class GoGridTests(unittest.TestCase):
 
     def setUp(self):
-        GoGridLBDriver.connectionCls.conn_classes = (None,
-                                                     GoGridLBMockHttp)
+        GoGridLBDriver.connectionCls.conn_class = GoGridLBMockHttp
         GoGridLBMockHttp.type = None
         self.driver = GoGridLBDriver('user', 'key')
 

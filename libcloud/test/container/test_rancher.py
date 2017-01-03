@@ -101,9 +101,7 @@ class RancherMockHttp(MockHttp):
                     {}, httplib.responses[httplib.OK])
 
 
-RancherContainerDriver.connectionCls.conn_classes = (
-    RancherMockHttp, RancherMockHttp
-)
+RancherContainerDriver.connectionCls.conn_class = RancherMockHttp
 RancherMockHttp.type = None
 RancherMockHttp.use_param = 'a'
 
