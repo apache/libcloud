@@ -76,7 +76,8 @@ matrix:
     - env: ENV=3.4-lxml
     - env: ENV=3.5-lxml
       # Trigger ReadTheDocs build
-      after_success: ./contrib/trigger_rtd_build.py 8284
+  after_success:
+    - ./contrib/trigger_rtd_build.py 8284
 
 install:
   - pip install --upgrade "pip<8.0.0"
