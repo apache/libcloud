@@ -313,8 +313,6 @@ class Connection(object):
     A Base Connection class to derive from.
     """
     conn_class = LibcloudConnection
-    # backward compat to pre 1.3
-    conn_classes = (conn_class, conn_class)
 
     responseCls = Response
     rawResponseCls = RawResponse

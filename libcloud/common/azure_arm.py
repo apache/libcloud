@@ -23,7 +23,7 @@ import time
 from libcloud.common.base import (ConnectionUserAndKey,
                                   JsonResponse,
                                   RawResponse)
-from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.py3 import basestring, urlencode
 
 
@@ -61,7 +61,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     Represents a single connection to Azure
     """
 
-    conn_classes = (None, LibcloudHTTPSConnection)
+    conn_class = LibcloudConnection
     driver = AzureBaseDriver
     name = 'Azure AD Auth'
     responseCls = AzureJsonResponse
@@ -91,7 +91,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         Log in and get bearer token used to authorize API requests.
         """
 
-        conn = self.conn_classes[1](self.login_host, 443)
+        conn = self.conn_class(self.login_host, 443)
         conn.connect()
         params = urlencode({
             "grant_type": "client_credentials",
