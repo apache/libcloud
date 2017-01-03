@@ -57,7 +57,7 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
+SUPPORTED_VERSIONS = ['2.6', '2.7', 'PyPy', '3.x']
 
 TEST_REQUIREMENTS = [
     'mock',
@@ -293,13 +293,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.0',
-        'Programming Language :: Python :: 3.1',
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
