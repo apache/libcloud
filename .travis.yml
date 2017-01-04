@@ -60,6 +60,9 @@ matrix:
             - graphviz
             - gcc
             - libvirt-bin
+      # Trigger ReadTheDocs build on docs builder
+      after_success:
+        - ./contrib/trigger_rtd_build.py 8284
   # For now allow failures of all the builds which use lxml
   allow_failures:
     - env: ENV=2.6-lxml
@@ -71,7 +74,6 @@ matrix:
     - env: ENV=3.4-lxml
     - env: ENV=3.5-lxml
       # Trigger ReadTheDocs build
-      after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
   - pip install --upgrade "pip<8.0.0"
