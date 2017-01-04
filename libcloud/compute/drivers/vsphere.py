@@ -136,7 +136,7 @@ class VSphereNodeDriver(NodeDriver):
     }
 
     def __new__(cls, username, password, secure=True, host=None, port=None,
-                url=None, api_version=DEFAULT_API_VERSION):
+                url=None, api_version=DEFAULT_API_VERSION, **kwargs):
         if cls is VSphereNodeDriver:
             if api_version == '5.5':
                 cls = VSphere_5_5_NodeDriver
