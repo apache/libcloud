@@ -2119,6 +2119,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             ex_tagname_value_pairs = None)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
 
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
