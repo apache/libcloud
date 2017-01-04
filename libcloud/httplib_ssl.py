@@ -160,7 +160,7 @@ class LibcloudConnection(LibcloudBaseConnection):
     response = None
 
     def __init__(self, host, port, **kwargs):
-        self.host = '{}://{}'.format(
+        self.host = '{0}://{1}'.format(
             'https' if port == 443 else 'http',
             host
         )
