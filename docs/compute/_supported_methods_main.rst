@@ -7,10 +7,11 @@ Provider                              list nodes create node reboot node destroy
 `Aliyun ECS`_                         yes        yes         yes         yes          yes         yes        yes        
 `PCextreme AuroraCompute`_            yes        yes         yes         yes          yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
+`Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          yes         yes        no         
 `BSNL`_                               yes        yes         yes         yes          yes         yes        yes        
-`cloudscale.ch`_                      yes        yes         yes         yes          yes         yes        no         
+`Cloudscale`_                         yes        yes         yes         yes          yes         yes        no         
 `CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
 `Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
@@ -64,10 +65,11 @@ Provider                              list nodes create node reboot node destroy
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
-.. _`cloudscale.ch`: https://www.cloudscale.ch/
+.. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
