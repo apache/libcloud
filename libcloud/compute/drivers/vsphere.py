@@ -60,7 +60,7 @@ DEFAULT_CONNECTION_TIMEOUT = 5  # default connection timeout in seconds
 
 class VSphereConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, url=None, timeout=None):
+                 host=None, port=None, url=None, timeout=None, **kwargs):
         if host and url:
             raise ValueError('host and url arguments are mutually exclusive')
 
@@ -77,7 +77,8 @@ class VSphereConnection(ConnectionUserAndKey):
         super(VSphereConnection, self).__init__(user_id=user_id,
                                                 key=key, secure=secure,
                                                 host=host, port=port,
-                                                url=url, timeout=timeout)
+                                                url=url, timeout=timeout,
+                                                **kwargs)
 
     def connect(self):
         self.client = VIServer()
@@ -135,7 +136,7 @@ class VSphereNodeDriver(NodeDriver):
     }
 
     def __new__(cls, username, password, secure=True, host=None, port=None,
-                url=None, api_version=DEFAULT_API_VERSION, **kwargs):
+                url=None, api_version=DEFAULT_API_VERSION):
         if cls is VSphereNodeDriver:
             if api_version == '5.5':
                 cls = VSphere_5_5_NodeDriver
