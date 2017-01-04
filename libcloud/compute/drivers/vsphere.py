@@ -93,11 +93,12 @@ class VSphereConnection(ConnectionUserAndKey):
         except Exception:
             e = sys.exc_info()[1]
             message = e.message
+            if hasattr(e, 'strerror'):
+                message = e.strerror
             fault = getattr(e, 'fault', None)
 
             if fault == 'InvalidLoginFault':
                 raise InvalidCredsError(message)
-
             raise LibcloudError(value=message, driver=self.driver)
 
         atexit.register(self.disconnect)
