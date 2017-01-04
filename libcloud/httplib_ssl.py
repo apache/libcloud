@@ -24,6 +24,7 @@ import socket
 import requests
 
 import libcloud.security
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 
 
@@ -154,13 +155,13 @@ class LibcloudBaseConnection(object):
             self.ca_cert = libcloud.security.CA_CERTS_PATH
 
 
-class LibcloudConnection(LibcloudBaseConnection):
+class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
     timeout = None
     host = None
     response = None
 
     def __init__(self, host, port, **kwargs):
-        self.host = '{}://{}'.format(
+        self.host = '{0}://{1}'.format(
             'https' if port == 443 else 'http',
             host
         )
@@ -168,7 +169,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
-        super(LibcloudConnection, self).__init__()
+        LibcloudBaseConnection.__init__(self)
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)

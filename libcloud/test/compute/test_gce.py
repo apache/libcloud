@@ -740,9 +740,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         description = 'CoreOS beta 522.3.0'
         name = 'coreos'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
+                             'MULTI_IP_SUBNET']
         expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'}
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'},
+            {'type': 'MULTI_IP_SUBNET'},
         ]
         mock_request = mock.Mock()
         mock_request.side_effect = self.driver.connection.async_request
@@ -770,9 +772,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
         description = 'CoreOS beta 522.3.0'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
+                             'MULTI_IP_SUBNET']
         expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'}
+            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'},
+            {'type': 'MULTI_IP_SUBNET'},
         ]
         image = self.driver.ex_copy_image(name, url, description=description,
                                           family=family,
@@ -3150,6 +3154,12 @@ class GCEMockHttp(MockHttpTestCase):
         else:
             body = self.fixtures.load(
                 'zones_us-central1-a_instances_lcnode-001.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances_libcloud_lb_nopubip_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-b_instances_libcloud-lb-nopubip-001.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_b_instances_libcloud_lb_demo_www_000(

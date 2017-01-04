@@ -102,7 +102,7 @@ class OvhConnection(ConnectionUserAndKey):
             'Content-Type': 'application/json',
             'X-Ovh-Application': user_id,
         }
-        httpcon = LibcloudConnection(self.host)
+        httpcon = LibcloudConnection(host=self.host, port=443)
         httpcon.request(method='POST', url=action, body=data, headers=headers)
         response = httpcon.getresponse()
 

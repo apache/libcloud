@@ -20,7 +20,7 @@ try:
 except:
     import json
 
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, urlparse
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
@@ -85,22 +85,13 @@ class RancherConnection(ConnectionUserAndKey):
 
 
 class RancherContainerDriver(ContainerDriver):
+    """
+    Driver for Rancher by Rancher Labs.
 
-    type = Provider.RANCHER
-    name = 'Rancher'
-    website = 'http://rancher.com'
-    connectionCls = RancherConnection
-    # Holding off on cluster support for now.
-    # Only Environment API interaction enabled.
-    supports_clusters = False
-    # As in the /v1/
-    version = '1'
+    This driver is capable of interacting with the Version 1 API of Rancher.
+    It currently does NOT support the Version 2 API.
 
-    def __init__(self, key, secret, secure=True, host='localhost', port=443):
-        """
-        Rancher Container driver class.
-
-        Example:
+    Example:
 
         >>> from libcloud.container.providers import get_driver
         >>> from libcloud.container.types import Provider
@@ -114,6 +105,24 @@ class RancherContainerDriver(ContainerDriver):
         >>> newcontainer = connection.deploy_container("myawesomepastebin",
         image, environment={"STORAGE_TYPE": "file"})
 
+    :ivar   baseuri: The URL base path to the API.
+    :type   baseuri: ``str``
+    """
+
+    type = Provider.RANCHER
+    name = 'Rancher'
+    website = 'http://rancher.com'
+    connectionCls = RancherConnection
+    # Holding off on cluster support for now.
+    # Only Environment API interaction enabled.
+    supports_clusters = False
+    # As in the /v1/
+    version = '1'
+
+    def __init__(self, key, secret, secure=True, host='localhost', port=443):
+        """
+        Creates a new Rancher Container driver.
+
         :param    key: API key or username to used (required)
         :type     key: ``str``
 
@@ -123,32 +132,30 @@ class RancherContainerDriver(ContainerDriver):
         :param    secure: Whether to use HTTPS or HTTP.
         :type     secure: ``bool``
 
-        :param    host: Override hostname used for connections.
+        :param    host: Override hostname used for connections. This can also
+         be a full URL string, including scheme, port, and base path.
         :type     host: ``str``
 
         :param    port: Override port used for connections.
         :type     port: ``int``
 
-
-        :return: ``None``
+        :return: A newly initialized driver instance.
         """
 
-        if host.startswith('http://'):
-            secure = False
+        # Parse the Given Host
+        if '://' not in host and not host.startswith("//"):
+            host = '//' + host
+        parsed = urlparse.urlparse(host)
 
-        super(RancherContainerDriver, self).__init__(key=key, secret=secret,
-                                                     secure=secure, host=host,
-                                                     port=port)
+        super(RancherContainerDriver, self).__init__(
+            key=key,
+            secret=secret,
+            secure=False if parsed.scheme == 'http' else secure,
+            host=parsed.hostname,
+            port=parsed.port if parsed.port else port
+        )
 
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.strip(prefix)
-
-        # We only support environment api keys, meaning none of this:
-        # self.baseuri = "/v%s/projects/%s" % (self.version, project_id)
-        self.baseuri = "/v%s" % self.version
+        self.baseuri = parsed.path if parsed.path else "/v%s" % self.version
 
     def ex_list_stacks(self):
         """

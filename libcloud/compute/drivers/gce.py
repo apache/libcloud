@@ -1645,7 +1645,8 @@ class GCENodeDriver(NodeDriver):
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
-    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
+    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
+                         'MULTI_IP_SUBNET']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
@@ -3117,8 +3118,9 @@ class GCENodeDriver(NodeDriver):
 
         :keywork  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only. Possible
-                                     values include \'VIRTIO_SCSI_MULTIQUEUE\'
-                                     and \'WINDOWS\' if specified.
+                                     values include \'VIRTIO_SCSI_MULTIQUEUE\',
+                                     \'WINDOWS\', \'MULTI_IP_SUBNET\' if
+                                     specified.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
@@ -3726,12 +3728,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if ex_subnetwork:
-            if not hasattr(ex_subnetwork, 'name'):
-                ex_subnetwork = \
-                    self.ex_get_subnetwork(ex_subnetwork,
-                                           region=self._get_region_from_zone(
-                                               location))
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -4440,14 +4441,15 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_multiple_nodes(
             self, base_name, size, image, number, location=None,
-            ex_network='default', ex_tags=None, ex_metadata=None,
-            ignore_errors=True, use_existing_disk=True, poll_interval=2,
-            external_ip='ephemeral', ex_disk_type='pd-standard',
-            ex_disk_auto_delete=True, ex_service_accounts=None,
-            timeout=DEFAULT_TASK_COMPLETION_TIMEOUT, description=None,
-            ex_can_ip_forward=None, ex_disks_gce_struct=None,
+            ex_network='default', ex_subnetwork=None, ex_tags=None,
+            ex_metadata=None, ignore_errors=True, use_existing_disk=True,
+            poll_interval=2, external_ip='ephemeral',
+            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
+            description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
-            ex_automatic_restart=None, ex_image_family=None):
+            ex_automatic_restart=None, ex_image_family=None,
+            ex_preemptible=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4534,8 +4536,13 @@ class GCENodeDriver(NodeDriver):
         :type     description: ``str`` or ``None``
 
         :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
-                                  send/receive non-matching src/dst packets.
+                                     send/receive non-matching src/dst packets.
         :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                  (If not supplied, the instance will
+                                  not be preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
 
         :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
                                        formatted disks[] structure. No attempt
@@ -4580,6 +4587,7 @@ class GCENodeDriver(NodeDriver):
 
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
+
         """
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
@@ -4596,6 +4604,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -4607,6 +4620,7 @@ class GCENodeDriver(NodeDriver):
                       'image': image,
                       'location': location,
                       'network': ex_network,
+                      'subnetwork': ex_subnetwork,
                       'tags': ex_tags,
                       'metadata': ex_metadata,
                       'ignore_errors': ignore_errors,
@@ -4620,7 +4634,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_disks_gce_struct': ex_disks_gce_struct,
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
-                      'ex_automatic_restart': ex_automatic_restart}
+                      'ex_automatic_restart': ex_automatic_restart,
+                      'ex_preemptible': ex_preemptible}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7627,10 +7642,13 @@ class GCENodeDriver(NodeDriver):
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
             ex_can_ip_forward=node_attrs['ex_can_ip_forward'],
+            ex_disk_auto_delete=node_attrs['ex_disk_auto_delete'],
             ex_disks_gce_struct=node_attrs['ex_disks_gce_struct'],
             ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
-            ex_automatic_restart=node_attrs['ex_automatic_restart'])
+            ex_automatic_restart=node_attrs['ex_automatic_restart'],
+            ex_subnetwork=node_attrs['subnetwork'],
+            ex_preemptible=node_attrs['ex_preemptible'])
 
         try:
             node_res = self.connection.request(request, method='POST',

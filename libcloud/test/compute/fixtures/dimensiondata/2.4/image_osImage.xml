@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<osImages xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="47" totalCount="47" pageSize="250">
+    <osImage id="c14b1a46-2428-44c1-9c1a-b20e6418d08c" datacenterId="NA9">
+        <name>RedHat 6 64-bit 2 CPU</name>
+        <description>RedHat 6.6 Enterprise (Santiago) 64-bit</description>
+        <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>4</memoryGb>
+        <disk id="a02b7244-99d8-4889-84a5-5e4373c1bb26" scsiId="0" sizeGb="10" speed="STANDARD" />
+        <createTime>2015-09-17T11:23:48.000Z</createTime>
+        <osImageKey>T-RHEL-6-64-2-4-10</osImageKey>
+        <guest osCustomization="true">
+            <operatingSystem id="REDHAT664" displayName="REDHAT6/64" family="UNIX" />
+        </guest>
+    </osImage>
+    <osImage id="6b4fb0c7-a57b-4f58-b59c-9958f94f971a" datacenterId="NA9">
+        <name>Win2012 DC 2 CPU</name>
+        <description>Windows 2012 Datacenter</description>
+        <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>4</memoryGb>
+        <disk id="f5e01854-a211-4ec6-96d6-2753b6d47877" scsiId="0" sizeGb="50" speed="STANDARD" />
+        <createTime>2015-09-17T11:44:43.000Z</createTime>
+        <osImageKey>T-WIN-2012-DATACTR-64-2-4-50</osImageKey>
+        <guest osCustomization="true">
+             <operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" family="WINDOWS" />
+        </guest>
+    </osImage>
+    <osImage id="3ebf3c0f-90fe-4a8b-8585-6e65b316592c" datacenterId="NA9">
+        <name>Win2008 Std 32-bit 2 CPU</name>
+        <description>Windows 2008 Enterprise R2 32-bit installed with Microsoft SQL Server 2012 Standard Edition</description>
+        <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>4</memoryGb>
+        <disk id="6e5b5112-0eae-44eb-83cd-1bd0d58fbeab" scsiId="0" sizeGb="50" speed="STANDARD" />
+        <softwareLabel>MSSQL2008R2S</softwareLabel>
+        <createTime>2014-11-20T12:54:22.000Z</createTime>
+        <osImageKey>T-WIN-2008-ENT-32-2-4-50</osImageKey>
+        <guest osCustomization="true">
+             <operatingSystem id="WIN2008S32" displayName="WIN2008S/32" family="WINDOWS" />
+        </guest>
+    </osImage>
+</osImages>

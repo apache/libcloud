@@ -4,10 +4,10 @@ sudo: false
 python:
     - 2.6
     - 2.7
-    - 3.2
     - 3.3
     - 3.4
     - 3.5
+    - 3.6
     - pypy
     - pypy3
 os:
@@ -18,7 +18,7 @@ addons:
   apt:
     packages:
       - graphviz
-      - libvirt
+      - libvirt-bin
 
 matrix:
   fast_finish: true
@@ -29,9 +29,6 @@ matrix:
     - env: ENV=2.7-lxml
       python: 2.7
       before_script: TOX_ENV=py2.7-lxml
-    - env: ENV=3.2-lxml
-      python: 3.2
-      before_script: TOX_ENV=py3.2-lxml
     - env: ENV=3.3-lxml
       python: 3.3
       before_script: TOX_ENV=py3.3-lxml
@@ -62,20 +59,20 @@ matrix:
           packages:
             - graphviz
             - gcc
-            - libvirt
+            - libvirt-bin
+      # Trigger ReadTheDocs build on docs builder
+      after_success:
+        - ./contrib/trigger_rtd_build.py 8284
   # For now allow failures of all the builds which use lxml
   allow_failures:
     - env: ENV=2.6-lxml
     - env: ENV=2.7-lxml
     - env: ENV=pypy-lxml
     - env: ENV=pypy3-lxml
-    - env: ENV=py3.2-lxml
-    - env: ENV=3.2-lxml
     - env: ENV=3.3-lxml
     - env: ENV=3.4-lxml
     - env: ENV=3.5-lxml
       # Trigger ReadTheDocs build
-      after_success: ./contrib/trigger_rtd_build.py 8284
 
 install:
   - pip install --upgrade "pip<8.0.0"

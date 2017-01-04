@@ -284,6 +284,16 @@ INSTANCE_TYPES = {
             'cpu': 40
         }
     },
+    'm4.16xlarge': {
+        'id': 'm4.16xlarge',
+        'name': '16 Extra Large Instance',
+        'ram': GiB(256),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
@@ -683,6 +693,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
@@ -746,6 +757,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
@@ -800,6 +812,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
@@ -863,6 +876,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
@@ -924,6 +938,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
@@ -986,6 +1001,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c3.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
@@ -1024,6 +1040,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c4.large',
             'c4.xlarge',
             'c4.2xlarge',
@@ -1068,6 +1085,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'c3.large',
@@ -1135,6 +1153,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
@@ -1174,6 +1193,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
@@ -1214,6 +1234,12 @@ REGION_DETAILS = {
             'm3.large',
             'm3.xlarge',
             'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             't2.nano',
@@ -1247,6 +1273,7 @@ REGION_DETAILS = {
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'c3.large',
@@ -1298,6 +1325,12 @@ REGION_DETAILS = {
             'm3.large',
             'm3.xlarge',
             'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
@@ -6947,8 +6980,8 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         return quota
 
-    def ex_describe_quota(self, dry_run=False, filters=None,
-                          max_results=None, marker=None):
+    def ex_describe_quotas(self, dry_run=False, filters=None,
+                           max_results=None, marker=None):
         """
         Describes one or more of your quotas.
 
@@ -6978,7 +7011,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             raise NotImplementedError(
                 'quota marker is not implemented')
 
-        params = {'Action': 'DescribeQuota'}
+        params = {'Action': 'DescribeQuotas'}
 
         if dry_run:
             params.update({'DryRun': dry_run})

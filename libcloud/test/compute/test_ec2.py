@@ -429,21 +429,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 54)
+                self.assertEqual(len(sizes), 55)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
                 self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 45)
+                self.assertEqual(len(sizes), 46)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 52)
+                self.assertEqual(len(sizes), 53)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 44)
+                self.assertEqual(len(sizes), 45)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 48)
+                self.assertEqual(len(sizes), 49)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 52)
+                self.assertEqual(len(sizes), 53)
+            elif region_name == 'ap-south-1':
+                self.assertEqual(len(sizes), 29)
 
         self.driver.region_name = region_old
 
@@ -1798,8 +1800,8 @@ class OutscaleTests(EC2Tests):
 class FCUMockHttp(EC2MockHttp):
     fixtures = ComputeFileFixtures('fcu')
 
-    def _DescribeQuota(self, method, url, body, headers):
-        body = self.fixtures.load('ex_describe_quota.xml')
+    def _DescribeQuotas(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_quotas.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeProductTypes(self, method, url, body, headers):
@@ -1829,8 +1831,8 @@ class OutscaleFCUTests(LibcloudTestCase):
                                             secret=EC2_PARAMS[1],
                                             host='some.fcucloud.com')
 
-    def test_ex_describe_quota(self):
-        is_truncated, quota = self.driver.ex_describe_quota()
+    def test_ex_describe_quotas(self):
+        is_truncated, quota = self.driver.ex_describe_quotas()
         self.assertTrue(is_truncated == 'true')
         self.assertTrue('global' in quota.keys())
         self.assertTrue('vpc-00000000' in quota.keys())

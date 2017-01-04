@@ -39,7 +39,7 @@ from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.compression import decompress_data
 
 
-class LoggingBaseConnection():
+class LoggingBaseConnection(LibcloudConnection):
     """
     Debug class to log all HTTP(s) requests as they could be made
     with the curl command.
@@ -169,7 +169,7 @@ class LoggingBaseConnection():
         return " ".join(cmd)
 
 
-class LoggingConnection(LoggingBaseConnection, LibcloudConnection):
+class LoggingConnection(LoggingBaseConnection):
     """
     Utility Class for logging HTTPS connections
     """

@@ -1333,6 +1333,9 @@
     },
     {
       "type": "WINDOWS"
+    },
+    {
+      "type": "MULTI_IP_SUBNET"
     }
    ],
    "sourceType": "RAW",

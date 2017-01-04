@@ -193,6 +193,7 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
+        # pylint: disable=E1101
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -313,8 +314,6 @@ class Connection(object):
     A Base Connection class to derive from.
     """
     conn_class = LibcloudConnection
-    # backward compat to pre 1.3
-    conn_classes = (conn_class, conn_class)
 
     responseCls = Response
     rawResponseCls = RawResponse
@@ -431,7 +430,8 @@ class Connection(object):
 
         if getattr(self, 'base_url', None) and base_url is None:
             (host, port,
-             secure, request_path) = self._tuple_from_url(self.base_url)
+             secure, request_path) = \
+                self._tuple_from_url(getattr(self, 'base_url'))
         elif base_url is not None:
             (host, port,
              secure, request_path) = self._tuple_from_url(base_url)
@@ -449,10 +449,10 @@ class Connection(object):
             kwargs.update({'port': port})
 
         if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file'):
-            kwargs.update({'key_file': self.key_file})
+            kwargs.update({'key_file': getattr(self, 'key_file')})
 
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
-            kwargs.update({'cert_file': self.cert_file})
+            kwargs.update({'cert_file': getattr(self, 'cert_file')})
 
         #  kwargs = {'host': host, 'port': int(port)}
 
