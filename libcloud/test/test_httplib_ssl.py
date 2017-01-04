@@ -16,8 +16,6 @@
 import os
 import sys
 import os.path
-import ssl
-import socket
 import mock
 from mock import patch
 
