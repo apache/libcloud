@@ -24,6 +24,7 @@ import socket
 import requests
 
 import libcloud.security
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 
 
@@ -154,7 +155,7 @@ class LibcloudBaseConnection(object):
             self.ca_cert = libcloud.security.CA_CERTS_PATH
 
 
-class LibcloudConnection(LibcloudBaseConnection):
+class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
     timeout = None
     host = None
     response = None
