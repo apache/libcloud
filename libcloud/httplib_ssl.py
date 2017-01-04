@@ -169,7 +169,7 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
-        super(LibcloudConnection, self).__init__()
+        LibcloudBaseConnection.__init__(self)
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
