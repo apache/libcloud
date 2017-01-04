@@ -193,12 +193,7 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-<<<<<<< HEAD
-        # See - https://github.com/kennethreitz/requests/issues/2417
-        #pylint: disable=E1101
-=======
         # pylint: disable=E1101
->>>>>>> github-923
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -436,11 +431,7 @@ class Connection(object):
         if getattr(self, 'base_url', None) and base_url is None:
             (host, port,
              secure, request_path) = \
-<<<<<<< HEAD
-            self._tuple_from_url(getattr(self, 'base_url'))
-=======
                 self._tuple_from_url(getattr(self, 'base_url'))
->>>>>>> github-923
         elif base_url is not None:
             (host, port,
              secure, request_path) = self._tuple_from_url(base_url)
