@@ -2095,9 +2095,9 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             ex_primary_nic_vlan=vlan,
             ex_primary_nic_network_adapter=None,
             ex_additional_nics=None,
-            ex_disks = None,
-            ex_tagid_value_pairs = None,
-            ex_tagname_value_pairs = None)
+            ex_disks=None,
+            ex_tagid_value_pairs=None,
+            ex_tagname_value_pairs=None)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
 
     def test_ex_create_node_uncustomized_mcp2_using_ipv4(self):
@@ -2114,9 +2114,9 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             ex_primary_nic_vlan=None,
             ex_primary_nic_network_adapter=None,
             ex_additional_nics=None,
-            ex_disks = None,
-            ex_tagid_value_pairs = None,
-            ex_tagname_value_pairs = None)
+            ex_disks=None,
+            ex_tagid_value_pairs=None,
+            ex_tagname_value_pairs=None)
         self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
 
 
