@@ -19,6 +19,7 @@ except ImportError:
     import json
 
 import time
+from urlparse import urlparse
 
 from libcloud.common.base import (ConnectionUserAndKey,
                                   JsonResponse,
@@ -55,6 +56,80 @@ class AzureAuthJsonResponse(JsonResponse):
         else:
             return str(b)
 
+# Based on https://github.com/Azure/azure-xplat-cli/blob/master/lib/util/profile/environment.js
+publicEnvironments = [
+  {
+    'name': 'default',
+    'portalUrl': 'http://go.microsoft.com/fwlink/?LinkId=254433',
+    'publishingProfileUrl': 'http://go.microsoft.com/fwlink/?LinkId=254432',
+    'managementEndpointUrl': 'https://management.core.windows.net',
+    'resourceManagerEndpointUrl': 'https://management.azure.com/',
+    'sqlManagementEndpointUrl': 'https://management.core.windows.net:8443/',
+    'sqlServerHostnameSuffix': '.database.windows.net',
+    'galleryEndpointUrl': 'https://gallery.azure.com/',
+    'activeDirectoryEndpointUrl': 'https://login.microsoftonline.com',
+    'activeDirectoryResourceId': 'https://management.core.windows.net/',
+    'activeDirectoryGraphResourceId': 'https://graph.windows.net/',
+    'activeDirectoryGraphApiVersion': '2013-04-05',
+    'storageEndpointSuffix': '.core.windows.net',
+    'keyVaultDnsSuffix': '.vault.azure.net',
+    'azureDataLakeStoreFileSystemEndpointSuffix': 'azuredatalakestore.net',
+    'azureDataLakeAnalyticsCatalogAndJobEndpointSuffix': 'azuredatalakeanalytics.net'
+  },
+  {
+    'name': 'AzureChinaCloud',
+    'portalUrl': 'http://go.microsoft.com/fwlink/?LinkId=301902',
+    'publishingProfileUrl': 'http://go.microsoft.com/fwlink/?LinkID=301774',
+    'managementEndpointUrl': 'https://management.core.chinacloudapi.cn',
+    'resourceManagerEndpointUrl': 'https://management.chinacloudapi.cn',
+    'sqlManagementEndpointUrl': 'https://management.core.chinacloudapi.cn:8443/',
+    'sqlServerHostnameSuffix': '.database.chinacloudapi.cn',
+    'galleryEndpointUrl': 'https://gallery.chinacloudapi.cn/',
+    'activeDirectoryEndpointUrl': 'https://login.chinacloudapi.cn',
+    'activeDirectoryResourceId': 'https://management.core.chinacloudapi.cn/',
+    'activeDirectoryGraphResourceId': 'https://graph.chinacloudapi.cn/',
+    'activeDirectoryGraphApiVersion': '2013-04-05',
+    'storageEndpointSuffix': '.core.chinacloudapi.cn',
+    'keyVaultDnsSuffix': '.vault.azure.cn',
+    'azureDataLakeStoreFileSystemEndpointSuffix': 'N/A',
+    'azureDataLakeAnalyticsCatalogAndJobEndpointSuffix': 'N/A'
+  },
+  {
+    'name': 'AzureUSGovernment',
+    'portalUrl': 'https://manage.windowsazure.us',
+    'publishingProfileUrl': 'https://manage.windowsazure.us/publishsettings/index',
+    'managementEndpointUrl': 'https://management.core.usgovcloudapi.net',
+    'resourceManagerEndpointUrl': 'https://management.usgovcloudapi.net',
+    'sqlManagementEndpointUrl': 'https://management.core.usgovcloudapi.net:8443/',
+    'sqlServerHostnameSuffix': '.database.usgovcloudapi.net',
+    'galleryEndpointUrl': 'https://gallery.usgovcloudapi.net/',
+    'activeDirectoryEndpointUrl': 'https://login-us.microsoftonline.com',
+    'activeDirectoryResourceId': 'https://management.core.usgovcloudapi.net/',
+    'activeDirectoryGraphResourceId': 'https://graph.windows.net/',
+    'activeDirectoryGraphApiVersion': '2013-04-05',
+    'storageEndpointSuffix': '.core.usgovcloudapi.net',
+    'keyVaultDnsSuffix': '.vault.usgovcloudapi.net',
+    'azureDataLakeStoreFileSystemEndpointSuffix': 'N/A',
+    'azureDataLakeAnalyticsCatalogAndJobEndpointSuffix': 'N/A'
+  },
+  {
+    'name': 'AzureGermanCloud',
+    'portalUrl': 'http://portal.microsoftazure.de/',
+    'publishingProfileUrl': 'https://manage.microsoftazure.de/publishsettings/index',
+    'managementEndpointUrl': 'https://management.core.cloudapi.de',
+    'resourceManagerEndpointUrl': 'https://management.microsoftazure.de',
+    'sqlManagementEndpointUrl': 'https://management.core.cloudapi.de:8443/',
+    'sqlServerHostnameSuffix': '.database.cloudapi.de',
+    'galleryEndpointUrl': 'https://gallery.cloudapi.de/',
+    'activeDirectoryEndpointUrl': 'https://login.microsoftonline.de',
+    'activeDirectoryResourceId': 'https://management.core.cloudapi.de/',
+    'activeDirectoryGraphResourceId': 'https://graph.cloudapi.de/',
+    'activeDirectoryGraphApiVersion': '2013-04-05',
+    'storageEndpointSuffix': '.core.cloudapi.de',
+    'keyVaultDnsSuffix': '.vault.microsoftazure.de',
+    'azureDataLakeStoreFileSystemEndpointSuffix': 'N/A',
+    'azureDataLakeAnalyticsCatalogAndJobEndpointSuffix': 'N/A'
+  }]
 
 class AzureResourceManagementConnection(ConnectionUserAndKey):
     """
@@ -66,14 +141,15 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     name = 'Azure AD Auth'
     responseCls = AzureJsonResponse
     rawResponseCls = RawResponse
-    host = 'management.azure.com'
-    login_host = 'login.windows.net'
-    login_resource = 'https://management.core.windows.net/'
 
     def __init__(self, key, secret, secure=True, tenant_id=None,
                  subscription_id=None, **kwargs):
         super(AzureResourceManagementConnection, self) \
             .__init__(key, secret, **kwargs)
+        cloud_environment = kwargs.get("cloud_environment", "default")
+        self.host = urlparse(publicEnvironments[cloud_environment]['resourceManagerEndpointUrl']).hostname
+        self.login_host = urlparse(publicEnvironments[cloud_environment]['activeDirectoryEndpointUrl']).hostname
+        self.login_resource = publicEnvironments[cloud_environment]['activeDirectoryResourceId']
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
 
