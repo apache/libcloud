@@ -177,7 +177,6 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         self.session.timeout = kwargs.get('timeout', 60)
 
     def request(self, method, url, body=None, headers=None, raw=False):
-        import pdb; pdb.set_trace()
         self.response = self.session.request(
             method=method.lower(),
             url=''.join([self.host, url]),
