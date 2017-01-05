@@ -163,15 +163,21 @@ class ConnectionClassTestCase(unittest.TestCase):
         for method in ['POST', 'PUT', 'post', 'put']:
             con.request('/test', method=method, data=None,
                         headers={'Content-Length': '42'}, raw=True)
-            putheader_call_list = con.connection.putheader.call_args_list
-            self.assertIn(call('Content-Length', '42'), putheader_call_list)
+            request_prepared_call_list = con.connection.prepared_request.call_args_list
+            expected_call = call(body=None, headers={'Host': '127.0.0.1', 'Content-Length': '42',
+                                                     'Accept-Encoding': 'gzip,deflate',
+                                                     'User-Agent': con._user_agent()}, url='/test', method=method)
+            self.assertIn(expected_call, request_prepared_call_list)
 
         # '' as data, raw request, do not touch Content-Length if present
         for method in ['POST', 'PUT', 'post', 'put']:
             con.request('/test', method=method, data=None,
                         headers={'Content-Length': '42'}, raw=True)
-            putheader_call_list = con.connection.putheader.call_args_list
-            self.assertIn(call('Content-Length', '42'), putheader_call_list)
+            request_prepared_call_list = con.connection.prepared_request.call_args_list
+            expected_call = call(body=None, headers={'Host': '127.0.0.1', 'Content-Length': '42',
+                                                     'Accept-Encoding': 'gzip,deflate',
+                                                     'User-Agent': con._user_agent()}, url='/test', method=method)
+            self.assertIn(expected_call, request_prepared_call_list)
 
         # 'a' as data, content length should be present
         for method in ['POST', 'PUT', 'post', 'put']:

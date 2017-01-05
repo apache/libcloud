@@ -107,6 +107,9 @@ class MockResponse(object):
     def getheaders(self):
         return list(self.headers.items())
 
+    def iter_content(self, chunk_size):
+        return self.body_iter
+
     def msg(self):
         raise NotImplemented
 
@@ -275,6 +278,9 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 
 
 class StorageMockHttp(MockHttp):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False):
+        pass
+
     def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
         pass
 

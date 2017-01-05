@@ -39,13 +39,16 @@ from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.compression import decompress_data
 
 
-class LoggingBaseConnection(LibcloudConnection):
+class LoggingConnection(LibcloudConnection):
     """
     Debug class to log all HTTP(s) requests as they could be made
     with the curl command.
 
     :cvar log: file-like object that logs entries are written to.
     """
+
+    protocol = 'https'
+    port = None
 
     log = None
     http_proxy_used = False
@@ -167,15 +170,6 @@ class LoggingBaseConnection(LibcloudConnection):
         cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
                                              self.port, url))])
         return " ".join(cmd)
-
-
-class LoggingConnection(LoggingBaseConnection):
-    """
-    Utility Class for logging HTTPS connections
-    """
-
-    protocol = 'https'
-    port = None
 
     def getresponse(self):
         r = LibcloudConnection.getresponse(self)

@@ -398,7 +398,7 @@ class CloudFilesTests(unittest.TestCase):
         extra = {}
 
         def func(*args, **kwargs):
-            self.assertEqual(kwargs['headers']['Content-Length'], 0)
+            self.assertEqual(kwargs['headers']['Content-Length'], '0')
             func.called = True
             return old_request(*args, **kwargs)
 

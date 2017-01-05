@@ -24,7 +24,6 @@ import socket
 import requests
 
 import libcloud.security
-from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 
 
@@ -187,17 +186,19 @@ class LibcloudConnection(LibcloudBaseConnection):
             verify=self.ca_cert if self.ca_cert is not None else self.verify
         )
 
-    def prepared_request(self, method, url, body=None, headers=None, raw=False):
-        req = requests.Request(method, ''.join([self.host, url]), data=body, headers=headers)
-        
+    def prepared_request(self, method, url, body=None,
+                         headers=None, raw=False):
+        req = requests.Request(method, ''.join([self.host, url]),
+                               data=body, headers=headers)
+
         prepped = self.session.prepare_request(req)
 
         prepped.body = body
-        
-        self.response = self.session.send(prepped,
+
+        self.response = self.session.send(
+            prepped,
             stream=raw,
-            verify=self.ca_cert if self.ca_cert is not None else self.verify
-        )
+            verify=self.ca_cert if self.ca_cert is not None else self.verify)
 
     def getresponse(self):
         return self.response
