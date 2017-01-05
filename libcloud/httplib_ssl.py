@@ -153,7 +153,7 @@ class LibcloudBaseConnection(object):
             self.ca_cert = libcloud.security.CA_CERTS_PATH
 
 
-class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
+class LibcloudConnection(LibcloudBaseConnection):
     timeout = None
     host = None
     response = None
@@ -183,6 +183,18 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
             data=body,
             headers=headers,
             allow_redirects=1,
+            stream=raw,
+            verify=self.ca_cert if self.ca_cert is not None else self.verify
+        )
+
+    def prepared_request(self, method, url, body=None, headers=None, raw=False):
+        req = requests.Request(method, ''.join([self.host, url]), data=body, headers=headers)
+        
+        prepped = self.session.prepare_request(req)
+
+        prepped.body = body
+        
+        self.response = self.session.send(prepped,
             stream=raw,
             verify=self.ca_cert if self.ca_cert is not None else self.verify
         )

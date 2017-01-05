@@ -285,7 +285,7 @@ class RawResponse(Response):
     def response(self):
         if not self._response:
             response = self.connection.connection.getresponse()
-            self._response, self.body = response, response
+            self._response, self.body = response, response.text
             if not self.success():
                 self.parse_error()
         return self._response
@@ -293,7 +293,7 @@ class RawResponse(Response):
     @property
     def status(self):
         if not self._status:
-            self._status = self.response.status
+            self._status = self.response.status_code
         return self._status
 
     @property
@@ -604,14 +604,11 @@ class Connection(object):
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
-                self.connection.putrequest(method, url,
-                                           skip_host=1,
-                                           skip_accept_encoding=1)
-
-                for key, value in list(headers.items()):
-                    self.connection.putheader(key, str(value))
-
-                self.connection.endheaders()
+                self.connection.prepared_request(
+                    method=method,
+                    url=url,
+                    body=data,
+                    headers=headers)
             else:
                 if retry_enabled:
                     retry_request = retry(timeout=self.timeout,

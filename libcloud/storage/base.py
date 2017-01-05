@@ -557,7 +557,7 @@ class StorageDriver(BaseDriver):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = libcloud.utils.files.read_in_chunks(response, chunk_size)
+        stream = response.iter_content(chunk_size)
 
         try:
             data_read = next(stream)
@@ -642,7 +642,7 @@ class StorageDriver(BaseDriver):
             upload_func_kwargs['chunked'] = False
 
         if file_size is not None and 'Content-Length' not in headers:
-            headers['Content-Length'] = file_size
+            headers['Content-Length'] = str(file_size)
 
         headers['Content-Type'] = content_type
         response = self.connection.request(request_path,
