@@ -76,8 +76,6 @@ class LibcloudBaseConnection(object):
 
     def __init__(self):
         self.session = requests.Session()
-        self.verify = True
-        self.ca_cert = None
 
     def set_http_proxy(self, proxy_url):
         """
@@ -169,6 +167,9 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
         proxy_url = kwargs.pop('proxy_url', proxy_url_env)
 
+        self._setup_verify()
+        self._setup_ca_cert()
+
         LibcloudBaseConnection.__init__(self)
 
         if proxy_url:
@@ -176,6 +177,7 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         self.session.timeout = kwargs.get('timeout', 60)
 
     def request(self, method, url, body=None, headers=None, raw=False):
+        import pdb; pdb.set_trace()
         self.response = self.session.request(
             method=method.lower(),
             url=''.join([self.host, url]),
@@ -187,7 +189,7 @@ class LibcloudConnection(httplib.HTTPSConnection, LibcloudBaseConnection):
         )
 
     def getresponse(self):
-        return self
+        return self.response
 
     def getheaders(self):
         # urlib decoded response body, libcloud has a bug
