@@ -430,12 +430,7 @@ class BaseS3StorageDriver(StorageDriver):
         :param ex_storage_class: Storage class
         :type ex_storage_class: ``str``
         """
-        upload_func = self._upload_file
-        upload_func_kwargs = {'file_path': file_path}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash,
                                 storage_class=ex_storage_class)
@@ -642,29 +637,12 @@ class BaseS3StorageDriver(StorageDriver):
         # Amazon provides a different (complex?) mechanism to do multipart
         # uploads
         if self.supports_s3_multipart_upload:
-            # Initiate the multipart request and get an upload id
-            upload_func = self._upload_multipart
-            upload_func_kwargs = {'iterator': iterator,
-                                  'container': container,
-                                  'object_name': object_name}
             method = 'POST'
-            iterator = iter('')
             params = 'uploads'
 
-        elif self.supports_chunked_encoding:
-            upload_func = self._stream_data
-            upload_func_kwargs = {'iterator': iterator}
-        else:
-            # In this case, we have to load the entire object to
-            # memory and send it as normal data
-            upload_func = self._upload_data
-            upload_func_kwargs = {}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, method=method, query_args=params,
-                                iterator=iterator, verify_hash=False,
+                                stream=iterator, verify_hash=False,
                                 storage_class=ex_storage_class)
 
     def delete_object(self, obj):
@@ -783,10 +761,9 @@ class BaseS3StorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
-    def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, method='PUT', query_args=None,
-                    extra=None, file_path=None, iterator=None,
-                    verify_hash=True, storage_class=None):
+    def _put_object(self, container, object_name, method='PUT',
+                    query_args=None, extra=None, file_path=None,
+                    stream=None, verify_hash=True, storage_class=None):
         headers = {}
         extra = extra or {}
         storage_class = storage_class or 'standard'
@@ -820,14 +797,13 @@ class BaseS3StorageDriver(StorageDriver):
         # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
-            upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
             request_path=request_path, request_method=method,
-            headers=headers, file_path=file_path, iterator=iterator)
+            headers=headers, file_path=file_path, stream=stream)
 
         response = result_dict['response']
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
-        response = response.response
+        response = response
         server_hash = headers.get('etag', '').replace('"', '')
 
         if (verify_hash and result_dict['data_hash'] != server_hash):

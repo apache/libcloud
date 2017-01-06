@@ -81,6 +81,7 @@ class MockResponse(object):
     status = 0
     reason = ''
     version = 11
+    request = None
 
     def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status

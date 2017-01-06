@@ -459,12 +459,7 @@ class OSSStorageDriver(StorageDriver):
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
-        upload_func = self._upload_file
-        upload_func_kwargs = {'file_path': file_path}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash)
 
@@ -474,29 +469,12 @@ class OSSStorageDriver(StorageDriver):
         params = None
 
         if self.supports_multipart_upload:
-            # Initiate the multipart request and get an upload id
-            upload_func = self._upload_multipart
-            upload_func_kwargs = {'iterator': iterator,
-                                  'container': container,
-                                  'object_name': object_name}
             method = 'POST'
-            iterator = iter('')
             params = 'uploads'
 
-        elif self.supports_chunked_encoding:
-            upload_func = self._stream_data
-            upload_func_kwargs = {'iterator': iterator}
-        else:
-            # In this case, we have to load the entire object to
-            # memory and send it as normal data
-            upload_func = self._upload_data
-            upload_func_kwargs = {}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, method=method, query_args=params,
-                                iterator=iterator, verify_hash=False)
+                                stream=iterator, verify_hash=False)
 
     def delete_object(self, obj):
         object_path = self._get_object_path(obj.container, obj.name)
@@ -611,10 +589,9 @@ class OSSStorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
-    def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, method='PUT', query_args=None,
-                    extra=None, file_path=None, iterator=None,
-                    verify_hash=False):
+    def _put_object(self, container, object_name, method='PUT',
+                    query_args=None, extra=None, file_path=None,
+                    stream=None, verify_hash=False):
         """
         Create an object and upload data using the given function.
         """
@@ -646,15 +623,14 @@ class OSSStorageDriver(StorageDriver):
         # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
-            upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
             request_path=request_path, request_method=method,
-            headers=headers, file_path=file_path, iterator=iterator,
+            headers=headers, file_path=file_path, stream=stream,
             container=container)
 
         response = result_dict['response']
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
-        response = response.response
+        response = response
         server_hash = headers['etag'].replace('"', '')
 
         if (verify_hash and result_dict['data_hash'].upper() != server_hash):
@@ -705,7 +681,7 @@ class OSSStorageDriver(StorageDriver):
         object_path = self._get_object_path(container, object_name)
 
         # Get the upload id from the response xml
-        response.body = response.response.read()
+        response.body = response.read()
         body = response.parse_body()
         upload_id = body.find(fixxpath(xpath='UploadId',
                                        namespace=self.namespace)).text

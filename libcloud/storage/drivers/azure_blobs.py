@@ -781,11 +781,6 @@ class AzureBlobsStorageDriver(StorageDriver):
                                       'object_path': object_path,
                                       'blob_type': ex_blob_type,
                                       'lease': None}
-            else:
-                upload_func = self._stream_data
-                upload_func_kwargs = {'iterator': iterator,
-                                      'chunked': False,
-                                      'calculate_hash': verify_hash}
 
             return self._put_object(container=container,
                                     object_name=object_name,
@@ -927,12 +922,9 @@ class AzureBlobsStorageDriver(StorageDriver):
 
             lease.update_headers(headers)
 
-            iterator = iter('')
             result_dict = self._upload_object(object_name, content_type,
-                                              upload_func, upload_func_kwargs,
                                               object_path, headers=headers,
-                                              file_path=file_path,
-                                              iterator=iterator)
+                                              file_path=file_path)
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
