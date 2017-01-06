@@ -1340,7 +1340,7 @@ class AzureNodeDriver(NodeDriver):
                                                     storageAccount)
             blobdriver = AzureBlobsStorageDriver(storageAccount,
                                                  keys["key1"],
-                                                 host="blob%s" % (self.connection.storage_suffix))
+                                                 host="%s.blob%s" % (storageAccount, self.connection.storage_suffix))
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
