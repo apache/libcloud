@@ -145,7 +145,11 @@ class Route53DNSDriver(DNSDriver):
         uri = API_ROOT + 'hostedzone/' + zone_id + '/rrset?' + params
         data = self.connection.request(uri).object
 
-        record = self._to_records(data=data, zone=zone)[0]
+        try:
+            record = self._to_records(data=data, zone=zone)[0]
+        except IndexError:
+            raise RecordDoesNotExistError(value='', driver=self,
+                                          record_id=record_id)
 
         # A cute aspect of the /rrset filters is that they are more pagination
         # hints than filters!!
@@ -185,9 +189,26 @@ class Route53DNSDriver(DNSDriver):
 
     def create_record(self, name, zone, type, data, extra=None):
         extra = extra or {}
-        batch = [('CREATE', name, type, data, extra)]
-        self._post_changeset(zone, batch)
+        batch = []
+
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
+
+        try:
+            r = self.get_record(zone.id, id)
+            batch += self._prepare_delete(r, all=True)
+            if '_multi_value' in r.extra and r.extra['_multi_value']:
+                extra = r.extra
+            else:
+                tmp = {'type': r.type, 'data': r.data, 'name': r.name, 'extra': {}}
+                if 'priority' in r.extra:
+                    tmp['extra']['priority'] = r.extra['priority']
+                extra['_multi_value'] = True
+                extra['_other_records'] = [tmp]
+        except RecordDoesNotExistError:
+            pass
+        batch += [('CREATE', name, type, data, extra)]
+
+        self._post_changeset(zone, batch)
         return Record(id=id, name=name, type=type, data=data, zone=zone,
                       driver=self, ttl=extra.get('ttl', None), extra=extra)
 
@@ -220,12 +241,11 @@ class Route53DNSDriver(DNSDriver):
 
     def delete_record(self, record):
         try:
-            r = record
-            batch = [('DELETE', r.name, r.type, r.data, r.extra)]
+            batch = self._prepare_delete(record)
             self._post_changeset(record.zone, batch)
         except InvalidChangeBatch:
             raise RecordDoesNotExistError(value='', driver=self,
-                                          record_id=r.id)
+                                          record_id=record.id)
         return True
 
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
@@ -237,36 +257,14 @@ class Route53DNSDriver(DNSDriver):
         """
         extra = extra or {}
 
-        attrs = {'xmlns': NAMESPACE}
-        changeset = ET.Element('ChangeResourceRecordSetsRequest', attrs)
-        batch = ET.SubElement(changeset, 'ChangeBatch')
-        changes = ET.SubElement(batch, 'Changes')
-
-        change = ET.SubElement(changes, 'Change')
-        ET.SubElement(change, 'Action').text = 'CREATE'
-
-        rrs = ET.SubElement(change, 'ResourceRecordSet')
-        ET.SubElement(rrs, 'Name').text = name + '.' + zone.domain
-        ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type]
-        ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
-
-        rrecs = ET.SubElement(rrs, 'ResourceRecords')
+        batch = [('CREATE', name, self.RECORD_TYPE_MAP[type], data, extra)]
+        self._post_changeset(zone, batch)
 
         # Value is provided as a multi line string
         values = [value.strip() for value in data.split('\n') if
                   value.strip()]
 
-        for value in values:
-            rrec = ET.SubElement(rrecs, 'ResourceRecord')
-            ET.SubElement(rrec, 'Value').text = value
-
-        uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
-        data = ET.tostring(changeset)
-        self.connection.set_context({'zone_id': zone.id})
-        self.connection.request(uri, method='POST', data=data)
-
         id = ':'.join((self.RECORD_TYPE_MAP[type], name))
-
         records = []
         for value in values:
             record = Record(id=id, name=name, type=type, data=value, zone=zone,
@@ -283,14 +281,18 @@ class Route53DNSDriver(DNSDriver):
         :param zone: Zone to delete records for.
         :type  zone: :class:`Zone`
         """
+        records_id = []
         deletions = []
         for r in zone.list_records():
-            if r.type in (RecordType.NS, RecordType.SOA):
+            if r.type in (RecordType.NS, RecordType.SOA) or r.id in records_id:
                 continue
-            deletions.append(('DELETE', r.name, r.type, r.data, r.extra))
+            records_id.append(r.id)
+            deletions += self._prepare_delete(r, all=True)
 
         if deletions:
-            self._post_changeset(zone, deletions)
+            return self._post_changeset(zone, deletions)
+
+        return True
 
     def _update_single_value_record(self, record, name=None, type=None,
                                     data=None, extra=None):
@@ -303,67 +305,32 @@ class Route53DNSDriver(DNSDriver):
 
     def _update_multi_value_record(self, record, name=None, type=None,
                                    data=None, extra=None):
-        other_records = record.extra.get('_other_records', [])
-
-        attrs = {'xmlns': NAMESPACE}
-        changeset = ET.Element('ChangeResourceRecordSetsRequest', attrs)
-        batch = ET.SubElement(changeset, 'ChangeBatch')
-        changes = ET.SubElement(batch, 'Changes')
-
         # Delete existing records
-        change = ET.SubElement(changes, 'Change')
-        ET.SubElement(change, 'Action').text = 'DELETE'
-
-        rrs = ET.SubElement(change, 'ResourceRecordSet')
-
-        if record.name:
-            record_name = record.name + '.' + record.zone.domain
-        else:
-            record_name = record.zone.domain
-
-        ET.SubElement(rrs, 'Name').text = record_name
-        ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[record.type]
-        ET.SubElement(rrs, 'TTL').text = str(record.extra.get('ttl', '0'))
-
-        rrecs = ET.SubElement(rrs, 'ResourceRecords')
-
-        rrec = ET.SubElement(rrecs, 'ResourceRecord')
-        ET.SubElement(rrec, 'Value').text = record.data
-
-        for other_record in other_records:
-            rrec = ET.SubElement(rrecs, 'ResourceRecord')
-            ET.SubElement(rrec, 'Value').text = other_record['data']
+        batch = self._prepare_delete(record, all=True)
 
         # Re-create new (updated) records. Since we are updating a multi value
         # record, only a single record is updated and others are left as is.
-        change = ET.SubElement(changes, 'Change')
-        ET.SubElement(change, 'Action').text = 'CREATE'
+        batch += [('CREATE', record.name, record.type, data, record.extra)]
+        return self._post_changeset(record.zone, batch)
 
-        rrs = ET.SubElement(change, 'ResourceRecordSet')
+    def _prepare_delete(self, record, all=False):
+        multiple_value_record = record.extra.get('_multi_value', False)
+        other_records = record.extra.get('_other_records', [])
 
-        if name:
-            record_name = name + '.' + record.zone.domain
-        else:
-            record_name = record.zone.domain
-
-        ET.SubElement(rrs, 'Name').text = record_name
-        ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type]
-        ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
-
-        rrecs = ET.SubElement(rrs, 'ResourceRecords')
-
-        rrec = ET.SubElement(rrecs, 'ResourceRecord')
-        ET.SubElement(rrec, 'Value').text = data
-
-        for other_record in other_records:
-            rrec = ET.SubElement(rrecs, 'ResourceRecord')
-            ET.SubElement(rrec, 'Value').text = other_record['data']
-        uri = API_ROOT + 'hostedzone/' + record.zone.id + '/rrset'
-        data = ET.tostring(changeset)
-        self.connection.set_context({'zone_id': record.zone.id})
-        response = self.connection.request(uri, method='POST', data=data)
-
-        return response.status == httplib.OK
+        r = record
+        batch = [('DELETE', r.name, r.type, r.data, r.extra)]
+        if multiple_value_record and not all:
+            data = []
+            extra = {}
+            for rec in other_records:
+                if 'ttl' in rec and rec['ttl'] is not None:
+                    extra['ttl'] = rec['ttl']
+                data_rec = rec['data']
+                if 'priority' in rec['extra']:
+                    data_rec = '%s %s' % (rec['extra']['priority'], rec['data'])
+                data.append(data_rec)
+            batch.append(('CREATE', r.name, r.type, '\n'.join(data), extra))
+        return batch
 
     def _post_changeset(self, zone, changes_list):
         attrs = {'xmlns': NAMESPACE}
@@ -372,6 +339,8 @@ class Route53DNSDriver(DNSDriver):
         changes = ET.SubElement(batch, 'Changes')
 
         for action, name, type_, data, extra in changes_list:
+            other_records = extra.get('_other_records', [])
+
             change = ET.SubElement(changes, 'Change')
             ET.SubElement(change, 'Action').text = action
 
@@ -387,10 +356,27 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
 
             rrecs = ET.SubElement(rrs, 'ResourceRecords')
-            rrec = ET.SubElement(rrecs, 'ResourceRecord')
-            if 'priority' in extra:
-                data = '%s %s' % (extra['priority'], data)
-            ET.SubElement(rrec, 'Value').text = data
+
+            for other_record in other_records:
+                rrec = ET.SubElement(rrecs, 'ResourceRecord')
+                data_o_rec = other_record['data']
+                if 'priority' in other_record['extra']:
+                    data_o_rec = '%s %s' % (other_record['extra']['priority'], other_record['data'])
+                ET.SubElement(rrec, 'Value').text = data_o_rec
+
+            if '\n' not in data:
+                rrec = ET.SubElement(rrecs, 'ResourceRecord')
+                if 'priority' in extra:
+                    data = '%s %s' % (extra['priority'], data)
+                ET.SubElement(rrec, 'Value').text = data
+            else:
+                # Value is provided as a multi line string
+                values = [value.strip() for value in data.split('\n') if
+                    value.strip()]
+
+                for value in values:
+                    rrec = ET.SubElement(rrecs, 'ResourceRecord')
+                    ET.SubElement(rrec, 'Value').text = value
 
         uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
         data = ET.tostring(changeset)

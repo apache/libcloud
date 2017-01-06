@@ -25,7 +25,7 @@ from libcloud.dns.types import RecordType
 
 from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_POWERDNS
+from libcloud.test.secrets import DNS_PARAMS_POWERDNS_3X
 
 class PowerDNSTestCase(LibcloudTestCase):
 
@@ -33,7 +33,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         #PowerDNSDriver.connectionCls.conn_classes = (PowerDNSMockHttp,
         #                                             PowerDNSMockHttp)
         #PowerDNSMockHttp.type = None
-        self.driver = PowerDNSDriver(*DNS_PARAMS_POWERDNS)
+        self.driver = PowerDNSDriver(*DNS_PARAMS_POWERDNS_3X)
 
         self.test_zone = Zone(id='example.com.', domain='example.com',
                               driver=self.driver, type='master', ttl=None,
@@ -46,7 +46,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         extra = {'nameservers': ['ns1.example.com', 'ns2.example.com']}
         zone = self.driver.create_zone('example.com', extra=extra)
         self.assertEqual(zone.id, 'example.com.')
-        self.assertEqual(zone.domain, 'example.com.')
+        self.assertEqual(zone.domain, 'example.com')
         self.assertEqual(zone.type, None)
         self.assertEqual(zone.ttl, None)
 
@@ -55,7 +55,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                               type=RecordType.A,
                                               data='127.0.0.1',
                                               extra={'ttl': 86400})
-        self.assertEqual(record.name, 'example.com.')
+        self.assertEqual(record.name, 'example.com')
         self.assertEqual(record.data, '127.0.0.1')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 86400)
@@ -65,7 +65,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                               type=RecordType.A,
                                               data='192.0.5.4',
                                               extra={'ttl': 86400})
-        self.assertEqual(record.name, 'newrecord.example.com.')
+        self.assertEqual(record.name, 'newrecord.example.com')
         self.assertEqual(record.data, '192.0.5.4')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 86400)
@@ -75,7 +75,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                               type=RecordType.A,
                                               data='192.0.5.10',
                                               extra={'ttl': 86400})
-        self.assertEqual(record.name, 'newrecord.example.com.')
+        self.assertEqual(record.name, 'newrecord.example.com')
         self.assertEqual(record.data, '192.0.5.10')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 86400)
@@ -84,7 +84,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         records = self.test_zone.list_records()
         record = None
         for r in records:
-            if r.id == "A:example.com.":
+            if r.id == "A:example.com":
                 record = r
         self.assertEqual(record.data, '127.0.0.1')
 
@@ -95,11 +95,11 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_40_update_sameid_record(self):
         records = []
         for r in self.test_zone.list_records():
-            if r.id == "A:newrecord.example.com.":
+            if r.id == "A:newrecord.example.com":
                 records.append(r)
 
         record = records[0]
-        self.assertEqual(record.id, "A:newrecord.example.com.")
+        self.assertEqual(record.id, "A:newrecord.example.com")
 
         new_record = record.update(name=record.name, type=record.type,
             data='192.0.5.100', extra=record.extra)
@@ -118,7 +118,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                               type=RecordType.MX,
                                               data='newrecord2.example.com',
                                               extra={'ttl': 86400, 'priority':30})
-        self.assertEqual(record1.name, 'example.com.')
+        self.assertEqual(record1.name, 'example.com')
         self.assertEqual(record1.data, 'newrecord.example.com')
         self.assertEqual(record1.type, RecordType.MX)
         self.assertEqual(record1.ttl, 86400)
@@ -127,7 +127,7 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_42_update_mx_record(self):
         records = self.test_zone.list_records()
         records = self.driver.ex_filter_records(records,
-                        id='MX:example.com.', extra__priority=10)
+                        id='MX:example.com', extra__priority=10)
         self.assertEqual(len(records), 1)
         record = records[0]
 
@@ -136,7 +136,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         self.assertEqual(new_record.extra['priority'], 100)
 
     def test_40_get_record(self):
-        record_id = 'NS:example.com.'
+        record_id = 'NS:example.com'
         record = self.driver.ex_get_record('example.com', record_id)
         self.assertEqual(record.id, record_id)
 
@@ -147,12 +147,12 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_50_delete_sameid_record(self):
         records = []
         for r in self.test_zone.list_records():
-            if r.id == "A:newrecord.example.com.":
+            if r.id == "A:newrecord.example.com":
                 records.append(r)
 
         self.assertEqual(len(records), 2)
         record = records[0]
-        self.assertEqual(record.id, "A:newrecord.example.com.")
+        self.assertEqual(record.id, "A:newrecord.example.com")
 
         result = record.delete()
         self.assertEqual(result, True)
@@ -160,12 +160,12 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_51_delete_record(self):
         records = []
         for r in self.test_zone.list_records():
-            if r.id == "A:newrecord.example.com.":
+            if r.id == "A:newrecord.example.com":
                 records.append(r)
 
         record = records[0]
         self.assertEqual(len(records), 1)
-        self.assertEqual(record.id, "A:newrecord.example.com.")
+        self.assertEqual(record.id, "A:newrecord.example.com")
 
         result = record.delete()
         self.assertEqual(result, True)
