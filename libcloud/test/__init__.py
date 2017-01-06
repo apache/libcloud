@@ -196,7 +196,7 @@ class MockHttp(BaseMockHttpObject):
         self.host = host
         self.port = port
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         scheme, netloc, path, params, query, fragment = parsed
@@ -285,7 +285,8 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 
 
 class StorageMockHttp(MockHttp):
-    def prepared_request(self, method, url, body=None, headers=None, raw=False):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False,
+                         stream=False):
         pass
 
     def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):

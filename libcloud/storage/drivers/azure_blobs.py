@@ -785,8 +785,6 @@ class AzureBlobsStorageDriver(StorageDriver):
             return self._put_object(container=container,
                                     object_name=object_name,
                                     object_size=object_size,
-                                    upload_func=upload_func,
-                                    upload_func_kwargs=upload_func_kwargs,
                                     file_path=file_path, extra=extra,
                                     verify_hash=verify_hash,
                                     blob_type=ex_blob_type,
@@ -817,20 +815,13 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         object_path = self._get_object_path(container, object_name)
 
-        upload_func = self._upload_in_chunks
-        upload_func_kwargs = {'iterator': iterator,
-                              'object_path': object_path,
-                              'blob_type': ex_blob_type,
-                              'lease': None}
-
         return self._put_object(container=container,
                                 object_name=object_name,
                                 object_size=ex_page_blob_size,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, verify_hash=verify_hash,
                                 blob_type=ex_blob_type,
-                                use_lease=ex_use_lease)
+                                use_lease=ex_use_lease,
+                                stream=iterator)
 
     def delete_object(self, obj):
         """
@@ -900,9 +891,10 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         return headers
 
-    def _put_object(self, container, object_name, object_size, upload_func,
-                    upload_func_kwargs, file_path=None, extra=None,
-                    verify_hash=True, blob_type=None, use_lease=False):
+    def _put_object(self, container, object_name, object_size,
+                    file_path=None, extra=None,
+                    verify_hash=True, blob_type=None, use_lease=False,
+                    stream=None):
         """
         Control function that does the real job of uploading data to a blob
         """
@@ -917,20 +909,17 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         # Get a lease if required and do the operations
         with AzureBlobLease(self, object_path, use_lease) as lease:
-            if 'lease' in upload_func_kwargs:
-                upload_func_kwargs['lease'] = lease
-
             lease.update_headers(headers)
 
             result_dict = self._upload_object(object_name, content_type,
                                               object_path, headers=headers,
-                                              file_path=file_path)
+                                              file_path=file_path,
+                                              stream=stream)
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
             data_hash = result_dict['data_hash']
             headers = response.headers
-            response = response.response
 
         if response.status != httplib.CREATED:
             raise LibcloudError(
