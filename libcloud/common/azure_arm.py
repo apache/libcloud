@@ -147,9 +147,17 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         super(AzureResourceManagementConnection, self) \
             .__init__(key, secret, **kwargs)
         cloud_environment = kwargs.get("cloud_environment", "default")
-        self.host = urlparse(publicEnvironments[cloud_environment]['resourceManagerEndpointUrl']).hostname
-        self.login_host = urlparse(publicEnvironments[cloud_environment]['activeDirectoryEndpointUrl']).hostname
-        self.login_resource = publicEnvironments[cloud_environment]['activeDirectoryResourceId']
+        if isinstance(cloud_environment, basestring):
+            cloud_environment = publicEnvironments[cloud_environment]
+        if not isinstance(cloud_environment, dict):
+            raise Exception("cloud_environment must be one of '%s' or a dict "
+                            "containing keys 'resourceManagerEndpointUrl', "
+                            "'activeDirectoryEndpointUrl', "
+                            "'activeDirectoryResourceId'" % (
+                                "', '".join(publicEnvironments.keys())))
+        self.host = urlparse(cloud_environment['resourceManagerEndpointUrl']).hostname
+        self.login_host = urlparse(cloud_environment['activeDirectoryEndpointUrl']).hostname
+        self.login_resource = cloud_environment['activeDirectoryResourceId']
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
 
