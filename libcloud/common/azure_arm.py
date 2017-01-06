@@ -153,11 +153,13 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
             raise Exception("cloud_environment must be one of '%s' or a dict "
                             "containing keys 'resourceManagerEndpointUrl', "
                             "'activeDirectoryEndpointUrl', "
-                            "'activeDirectoryResourceId'" % (
+                            "'activeDirectoryResourceId', "
+                            "'storageEndpointSuffix'" % (
                                 "', '".join(publicEnvironments.keys())))
         self.host = urlparse(cloud_environment['resourceManagerEndpointUrl']).hostname
         self.login_host = urlparse(cloud_environment['activeDirectoryEndpointUrl']).hostname
         self.login_resource = cloud_environment['activeDirectoryResourceId']
+        self.storage_suffix = cloud_environment['storageEndpointSuffix']
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
 

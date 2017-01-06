@@ -49,8 +49,8 @@ You can select an alternate cloud environment using the "cloud_environment"
 parameter to AzureNodeDriver constructor.  Available alternate cloud
 environments are 'AzureChinaCloud', 'AzureUSGovernment' and 'AzureGermanCloud'.
 You can also supply explicit endpoints by providing a dict with the keys
-'resourceManagerEndpointUrl', 'activeDirectoryEndpointUrl' and
-'activeDirectoryResourceId'.
+'resourceManagerEndpointUrl', 'activeDirectoryEndpointUrl',
+'activeDirectoryResourceId' and 'storageEndpointSuffix'.
 
 API Docs
 --------
