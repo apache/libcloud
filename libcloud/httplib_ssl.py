@@ -180,19 +180,20 @@ class LibcloudConnection(LibcloudBaseConnection):
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False,
+                stream=False):
         self.response = self.session.request(
             method=method.lower(),
             url=''.join([self.host, url]),
             data=body,
             headers=headers,
             allow_redirects=1,
-            stream=raw,
+            stream=stream,
             verify=self.ca_cert if self.ca_cert is not None else self.verify
         )
 
     def prepared_request(self, method, url, body=None,
-                         headers=None, raw=False):
+                         headers=None, raw=False, stream=False):
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 

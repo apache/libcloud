@@ -152,6 +152,7 @@ class Response(object):
         self.error = response.reason
         self.status = response.status_code
         self.request = response.request
+        self.iter_content = response.iter_content
 
         self.body = response.text.strip() \
             if response.text is not None and hasattr(response.text, 'strip') \
@@ -501,7 +502,7 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False):
+                method='GET', raw=False, stream=False):
         """
         Request a given `action`.
 
@@ -530,6 +531,10 @@ class Connection(object):
         :param raw: True to perform a "raw" request aka only send the headers
                      and use the rawResponseCls class. This is used with
                      storage API when uploading a file.
+
+        :type stream: ``bool``
+        :param stream: True to return an iterator in Response.iter_content and allow
+                    streaming of the response data (for downloading large files)
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
@@ -601,7 +606,8 @@ class Connection(object):
                     method=method,
                     url=url,
                     body=data,
-                    headers=headers)
+                    headers=headers,
+                    stream=stream)
             else:
                 if retry_enabled:
                     retry_request = retry(timeout=self.timeout,
@@ -610,10 +616,11 @@ class Connection(object):
                     retry_request(self.connection.request)(method=method,
                                                            url=url,
                                                            body=data,
-                                                           headers=headers)
+                                                           headers=headers,
+                                                           stream=stream)
                 else:
                     self.connection.request(method=method, url=url, body=data,
-                                            headers=headers)
+                                            headers=headers, stream=stream)
         except socket.gaierror:
             e = sys.exc_info()[1]
             message = str(e)
