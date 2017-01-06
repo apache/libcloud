@@ -250,13 +250,19 @@ class GCELicense(UuidMixin, LazyObject):
         # connection thread-safe? Saving, modifying, and restoring
         # driver.connection.request_path is really hacky and thread-unsafe.
         saved_request_path = self.driver.connection.request_path
-        new_request_path = saved_request_path.replace(self.driver.project,
-                                                      self.project)
-        self.driver.connection.request_path = new_request_path
+        try:
+            new_request_path = saved_request_path.replace(self.driver.project,
+                                                          self.project)
+            self.driver.connection.request_path = new_request_path
 
-        request = '/global/licenses/%s' % self.name
-        response = self.driver.connection.request(request, method='GET').object
-        self.driver.connection.request_path = saved_request_path
+            request = '/global/licenses/%s' % self.name
+            response = self.driver.connection.request(request,
+                                                      method='GET').object
+        except:
+            raise
+        finally:
+            # Restore the connection request_path
+            self.driver.connection.request_path = saved_request_path
 
         self.extra = {
             'selfLink': response.get('selfLink'),
