@@ -88,7 +88,13 @@ class MockResponse(object):
         self.body = body
         self.headers = headers or self.headers
         self.reason = reason or self.reason
-        self.body_iter = iter(self.body) if self.body is not None else None
+        if self.body:
+            if not hasattr(self.body, '__next__'):
+                self.body_iter = iter(self.body)
+            else:
+                self.body_iter = self.body
+        else:
+            self.body_iter = iter('')
 
     def read(self, *args, **kwargs):
         return self.body

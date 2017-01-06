@@ -435,173 +435,6 @@ class BaseS3StorageDriver(StorageDriver):
                                 verify_hash=verify_hash,
                                 storage_class=ex_storage_class)
 
-    def _upload_multipart(self, response, data, iterator, container,
-                          object_name, calculate_hash=True):
-        """
-        Callback invoked for uploading data to S3 using Amazon's
-        multipart upload mechanism
-
-        :param response: Response object from the initial POST request
-        :type response: :class:`S3RawResponse`
-
-        :param data: Any data from the initial POST request
-        :type data: ``str``
-
-        :param iterator: The generator for fetching the upload data
-        :type iterator: ``generator``
-
-        :param container: The container owning the object to which data is
-            being uploaded
-        :type container: :class:`Container`
-
-        :param object_name: The name of the object to which we are uploading
-        :type object_name: ``str``
-
-        :keyword calculate_hash: Indicates if we must calculate the data hash
-        :type calculate_hash: ``bool``
-
-        :return: A tuple of (status, checksum, bytes transferred)
-        :rtype: ``tuple``
-        """
-
-        object_path = self._get_object_path(container, object_name)
-
-        # Get the upload id from the response xml
-        response.body = response.response.read()
-        body = response.parse_body()
-        upload_id = body.find(fixxpath(xpath='UploadId',
-                                       namespace=self.namespace)).text
-
-        try:
-            # Upload the data through the iterator
-            result = self._upload_from_iterator(iterator, object_path,
-                                                upload_id, calculate_hash)
-            (chunks, data_hash, bytes_transferred) = result
-
-            # Commit the chunk info and complete the upload
-            etag = self._commit_multipart(object_path, upload_id, chunks)
-        except Exception:
-            exc = sys.exc_info()[1]
-            # Amazon provides a mechanism for aborting an upload.
-            self._abort_multipart(object_path, upload_id)
-            raise exc
-
-        # Modify the response header of the first request. This is used
-        # by other functions once the callback is done
-        response.headers['etag'] = etag
-
-        return (True, data_hash, bytes_transferred)
-
-    def _upload_from_iterator(self, iterator, object_path, upload_id,
-                              calculate_hash=True):
-        """
-        Uploads data from an iterator in fixed sized chunks to S3
-
-        :param iterator: The generator for fetching the upload data
-        :type iterator: ``generator``
-
-        :param object_path: The path of the object to which we are uploading
-        :type object_name: ``str``
-
-        :param upload_id: The upload id allocated for this multipart upload
-        :type upload_id: ``str``
-
-        :keyword calculate_hash: Indicates if we must calculate the data hash
-        :type calculate_hash: ``bool``
-
-        :return: A tuple of (chunk info, checksum, bytes transferred)
-        :rtype: ``tuple``
-        """
-
-        data_hash = None
-        if calculate_hash:
-            data_hash = self._get_hash_function()
-
-        bytes_transferred = 0
-        count = 1
-        chunks = []
-        params = {'uploadId': upload_id}
-
-        # Read the input data in chunk sizes suitable for AWS
-        for data in read_in_chunks(iterator, chunk_size=CHUNK_SIZE,
-                                   fill_size=True, yield_empty=True):
-            bytes_transferred += len(data)
-
-            if calculate_hash:
-                data_hash.update(data)
-
-            chunk_hash = self._get_hash_function()
-            chunk_hash.update(data)
-            chunk_hash = base64.b64encode(chunk_hash.digest()).decode('utf-8')
-
-            # This provides an extra level of data check and is recommended
-            # by amazon
-            headers = {'Content-MD5': chunk_hash}
-            params['partNumber'] = count
-
-            request_path = '?'.join((object_path, urlencode(params)))
-
-            resp = self.connection.request(request_path, method='PUT',
-                                           data=data, headers=headers)
-
-            if resp.status != httplib.OK:
-                raise LibcloudError('Error uploading chunk', driver=self)
-
-            server_hash = resp.headers['etag']
-
-            # Keep this data for a later commit
-            chunks.append((count, server_hash))
-            count += 1
-
-        if calculate_hash:
-            data_hash = data_hash.hexdigest()
-
-        return (chunks, data_hash, bytes_transferred)
-
-    def _commit_multipart(self, object_path, upload_id, chunks):
-        """
-        Makes a final commit of the data.
-
-        :param object_path: Server side object path.
-        :type object_path: ``str``
-
-        :param upload_id: ID of the multipart upload.
-        :type upload_id: ``str``
-
-        :param upload_id: A list of (chunk_number, chunk_hash) tuples.
-        :type upload_id: ``list``
-        """
-
-        root = Element('CompleteMultipartUpload')
-
-        for (count, etag) in chunks:
-            part = SubElement(root, 'Part')
-            part_no = SubElement(part, 'PartNumber')
-            part_no.text = str(count)
-
-            etag_id = SubElement(part, 'ETag')
-            etag_id.text = str(etag)
-
-        data = tostring(root)
-
-        params = {'uploadId': upload_id}
-        request_path = '?'.join((object_path, urlencode(params)))
-        response = self.connection.request(request_path, data=data,
-                                           method='POST')
-
-        if response.status != httplib.OK:
-            element = response.object
-            # pylint: disable=maybe-no-member
-            code, message = response._parse_error_details(element=element)
-            msg = 'Error in multipart commit: %s (%s)' % (message, code)
-            raise LibcloudError(msg, driver=self)
-
-        # Get the server's etag to be passed back to the caller
-        body = response.parse_body()
-        server_hash = body.find(fixxpath(xpath='ETag',
-                                         namespace=self.namespace)).text
-        return server_hash
-
     def _abort_multipart(self, object_path, upload_id):
         """
         Aborts an already initiated multipart upload
@@ -637,9 +470,8 @@ class BaseS3StorageDriver(StorageDriver):
         # Amazon provides a different (complex?) mechanism to do multipart
         # uploads
         if self.supports_s3_multipart_upload:
-            method = 'POST'
-            params = 'uploads'
-
+            # @TODO: This needs implementing again from scratch.
+            pass
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, method=method, query_args=params,
                                 stream=iterator, verify_hash=False,
@@ -808,7 +640,8 @@ class BaseS3StorageDriver(StorageDriver):
 
         if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
-                value='MD5 hash checksum does not match',
+                value='MD5 hash {0} checksum does not match {1}'.format(
+                    server_hash, result_dict['data_hash']),
                 object_name=object_name, driver=self)
         elif response.status == httplib.OK:
             obj = Object(

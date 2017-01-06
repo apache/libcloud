@@ -154,7 +154,8 @@ class Response(object):
         self.request = response.request
 
         self.body = response.text.strip() \
-            if response.text is not None else ''
+            if response.text is not None and hasattr(response.text, 'strip') \
+            else ''
 
         if not self.success():
             raise exception_from_message(code=self.status,
