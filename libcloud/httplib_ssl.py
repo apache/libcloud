@@ -149,7 +149,12 @@ class LibcloudBaseConnection(object):
         if self.verify is False:
             pass
         else:
-            self.ca_cert = libcloud.security.CA_CERTS_PATH
+            if isinstance(libcloud.security.CA_CERTS_PATH, list):
+                if len(libcloud.security.CA_CERTS_PATH) > 1:
+                    raise ValueError('Only 1 certificate path is supported')
+                self.ca_cert = libcloud.security.CA_CERTS_PATH[0]
+            else:     
+                self.ca_cert = libcloud.security.CA_CERTS_PATH
 
 
 class LibcloudConnection(LibcloudBaseConnection):
