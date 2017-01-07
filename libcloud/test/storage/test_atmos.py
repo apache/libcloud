@@ -491,7 +491,8 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     def runTest(self):
         pass
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False,
+                stream=False):
         headers = headers or {}
         parsed = urlparse.urlparse(url)
         if parsed.query.startswith('metadata/'):

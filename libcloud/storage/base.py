@@ -629,7 +629,7 @@ class StorageDriver(BaseDriver):
             response = self.connection.request(
                 request_path,
                 method=request_method, data=stream,
-                headers=headers, raw=False)
+                headers=headers, raw=True)
             stream_hash, stream_length = self._hash_buffered_stream(
                 stream,
                 self._get_hash_function())
@@ -638,7 +638,7 @@ class StorageDriver(BaseDriver):
                 response = self.connection.request(
                     request_path,
                     method=request_method, data=file_stream,
-                    headers=headers, raw=False)
+                    headers=headers, raw=True)
             with open(file_path, 'rb') as file_stream:
                 stream_hash, stream_length = self._hash_buffered_stream(
                     file_stream,
@@ -656,12 +656,20 @@ class StorageDriver(BaseDriver):
                 'data_hash': stream_hash}
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
+        total_len = 0
+        if not hasattr(stream, '__exit__'):
+            for s in iter(stream):
+                hasher.update(s)
+                total_len = total_len + len(s)
+            return (hasher.hexdigest(), total_len)
         with stream:
             buf = stream.read(blocksize)
-            total_len = 0
             while len(buf) > 0:
                 total_len = total_len + len(buf)
-                hasher.update(buf)
+                if isinstance(buf, str):
+                    hasher.update(buf.encode())
+                else:
+                    hasher.update(buf)
                 buf = stream.read(blocksize)
         return (hasher.hexdigest(), total_len)
 

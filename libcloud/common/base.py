@@ -284,6 +284,20 @@ class RawResponse(Response):
         self._reason = None
         self.connection = connection
 
+    def success(self):
+        """
+        Determine if our request was successful.
+
+        The meaning of this can be arbitrary; did we receive OK status? Did
+        the node get created? Were we authenticated?
+
+        :rtype: ``bool``
+        :return: ``True`` or ``False``
+        """
+        # pylint: disable=E1101
+        return self.status in [requests.codes.ok, requests.codes.created,
+                               httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+
     @property
     def response(self):
         if not self._response:
