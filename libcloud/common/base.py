@@ -272,7 +272,7 @@ class XmlResponse(Response):
 
 class RawResponse(Response):
 
-    def __init__(self, connection):
+    def __init__(self, connection, response=None):
         """
         :param connection: Parent connection object.
         :type connection: :class:`.Connection`
@@ -283,6 +283,12 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
+        if response:
+            self.headers = lowercase_keys(dict(response.headers))
+            self.error = response.reason
+            self.status = response.status_code
+            self.request = response.request
+            self.iter_content = response.iter_content
 
     def success(self):
         """
@@ -306,18 +312,6 @@ class RawResponse(Response):
             if not self.success():
                 self.parse_error()
         return self._response
-
-    @property
-    def status(self):
-        if not self._status:
-            self._status = self.response.status_code
-        return self._status
-
-    @property
-    def headers(self):
-        if not self._headers:
-            self._headers = lowercase_keys(dict(self.response.getheaders()))
-        return self._headers
 
     @property
     def reason(self):
@@ -660,7 +654,8 @@ class Connection(object):
 
         if raw:
             responseCls = self.rawResponseCls
-            kwargs = {'connection': self}
+            kwargs = {'connection': self,
+                      'response': self.connection.getresponse()}
         else:
             responseCls = self.responseCls
             kwargs = {'connection': self,

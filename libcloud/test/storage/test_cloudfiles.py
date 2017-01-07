@@ -54,10 +54,10 @@ class CloudFilesTests(unittest.TestCase):
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_class = CloudFilesMockHttp
-        self.driver_klass.connectionCls.rawResponseCls = \
-            CloudFilesMockRawResponse
+        #self.driver_klass.connectionCls.rawResponseCls = \
+        #    CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
-        CloudFilesMockRawResponse.type = None
+        #CloudFilesMockRawResponse.type = None
 
         driver_kwargs = self.driver_kwargs.copy()
         driver_kwargs['region'] = self.region
@@ -1134,12 +1134,6 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             status_code = httplib.NOT_FOUND
 
         return (status_code, body, headers, httplib.responses[httplib.OK])
-
-
-class CloudFilesMockRawResponse(MockRawResponse):
-
-    fixtures = StorageFileFixtures('cloudfiles')
-    base_headers = {'content-type': 'application/json; charset=UTF-8'}
 
     def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
         headers = {'etag': 'e2378cace8712661ce7beec3d9362ef6'}

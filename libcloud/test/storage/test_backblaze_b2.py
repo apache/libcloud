@@ -224,6 +224,14 @@ class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _file_test00001_2_txt(self, method, url, body, headers):
+        # test_download_object
+        if method == 'GET':
+            body = 'ab'
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class BackblazeB2MockRawResponse(MockRawResponse):
     def _file_test00001_2_txt(self, method, url, body, headers):

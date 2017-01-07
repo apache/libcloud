@@ -414,7 +414,8 @@ class BaseS3StorageDriver(StorageDriver):
 
     def download_object_as_stream(self, obj, chunk_size=None):
         obj_path = self._get_object_path(obj.container, obj.name)
-        response = self.connection.request(obj_path, method='GET', stream=True)
+        response = self.connection.request(obj_path, method='GET',
+                                           stream=True, raw=True)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
