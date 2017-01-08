@@ -645,6 +645,7 @@ class StorageDriver(BaseDriver):
                     self._get_hash_function())
 
         if not response.success():
+            print(response.success())
             raise LibcloudError(
                 value='Object upload failed, Perhaps a timeout?', driver=self)
 

@@ -521,7 +521,7 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         self.assertTrue(url.startswith('/api/'),
                         ('"%s" is invalid. Needs to '
                          'start with "/api". The passed URL should be just '

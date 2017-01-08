@@ -158,7 +158,7 @@ class MockRawResponse(BaseMockHttpObject):
     type = None
     responseCls = MockResponse
 
-    def __init__(self, connection, path=None):
+    def __init__(self, connection, response=None):
         super(MockRawResponse, self).__init__()
         self._data = []
         self._current_item = 0
@@ -166,8 +166,8 @@ class MockRawResponse(BaseMockHttpObject):
         self._status = None
         self._headers = None
         self._reason = None
-        self._path = path
         self.connection = connection
+        self.iter_content = self.next
 
     def next(self):
         if self._current_item == len(self._data):
@@ -223,7 +223,7 @@ class MockRawResponse(BaseMockHttpObject):
         if not self._response:
             meth_name = self._get_method_name(type=self.type,
                                               use_param=False, qs=None,
-                                              path=self._path if self._path else self.connection.action)
+                                              path=self.connection.action)
             meth = getattr(self, meth_name.replace('%', '_'))
             result = meth(self.connection.method, None, None, None)
             self._status, self._body, self._headers, self._reason = result
@@ -380,23 +380,8 @@ class MockConnection(object):
 class StorageMockHttp(MockHttp):
     def prepared_request(self, method, url, body=None, headers=None, raw=False,
                          stream=False):
-         # Find a method we can use for this request
-        parsed = urlparse.urlparse(url)
-        scheme, netloc, path, params, query, fragment = parsed
-        qs = parse_qs(query)
-        if path.endswith('/'):
-            path = path[:-1]
-        meth_name = self._get_method_name(type=self.type,
-                                          use_param=self.use_param,
-                                          qs=qs, path=path)
-        meth = getattr(self, meth_name.replace('%', '_'))
-
-        if self.test and isinstance(self.test, LibcloudTestCase):
-            self.test._add_visited_url(url=url)
-            self.test._add_executed_mock_method(method_name=meth_name)
-
-        status, body, headers, reason = meth(method, url, body, headers)
-        self.response = self.rawResponseCls(MockConnection(action=method), path=path)
+        self.action = url
+        self.response = self.rawResponseCls(self)
 
     def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
         pass
