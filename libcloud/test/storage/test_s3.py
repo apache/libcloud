@@ -375,10 +375,11 @@ class S3MockRawResponse(MockRawResponse):
                     httplib.responses[httplib.OK])
         else:
             body = ''
-            return (httplib.BAD_REQUEST,
+            headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+            return (httplib.OK,
                     body,
                     headers,
-                    httplib.responses[httplib.BAD_REQUEST])
+                    httplib.responses[httplib.OK])
 
 
 class S3Tests(unittest.TestCase):

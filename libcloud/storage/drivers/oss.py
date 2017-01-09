@@ -853,14 +853,14 @@ class OSSStorageDriver(StorageDriver):
 
     def _upload_object(self, object_name, content_type, upload_func,
                        upload_func_kwargs, request_path, request_method='PUT',
-                       headers=None, file_path=None, iterator=None,
+                       headers=None, file_path=None, stream=None,
                        container=None):
         """
         Helper function for setting common request headers and calling the
         passed in callback which uploads an object.
         """
         headers = headers or {}
-
+        iterator = stream
         if file_path and not os.path.exists(file_path):
             raise OSError('File %s does not exist' % (file_path))
 

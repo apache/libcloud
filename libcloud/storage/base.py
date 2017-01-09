@@ -23,6 +23,7 @@ from __future__ import with_statement
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
+from io import BufferedIOBase
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next
@@ -645,7 +646,6 @@ class StorageDriver(BaseDriver):
                     self._get_hash_function())
 
         if not response.success():
-            print(response.success())
             raise LibcloudError(
                 value='Object upload failed, Perhaps a timeout?', driver=self)
 
@@ -658,9 +658,17 @@ class StorageDriver(BaseDriver):
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0
+        if hasattr(stream, '__next__'):
+            data = libcloud.utils.files.exhaust_iterator(iterator=stream)
+            hasher.update(b(data))
+            total_len = len(data)
+            return (hasher.hexdigest(), total_len)
         if not hasattr(stream, '__exit__'):
-            for s in iter(stream):
-                hasher.update(s)
+            for s in stream:
+                if isinstance(s, str):
+                    hasher.update(s.encode())
+                else:
+                    hasher.update(s)
                 total_len = total_len + len(s)
             return (hasher.hexdigest(), total_len)
         with stream:
