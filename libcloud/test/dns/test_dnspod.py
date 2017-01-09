@@ -15,7 +15,7 @@ from libcloud.dns.base import Zone, Record
 class DNSPodDNSTests(unittest.TestCase):
     def setUp(self):
         DNSPodMockHttp.type = None
-        DNSPodDNSDriver.connectionCls.conn_classes = (None, DNSPodMockHttp)
+        DNSPodDNSDriver.connectionCls.conn_class = DNSPodMockHttp
         self.driver = DNSPodDNSDriver(*DNS_PARAMS_DNSPOD)
         self.test_zone = Zone(id='11', type='master', ttl=None,
                               domain='test.com', extra={}, driver=self.driver)

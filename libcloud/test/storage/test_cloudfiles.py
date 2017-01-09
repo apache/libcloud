@@ -20,7 +20,7 @@ import os.path                          # pylint: disable-msg=W0404
 import math
 import sys
 import copy
-
+from io import BytesIO
 import mock
 
 import libcloud.utils.files
@@ -38,9 +38,8 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
-from libcloud.storage.drivers.dummy import DummyIterator
 
-from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
+from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
 from libcloud.test import unittest
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
@@ -53,8 +52,7 @@ class CloudFilesTests(unittest.TestCase):
     region = 'ord'
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (
-            None, CloudFilesMockHttp)
+        self.driver_klass.connectionCls.conn_class = CloudFilesMockHttp
         self.driver_klass.connectionCls.rawResponseCls = \
             CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
@@ -367,12 +365,15 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue(hasattr(stream, '__iter__'))
 
     def test_upload_object_success(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, 'hash343hhash89h932439jsaa89', 1000
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
-        old_func = CloudFilesStorageDriver._upload_file
-        CloudFilesStorageDriver._upload_file = upload_file
+        old_func = CloudFilesStorageDriver._upload_object
+        CloudFilesStorageDriver._upload_object = upload_file
         file_path = os.path.abspath(__file__)
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
@@ -383,16 +384,21 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, 1000)
         self.assertTrue('some-value' in obj.meta_data)
-        CloudFilesStorageDriver._upload_file = old_func
+        CloudFilesStorageDriver._upload_object = old_func
 
     def test_upload_object_zero_size_object(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, 'hash343hhash89h932439jsaa89', 0
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 0,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
-        old_func = CloudFilesStorageDriver._upload_file
+        old_func = CloudFilesStorageDriver._upload_object
+        CloudFilesStorageDriver._upload_object = upload_file
+
         old_request = self.driver.connection.request
-        CloudFilesStorageDriver._upload_file = upload_file
+
         file_path = os.path.join(os.path.dirname(__file__), '__init__.py')
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'empty'
@@ -410,19 +416,21 @@ class CloudFilesTests(unittest.TestCase):
             extra=extra, object_name=object_name)
         self.assertEqual(obj.name, 'empty')
         self.assertEqual(obj.size, 0)
-        self.assertTrue(func.called)
-        CloudFilesStorageDriver._upload_file = old_func
+        CloudFilesStorageDriver._upload_object = old_func
         self.driver.connection.request = old_request
 
     def test_upload_object_invalid_hash(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, 'hash343hhash89h932439jsaa89', 1000
-
         CloudFilesMockRawResponse.type = 'INVALID_HASH'
 
-        old_func = CloudFilesStorageDriver._upload_file
-        CloudFilesStorageDriver._upload_file = upload_file
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'blah blah'}
+
+        old_func = CloudFilesStorageDriver._upload_object
+        CloudFilesStorageDriver._upload_object = upload_file
         file_path = os.path.abspath(__file__)
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
@@ -436,7 +444,7 @@ class CloudFilesTests(unittest.TestCase):
             self.fail(
                 'Invalid hash was returned but an exception was not thrown')
         finally:
-            CloudFilesStorageDriver._upload_file = old_func
+            CloudFilesStorageDriver._upload_object = old_func
 
     def test_upload_object_no_content_type(self):
         def no_content_type(name):
@@ -515,7 +523,7 @@ class CloudFilesTests(unittest.TestCase):
 
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_stream_data'
-        iterator = DummyIterator(data=['2', '3', '5'])
+        iterator = BytesIO(b('235'))
         try:
             self.driver.upload_object_via_stream(container=container,
                                                  object_name=object_name,
@@ -647,8 +655,7 @@ class CloudFilesTests(unittest.TestCase):
         }
         expected_headers = {
             # Automatically added headers
-            'Content-Type': 'application/octet-stream',
-            'Transfer-Encoding': 'chunked',
+            'Content-Type': 'application/octet-stream'
         }
         expected_headers.update(cors_headers)
 
@@ -690,6 +697,7 @@ class CloudFilesTests(unittest.TestCase):
         )
         self.assertEqual(len(bytes_blob), mocked_response.size)
 
+    @unittest.skip("Skipping as chunking is disabled in 2.0rc1")
     def test_upload_object_via_stream_chunked_encoding(self):
 
         # Create enough bytes it should get split into two chunks
@@ -712,8 +720,9 @@ class CloudFilesTests(unittest.TestCase):
         logged_data = []
 
         class InterceptResponse(CloudFilesMockRawResponse):
-            def __init__(self, connection):
-                super(InterceptResponse, self).__init__(connection=connection)
+            def __init__(self, connection, response=None):
+                super(InterceptResponse, self).__init__(connection=connection,
+                                                        response=response)
                 old_send = self.connection.connection.send
 
                 def intercept_send(data):
@@ -786,12 +795,15 @@ class CloudFilesTests(unittest.TestCase):
             self.driver.connection.request = _request
 
     def test_create_container_put_object_name_encoding(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, 'hash343hhash89h932439jsaa89', 1000
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
-        old_func = CloudFilesStorageDriver._upload_file
-        CloudFilesStorageDriver._upload_file = upload_file
+        old_func = CloudFilesStorageDriver._upload_object
+        CloudFilesStorageDriver._upload_object = upload_file
 
         container_name = 'speci@l_name'
         object_name = 'm@obj€ct'
@@ -804,7 +816,7 @@ class CloudFilesTests(unittest.TestCase):
             file_path=file_path, container=container,
             object_name=object_name)
         self.assertEqual(obj.name, object_name)
-        CloudFilesStorageDriver._upload_file = old_func
+        CloudFilesStorageDriver._upload_object = old_func
 
     def test_ex_enable_static_website(self):
         container = Container(name='foo_bar_container', extra={}, driver=self)

@@ -32,8 +32,8 @@ from libcloud.test.secrets import CLOUDSCALE_PARAMS
 class CloudscaleTests(LibcloudTestCase):
 
     def setUp(self):
-        CloudscaleNodeDriver.connectionCls.conn_classes = \
-            (None, CloudscaleMockHttp)
+        CloudscaleNodeDriver.connectionCls.conn_class = \
+            CloudscaleMockHttp
         self.driver = CloudscaleNodeDriver(*CLOUDSCALE_PARAMS)
 
     def test_list_images_success(self):

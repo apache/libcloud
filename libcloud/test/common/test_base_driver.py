@@ -54,8 +54,6 @@ class BaseDriverTestCase(unittest.TestCase):
         DummyDriver2.connectionCls = Mock()
         DummyDriver2(key='foo')
         call_kwargs = DummyDriver2.connectionCls.call_args[1]
-        self.assertEqual(call_kwargs['timeout'], 13)
-        self.assertEqual(call_kwargs['retry_delay'], None)
 
         # 4. Value provided via "_ex_connection_class_kwargs" and constructor,
         # constructor should win

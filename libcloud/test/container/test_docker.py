@@ -34,8 +34,8 @@ class DockerContainerDriverTestCase(unittest.TestCase):
         versions = ('linux_124', 'mac_124')
         self.drivers = []
         for version in versions:
-            DockerContainerDriver.connectionCls.conn_classes = (
-                DockerMockHttp, DockerMockHttp)
+            DockerContainerDriver.connectionCls.conn_class = \
+                DockerMockHttp
             DockerMockHttp.type = None
             DockerMockHttp.use_param = 'a'
             driver = DockerContainerDriver(*CONTAINER_PARAMS_DOCKER)

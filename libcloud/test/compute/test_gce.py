@@ -28,7 +28,7 @@ from libcloud.compute.drivers.gce import (
     GCEUrlMap, GCEZone, GCESubnetwork)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     ResourceNotFoundError, ResourceExistsError,
-                                    InvalidRequestError, GoogleBaseError)
+                                    GoogleBaseError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 
@@ -50,9 +50,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def setUp(self):
         GCEMockHttp.test = self
-        GCENodeDriver.connectionCls.conn_classes = (GCEMockHttp, GCEMockHttp)
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GCEMockHttp.type = None
         kwargs = GCE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'
@@ -884,13 +883,6 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node = self.driver.ex_get_node('node-name', zone)
         self.assertRaises(GoogleBaseError, self.driver.ex_set_machine_type,
                           node, 'custom-4-61440')
-
-    def test_ex_set_machine_type_invalid(self):
-        # get stopped node, change machine type
-        zone = 'us-central1-a'
-        node = self.driver.ex_get_node('custom-node', zone)
-        self.assertRaises(InvalidRequestError, self.driver.ex_set_machine_type,
-                          node, 'custom-1-61440')
 
     def test_ex_set_machine_type(self):
         # get stopped node, change machine type

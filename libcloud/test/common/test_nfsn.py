@@ -36,7 +36,7 @@ mock_header = 'testid;1000000;yumsalty1234;66dfb282a9532e5b8e6a9517764d5fbc001a4
 class NFSNConnectionTestCase(LibcloudTestCase):
 
     def setUp(self):
-        NFSNConnection.conn_classes = (None, NFSNMockHttp)
+        NFSNConnection.conn_class = NFSNMockHttp
         NFSNMockHttp.type = None
         self.driver = NFSNConnection('testid', 'testsecret')
 

@@ -30,8 +30,7 @@ from libcloud.utils.py3 import xmlrpclib
 class SoftLayerTests(unittest.TestCase):
 
     def setUp(self):
-        SoftLayerDNSDriver.connectionCls.conn_classes = (
-            SoftLayerDNSMockHttp, SoftLayerDNSMockHttp)
+        SoftLayerDNSDriver.connectionCls.conn_class = SoftLayerDNSMockHttp
         SoftLayerDNSMockHttp.type = None
         self.driver = SoftLayerDNSDriver(*SOFTLAYER_PARAMS)
 

@@ -4,7 +4,6 @@ sudo: false
 python:
     - 2.6
     - 2.7
-    - 3.2
     - 3.3
     - 3.4
     - 3.5
@@ -30,9 +29,6 @@ matrix:
     - env: ENV=2.7-lxml
       python: 2.7
       before_script: TOX_ENV=py2.7-lxml
-    - env: ENV=3.2-lxml
-      python: 3.2
-      before_script: TOX_ENV=py3.2-lxml
     - env: ENV=3.3-lxml
       python: 3.3
       before_script: TOX_ENV=py3.3-lxml
@@ -73,8 +69,6 @@ matrix:
     - env: ENV=2.7-lxml
     - env: ENV=pypy-lxml
     - env: ENV=pypy3-lxml
-    - env: ENV=py3.2-lxml
-    - env: ENV=3.2-lxml
     - env: ENV=3.3-lxml
     - env: ENV=3.4-lxml
     - env: ENV=3.5-lxml

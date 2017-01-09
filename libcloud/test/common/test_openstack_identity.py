@@ -46,8 +46,7 @@ from libcloud.test.compute.test_openstack import OpenStack_2_0_MockHttp
 class OpenStackIdentityConnectionTestCase(unittest.TestCase):
     def setUp(self):
         OpenStackBaseConnection.auth_url = None
-        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
-                                                OpenStackMockHttp)
+        OpenStackBaseConnection.conn_class = OpenStackMockHttp
 
     def test_auth_url_is_correctly_assembled(self):
         tuples = [
@@ -209,8 +208,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         self.assertEqual(mocked_auth_method.call_count, 1)
 
     def _get_mock_connection(self, mock_http_class, auth_url=None):
-        OpenStackBaseConnection.conn_classes = (mock_http_class,
-                                                mock_http_class)
+        OpenStackBaseConnection.conn_class = mock_http_class
 
         if auth_url is None:
             auth_url = "https://auth.api.example.com"
@@ -228,7 +226,7 @@ class OpenStackIdentity_2_0_ConnectionTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_2_0_MockHttp
         mock_cls.type = None
-        OpenStackIdentity_2_0_Connection.conn_classes = (mock_cls, mock_cls)
+        OpenStackIdentity_2_0_Connection.conn_class = mock_cls
 
         self.auth_instance = OpenStackIdentity_2_0_Connection(auth_url='http://none',
                                                               user_id='test',
@@ -249,7 +247,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_3_0_MockHttp
         mock_cls.type = None
-        OpenStackIdentity_3_0_Connection.conn_classes = (mock_cls, mock_cls)
+        OpenStackIdentity_3_0_Connection.conn_class = mock_cls
 
         self.auth_instance = OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                                               user_id='test',
@@ -431,7 +429,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
     def setUp(self):
         mock_cls = OpenStackIdentity_3_0_MockHttp
         mock_cls.type = None
-        OpenStackIdentity_3_0_Connection_OIDC_access_token.conn_classes = (mock_cls, mock_cls)
+        OpenStackIdentity_3_0_Connection_OIDC_access_token.conn_class = mock_cls
 
         self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
                                                                                 user_id='idp',
@@ -454,7 +452,7 @@ class OpenStackIdentity_2_0_Connection_VOMSTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_2_0_Connection_VOMSMockHttp
         mock_cls.type = None
-        OpenStackIdentity_2_0_Connection_VOMS.conn_classes = (mock_cls, mock_cls)
+        OpenStackIdentity_2_0_Connection_VOMS.conn_class = mock_cls
 
         self.auth_instance = OpenStackIdentity_2_0_Connection_VOMS(auth_url='http://none',
                                                                    user_id=None,

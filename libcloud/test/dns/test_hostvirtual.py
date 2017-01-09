@@ -28,8 +28,7 @@ from libcloud.test.secrets import DNS_PARAMS_HOSTVIRTUAL
 
 class HostVirtualTests(unittest.TestCase):
     def setUp(self):
-        HostVirtualDNSDriver.connectionCls.conn_classes = (
-            None, HostVirtualMockHttp)
+        HostVirtualDNSDriver.connectionCls.conn_class = HostVirtualMockHttp
         HostVirtualMockHttp.type = None
         self.driver = HostVirtualDNSDriver(*DNS_PARAMS_HOSTVIRTUAL)
 

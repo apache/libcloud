@@ -42,31 +42,7 @@ USE_CERTIFI = str(USE_CERTIFI).lower() in ['true', '1']
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together.
-CA_CERTS_PATH = [
-    # centos/fedora: openssl
-    '/etc/pki/tls/certs/ca-bundle.crt',
-
-    # debian/ubuntu/arch/gentoo: ca-certificates
-    '/etc/ssl/certs/ca-certificates.crt',
-
-    # freebsd: ca_root_nss
-    '/usr/local/share/certs/ca-root-nss.crt',
-
-    # macports: curl-ca-bundle
-    '/opt/local/share/curl/curl-ca-bundle.crt',
-
-    # homebrew: openssl
-    '/usr/local/etc/openssl/cert.pem',
-
-    # homebrew: curl-ca-bundle (backward compatibility)
-    '/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt',
-
-    # opensuse/sles: openssl
-    '/etc/ssl/ca-bundle.pem',
-
-    # SLES11 imported CA certificate
-    '/etc/ssl/certs/YaST-CA.pem',
-]
+CA_CERTS_PATH = None
 
 # Insert certifi CA bundle path to the front of Libcloud CA bundle search
 # path if certifi is available

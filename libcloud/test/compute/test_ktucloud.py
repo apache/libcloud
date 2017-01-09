@@ -35,8 +35,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        KTUCloudNodeDriver.connectionCls.conn_classes = \
-            (None, KTUCloudStackMockHttp)
+        KTUCloudNodeDriver.connectionCls.conn_class = KTUCloudStackMockHttp
         self.driver = KTUCloudNodeDriver('apikey', 'secret',
                                          path='/test/path',
                                          host='api.dummy.com')

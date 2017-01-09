@@ -38,7 +38,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.4'
-        DimensionData.connectionCls.conn_classes = (None, DimensionDataMockHttp)
+        DimensionData.connectionCls.conn_class = DimensionDataMockHttp
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 

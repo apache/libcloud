@@ -39,9 +39,9 @@ USER_DATA = '#!/bin/sh\ntest_script.sh\n'
 class BrightboxTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        BrightboxNodeDriver.connectionCls.conn_classes = (
-            None, BrightboxMockHttp)
+        BrightboxNodeDriver.connectionCls.conn_class = BrightboxMockHttp
         BrightboxMockHttp.type = None
+        BrightboxNodeDriver.connectionCls.token = 'test'
         self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS)
 
     def test_authentication(self):
@@ -246,30 +246,36 @@ class BrightboxMockHttp(MockHttp):
 
     def _token(self, method, url, body, headers):
         if method == 'POST':
-            return self.response(httplib.OK, self.fixtures.load('token.json'))
+            return self.test_response(httplib.OK, self.fixtures.load('token.json'))
 
     def _token_INVALID_CLIENT(self, method, url, body, headers):
         if method == 'POST':
-            return self.response(httplib.BAD_REQUEST, '{"error":"invalid_client"}')
+            return self.test_response(httplib.BAD_REQUEST, '{"error":"invalid_client"}')
 
     def _token_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
         if method == 'POST':
-            return self.response(httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}')
+            return self.test_response(httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}')
+
+    def _1_0_servers_INVALID_CLIENT(self, method, url, body, headers):
+        return self.test_response(httplib.BAD_REQUEST, '{"error":"invalid_client"}')
+
+    def _1_0_servers_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
+        return self.test_response(httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}')
 
     def _1_0_images(self, method, url, body, headers):
         if method == 'GET':
-            return self.response(httplib.OK, self.fixtures.load('list_images.json'))
+            return self.test_response(httplib.OK, self.fixtures.load('list_images.json'))
 
     def _1_0_servers(self, method, url, body, headers):
         if method == 'GET':
-            return self.response(httplib.OK, self.fixtures.load('list_servers.json'))
+            return self.test_response(httplib.OK, self.fixtures.load('list_servers.json'))
         elif method == 'POST':
             body = json.loads(body)
             encoded = base64.b64encode(b(USER_DATA)).decode('ascii')
 
             if 'user_data' in body and body['user_data'] != encoded:
                 data = '{"error_name":"dodgy user data", "errors": ["User data not encoded properly"]}'
-                return self.response(httplib.BAD_REQUEST, data)
+                return self.test_response(httplib.BAD_REQUEST, data)
             if body.get('zone', '') == 'zon-remk1':
                 node = json.loads(
                     self.fixtures.load('create_server_gb1_b.json'))
@@ -282,30 +288,30 @@ class BrightboxMockHttp(MockHttp):
                                          for x in body['server_groups']]
             if 'user_data' in body:
                 node['user_data'] = body['user_data']
-            return self.response(httplib.ACCEPTED, json.dumps(node))
+            return self.test_response(httplib.ACCEPTED, json.dumps(node))
 
     def _1_0_servers_srv_xvpn7(self, method, url, body, headers):
         if method == 'DELETE':
-            return self.response(httplib.ACCEPTED, '')
+            return self.test_response(httplib.ACCEPTED, '')
 
     def _1_0_server_types(self, method, url, body, headers):
         if method == 'GET':
-            return self.response(httplib.OK, self.fixtures.load('list_server_types.json'))
+            return self.test_response(httplib.OK, self.fixtures.load('list_server_types.json'))
 
     def _1_0_zones(self, method, url, body, headers):
         if method == 'GET':
             if headers['Host'] == 'api.gbt.brightbox.com':
-                return self.response(httplib.OK, "{}")
+                return self.test_response(httplib.OK, "{}")
             else:
-                return self.response(httplib.OK, self.fixtures.load('list_zones.json'))
+                return self.test_response(httplib.OK, self.fixtures.load('list_zones.json'))
 
     def _2_0_zones(self, method, url, body, headers):
         data = '{"error_name":"unrecognised_endpoint", "errors": ["The request was for an unrecognised API endpoint"]}'
-        return self.response(httplib.BAD_REQUEST, data)
+        return self.test_response(httplib.BAD_REQUEST, data)
 
     def _1_0_cloud_ips(self, method, url, body, headers):
         if method == 'GET':
-            return self.response(httplib.OK, self.fixtures.load('list_cloud_ips.json'))
+            return self.test_response(httplib.OK, self.fixtures.load('list_cloud_ips.json'))
         elif method == 'POST':
             if body:
                 body = json.loads(body)
@@ -314,32 +320,32 @@ class BrightboxMockHttp(MockHttp):
 
             if 'reverse_dns' in body:
                 node['reverse_dns'] = body['reverse_dns']
-            return self.response(httplib.ACCEPTED, json.dumps(node))
+            return self.test_response(httplib.ACCEPTED, json.dumps(node))
 
     def _1_0_cloud_ips_cip_jsjc5(self, method, url, body, headers):
         if method == 'DELETE':
-            return self.response(httplib.OK, '')
+            return self.test_response(httplib.OK, '')
         elif method == 'PUT':
             body = json.loads(body)
             if body.get('reverse_dns', None) == 'fred.co.uk':
-                return self.response(httplib.OK, '')
+                return self.test_response(httplib.OK, '')
             else:
-                return self.response(httplib.BAD_REQUEST, '{"error_name":"bad dns", "errors": ["Bad dns"]}')
+                return self.test_response(httplib.BAD_REQUEST, '{"error_name":"bad dns", "errors": ["Bad dns"]}')
 
     def _1_0_cloud_ips_cip_jsjc5_map(self, method, url, body, headers):
         if method == 'POST':
             body = json.loads(body)
             if 'destination' in body:
-                return self.response(httplib.ACCEPTED, '')
+                return self.test_response(httplib.ACCEPTED, '')
             else:
                 data = '{"error_name":"bad destination", "errors": ["Bad destination"]}'
-                return self.response(httplib.BAD_REQUEST, data)
+                return self.test_response(httplib.BAD_REQUEST, data)
 
     def _1_0_cloud_ips_cip_jsjc5_unmap(self, method, url, body, headers):
         if method == 'POST':
-            return self.response(httplib.ACCEPTED, '')
+            return self.test_response(httplib.ACCEPTED, '')
 
-    def response(self, status, body):
+    def test_response(self, status, body):
         return (status, body, {'content-type': 'application/json'}, httplib.responses[status])
 
 

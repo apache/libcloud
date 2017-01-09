@@ -424,12 +424,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         Note: This will override file with a same name if it already exists.
         """
-        upload_func = self._upload_file
-        upload_func_kwargs = {'file_path': file_path}
 
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash, headers=headers)
 
@@ -439,13 +435,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
-        upload_func = self._stream_data
-        upload_func_kwargs = {'iterator': iterator}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, iterator=iterator,
+                                extra=extra, stream=iterator,
                                 headers=headers)
 
     def delete_object(self, obj):
@@ -646,16 +637,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):
-        upload_func = self._stream_data
-        upload_func_kwargs = {'iterator': iterator}
         part_name = object_name + '/%08d' % part_number
         extra = {'content_type': 'application/octet-stream'}
 
         self._put_object(container=container,
                          object_name=part_name,
-                         upload_func=upload_func,
-                         upload_func_kwargs=upload_func_kwargs,
-                         extra=extra, iterator=iterator,
+                         extra=extra, stream=iterator,
                          verify_hash=verify_hash)
 
     def _upload_object_manifest(self, container, object_name, extra=None,
@@ -756,9 +743,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 raise LibcloudError('Unexpected status code: %s' %
                                     (response.status))
 
-    def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, verify_hash=True, headers=None):
+    def _put_object(self, container, object_name, extra=None, file_path=None,
+                    stream=None, verify_hash=True, headers=None):
         extra = extra or {}
         container_name_encoded = self._encode_container_name(container.name)
         object_name_encoded = self._encode_object_name(object_name)
@@ -778,11 +764,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         request_path = '/%s/%s' % (container_name_encoded, object_name_encoded)
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
-            upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
             request_path=request_path, request_method='PUT',
-            headers=headers, file_path=file_path, iterator=iterator)
+            headers=headers, file_path=file_path, stream=stream)
 
-        response = result_dict['response'].response
+        response = result_dict['response']
         bytes_transferred = result_dict['bytes_transferred']
         server_hash = result_dict['response'].headers.get('etag', None)
 

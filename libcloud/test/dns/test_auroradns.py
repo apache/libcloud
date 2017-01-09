@@ -33,8 +33,7 @@ from libcloud.utils.py3 import httplib
 class AuroraDNSDriverTests(LibcloudTestCase):
 
     def setUp(self):
-        AuroraDNSDriver.connectionCls.conn_classes = (None,
-                                                      AuroraDNSDriverMockHttp)
+        AuroraDNSDriver.connectionCls.conn_class = AuroraDNSDriverMockHttp
         AuroraDNSDriverMockHttp.type = None
         self.driver = AuroraDNSDriver(*DNS_PARAMS_AURORADNS)
 

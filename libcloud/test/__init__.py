@@ -15,13 +15,12 @@
 
 import sys
 import random
+import requests
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
-from libcloud.utils.py3 import u
 from libcloud.utils.py3 import unittest2_required
 
 if unittest2_required:
@@ -78,25 +77,33 @@ class MockResponse(object):
     A mock HTTPResponse
     """
     headers = {}
-    body = StringIO()
+    body = ''
     status = 0
     reason = ''
     version = 11
+    request = None
 
     def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(u(body)) if body else StringIO()
+        self.body = body
         self.headers = headers or self.headers
         self.reason = reason or self.reason
+        if self.body:
+            if not hasattr(self.body, '__next__'):
+                self.body_iter = iter(self.body)
+            else:
+                self.body_iter = self.body
+        else:
+            self.body_iter = iter('')
 
     def read(self, *args, **kwargs):
-        return self.body.read(*args, **kwargs)
+        return self.body
 
     def next(self):
         if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-            return self.body.next()
+            return self.body_iter.next()
         else:
-            return next(self.body)
+            return next(self.body_iter)
 
     def __next__(self):
         return self.next()
@@ -107,8 +114,22 @@ class MockResponse(object):
     def getheaders(self):
         return list(self.headers.items())
 
+    def iter_content(self, chunk_size):
+        return self.body_iter
+
     def msg(self):
         raise NotImplemented
+
+    @property
+    def status_code(self):
+        return self.status
+
+    def raise_for_status(self):
+        raise requests.exceptions.HTTPError(self.status)
+
+    @property
+    def text(self):
+        return self.body
 
 
 class BaseMockHttpObject(object):
@@ -127,6 +148,93 @@ class BaseMockHttpObject(object):
             meth_name = 'root'
 
         return meth_name
+
+
+class MockRawResponse(BaseMockHttpObject):
+    """
+    Mock RawResponse object suitable for testing.
+    """
+
+    type = None
+    responseCls = MockResponse
+
+    def __init__(self, connection, response=None):
+        super(MockRawResponse, self).__init__()
+        self._data = []
+        self._current_item = 0
+        self._response = None
+        self._status = None
+        self._headers = None
+        self._reason = None
+        self.connection = connection
+        self.iter_content = self.next
+
+    def next(self):
+        if self._current_item == len(self._data):
+            raise StopIteration
+
+        value = self._data[self._current_item]
+        self._current_item += 1
+        return value
+
+    def __next__(self):
+        return self.next()
+
+    def _generate_random_data(self, size):
+        data = ''
+        current_size = 0
+        while current_size < size:
+            value = str(random.randint(0, 9))
+            value_size = len(value)
+            data += value
+            current_size += value_size
+
+        return data
+
+    @property
+    def response(self):
+        return self._get_response_if_not_available()
+
+    @property
+    def status(self):
+        self._get_response_if_not_available()
+        return self._status
+
+    @property
+    def status_code(self):
+        self._get_response_if_not_available()
+        return self._status
+
+    def success(self):
+        self._get_response_if_not_available()
+        return self._status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+
+    @property
+    def headers(self):
+        self._get_response_if_not_available()
+        return self._headers
+
+    @property
+    def reason(self):
+        self._get_response_if_not_available()
+        return self._reason
+
+    def _get_response_if_not_available(self):
+        if not self._response:
+            meth_name = self._get_method_name(type=self.type,
+                                              use_param=False, qs=None,
+                                              path=self.connection.action)
+            meth = getattr(self, meth_name.replace('%', '_'))
+            result = meth(self.connection.method, None, None, None)
+            self._status, self._body, self._headers, self._reason = result
+            self._response = self.responseCls(self._status, self._body,
+                                              self._headers, self._reason)
+        return self._response
+
+    @property
+    def text(self):
+        self._get_response_if_not_available()
+        return self._body
 
 
 class MockHttp(BaseMockHttpObject):
@@ -160,6 +268,7 @@ class MockHttp(BaseMockHttpObject):
 
     """
     responseCls = MockResponse
+    rawResponseCls = MockRawResponse
     host = None
     port = None
     response = None
@@ -175,7 +284,7 @@ class MockHttp(BaseMockHttpObject):
         self.host = host
         self.port = port
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         scheme, netloc, path, params, query, fragment = parsed
@@ -263,7 +372,17 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
                 self.assertEqual(params[key], value)
 
 
+class MockConnection(object):
+    def __init__(self, action):
+        self.action = action
+
+
 class StorageMockHttp(MockHttp):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False,
+                         stream=False):
+        self.action = url
+        self.response = self.rawResponseCls(self)
+
     def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
         pass
 
@@ -276,78 +395,6 @@ class StorageMockHttp(MockHttp):
     def send(self, data):
         pass
 
-
-class MockRawResponse(BaseMockHttpObject):
-    """
-    Mock RawResponse object suitable for testing.
-    """
-
-    type = None
-    responseCls = MockResponse
-
-    def __init__(self, connection):
-        super(MockRawResponse, self).__init__()
-        self._data = []
-        self._current_item = 0
-
-        self._status = None
-        self._response = None
-        self._headers = None
-        self._reason = None
-        self.connection = connection
-
-    def next(self):
-        if self._current_item == len(self._data):
-            raise StopIteration
-
-        value = self._data[self._current_item]
-        self._current_item += 1
-        return value
-
-    def __next__(self):
-        return self.next()
-
-    def _generate_random_data(self, size):
-        data = ''
-        current_size = 0
-        while current_size < size:
-            value = str(random.randint(0, 9))
-            value_size = len(value)
-            data += value
-            current_size += value_size
-
-        return data
-
-    @property
-    def response(self):
-        return self._get_response_if_not_available()
-
-    @property
-    def status(self):
-        self._get_response_if_not_available()
-        return self._status
-
-    @property
-    def headers(self):
-        self._get_response_if_not_available()
-        return self._headers
-
-    @property
-    def reason(self):
-        self._get_response_if_not_available()
-        return self._reason
-
-    def _get_response_if_not_available(self):
-        if not self._response:
-            meth_name = self._get_method_name(type=self.type,
-                                              use_param=False, qs=None,
-                                              path=self.connection.action)
-            meth = getattr(self, meth_name.replace('%', '_'))
-            result = meth(self.connection.method, None, None, None)
-            self._status, self._body, self._headers, self._reason = result
-            self._response = self.responseCls(self._status, self._body,
-                                              self._headers, self._reason)
-        return self._response
 
 if __name__ == "__main__":
     import doctest

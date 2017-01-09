@@ -29,8 +29,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 class ElasticLBTests(unittest.TestCase):
     def setUp(self):
         ElasticLBMockHttp.test = self
-        ElasticLBDriver.connectionCls.conn_classes = (None,
-                                                      ElasticLBMockHttp)
+        ElasticLBDriver.connectionCls.conn_class = ElasticLBMockHttp
         ElasticLBMockHttp.type = None
         ElasticLBMockHttp.use_param = 'Action'
 

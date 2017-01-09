@@ -42,7 +42,7 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = "test"
-        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp)
+        VCloudNodeDriver.connectionCls.conn_class = TerremarkMockHttp
         TerremarkMockHttp.type = None
         self.driver = TerremarkDriver(*VCLOUD_PARAMS)
 
@@ -96,8 +96,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (
-            None, VCloud_1_5_MockHttp)
+        VCloudNodeDriver.connectionCls.conn_class = VCloud_1_5_MockHttp
         VCloud_1_5_MockHttp.type = None
         self.driver = VCloud_1_5_NodeDriver(*VCLOUD_PARAMS)
 
@@ -350,8 +349,7 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (
-            None, VCloud_1_5_MockHttp)
+        VCloudNodeDriver.connectionCls.conn_class = VCloud_1_5_MockHttp
         VCloud_1_5_MockHttp.type = None
         self.driver = VCloudNodeDriver(
             *VCLOUD_PARAMS, **{'api_version': '5.1'})
@@ -408,8 +406,7 @@ class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (
-            None, VCloud_5_5_MockHttp)
+        VCloudNodeDriver.connectionCls.conn_class = VCloud_5_5_MockHttp
         VCloud_5_5_MockHttp.type = None
         self.driver = VCloudNodeDriver(
             *VCLOUD_PARAMS, **{'api_version': '5.5'})
@@ -524,7 +521,7 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
-    def request(self, method, url, body=None, headers=None, raw=False):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         self.assertTrue(url.startswith('/api/'),
                         ('"%s" is invalid. Needs to '
                          'start with "/api". The passed URL should be just '

@@ -41,8 +41,7 @@ from libcloud.test.file_fixtures import OpenStackFixtures
 class RackspaceLBTests(unittest.TestCase):
 
     def setUp(self):
-        RackspaceLBDriver.connectionCls.conn_classes = (None,
-                                                        RackspaceLBMockHttp)
+        RackspaceLBDriver.connectionCls.conn_class = RackspaceLBMockHttp
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
         self.driver.connection.poll_interval = 0.0
@@ -167,8 +166,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancer.id, '8290')
 
     def test_ex_create_balancer(self):
-        RackspaceLBDriver.connectionCls.conn_classes = (None,
-                                                        RackspaceLBWithVIPMockHttp)
+        RackspaceLBDriver.connectionCls.conn_class = RackspaceLBWithVIPMockHttp
         RackspaceLBMockHttp.type = None
         driver = RackspaceLBDriver('user', 'key')
         balancer = driver.ex_create_balancer(name='test2',
@@ -918,8 +916,7 @@ class RackspaceLBTests(unittest.TestCase):
 class RackspaceUKLBTests(RackspaceLBTests):
 
     def setUp(self):
-        RackspaceLBDriver.connectionCls.conn_classes = (None,
-                                                        RackspaceLBMockHttp)
+        RackspaceLBDriver.connectionCls.conn_class = RackspaceLBMockHttp
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key', region='lon')
         # normally authentication happens lazily, but we force it here

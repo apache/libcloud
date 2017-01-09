@@ -66,7 +66,7 @@ class MockClient(BaseSSHClient):
 class DeploymentTests(unittest.TestCase):
 
     def setUp(self):
-        Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
+        Rackspace.connectionCls.conn_class = RackspaceMockHttp
         RackspaceMockHttp.type = None
         self.driver = Rackspace(*RACKSPACE_PARAMS)
         # normally authentication happens lazily, but we force it here

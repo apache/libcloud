@@ -26,8 +26,7 @@ from libcloud.utils.py3 import httplib
 class DigitalOceanDNSTests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanDNSDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanDNSMockHttp)
+        DigitalOceanDNSDriver.connectionCls.conn_class = DigitalOceanDNSMockHttp
         DigitalOceanDNSMockHttp.type = None
         self.driver = DigitalOceanDNSDriver(*DIGITALOCEAN_v2_PARAMS)
 
@@ -97,7 +96,7 @@ class DigitalOceanDNSTests(LibcloudTestCase):
 class DigitalOceanDNSMockHttp(MockHttpTestCase):
     fixtures = DNSFileFixtures('digitalocean')
 
-    response = {
+    response_map = {
         None: httplib.OK,
         'CREATE': httplib.CREATED,
         'DELETE': httplib.NO_CONTENT,
@@ -109,103 +108,103 @@ class DigitalOceanDNSMockHttp(MockHttpTestCase):
 
     def _v2_domains(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_CREATE(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_CREATE.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_EMPTY.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_UNAUTHORIZED.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_testdomain.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_DELETE(self, method, url, body, headers):
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_NOT_FOUND(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_testdomain_NOT_FOUND.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_testdomain_records.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_CREATE(self, method, url,
                                               body, headers):
         body = self.fixtures.load('_v2_domains_testdomain_records_CREATE.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234560(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234560.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234561(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234561.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234562(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234562.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234563(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234563.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234564(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234564.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234564_DELETE(
             self, method, url, body, headers):
         self.type = 'DELETE'
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234564_NOT_FOUND(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234564_NOT_FOUND.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_testdomain_records_1234564_UPDATE(
             self, method, url, body, headers):
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234564_UPDATE.json')
-        return (self.response[self.type], body, {},
-                httplib.responses[self.response[self.type]])
+        return (self.response_map[self.type], body, {},
+                httplib.responses[self.response_map[self.type]])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

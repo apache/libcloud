@@ -28,8 +28,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class RimuHostingTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        RimuHostingNodeDriver.connectionCls.conn_classes = (None,
-                                                            RimuHostingMockHttp)
+        RimuHostingNodeDriver.connectionCls.conn_class = RimuHostingMockHttp
         self.driver = RimuHostingNodeDriver('foo')
 
     def test_list_nodes(self):

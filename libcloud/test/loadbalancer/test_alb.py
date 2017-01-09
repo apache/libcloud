@@ -28,7 +28,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 class ApplicationLBTests(unittest.TestCase):
     def setUp(self):
         ApplicationLBMockHttp.test = self
-        ApplicationLBDriver.connectionCls.conn_classes = (None, ApplicationLBMockHttp)
+        ApplicationLBDriver.connectionCls.conn_class = ApplicationLBMockHttp
         ApplicationLBMockHttp.type = None
         ApplicationLBMockHttp.use_param = 'Action'
         self.driver = ApplicationLBDriver(*LB_ALB_PARAMS)

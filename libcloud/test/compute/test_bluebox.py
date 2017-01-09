@@ -29,7 +29,7 @@ from libcloud.test.secrets import BLUEBOX_PARAMS
 class BlueboxTest(unittest.TestCase):
 
     def setUp(self):
-        Bluebox.connectionCls.conn_classes = (None, BlueboxMockHttp)
+        Bluebox.connectionCls.conn_class = BlueboxMockHttp
         self.driver = Bluebox(*BLUEBOX_PARAMS)
 
     def test_create_node(self):

@@ -18,7 +18,6 @@
 import base64
 import codecs
 import hmac
-import os
 import time
 import sys
 from hashlib import sha1
@@ -40,14 +39,12 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import PY3
 from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import guess_file_mime_type, read_in_chunks, \
-    exhaust_iterator
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse, \
     XmlResponse
 from libcloud.common.types import MalformedResponseError
-from libcloud.storage.base import Object, Container, StorageDriver, \
-    DEFAULT_CONTENT_TYPE
+from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
@@ -459,12 +456,7 @@ class OSSStorageDriver(StorageDriver):
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
-        upload_func = self._upload_file
-        upload_func_kwargs = {'file_path': file_path}
-
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash)
 
@@ -474,29 +466,11 @@ class OSSStorageDriver(StorageDriver):
         params = None
 
         if self.supports_multipart_upload:
-            # Initiate the multipart request and get an upload id
-            upload_func = self._upload_multipart
-            upload_func_kwargs = {'iterator': iterator,
-                                  'container': container,
-                                  'object_name': object_name}
-            method = 'POST'
-            iterator = iter('')
-            params = 'uploads'
-
-        elif self.supports_chunked_encoding:
-            upload_func = self._stream_data
-            upload_func_kwargs = {'iterator': iterator}
-        else:
-            # In this case, we have to load the entire object to
-            # memory and send it as normal data
-            upload_func = self._upload_data
-            upload_func_kwargs = {}
-
+            # @TODO: This needs implementing again from scratch.
+            pass
         return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, method=method, query_args=params,
-                                iterator=iterator, verify_hash=False)
+                                stream=iterator, verify_hash=False)
 
     def delete_object(self, obj):
         object_path = self._get_object_path(obj.container, obj.name)
@@ -611,10 +585,9 @@ class OSSStorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
-    def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, method='PUT', query_args=None,
-                    extra=None, file_path=None, iterator=None,
-                    verify_hash=False):
+    def _put_object(self, container, object_name, method='PUT',
+                    query_args=None, extra=None, file_path=None,
+                    stream=None, verify_hash=False):
         """
         Create an object and upload data using the given function.
         """
@@ -646,20 +619,19 @@ class OSSStorageDriver(StorageDriver):
         # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
-            upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
             request_path=request_path, request_method=method,
-            headers=headers, file_path=file_path, iterator=iterator,
-            container=container)
+            headers=headers, file_path=file_path, stream=stream)
 
         response = result_dict['response']
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
-        response = response.response
+
         server_hash = headers['etag'].replace('"', '')
 
-        if (verify_hash and result_dict['data_hash'].upper() != server_hash):
+        if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
-                value='MD5 hash checksum does not match',
+                value='MD5 hash {0} checksum does not match {1}'.format(
+                    server_hash, result_dict['data_hash']),
                 object_name=object_name, driver=self)
         elif response.status == httplib.OK:
             obj = Object(
@@ -874,80 +846,6 @@ class OSSStorageDriver(StorageDriver):
         if resp.status != httplib.NO_CONTENT:
             raise LibcloudError('Error in multipart abort. status_code=%d' %
                                 (resp.status), driver=self)
-
-    def _upload_object(self, object_name, content_type, upload_func,
-                       upload_func_kwargs, request_path, request_method='PUT',
-                       headers=None, file_path=None, iterator=None,
-                       container=None):
-        """
-        Helper function for setting common request headers and calling the
-        passed in callback which uploads an object.
-        """
-        headers = headers or {}
-
-        if file_path and not os.path.exists(file_path):
-            raise OSError('File %s does not exist' % (file_path))
-
-        if iterator is not None and not hasattr(iterator, 'next') and not \
-                hasattr(iterator, '__next__'):
-            raise AttributeError('iterator object must implement next() ' +
-                                 'method.')
-
-        if not content_type:
-            if file_path:
-                name = file_path
-            else:
-                name = object_name
-            content_type, _ = guess_file_mime_type(name)
-
-            if not content_type:
-                if self.strict_mode:
-                    raise AttributeError('File content-type could not be '
-                                         'guessed and no content_type value '
-                                         'is provided')
-                else:
-                    # Fallback to a content-type
-                    content_type = DEFAULT_CONTENT_TYPE
-
-        file_size = None
-
-        if iterator:
-            if self.supports_chunked_encoding:
-                headers['Transfer-Encoding'] = 'chunked'
-                upload_func_kwargs['chunked'] = True
-            else:
-                # Chunked transfer encoding is not supported. Need to buffer
-                # all the data in memory so we can determine file size.
-                iterator = read_in_chunks(
-                    iterator=iterator)
-                data = exhaust_iterator(iterator=iterator)
-
-                file_size = len(data)
-                upload_func_kwargs['data'] = data
-        else:
-            file_size = os.path.getsize(file_path)
-            upload_func_kwargs['chunked'] = False
-
-        if file_size is not None and 'Content-Length' not in headers:
-            headers['Content-Length'] = file_size
-
-        headers['Content-Type'] = content_type
-        response = self.connection.request(request_path,
-                                           method=request_method, data=None,
-                                           headers=headers, raw=True,
-                                           container=container)
-
-        upload_func_kwargs['response'] = response
-        success, data_hash, bytes_transferred = upload_func(
-            **upload_func_kwargs)
-
-        if not success:
-            raise LibcloudError(
-                value='Object upload failed, Perhaps a timeout?', driver=self)
-
-        result_dict = {'response': response, 'data_hash': data_hash,
-                       'bytes_transferred': bytes_transferred}
-        return result_dict
 
     def _to_containers(self, obj, xpath):
         for element in obj.findall(fixxpath(xpath=xpath,
