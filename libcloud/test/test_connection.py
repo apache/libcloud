@@ -27,6 +27,8 @@ from libcloud.httplib_ssl import LibcloudBaseConnection
 from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.misc import retry
 
+import requests_mock
+
 
 class BaseConnectionClassTestCase(unittest.TestCase):
     def test_parse_proxy_url(self):
@@ -124,66 +126,6 @@ class ConnectionClassTestCase(unittest.TestCase):
                         'secure=True\)')
         self.assertRaisesRegexp(ValueError, expected_msg, Connection,
                                 secure=False)
-
-    def test_content_length(self):
-        con = Connection()
-        con.connection = Mock()
-
-        # GET method
-        # No data, no content length should be present
-        con.request('/test', method='GET', data=None)
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertTrue('Content-Length' not in call_kwargs['headers'])
-
-        # '' as data, no content length should be present
-        con.request('/test', method='GET', data='')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertTrue('Content-Length' not in call_kwargs['headers'])
-
-        # 'a' as data, content length should be present (data in GET is not
-        # correct, but anyways)
-        con.request('/test', method='GET', data='a')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
-
-        # POST, PUT method
-        # No data, content length should be present
-        for method in ['POST', 'PUT', 'post', 'put']:
-            con.request('/test', method=method, data=None)
-            call_kwargs = con.connection.request.call_args[1]
-            self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
-
-        # '' as data, content length should be present
-        for method in ['POST', 'PUT', 'post', 'put']:
-            con.request('/test', method=method, data='')
-            call_kwargs = con.connection.request.call_args[1]
-            self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
-
-        # No data, raw request, do not touch Content-Length if present
-        for method in ['POST', 'PUT', 'post', 'put']:
-            con.request('/test', method=method, data=None,
-                        headers={'Content-Length': '42'}, raw=True)
-            request_prepared_call_list = con.connection.prepared_request.call_args_list
-            expected_call = call(body=None, headers={'Host': '127.0.0.1', 'Content-Length': '42',
-                                                     'Accept-Encoding': 'gzip,deflate',
-                                                     'User-Agent': con._user_agent()}, url='/test', method=method)
-            self.assertIn(expected_call, request_prepared_call_list)
-
-        # '' as data, raw request, do not touch Content-Length if present
-        for method in ['POST', 'PUT', 'post', 'put']:
-            con.request('/test', method=method, data=None,
-                        headers={'Content-Length': '42'}, raw=True)
-            request_prepared_call_list = con.connection.prepared_request.call_args_list
-            expected_call = call(body=None, headers={'Host': '127.0.0.1', 'Content-Length': '42',
-                                                     'Accept-Encoding': 'gzip,deflate',
-                                                     'User-Agent': con._user_agent()}, url='/test', method=method)
-            self.assertIn(expected_call, request_prepared_call_list)
-
-        # 'a' as data, content length should be present
-        for method in ['POST', 'PUT', 'post', 'put']:
-            con.request('/test', method=method, data='a')
-            call_kwargs = con.connection.request.call_args[1]
-            self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
 
     def test_cache_busting(self):
         params1 = {'foo1': 'bar1', 'foo2': 'bar2'}
