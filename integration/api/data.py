@@ -13,8 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bottle import run
-
-from .routes import *
-
-run(host='localhost', port=9898)
+NODES = [
+    {'id': '1234a',
+     'name': 'test-1',
+     'state': 'RUNNING',
+     'public_ips': ['4.4.4.4', '8.8.8.8'],
+     'private_ips': ['10.0.0.1', '192.168.1.1'],
+     'size': 'test-size-1',
+     'created_at': '2017-01-09T05:25:12+00:00',
+     'image': 'test-image-1',
+     'extra': {'test-key': 'test-value'}}
+]

@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-@route('/hello/<name>')
-def index(name):
-    return template('<b>Hello {{name}}</b>!', name=name)
+import json
+
+from bottle import route, template
+
+from .data import NODES
+
+@route('/compute/nodes', method='GET')
+def list_nodes():
+    return json.dumps(NODES)
