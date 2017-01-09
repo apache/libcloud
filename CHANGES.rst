@@ -2,8 +2,8 @@
 =========
 
 
-Changes in current version of Apache Libcloud
----------------------------------------------
+Changes in Apache Libcloud 1.5.0
+--------------------------------
 
 Common
 ~~~~~~
