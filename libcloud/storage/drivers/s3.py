@@ -16,7 +16,6 @@
 import base64
 import hmac
 import time
-import sys
 
 from hashlib import sha1
 
@@ -417,11 +416,12 @@ class BaseS3StorageDriver(StorageDriver):
         response = self.connection.request(obj_path, method='GET',
                                            stream=True, raw=True)
 
-        return self._get_object(obj=obj, callback=read_in_chunks,
-                                response=response,
-                                callback_kwargs={'iterator': response.iter_content,
-                                                 'chunk_size': chunk_size},
-                                success_status_code=httplib.OK)
+        return self._get_object(
+            obj=obj, callback=read_in_chunks,
+            response=response,
+            callback_kwargs={'iterator': response.iter_content,
+                             'chunk_size': chunk_size},
+            success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, ex_storage_class=None):

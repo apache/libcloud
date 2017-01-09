@@ -541,8 +541,9 @@ class Connection(object):
                      storage API when uploading a file.
 
         :type stream: ``bool``
-        :param stream: True to return an iterator in Response.iter_content and allow
-                    streaming of the response data (for downloading large files)
+        :param stream: True to return an iterator in Response.iter_content
+                    and allow streaming of the response data
+                    (for downloading large files)
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance

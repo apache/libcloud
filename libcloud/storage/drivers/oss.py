@@ -18,7 +18,6 @@
 import base64
 import codecs
 import hmac
-import os
 import time
 import sys
 from hashlib import sha1
@@ -40,14 +39,12 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import PY3
 from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import guess_file_mime_type, read_in_chunks, \
-    exhaust_iterator
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse, \
     XmlResponse
 from libcloud.common.types import MalformedResponseError
-from libcloud.storage.base import Object, Container, StorageDriver, \
-    DEFAULT_CONTENT_TYPE
+from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
@@ -588,9 +585,9 @@ class OSSStorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
-    def _put_object(self, container, object_name, method='PUT', query_args=None,
-                    extra=None, file_path=None, stream=None,
-                    verify_hash=False):
+    def _put_object(self, container, object_name, method='PUT',
+                    query_args=None, extra=None, file_path=None,
+                    stream=None, verify_hash=False):
         """
         Create an object and upload data using the given function.
         """

@@ -23,7 +23,6 @@ from __future__ import with_statement
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
-from io import BufferedIOBase
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next

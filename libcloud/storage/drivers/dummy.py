@@ -81,6 +81,7 @@ class DummyIterator(object):
     def __exit__(self, type, value, traceback):
         pass
 
+
 class DummyStorageDriver(StorageDriver):
     """
     Dummy Storage driver.

@@ -43,9 +43,6 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
-if PY3:
-    from io import FileIO as file
-
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100
 
@@ -764,31 +761,19 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         self._check_values(ex_blob_type, file_size)
 
-        with file(file_path, 'rb') as file_handle:
-            iterator = iter(file_handle)
-
-            # If size is greater than 64MB or type is Page, upload in chunks
-            if ex_blob_type == 'PageBlob' or file_size > AZURE_BLOCK_MAX_SIZE:
-                # For chunked upload of block blobs, the initial size must
-                # be 0.
-                if ex_blob_type == 'BlockBlob':
-                    object_size = None
-
-                object_path = self._get_object_path(container, object_name)
-
-                upload_func = self._upload_in_chunks
-                upload_func_kwargs = {'iterator': iterator,
-                                      'object_path': object_path,
-                                      'blob_type': ex_blob_type,
-                                      'lease': None}
-
-            return self._put_object(container=container,
-                                    object_name=object_name,
-                                    object_size=object_size,
-                                    file_path=file_path, extra=extra,
-                                    verify_hash=verify_hash,
-                                    blob_type=ex_blob_type,
-                                    use_lease=ex_use_lease)
+        # If size is greater than 64MB or type is Page, upload in chunks
+        if ex_blob_type == 'PageBlob' or file_size > AZURE_BLOCK_MAX_SIZE:
+            # For chunked upload of block blobs, the initial size must
+            # be 0.
+            if ex_blob_type == 'BlockBlob':
+                object_size = None
+        return self._put_object(container=container,
+                                object_name=object_name,
+                                object_size=object_size,
+                                file_path=file_path, extra=extra,
+                                verify_hash=verify_hash,
+                                blob_type=ex_blob_type,
+                                use_lease=ex_use_lease)
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  verify_hash=False, extra=None,
@@ -812,8 +797,6 @@ class AzureBlobsStorageDriver(StorageDriver):
             ex_blob_type = self.ex_blob_type
 
         self._check_values(ex_blob_type, ex_page_blob_size)
-
-        object_path = self._get_object_path(container, object_name)
 
         return self._put_object(container=container,
                                 object_name=object_name,
