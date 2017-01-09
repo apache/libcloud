@@ -163,9 +163,10 @@ class LibcloudConnection(LibcloudBaseConnection):
     response = None
 
     def __init__(self, host, port, **kwargs):
-        self.host = '{0}://{1}'.format(
+        self.host = '{0}://{1}{2}'.format(
             'https' if port == 443 else 'http',
-            host
+            host,
+            ":{0}".format(port) if port not in (80, 443) else ""
         )
         # Support for HTTP proxy
         proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
