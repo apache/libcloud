@@ -99,6 +99,16 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_host, '127.0.0.5')
         self.assertEqual(conn.proxy_port, 3128)
 
+    def test_connection_to_unusual_port(self):
+        conn = LibcloudConnection(host='localhost', port=8080)
+        self.assertEqual(conn.proxy_scheme, None)
+        self.assertEqual(conn.proxy_host, None)
+        self.assertEqual(conn.proxy_port, None)
+        self.assertEqual(conn.host, 'http://localhost:8080')
+
+        conn = LibcloudConnection(host='localhost', port=80)
+        self.assertEqual(conn.host, 'http://localhost')
+
 
 class ConnectionClassTestCase(unittest.TestCase):
     def setUp(self):
