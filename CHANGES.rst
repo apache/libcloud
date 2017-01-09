@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [google compute] Improve performance of list nodes by caching volume information.
+  (GITHUB-813, LIBCLOUD-826)
+  [Tom Melendez]
+
 - [azure] New method for accessing rate cards.
   [GITHUB-957]
   (Soren L. Hansen)
