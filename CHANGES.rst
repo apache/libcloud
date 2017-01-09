@@ -1,6 +1,20 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Common
+~~~~~~
+
+- Introduction of the requests package as the mechanism for making HTTP requests for all drivers
+  [GITHUB-928]
+  (Anthony Shaw)
+
+- Fix bug where custom port would not get propagated to connection
+  [GITHUB-971]
+  (Anthony Shaw)
+
 
 Changes in Apache Libcloud 1.5.0
 --------------------------------
