@@ -24,7 +24,6 @@ try:
 except ImportError:
     from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
