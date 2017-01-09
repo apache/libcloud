@@ -19,15 +19,13 @@ import socket
 import sys
 import ssl
 
-from mock import Mock, call, patch
+from mock import Mock, patch
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection
 from libcloud.httplib_ssl import LibcloudBaseConnection
 from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.misc import retry
-
-import requests_mock
 
 
 class BaseConnectionClassTestCase(unittest.TestCase):

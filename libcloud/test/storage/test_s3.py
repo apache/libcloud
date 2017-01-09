@@ -46,7 +46,6 @@ from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
 from libcloud.storage.drivers.s3 import S3APSEStorageDriver
 from libcloud.storage.drivers.s3 import S3APNEStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
-from libcloud.storage.drivers.dummy import DummyIterator
 from libcloud.utils.py3 import b
 
 from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
@@ -245,15 +244,10 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
     def _foo_bar_container_foo_test_stream_data_MULTIPART(self, method, url,
                                                           body, headers):
         headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-        TEST_ID = 'VXBsb2FkIElEIGZvciA2aWWpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA'
-
-        query_string = urlparse.urlsplit(url).query
-        query = parse_qs(query_string)
-
         return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
+                body,
+                headers,
+                httplib.responses[httplib.OK])
 
     def _foo_bar_container_LIST_MULTIPART(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
@@ -709,11 +703,11 @@ class S3Tests(unittest.TestCase):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
         # returned
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200),
-                'bytes_transferred': 1000,
-                'data_hash': 'hash343hhash89h932439jsaa89'}
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa89'}
 
         self.mock_raw_response_klass.type = 'INVALID_HASH1'
 
@@ -739,11 +733,11 @@ class S3Tests(unittest.TestCase):
         # Invalid hash is detected when comparing hash provided in the response
         # ETag header
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200, headers={'etag': 'woopwoopwoop'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         self.mock_raw_response_klass.type = 'INVALID_HASH2'
 
@@ -768,12 +762,12 @@ class S3Tests(unittest.TestCase):
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200,
                                              headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
         self.mock_response_klass.type = None
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -794,11 +788,11 @@ class S3Tests(unittest.TestCase):
 
     def test_upload_object_with_acl(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         self.mock_response_klass.type = None
         old_func = self.driver_type._upload_object
@@ -872,7 +866,7 @@ class S3Tests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         object_name = 'foo_test_stream_data'
-        iterator = BytesIO(b('234'*CHUNK_SIZE))
+        iterator = BytesIO(b('234' * CHUNK_SIZE))
         extra = {'content_type': 'text/plain'}
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,

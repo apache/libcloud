@@ -38,7 +38,6 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
-from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
@@ -367,11 +366,11 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         old_func = CloudFilesStorageDriver._upload_object
         CloudFilesStorageDriver._upload_object = upload_file
@@ -389,11 +388,11 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_upload_object_zero_size_object(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 0,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 0,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         old_func = CloudFilesStorageDriver._upload_object
         CloudFilesStorageDriver._upload_object = upload_file
@@ -422,12 +421,13 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_upload_object_invalid_hash(self):
         CloudFilesMockRawResponse.type = 'INVALID_HASH'
+
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': 'blah blah'}
+                    'bytes_transferred': 1000,
+                    'data_hash': 'blah blah'}
 
         old_func = CloudFilesStorageDriver._upload_object
         CloudFilesStorageDriver._upload_object = upload_file
@@ -796,11 +796,11 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_create_container_put_object_name_encoding(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         old_func = CloudFilesStorageDriver._upload_object
         CloudFilesStorageDriver._upload_object = upload_file

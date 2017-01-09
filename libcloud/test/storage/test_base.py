@@ -14,18 +14,14 @@
 # limitations under the License.
 
 import sys
-import hashlib
+
 from libcloud.utils.py3 import httplib
 from io import BytesIO
 
 from mock import Mock
 
 from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b, u
-
-if PY3:
-    from io import FileIO as file
+from libcloud.utils.py3 import b
 
 from libcloud.storage.base import StorageDriver
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE

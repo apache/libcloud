@@ -38,7 +38,6 @@ from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
-from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
@@ -879,7 +878,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         object_name = 'foo_test_upload'
         blob_size = AZURE_PAGE_CHUNK_SIZE
-        iterator = BytesIO(b('1'*blob_size))
+        iterator = BytesIO(b('1' * blob_size))
         extra = {'content_type': 'text/plain'}
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,
@@ -899,7 +898,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         object_name = 'foo_test_upload'
         blob_size = AZURE_PAGE_CHUNK_SIZE
-        iterator = BytesIO(b('1'*blob_size))
+        iterator = BytesIO(b('1' * blob_size))
         extra = {'content_type': 'text/plain'}
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,

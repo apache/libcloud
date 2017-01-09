@@ -651,11 +651,11 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_object_invalid_hash1(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(200, headers={'etag':'2345'}),
-                'bytes_transferred': 1000,
-                'data_hash': 'hash343hhash89h932439jsaa89'}
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': MockResponse(200, headers={'etag': '2345'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa89'}
 
         self.mock_raw_response_klass.type = 'INVALID_HASH1'
 
@@ -679,12 +679,12 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200,
                                              headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
         self.mock_response_klass.type = None
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -705,11 +705,11 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_object_with_acl(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         self.mock_response_klass.type = None
         old_func = self.driver_type._upload_object

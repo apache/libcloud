@@ -291,11 +291,11 @@ class AtmosTests(unittest.TestCase):
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
-            request_path=None, request_method=None,
-            headers=None, file_path=None, stream=None):
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
             return {'response': MockResponse(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
-                'bytes_transferred': 1000,
-                'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
         old_func = AtmosDriver._upload_object
         AtmosDriver._upload_object = upload_file
@@ -749,6 +749,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
 
     def _rest_namespace_fbc_ftu(self, method, url, body, headers):
         return (httplib.CREATED, '', {}, httplib.responses[httplib.CREATED])
+
 
 class AtmosMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('atmos')
