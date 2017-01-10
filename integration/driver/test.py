@@ -16,7 +16,7 @@
 import base64
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.base import NodeDriver
+from libcloud.compute.base import NodeDriver, Node
 
 from libcloud.utils.py3 import b
 
@@ -68,5 +68,5 @@ class TestNodeDriver(NodeDriver):
         r = self.connection.request('/compute/nodes')
         nodes = []
         for node in r.object:
-            nodes.append(Node(**node))
+            nodes.append(Node(driver=self, **node))
         return nodes

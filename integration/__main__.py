@@ -3,6 +3,7 @@ import sys
 
 from .driver.test import TestNodeDriver
 
+from .api.data import NODES
 
 class IntegrationTest(unittest.TestCase):
     def setUp(self):        
