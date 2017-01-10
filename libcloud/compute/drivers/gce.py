@@ -6900,7 +6900,7 @@ class GCENodeDriver(NodeDriver):
                 region_name = region.name
 
         request = '/regions/%s/subnetworks/%s' % (region_name, subnet_name)
-        self.connection.request(request, method='DELETE').object
+        self.connection.async_request(request, method='DELETE').object
         return True
 
     def ex_get_subnetwork(self, name, region=None):
