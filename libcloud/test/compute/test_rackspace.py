@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
-from libcloud.compute.providers import DEPRECATED_RACKSPACE_PROVIDERS
+from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
@@ -28,6 +28,12 @@ from libcloud.pricing import clear_pricing_data
 
 from libcloud.test.secrets import RACKSPACE_NOVA_PARAMS
 from libcloud.test.secrets import RACKSPACE_PARAMS
+
+DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
+                                  Provider.RACKSPACE_NOVA_BETA,
+                                  Provider.RACKSPACE_NOVA_DFW,
+                                  Provider.RACKSPACE_NOVA_LON,
+                                  Provider.RACKSPACE_NOVA_ORD]
 
 
 class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
@@ -119,17 +125,16 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
 
 # Does not derive from TestCase because it should not be used by setup.py test
 class BaseRackspaceNovaTestCase(object):
-    conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
+    conn_class = RackspaceNovaMockHttp
     auth_url = 'https://auth.api.example.com'
 
     def create_driver(self):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = self.conn_classes
+        self.driver_klass.connectionCls.conn_class = self.conn_class
         self.driver_klass.connectionCls.auth_url = self.auth_url
-        self.conn_classes[0].type = None
-        self.conn_classes[1].type = None
+        self.conn_class.type = None
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -185,7 +190,7 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_args = RACKSPACE_NOVA_PARAMS
     driver_kwargs = {'region': 'lon'}
 
-    conn_classes = (RackspaceNovaLonMockHttp, RackspaceNovaLonMockHttp)
+    conn_class = RackspaceNovaLonMockHttp
     auth_url = 'https://lon.auth.api.example.com'
 
     expected_endpoint = 'https://lon.servers.api.rackspacecloud.com/v2/1337'

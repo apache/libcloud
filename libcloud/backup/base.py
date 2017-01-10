@@ -113,13 +113,13 @@ class BackupTargetJob(object):
         self.extra = extra or {}
 
     def cancel(self):
-        return self.driver.cancel_target_job(target=self.target, job=self)
+        return self.driver.cancel_target_job(job=self)
 
     def suspend(self):
-        return self.driver.suspend_target_job(target=self.target, job=self)
+        return self.driver.suspend_target_job(job=self)
 
     def resume(self):
-        return self.driver.resume_target_job(target=self.target, job=self)
+        return self.driver.resume_target_job(job=self)
 
     def __repr__(self):
         return ('<Job: id=%s, status=%s, progress=%s'
@@ -443,7 +443,7 @@ class BackupDriver(BaseDriver):
         raise NotImplementedError(
             'create_target_job not implemented for this driver')
 
-    def resume_target_job(self, target, job):
+    def resume_target_job(self, job):
         """
         Resume a suspended backup job on a target
 
@@ -458,7 +458,7 @@ class BackupDriver(BaseDriver):
         raise NotImplementedError(
             'resume_target_job not implemented for this driver')
 
-    def suspend_target_job(self, target, job):
+    def suspend_target_job(self, job):
         """
         Suspend a running backup job on a target
 
@@ -473,7 +473,7 @@ class BackupDriver(BaseDriver):
         raise NotImplementedError(
             'suspend_target_job not implemented for this driver')
 
-    def cancel_target_job(self, target, job):
+    def cancel_target_job(self, job):
         """
         Cancel a backup job on a target
 

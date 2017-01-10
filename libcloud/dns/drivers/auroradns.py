@@ -250,9 +250,12 @@ class AuroraDNSDriver(DNSDriver):
         RecordType.MX: 'MX',
         RecordType.NS: 'NS',
         RecordType.SOA: 'SOA',
-        RecordType.SPF: 'SPF',
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
+        RecordType.DS: 'DS',
+        RecordType.PTR: 'PTR',
+        RecordType.SSHFP: 'SSHFP',
+        RecordType.TLSA: 'TLSA'
     }
 
     HEALTHCHECK_TYPE_MAP = {
@@ -261,24 +264,17 @@ class AuroraDNSDriver(DNSDriver):
         AuroraDNSHealthCheckType.TCP: 'TCP'
     }
 
-    def list_zones(self):
-        zones = []
-
+    def iterate_zones(self):
         res = self.connection.request('/zones')
         for zone in res.parse_body():
-            zones.append(self.__res_to_zone(zone))
+            yield self.__res_to_zone(zone)
 
-        return zones
-
-    def list_records(self, zone):
+    def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        records = []
         res = self.connection.request('/zones/%s/records' % zone.id)
 
         for record in res.parse_body():
-            records.append(self.__res_to_record(zone, record))
-
-        return records
+            yield self.__res_to_record(zone, record)
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -338,7 +334,14 @@ class AuroraDNSDriver(DNSDriver):
                                 method='DELETE')
         return True
 
-    def update_record(self, record, name, type, data, extra):
+    def list_record_types(self):
+        types = []
+        for record_type in self.RECORD_TYPE_MAP.keys():
+            types.append(record_type)
+
+        return types
+
+    def update_record(self, record, name, type, data, extra=None):
         rdata = {}
 
         if name is not None:
@@ -570,7 +573,7 @@ class AuroraDNSDriver(DNSDriver):
         extra['modified'] = record['modified']
         extra['disabled'] = record['disabled']
         extra['ttl'] = record['ttl']
-        extra['prio'] = record['prio']
+        extra['priority'] = record['prio']
 
         return Record(id=record['id'], name=name,
                       type=record['type'],

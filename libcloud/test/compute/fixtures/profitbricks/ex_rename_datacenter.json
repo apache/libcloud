@@ -1,0 +1,46 @@
+{
+    "id": "dc-1",
+    "type": "datacenter",
+    "href": "/cloudapi/v3/datacenters/dc-1",
+    "metadata" : {
+        "createdDate": "2016-10-17T11:33:11Z",
+        "createdBy": "test@test.test",
+        "etag": "53b215b8ec0356a649955dab019845a4",
+        "lastModifiedDate": "2016-10-18T15:13:44Z",
+        "lastModifiedBy": "test@test.test",
+        "state" : "BUSY"
+    },
+    "properties" : {
+        "name": "Test Data Center",
+        "description": "This is a test data center.",
+        "location": "de/fkb",
+        "version": 35,
+        "features": [
+            "SSD",
+            "MULTIPLE_CPU"
+        ]
+    },
+    "entities" : {
+        "servers" : {
+            "id": "dc-1/servers",
+            "type": "collection",
+            "href": "/cloudapi/v3/datacenters/dc-1/servers"
+        },
+        "volumes" : {
+            "id": "dc-1/volumes",
+            "type": "collection",
+            "href": "/cloudapi/v3/datacenters/dc-1/volumes"
+        },
+        "loadbalancers" : {
+            "id": "dc-1/loadbalancers",
+            "type": "collection",
+            "href": "/cloudapi/v3/datacenters/dc-1/loadbalancers",
+            "items": []
+        },
+        "lans" : {
+            "id": "dc-1/lans",
+            "type": "collection",
+            "href": "/cloudapi/v3/datacenters/dc-1/lans"
+        }
+    }
+}

@@ -77,7 +77,7 @@ class VCLNodeDriver(NodeDriver):
         :param    secret: Secret password to be used (required)
         :type     secret: ``str``
 
-        :param    secure: Weither to use HTTPS or HTTP.
+        :param    secure: Whether to use HTTPS or HTTP.
         :type     secure: ``bool``
 
         :param    host: Override hostname used for connections. (required)

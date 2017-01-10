@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipAddressLists xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="1" pageSize="250">
+    <ipAddressList id="5e7c323f-c885-4e4b-9a27-94c44217dbd3">
+        <name>Test_IP_Address_List_3</name>
+        <description>Test Description</description>
+        <ipVersion>IPV4</ipVersion>
+        <ipAddress begin="190.2.2.0" prefixSize="24"/>
+        <ipAddress begin="190.2.2.100"/>
+        <ipAddress begin="190.2.2.106" end="190.2.2.108"/>
+        <childIpAddressList id="0291ef78-4059-4bc1-b433-3f6ad698dc41" name="TestIPList2"/>
+        <state>NORMAL</state>
+        <createTime>2016-09-05T05:57:53.000Z</createTime>
+    </ipAddressList>
+</ipAddressLists>

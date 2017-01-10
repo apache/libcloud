@@ -1,0 +1,38 @@
+{
+  "volumes": [
+    {
+      "size_gigabytes": 4,
+      "region": {
+        "slug": "nyc1",
+        "sizes": [
+          "512mb",
+          "1gb",
+          "2gb",
+          "4gb",
+          "8gb",
+          "16gb",
+          "32gb",
+          "48gb",
+          "64gb"
+        ],
+        "name": "New York 1",
+        "features": [
+          "private_networking",
+          "backups",
+          "ipv6",
+          "metadata"
+        ],
+        "available": true
+      },
+      "name": "example",
+      "id": "62766883-2c28-11e6-b8e6-000f53306ae1",
+      "droplet_ids": [],
+      "description": "Block store for examples",
+      "created_at": "2016-06-06T20:51:04Z"
+    }
+  ],
+  "links": {},
+  "meta": {
+    "total": 1
+  }
+}

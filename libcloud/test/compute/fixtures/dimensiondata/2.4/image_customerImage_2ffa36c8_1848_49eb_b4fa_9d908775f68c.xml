@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <customerImage xmlns="urn:didata.com:api:cloud:types" id="2ffa36c8-1848-49eb-b4fa-9d908775f68c" datacenterId="NA9">
+        <name>CustomerImageWithPricedSoftwareLabels</name>
+        <description />
+        <guest osCustomization="true">
+            <operatingSystem id="WIN2008S32" displayName="WIN2008S/32" family="WINDOWS" />
+            <vmTools versionStatus="CURRENT" runningStatus="NOT_RUNNING" />
+        </guest>
+        <cpu count="1" speed="STANDARD" coresPerSocket="1" />
+        <memoryGb>1</memoryGb>
+        <disk id="29455efc-51af-4b4d-91b3-d81ca0dff7d8" scsiId="0" sizeGb="50" speed="STANDARD" />
+        <softwareLabel>MSSQL2008R2S</softwareLabel>
+        <createTime>2015-11-03T15:25:34.000Z</createTime>
+        <source type="CLONE">
+            <artifact type="SERVER_ID" value="7c9c2551-269d-4274-a247126ba7c6215c" />
+        </source>
+        <state>NORMAL</state>
+        <virtualHardware version="vmx-08" upToDate="false" />
+    </customerImage>

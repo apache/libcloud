@@ -26,6 +26,7 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
+from libcloud.common.digitalocean import DigitalOcean_v1_Error
 from libcloud.compute.base import NodeImage
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
@@ -39,10 +40,14 @@ from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanNodeDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanNodeDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v2_PARAMS)
+
+    def test_v1_Error(self):
+        self.assertRaises(DigitalOcean_v1_Error, DigitalOceanNodeDriver,
+                          *DIGITALOCEAN_v1_PARAMS, api_version='v1')
 
     def test_v2_uses_v1_key(self):
         self.assertRaises(InvalidCredsError, DigitalOceanNodeDriver,
@@ -143,10 +148,22 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.ex_shutdown_node(node)
         self.assertTrue(result)
 
+    def test_ex_hard_reboot_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'POWERCYCLE'
+        result = self.driver.ex_hard_reboot(node)
+        self.assertTrue(result)
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'DESTROY'
         result = self.driver.destroy_node(node)
+        self.assertTrue(result)
+
+    def test_ex_change_kernel_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'KERNELCHANGE'
+        result = self.driver.ex_change_kernel(node, 7515)
         self.assertTrue(result)
 
     def test_ex_rename_node_success(self):
@@ -189,6 +206,72 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         nodes = self.driver._paginated_request('/v2/droplets', 'droplets')
         self.assertEqual(len(nodes), 2)
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 1)
+        volume = volumes[0]
+        self.assertEqual(volume.id, "62766883-2c28-11e6-b8e6-000f53306ae1")
+        self.assertEqual(volume.name, "example")
+        self.assertEqual(volume.size, 4)
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_list_volumes_empty(self):
+        DigitalOceanMockHttp.type = 'EMPTY'
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 0)
+
+    def test_create_volume(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        DigitalOceanMockHttp.type = 'CREATE'
+        volume = self.driver.create_volume(4, 'example', nyc1)
+        self.assertEqual(volume.id, "62766883-2c28-11e6-b8e6-000f53306ae1")
+        self.assertEqual(volume.name, "example")
+        self.assertEqual(volume.size, 4)
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'ATTACH'
+        resp = self.driver.attach_volume(node, volume)
+        self.assertTrue(resp)
+
+    def test_detach_volume(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'DETACH'
+        resp = self.driver.detach_volume(volume)
+        self.assertTrue(resp)
+
+    def test_destroy_volume(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'DESTROY'
+        resp = self.driver.destroy_volume(volume)
+        self.assertTrue(resp)
+
+    def test_list_volume_snapshots(self):
+        volume = self.driver.list_volumes()[0]
+        snapshots = self.driver.list_volume_snapshots(volume)
+        self.assertEqual(len(snapshots), 3)
+        snapshot1, snapshot2, snapshot3 = snapshots
+        self.assertEqual(snapshot1.id, "c0def940-9324-11e6-9a56-000f533176b1")
+        self.assertEqual(snapshot2.id, "c2036724-9343-11e6-aef4-000f53315a41")
+        self.assertEqual(snapshot3.id, "d347e033-9343-11e6-9a56-000f533176b1")
+
+    def test_create_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        DigitalOceanMockHttp.type = 'CREATE'
+        snapshot = self.driver.create_volume_snapshot(volume, 'test-snapshot')
+        self.assertEqual(snapshot.id, "c0def940-9324-11e6-9a56-000f533176b1")
+        self.assertEqual(snapshot.name, 'test-snapshot')
+        self.assertEqual(volume.driver, self.driver)
+
+    def test_delete_volume_snapshot(self):
+        volume = self.driver.list_volumes()[0]
+        snapshot = self.driver.list_volume_snapshots(volume)[0]
+        DigitalOceanMockHttp.type = 'DELETE'
+        result = self.driver.delete_volume_snapshot(snapshot)
+        self.assertTrue(result)
+
 
 class DigitalOceanMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -224,6 +307,11 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         return (httplib.NO_CONTENT, body, {},
                 httplib.responses[httplib.NO_CONTENT])
 
+    def _v2_droplets_3164444_actions_KERNELCHANGE(self, method, url, body, headers):
+        # change_kernel
+        body = self.fixtures.load('ex_change_kernel.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
     def _v2_droplets_3164444_actions_RENAME(self, method, url, body, headers):
         # rename_node
         body = self.fixtures.load('ex_rename_node.json')
@@ -256,6 +344,12 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         body = self.fixtures.load('ex_shutdown_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
+    def _v2_droplets_3164444_actions_POWERCYCLE(self, method, url,
+                                                body, headers):
+        # ex_hard_reboot
+        body = self.fixtures.load('ex_hard_reboot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
     def _v2_account_keys(self, method, url, body, headers):
         body = self.fixtures.load('list_key_pairs.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -278,6 +372,49 @@ class DigitalOceanMockHttp(MockHttpTestCase):
     def _v2_droplets_PAGE_ONE(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes_page_1.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes(self, method, url, body, headers):
+        body = self.fixtures.load('list_volumes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_EMPTY(self, method, url, body, headers):
+        body = self.fixtures.load('list_volumes_empty.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_CREATE(self, method, url, body, headers):
+        body = self.fixtures.load('create_volume.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_volumes_actions_ATTACH(self, method, url, body, headers):
+        body = self.fixtures.load('attach_volume.json')
+        return (httplib.ACCEPTED, body, {},
+                httplib.responses[httplib.ACCEPTED])
+
+    def _v2_volumes_DETACH(self, method, url, body, headers):
+        body = self.fixtures.load('detach_volume.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_DESTROY(self, method,
+                                                                 url, body,
+                                                                 headers):
+        return (httplib.NO_CONTENT, None, {},
+                httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_snapshots_CREATE(
+            self, method, url, body, headers):
+        body = self.fixtures.load('create_volume_snapshot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_snapshots(
+            self, method, url, body, headers):
+        body = self.fixtures.load('list_volume_snapshots.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_snapshots_c0def940_9324_11e6_9a56_000f533176b1_DELETE(
+            self, method, url, body, headers):
+        return (httplib.NO_CONTENT, None, {},
+                httplib.responses[httplib.NO_CONTENT])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

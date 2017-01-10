@@ -16,60 +16,35 @@
 """
 Common settings and connection objects for DigitalOcean Cloud
 """
-import warnings
 
 from libcloud.utils.py3 import httplib, parse_qs, urlparse
 
 from libcloud.common.base import BaseDriver
-from libcloud.common.base import ConnectionUserAndKey, ConnectionKey
+from libcloud.common.base import ConnectionKey
 from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError
+from libcloud.common.types import LibcloudError, InvalidCredsError
 
 __all__ = [
-    'DigitalOcean_v1_Response',
-    'DigitalOcean_v1_Connection',
     'DigitalOcean_v2_Response',
     'DigitalOcean_v2_Connection',
     'DigitalOceanBaseDriver'
 ]
 
 
-class DigitalOcean_v1_Response(JsonResponse):
-    def parse_error(self):
-        if self.status == httplib.FOUND and '/api/error' in self.body:
-            # Hacky, but DigitalOcean error responses are awful
-            raise InvalidCredsError(self.body)
-        elif self.status == httplib.UNAUTHORIZED:
-            body = self.parse_body()
-            raise InvalidCredsError(body['message'])
-        else:
-            body = self.parse_body()
-
-            if 'error_message' in body:
-                error = '%s (code: %s)' % (body['error_message'], self.status)
-            else:
-                error = body
-            return error
-
-
-class DigitalOcean_v1_Connection(ConnectionUserAndKey):
+class DigitalOcean_v1_Error(LibcloudError):
     """
-    Connection class for the DigitalOcean (v1) driver.
+    Exception for when attempting to use version 1
+    of the DigitalOcean API which is no longer
+    supported.
     """
 
-    host = 'api.digitalocean.com'
-    responseCls = DigitalOcean_v1_Response
-
-    def add_default_params(self, params):
-        """
-        Add parameters that are necessary for every request
-
-        This method adds ``client_id`` and ``api_key`` to
-        the request.
-        """
-        params['client_id'] = self.user_id
-        params['api_key'] = self.key
-        return params
+    def __init__(self,
+                 value=('Driver no longer supported: Version 1 of the '
+                        'DigitalOcean API reached end of life on November 9, '
+                        '2015. Use the v2 driver. Please visit: '
+                        'https://developers.digitalocean.com/documentation/changelog/api-v1/sunsetting-api-v1/'),  # noqa: E501
+                 driver=None):
+        super(DigitalOcean_v1_Error, self).__init__(value, driver=driver)
 
 
 class DigitalOcean_v2_Response(JsonResponse):
@@ -142,9 +117,7 @@ class DigitalOceanBaseDriver(BaseDriver):
     def __new__(cls, key, secret=None, api_version='v2', **kwargs):
         if cls is DigitalOceanBaseDriver:
             if api_version == 'v1' or secret is not None:
-                cls = DigitalOcean_v1_BaseDriver
-                warnings.warn("The v1 API has become deprecated. Please "
-                              "consider utilizing the v2 API.")
+                raise DigitalOcean_v1_Error()
             elif api_version == 'v2':
                 cls = DigitalOcean_v2_BaseDriver
             else:
@@ -167,22 +140,6 @@ class DigitalOceanBaseDriver(BaseDriver):
     def _paginated_request(self, url, obj):
         raise NotImplementedError(
             '_paginated_requests not implemented for this driver')
-
-
-class DigitalOcean_v1_BaseDriver(DigitalOceanBaseDriver):
-    """
-    DigitalOcean BaseDriver using v1 of the API.
-    """
-    connectionCls = DigitalOcean_v1_Connection
-
-    def ex_get_event(self, event_id):
-        """
-        Get an event object
-
-        :param      event_id: Event id (required)
-        :type       event_id: ``str``
-        """
-        return self.connection.request('/v1/events/%s' % event_id).object
 
 
 class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):

@@ -81,7 +81,7 @@ class AWSGenericResponse(AWSBaseResponse):
     # exception class that is raised immediately.
     # If a custom exception class is not defined, errors are accumulated and
     # returned from the parse_error method.
-    expections = {}
+    exceptions = {}
 
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
@@ -347,6 +347,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
 
 class SignedAWSConnection(AWSTokenConnection):
+    version = None
+
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None, token=None,
                  retry_delay=None, backoff=None,

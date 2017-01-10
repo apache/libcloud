@@ -36,7 +36,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider
-from libcloud.providers import get_driver
+from libcloud.compute.providers import get_driver
 
 from pprint import pprint
 

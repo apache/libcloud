@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DescribeSecurityGroupsResponse>
+	<RequestId>94D38899-626D-434A-891F-7E1F77A81525</RequestId>
+	<TotalCount>4</TotalCount>
+	<PageNumber>1</PageNumber>
+	<PageSize>10</PageSize>
+	<RegionId>cn-hangzhou </RegionId>
+	<SecurityGroups>
+		<SecurityGroup>
+			<SecurityGroupId>sg-F876FF7BA</SecurityGroupId>
+			<Description>Test</Description>
+		</SecurityGroup>
+		<SecurityGroup>
+			<SecurityGroupId>sg-086FFC27A</SecurityGroupId>
+			<Description>test00212</Description>
+		</SecurityGroup>
+		<SecurityGroup>
+			<SecurityGroupId>sg-BA4B7975B</SecurityGroupId>
+			<Description>cn-hangzhou test group</Description>
+		</SecurityGroup>
+		<SecurityGroup>
+			<SecurityGroupId>sg-35F20777C</SecurityGroupId>
+			<Description>cn-hangzhou test group</Description>
+		</SecurityGroup>
+	</SecurityGroups>
+</DescribeSecurityGroupsResponse>

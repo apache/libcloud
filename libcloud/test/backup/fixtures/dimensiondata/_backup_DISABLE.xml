@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns13:Status xmlns:ns16="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns15="http://oec.api.opsource.net/schemas/reset" xmlns:ns9="http://oec.api.opsource.net/schemas/storage" xmlns:ns5="http://oec.api.opsource.net/schemas/backup" xmlns:ns12="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns13="http://oec.api.opsource.net/schemas/general" xmlns:ns6="http://oec.api.opsource.net/schemas/support" xmlns:ns7="http://oec.api.opsource.net/schemas/organization" xmlns:ns10="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns8="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns11="http://oec.api.opsource.net/schemas/vip" xmlns:ns2="http://oec.api.opsource.net/schemas/network" xmlns:ns4="http://oec.api.opsource.net/schemas/directory" xmlns:ns3="http://oec.api.opsource.net/schemas/admin">
+    <ns13:operation>Disable Backup for Server</ns13:operation>
+    <ns13:result>SUCCESS</ns13:result>
+    <ns13:resultDetail>Backup disabled for Server</ns13:resultDetail>
+    <ns13:resultCode>REASON_0</ns13:resultCode>
+</ns13:Status>

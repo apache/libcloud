@@ -7,14 +7,14 @@
  "backends": [
   {
    "description": "",
-   "group": "https://www.googleapis.com/resourceviews/v1beta1/projects/project_name/zones/us-central1-b/resourceViews/us-resources",
+   "group": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myinstancegroup",
    "balancingMode": "RATE",
    "maxRate": 100,
    "capacityScaler": 1.0
   },
   {
    "description": "",
-   "group": "https://www.googleapis.com/resourceviews/v1beta1/projects/project_name/zones/europe-west1-b/resourceViews/eu-resources",
+   "group": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myinstancegroup",
    "balancingMode": "RATE",
    "maxRate": 150,
    "capacityScaler": 1.0

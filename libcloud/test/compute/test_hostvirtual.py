@@ -28,8 +28,7 @@ from libcloud.test.secrets import HOSTVIRTUAL_PARAMS
 class HostVirtualTest(unittest.TestCase):
 
     def setUp(self):
-        HostVirtualNodeDriver.connectionCls.conn_classes = (
-            None, HostVirtualMockHttp)
+        HostVirtualNodeDriver.connectionCls.conn_class = HostVirtualMockHttp
         self.driver = HostVirtualNodeDriver(*HOSTVIRTUAL_PARAMS)
 
     def test_list_nodes(self):

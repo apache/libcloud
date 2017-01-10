@@ -1,0 +1,26 @@
+{
+    "status": {
+        "code": "1",
+        "message": "Action completed successful",
+        "created_at": "2014-06-05 10:07:05"
+    },
+    "domain": {
+        "id": "9",
+        "domain": "dnspod.com",
+        "domain_grade": "DP_Free"
+    },
+    "record": {
+        "id": "50",
+        "sub_domain": "@",
+        "record_type": "A",
+        "record_line": "Default",
+        "value": "96.126.115.73",
+        "mx": "0",
+        "ttl": "600",
+        "enabled": "1",
+        "monitor_status": "",
+        "remark": "",
+        "updated_on": "2014-06-05 09:47:59",
+        "domain_id": "9"
+    }
+}

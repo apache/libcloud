@@ -24,10 +24,10 @@ try:
 except ImportError:
     have_paramiko = False
 
+import libcloud
 from libcloud import _init_once
-from libcloud.common.base import LoggingHTTPConnection
-from libcloud.common.base import LoggingHTTPSConnection
-
+from libcloud.utils.loggingconnection import LoggingConnection
+from libcloud.base import DriverTypeNotFoundError
 from libcloud.test import unittest
 
 
@@ -36,8 +36,7 @@ class TestUtils(unittest.TestCase):
         # Debug mode is disabled
         _init_once()
 
-        self.assertEqual(LoggingHTTPConnection.log, None)
-        self.assertEqual(LoggingHTTPSConnection.log, None)
+        self.assertEqual(LoggingConnection.log, None)
 
         if have_paramiko:
             logger = paramiko.util.logging.getLogger()
@@ -48,14 +47,20 @@ class TestUtils(unittest.TestCase):
         os.environ['LIBCLOUD_DEBUG'] = '/dev/null'
         _init_once()
 
-        self.assertTrue(LoggingHTTPConnection.log is not None)
-        self.assertTrue(LoggingHTTPSConnection.log is not None)
+        self.assertTrue(LoggingConnection.log is not None)
 
         if have_paramiko:
             logger = paramiko.util.logging.getLogger()
             paramiko_log_level = logger.getEffectiveLevel()
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
+    def test_factory(self):
+        driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2)
+        self.assertEqual(driver.__name__, 'EC2NodeDriver')
+
+    def test_raises_error(self):
+        with self.assertRaises(DriverTypeNotFoundError):
+            libcloud.get_driver('potato', 'potato')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

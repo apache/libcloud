@@ -72,6 +72,7 @@ try:
 except ImportError:
     import json
 
+import logging
 import base64
 import errno
 import time
@@ -101,6 +102,8 @@ except ImportError:
 
 UTC_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
+LOG = logging.getLogger(__name__)
+
 
 def _utcnow():
     """
@@ -110,10 +113,16 @@ def _utcnow():
 
 
 def _utc_timestamp(datetime_obj):
+    """
+    Return string of datetime_obj in the UTC Timestamp Format
+    """
     return datetime_obj.strftime(UTC_TIMESTAMP_FORMAT)
 
 
 def _from_utc_timestamp(timestamp):
+    """
+    Return datetime obj where date and time are pulled from timestamp string.
+    """
     return datetime.datetime.strptime(timestamp, UTC_TIMESTAMP_FORMAT)
 
 
@@ -160,7 +169,7 @@ class ResourceNotFoundError(GoogleBaseError):
                 "error may be an authentication issue. " \
                 "Please  ensure your auth credentials match " \
                 "your project. "
-        super(GoogleBaseError, self).__init__(value, http_code, driver)
+        super(ResourceNotFoundError, self).__init__(value, http_code, driver)
 
 
 class QuotaExceededError(GoogleBaseError):
@@ -335,6 +344,9 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         super(GoogleBaseAuthConnection, self).__init__(user_id, key, **kwargs)
 
     def add_default_headers(self, headers):
+        """
+        Add defaults for 'Content-Type' and 'Host' headers.
+        """
         headers['Content-Type'] = "application/x-www-form-urlencoded"
         headers['Host'] = self.host
         return headers
@@ -377,6 +389,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         :return:  A dictionary containing updated token information.
         :rtype:   ``dict``
         """
+        # pylint: disable=no-member
         return self.get_new_token()
 
 
@@ -570,10 +583,10 @@ class GoogleAuthType(object):
     def guess_type(cls, user_id):
         if cls._is_sa(user_id):
             return cls.SA
-        elif cls._is_gce():
-            return cls.GCE
         elif cls._is_gcs_s3(user_id):
             return cls.GCS_S3
+        elif cls._is_gce():
+            return cls.GCE
         else:
             return cls.IA
 
@@ -676,8 +689,13 @@ class GoogleOAuth2Credential(object):
             with open(filename, 'r') as f:
                 data = f.read()
             token = json.loads(data)
-        except IOError:
-            pass
+        except (IOError, ValueError):
+            # Note: File related errors (IOError) and errors related to json
+            # parsing of the data (ValueError) are not fatal.
+            e = sys.exc_info()[1]
+            LOG.info('Failed to read cached auth token from file "%s": %s',
+                     filename, str(e))
+
         return token
 
     def _write_token_to_file(self):
@@ -685,11 +703,22 @@ class GoogleOAuth2Credential(object):
         Write token to credential file.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        data = json.dumps(self.token)
-        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY,
-                               int('600', 8)), 'w') as f:
-            f.write(data)
+        filename = os.path.expanduser(self.credential_file)
+        filename = os.path.realpath(filename)
+
+        try:
+            data = json.dumps(self.token)
+            write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+            with os.fdopen(os.open(filename, write_flags,
+                                   int('600', 8)), 'w') as f:
+                f.write(data)
+        except:
+            # Note: Failure to write (cache) token in a file is not fatal. It
+            # simply means degraded performance since we will need to acquire a
+            # new token each time script runs.
+            e = sys.exc_info()[1]
+            LOG.info('Failed to write auth token to file "%s": %s',
+                     filename, str(e))
 
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):

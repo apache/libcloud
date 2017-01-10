@@ -1,0 +1,42 @@
+{
+  "id": 31,
+  "name": "example.org",
+  "synced": false,
+  "queries_count": 0,
+  "records_count": 3,
+  "aliases_count": 0,
+  "redirects_count": 0,
+  "forwards_count": 0,
+  "records": [
+    {
+      "id": 6683,
+      "name": "example.org.",
+      "type": "SOA",
+      "content": "a.ns.luadns.net. hostmaster.luadns.com. 1421501178 1200 120 604800 3600",
+      "ttl": 3600,
+      "zone_id": 3,
+      "created_at": "2015-01-17T13:26:17.52747Z",
+      "updated_at": "2015-01-17T13:26:17.527471Z"
+    },
+    {
+      "id": 6684,
+      "name": "example.org.",
+      "type": "NS",
+      "content": "a.ns.luadns.net.",
+      "ttl": 86400,
+      "zone_id": 3,
+      "created_at": "2015-01-17T13:26:17.529741Z",
+      "updated_at": "2015-01-17T13:26:17.529741Z"
+    },
+    {
+      "id": 6685,
+      "name": "example.org.",
+      "type": "NS",
+      "content": "b.ns.luadns.net.",
+      "ttl": 86400,
+      "zone_id": 3,
+      "created_at": "2015-01-17T13:26:17.531911Z",
+      "updated_at": "2015-01-17T13:26:17.531911Z"
+    }
+  ]
+}

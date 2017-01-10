@@ -30,8 +30,7 @@ from libcloud.test import MockHttp
 class KubernetesContainerDriverTestCase(unittest.TestCase):
 
     def setUp(self):
-        KubernetesContainerDriver.connectionCls.conn_classes = (
-            KubernetesMockHttp, KubernetesMockHttp)
+        KubernetesContainerDriver.connectionCls.conn_class = KubernetesMockHttp
         KubernetesMockHttp.type = None
         KubernetesMockHttp.use_param = 'a'
         self.driver = KubernetesContainerDriver(*CONTAINER_PARAMS_KUBERNETES)

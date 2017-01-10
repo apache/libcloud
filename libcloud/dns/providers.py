@@ -13,9 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils.misc import get_driver as get_provider_driver
-from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.dns.types import Provider
+from libcloud.dns.types import OLD_CONSTANT_TO_NEW_MAPPING
+from libcloud.common.providers import get_driver as _get_provider_driver
+from libcloud.common.providers import set_driver as _set_provider_driver
+
+__all__ = [
+    'DRIVERS',
+
+    'get_driver',
+    'set_driver'
+]
 
 DRIVERS = {
     Provider.DUMMY:
@@ -57,6 +65,16 @@ DRIVERS = {
     ('libcloud.dns.drivers.godaddy', 'GoDaddyDNSDriver'),
     Provider.CLOUDFLARE:
     ('libcloud.dns.drivers.cloudflare', 'CloudFlareDNSDriver'),
+    Provider.NFSN:
+    ('libcloud.dns.drivers.nfsn', 'NFSNDNSDriver'),
+    Provider.NSONE:
+    ('libcloud.dns.drivers.nsone', 'NsOneDNSDriver'),
+    Provider.LUADNS:
+    ('libcloud.dns.drivers.luadns', 'LuadnsDNSDriver'),
+    Provider.BUDDYNS:
+    ('libcloud.dns.drivers.buddyns', 'BuddyNSDNSDriver'),
+    Provider.POWERDNS:
+    ('libcloud.dns.drivers.powerdns', 'PowerDNSDriver'),
 
     # Deprecated
     Provider.RACKSPACE_US:
@@ -67,8 +85,11 @@ DRIVERS = {
 
 
 def get_driver(provider):
-    return get_provider_driver(DRIVERS, provider)
+    deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
+    return _get_provider_driver(drivers=DRIVERS, provider=provider,
+                                deprecated_constants=deprecated_constants)
 
 
 def set_driver(provider, module, klass):
-    return set_provider_driver(DRIVERS, provider, module, klass)
+    return _set_provider_driver(drivers=DRIVERS, provider=provider,
+                                module=module, klass=klass)

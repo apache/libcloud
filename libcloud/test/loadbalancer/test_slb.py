@@ -34,8 +34,7 @@ class SLBDriverTestCases(unittest.TestCase):
 
     def setUp(self):
         SLBMockHttp.test = self
-        SLBDriver.connectionCls.conn_classes = (None,
-                                                SLBMockHttp)
+        SLBDriver.connectionCls.conn_class = SLBMockHttp
         SLBMockHttp.type = None
         SLBMockHttp.use_param = 'Action'
 

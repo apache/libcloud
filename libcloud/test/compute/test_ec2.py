@@ -23,13 +23,6 @@ from libcloud.utils.iso8601 import UTC
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
-from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
-from libcloud.compute.drivers.ec2 import EC2USWestOregonNodeDriver
-from libcloud.compute.drivers.ec2 import EC2EUNodeDriver
-from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
-from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
-from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
-from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
 from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
@@ -85,12 +78,25 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def setUp(self):
         EC2MockHttp.test = self
-        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2NodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
 
         self.driver = EC2NodeDriver(*EC2_PARAMS,
                                     **{'region': self.region})
+
+    def test_instantiate_driver_with_token(self):
+        token = 'temporary_credentials_token'
+        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        self.assertTrue(hasattr(driver, 'token'), 'Driver has no attribute token')
+        self.assertEquals(token, driver.token, "Driver token does not match with provided token")
+
+    def test_driver_with_token_signature_version(self):
+        token = 'temporary_credentials_token'
+        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        kwargs = driver._ex_connection_class_kwargs()
+        self.assertIn('signature_version', kwargs)
+        self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -396,10 +402,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         names = [
             ('ec2_us_east', 'us-east-1'),
             ('ec2_us_west', 'us-west-1'),
+            ('ec2_us_west', 'us-west-2'),
             ('ec2_eu_west', 'eu-west-1'),
             ('ec2_ap_southeast', 'ap-southeast-1'),
             ('ec2_ap_northeast', 'ap-northeast-1'),
-            ('ec2_ap_southeast_2', 'ap-southeast-2')
+            ('ec2_ap_southeast_2', 'ap-southeast-2'),
+            ('ec2_ap_south_1', 'ap-south-1')
         ]
 
         for api_name, region_name in names:
@@ -408,31 +416,36 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             sizes = self.driver.list_sizes()
 
             ids = [s.id for s in sizes]
-            self.assertTrue('t1.micro' in ids)
-            self.assertTrue('m1.small' in ids)
-            self.assertTrue('m1.large' in ids)
-            self.assertTrue('m1.xlarge' in ids)
-            self.assertTrue('c1.medium' in ids)
-            self.assertTrue('c1.xlarge' in ids)
-            self.assertTrue('m2.xlarge' in ids)
-            self.assertTrue('m2.2xlarge' in ids)
-            self.assertTrue('m2.4xlarge' in ids)
+
+            if region_name not in ['ap-south-1']:
+                self.assertTrue('t1.micro' in ids)
+                self.assertTrue('m1.small' in ids)
+                self.assertTrue('m1.large' in ids)
+                self.assertTrue('m1.xlarge' in ids)
+                self.assertTrue('c1.medium' in ids)
+                self.assertTrue('c1.xlarge' in ids)
+                self.assertTrue('m2.xlarge' in ids)
+                self.assertTrue('m2.2xlarge' in ids)
+                self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 53)
+                self.assertEqual(len(sizes), 55)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
+                self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 45)
+                self.assertEqual(len(sizes), 46)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 41)
+                self.assertEqual(len(sizes), 53)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 43)
+                self.assertEqual(len(sizes), 45)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 47)
+                self.assertEqual(len(sizes), 49)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 51)
+                self.assertEqual(len(sizes), 53)
+            elif region_name == 'ap-south-1':
+                self.assertEqual(len(sizes), 29)
 
         self.driver.region_name = region_old
 
@@ -671,6 +684,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         self.driver.ex_delete_tags(node, {'sample': 'tag'})
 
+    def test_ex_delete_tags2(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        self.driver.ex_create_tags(node, {'sample': 'another tag'})
+        self.driver.ex_delete_tags(node, {'sample': None})
+
     def test_ex_describe_addresses_for_node(self):
         node1 = Node('i-4382922a', None, None, None, None, self.driver)
         ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
@@ -887,6 +905,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('Daily Backup', snaps[0].extra['description'])
 
         self.assertEqual('snap-18349159', snaps[1].id)
+        self.assertEqual('DB Backup 1', snaps[1].name)
         self.assertEqual(VolumeSnapshotState.AVAILABLE, snaps[1].state)
         self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
         self.assertEqual(15, snaps[1].size)
@@ -1187,47 +1206,6 @@ class EC2APSE2Tests(EC2Tests):
 
 class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
-
-
-# Tests for the old, deprecated way of instantiating a driver.
-class EC2OldStyleModelTests(EC2Tests):
-    driver_klass = EC2USWestNodeDriver
-
-    def setUp(self):
-        EC2MockHttp.test = self
-        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
-        EC2MockHttp.use_param = 'Action'
-        EC2MockHttp.type = None
-
-        self.driver = self.driver_klass(*EC2_PARAMS)
-
-
-class EC2USWest1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestNodeDriver
-
-
-class EC2USWest2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestOregonNodeDriver
-
-
-class EC2EUWestOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2EUNodeDriver
-
-
-class EC2APSE1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSENodeDriver
-
-
-class EC2APNEOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APNENodeDriver
-
-
-class EC2APSE2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSESydneyNodeDriver
-
-
-class EC2SAEastOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2SAEastNodeDriver
 
 
 class EC2MockHttp(MockHttpTestCase):
@@ -1643,7 +1621,7 @@ class EucMockHttp(EC2MockHttp):
 class NimbusTests(EC2Tests):
 
     def setUp(self):
-        NimbusNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        NimbusNodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = NimbusNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
@@ -1701,7 +1679,7 @@ class NimbusTests(EC2Tests):
 class EucTests(LibcloudTestCase, TestCaseMixin):
 
     def setUp(self):
-        EucNodeDriver.connectionCls.conn_classes = (None, EucMockHttp)
+        EucNodeDriver.connectionCls.conn_class = EucMockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EucNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
@@ -1730,7 +1708,7 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
 class OutscaleTests(EC2Tests):
 
     def setUp(self):
-        OutscaleSASNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        OutscaleSASNodeDriver.connectionCls.conn_class = EC2MockHttp
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
@@ -1817,6 +1795,75 @@ class OutscaleTests(EC2Tests):
         self.assertTrue('m1.small' in ids)
         self.assertTrue('m1.large' in ids)
         self.assertTrue('m1.xlarge' in ids)
+
+
+class FCUMockHttp(EC2MockHttp):
+    fixtures = ComputeFileFixtures('fcu')
+
+    def _DescribeQuotas(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_quotas.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeProductTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_product_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeInstanceTypes(self, method, url, body, headers):
+        body = self.fixtures.load('ex_describe_instance_types.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _GetProductType(self, method, url, body, headers):
+        body = self.fixtures.load('ex_get_product_type.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifyInstanceKeypair(self, method, url, body, headers):
+        body = self.fixtures.load('ex_modify_instance_keypair.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class OutscaleFCUTests(LibcloudTestCase):
+
+    def setUp(self):
+        OutscaleSASNodeDriver.connectionCls.conn_class = FCUMockHttp
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = OutscaleSASNodeDriver(key=EC2_PARAMS[0],
+                                            secret=EC2_PARAMS[1],
+                                            host='some.fcucloud.com')
+
+    def test_ex_describe_quotas(self):
+        is_truncated, quota = self.driver.ex_describe_quotas()
+        self.assertTrue(is_truncated == 'true')
+        self.assertTrue('global' in quota.keys())
+        self.assertTrue('vpc-00000000' in quota.keys())
+
+    def test_ex_describe_product_types(self):
+        product_types = self.driver.ex_describe_product_types()
+        pt = {}
+        for e in product_types:
+            pt[e['productTypeId']] = e['description']
+        self.assertTrue('0001' in pt.keys())
+        self.assertTrue('MapR' in pt.values())
+        self.assertTrue(pt['0002'] == 'Windows')
+
+    def test_ex_describe_instance_instance_types(self):
+        instance_types = self.driver.ex_describe_instance_types()
+        it = {}
+        for e in instance_types:
+            it[e['name']] = e['memory']
+        self.assertTrue('og4.4xlarge' in it.keys())
+        self.assertTrue('oc2.8xlarge' in it.keys())
+        self.assertTrue('68718428160' in it.values())
+        self.assertTrue(it['m3.large'] == '8050966528')
+
+    def test_ex_get_product_type(self):
+        product_type = self.driver.ex_get_product_type('ami-29ab9e54')
+        self.assertTrue(product_type['productTypeId'] == '0002')
+        self.assertTrue(product_type['description'] == 'Windows')
+
+    def test_ex_modify_instance_keypair(self):
+        r = self.driver.ex_modify_instance_keypair('i-57292bc5', 'key_name')
+        self.assertTrue(r)
 
 
 if __name__ == '__main__':

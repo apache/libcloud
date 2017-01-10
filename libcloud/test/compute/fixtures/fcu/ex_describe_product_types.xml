@@ -1,0 +1,18 @@
+<DescribeProductTypesResponse
+    xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
+    <requestId>6f5287ac-2833-43d5-8675-b1ffd7b658d3</requestId>
+    <productTypeSet>
+        <item>
+            <productTypeId>0001</productTypeId>
+            <description>Linux/UNIX</description>
+        </item>
+        <item>
+            <productTypeId>0002</productTypeId>
+            <description>Windows</description>
+        </item>
+        <item>
+            <productTypeId>0003</productTypeId>
+            <description>MapR</description>
+        </item>
+    </productTypeSet>
+</DescribeProductTypesResponse>

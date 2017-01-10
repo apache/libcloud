@@ -1,0 +1,7 @@
+{ "name": "myexample.com",
+  "name_idn": "myexample.com",
+  "serial": null,
+  "master": "65.55.37.62",
+  "creation_ts": "2016-04-09T06:20:05.140",
+  "status": "https://www.buddyns.com/api/v2/zone/myexample.com/status/",
+  "delegation": "https://www.buddyns.com/api/v2/zone/myexample.com/delegation/"}

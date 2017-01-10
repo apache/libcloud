@@ -9,15 +9,31 @@ certificate files.
 ``CA_CERTS_PATH`` contains common paths to CA bundle installations on the
 following platforms:
 
+* ``certifi`` package on PyPi
 * ``openssl`` package on CentOS / Fedora
 * ``ca-certificates`` package on Debian / Ubuntu / Arch / Gentoo
 * ``ca_root_nss`` port on FreeBSD
 * ``curl-ca-bundle`` port on Mac OS X
+* ``openssl`` and ``curl-ca-bundle`` homebrew package
 
 If no valid CA certificate files are found, you will see an error message
 similar to the one below:
 
 ``No CA Certificates were found in CA_CERTS_PATH.``
+
+The easiest way to resolve this issue is to install `certifi` Python package
+from PyPi using pip. This package provides curated collection of Root
+Certificates based on the Mozilla CA bundle. If this package is installed
+and available, Libcloud will use CA bundle which is bundled by default.
+
+As the list of trusted CA certificates can and does change, you are also
+encouraged to periodically update this package (``pip install --upgrade
+certifi`` or similar).
+
+If for some reason you want to avoid this behavior, you can set
+``LIBCLOUD_SSL_USE_CERTIFI`` environment variable to ``false``. Or even,
+better provide a direct path to the CA bundle you want to use using
+``SSL_CERT_FILE`` environment variable as shown below.
 
 Windows Users
 -------------

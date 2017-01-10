@@ -1,0 +1,42 @@
+Name,Type,Location,Private IP
+Address,Status,"user:ATag","user:BTag","user:CTag",Start Time,End
+Time,Duration (Hours),CPU Type,CPU Count, RAM (GB), Storage (GB),Economy
+Storage (GB),CPU Hours,High Performance CPU Hours,RAM Hours,Storage
+Hours,Economy Storage Hours,Bandwidth-In (GB),Bandwidth-Out (GB),Subadmin
+Hours,Network Hours,Essentials Network Domain Hours,Advanced Network Domain
+Hours,VLAN Hours,Public IP Hours,Cloud Files Account Hours,Cloud Storage (GB)
+Server A,Server,NA1,10.162.12.16,Running,Bob,IT,,19/06/2014 04:16,19/06/2014
+11:17,7.03,Standard,1,2,10,0,7.03,0,14.05,70.27,0,0,0,0,0,0,0,0,0,0,0
+Server A,Server,NA1,10.162.12.16,Running,Bob,IT,,19/06/2014 11:17,20/06/2014
+00:00,12.71,High Performance,1,2,10,0,0,12.71,0,127.06,0,0,0,0,0,0,0,0,0,0,0
+Server B,Server,NA1,10.162.12.13,Running,Mary,IT,,19/06/2014 03:42,19/06/2014
+11:18,7.61,Essentials,1,2,10,0,0,0,15.22,76.1,0,0,0,0,0,0,0,0,0,0,0
+Server B,Server,NA1,10.162.12.13,Stopped,Mary,IT,,19/06/2014 11:18,19/06/2014
+23:18,12,Essentials,1,2,10,0,0,0,0,120,0,0,0,0,0,0,0,0,0,0,0
+Server B,Server,NA1,10.162.12.13,Stopped,Bob,IT,,19/06/2014 23:18,20/06/2014
+00:00,0.689722222,Essentials,1,2,10,0,0,0,0,6.897222223,0,0,0,0,0,0,0,0,0,0,0
+Customer Image A,Image,NA1,,Running,Bob,IT,,19/06/2014 03:30,20/06/2014
+00:00,20.5,,0,0,10,0,0,0,0,205,0,0,0,0,0,0,0,0,0,0,0
+Customer Image B,Image,NA1,,Running,Bob,IT,,19/06/2014 03:10,19/06/2014
+03:12,0.04,,0,0,10,0,0,0,0,0.44,0,0,0,0,0,0,0,0,0,0,0
+Joseph_F,Sub-Administrator,,,Running,Bob,IT,,19/06/2014 00:00,20/06/2014
+00:00,24,,0,0,0,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0
+Lguy,Sub-Administrator,,,Running,Mary,IT,,19/06/2014 00:00,20/06/2014
+00:00,24,,0,0,0,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0
+a network,Network,NA1,,Running,,IT,,19/06/2014 01:39,20/06/2014
+00:00,22.34,,0,0,0,0,0,0,0,0,0,0,0.9,0,22.34,0,0,0,0,0,0
+b network,Network,NA1,,Running,,IT,,19/06/2014 01:49,20/06/2014
+00:00,22.18,,0,0,0,0,0,0,0,0,0,0,7.1,0,22.18,0,0,0,0,0,0
+Rick's Network Domain,Network Domain,NA9,,Running,Bob,IT,,19/06/2014
+04:19,20/06/2014 00:00,19.68,,0,0,0,0,0,0,0,0,0,0,7.1,0,22.18,19.68,0,0,0,0,0
+Rick's VLAN,VLAN,NA9,,Running,Bob,IT,,19/06/2014 04:22,20/06/2014
+00:00,19.63,,0,0,0,0,0,0,0,0,0,0,0,0,22.18,0,0,19.63,0,0,0
+files1_koala,Cloud Files,,,Running,,IT,,19/06/2014 00:00,20/06/2014
+00:00,24,,0,0,0,0,0,0,0,0,0,0,0.5,0,0,0,0,0,0,24,52
+testbed,Cloud Files,,,Running,,IT,,19/06/2014 00:00,20/06/2014
+00:00,24,,0,0,0,0,0,0,0,0,0,0,0.01,0,0,0,0,0,0,24,100
+Network: b network IP Block:
+168.143.92.136(4),IpBlock,NA1,,Reserved,Mary,IT,,19/06/2014 11:47,20/06/2014 
+00:00,12.2,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48.82,0,0
+TOTAL for 19/06/14,,,,,,,,19/06/2014 00:00,20/06/2014
+00:00,24,,0,0,0,0,8,13,30,606,0,3,23,48,89,20,0,20,49,48,152

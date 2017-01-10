@@ -45,6 +45,7 @@ EC2_REGIONS = [
     'ap-southeast-2',
     'ap-northeast-1',
     'ap-northeast-2',
+    'ap-south-1',
     'sa-east-1'
 ]
 
@@ -92,7 +93,8 @@ EC2_INSTANCE_TYPES = [
     't2.micro',
     't2.small',
     't2.medium',
-    't2.large'
+    't2.large',
+    'x1.32xlarge'
 ]
 
 # Maps EC2 region name to region name used in the pricing file
@@ -112,6 +114,7 @@ REGION_NAME_MAP = {
     'apac-tokyo': 'ec2_ap_northeast',
     'ap-northeast-1': 'ec2_ap_northeast',
     'ap-northeast-2': 'ec2_ap_northeast',
+    'ap-south-1': 'ec2_ap_south_1',
     'sa-east-1': 'ec2_sa_east',
     'us-gov-west-1': 'ec2_us_govwest'
 }
@@ -161,7 +164,11 @@ def scrape_ec2_pricing():
 
                 for size in sizes:
                     price = size['valueColumns'][0]['prices']['USD']
-                    result[libcloud_region_name][size['size']] = price
+                    if str(price).lower() == 'n/a':
+                        # Price not available
+                        continue
+
+                    result[libcloud_region_name][size['size']] = float(price)
 
     return result
 

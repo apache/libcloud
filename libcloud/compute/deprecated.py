@@ -46,5 +46,10 @@ DEPRECATED_DRIVERS = {
         'reason': 'The CloudFrames Provider is no longer supported',
         'url': 'http://libcloud.apache.org/blog/2016/02/16/new-drivers-'
                'deprecated-drivers.html'
+    },
+    Provider.RUNABOVE: {
+        'reason': 'The RunAbove compute is no longer supported. '
+                  'Use the OVH one instead.',
+        'url': 'https://www.runabove.com/cloud-instance.xml'
     }
 }

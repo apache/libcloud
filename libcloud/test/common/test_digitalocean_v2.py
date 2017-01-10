@@ -26,8 +26,8 @@ from libcloud.utils.py3 import httplib
 class DigitalOceanTests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanBaseDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanBaseDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanBaseDriver(*DIGITALOCEAN_v2_PARAMS)
 
@@ -96,8 +96,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
 
     def _v2_actions_page_1(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions_page_1.json')
-        return (self.response[None], body, {},
-                httplib.responses[self.response[None]])
+        return (httplib.OK, body, {},
+                httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':

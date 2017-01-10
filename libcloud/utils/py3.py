@@ -18,6 +18,8 @@
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
+# pylint: disable=import-error
+
 from __future__ import absolute_import
 
 import sys
@@ -62,7 +64,11 @@ if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
     PY32 = True
 
 if PY2_pre_279 or PY3_pre_32:
-    from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
+    try:
+        from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
+    except ImportError:
+        import warnings
+        warnings.warn("Missing backports.ssl_match_hostname package")
 else:
     # ssl module in Python >= 3.2 includes match hostname function
     from ssl import match_hostname, CertificateError  # NOQA

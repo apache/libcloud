@@ -1,0 +1,6 @@
+<GetProductTypeResponse
+    xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
+    <requestId>e37f7876-8379-4505-8c3c-73c500e34257</requestId>
+    <productTypeId>0002</productTypeId>
+    <description>Windows</description>
+</GetProductTypeResponse>

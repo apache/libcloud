@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns13:Status xmlns:ns16="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns="http://oec.api.opsource.net/schemas/server" xmlns:ns14="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns15="http://oec.api.opsource.net/schemas/reset" xmlns:ns9="http://oec.api.opsource.net/schemas/storage" xmlns:ns5="http://oec.api.opsource.net/schemas/backup" xmlns:ns12="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns13="http://oec.api.opsource.net/schemas/general" xmlns:ns6="http://oec.api.opsource.net/schemas/support" xmlns:ns7="http://oec.api.opsource.net/schemas/organization" xmlns:ns10="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns8="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns11="http://oec.api.opsource.net/schemas/vip" xmlns:ns2="http://oec.api.opsource.net/schemas/network" xmlns:ns4="http://oec.api.opsource.net/schemas/directory" xmlns:ns3="http://oec.api.opsource.net/schemas/admin">
+    <ns13:operation>Add Backup Client</ns13:operation>
+    <ns13:result>SUCCESS</ns13:result>
+    <ns13:resultDetail>Backup Client added</ns13:resultDetail>
+    <ns13:resultCode>REASON_0</ns13:resultCode>
+    <ns13:additionalInformation name="backupClient.id">
+        <ns13:value>a26cead0-6bab-4446-9a16-c227e6ab201f</ns13:value>
+    </ns13:additionalInformation>
+    <ns13:additionalInformation name="backupClient.downloadUrl">
+        <ns13:value>https://backups-na.cloud-vpn.net/PCS/BackupClientInstallerDownload/4b3f35815b848ce7270186b52e5817fa5de0fe42</ns13:value>
+    </ns13:additionalInformation>
+</ns13:Status>

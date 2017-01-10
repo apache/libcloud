@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns0:Status xmlns:ns0="http://oec.api.opsource.net/schemas/general">
+    <ns0:operation>Enable Backup for Server</ns0:operation>
+    <ns0:result>ERROR</ns0:result>
+    <ns0:resultDetail>Cloud backup for this server is already enabled or being enabled (state: NORMAL).</ns0:resultDetail>
+    <ns0:resultCode>REASON_550</ns0:resultCode>
+</ns0:Status>

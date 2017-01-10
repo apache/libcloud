@@ -211,8 +211,6 @@ class AtmosDriver(StorageDriver):
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
-        upload_func = self._upload_file
-        upload_func_kwargs = {'file_path': file_path}
         method = 'PUT'
 
         extra = extra or {}
@@ -232,8 +230,6 @@ class AtmosDriver(StorageDriver):
         result_dict = self._upload_object(
             object_name=object_name,
             content_type=content_type,
-            upload_func=upload_func,
-            upload_func_kwargs=upload_func_kwargs,
             request_path=request_path,
             request_method=method,
             headers={}, file_path=file_path)

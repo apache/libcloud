@@ -1,0 +1,10 @@
+{
+ "kind": "compute#zone",
+ "id": "2220",
+ "creationTimestamp": "2014-05-30T18:35:16.575-07:00",
+ "name": "asia-east1-a",
+ "description": "asia-east1-a",
+ "status": "UP",
+ "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/asia-east1",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/asia-east1-a"
+}

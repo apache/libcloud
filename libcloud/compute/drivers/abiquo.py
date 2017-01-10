@@ -18,9 +18,12 @@ Abiquo Compute Driver
 The driver implements the compute Abiquo functionality for the Abiquo API.
 This version is compatible with the following versions of Abiquo:
 
-    * Abiquo 3.1 (http://wiki.abiquo.com/display/ABI31/The+Abiquo+API)
+    * Abiquo 3.4 (http://wiki.abiquo.com/display/ABI34/The+Abiquo+API)
 """
-import xml.etree.ElementTree as ET
+try:
+    from lxml import etree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 from libcloud.compute.base import NodeDriver, NodeSize
 from libcloud.compute.types import Provider, LibcloudError
@@ -746,8 +749,6 @@ class AbiquoNodeDriver(NodeDriver):
             # Override the 'NodeSize' data
             ram = ET.SubElement(vm, 'ram')
             ram.text = str(kwargs['size'].ram)
-            hd = ET.SubElement(vm, 'hdInBytes')
-            hd.text = str(int(kwargs['size'].disk) * self.GIGABYTE)
 
         # Create the virtual machine
         nodes_link = group.uri + '/virtualmachines'

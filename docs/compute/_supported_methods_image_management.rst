@@ -4,39 +4,22 @@
 Provider                              list images get image create image delete image copy image
 ===================================== =========== ========= ============ ============ ==========
 `Abiquo`_                             yes         no        no           no           no        
+`Aliyun ECS`_                         yes         yes       yes          yes          yes       
 `PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Azure Virtual machines`_             yes         no        no           no           no        
+`Azure Virtual machines`_             yes         yes       no           no           no        
 `Bluebox Blocks`_                     yes         no        no           no           no        
 `Brightbox`_                          yes         no        no           no           no        
 `BSNL`_                               yes         no        no           no           no        
-`CiscoCCS`_                           yes         no        no           no           no        
+`Cloudscale`_                         yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
 `Cloudwatt`_                          yes         yes       yes          yes          no        
 `DigitalOcean`_                       yes         yes       yes          yes          no        
 `DimensionData`_                      yes         no        no           no           no        
 `Amazon EC2`_                         yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-northeast-2)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-southeast-1)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (ap-southeast-2)`_        yes         yes       yes          yes          yes       
-`Amazon EC2 (eu-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (eu-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (sa-east-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2`_                         yes         yes       yes          yes          yes       
-`Amazon EC2 (us-west-1)`_             yes         yes       yes          yes          yes       
-`Amazon EC2 (us-west-2)`_             yes         yes       yes          yes          yes       
 `Enomaly Elastic Computing Platform`_ yes         no        no           no           no        
 `ElasticHosts`_                       yes         no        no           no           no        
-`ElasticHosts (syd-y)`_               yes         no        no           no           no        
-`ElasticHosts (tor-p)`_               yes         no        no           no           no        
-`ElasticHosts (cn-1)`_                yes         no        no           no           no        
-`ElasticHosts (lon-p)`_               yes         no        no           no           no        
-`ElasticHosts (lon-b)`_               yes         no        no           no           no        
-`ElasticHosts (sat-p)`_               yes         no        no           no           no        
-`ElasticHosts (lax-p)`_               yes         no        no           no           no        
-`ElasticHosts (sjc-c)`_               yes         no        no           no           no        
 `Eucalyptus`_                         yes         yes       yes          yes          yes       
 `Exoscale`_                           yes         no        no           no           no        
 `Gandi`_                              yes         no        no           no           no        
@@ -60,12 +43,12 @@ Provider                              list images get image create image delete 
 `OpenStack`_                          yes         yes       no           no           no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       
 `Outscale SAS`_                       yes         yes       yes          yes          yes       
+`Ovh`_                                yes         yes       no           no           no        
 `Packet`_                             yes         no        no           no           no        
 `ProfitBricks`_                       yes         no        no           no           no        
 `Rackspace Cloud (Next Gen)`_         yes         yes       yes          yes          no        
 `Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
 `RimuHosting`_                        yes         no        no           no           no        
-`RunAbove`_                           yes         yes       no           no           no        
 `ServerLove`_                         yes         no        no           no           no        
 `skalicloud`_                         yes         no        no           no           no        
 `SoftLayer`_                          yes         no        no           no           no        
@@ -79,39 +62,22 @@ Provider                              list images get image create image delete 
 ===================================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
+.. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
-.. _`CiscoCCS`: http://www.cisco.com/
+.. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-northeast-2)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (ap-southeast-2)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (eu-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (eu-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (sa-east-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (us-west-1)`: http://aws.amazon.com/ec2/
-.. _`Amazon EC2 (us-west-2)`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts (syd-y)`: http://www.elastichosts.com/
-.. _`ElasticHosts (tor-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (cn-1)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lon-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lon-b)`: http://www.elastichosts.com/
-.. _`ElasticHosts (sat-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
-.. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
@@ -135,12 +101,12 @@ Provider                              list images get image create image delete 
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
+.. _`Ovh`: https://www.ovh.com/
 .. _`Packet`: http://www.packet.net/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
-.. _`RunAbove`: https://www.runabove.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/

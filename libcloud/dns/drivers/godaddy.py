@@ -71,7 +71,7 @@ class GoDaddyDNSConnection(ConnectionKey):
 
     allow_insecure = False
 
-    def __init__(self, key, secret, shopper_id, secure=True, host=None,
+    def __init__(self, key, secret, secure=True, shopper_id=None, host=None,
                  port=None, url=None, timeout=None,
                  proxy_url=None, backoff=None, retry_delay=None):
         super(GoDaddyDNSConnection, self).__init__(
@@ -87,7 +87,9 @@ class GoDaddyDNSConnection(ConnectionKey):
         self.shopper_id = shopper_id
 
     def add_default_headers(self, headers):
-        headers['X-Shopper-Id'] = self.shopper_id
+        if self.shopper_id is not None:
+            headers['X-Shopper-Id'] = self.shopper_id
+        headers['Content-type'] = 'application/json'
         headers['Authorization'] = "sso-key %s:%s" % \
             (self.key, self.secret)
         return headers
@@ -130,6 +132,7 @@ class GoDaddyDNSDriver(DNSDriver):
         :param  secret: Your access key secret
         :type   secret: ``str``
         """
+        self.shopper_id = shopper_id
         super(GoDaddyDNSDriver, self).__init__(key=key, secret=secret,
                                                secure=secure,
                                                host=host, port=port,
@@ -187,7 +190,7 @@ class GoDaddyDNSDriver(DNSDriver):
         new_record = self._format_record(name, type, data, extra)
         self.connection.request(
             '/v1/domains/%s/records' % (zone.domain), method='PATCH',
-            data=[new_record])
+            data=json.dumps([new_record]))
         id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
@@ -226,7 +229,7 @@ class GoDaddyDNSDriver(DNSDriver):
                                               record.type,
                                               record.name),
             method='PUT',
-            data=[new_record])
+            data=json.dumps([new_record]))
         id = self._get_id_of_record(name, type)
         return Record(
             id=id, name=name,
@@ -418,9 +421,10 @@ class GoDaddyDNSDriver(DNSDriver):
                 'type': type,
                 'name': name,
                 'data': data,
-                'priority': 1,
                 'ttl': extra.get('ttl', 5)
             }
+        if type == RecordType.MX:
+            new_record['priority'] = 1
         return new_record
 
     def _to_zones(self, items):
@@ -468,6 +472,9 @@ class GoDaddyDNSDriver(DNSDriver):
 
     def _get_id_of_record(self, name, type):
         return '%s:%s' % (name, type)
+
+    def _ex_connection_class_kwargs(self):
+        return {'shopper_id': self.shopper_id}
 
 
 class GoDaddyAvailability(object):

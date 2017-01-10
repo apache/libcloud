@@ -271,4 +271,4 @@ class ForbiddenError(LibcloudError):
 
     def __init__(self, driver):
         message = 'User has not permission to perform this task.'
-        super(LibcloudError, self).__init__(message, driver)
+        super(ForbiddenError, self).__init__(message, driver)

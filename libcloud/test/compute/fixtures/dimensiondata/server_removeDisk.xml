@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<response requestId="na9_20160321T074626030-0400_7e9fffe7-190b-46f2-91079d52fe57d0ad" xmlns="urn:didata.com:api:cloud:types">
+    <operation>REMOVE_DISK</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Remove disk '540c4d86-4d84-11e4-a91c-0030487e0302' from Server 'Server 1' has been accepted and is being processed.</message>
+</response>

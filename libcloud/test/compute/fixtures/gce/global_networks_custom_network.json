@@ -1,0 +1,14 @@
+{
+ "kind": "compute#network",
+ "id": "5125152985904090792",
+ "creationTimestamp": "2016-03-25T05:34:15.077-07:00",
+ "name": "custom-network",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/custom-network",
+ "autoCreateSubnetworks": false,
+ "subnetworks": [
+  "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112",
+  "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-east1/subnetworks/cf-daf1e2124a902a47",
+  "https://www.googleapis.com/compute/v1/projects/project_name/regions/asia-east1/subnetworks/cf-4c2da366a0381eb9",
+  "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1/subnetworks/cf-df1837b06a6f927b"
+ ]
+}

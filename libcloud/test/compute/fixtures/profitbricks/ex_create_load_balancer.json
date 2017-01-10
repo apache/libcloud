@@ -1,0 +1,18 @@
+{
+    "id": "bal-1",
+    "type": "loadbalancer",
+    "href": "/cloudapi/v3/datacenters/dc-1/loadbalancers/bal-1",
+    "metadata": {
+        "createdDate": "2016-10-26T13:02:33Z",
+        "createdBy": "test@test.te",
+        "etag": "71e8df57a58615b9e15400ede4138b41",
+        "lastModifiedDate": "2016-10-26T13:02:33Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "BUSY"
+    },
+    "properties": {
+        "name": "Test load balancer",
+        "ip": null,
+        "dhcp": true
+    }
+}

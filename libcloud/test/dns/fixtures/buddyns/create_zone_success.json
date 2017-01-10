@@ -1,0 +1,8 @@
+{ "name": "microsoft.com",
+  "name_idn": "microsoft.com",
+  "serial": null,
+  "master": "65.55.37.62",
+  "creation_ts": null,
+  "status": "https://www.buddyns.com/api/v2/zone/anexample.com/status/",
+  "delegation": "https://www.buddyns.com/api/v2/zone/anexample.com/delegation/"
+}

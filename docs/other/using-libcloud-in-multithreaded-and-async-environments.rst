@@ -43,7 +43,7 @@ You need to do two things when you want to use Libcloud with gevent:
 * Create a separate driver instance for each Greenlet. This is necessary
   because a driver instance reuses the same Connection class.
 
-For an example see Efficiently download multiple files using gevent.
+For an example see :doc:`Efficiently download multiple files using gevent </storage/examples>`.
 
 Using Libcloud with Twisted
 ---------------------------

@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.iso8601 import parse_date
 
 try:
@@ -206,12 +207,16 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             'display_name': name,
             'display_description': name,
             'size': size,
-            'volume_type': ex_volume_type,
             'metadata': {
                 'contents': name,
             },
-            'availability_zone': location
         }
+
+        if ex_volume_type:
+            volume['volume_type'] = ex_volume_type
+
+        if location:
+            volume['availability_zone'] = location
 
         if snapshot:
             volume['snapshot_id'] = snapshot.id
@@ -318,9 +323,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             node_id = node_id.id
 
         uri = '/servers/%s' % (node_id)
-        resp = self.connection.request(uri, method='GET')
-        if resp.status == httplib.NOT_FOUND:
-            return None
+        try:
+            resp = self.connection.request(uri, method='GET')
+        except BaseHTTPError as e:
+            if e.code == httplib.NOT_FOUND:
+                return None
+            raise
 
         return self._to_node_from_obj(resp.object)
 
@@ -1664,10 +1672,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type  volume: `StorageVolume`
 
         :param name: Name of snapshot (optional)
-        :type  name: `str`
+        :type  name: `str` | `NoneType`
 
         :param ex_description: Description of the snapshot (optional)
-        :type  ex_description: `str`
+        :type  ex_description: `str` | `NoneType`
 
         :param ex_force: Specifies if we create a snapshot that is not in
                          state `available`. For example `in-use`. Defaults
@@ -1676,10 +1684,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`VolumeSnapshot`
         """
-        data = {'snapshot': {'display_name': name,
-                             'display_description': ex_description,
-                             'volume_id': volume.id,
-                             'force': ex_force}}
+        data = {'snapshot': {'volume_id': volume.id, 'force': ex_force}}
+
+        if name is not None:
+            data['snapshot']['display_name'] = name
+
+        if ex_description is not None:
+            data['snapshot']['display_description'] = ex_description
 
         return self._to_snapshot(self.connection.request('/os-snapshots',
                                                          method='POST',
@@ -2061,29 +2072,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         for label, values in api_node['addresses'].items():
             for value in values:
                 ip = value['addr']
-
                 is_public_ip = False
 
                 try:
-                    public_subnet = is_public_subnet(ip)
+                    is_public_ip = is_public_subnet(ip)
                 except:
                     # IPv6
-                    public_subnet = False
 
-                # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating' for
-                # public and 'fixed' for private
-                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating'
+                    # for public and 'fixed' for private
+                    explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
-                if explicit_ip_type == 'floating':
-                    is_public_ip = True
-                elif explicit_ip_type == 'fixed':
-                    is_public_ip = False
-                elif label in public_networks_labels:
-                    # Try label next
-                    is_public_ip = True
-                elif public_subnet:
-                    # Check for public subnet
-                    is_public_ip = True
+                    if label in public_networks_labels:
+                        is_public_ip = True
+                    elif explicit_ip_type == 'floating':
+                        is_public_ip = True
+                    elif explicit_ip_type == 'fixed':
+                        is_public_ip = False
 
                 if is_public_ip:
                     public_ips.append(ip)
@@ -2108,6 +2113,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             created_at=created,
             driver=self,
             extra=dict(
+                addresses=api_node['addresses'],
                 hostId=api_node['hostId'],
                 access_ip=api_node.get('accessIPv4'),
                 access_ipv6=api_node.get('accessIPv6', None),
@@ -2192,7 +2198,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         snapshot = VolumeSnapshot(id=data['id'], driver=self,
                                   size=data['size'], extra=extra,
-                                  created=created_dt, state=state)
+                                  created=created_dt, state=state,
+                                  name=display_name)
         return snapshot
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
@@ -2404,27 +2411,31 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return node.extra['metadata']
 
     def ex_pause_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'pause': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'pause')
 
     def ex_unpause_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'unpause': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'unpause')
+
+    def ex_stop_node(self, node):
+        return self._post_simple_node_action(node, 'os-stop')
+
+    def ex_start_node(self, node):
+        return self._post_simple_node_action(node, 'os-start')
 
     def ex_suspend_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'suspend': None}
-        resp = self.connection.request(uri, method='POST', data=data)
-        return resp.status == httplib.ACCEPTED
+        return self._post_simple_node_action(node, 'suspend')
 
     def ex_resume_node(self, node):
-        uri = '/servers/%s/action' % (node.id)
-        data = {'resume': None}
-        resp = self.connection.request(uri, method='POST', data=data)
+        return self._post_simple_node_action(node, 'resume')
+
+    def _post_simple_node_action(self, node, action):
+        """ Post a simple, data-less action to the OS node action endpoint
+        :param `Node` node:
+        :param str action: the action to call
+        :return `bool`: a boolean that indicates success
+        """
+        uri = '/servers/{node_id}/action'.format(node_id=node.id)
+        resp = self.connection.request(uri, method='POST', data={action: None})
         return resp.status == httplib.ACCEPTED
 
 

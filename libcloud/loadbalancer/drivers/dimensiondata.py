@@ -75,10 +75,11 @@ class DimensionDataLBDriver(Driver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
 
-        if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
-
-        self.selected_region = API_ENDPOINTS[region]
+        if region not in API_ENDPOINTS and host is None:
+            raise ValueError(
+                'Invalid region: %s, no host specified' % (region))
+        if region is not None:
+            self.selected_region = API_ENDPOINTS[region]
 
         super(DimensionDataLBDriver, self).__init__(key=key, secret=secret,
                                                     secure=secure, host=host,
@@ -97,16 +98,18 @@ class DimensionDataLBDriver(Driver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_balancer(self, name, port, protocol, algorithm, members):
+    def create_balancer(self, name, port=None, protocol=None,
+                        algorithm=None, members=None,
+                        ex_listener_ip_address=None):
         """
         Create a new load balancer instance
 
         :param name: Name of the new load balancer (required)
         :type  name: ``str``
 
-        :param port: Port the load balancer should listen on,
-                    defaults to 80 (required)
-        :type  port: ``str``
+        :param port: An integer in the range of 1-65535. If not supplied,
+                     it will be taken to mean 'Any Port'
+        :type  port: ``int``
 
         :param protocol: Loadbalancer protocol, defaults to http.
         :type  protocol: ``str``
@@ -117,11 +120,13 @@ class DimensionDataLBDriver(Driver):
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
         :type algorithm: :class:`.Algorithm`
 
+        :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
+                                       notation (x.x.x.x).
+        :type ex_listener_ip_address: ``str``
+
         :rtype: :class:`LoadBalancer`
         """
         network_domain_id = self.network_domain_id
-        if port is None:
-            port = 80
         if protocol is None:
             protocol = 'http'
         if algorithm is None:
@@ -153,7 +158,8 @@ class DimensionDataLBDriver(Driver):
             name=name,
             ex_description=name,
             port=port,
-            pool=pool)
+            pool=pool,
+            listener_ip_address=ex_listener_ip_address)
 
         return LoadBalancer(
             id=listener.id,
@@ -163,22 +169,31 @@ class DimensionDataLBDriver(Driver):
             port=port,
             driver=self,
             extra={'pool_id': pool.id,
-                   'network_domain_id': network_domain_id}
+                   'network_domain_id': network_domain_id,
+                   'listener_ip_address': ex_listener_ip_address}
         )
 
-    def list_balancers(self):
+    def list_balancers(self, ex_network_domain_id=None):
         """
-        List all loadbalancers inside a geography.
+        List all loadbalancers inside a geography or in given network.
 
         In Dimension Data terminology these are known as virtual listeners
 
+        :param ex_network_domain_id: UUID of Network Domain
+               if not None returns only balancers in the given network
+               if None then returns all pools for the organization
+        :type  ex_network_domain_id: ``str``
+
         :rtype: ``list`` of :class:`LoadBalancer`
         """
+        params = None
+        if ex_network_domain_id is not None:
+            params = {"networkDomainId": ex_network_domain_id}
 
         return self._to_balancers(
             self.connection
-            .request_with_orgId_api_2('networkDomainVip/virtualListener')
-            .object)
+            .request_with_orgId_api_2('networkDomainVip/virtualListener',
+                                      params=params).object)
 
     def get_balancer(self, balancer_id):
         """
@@ -204,7 +219,7 @@ class DimensionDataLBDriver(Driver):
 
         :rtype: ``list`` of ``str``
         """
-        return ['http', 'https', 'tcp', 'udp']
+        return ['http', 'https', 'tcp', 'udp', 'ftp', 'smtp']
 
     def balancer_list_members(self, balancer):
         """
@@ -558,8 +573,8 @@ class DimensionDataLBDriver(Driver):
                                    network_domain_id,
                                    name,
                                    ex_description,
-                                   port,
-                                   pool,
+                                   port=None,
+                                   pool=None,
                                    listener_ip_address=None,
                                    persistence_profile=None,
                                    fallback_persistence_profile=None,
@@ -580,8 +595,9 @@ class DimensionDataLBDriver(Driver):
         :param ex_description: Description of the node (required)
         :type  ex_description: ``str``
 
-        :param port: Description of the node (required)
-        :type  port: ``str``
+        :param port: An integer in the range of 1-65535. If not supplied,
+                     it will be taken to mean 'Any Port'
+        :type  port: ``int``
 
         :param pool: The pool to use for the listener
         :type  pool: :class:`DimensionDataPool`
@@ -619,7 +635,6 @@ class DimensionDataLBDriver(Driver):
         """
         if port is 80 or 443:
             listener_type = 'PERFORMANCE_LAYER_4'
-            protocol = 'HTTP'
         else:
             listener_type = 'STANDARD'
 
@@ -636,7 +651,8 @@ class DimensionDataLBDriver(Driver):
         if listener_ip_address is not None:
             ET.SubElement(create_node_elm, "listenerIpAddress").text = \
                 str(listener_ip_address)
-        ET.SubElement(create_node_elm, "port").text = str(port)
+        if port is not None:
+            ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = 'true'
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(connection_limit)
@@ -644,8 +660,9 @@ class DimensionDataLBDriver(Driver):
             .text = str(connection_rate_limit)
         ET.SubElement(create_node_elm, "sourcePortPreservation") \
             .text = source_port_preservation
-        ET.SubElement(create_node_elm, "poolId") \
-            .text = pool.id
+        if pool is not None:
+            ET.SubElement(create_node_elm, "poolId") \
+                .text = pool.id
         if persistence_profile is not None:
             ET.SubElement(create_node_elm, "persistenceProfileId") \
                 .text = persistence_profile.id
@@ -676,15 +693,28 @@ class DimensionDataLBDriver(Driver):
             status=State.RUNNING
         )
 
-    def ex_get_pools(self):
+    def ex_get_pools(self, ex_network_domain_id=None):
         """
-        Get all of the pools inside the current geography
+        Get all of the pools inside the current geography or
+        in given network.
+
+        :param ex_network_domain_id: UUID of Network Domain
+               if not None returns only balancers in the given network
+               if None then returns all pools for the organization
+        :type  ex_network_domain_id: ``str``
 
         :return: Returns a ``list`` of type ``DimensionDataPool``
         :rtype: ``list`` of ``DimensionDataPool``
         """
+        params = None
+
+        if ex_network_domain_id is not None:
+            params = {"networkDomainId": ex_network_domain_id}
+
         pools = self.connection \
-            .request_with_orgId_api_2('networkDomainVip/pool').object
+            .request_with_orgId_api_2('networkDomainVip/pool',
+                                      params=params).object
+
         return self._to_pools(pools)
 
     def ex_get_pool(self, pool_id):
@@ -824,15 +854,25 @@ class DimensionDataLBDriver(Driver):
             response_code = findtext(result, 'responseCode', TYPES_URN)
             return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_get_nodes(self):
+    def ex_get_nodes(self, ex_network_domain_id=None):
         """
-        Get the nodes within this geography
+        Get the nodes within this geography or in given network.
+
+        :param ex_network_domain_id: UUID of Network Domain
+               if not None returns only balancers in the given network
+               if None then returns all pools for the organization
+        :type  ex_network_domain_id: ``str``
 
         :return: Returns an ``list`` of ``DimensionDataVIPNode``
         :rtype: ``list`` of ``DimensionDataVIPNode``
         """
+        params = None
+        if ex_network_domain_id is not None:
+            params = {"networkDomainId": ex_network_domain_id}
+
         nodes = self.connection \
-            .request_with_orgId_api_2('networkDomainVip/node').object
+            .request_with_orgId_api_2('networkDomainVip/node',
+                                      params=params).object
         return self._to_nodes(nodes)
 
     def ex_get_node(self, node_id):
