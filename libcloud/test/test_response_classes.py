@@ -19,7 +19,7 @@ import unittest
 import requests
 import requests_mock
 
-from libcloud.common.base import XmlResponse, JsonResponse
+from libcloud.common.base import XmlResponse, JsonResponse, RawResponse, Connection
 from libcloud.common.types import MalformedResponseError
 from libcloud.httplib_ssl import LibcloudConnection
 
@@ -94,6 +94,18 @@ class ResponseClassesTests(unittest.TestCase):
         parsed = response.parse_body()
         self.assertEqual(parsed, '')
 
+    def test_RawResponse_class_read_method(self):
+        TEST_DATA = '1234abcd'
+        
+        conn = Connection(host='mock.com', port=80, secure=False)
+        conn.connect()
+        adapter = requests_mock.Adapter()
+        conn.connection.session.mount('mock', adapter)
+        adapter.register_uri('GET', 'http://test.com/raw_data', text=TEST_DATA)
+        
+        response = conn.request('/raw_data', raw=True)
+        data = response.response.read()
+        self.assertEqual(data, TEST_DATA)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
