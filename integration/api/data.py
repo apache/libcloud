@@ -22,5 +22,16 @@ NODES = [
      'size': 'test-size-1',
      'created_at': '2017-01-09T05:25:12+00:00',
      'image': 'test-image-1',
+     'extra': {'test-key': 'test-value'}},
+    {'id': '4567a',
+     'name': 'test-2',
+     'state': 'RUNNING',
+     'public_ips': ['4.4.4.5', '8.8.8.8'],
+     'private_ips': ['10.0.0.2', '192.168.1.1'],
+     'size': 'test-size-1',
+     'created_at': '2017-01-09T05:25:12+00:00',
+     'image': 'test-image-1',
      'extra': {'test-key': 'test-value'}}
 ]
+
+REPORT_DATA = "Around the ragged rocks, the ragged rascal ran. \r\n"

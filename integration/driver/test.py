@@ -70,3 +70,7 @@ class TestNodeDriver(NodeDriver):
         for node in r.object:
             nodes.append(Node(driver=self, **node))
         return nodes
+
+    def ex_report_data(self):
+        r = self.connection.request('/compute/report_data', raw=True)
+        return r.response.read()

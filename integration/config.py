@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import wraps
+import base64
+from libcloud.utils.py3 import b
 
-from bottle import run
+API_AUTH = ('apache', 'libcloud')
 
-from .routes import *
-
-if __name__ == '__main__':
-    run(host='localhost', port=9898)
+EXPECTED_AUTH = 'Basic %s' % (base64.b64encode(b('%s:%s' % API_AUTH)))

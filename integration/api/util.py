@@ -13,11 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from bottle import run, request
+import base64
 from functools import wraps
 
-from bottle import run
+from libcloud.utils.py3 import b
 
-from .routes import *
+from ..config import EXPECTED_AUTH
 
-if __name__ == '__main__':
-    run(host='localhost', port=9898)
+def secure(f):
+    @wraps(f)
+    def secure_route(*args, **kwargs):
+        if 'Authorization' not in request.headers.keys():
+            raise Exception('Argghhhh')
+        else:
+            auth = request.headers['Authorization']
+
+            if auth != EXPECTED_AUTH:
+                raise Exception('Bad authentication')
+            return f(*args, **kwargs)
+    return secure_route
