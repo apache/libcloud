@@ -40,8 +40,9 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
                                                                port=443)
         else:
             self.connection.conn_class.assert_called_with(host='127.0.0.1',
-                                                               port=443,
-                                                               timeout=10)
+                                                          secure=1,
+                                                          port=443,
+                                                          timeout=10)
 
 
 if __name__ == '__main__':

@@ -162,9 +162,10 @@ class LibcloudConnection(LibcloudBaseConnection):
     host = None
     response = None
 
-    def __init__(self, host, port, **kwargs):
+    def __init__(self, host, port, secure=None, **kwargs):
+        scheme = 'https' if secure is not None and secure else 'http'
         self.host = '{0}://{1}{2}'.format(
-            'https' if port == 443 else 'http',
+            'https' if port == 443 else scheme,
             host,
             ":{0}".format(port) if port not in (80, 443) else ""
         )

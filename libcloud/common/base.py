@@ -459,6 +459,9 @@ class Connection(object):
         if not hasattr(kwargs, 'port'):
             kwargs.update({'port': port})
 
+        if not hasattr(kwargs, 'secure'):
+            kwargs.update({'secure': self.secure})
+
         if not hasattr(kwargs, 'key_file') and hasattr(self, 'key_file'):
             kwargs.update({'key_file': getattr(self, 'key_file')})
 
