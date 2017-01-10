@@ -110,6 +110,10 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.host, 'http://localhost')
 
     def test_secure_connection_unusual_port(self):
+        """
+        Test that the connection class will default to secure (https) even
+        when the port is an unusual (non 443, 80) number
+        """
         conn = Connection(secure=True, host='localhost', port=8081)
         conn.connect()
         self.assertEqual(conn.connection.host, 'https://localhost:8081')
@@ -118,7 +122,32 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         conn2.connect()
         self.assertEqual(conn2.connection.host, 'https://localhost:8081')
 
+    def test_secure_by_default(self):
+        """
+        Test that the connection class will default to secure (https)
+        """
+        conn = Connection(host='localhost', port=8081)
+        conn.connect()
+        self.assertEqual(conn.connection.host, 'https://localhost:8081')
+
+    def test_implicit_port(self):
+        """
+        Test that the port is not included in the URL if the protocol implies
+        the port, e.g. http implies 80
+        """
+        conn = Connection(secure=True, host='localhost', port=443)
+        conn.connect()
+        self.assertEqual(conn.connection.host, 'https://localhost')
+
+        conn2 = Connection(secure=False, host='localhost', port=80)
+        conn2.connect()
+        self.assertEqual(conn2.connection.host, 'http://localhost')
+
     def test_insecure_connection_unusual_port(self):
+        """
+        Test that the connection will allow unusual ports and insecure
+        schemes
+        """
         conn = Connection(secure=False, host='localhost', port=8081)
         conn.connect()
         self.assertEqual(conn.connection.host, 'http://localhost:8081')
