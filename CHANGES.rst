@@ -11,6 +11,10 @@ Common
   [GITHUB-928]
   (Anthony Shaw)
 
+- Fix bug where custom port and secure flag would not get propagated to connection class
+  [GITHUB-972]
+  (Anthony Shaw)
+
 - Fix bug where custom port would not get propagated to connection
   [GITHUB-971]
   (Anthony Shaw)
