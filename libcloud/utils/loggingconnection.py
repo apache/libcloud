@@ -27,7 +27,8 @@ import sys
 import os
 
 from libcloud.common.base import (LibcloudConnection,
-                                  HTTPResponse)
+                                  HTTPResponse,
+                                  HttpLibResponseProxy)
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
@@ -172,7 +173,7 @@ class LoggingConnection(LibcloudConnection):
         return " ".join(cmd)
 
     def getresponse(self):
-        r = LibcloudConnection.getresponse(self)
+        r = HttpLibResponseProxy(LibcloudConnection.getresponse(self))
         if self.log is not None:
             r, rv = self._log_response(r)
             self.log.write(rv + "\n")
