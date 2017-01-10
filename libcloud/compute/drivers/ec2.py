@@ -3322,11 +3322,13 @@ class BaseEC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
-    def detach_volume(self, volume):
+    def detach_volume(self, volume, ex_force=False):
         params = {
             'Action': 'DetachVolume',
             'VolumeId': volume.id}
 
+        if ex_force:
+            params['Force'] = 1
         self.connection.request(self.path, params=params)
         return True
 
