@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+API_VERSION = '2016-09-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -3230,7 +3230,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3297,11 +3297,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
