@@ -5751,7 +5751,7 @@ class GCENodeDriver(NodeDriver):
         return self.ex_instancegroupmanager_list_managed_instances(manager)
 
     def ex_instancegroupmanager_delete_instances(self, manager,
-                                                   node_list):
+                                                 node_list):
         """
         Remove instances from GCEInstanceGroupManager and destroy
         the instance
