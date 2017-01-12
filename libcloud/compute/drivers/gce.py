@@ -1371,6 +1371,25 @@ class GCEInstanceGroupManager(UuidMixin):
         return self.driver.ex_instancegroupmanager_recreate_instances(
             manager=self)
 
+    def delete_instances(self, node_list):
+        """
+        Removes one or more instances from the specified instance group,
+        and delete those instances.
+
+        Scopes needed - one of the following:
+        * https://www.googleapis.com/auth/cloud-platform
+        * https://www.googleapis.com/auth/compute
+
+        :param  node_list: List of nodes to delete.
+        :type   node_list: ``list`` of :class:`Node` or ``list`` of
+                           :class:`GCENode`
+
+        :return:  Return True if successful.
+        :rtype: ``bool``
+        """
+        return self.driver.ex_instancegroupmanager_delete_instances(
+            manager=self, node_list=node_list)
+
     def resize(self, size):
         """
         Set the number of instances for this Instance Group.  An increase in
@@ -5730,6 +5749,37 @@ class GCENodeDriver(NodeDriver):
                                 data=request_data).object
 
         return self.ex_instancegroupmanager_list_managed_instances(manager)
+
+    def ex_instancegroupmanager_delete_instances(self, manager,
+                                                   node_list):
+        """
+        Remove instances from GCEInstanceGroupManager and destry
+        the instance
+
+        Scopes needed - one of the following:
+        * https://www.googleapis.com/auth/cloud-platform
+        * https://www.googleapis.com/auth/compute
+
+        :param  manager:  Required. The name of the managed instance group. The
+                       name must be 1-63 characters long, and comply with
+                       RFC1035.
+        :type   manager: ``str`` or :class: `GCEInstanceGroupManager`
+
+        :keyword  node_list:  list of Node objects to delete.
+        :type   :type   node_list: ``list`` of :class:`Node`
+
+        :return:  True if successful
+        :rtype: ``bool``
+        """
+
+        request = "/zones/%s/instanceGroupManagers/%s/deleteInstances" % (
+            manager.zone.name, manager.name)
+        request_data = {'instances': [x.extra['selfLink']
+                                      for x in node_list]}
+        self.connection.request(request, method='POST',
+                                data=request_data).object
+
+        return True
 
     def ex_instancegroupmanager_resize(self, manager, size):
         """
