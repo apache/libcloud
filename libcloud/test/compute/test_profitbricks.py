@@ -4962,7 +4962,7 @@ class ProfitBricksMockHttp(MockHttp):
 
     GET     - fetch a list of snapshots
     '''
-    def _cloudapi_v3__snapshots(
+    def _cloudapi_v3_snapshots(
         self, method, url, body, headers
     ):
         if method == 'GET':
