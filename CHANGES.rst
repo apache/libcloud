@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in current version of Apache Libcloud
----------------------------------------------
+Changes Apache Libcloud 2.0.0rc1
+--------------------------------
 
 Common
 ~~~~~~
