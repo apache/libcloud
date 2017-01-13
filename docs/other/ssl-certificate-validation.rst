@@ -1,5 +1,5 @@
-SSL Certificate Validation
-==========================
+SSL Certificate Validation in <v2.0
+===================================
 
 When establishing a secure connection to a cloud provider endpoint,
 Libcloud verifies server SSL certificate. By default, Libcloud searches
