@@ -19,7 +19,6 @@ verification, depending on libcloud.security settings.
 """
 
 import os
-import socket
 import warnings
 import requests
 
