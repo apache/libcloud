@@ -1,8 +1,8 @@
 Changes in Apache Libcloud v2.0.0RC1
 ====================================
 
-Replacement of urllib with `requests`
--------------------------------------
+Replacement of httplib with `requests`
+--------------------------------------
 
 Apache Libcloud supports Python 2.6, 2.7 - 3.3 and beyond. To achieve this a package was written within the
 Libcloud library to create a generic HTTP client for Python 2 and 3. This package has a custom implementation of a certificate store, searching and TLS preference configuration. One of the first errors to greet new users of Libcloud would be "No CA Certificates were found in CA_CERTS_PATH."... 
@@ -18,7 +18,7 @@ Other changes include:
 * Support for mocking HTTP responses without having to mock the Connection class
 * 10% typical performance improvement with the use of persistent TCP connections for each driver instance
 * Access to the low-level TCP session is no longer available. Access to .read() on a raw connection will bind around `requests` body or iter_content methods.
-
+* Temporary removal of the S3 very-large file support using the custom multi-part APIs. This will be added back in subsequent release candidates.
 
 Allow redirects is enabled by default
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
