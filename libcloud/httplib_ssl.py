@@ -19,7 +19,6 @@ verification, depending on libcloud.security settings.
 """
 
 import os
-import socket
 import warnings
 import requests
 
@@ -32,25 +31,9 @@ __all__ = [
     'LibcloudConnection'
 ]
 
+ALLOW_REDIRECTS = 1
+
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
-
-# Error message which is thrown when establishing SSL / TLS connection fails
-UNSUPPORTED_TLS_VERSION_ERROR_MSG = """
-Failed to establish SSL / TLS connection (%s). It is possible that the server \
-doesn't support requested SSL / TLS version (%s).
-For information on how to work around this issue, please see \
-https://libcloud.readthedocs.org/en/latest/other/\
-ssl-certificate-validation.html#changing-used-ssl-tls-version
-""".strip()
-
-# Maps ssl.PROTOCOL_* constant to the actual SSL / TLS version name
-SSL_CONSTANT_TO_TLS_VERSION_MAP = {
-    0: 'SSL v2',
-    2: 'SSLv3, TLS v1.0, TLS v1.1, TLS v1.2',
-    3: 'TLS v1.0',
-    4: 'TLS v1.1',
-    5: 'TLS v1.2'
-}
 
 
 class LibcloudBaseConnection(object):
@@ -182,16 +165,24 @@ class LibcloudConnection(LibcloudBaseConnection):
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
 
+    @property
+    def verification(self):
+        """
+        The option for SSL verification given to underlying requests
+        """
+        return self.ca_cert if self.ca_cert is not None else self.verify
+
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
+        url = urlparse.urljoin(self.host, url)
         self.response = self.session.request(
             method=method.lower(),
-            url=''.join([self.host, url]),
+            url=url,
             data=body,
             headers=headers,
-            allow_redirects=1,
+            allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
-            verify=self.ca_cert if self.ca_cert is not None else self.verify
+            verify=self.verification
         )
 
     def prepared_request(self, method, url, body=None,
@@ -280,33 +271,3 @@ class HttpLibResponseProxy(object):
     def version(self):
         # requests doesn't expose this
         return '11'
-
-
-def get_socket_error_exception(ssl_version, exc):
-    """
-    Function which intercepts socket.error exceptions and re-throws an
-    exception with a more user-friendly message in case server doesn't support
-    requested SSL version.
-    """
-    exc_msg = str(exc)
-
-    # Re-throw an exception with a more friendly error message
-    if 'connection reset by peer' in exc_msg.lower():
-        ssl_version_name = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
-        msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
-               (exc_msg, ssl_version_name))
-
-        # Note: In some cases arguments are (errno, message) and in
-        # other it's just (message,)
-        exc_args = getattr(exc, 'args', [])
-
-        if len(exc_args) == 2:
-            new_exc_args = [exc.args[0], msg]
-        else:
-            new_exc_args = [msg]
-
-        new_exc = socket.error(*new_exc_args)
-        new_exc.original_exc = exc
-        return new_exc
-    else:
-        return exc
