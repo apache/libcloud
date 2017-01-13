@@ -674,7 +674,12 @@ class Connection(object):
         return response
 
     def morph_action_hook(self, action):
-        return urlparse.urljoin(self.request_path, action)
+        url = urlparse.urljoin(self.request_path.lstrip('/').rstrip('/') +
+                               '/', action.lstrip('/'))
+        if not url.startswith('/'):
+            return '/' + url
+        else:
+            return url
 
     def add_default_params(self, params):
         """
