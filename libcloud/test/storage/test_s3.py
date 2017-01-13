@@ -17,7 +17,7 @@ import base64
 import hmac
 import os
 import sys
-import unittest
+
 from io import BytesIO
 
 from hashlib import sha1
@@ -50,6 +50,7 @@ from libcloud.utils.py3 import b
 
 from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import unittest
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
