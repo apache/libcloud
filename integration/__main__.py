@@ -1,12 +1,13 @@
 import unittest
 import sys
 
-from .driver.test import TestNodeDriver
+from integration.driver.test import TestNodeDriver
 
-from .api.data import NODES, REPORT_DATA
+from integration.api.data import NODES, REPORT_DATA
+
 
 class IntegrationTest(unittest.TestCase):
-    def setUp(self):        
+    def setUp(self):
         self.instance = TestNodeDriver('apache', 'libcloud', secure=False,
                                        host='localhost', port=9898)
 
@@ -30,7 +31,7 @@ class IntegrationTest(unittest.TestCase):
         """
         Test that a raw request can correctly return the data
         """
-        data = self.instance.ex_report_data().body
+        data = self.instance.ex_report_data()
         self.assertEqual(data, REPORT_DATA)
 
 if __name__ == '__main__':

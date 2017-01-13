@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import wraps
-
 from bottle import run
 
-from .routes import *
+import integration.api.routes  # noqa
 
 if __name__ == '__main__':
     run(host='localhost', port=9898)

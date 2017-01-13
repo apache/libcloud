@@ -56,14 +56,14 @@ class TestNodeDriver(NodeDriver):
     name = 'Test Compute Driver'
     website = 'http://libcloud.apache.org'
     features = {'create_node': ['ssh_key', 'password']}
-    
+
     def __init__(self, key, secret=None, secure=True,
                  host=None, port=None, **kwargs):
         super(TestNodeDriver, self).__init__(key=key, secret=secret,
                                              secure=secure, host=host,
                                              port=port,
                                              **kwargs)
-    
+
     def list_nodes(self):
         r = self.connection.request('/compute/nodes')
         nodes = []

@@ -15,15 +15,17 @@
 
 import json
 
-from bottle import route, template
+from bottle import route
 
-from .data import NODES, REPORT_DATA
-from .util import secure
+from integration.api.data import NODES, REPORT_DATA
+from integration.api.util import secure
+
 
 @route('/compute/nodes', method='GET')
 @secure
 def list_nodes():
     return json.dumps(NODES)
+
 
 @route('/compute/report_data', method='GET')
 @secure

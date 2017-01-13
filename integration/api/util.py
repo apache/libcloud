@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bottle import run, request
-import base64
+from bottle import request
 from functools import wraps
 
-from libcloud.utils.py3 import b
+from integration.config import EXPECTED_AUTH
 
-from ..config import EXPECTED_AUTH
 
 def secure(f):
     @wraps(f)
