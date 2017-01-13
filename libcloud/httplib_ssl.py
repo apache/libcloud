@@ -182,16 +182,24 @@ class LibcloudConnection(LibcloudBaseConnection):
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
 
+    @property
+    def verification(self):
+        """
+        The option for SSL verification given to underlying requests
+        """
+        return self.ca_cert if self.ca_cert is not None else self.verify
+
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
+        url = urlparse.urljoin(self.host, url)
         self.response = self.session.request(
             method=method.lower(),
-            url=''.join([self.host, url]),
+            url=url,
             data=body,
             headers=headers,
             allow_redirects=1,
             stream=stream,
-            verify=self.ca_cert if self.ca_cert is not None else self.verify
+            verify=self.verification
         )
 
     def prepared_request(self, method, url, body=None,
