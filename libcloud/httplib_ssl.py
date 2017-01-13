@@ -32,6 +32,8 @@ __all__ = [
     'LibcloudConnection'
 ]
 
+ALLOW_REDIRECTS = 1
+
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
 
 # Error message which is thrown when establishing SSL / TLS connection fails
@@ -197,7 +199,7 @@ class LibcloudConnection(LibcloudBaseConnection):
             url=url,
             data=body,
             headers=headers,
-            allow_redirects=1,
+            allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
             verify=self.verification
         )
