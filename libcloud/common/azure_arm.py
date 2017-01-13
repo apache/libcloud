@@ -143,10 +143,11 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
     rawResponseCls = RawResponse
 
     def __init__(self, key, secret, secure=True, tenant_id=None,
-                 subscription_id=None, **kwargs):
+                 subscription_id=None, cloud_environment=None, **kwargs):
         super(AzureResourceManagementConnection, self) \
             .__init__(key, secret, **kwargs)
-        cloud_environment = kwargs.get("cloud_environment", "default")
+        if not cloud_environment:
+            cloud_environment = "default"
         if isinstance(cloud_environment, basestring):
             cloud_environment = publicEnvironments[cloud_environment]
         if not isinstance(cloud_environment, dict):

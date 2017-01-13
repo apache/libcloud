@@ -191,6 +191,7 @@ class AzureNodeDriver(NodeDriver):
                  api_version=None, region=None, **kwargs):
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
+        self.cloud_environment = kwargs.get("cloud_environment")
         super(AzureNodeDriver, self).__init__(key=key, secret=secret,
                                               secure=secure,
                                               host=host, port=port,
@@ -1351,6 +1352,7 @@ class AzureNodeDriver(NodeDriver):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
         kwargs['tenant_id'] = self.tenant_id
         kwargs['subscription_id'] = self.subscription_id
+        kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):
