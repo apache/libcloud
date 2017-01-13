@@ -57,7 +57,7 @@ class AzureAuthJsonResponse(JsonResponse):
             return str(b)
 
 # Based on https://github.com/Azure/azure-xplat-cli/blob/master/lib/util/profile/environment.js
-publicEnvironments = [
+publicEnvironments = {v['name']: v for v in [
   {
     'name': 'default',
     'portalUrl': 'http://go.microsoft.com/fwlink/?LinkId=254433',
@@ -129,7 +129,7 @@ publicEnvironments = [
     'keyVaultDnsSuffix': '.vault.microsoftazure.de',
     'azureDataLakeStoreFileSystemEndpointSuffix': 'N/A',
     'azureDataLakeAnalyticsCatalogAndJobEndpointSuffix': 'N/A'
-  }]
+  }]}
 
 class AzureResourceManagementConnection(ConnectionUserAndKey):
     """
