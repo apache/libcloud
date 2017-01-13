@@ -25,6 +25,10 @@ Compute
 - Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated
   [GITHUB-967]
   (Anthony Shaw)
+  
+- [google compute] Improve performance of list nodes by caching volume information.
+  (GITHUB-813, LIBCLOUD-826)
+  [Tom Melendez]
 
 Changes in Apache Libcloud 1.5.0
 --------------------------------
@@ -38,10 +42,6 @@ Common
 
 Compute
 ~~~~~~~
-
-- [google compute] Improve performance of list nodes by caching volume information.
-  (GITHUB-813, LIBCLOUD-826)
-  [Tom Melendez]
 
 - [azure] New method for accessing rate cards.
   [GITHUB-957]
