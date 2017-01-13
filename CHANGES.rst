@@ -19,8 +19,17 @@ Common
   [GITHUB-971]
   (Anthony Shaw)
 
+- Fix bug where instantiating a connection from URL and then requesting an action with a leading / would lead to
+  a malformed URL
+  [GITHUB-976]
+  (Anthony Shaw)
+
 Compute
 ~~~~~~~
+
+- Fix a bug in profitbricks driver where listing snapshots would request a malformed URL
+  [GITHUB-976]
+  (Anthony Shaw)
 
 - Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated
   [GITHUB-967]
