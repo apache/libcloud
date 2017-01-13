@@ -46,7 +46,7 @@ from libcloud.utils.compression import decompress_data
 
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.httplib_ssl import LibcloudConnection, HttpLibResponseProxy
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
@@ -271,7 +271,6 @@ class XmlResponse(Response):
 
 
 class RawResponse(Response):
-
     def __init__(self, connection, response=None):
         """
         :param connection: Parent connection object.
@@ -308,7 +307,8 @@ class RawResponse(Response):
     def response(self):
         if not self._response:
             response = self.connection.connection.getresponse()
-            self._response, self.body = response, response.text
+            self._response = HttpLibResponseProxy(response)
+            self.body = response.text
             if not self.success():
                 self.parse_error()
         return self._response

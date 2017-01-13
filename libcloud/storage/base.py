@@ -25,7 +25,6 @@ import hashlib
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import next
 from libcloud.utils.py3 import b
 
 import libcloud.utils.files
@@ -557,25 +556,12 @@ class StorageDriver(BaseDriver):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = response.iter_content(chunk_size)
-
-        try:
-            data_read = next(stream)
-        except StopIteration:
-            # Empty response?
-            return False
-
         bytes_transferred = 0
 
         with open(file_path, 'wb') as file_handle:
-            while len(data_read) > 0:
-                file_handle.write(b(data_read))
-                bytes_transferred += len(data_read)
-
-                try:
-                    data_read = next(stream)
-                except StopIteration:
-                    data_read = ''
+            for chunk in response._response.iter_content(chunk_size):
+                file_handle.write(b(chunk))
+                bytes_transferred += len(chunk)
 
         if int(obj.size) != int(bytes_transferred):
             # Transfer failed, support retry?

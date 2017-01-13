@@ -17,7 +17,14 @@ import sys
 import random
 import requests
 
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import PY2
+
+if PY2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
+
+from libcloud.utils.py3 import (httplib, u)
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
@@ -72,6 +79,17 @@ class multipleresponse(object):
         return response
 
 
+class BodyStream(StringIO):
+    def next(self, chunk_size=None):
+        return StringIO.next(self)
+
+    def __next__(self, chunk_size=None):
+        return StringIO.__next__(self)
+
+    def read(self, chunk_size=None):
+        return StringIO.read(self)
+
+
 class MockResponse(object):
     """
     A mock HTTPResponse
@@ -95,11 +113,13 @@ class MockResponse(object):
                 self.body_iter = self.body
         else:
             self.body_iter = iter('')
+        self._response = requests.Response()
+        self._response.raw = BodyStream(u(body))
 
     def read(self, *args, **kwargs):
         return self.body
 
-    def next(self):
+    def next(self, *args):
         if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
             return self.body_iter.next()
         else:
@@ -115,7 +135,13 @@ class MockResponse(object):
         return list(self.headers.items())
 
     def iter_content(self, chunk_size):
-        return self.body_iter
+        def generator():
+            while True:
+                chunk = self.raw.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+        return generator()
 
     def msg(self):
         raise NotImplemented
@@ -169,7 +195,7 @@ class MockRawResponse(BaseMockHttpObject):
         self.connection = connection
         self.iter_content = self.next
 
-    def next(self):
+    def next(self, chunk_size=None):
         if self._current_item == len(self._data):
             raise StopIteration
 
