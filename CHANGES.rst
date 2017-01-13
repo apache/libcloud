@@ -19,6 +19,12 @@ Common
   [GITHUB-971]
   (Anthony Shaw)
 
+Compute
+~~~~~~~
+
+- Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated
+  [GITHUB-967]
+  (Anthony Shaw)
 
 Changes in Apache Libcloud 1.5.0
 --------------------------------
