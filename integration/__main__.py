@@ -35,4 +35,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(data, REPORT_DATA)
 
 if __name__ == '__main__':
-    sys.exit(unittest.main())
+    import libcloud
+    with open('/tmp/testing.log', 'w') as f:
+        libcloud.enable_debug(f)
+        sys.exit(unittest.main())
