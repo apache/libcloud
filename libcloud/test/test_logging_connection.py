@@ -20,10 +20,14 @@ import requests_mock
 import libcloud
 from libcloud.test import unittest
 from libcloud.common.base import Connection
+from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
 
 class TestLoggingConnection(unittest.TestCase):
+    def tearDown(self):
+        Connection.conn_class = LibcloudConnection
+
     def test_debug_method_uses_log_class(self):
         with StringIO() as fh:
             libcloud.enable_debug(fh)
@@ -39,9 +43,11 @@ class TestLoggingConnection(unittest.TestCase):
             self.assertEqual(conn.connection.host, 'http://test.com')
             with requests_mock.mock() as m:
                 m.get('http://test.com/test', text='data')
-                response = conn.request('/test')
-        self.assertEqual(response.body, 'data')
+                conn.request('/test')
+            log = fh.getvalue()
         self.assertTrue(isinstance(conn.connection, LoggingConnection))
+        self.assertIn('-i -X GET', log)
+        self.assertIn('data', log)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
