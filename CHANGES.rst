@@ -7,6 +7,10 @@ Changes Apache Libcloud 2.0.0rc1
 Common
 ~~~~~~
 
+- Fix DEBUG mode, also add support for using io.StringIO as the file handle when calling libcloud.enable_debug
+  [GITHUB-978, LIBCLOUD-887]
+  (Anthony Shaw)
+
 - Introduction of the requests package as the mechanism for making HTTP requests for all drivers
   [GITHUB-928]
   (Anthony Shaw)
