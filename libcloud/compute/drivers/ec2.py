@@ -981,7 +981,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.eu-west-2.amazonaws.com',
         'api_name': 'ec2_eu_west_london',
         'country': 'United Kingdom',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -1376,7 +1376,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.ca-central-1.amazonaws.com',
         'api_name': 'ec2_ca_central_1',
         'country': 'Canada',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             't1.micro',
             'm1.small',
