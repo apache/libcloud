@@ -1874,7 +1874,7 @@ class GCENodeDriver(NodeDriver):
         :type     node: ``Node``
 
         :keyword  name: Name of the access config.
-        :type     node: ``str``
+        :type     nam: ``str``
 
         :keyword  nic: Name of the network interface.
         :type     nic: ``str``
@@ -3233,7 +3233,7 @@ class GCENodeDriver(NodeDriver):
                           is set with that family name.
         :type     family: ``str``
 
-        :keywork  guest_os_features: Features of the guest operating system,
+        :keyword  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only. Possible
                                      values include \'VIRTIO_SCSI_MULTIQUEUE\',
                                      \'WINDOWS\', \'MULTI_IP_SUBNET\' if
@@ -3303,7 +3303,7 @@ class GCENodeDriver(NodeDriver):
         :type   name: ``str``
 
         :param  url: The URL to the image. The URL can start with `gs://`
-        :param  url: ``str``
+        :type url: ``str``
 
         :param  description: The description of the image
         :type   description: ``str``
@@ -5536,7 +5536,7 @@ class GCENodeDriver(NodeDriver):
         :param  instancegroup:  The Instance Group where from which you
                                 want to generate a list of included
                                 instances.
-        :type   instancegroup: :class:``GCEInstanceGroup``
+        :type   instancegroup: :class:`GCEInstanceGroup`
 
         :return:  List of :class:`GCENode` objects.
         :rtype: ``list`` of :class:`GCENode` objects.
@@ -6651,8 +6651,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return a License object for specified project and name.
 
-        :param  name: The project to reference when looking up the license.
-        :type   name: ``str``
+        :param  project: The project to reference when looking up the license.
+        :type   project: ``str``
 
         :param  name: The name of the License
         :type   name: ``str``
@@ -6786,7 +6786,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  ex_project_list: The name of the project to list for images.
                                  Examples include: 'debian-cloud'.
-        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+        :type   ex_project_list: ``str`` or ``list`` of ``str`` or ``None``
 
         :param  ex_standard_projects: If true, check in standard projects if
                                       the image is not found.
@@ -6919,8 +6919,8 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name, URL or object of the subnetwork
         :type   name: ``str`` or :class:`GCESubnetwork`
 
-        :param  name: The region object, name, or URL of the subnetwork
-        :type   name: ``str`` or :class:`GCERegion` or ``None``
+        :keyword region: The region object, name, or URL of the subnetwork
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
 
         :return:  True if successful
         :rtype:   ``bool``
@@ -6966,8 +6966,8 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name or URL of the subnetwork
         :type   name: ``str``
 
-        :param  name: The region of the subnetwork
-        :type   name: ``str`` or :class:`GCERegion` or ``None``
+        :keyword region: The region of the subnetwork
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
 
         :return:  A Subnetwork object
         :rtype:   :class:`GCESubnetwork`
