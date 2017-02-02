@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <GetHostedZoneResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/">
    <HostedZone>

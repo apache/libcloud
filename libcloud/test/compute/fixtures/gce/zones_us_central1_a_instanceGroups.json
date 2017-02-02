@@ -1,0 +1,29 @@
+{
+    "id": "projects/project_name/zones/us-central1-a/instanceGroups",
+    "items": [
+        {
+            "creationTimestamp": "2016-09-09T13:48:39.700-07:00",
+            "description": "",
+            "fingerprint": "42WmSpB8rSM=",
+            "id": "5837905299775594184",
+            "kind": "compute#instanceGroup",
+            "name": "myname",
+            "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myname",
+            "size": 0,
+            "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
+        },
+        {
+            "creationTimestamp": "2016-09-09T13:54:30.857-07:00",
+            "description": "",
+            "fingerprint": "42WmSpB8rSM=",
+            "id": "6825641674983513961",
+            "kind": "compute#instanceGroup",
+            "name": "myname2",
+            "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myname2",
+            "size": 0,
+            "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
+        }
+    ],
+    "kind": "compute#instanceGroupList",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups"
+}

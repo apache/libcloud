@@ -1,0 +1,30 @@
+{
+    "id": "sshot",
+    "type": "snapshot",
+    "href": "/cloudapi/v3/snapshots/sshot",
+    "metadata": {
+        "createdDate": "2016-10-26T11:38:45Z",
+        "createdBy": "test@test.te",
+        "etag": "01873262ac042b5f44ed33b4241225b4",
+        "lastModifiedDate": "2016-10-26T11:38:45Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "AVAILABLE"
+    },
+    "properties": {
+        "name": "Test Snapshot",
+        "description": "Test Snapshot",
+        "location": "us/las",
+        "size": 10,
+        "cpuHotPlug": true,
+        "cpuHotUnplug": false,
+        "ramHotPlug": true,
+        "ramHotUnplug": false,
+        "nicHotPlug": true,
+        "nicHotUnplug": true,
+        "discVirtioHotPlug": true,
+        "discVirtioHotUnplug": true,
+        "discScsiHotPlug": false,
+        "discScsiHotUnplug": false,
+        "licenceType": "LINUX"
+    }
+}

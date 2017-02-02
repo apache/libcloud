@@ -15,137 +15,110 @@
 
 import sys
 import unittest
-import zlib
-import gzip
 
-from mock import Mock
+import requests
+import requests_mock
 
-from libcloud.utils.py3 import httplib, b, StringIO, PY3
-from libcloud.common.base import Response, XmlResponse, JsonResponse
+from libcloud.common.base import XmlResponse, JsonResponse, Connection
 from libcloud.common.types import MalformedResponseError
+from libcloud.httplib_ssl import LibcloudConnection
 
 
 class ResponseClassesTests(unittest.TestCase):
     def setUp(self):
-        self._mock_response = Mock()
-        self._mock_response.getheaders.return_value = []
-        self._mock_response.status = httplib.OK
-        self._mock_response._original_data = None
-        self._mock_connection = Mock()
+        self.mock_connection = LibcloudConnection(host='mock.com', port=80)
+        self.mock_connection.driver = None
 
     def test_XmlResponse_class(self):
-        self._mock_response.read.return_value = '<foo>bar</foo>'
-        response = XmlResponse(response=self._mock_response,
-                               connection=self._mock_connection)
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/2', text='<foo>bar</foo>')
+            response_obj = requests.get('mock://test.com/2')
+            response = XmlResponse(response=response_obj,
+                                   connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed.tag, 'foo')
         self.assertEqual(parsed.text, 'bar')
 
     def test_XmlResponse_class_malformed_response(self):
-        self._mock_response.read.return_value = '<foo>'
-
-        try:
-            XmlResponse(response=self._mock_response,
-                        connection=self._mock_connection)
-        except MalformedResponseError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/', text='<foo>')
+            response_obj = requests.get('mock://test.com/')
+            try:
+                XmlResponse(response=response_obj,
+                            connection=self.mock_connection)
+            except MalformedResponseError:
+                pass
+            else:
+                self.fail('Exception was not thrown')
 
     def test_XmlResponse_class_zero_length_body_strip(self):
-        self._mock_response.read.return_value = ' '
-
-        response = XmlResponse(response=self._mock_response,
-                               connection=self._mock_connection)
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/', text=' ')
+            response_obj = requests.get('mock://test.com/')
+            response = XmlResponse(response=response_obj,
+                                   connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, '')
 
     def test_JsonResponse_class_success(self):
-        self._mock_response.read.return_value = '{"foo": "bar"}'
-        response = JsonResponse(response=self._mock_response,
-                                connection=self._mock_connection)
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/', text='{"foo": "bar"}')
+            response_obj = requests.get('mock://test.com/')
+            response = JsonResponse(response=response_obj,
+                                    connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, {'foo': 'bar'})
 
     def test_JsonResponse_class_malformed_response(self):
-        self._mock_response.read.return_value = '{"foo": "bar'
-
-        try:
-            JsonResponse(response=self._mock_response,
-                         connection=self._mock_connection)
-        except MalformedResponseError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/', text='{"foo": "bar"')
+            response_obj = requests.get('mock://test.com/')
+            try:
+                JsonResponse(response=response_obj,
+                             connection=self.mock_connection)
+            except MalformedResponseError:
+                pass
+            else:
+                self.fail('Exception was not thrown')
 
     def test_JsonResponse_class_zero_length_body_strip(self):
-        self._mock_response.read.return_value = ' '
-
-        response = JsonResponse(response=self._mock_response,
-                                connection=self._mock_connection)
+        with requests_mock.mock() as m:
+            m.register_uri('GET', 'mock://test.com/', text=' ')
+            response_obj = requests.get('mock://test.com/')
+            response = JsonResponse(response=response_obj,
+                                    connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, '')
 
-    def test_deflate_encoding(self):
-        original_data = 'foo bar ponies, wooo zlib'
-        compressed_data = zlib.compress(b(original_data))
+    def test_RawResponse_class_read_method(self):
+        """
+        Test that the RawResponse class includes a response
+        property which exhibits the same properties and methods
+        as httplib.HTTPResponse for backward compat <1.5.0
+        """
+        TEST_DATA = '1234abcd'
 
-        self._mock_response.read.return_value = compressed_data
-        self._mock_response.getheaders.return_value = \
-            {'Content-Encoding': 'deflate'}
+        conn = Connection(host='mock.com', port=80, secure=False)
+        conn.connect()
 
-        response = Response(response=self._mock_response,
-                            connection=self._mock_connection)
+        with requests_mock.Mocker() as m:
+            m.register_uri('GET', 'http://mock.com/raw_data', text=TEST_DATA,
+                           headers={'test': 'value'})
+            response = conn.request('/raw_data', raw=True)
+        data = response.response.read()
+        self.assertEqual(data, TEST_DATA)
 
-        body = response.parse_body()
-        self.assertEqual(body, original_data)
+        header_value = response.response.getheader('test')
+        self.assertEqual(header_value, 'value')
 
-        self._mock_response.getheaders.return_value = \
-            {'Content-Encoding': 'zlib'}
+        headers = response.response.getheaders()
+        self.assertEqual(headers, [('test', 'value')])
 
-        response = Response(response=self._mock_response,
-                            connection=self._mock_connection)
-
-        body = response.parse_body()
-        self.assertEqual(body, original_data)
-
-    def test_gzip_encoding(self):
-        original_data = 'foo bar ponies, wooo gzip'
-
-        if PY3:
-            from io import BytesIO
-            string_io = BytesIO()
-        else:
-            string_io = StringIO()
-
-        stream = gzip.GzipFile(fileobj=string_io, mode='w')
-        stream.write(b(original_data))
-        stream.close()
-        compressed_data = string_io.getvalue()
-
-        self._mock_response.read.return_value = compressed_data
-        self._mock_response.getheaders.return_value = \
-            {'Content-Encoding': 'gzip'}
-
-        response = Response(response=self._mock_response,
-                            connection=self._mock_connection)
-
-        body = response.parse_body()
-        self.assertEqual(body, original_data)
-
-        self._mock_response.getheaders.return_value = \
-            {'Content-Encoding': 'x-gzip'}
-
-        response = Response(response=self._mock_response,
-                            connection=self._mock_connection)
-
-        body = response.parse_body()
-        self.assertEqual(body, original_data)
-
+        self.assertEqual(response.response.status, 200)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

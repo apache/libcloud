@@ -112,6 +112,8 @@ class AzureConnection(ConnectionUserAndKey):
 
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
+    skip_host = False
+    skip_accept_encoding = False
 
     def add_default_params(self, params):
         return params

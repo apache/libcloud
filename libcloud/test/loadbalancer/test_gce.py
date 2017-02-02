@@ -32,10 +32,9 @@ class GCELoadBalancerTest(GoogleTestCase):
 
     def setUp(self):
         GCEMockHttp.test = self
-        GCELBDriver.connectionCls.conn_classes = (GCEMockHttp, GCEMockHttp)
-        GCENodeDriver.connectionCls.conn_classes = (GCEMockHttp, GCEMockHttp)
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GCELBDriver.connectionCls.conn_class = GCEMockHttp
+        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GCEMockHttp.type = None
         kwargs = GCE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'
@@ -188,6 +187,13 @@ class GCELoadBalancerTest(GoogleTestCase):
         self.assertEqual(member.ip, node.public_ips[0])
         self.assertEqual(member.id, node.name)
         self.assertEqual(member.port, balancer.port)
+
+    def test_node_to_member_no_pub_ip(self):
+        node = self.driver.gce.ex_get_node('libcloud-lb-nopubip-001',
+                                           'us-central1-b')
+        balancer = self.driver.get_balancer('lcforwardingrule')
+        member = self.driver._node_to_member(node, balancer)
+        self.assertIsNone(member.ip)
 
     def test_forwarding_rule_to_loadbalancer(self):
         fwr = self.driver.gce.ex_get_forwarding_rule('lcforwardingrule')

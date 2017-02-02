@@ -36,7 +36,7 @@ class ECSDriverTestCase(LibcloudTestCase):
 
     def setUp(self):
         ECSMockHttp.test = self
-        ECSDriver.connectionCls.conn_classes = (ECSMockHttp, ECSMockHttp)
+        ECSDriver.connectionCls.conn_class = ECSMockHttp
         ECSMockHttp.use_param = 'Action'
         ECSMockHttp.type = None
 
@@ -58,6 +58,7 @@ class ECSDriverTestCase(LibcloudTestCase):
                                             driver=self.driver)
         self.fake_location = NodeLocation(id=self.region, name=self.region,
                                           country=None, driver=self.driver)
+        self.fake_instance_id = 'fake_instance_id'
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -245,6 +246,11 @@ class ECSDriverTestCase(LibcloudTestCase):
     def test_stop_node_with_ex_force_stop(self):
         ECSMockHttp.type = 'stop_node_force_stop'
         result = self.driver.ex_stop_node(self.fake_node, ex_force_stop=True)
+        self.assertTrue(result)
+
+    def test_create_public_ip(self):
+        ECSMockHttp.type = 'create_public_ip'
+        result = self.driver.create_public_ip(self.fake_instance_id)
         self.assertTrue(result)
 
     def test_list_volumes(self):
@@ -579,7 +585,7 @@ class ECSMockHttp(MockHttpTestCase):
                   'InternetMaxBandwidthIn': '200',
                   'HostName': 'hostname',
                   'Password': 'password',
-                  'IoOptimized': 'true',
+                  'IoOptimized': 'optimized',
                   'SystemDisk.Category': 'cloud',
                   'SystemDisk.DiskName': 'root',
                   'SystemDisk.Description': 'sys',
@@ -903,8 +909,35 @@ class ECSMockHttp(MockHttpTestCase):
         self.assertUrlContainsQueryParams(url, params)
         return self._DescribeSecurityGroups(method, url, body, headers)
 
+    def _create_sg_CreateSecurityGroup(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'Description': 'description',
+                  'ClientToken': 'clientToken'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('create_security_group.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _delete_sg_by_id_DeleteSecurityGroup(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'SecurityGroupId': 'sg-fakeSecurityGroupId'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('delete_security_group_by_id.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _list_sgas_DescribeSecurityGroupAttributes(self, method, url, body, headers):
+        params = {'RegionId': self.test.region,
+                  'SecurityGroupId': 'sg-fakeSecurityGroupId',
+                  'NicType': 'internet'}
+        self.assertUrlContainsQueryParams(url, params)
+        resp_body = self.fixtures.load('describe_security_group_attributes.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
     def _DescribeZones(self, method, url, body, headers):
         resp_body = self.fixtures.load('describe_zones.xml')
+        return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _create_public_ip_AllocatePublicIpAddress(self, method, url, body, headers):
+        resp_body = self.fixtures.load('create_public_ip.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
 

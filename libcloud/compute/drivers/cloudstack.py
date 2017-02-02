@@ -1235,6 +1235,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
+        'Migrating': NodeState.MIGRATING,
         'Stopped': NodeState.STOPPED,
         'Stopping': NodeState.PENDING,
         'Destroyed': NodeState.TERMINATED,
@@ -1251,7 +1252,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Allocated': StorageVolumeState.AVAILABLE,
         'Ready': StorageVolumeState.AVAILABLE,
         'Snapshotting': StorageVolumeState.BACKUP,
-        'UploadError': StorageVolumeState.ERROR
+        'UploadError': StorageVolumeState.ERROR,
+        'Migrating': StorageVolumeState.MIGRATING
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
@@ -1633,7 +1635,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             server_params['keypair'] = ex_key_name
 
         if ex_user_data:
-            ex_user_data = base64.b64encode(b(ex_user_data).decode('ascii'))
+            ex_user_data = base64.b64encode(b(ex_user_data)).decode('ascii')
             server_params['userdata'] = ex_user_data
 
         if ex_security_groups:
@@ -4721,10 +4723,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         tags = {}
 
         for tag in tag_set:
-            for key, value in tag.iteritems():
-                key = tag['key']
-                value = tag['value']
-                tags[key] = value
+            key = tag['key']
+            value = tag['value']
+            tags[key] = value
 
         return tags
 

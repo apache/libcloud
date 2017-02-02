@@ -1,0 +1,22 @@
+[
+  {
+      "volumeId": "foo",
+      "status": "available",
+      "region": "GRA1",
+      "name": "",
+      "description": "",
+      "size": 10,
+      "creationDate": "2016-10-10T17:33:02Z",
+      "id": "foo-snap"
+  },
+  {
+      "volumeId": "bar",
+      "status": "available",
+      "region": "GRA1",
+      "name": "",
+      "description": "",
+      "size": 10,
+      "creationDate": "2016-10-09T17:33:02Z",
+      "id": "bar-snap"
+    }
+]

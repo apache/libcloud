@@ -75,6 +75,12 @@ class DummyIterator(object):
     def __next__(self):
         return self.next()
 
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        pass
+
 
 class DummyStorageDriver(StorageDriver):
     """

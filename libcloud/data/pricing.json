@@ -84,6 +84,36 @@
             "t2.nano": 0.01,
             "x1.32xlarge": 19.341
         },
+        "ec2_ap_south_1": {
+            "c4.large": 0.137,
+            "c4.xlarge": 0.275,
+            "c4.2xlarge": 0.549,
+            "c4.4xlarge": 1.097,
+            "c4.8xlarge": 2.195,
+            "d2.xlarge": 0.827,
+            "d2.2xlarge": 1.653,
+            "d2.4xlarge": 3.306,
+            "d2.8xlarge": 6.612,
+            "i2.xlarge": 0.967,
+            "i2.2xlarge": 1.933,
+            "i2.4xlarge": 3.867,
+            "i2.8xlarge": 7.733,
+            "m4.large": 0.169,
+            "m4.xlarge": 0.337,
+            "m4.2xlarge": 0.675,
+            "m4.4xlarge": 1.35,
+            "m4.10xlarge": 3.375,
+            "r3.large": 0.19,
+            "r3.xlarge": 0.379,
+            "r3.2xlarge": 0.758,
+            "r3.4xlarge": 1.516,
+            "r3.8xlarge": 3.032,
+            "t2.micro": 0.019,
+            "t2.small": 0.038,
+            "t2.medium": 0.076,
+            "t2.large": 0.152,
+            "t2.nano": 0.0095
+        },
         "ec2_ap_southeast": {
             "c1.medium": 0.164,
             "c1.xlarge": 0.655,
@@ -1005,5 +1035,5 @@
         }
     },
     "storage": {},
-    "updated": 1463737767
+    "updated": 1467125838
 }

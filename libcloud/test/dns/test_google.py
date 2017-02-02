@@ -32,10 +32,8 @@ class GoogleTests(GoogleTestCase):
 
     def setUp(self):
         GoogleDNSMockHttp.test = self
-        GoogleDNSDriver.connectionCls.conn_classes = (GoogleDNSMockHttp,
-                                                      GoogleDNSMockHttp)
-        GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
-                                                 GoogleAuthMockHttp)
+        GoogleDNSDriver.connectionCls.conn_class = GoogleDNSMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GoogleDNSMockHttp.type = None
         kwargs = DNS_KEYWORD_PARAMS_GOOGLE.copy()
         kwargs['auth_type'] = 'IA'

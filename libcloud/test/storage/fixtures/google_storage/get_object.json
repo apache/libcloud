@@ -1,0 +1,18 @@
+{
+    "kind": "storage#object",
+    "id": "test-bucket/test-object/12345",
+    "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/o/test-object  ",
+    "name": "test-object",
+    "bucket": "test-bucket",
+    "generation": "12345",
+    "metageneration": "67890",
+    "contentType": "text/plain",
+    "timeCreated": "2016-09-14T01:19:33.850Z",
+    "updated": "2016-09-14T01:19:33.850Z",
+    "storageClass": "STANDARD",
+    "size": "123",
+    "md5Hash": "wVenkDHhxA+FkxgpvF/FUg==",
+    "mediaLink": "https://www.googleapis.com/download/storage/v1/b/test-bucket/o/test-object?generation=12345&alt=media",
+    "crc32": "+x0GyA==",
+    "etag": "etag"
+}

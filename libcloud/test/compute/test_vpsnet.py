@@ -30,7 +30,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class VPSNetTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        VPSNetNodeDriver.connectionCls.conn_classes = (None, VPSNetMockHttp)
+        VPSNetNodeDriver.connectionCls.conn_class = VPSNetMockHttp
         self.driver = VPSNetNodeDriver(*VPSNET_PARAMS)
 
     def test_create_node(self):

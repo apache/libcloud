@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<portList id="c8c92ea3-2da8-4d51-8153-f39bec794d69"
+          xmlns="urn:didata.com:api:cloud:types">
+    <name>MyPortList</name>
+    <description>Production Servers</description>
+    <port begin="8000" end="9600"/>
+    <port begin="25"/>
+    <port begin="443"/>
+    <childPortList id="c8c92ea3-2da8-4d51-8153-f39bec794d68"
+                   name="tomcatPorts"/>
+    <childPortList id="c8c92ea3-2da8-4d51-8153-f39bec794d67"
+                   name="mySqlPorts"/>
+    <state>NORMAL</state>
+    <createTime>2015-06-21T18:54:42.000Z</createTime>
+</portList>

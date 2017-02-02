@@ -349,7 +349,8 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         return self._to_protocols_with_default_ports(
             self.connection.request('/loadbalancers/protocols').object)
 
-    def list_balancers(self, ex_member_address=None):
+    def list_balancers(self, ex_member_address=None, ex_status=None,
+                       ex_changes_since=None, ex_params={}):
         """
         @inherits: :class:`Driver.list_balancers`
 
@@ -357,11 +358,32 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                                   If provided, only the load balancers which
                                   have this member attached will be returned.
         :type ex_member_address: ``str``
+
+        :param ex_status: Optional. Filter balancers by status
+        :type ex_status: ``str``
+
+        :param ex_changes_since: Optional. List all load balancers that have
+                                 changed since the specified date/time
+        :type ex_changes_since: ``str``
+
+        :param ex_params: Optional. Set parameters to be submitted to the API
+                          in the query string
+        :type ex_params: ``dict``
         """
+
         params = {}
 
         if ex_member_address:
             params['nodeaddress'] = ex_member_address
+
+        if ex_status:
+            params['status'] = ex_status
+
+        if ex_changes_since:
+            params['changes-since'] = ex_changes_since
+
+        for key, value in ex_params.items():
+            params[key] = value
 
         return self._to_balancers(
             self.connection.request('/loadbalancers', params=params).object)

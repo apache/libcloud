@@ -16,8 +16,7 @@ class LuadnsTests(unittest.TestCase):
 
     def setUp(self):
         LuadnsMockHttp.type = None
-        LuadnsDNSDriver.connectionCls.conn_classes = (
-            None, LuadnsMockHttp)
+        LuadnsDNSDriver.connectionCls.conn_class = LuadnsMockHttp
         self.driver = LuadnsDNSDriver(*DNS_PARAMS_LUADNS)
         self.test_zone = Zone(id='11', type='master', ttl=None,
                               domain='example.com', extra={},

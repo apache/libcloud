@@ -1,0 +1,44 @@
+{
+  "snapshots": [
+    {
+      "id": "c0def940-9324-11e6-9a56-000f533176b1",
+      "name": "test-snapshot",
+      "regions": [
+        "nyc1"
+      ],
+      "created_at": "2016-10-15T22:14:34Z",
+      "resource_id": "8371d4fe-92b0-11e6-9a56-000f533176b1",
+      "resource_type": "volume",
+      "min_disk_size": 1,
+      "size_gigabytes": 0
+    },
+    {
+      "id": "c2036724-9343-11e6-aef4-000f53315a41",
+      "name": "test-snapshot-2",
+      "regions": [
+        "nyc1"
+      ],
+      "created_at": "2016-10-16T01:56:30Z",
+      "resource_id": "8371d4fe-92b0-11e6-9a56-000f533176b1",
+      "resource_type": "volume",
+      "min_disk_size": 1,
+      "size_gigabytes": 0
+    },
+    {
+      "id": "d347e033-9343-11e6-9a56-000f533176b1",
+      "name": "test-snapshot-3",
+      "regions": [
+        "nyc1"
+      ],
+      "created_at": "2016-10-16T01:56:59Z",
+      "resource_id": "8371d4fe-92b0-11e6-9a56-000f533176b1",
+      "resource_type": "volume",
+      "min_disk_size": 1,
+      "size_gigabytes": 0
+    }
+  ],
+  "links": {},
+  "meta": {
+    "total": 3
+  }
+}

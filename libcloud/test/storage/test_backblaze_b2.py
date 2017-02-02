@@ -38,8 +38,8 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         self.driver_klass.connectionCls.authCls = MockAuthConn()
-        self.driver_klass.connectionCls.conn_classes = (
-            None, BackblazeB2MockHttp)
+        self.driver_klass.connectionCls.conn_class = \
+            BackblazeB2MockHttp
         self.driver_klass.connectionCls.rawResponseCls = \
             BackblazeB2MockRawResponse
         BackblazeB2MockHttp.type = None
@@ -220,6 +220,14 @@ class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
     def _b2api_v1_b2_hide_file(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('b2_hide_file.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _file_test00001_2_txt(self, method, url, body, headers):
+        # test_download_object
+        if method == 'GET':
+            body = 'ab'
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

@@ -1,0 +1,33 @@
+<DescribeInstanceTypesResponse
+    xmlns="http://api.outscale.com/wsdl/fcuext/2014-04-15/">
+    <requestId>0556395e-4fe3-4cc1-80cb-c98b9f44ca4b</requestId>
+    <instanceTypeSet>
+        <item>
+            <name>og4.4xlarge</name>
+            <vcpu>24</vcpu>
+            <memory>193273528320</memory>
+            <storageSize>412316860416</storageSize>
+            <storageCount>1</storageCount>
+            <maxIpAddresses>30</maxIpAddresses>
+            <ebsOptimizedAvailable>true</ebsOptimizedAvailable>
+        </item>
+        <item>
+            <name>m3.large</name>
+            <vcpu>2</vcpu>
+            <memory>8050966528</memory>
+            <storageSize>34359738368</storageSize>
+            <storageCount>1</storageCount>
+            <maxIpAddresses>10</maxIpAddresses>
+            <ebsOptimizedAvailable>false</ebsOptimizedAvailable>
+        </item>
+        <item>
+            <name>oc2.8xlarge</name>
+            <vcpu>15</vcpu>
+            <memory>68718428160</memory>
+            <storageSize>901943132160</storageSize>
+            <storageCount>4</storageCount>
+            <maxIpAddresses>30</maxIpAddresses>
+            <ebsOptimizedAvailable>false</ebsOptimizedAvailable>
+        </item>
+    </instanceTypeSet>
+</DescribeInstanceTypesResponse>

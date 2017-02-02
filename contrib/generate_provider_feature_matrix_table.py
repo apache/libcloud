@@ -410,7 +410,8 @@ def generate_supported_providers_table(api, provider_matrix):
             docs_link = ''
 
         cls = values['cls']
-        supported_regions = cls.list_regions()
+        supported_regions = cls.list_regions() if hasattr(cls, 'list_regions') \
+            else None
 
         if supported_regions:
             supported_regions = ', '.join(supported_regions)

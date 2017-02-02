@@ -25,7 +25,6 @@ import hashlib
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import next
 from libcloud.utils.py3 import b
 
 import libcloud.utils.files
@@ -557,25 +556,12 @@ class StorageDriver(BaseDriver):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = libcloud.utils.files.read_in_chunks(response, chunk_size)
-
-        try:
-            data_read = next(stream)
-        except StopIteration:
-            # Empty response?
-            return False
-
         bytes_transferred = 0
 
         with open(file_path, 'wb') as file_handle:
-            while len(data_read) > 0:
-                file_handle.write(b(data_read))
-                bytes_transferred += len(data_read)
-
-                try:
-                    data_read = next(stream)
-                except StopIteration:
-                    data_read = ''
+            for chunk in response._response.iter_content(chunk_size):
+                file_handle.write(b(chunk))
+                bytes_transferred += len(chunk)
 
         if int(obj.size) != int(bytes_transferred):
             # Transfer failed, support retry?
@@ -589,9 +575,11 @@ class StorageDriver(BaseDriver):
 
         return True
 
-    def _upload_object(self, object_name, content_type, upload_func,
-                       upload_func_kwargs, request_path, request_method='PUT',
-                       headers=None, file_path=None, iterator=None):
+    def _upload_object(self, object_name, content_type, request_path,
+                       request_method='PUT',
+                       headers=None, file_path=None, stream=None,
+                       upload_func=None, upload_func_kwargs=None,
+                       chunked=False, multipart=False):
         """
         Helper function for setting common request headers and calling the
         passed in callback which uploads an object.
@@ -601,8 +589,8 @@ class StorageDriver(BaseDriver):
         if file_path and not os.path.exists(file_path):
             raise OSError('File %s does not exist' % (file_path))
 
-        if iterator is not None and not hasattr(iterator, 'next') and not \
-                hasattr(iterator, '__next__'):
+        if stream is not None and not hasattr(stream, 'next') and not \
+                hasattr(stream, '__next__'):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
@@ -622,200 +610,56 @@ class StorageDriver(BaseDriver):
                     # Fallback to a content-type
                     content_type = DEFAULT_CONTENT_TYPE
 
-        file_size = None
-
-        if iterator:
-            if self.supports_chunked_encoding:
-                headers['Transfer-Encoding'] = 'chunked'
-                upload_func_kwargs['chunked'] = True
-            else:
-                # Chunked transfer encoding is not supported. Need to buffer
-                # all the data in memory so we can determine file size.
-                iterator = libcloud.utils.files.read_in_chunks(
-                    iterator=iterator)
-                data = libcloud.utils.files.exhaust_iterator(iterator=iterator)
-
-                file_size = len(data)
-                upload_func_kwargs['data'] = data
-        else:
-            file_size = os.path.getsize(file_path)
-            upload_func_kwargs['chunked'] = False
-
-        if file_size is not None and 'Content-Length' not in headers:
-            headers['Content-Length'] = file_size
-
         headers['Content-Type'] = content_type
-        response = self.connection.request(request_path,
-                                           method=request_method, data=None,
-                                           headers=headers, raw=True)
+        if stream:
+            response = self.connection.request(
+                request_path,
+                method=request_method, data=stream,
+                headers=headers, raw=True)
+            stream_hash, stream_length = self._hash_buffered_stream(
+                stream,
+                self._get_hash_function())
+        else:
+            with open(file_path, 'rb') as file_stream:
+                response = self.connection.request(
+                    request_path,
+                    method=request_method, data=file_stream,
+                    headers=headers, raw=True)
+            with open(file_path, 'rb') as file_stream:
+                stream_hash, stream_length = self._hash_buffered_stream(
+                    file_stream,
+                    self._get_hash_function())
 
-        upload_func_kwargs['response'] = response
-        success, data_hash, bytes_transferred = upload_func(
-            **upload_func_kwargs)
-
-        if not success:
+        if not response.success():
             raise LibcloudError(
                 value='Object upload failed, Perhaps a timeout?', driver=self)
 
-        result_dict = {'response': response, 'data_hash': data_hash,
-                       'bytes_transferred': bytes_transferred}
-        return result_dict
+        if upload_func:
+            upload_func(**upload_func_kwargs)
 
-    def _upload_data(self, response, data, calculate_hash=True):
-        """
-        Upload data stored in a string.
+        return {'response': response,
+                'bytes_transferred': stream_length,
+                'data_hash': stream_hash}
 
-        :param response: RawResponse object.
-        :type response: :class:`RawResponse`
-
-        :param data: Data to upload.
-        :type data: ``str``
-
-        :param calculate_hash: True to calculate hash of the transferred data.
-                               (defaults to True).
-        :type calculate_hash: ``bool``
-
-        :return: First item is a boolean indicator of success, second
-                 one is the uploaded data MD5 hash and the third one
-                 is the number of transferred bytes.
-        :rtype: ``tuple``
-        """
-        bytes_transferred = 0
-        data_hash = None
-
-        if calculate_hash:
-            data_hash = self._get_hash_function()
-            data_hash.update(b(data))
-
-        try:
-            response.connection.connection.send(b(data))
-        except Exception:
-            # TODO: let this exception propagate
-            # Timeout, etc.
-            return False, None, bytes_transferred
-
-        bytes_transferred = len(data)
-
-        if calculate_hash:
-            data_hash = data_hash.hexdigest()
-
-        return True, data_hash, bytes_transferred
-
-    def _stream_data(self, response, iterator, chunked=False,
-                     calculate_hash=True, chunk_size=None, data=None):
-        """
-        Stream a data over an http connection.
-
-        :param response: RawResponse object.
-        :type response: :class:`RawResponse`
-
-        :param response: An object which implements an iterator interface
-                         or a File like object with read method.
-        :type iterator: :class:`object`
-
-        :param chunked: True if the chunked transfer encoding should be used
-                        (defaults to False).
-        :type chunked: ``bool``
-
-        :param calculate_hash: True to calculate hash of the transferred data.
-                               (defaults to True).
-        :type calculate_hash: ``bool``
-
-        :param chunk_size: Optional chunk size (defaults to ``CHUNK_SIZE``)
-        :type chunk_size: ``int``
-
-        :rtype: ``tuple``
-        :return: First item is a boolean indicator of success, second
-                 one is the uploaded data MD5 hash and the third one
-                 is the number of transferred bytes.
-        """
-
-        chunk_size = chunk_size or CHUNK_SIZE
-
-        data_hash = None
-        if calculate_hash:
-            data_hash = self._get_hash_function()
-
-        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size,
-                                                        fill_size=True)
-
-        bytes_transferred = 0
-        try:
-            chunk = next(generator)
-        except StopIteration:
-            # Special case when StopIteration is thrown on the first iteration
-            # create a 0-byte long object
-            chunk = ''
-            if chunked:
-                response.connection.connection.send(b('%X\r\n' %
-                                                      (len(chunk))))
-                response.connection.connection.send(chunk)
-                response.connection.connection.send(b('\r\n'))
-                response.connection.connection.send(b('0\r\n\r\n'))
-            else:
-                response.connection.connection.send(chunk)
-            return True, data_hash.hexdigest(), bytes_transferred
-
-        while len(chunk) > 0:
-            try:
-                if chunked:
-                    response.connection.connection.send(b('%X\r\n' %
-                                                          (len(chunk))))
-                    response.connection.connection.send(b(chunk))
-                    response.connection.connection.send(b('\r\n'))
-                else:
-                    response.connection.connection.send(b(chunk))
-            except Exception:
-                # TODO: let this exception propagate
-                # Timeout, etc.
-                return False, None, bytes_transferred
-
-            bytes_transferred += len(chunk)
-            if calculate_hash:
-                data_hash.update(b(chunk))
-
-            try:
-                chunk = next(generator)
-            except StopIteration:
-                chunk = ''
-
-        if chunked:
-            response.connection.connection.send(b('0\r\n\r\n'))
-
-        if calculate_hash:
-            data_hash = data_hash.hexdigest()
-
-        return True, data_hash, bytes_transferred
-
-    def _upload_file(self, response, file_path, chunked=False,
-                     calculate_hash=True):
-        """
-        Upload a file to the server.
-
-        :type response: :class:`RawResponse`
-        :param response: RawResponse object.
-
-        :type file_path: ``str``
-        :param file_path: Path to a local file.
-
-        :type iterator: :class:`object`
-        :param response: An object which implements an iterator interface (File
-                         object, etc.)
-
-        :rtype: ``tuple``
-        :return: First item is a boolean indicator of success, second
-                 one is the uploaded data MD5 hash and the third one
-                 is the number of transferred bytes.
-        """
-        with open(file_path, 'rb') as file_handle:
-            success, data_hash, bytes_transferred = (
-                self._stream_data(
-                    response=response,
-                    iterator=iter(file_handle),
-                    chunked=chunked,
-                    calculate_hash=calculate_hash))
-
-        return success, data_hash, bytes_transferred
+    def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
+        total_len = 0
+        if hasattr(stream, '__next__'):
+            data = libcloud.utils.files.exhaust_iterator(iterator=stream)
+            hasher.update(b(data))
+            total_len = len(data)
+            return (hasher.hexdigest(), total_len)
+        if not hasattr(stream, '__exit__'):
+            for s in stream:
+                hasher.update(s)
+                total_len = total_len + len(s)
+            return (hasher.hexdigest(), total_len)
+        with stream:
+            buf = stream.read(blocksize)
+            while len(buf) > 0:
+                total_len = total_len + len(buf)
+                hasher.update(buf)
+                buf = stream.read(blocksize)
+        return (hasher.hexdigest(), total_len)
 
     def _get_hash_function(self):
         """

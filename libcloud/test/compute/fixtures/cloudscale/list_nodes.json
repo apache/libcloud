@@ -1,0 +1,48 @@
+[
+  {
+    "href": "https://api.cloudscale.ch/v1/servers/47cec963-fcd2-482f-bdb6-24461b2d47b1",
+    "uuid": "47cec963-fcd2-482f-bdb6-24461b2d47b1",
+    "name": "db-master",
+    "status": "running",
+    "flavor": {
+      "slug": "flex-4",
+      "name": "Flex-4",
+      "vcpu_count": 2,
+      "memory_gb": 4
+    },
+    "image": {
+      "slug": "debian-8",
+      "name": "Debian 8 (2016-10-20)",
+      "operating_system": "Debian"
+    },
+    "volumes": [
+      {
+        "type": "ssd",
+        "device_path": "/dev/vda",
+        "size_gb": 50
+      }
+    ],
+    "interfaces": [
+      {
+        "type": "public",
+        "addresses": [
+          {
+            "version": 4,
+            "address": "185.98.122.176",
+            "prefix_length": 24,
+            "gateway": "185.98.122.1",
+            "reverse_ptr": "185-98-122-176.cust.cloudscale.ch"
+          },
+          {
+            "version": 6,
+            "address": "2a06:c01:1:1902::7ab0:176",
+            "prefix_length": 64,
+            "gateway": "fe80::1",
+            "reverse_ptr": "185-98-122-176.cust.cloudscale.ch"
+          }
+        ]
+      }
+    ],
+    "anti_affinity_with": []
+  }
+]

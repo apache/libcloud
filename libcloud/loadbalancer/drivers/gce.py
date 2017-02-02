@@ -338,9 +338,12 @@ class GCELBDriver(Driver):
         # would be found if it was there.
         if hasattr(node, 'name'):
             member_id = node.name
-            member_ip = node.public_ips[0]
         else:
             member_id = node
+
+        if hasattr(node, 'public_ips') and len(node.public_ips) > 0:
+            member_ip = node.public_ips[0]
+        else:
             member_ip = None
 
         extra = {'node': node}

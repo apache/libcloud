@@ -1,0 +1,21 @@
+<DescribeRulesResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/">
+    <DescribeRulesResult>
+        <Rules>
+            <member>
+                <IsDefault>true</IsDefault>
+                <Conditions />
+                <Priority>default</Priority>
+                <Actions>
+                    <member>
+                        <Type>forward</Type>
+                        <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/TEST-TARGET-GROUP1/1111111111111111</TargetGroupArn>
+                    </member>
+                </Actions>
+                <RuleArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:listener-rule/app/Test-Develop-App-LB/1111111111111111/1111111111111111/1111111111111111</RuleArn>
+            </member>
+        </Rules>
+    </DescribeRulesResult>
+    <ResponseMetadata>
+        <RequestId>a6519d8d-a03b-11e6-90ef-9138cf7efdbc</RequestId>
+    </ResponseMetadata>
+</DescribeRulesResponse>
