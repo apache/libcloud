@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+API_VERSION = '2016-11-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -2092,6 +2092,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'ramdisk_id': {
             'xpath': 'ramdiskId',
             'transform_func': str
+        },
+        'ena_support': {
+            'xpath': 'enaSupport',
+            'transform_func': str
         }
     },
     'network': {
@@ -3625,7 +3629,8 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
-                          ramdisk_id=None, virtualization_type=None):
+                          ramdisk_id=None, virtualization_type=None,
+                          ena_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -3665,6 +3670,10 @@ class BaseEC2NodeDriver(NodeDriver):
                                          or hvm (optional)
         :type       virtualization_type: ``str``
 
+        :param      ena_support: Enable enhanced networking with Elastic
+                                 Network Adapter for the AMI
+        :type       ena_support: ``bool``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -3695,6 +3704,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if virtualization_type is not None:
             params['VirtualizationType'] = virtualization_type
+
+        if ena_support is not None:
+            params['EnaSupport'] = ena_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object

@@ -1,4 +1,4 @@
-<DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>766b978a-f574-4c8d-a974-57547a8c304e</requestId>
     <volumeSet>
         <item>
