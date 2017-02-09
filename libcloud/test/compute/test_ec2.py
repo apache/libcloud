@@ -558,7 +558,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               root_device_name='/dev/sda1',
                                               description='My Image',
                                               architecture='x86_64',
-                                              block_device_mapping=mapping)
+                                              block_device_mapping=mapping,
+                                              ena_support=True)
         self.assertEqual(image.id, 'ami-57c2fb3e')
 
     def test_ex_list_availability_zones(self):

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DescribeAccountAttributesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeAccountAttributesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>a00adaf6-f86c-48eb-85f8-7ac470ae993d</requestId>
     <accountAttributeSet>
         <item>
