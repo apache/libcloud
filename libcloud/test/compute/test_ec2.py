@@ -562,6 +562,35 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               ena_support=True)
         self.assertEqual(image.id, 'ami-57c2fb3e')
 
+    def test_ex_import_snapshot(self):
+        disk_container = [{'Description': 'Dummy import snapshot task',
+                           'Format': 'raw',
+                           'UserBucket': {'S3Bucket': 'dummy-bucket', 'S3Key': 'dummy-key'}}]
+
+        snap = self.driver.ex_import_snapshot(disk_container=disk_container)
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_wait_for_import_snapshot_completion(self):
+        snap = self.driver._wait_for_import_snapshot_completion(
+            import_task_id='import-snap-fhdysyq6')
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_timeout_wait_for_import_snapshot_completion(self):
+        import_task_id = 'import-snap-fhdysyq6'
+        EC2MockHttp.type = 'timeout'
+        with self.assertRaises(Exception) as context:
+            self.driver._wait_for_import_snapshot_completion(
+                import_task_id=import_task_id, timeout=0.01, interval=0.001)
+        self.assertEqual('Timeout while waiting for import task Id %s'
+                         % import_task_id, str(context.exception))
+
+    def test_ex_describe_import_snapshot_tasks(self):
+        snap = self.driver.ex_describe_import_snapshot_tasks(
+            import_task_id='import-snap-fh7y6i6w<')
+
+        self.assertEqual(snap.snapshotId, 'snap-0ea83e8a87e138f39')
+        self.assertEqual(snap.status, 'completed')
+
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
         availability_zone = availability_zones[0]
@@ -1262,6 +1291,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _RegisterImages(self, method, url, body, headers):
         body = self.fixtures.load('register_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ImportSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load('import_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _timeout_DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks_active.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_imageids_DescribeImages(self, method, url, body, headers):
