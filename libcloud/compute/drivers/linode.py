@@ -127,6 +127,15 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
+    def ex_stop_node(self, node):
+        """
+        Shutdown the given Linode
+
+        """
+        params = {"api_action": "linode.shutdown", "LinodeID": node.id}
+        self.connection.request(API_ROOT, params=params)
+        return True
+
     def reboot_node(self, node):
         """
         Reboot the given Linode
