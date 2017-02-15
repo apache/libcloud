@@ -271,6 +271,23 @@ class Route53DNSDriver(DNSDriver):
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
             ET.SubElement(rrec, 'Value').text = other_record['data']
 
+        # Re-create old records. Since we are deleting a multi value record,
+        # only a single record is deleted and others are left as is.
+        change = ET.SubElement(changes, 'Change')
+        ET.SubElement(change, 'Action').text = 'CREATE'
+
+        rrs = ET.SubElement(change, 'ResourceRecordSet')
+
+        ET.SubElement(rrs, 'Name').text = record_name
+        ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[record.type]
+        ET.SubElement(rrs, 'TTL').text = str(record.extra.get('ttl', '0'))
+
+        rrecs = ET.SubElement(rrs, 'ResourceRecords')
+
+        for other_record in other_records:
+            rrec = ET.SubElement(rrecs, 'ResourceRecord')
+            ET.SubElement(rrec, 'Value').text = other_record['data']
+
         uri = API_ROOT + 'hostedzone/' + record.zone.id + '/rrset'
         data = ET.tostring(changeset)
         self.connection.set_context({'zone_id': record.zone.id})
