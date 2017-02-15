@@ -122,9 +122,11 @@ class PacketNodeDriver(NodeDriver):
             # if project has been specified on initialization of driver, then
             # return nodes for this project only
             if self.project_id:
-                return self.list_nodes_for_project(ex_project_id=self.project_id)
+                return self.list_nodes_for_project(
+                    ex_project_id=self.project_id)
             else:
                 projects = [project.id for project in self.projects]
+
                 def _list_one(project):
                     driver = get_driver(self.type)(self.key)
                     try:
@@ -158,9 +160,12 @@ class PacketNodeDriver(NodeDriver):
 
     def list_sizes(self):
         data = self.connection.request('/plans').object['plans']
-        return [self._to_size(size) for size in data if size.get('line') == 'baremetal']
+        print data
+        return [self._to_size(size) for size in data if
+                size.get('line') == 'baremetal']
 
-    def create_node(self, name, size, image, location, ex_project_id=None, cloud_init=None):
+    def create_node(self, name, size, image, location,
+                    ex_project_id=None, cloud_init=None):
         """
         Create a node.
 
@@ -255,7 +260,8 @@ class PacketNodeDriver(NodeDriver):
     def _to_node(self, data):
         extra = {}
         extra_keys = ['created_at', 'updated_at',
-                      'userdata', 'billing_cycle', 'locked', 'iqn', 'locked', 'project', 'description']
+                      'userdata', 'billing_cycle', 'locked',
+                      'iqn', 'locked', 'project', 'description']
         if 'state' in data:
             state = self.NODE_STATE_MAP.get(data['state'], NodeState.UNKNOWN)
         else:
@@ -350,4 +356,3 @@ class Project(object):
     def __repr__(self):
         return (('<Project: id=%s, name=%s>') %
                 (self.id, self.name))
-
