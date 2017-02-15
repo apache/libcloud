@@ -160,7 +160,6 @@ class PacketNodeDriver(NodeDriver):
 
     def list_sizes(self):
         data = self.connection.request('/plans').object['plans']
-        print data
         return [self._to_size(size) for size in data if
                 size.get('line') == 'baremetal']
 
