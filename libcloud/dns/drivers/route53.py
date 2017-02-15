@@ -352,8 +352,13 @@ class Route53DNSDriver(DNSDriver):
 
         rrecs = ET.SubElement(rrs, 'ResourceRecords')
 
-        rrec = ET.SubElement(rrecs, 'ResourceRecord')
-        ET.SubElement(rrec, 'Value').text = data
+        # Value can be provided as a multi line string
+        values = [value.strip() for value in data.split('\n') if
+                  value.strip()]
+
+        for value in values:
+            rrec = ET.SubElement(rrecs, 'ResourceRecord')
+            ET.SubElement(rrec, 'Value').text = value
 
         for other_record in other_records:
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
