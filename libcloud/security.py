@@ -42,7 +42,7 @@ USE_CERTIFI = str(USE_CERTIFI).lower() in ['true', '1']
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together.
-CA_CERTS_PATH = None
+CA_CERTS_PATH = []
 
 # Insert certifi CA bundle path to the front of Libcloud CA bundle search
 # path if certifi is available
