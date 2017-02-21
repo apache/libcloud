@@ -1287,7 +1287,7 @@ class GCEInstanceGroupManager(UuidMixin):
         :type   id: ``str``
 
         :param  name: The name of this Instance Group.
-        :type   size: ``str``
+        :type   name: ``str``
 
         :param  zone: Zone in witch the Instance Group belongs
         :type   zone: :class: ``GCEZone``
@@ -1874,7 +1874,7 @@ class GCENodeDriver(NodeDriver):
         :type     node: ``Node``
 
         :keyword  name: Name of the access config.
-        :type     nam: ``str``
+        :type     name: ``str``
 
         :keyword  nic: Name of the network interface.
         :type     nic: ``str``
