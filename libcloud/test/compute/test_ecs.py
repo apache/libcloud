@@ -529,11 +529,13 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('2015-06-26T08:35:30Z', sg.creation_time)
 
     def test_ex_join_security_group(self):
-        result = self.driver.ex_join_security_group(self.fake_node, ex_security_group_id='F876FF7BA984')
+        ex_security_group_id_value='F876FF7BA984'
+        result = self.driver.ex_join_security_group(self.fake_node, ex_security_group_id=ex_security_group_id_value)
         self.assertTrue(result)
 
     def test_ex_leave_security_group(self):
-        result = self.driver.ex_leave_security_group(self.fake_node, ex_security_group_id='F876FF7BA984')
+        ex_security_group_id_value='F876FF7BA984'
+        result = self.driver.ex_leave_security_group(self.fake_node, ex_security_group_id=ex_security_group_id_value)
         self.assertTrue(result)
 
     def test_ex_list_security_groups_with_ex_filters(self):
