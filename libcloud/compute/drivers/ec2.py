@@ -79,7 +79,8 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+#API_VERSION = '2013-10-15'
+API_VERSION = '2016-11-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -3604,6 +3605,66 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    
+    def ex_import_snapshot(self, client_data=None,client_token=None,description=None,disk_container=None, dry_run='true',role_name=None):
+        """
+        Imports a disk into an EBS snapshot. More information can be found
+        at https://goo.gl/sbXkYA.
+
+        :param  ClientData: Describes the client specific data (optional)
+        :type   ClientData: ''dict''
+
+        :param  ClientToken: The token to enable idempotency for VM
+                import requests.(optional)
+        :type   CLientToken: ''str''
+
+        :param  Description: The description string for the
+                             import snapshot task.(optional)
+        :type   Description: ''str''
+
+        :param  DiskContainer:The disk container object for the
+                              import snapshot request.
+        :type   DiskContainer:''dict''
+
+        :param  DryRun: Checks whether you have the permission for
+                        the action, without actually making the request,
+                        and provides an error response.(optional)
+        :type   DryRun: ''bool''
+
+        :param  RoleName: The name of the role to use when not using the
+                          default role, 'vmimport'.(optional)
+        :type   RoleName: ''str''
+        
+        """
+
+        params = {'Action': 'ImportSnapshot', 'Version':'2016-11-15'}
+
+        """
+        if client_data is not None:
+             params['ClientData'] = client_data
+        """
+        
+        if client_token is not None:
+            params['ClientToken'] = client_token
+
+        if description is not None:
+            params['Description'] = description
+
+        if disk_container is not None:
+            #params.update(self._get_disk_container_params(disk_container))
+            params['DiskContainer'] = disk_container
+        if dry_run is not None:
+            params['DryRun'] = dry_run
+
+        if role_name is not None:
+            params['RoleName'] = role_name
+        print params
+
+        obj = self.connection.request(self.path, params=params).object
+
+        return obj
+
+    
     def ex_list_placement_groups(self, names=None):
         """
         List Placement Groups
@@ -6357,6 +6418,39 @@ class BaseEC2NodeDriver(NodeDriver):
                 else:
                     for key, value in v.items():
                         params['BlockDeviceMapping.%d.%s.%s'
+                               % (idx, k, key)] = str(value)
+        return params
+
+    def _get_disk_container_params(self, disk_container):
+        """
+        Return a list of dictionaries with query parameters for
+        a valid disk container
+
+        :param      mapping: List of dictionaries with the drive layout
+        :type       mapping: ``list`` or ``dict``
+
+        :return:    Dictionary representation of the drive mapping
+        :rtype:     ``dict``
+        """
+
+        if not isinstance(disk_container, (list, tuple)):
+            raise AttributeError('disk_container not list or tuple')
+
+        params = {}
+
+        for idx, content in enumerate(disk_container):
+            idx += 1  # We want 1-based indexes
+            if not isinstance(content, dict):
+                raise AttributeError(
+                    'content %s in disk_container'                                           
+                    'not a dict' % vals)
+
+            for k, v in content.items():
+                if not isinstance(v, dict):
+                    params['DiskContainer.%d.%s' % (idx, k)] = str(v)
+                else:                                                                              
+                    for key, value in v.items():                                                       
+                        params['DiskContainer.%d.%s.%s'
                                % (idx, k, key)] = str(value)
         return params
 
