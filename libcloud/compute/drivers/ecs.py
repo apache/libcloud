@@ -879,7 +879,7 @@ class ECSDriver(NodeDriver):
         :param node: The node to join security group
         :type node: :class:`Node`
 
-        :keyword group_id: security group id.
+        :param group_id: security group id.
         :type ex_filters: ``str``
 
 
@@ -894,8 +894,10 @@ class ECSDriver(NodeDriver):
             raise LibcloudError('could not find the node with id %s.'
                                 % node.id)
         current = nodes[0]
-        if current.state != NodeState.RUNNING and current.state != NodeState.STOPPED:
-            raise LibcloudError('The node state with id %s need be running or stopped .' % node.id)
+        if (current.state != NodeState.RUNNING) and \
+           (current.state != NodeState.STOPPED):
+            raise LibcloudError('The node state with id % s need\
+                                be running or stopped .' % node.id)
 
         params = {'Action': 'JoinSecurityGroup',
                   'InstanceId': current.id,
@@ -910,7 +912,7 @@ class ECSDriver(NodeDriver):
         :param node: The node to leave security group
         :type node: :class:`Node`
 
-        :keyword group_id: security group id.
+        :param group_id: security group id.
         :type ex_filters: ``str``
 
 
@@ -923,9 +925,10 @@ class ECSDriver(NodeDriver):
             raise LibcloudError('could not find the node with id %s.'
                                 % node.id)
         current = nodes[0]
-        if current.state != NodeState.RUNNING and current.state != NodeState.STOPPED:
-            raise LibcloudError('The node with id %s could not join security group, node need be running or stopped .'
-                                % node.id)
+        if (current.state != NodeState.RUNNING) and \
+           (current.state != NodeState.STOPPED):
+            raise LibcloudError('The node state with id %s need \
+                                be running or stopped .' % node.id)
 
         params = {'Action': 'LeaveSecurityGroup',
                   'InstanceId': node.id,
@@ -952,7 +955,7 @@ class ECSDriver(NodeDriver):
         zone_elements = findall(resp_body, 'Zones/Zone',
                                 namespace=self.namespace)
         zones = [self._to_zone(el) for el in zone_elements]
-        return zones    
+        return zones
     ##
     # Volume and snapshot management methods
     ##
