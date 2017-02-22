@@ -4794,6 +4794,30 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
+    def ex_modify_snapshot_attribute(self, snapshot, attributes):
+        """
+        Modify Snapshot attributes.
+
+        :param      snapshot: VolumeSnapshot instance
+        :type       snanpshot: :class:`VolumeSnapshot`
+
+        :param      attributes: Dictionary with snapshot attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = attributes or {}
+        attributes.update({'SnapshotId': snapshot.id})
+
+        params = {'Action': 'ModifySnapshotAttribute'}
+        params.update(attributes)
+
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
+
     def ex_modify_image_attribute(self, image, attributes):
         """
         Modify image attributes.

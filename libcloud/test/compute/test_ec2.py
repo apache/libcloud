@@ -934,6 +934,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_modify_image_attribute(image, data)
         self.assertTrue(resp)
 
+    def test_ex_modify_snapshot_attribute(self):
+        snap = VolumeSnapshot(id='snap-1234567890abcdef0',
+                              size=10, driver=self.driver)
+
+        data = {'CreateVolumePermission.Add.1.Group': 'all'}
+        resp = self.driver.ex_modify_snapshot_attribute(snap, data)
+        self.assertTrue(resp)
+
     def test_create_node_ex_security_groups(self):
         EC2MockHttp.type = 'ex_security_groups'
 
@@ -1400,6 +1408,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _ModifyInstanceAttribute(self, method, url, body, headers):
         body = self.fixtures.load('modify_instance_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifySnapshotAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_snapshot_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _idempotent_CreateTags(self, method, url, body, headers):
