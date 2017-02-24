@@ -889,18 +889,13 @@ class ECSDriver(NodeDriver):
         if group_id is None:
             raise AttributeError('group_id is required')
 
-        nodes = self.list_nodes(ex_node_ids=[node.id])
-        if len(nodes) != 1 and node.id != nodes[0].id:
-            raise LibcloudError('could not find the node with id %s.'
-                                % node.id)
-        current = nodes[0]
-        if (current.state != NodeState.RUNNING) and \
-           (current.state != NodeState.STOPPED):
+        if (node.state != NodeState.RUNNING) and \
+           (node.state != NodeState.STOPPED):
             raise LibcloudError('The node state with id % s need\
                                 be running or stopped .' % node.id)
 
         params = {'Action': 'JoinSecurityGroup',
-                  'InstanceId': current.id,
+                  'InstanceId': node.id,
                   'SecurityGroupId': group_id}
         resp = self.connection.request(self.path, params)
         return resp.success()
@@ -919,15 +914,12 @@ class ECSDriver(NodeDriver):
         :return: leave operation result.
         :rtype: ``bool``
         """
-
-        nodes = self.list_nodes(ex_node_ids=[node.id])
-        if len(nodes) != 1 and node.id != nodes[0].id:
-            raise LibcloudError('could not find the node with id %s.'
-                                % node.id)
-        current = nodes[0]
-        if (current.state != NodeState.RUNNING) and \
-           (current.state != NodeState.STOPPED):
-            raise LibcloudError('The node state with id %s need \
+        if group_id is None:
+            raise AttributeError('group_id is required')
+        
+        if (node.state != NodeState.RUNNING) and \
+           (node.state != NodeState.STOPPED):
+            raise LibcloudError('The node state with id % s need\
                                 be running or stopped .' % node.id)
 
         params = {'Action': 'LeaveSecurityGroup',
