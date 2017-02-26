@@ -5657,8 +5657,8 @@ class GCENodeDriver(NodeDriver):
                        RFC1035.
         :type   manager: ``str`` or :class: `GCEInstanceGroupManager`
 
-        :keyword  node_list:  list of Node objects to delete.
-        :type   :type   node_list: ``list`` of :class:`Node`
+        :param  node_list:  list of Node objects to delete.
+        :type   node_list: ``list`` of :class:`Node`
 
         :return:  True if successful
         :rtype: ``bool``
