@@ -912,6 +912,14 @@ class ECSMockHttp(MockHttpTestCase):
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('describe_security_groups.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+    
+    def _JoinSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('join_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _LeaveSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('leave_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _list_sgs_filters_DescribeSecurityGroups(self, method, url, body,
                                                  headers):
