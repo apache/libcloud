@@ -27,14 +27,16 @@ import time
 from libcloud.common.azure_arm import AzureResourceManagementConnection
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.types import NodeState, StorageVolumeState
+from libcloud.compute.types import (NodeState, StorageVolumeState,
+                                    VolumeSnapshotState)
 from libcloud.common.types import LibcloudError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.utils.py3 import basestring
+from libcloud.utils.iso8601 import parse_date
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
@@ -737,14 +739,14 @@ class AzureNodeDriver(NodeDriver):
         :type name: ``str``
 
         :param location: Which data center to create a volume in.
-        :type location: :class:`.NodeLocation`
+        :type location: :class:`NodeLocation`
 
         :param snapshot: Snapshot from which to create the new
             volume.  (optional)
-        :type snapshot: :class:`.VolumeSnapshot`
+        :type snapshot: :class:`VolumeSnapshot`
 
         :param ex_resource_group: The name of resource group in which to
-            create the node.
+            create the volume.
         :type ex_resource_group: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
@@ -753,7 +755,6 @@ class AzureNodeDriver(NodeDriver):
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-
         if location is None:
             raise ValueError("Must provide `location` value")
 
@@ -779,6 +780,13 @@ class AzureNodeDriver(NodeDriver):
                 'diskSizeGB': size
             }
         }
+        if snapshot is not None:
+            data['properties']['creationData'] = {
+                'createOption': 'Copy',
+                'sourceUri': {
+                    'id': snapshot.id
+                }
+            }
 
         response = self.connection.request(
             action,
@@ -860,7 +868,6 @@ class AzureNodeDriver(NodeDriver):
 
         disks.append({
             'lun': ex_lun,
-            'name': volume.name,
             'createOption': 'attach',
             'managedDisk': {
                 'id': volume.id
@@ -925,29 +932,117 @@ class AzureNodeDriver(NodeDriver):
         """
         Delete a volume.
         """
-        self.connection.request(
-            volume.id,
-            method='DELETE',
+        self.ex_delete_resource(volume)
+        return True
+
+    def create_volume_snapshot(self, volume, name=None, location=None,
+                               ex_resource_group=None, ex_tags=None):
+        """
+        Create snapshot from volume.
+
+        :param volume: Instance of ``StorageVolume``.
+        :type volume: :class`StorageVolume`
+
+        :param name: Name of snapshot (optional).
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in.
+        :type location: :class:`NodeLocation`
+
+        :param ex_resource_group: The name of resource group in which to
+            create the snapshot.
+        :type ex_resource_group: ``str``
+
+        :param ex_tags: Optional tags to associate with this resource.
+        :type ex_tags: ``dict``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        if name is None:
+            raise ValueError("Must provide `name` value")
+        if location is None:
+            raise ValueError("Must provide `location` value")
+        if ex_resource_group is None:
+            raise ValueError("Must provide `ex_resource_group` value")
+
+        snapshot_id = (
+            u'/subscriptions/{subscription_id}'
+            u'/resourceGroups/{resource_group}'
+            u'/providers/Microsoft.Compute'
+            u'/snapshots/{snapshot_name}'
+        ).format(
+            subscription_id=self.subscription_id,
+            resource_group=ex_resource_group,
+            snapshot_name=name,
+        )
+        tags = ex_tags if ex_tags is not None else {}
+
+        data = {
+            'location': location.id,
+            'tags': tags,
+            'properties': {
+                'creationData': {
+                    'createOption': 'Copy',
+                    'sourceUri': volume.id
+                },
+            }
+        }
+        response = self.connection.request(
+            snapshot_id,
+            method='PUT',
+            data=data,
             params={
                 'api-version': RESOURCE_API_VERSION
             },
         )
+
+        return self._to_snapshot(
+            response.object,
+            name=name,
+            ex_resource_group=ex_resource_group
+        )
+
+    def list_volume_snapshots(self, volume):
+        return [snapshot for snapshot in self.list_snapshots()
+                if snapshot.extra['source_id'] == volume.id]
+
+    def list_snapshots(self, ex_resource_group=None):
+        """
+        Lists all the snapshots under a resource group or subscription.
+
+        :param ex_resource_group: The identifier of your subscription
+            where the managed snapshots are located (optional).
+        :type ex_resource_group: ``str``
+
+        :rtype: list of :class:`VolumeSnapshot`
+        """
+        if ex_resource_group:
+            action = u'/subscriptions/{subscription_id}/resourceGroups' \
+                     u'/{resource_group}/providers/Microsoft.Compute/snapshots'
+        else:
+            action = u'/subscriptions/{subscription_id}' \
+                     u'/providers/Microsoft.Compute/snapshots'
+
+        action = action.format(
+            subscription_id=self.subscription_id,
+            resource_group=ex_resource_group
+        )
+
+        response = self.connection.request(
+            action,
+            method='GET',
+            params={
+                'api-version': RESOURCE_API_VERSION
+            }
+        )
+        return [self._to_snapshot(snap) for snap in response.object['value']]
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Delete a snapshot.
+        """
+        self.ex_delete_resource(snapshot)
         return True
-
-    def create_volume_snapshot(self, volume, name=None):
-        """
-        Create snapshot from volume.
-
-        :param volume: Instance of ``StorageVolume``
-        :type volume: :class`StorageVolume`
-
-        :param name: Name of snapshot (optional)
-        :type name: ``str``
-
-        :rtype: :class:`VolumeSnapshot`
-        """
-        super(AzureNodeDriver).create_volume_snapshot(volume, name=name)
-        # TODO
 
     def _to_volume(self, volume_obj, name=None, ex_resource_group=None):
         """
@@ -957,25 +1052,21 @@ class AzureNodeDriver(NodeDriver):
         :type volume_obj: ``dict``
 
         :param name: An optional name for the volume. If not provided
-            then either tag with a key "name" will be used.
+            then either tag with a key "name" will be used. (optional)
         :type name: ``str``
 
         :param ex_resource_group: An optional resource group for the volume.
             If not provided then either tag with a key "resource_group"
-            will be used.
+            will be used. (optional)
         :type ex_resource_group: ``str``
 
         :rtype: :class:`StorageVolume`
         """
         volume_id = volume_obj.get('id')
         volume_name = volume_obj.get('name')
-        properties = volume_obj['properties']
+        extra = dict(volume_obj)
+        properties = extra['properties']
         size = int(properties['diskSizeGB'])
-        extra = {
-            'tags': volume_obj.get('tags', {}),
-            'location_id': volume_obj['location'],
-            'properties': properties,
-        }
 
         provisioning_state = properties.get('provisioningState', '').lower()
         disk_state = properties.get('diskState', '').lower()
@@ -991,9 +1082,9 @@ class AzureNodeDriver(NodeDriver):
         else:
             state = StorageVolumeState.UNKNOWN
 
-        if volume_id is None and \
-                ex_resource_group is not None and \
-                name is not None:
+        if volume_id is None \
+                and ex_resource_group is not None \
+                and name is not None:
             volume_id = (
                 u'/subscriptions/{subscription_id}'
                 u'/resourceGroups/{resource_group}'
@@ -1014,6 +1105,84 @@ class AzureNodeDriver(NodeDriver):
             driver=self,
             state=state,
             extra=extra
+        )
+
+    def _to_snapshot(self, snapshot_obj, name=None,  ex_resource_group=None):
+        """
+        Parse the JSON element and return a VolumeSnapshot object.
+
+        :param snapshot_obj: A snapshot object from an azure response.
+        :type snapshot_obj: ``dict``
+
+        :param name: An optional name for the volume.
+        :type name: ``str``
+
+        :param ex_resource_group: An optional resource group for the volume.
+            If not provided then either tag with a key "resource_group"
+            will be used.
+        :type ex_resource_group: ``str``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        snapshot_id = snapshot_obj.get('id')
+        name = snapshot_obj.get('name', name)
+        properties = snapshot_obj['properties']
+        size = properties.get('diskSizeGB')
+        if size is not None:
+            size = int(size)
+        extra = dict(snapshot_obj)
+        extra['source_id'] = properties['creationData']['sourceUri']
+        if '/providers/Microsoft.Compute/disks/' in extra['source_id']:
+            extra['volume_id'] = extra['source_id']
+
+        provisioning_state = properties.get('provisioningState', '').lower()
+        if provisioning_state in ('creating', 'updating'):
+            state = VolumeSnapshotState.CREATING
+        elif provisioning_state == 'succeeded':
+            state = VolumeSnapshotState.AVAILABLE
+        elif provisioning_state == 'failed':
+            state = VolumeSnapshotState.ERROR
+        else:
+            state = VolumeSnapshotState.UNKNOWN
+
+        try:
+            created_at = parse_date(snapshot_obj['properties']['timeCreated'])
+        except ValueError:
+            created_at = None
+
+        if snapshot_id is None \
+                and ex_resource_group is not None \
+                and name is not None:
+            snapshot_id = (
+                u'/subscriptions/{subscription_id}'
+                u'/resourceGroups/{resource_group}'
+                u'/providers/Microsoft.Compute/snapshots/{snapshot_name}'
+            ).format(
+                subscription_id=self.subscription_id,
+                resource_group=ex_resource_group.upper(),
+                snapshot_name=name
+            )
+
+        return VolumeSnapshot(
+            snapshot_id,
+            name=name,
+            size=size,
+            driver=self,
+            state=state,
+            extra=extra,
+            created=created_at
+        )
+
+    def ex_delete_resource(self, resource):
+        """
+        Delete a resource.
+        """
+        self.connection.request(
+            resource.id,
+            method='DELETE',
+            params={
+                'api-version': RESOURCE_API_VERSION
+            },
         )
 
     def ex_get_ratecard(self, offer_durable_id, currency='USD',
