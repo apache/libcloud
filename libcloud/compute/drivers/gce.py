@@ -6626,7 +6626,8 @@ class GCENodeDriver(NodeDriver):
         :return:  A DiskType object for the name
         :rtype:   :class:`GCEDiskType`
         """
-        zone = self._set_zone(zone)
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'diskTypes', region=False, res_name='DiskType')
         request = '/zones/%s/diskTypes/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_disktype(response)
