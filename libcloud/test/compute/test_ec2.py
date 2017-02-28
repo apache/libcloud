@@ -437,7 +437,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             elif region_name == 'us-west-1':
                 self.assertEqual(len(sizes), 46)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 53)
+                self.assertEqual(len(sizes), 56)
             elif region_name == 'ap-southeast-1':
                 self.assertEqual(len(sizes), 45)
             elif region_name == 'ap-southeast-2':

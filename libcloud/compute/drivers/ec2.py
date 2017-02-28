@@ -324,6 +324,27 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'p2.xlarge': {
+        'id': 'p2.xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(61),
+        'disk' : 4,
+        'bandwidth': None
+    },
+    'p2.8xlarge': {
+        'id': 'p2.8xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(488),
+        'disk': 32,
+        'bandwidth': None
+    },
+    'p2.16xlarge': {
+        'id': 'p2.16xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(732),
+        'disk': 64,
+        'bandwidth': None
+    },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
         'name': 'Cluster Compute Quadruple Extra Large Instance',
@@ -881,6 +902,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1784,6 +1808,9 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cc2.8xlarge',
             'm3.xlarge',
             'm3.2xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
@@ -1861,6 +1888,9 @@ OUTSCALE_INC_REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'nv1.small',
             'nv1.medium',
             'nv1.large',
