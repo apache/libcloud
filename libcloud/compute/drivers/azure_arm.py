@@ -36,7 +36,7 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.utils.py3 import basestring
-from libcloud.utils.iso8601 import parse_date
+from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
@@ -802,23 +802,21 @@ class AzureNodeDriver(NodeDriver):
             volume_name=name,
         )
         tags = ex_tags if ex_tags is not None else {}
+
+        creation_data = {
+            'createOption': 'Empty'
+        } if snapshot is None else {
+            'createOption': 'Copy',
+            'sourceUri': snapshot.id
+        }
         data = {
             'location': location.id,
             'tags': tags,
             'properties': {
-                'creationData': {
-                    'createOption': 'Empty'
-                },
+                'creationData': creation_data,
                 'diskSizeGB': size
             }
         }
-        if snapshot is not None:
-            data['properties']['creationData'] = {
-                'createOption': 'Copy',
-                'sourceUri': {
-                    'id': snapshot.id
-                }
-            }
 
         response = self.connection.request(
             action,
@@ -868,7 +866,7 @@ class AzureNodeDriver(NodeDriver):
 
     def attach_volume(self, node, volume, device=None, ex_lun=None):
         """
-        Attach volume to node.
+        Attach a managed volume to node.
 
         :param node: A node to attach volume.
         :type node: :class:`Node`
@@ -906,7 +904,7 @@ class AzureNodeDriver(NodeDriver):
             }
         })
 
-        response = self.connection.request(
+        self.connection.request(
             action,
             method='PUT',
             params={
@@ -921,13 +919,11 @@ class AzureNodeDriver(NodeDriver):
                 'location': location
             }
         )
-
-        disks = response.object['properties']['storageProfile']['dataDisks']
-        return volume.id in [disk['managedDisk']['id'] for disk in disks]
+        return True
 
     def detach_volume(self, volume, ex_node=None):
         """
-        Detach a volume from a node.
+        Detach a managed volume from a node.
         """
         if ex_node is None:
             raise ValueError("Must provide `ex_node` value")
@@ -938,10 +934,11 @@ class AzureNodeDriver(NodeDriver):
 
         # remove volume from `properties.storageProfile.dataDisks`
         for index, disk in enumerate(disks):
-            if volume.id == disk['managedDisk']['id']:
-                del disks[index]
+            if 'managedDisk' in disk:
+                if volume.id == disk['managedDisk'].get('id'):
+                    del disks[index]
 
-        response = self.connection.request(
+        self.connection.request(
             action,
             method='PUT',
             params={
@@ -956,9 +953,7 @@ class AzureNodeDriver(NodeDriver):
                 'location': location
             }
         )
-
-        disks = response.object['properties']['storageProfile']['dataDisks']
-        return volume.id not in [disk['managedDisk']['id'] for disk in disks]
+        return True
 
     def destroy_volume(self, volume):
         """
@@ -1178,8 +1173,8 @@ class AzureNodeDriver(NodeDriver):
             state = VolumeSnapshotState.UNKNOWN
 
         try:
-            created_at = parse_date(snapshot_obj['properties']['timeCreated'])
-        except ValueError:
+            created_at = iso8601.parse_date(properties.get('timeCreated'))
+        except (TypeError, ValueError, iso8601.ParseError):
             created_at = None
 
         if snapshot_id is None \
