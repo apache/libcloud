@@ -1086,7 +1086,7 @@ class AzureNodeDriver(NodeDriver):
                 u'/providers/Microsoft.Compute/disks/{volume_name}'
             ).format(
                 subscription_id=self.subscription_id,
-                resource_group=ex_resource_group.upper(),
+                resource_group=ex_resource_group,
                 volume_name=name
             )
         if volume_name is None and \
@@ -1154,7 +1154,7 @@ class AzureNodeDriver(NodeDriver):
                 u'/providers/Microsoft.Compute/snapshots/{snapshot_name}'
             ).format(
                 subscription_id=self.subscription_id,
-                resource_group=ex_resource_group.upper(),
+                resource_group=ex_resource_group,
                 snapshot_name=name
             )
 
