@@ -625,6 +625,66 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'r4.large': {
+        'id': 'r4.large',
+        'name': 'Memory Optimized Large instance',
+        'ram': GiB(15.25),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'r4.xlarge': {
+        'id': 'r4.xlarge',
+        'name': 'Memory Optimized Extra Large instance',
+        'ram': GiB(30.5),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'r4.2xlarge': {
+        'id': 'r4.2xlarge',
+        'name': 'Memory Optimized Double Extra Large instance',
+        'ram': GiB(61),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'r4.4xlarge': {
+        'id': 'r4.4xlarge',
+        'name': 'Memory Optimized Quadruple Extra Large instance',
+        'ram': GiB(122),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'r4.8xlarge': {
+        'id': 'r4.8xlarge',
+        'name': 'Memory Optimized Eight Extra Large instance',
+        'ram': GiB(244),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
+    },
+    'r4.16xlarge': {
+        'id': 'r4.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(488),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
     # Burstable Performance General Purpose
     't2.nano': {
         'id': 't2.nano',
@@ -746,6 +806,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -802,6 +868,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -865,6 +937,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -930,6 +1008,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -992,6 +1076,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1040,6 +1130,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1075,6 +1171,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
@@ -1136,6 +1238,12 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             'x1.32xlarge'
         ]
     },
@@ -1192,6 +1300,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1231,6 +1345,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1266,6 +1386,12 @@ REGION_DETAILS = {
             'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1324,6 +1450,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1380,6 +1512,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
