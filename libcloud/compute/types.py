@@ -184,6 +184,7 @@ class Provider(Type):
     EC2_US_EAST_OHIO = 'ec2_us_east_ohio'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
+    EC2_EU_WEST2 = 'ec2_eu_west_london'
     EC2_US_WEST = 'ec2_us_west'
     EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
     EC2_AP_NORTHEAST = 'ec2_ap_northeast'
@@ -192,6 +193,7 @@ class Provider(Type):
     EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
+    EC2_CA_CENTRAL1 = 'ec2_ca_central_1'
 
     ELASTICHOSTS_UK1 = 'elastichosts_uk1'
     ELASTICHOSTS_UK2 = 'elastichosts_uk2'
@@ -227,6 +229,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_EAST_OHIO: Provider.EC2,
     Provider.EC2_EU: Provider.EC2,
     Provider.EC2_EU_WEST: Provider.EC2,
+    Provider.EC2_EU_WEST2: Provider.EC2,
     Provider.EC2_US_WEST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
@@ -236,6 +239,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+    Provider.EC2_CA_CENTRAL1: Provider.EC2,
 
     # ElasticHosts
     Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,

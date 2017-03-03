@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+API_VERSION = '2016-09-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -976,6 +976,70 @@ REGION_DETAILS = {
             'x1.32xlarge'
         ]
     },
+    # EU (London) Region
+    'eu-west-2': {
+        'endpoint': 'ec2.eu-west-2.amazonaws.com',
+        'api_name': 'ec2_eu_west_london',
+        'country': 'United Kingdom',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'cg1.4xlarge',
+            'g2.2xlarge',
+            'g2.8xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'x1.32xlarge'
+        ]
+    },
     # EU (Frankfurt) Region
     'eu-central-1': {
         'endpoint': 'ec2.eu-central-1.amazonaws.com',
@@ -1300,6 +1364,70 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'x1.32xlarge'
+        ]
+    },
+    # Canada (Central) Region
+    'ca-central-1': {
+        'endpoint': 'ec2.ca-central-1.amazonaws.com',
+        'api_name': 'ec2_ca_central_1',
+        'country': 'Canada',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'cg1.4xlarge',
+            'g2.2xlarge',
+            'g2.8xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -3230,7 +3358,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3297,11 +3425,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
@@ -3322,11 +3450,13 @@ class BaseEC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
-    def detach_volume(self, volume):
+    def detach_volume(self, volume, force=False):
         params = {
             'Action': 'DetachVolume',
             'VolumeId': volume.id}
 
+        if force:
+            params['Force'] = 1
         self.connection.request(self.path, params=params)
         return True
 
