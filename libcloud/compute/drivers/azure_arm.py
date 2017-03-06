@@ -788,10 +788,10 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`StorageVolume`
         """
         if location is None:
-            raise ValueError("Must provide `location` value")
+            raise ValueError("Must provide `location` value.")
 
         if ex_resource_group is None:
-            raise ValueError("Must provide `ex_resource_group` value")
+            raise ValueError("Must provide `ex_resource_group` value.")
 
         action = (
             u'/subscriptions/{subscription_id}/resourceGroups/{resource_group}'
@@ -926,17 +926,28 @@ class AzureNodeDriver(NodeDriver):
         Detach a managed volume from a node.
         """
         if ex_node is None:
-            raise ValueError("Must provide `ex_node` value")
+            raise ValueError("Must provide `ex_node` value.")
 
         action = ex_node.extra['id']
         location = ex_node.extra['location']
         disks = ex_node.extra['properties']['storageProfile']['dataDisks']
 
         # remove volume from `properties.storageProfile.dataDisks`
+        disk_index = None
         for index, disk in enumerate(disks):
             if 'managedDisk' in disk:
                 if volume.id == disk['managedDisk'].get('id'):
-                    del disks[index]
+                    disk_index = index
+            elif 'name' in disk:
+                if volume.name == disk['name']:
+                    disk_index = index
+        if disk_index is None:
+            raise LibcloudError((
+                "A disk with id {} does not found among managed disks "
+                "attached to an instance ({})."
+            ).format(volume.id, ex_node.id))
+        else:
+            del disks[disk_index]
 
         self.connection.request(
             action,
@@ -1656,14 +1667,16 @@ class AzureNodeDriver(NodeDriver):
             resource = resource.id
         r = self.connection.request(
             resource,
-            params={"api-version": "2015-06-15"})
+            params={"api-version": RESOURCE_API_VERSION})
         if replace:
             r.object["tags"] = tags
         else:
             r.object["tags"].update(tags)
-        r = self.connection.request(resource, data={"tags": r.object["tags"]},
-                                    params={"api-version": "2015-06-15"},
-                                    method="PATCH")
+        self.connection.request(
+            resource,
+            data={"tags": r.object["tags"]},
+            params={"api-version": RESOURCE_API_VERSION},
+            method="PATCH")
 
     def ex_start_node(self, node):
         """
@@ -1869,6 +1882,9 @@ class AzureNodeDriver(NodeDriver):
                     break
                 elif status["code"].startswith("ProvisioningState/failed"):
                     state = NodeState.ERROR
+                    break
+                elif status["code"] == "ProvisioningState/updating":
+                    state = NodeState.RECONFIGURING
                     break
                 elif status["code"] == "ProvisioningState/succeeded":
                     pass
