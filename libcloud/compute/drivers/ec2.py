@@ -108,21 +108,30 @@ INSTANCE_TYPES = {
         'name': 'Micro Instance',
         'ram': GiB(0.613),
         'disk': 15,  # GB
-        'bandwidth': None
+        'bandwidth': None,
+        'extra': {
+            'virtualizationTypes': ['paravirtual']
+        }
     },
     'm1.small': {
         'id': 'm1.small',
         'name': 'Small Instance',
         'ram': GiB(1.7),
         'disk': 160,  # GB
-        'bandwidth': None
+        'bandwidth': None,
+        'extra': {
+            'virtualizationTypes': ['paravirtual']
+        }
     },
     'm1.medium': {
         'id': 'm1.medium',
         'name': 'Medium Instance',
         'ram': GiB(3.75),
         'disk': 410,  # GB
-        'bandwidth': None
+        'bandwidth': None,
+        'extra': {
+            'virtualizationTypes': ['paravirtual']
+        }
     },
     'm1.large': {
         'id': 'm1.large',
@@ -131,7 +140,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 420,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'm1.xlarge': {
@@ -141,7 +151,8 @@ INSTANCE_TYPES = {
         'disk': 4 * 420,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'c1.medium': {
@@ -151,7 +162,8 @@ INSTANCE_TYPES = {
         'disk': 350,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'c1.xlarge': {
@@ -161,7 +173,8 @@ INSTANCE_TYPES = {
         'disk': 4 * 420,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'm2.xlarge': {
@@ -171,7 +184,8 @@ INSTANCE_TYPES = {
         'disk': 420,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'm2.2xlarge': {
@@ -181,7 +195,8 @@ INSTANCE_TYPES = {
         'disk': 850,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'm2.4xlarge': {
@@ -191,7 +206,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 840,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['paravirtual']
         }
     },
     'm3.medium': {
@@ -201,7 +217,8 @@ INSTANCE_TYPES = {
         'disk': 4,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 1
+            'cpu': 1,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'm3.large': {
@@ -211,7 +228,8 @@ INSTANCE_TYPES = {
         'disk': 32,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'm3.xlarge': {
@@ -221,7 +239,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 40,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'm3.2xlarge': {
@@ -231,7 +250,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 80,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'm4.large': {
@@ -241,7 +261,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['hvm']
         }
     },
     'm4.xlarge': {
@@ -251,7 +272,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['hvm']
         }
     },
     'm4.2xlarge': {
@@ -261,7 +283,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'm4.4xlarge': {
@@ -271,7 +294,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'm4.10xlarge': {
@@ -281,7 +305,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 40
+            'cpu': 40,
+            'virtualizationTypes': ['hvm']
         }
     },
     'm4.16xlarge': {
@@ -291,7 +316,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 64
+            'cpu': 64,
+            'virtualizationTypes': ['hvm']
         }
     },
     'cg1.4xlarge': {
@@ -301,7 +327,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 840,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'g2.2xlarge': {
@@ -311,7 +338,8 @@ INSTANCE_TYPES = {
         'disk': 60,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'g2.8xlarge': {
@@ -321,7 +349,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 120,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     'cc1.4xlarge': {
@@ -329,7 +358,10 @@ INSTANCE_TYPES = {
         'name': 'Cluster Compute Quadruple Extra Large Instance',
         'ram': 23552,
         'disk': 1690,
-        'bandwidth': None
+        'bandwidth': None,
+        'extra': {
+            'virtualizationTypes': ['hvm']
+        }
     },
     'cc2.8xlarge': {
         'id': 'cc2.8xlarge',
@@ -338,7 +370,8 @@ INSTANCE_TYPES = {
         'disk': 4 * 840,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     # c3 instances have 2 SSDs of the specified disk size
@@ -349,7 +382,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 16,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'c3.xlarge': {
@@ -359,7 +393,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 40,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'c3.2xlarge': {
@@ -369,7 +404,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 80,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'c3.4xlarge': {
@@ -379,7 +415,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 160,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'c3.8xlarge': {
@@ -389,7 +426,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 320,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'c4.large': {
@@ -399,7 +437,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['hvm']
         }
     },
     'c4.xlarge': {
@@ -409,7 +448,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['hvm']
         }
     },
     'c4.2xlarge': {
@@ -419,7 +459,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'c4.4xlarge': {
@@ -429,7 +470,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'c4.8xlarge': {
@@ -439,7 +481,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS only
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     'cr1.8xlarge': {
@@ -449,7 +492,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 120,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     'hs1.4xlarge': {
@@ -459,7 +503,19 @@ INSTANCE_TYPES = {
         'disk': 2 * 1024,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['paravirtual']
+        }
+    },
+    'hi1.4xlarge': {
+        'id': 'hi1.4xlarge',
+        'name': 'High Storage Four Extra Large Instance',
+        'ram': GiB(117),
+        'disk': 2 * 1024,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     'hs1.8xlarge': {
@@ -469,7 +525,8 @@ INSTANCE_TYPES = {
         'disk': 24 * 2000,
         'bandwidth': None,
         'extra': {
-            'cpu': 17
+            'cpu': 17,
+            'virtualizationTypes': ['paravirtual', 'hvm']
         }
     },
     # i2 instances have up to eight SSD drives
@@ -480,7 +537,8 @@ INSTANCE_TYPES = {
         'disk': 800,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['hvm']
         }
     },
     'i2.2xlarge': {
@@ -490,7 +548,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 800,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'i2.4xlarge': {
@@ -500,7 +559,8 @@ INSTANCE_TYPES = {
         'disk': 4 * 800,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'i2.8xlarge': {
@@ -510,7 +570,8 @@ INSTANCE_TYPES = {
         'disk': 8 * 800,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     'd2.xlarge': {
@@ -520,7 +581,8 @@ INSTANCE_TYPES = {
         'disk': 3 * 2000,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['hvm']
         }
     },
     'd2.2xlarge': {
@@ -530,7 +592,8 @@ INSTANCE_TYPES = {
         'disk': 6 * 2000,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'd2.4xlarge': {
@@ -540,7 +603,8 @@ INSTANCE_TYPES = {
         'disk': 12 * 2000,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'd2.8xlarge': {
@@ -550,7 +614,8 @@ INSTANCE_TYPES = {
         'disk': 24 * 2000,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 36
+            'cpu': 36,
+            'virtualizationTypes': ['hvm']
         }
     },
     # 1x SSD
@@ -561,7 +626,8 @@ INSTANCE_TYPES = {
         'disk': 32,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['hvm']
         }
     },
     'r3.xlarge': {
@@ -571,7 +637,8 @@ INSTANCE_TYPES = {
         'disk': 80,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 4
+            'cpu': 4,
+            'virtualizationTypes': ['hvm']
         }
     },
     'r3.2xlarge': {
@@ -581,7 +648,8 @@ INSTANCE_TYPES = {
         'disk': 160,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 8
+            'cpu': 8,
+            'virtualizationTypes': ['hvm']
         }
     },
     'r3.4xlarge': {
@@ -591,7 +659,8 @@ INSTANCE_TYPES = {
         'disk': 320,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 16
+            'cpu': 16,
+            'virtualizationTypes': ['hvm']
         }
     },
     'r3.8xlarge': {
@@ -601,7 +670,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 320,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 32
+            'cpu': 32,
+            'virtualizationTypes': ['hvm']
         }
     },
     # Burstable Performance General Purpose
@@ -612,7 +682,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 1
+            'cpu': 1,
+            'virtualizationTypes': ['hvm']
         }
     },
     't2.micro': {
@@ -622,7 +693,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 1
+            'cpu': 1,
+            'virtualizationTypes': ['hvm']
         }
     },
     't2.small': {
@@ -632,7 +704,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 11
+            'cpu': 11,
+            'virtualizationTypes': ['hvm']
         }
     },
     't2.medium': {
@@ -642,7 +715,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['hvm']
         }
     },
     't2.large': {
@@ -652,7 +726,8 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 2
+            'cpu': 2,
+            'virtualizationTypes': ['hvm']
         }
     },
     'x1.32xlarge': {
@@ -662,7 +737,8 @@ INSTANCE_TYPES = {
         'disk': 2 * 1920,  # GB
         'bandwidth': None,
         'extra': {
-            'cpu': 128
+            'cpu': 128,
+            'virtualizationTypes': ['hvm']
         }
     }
 }
@@ -3267,7 +3343,7 @@ class BaseEC2NodeDriver(NodeDriver):
                             Service (AWS KMS) customer master key (CMK) to use
                             when creating the encrypted volume.
                             Example:
-                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123
+                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a12
                             -456a-a12b-a123b4cd56ef.
                             Only used if encrypted is set to True.
         :type ex_kms_key_id: ``str``
@@ -4417,6 +4493,12 @@ class BaseEC2NodeDriver(NodeDriver):
                                       params=params.copy()).object
 
         return self._get_boolean(res)
+
+    def ex_rename_node(self, node, name):
+        """
+        Rename a Node
+        """
+        return self.ex_create_tags(node, {'Name': name})
 
     def ex_get_metadata_for_node(self, node):
         """
