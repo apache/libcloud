@@ -40,6 +40,7 @@ EC2_REGIONS = [
     'us-east-2',
     'us-west-1',
     'us-west-2',
+    'us-gov-west-1',
     'eu-west-1',
     'eu-west-2',
     'eu-central-1',
@@ -49,7 +50,8 @@ EC2_REGIONS = [
     'ap-northeast-1',
     'ap-northeast-2',
     'ap-south-1',
-    'sa-east-1'
+    'sa-east-1',
+    'cn-north-1',
 ]
 
 EC2_INSTANCE_TYPES = [
@@ -128,7 +130,8 @@ REGION_NAME_MAP = {
     'ap-northeast-2': 'ec2_ap_northeast',
     'ap-south-1': 'ec2_ap_south_1',
     'sa-east-1': 'ec2_sa_east',
-    'us-gov-west-1': 'ec2_us_govwest'
+    'us-gov-west-1': 'ec2_us_govwest',
+    'cn-north-1': 'ec2_cn_north',
 }
 
 INSTANCE_SIZES = [

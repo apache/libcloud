@@ -736,6 +736,26 @@ INSTANCE_TYPES = {
             'cpu': 2
         }
     },
+    't2.xlarge': {
+        'id': 't2.xlarge',
+        'name': 'Burstable Performance Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    't2.2xlarge': {
+        'id': 't2.2xlarge',
+        'name': 'Burstable Performance Double Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -886,7 +906,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-east-2.amazonaws.com',
         'api_name': 'ec2_us_east_ohio',
         'country': 'USA',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -1651,6 +1671,62 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large'
+        ]
+    },
+    # China (North) Region
+    'cn-north-1': {
+        'endpoint': 'ec2.cn-north-1.amazonaws.com.cn',
+        'api_name': 'ec2_cn_north',
+        'country': 'China',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            't2.xlarge',
+            't2.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm1.small',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'nimbus': {

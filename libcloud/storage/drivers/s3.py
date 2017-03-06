@@ -49,10 +49,15 @@ from libcloud.storage.types import ObjectHashMismatchError
 EXPIRATION_SECONDS = 15 * 60
 
 S3_US_STANDARD_HOST = 's3.amazonaws.com'
+S3_US_EAST2_HOST = 's3-us-east-2.amazonaws.com'
 S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
+S3_US_GOV_WEST_HOST = 's3-us-gov-west-1.amazonaws.com'
 S3_CN_NORTH_HOST = 's3.cn-north-1.amazonaws.com.cn'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
+S3_EU_WEST2_HOST = 's3-eu-west-2.amazonaws.com'
+S3_EU_CENTRAL_HOST = 's3-eu-central-1.amazonaws.com'
+S3_AP_SOUTH_HOST = 's3-ap-south-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
 S3_AP_SOUTHEAST2_HOST = 's3-ap-southeast-2.amazonaws.com'
 S3_AP_NORTHEAST1_HOST = 's3-ap-northeast-1.amazonaws.com'
@@ -60,6 +65,7 @@ S3_AP_NORTHEAST2_HOST = 's3-ap-northeast-2.amazonaws.com'
 S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
 S3_SA_SOUTHEAST2_HOST = 's3-sa-east-2.amazonaws.com'
+S3_CA_CENTRAL_HOST = 's3-ca-central-1.amazonaws.com'
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -996,6 +1002,17 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
     region_name = 'us-east-1'
 
 
+class S3USEast2Connection(S3SignatureV4Connection):
+    host = S3_US_EAST2_HOST
+
+
+class S3USEast2StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (us-east-2)'
+    connectionCls = S3USEast2Connection
+    ex_location_name = 'us-east-2'
+    region_name = 'us-east-2'
+
+
 class S3USWestConnection(S3SignatureV4Connection):
     host = S3_US_WEST_HOST
 
@@ -1018,6 +1035,17 @@ class S3USWestOregonStorageDriver(S3StorageDriver):
     region_name = 'us-west-2'
 
 
+class S3USGovWestConnection(S3SignatureV4Connection):
+    host = S3_US_GOV_WEST_HOST
+
+
+class S3USGovWestStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (us-gov-west-1)'
+    connectionCls = S3USGovWestConnection
+    ex_location_name = 'us-gov-west-1'
+    region_name = 'us-gov-west-1'
+
+
 class S3CNNorthConnection(S3SignatureV4Connection):
     host = S3_CN_NORTH_HOST
 
@@ -1038,6 +1066,28 @@ class S3EUWestStorageDriver(S3StorageDriver):
     connectionCls = S3EUWestConnection
     ex_location_name = 'EU'
     region_name = 'eu-west-1'
+
+
+class S3EUWest2Connection(S3SignatureV4Connection):
+    host = S3_EU_WEST2_HOST
+
+
+class S3EUWest2StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (eu-west-2)'
+    connectionCls = S3EUWest2Connection
+    ex_location_name = 'eu-west-2'
+    region_name = 'eu-west-2'
+
+
+class S3EUCentralConnection(S3SignatureV4Connection):
+    host = S3_EU_CENTRAL_HOST
+
+
+class S3EUCentralStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (eu-central-1)'
+    connectionCls = S3EUCentralConnection
+    ex_location_name = 'eu-central-1'
+    region_name = 'eu-central-1'
 
 
 class S3APSEConnection(S3SignatureV4Connection):
@@ -1088,6 +1138,17 @@ class S3APNE2StorageDriver(S3StorageDriver):
     region_name = 'ap-northeast-2'
 
 
+class S3APSouthConnection(S3SignatureV4Connection):
+    host = S3_AP_SOUTH_HOST
+
+
+class S3APSouthStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (ap-south-1)'
+    connectionCls = S3APSouthConnection
+    ex_location_name = 'ap-south-1'
+    region_name = 'ap-south-1'
+
+
 class S3SAEastConnection(S3SignatureV4Connection):
     host = S3_SA_EAST_HOST
 
@@ -1097,3 +1158,14 @@ class S3SAEastStorageDriver(S3StorageDriver):
     connectionCls = S3SAEastConnection
     ex_location_name = 'sa-east-1'
     region_name = 'sa-east-1'
+
+
+class S3CACentralConnection(S3SignatureV4Connection):
+    host = S3_CA_CENTRAL_HOST
+
+
+class S3CACentralStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (ca-central-1)'
+    connectionCls = S3CACentralConnection
+    ex_location_name = 'ca-central-1'
+    region_name = 'ca-central-1'
