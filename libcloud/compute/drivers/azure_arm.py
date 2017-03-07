@@ -373,7 +373,7 @@ class AzureNodeDriver(NodeDriver):
         # get paginated results
         # remove host from nextLink
         while r.object.get("nextLink"):
-            next_url = r.object.get("nextLink").split('https://management.azure.com')[1]
+            next_url = r.object.get("nextLink").split(self.connection.host)[1]
             r = self.connection.request(next_url,
                                         params={"api-version": "2015-06-15"})
             nodes_data.extend(r.object["value"])
@@ -1232,32 +1232,30 @@ class AzureNodeDriver(NodeDriver):
             action = "%s/InstanceView" % (data["id"])
             r = self.connection.request(action,
                                         params={'api-version': '2015-06-15'})
-            for status in r.object['statuses']:
-                if status['code'] in ['ProvisioningState/creating', 'ProvisioningState/updating']:
+            for status in r.object["statuses"]:
+                if status["code"] in ["ProvisioningState/creating", "ProvisioningState/updating"]:
                     state = NodeState.PENDING
-                elif status['code'] == 'ProvisioningState/deleting':
+                elif status["code"] == "ProvisioningState/deleting":
                     state = NodeState.TERMINATED
                     break
-                elif status['code'].startswith('ProvisioningState/failed'):
+                elif status["code"].startswith("ProvisioningState/failed"):
                     state = NodeState.ERROR
                     break
-                elif status['code'] == 'ProvisioningState/succeeded':
+                elif status["code"] == "ProvisioningState/succeeded":
                     state = NodeState.RUNNING
 
-                if status['code'] == 'PowerState/deallocated':
+                if status["code"] == "PowerState/deallocated":
                     state = NodeState.STOPPED
                     break
-                elif status['code'] == 'PowerState/stopped':
+                elif status["code"] == "PowerState/stopped":
                     # this is stopped without resources deallocated
                     state = NodeState.PAUSED
                     break
-                elif status['code'] == 'PowerState/deallocating':
+                elif status["code"] == "PowerState/deallocating":
                     state = NodeState.PENDING
                     break
-                elif status['code'] == 'PowerState/running':
+                elif status["code"] == "PowerState/running":
                     state = NodeState.RUNNING
-                # as close as we can to get the start date. Unfortunately
-                # this seems not be be a unique date
                 if status.get('time'):
                     created_at = status.get('time')
         except BaseHTTPError as h:
@@ -1322,7 +1320,6 @@ class AzureNodeDriver(NodeDriver):
             location = locations_mapping.get(location, 'eastus')
             cost_per_hour = price.get(location)
         extra['cost_per_hour'] = cost_per_hour
-
         node = Node(data['properties']['vmId'],
                     data['name'],
                     state,
