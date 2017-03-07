@@ -145,11 +145,7 @@ def get_size_price(driver_type, driver_name, size_id):
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
 
-    try:
-        price = float(pricing[size_id])
-    except KeyError:
-        # Price not available
-        price = None
+    price = pricing.get(size_id)
 
     return price
 

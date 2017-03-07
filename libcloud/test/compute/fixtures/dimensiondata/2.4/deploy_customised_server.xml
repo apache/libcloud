@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na9_20160321T074626030- 0400_7e9fffe7-190b-46f2-9107-9d52fe57d0ad">
+  <operation>DEPLOY_UNCUSTOMIZED_SERVER</operation>
+  <responseCode>IN_PROGRESS</responseCode>
+  <message>Request to deploy uncustomized Server 'Production Server' has been accepted and is being processed.</message>
+  <info name="serverId" value="e75ead52-692f-4314-8725-c8a4f4d13a87"/>
+</response>

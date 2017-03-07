@@ -19,6 +19,7 @@ Driver for Microsoft Azure Resource Manager (ARM) Virtual Machines provider.
 http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
+import re
 import base64
 import binascii
 import os
@@ -35,6 +36,31 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.utils.py3 import basestring
+from libcloud.pricing import get_size_price
+
+locations_mapping = {
+    "eastus": "us-east",
+    "eastus2": "us-east2",
+    "ukwest": "united-kingdom-west",
+    "uksouth": "united-kingdom-south",
+    "westcentralus": "us-west-central",
+    "westus2": "us-west-2",
+    "westus": "us-west",
+    "canadaeast": "canada-east",
+    "canadacenstral": "canada-central",
+    "brazilsouth": "brazil-south",
+    "australiasoutheast": "australia-southeast",
+    "australiaeast": "australia-east",
+    "japanwest": "japan-west",
+    "japaneast": "japan-east",
+    "southeastasia": "asia-pacific-southeast",
+    "eastasia": "asia-pacific-east",
+    "westeurope": "europe-west",
+    "northeurope": "europe-north",
+    "southcentralus": "us-south-central",
+    "northcentralus": "us-north-central",
+    "centralus": "us-central",
+}
 
 
 class AzureImage(NodeImage):
@@ -342,8 +368,18 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
+
+        nodes_data = r.object["value"]
+        # get paginated results
+        # remove host from nextLink
+        while r.object.get("nextLink"):
+            next_url = r.object.get("nextLink").split('https://management.azure.com')[1]
+            r = self.connection.request(next_url,
+                                        params={"api-version": "2015-06-15"})
+            nodes_data.extend(r.object["value"])
+
         return [self._to_node(n, fetch_nic=ex_fetch_nic)
-                for n in r.object["value"]]
+                for n in nodes_data]
 
     def create_node(self,
                     name,
@@ -606,7 +642,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        target = "%s/restart" % node.id
+        target = "%s/restart" % node.extra['id']
         try:
             self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -639,74 +675,29 @@ class AzureNodeDriver(NodeDriver):
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
-        try:
-            self.connection.request(node.id,
+        # This returns a 202 (Accepted) which means that the delete happens
+        # asynchronously.
+        self.connection.request(node.extra['id'],
                                     params={"api-version": "2015-06-15"},
                                     method='DELETE')
-        except BaseHTTPError as h:
-            if h.code == 202:
-                pass
-            else:
-                return False
 
-        # Need to poll until the node actually goes away.
-        while True:
-            try:
-                time.sleep(10)
-                self.connection.request(
-                    node.id,
-                    params={"api-version": "2015-06-15"})
-            except BaseHTTPError as h:
-                if h.code == 404:
-                    break
-                else:
-                    return False
-
-        # Optionally clean up the network
-        # interfaces that were attached to this node.
-        interfaces = \
-            node.extra["properties"]["networkProfile"]["networkInterfaces"]
+        # Optionally clean up the network interfaces that were attached to this node.
         if ex_destroy_nic:
-            for nic in interfaces:
-                while True:
-                    try:
-                        self.connection.request(nic["id"],
-                                                params={
-                                                    "api-version":
-                                                    "2015-06-15"},
+            try:
+                for nic in node.extra["networkProfile"]:
+                    self.connection.request(nic["id"],
+                                                params={"api-version": "2015-06-15"},
                                                 method='DELETE')
-                        break
-                    except BaseHTTPError as h:
-                        if h.code == 202:
-                            break
-                        inuse = h.message.startswith("[NicInUse]")
-                        if h.code == 400 and inuse:
-                            time.sleep(10)
-                        else:
-                            return False
-
+            except:
+                pass
         # Optionally clean up OS disk VHD.
-        vhd_uri = \
-            node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"]
         if ex_destroy_vhd:
-            while True:
-                try:
-                    resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(
-                        resourceGroup,
-                        vhd_uri)
-                    break
-                except LibcloudError as e:
-                    if "LeaseIdMissing" in str(e):
-                        # Unfortunately lease errors
-                        # (which occur if the vhd blob
-                        # hasn't yet been released by the VM being destroyed)
-                        # get raised as plain
-                        # LibcloudError.  Wait a bit and try again.
-                        time.sleep(10)
-                    else:
-                        raise
-
+            try:
+                resourceGroup = node.extra['resource_group']
+                self._ex_delete_old_vhd(resourceGroup,
+                                        node.extra["storageProfile"]["osDisk"]["vhd"]["uri"])
+            except:
+                pass
         return True
 
     def ex_get_ratecard(self, offer_durable_id, currency='USD',
@@ -1061,7 +1052,7 @@ class AzureNodeDriver(NodeDriver):
         :type node: :class:`.Node`
         """
 
-        target = "%s/start" % node.id
+        target = "%s/start" % node.extra['id']
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
@@ -1083,9 +1074,9 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if deallocate:
-            target = "%s/deallocate" % node.id
+            target = "%s/deallocate" % node.extra['id']
         else:
-            target = "%s/stop" % node.id
+            target = "%s/powerOff" % node.extra['id']
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
@@ -1218,64 +1209,128 @@ class AzureNodeDriver(NodeDriver):
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):
+        created_at = None
         private_ips = []
         public_ips = []
-        nics = data["properties"]["networkProfile"]["networkInterfaces"]
         if fetch_nic:
-            for nic in nics:
+            for nic in data['properties']['networkProfile']['networkInterfaces']:
                 try:
-                    n = self.ex_get_nic(nic["id"])
-                    priv = n.extra["ipConfigurations"][0]["properties"] \
-                        .get("privateIPAddress")
+                    n = self.ex_get_nic(nic['id'])
+                    priv = n.extra["ipConfigurations"][0]["properties"].get("privateIPAddress")
                     if priv:
                         private_ips.append(priv)
-                    pub = n.extra["ipConfigurations"][0]["properties"].get(
-                        "publicIPAddress")
+                    pub = n.extra["ipConfigurations"][0]["properties"].get("publicIPAddress")
                     if pub:
                         pub_addr = self.ex_get_public_ip(pub["id"])
                         addr = pub_addr.extra.get("ipAddress")
                         if addr:
                             public_ips.append(addr)
-                except BaseHTTPError:
-                    pass
-
+                except Exception as e:
+                    pass # can't do much can we?
         state = NodeState.UNKNOWN
         try:
             action = "%s/InstanceView" % (data["id"])
             r = self.connection.request(action,
-                                        params={"api-version": "2015-06-15"})
-            for status in r.object["statuses"]:
-                if status["code"] == "ProvisioningState/creating":
+                                        params={'api-version': '2015-06-15'})
+            for status in r.object['statuses']:
+                if status['code'] in ['ProvisioningState/creating', 'ProvisioningState/updating']:
                     state = NodeState.PENDING
-                    break
-                elif status["code"] == "ProvisioningState/deleting":
+                elif status['code'] == 'ProvisioningState/deleting':
                     state = NodeState.TERMINATED
                     break
-                elif status["code"].startswith("ProvisioningState/failed"):
+                elif status['code'].startswith('ProvisioningState/failed'):
                     state = NodeState.ERROR
                     break
-                elif status["code"] == "ProvisioningState/succeeded":
-                    pass
+                elif status['code'] == 'ProvisioningState/succeeded':
+                    state = NodeState.RUNNING
 
-                if status["code"] == "PowerState/deallocated":
+                if status['code'] == 'PowerState/deallocated':
                     state = NodeState.STOPPED
                     break
-                elif status["code"] == "PowerState/deallocating":
+                elif status['code'] == 'PowerState/stopped':
+                    # this is stopped without resources deallocated
+                    state = NodeState.PAUSED
+                    break
+                elif status['code'] == 'PowerState/deallocating':
                     state = NodeState.PENDING
                     break
-                elif status["code"] == "PowerState/running":
+                elif status['code'] == 'PowerState/running':
                     state = NodeState.RUNNING
-        except BaseHTTPError:
+                # as close as we can to get the start date. Unfortunately
+                # this seems not be be a unique date
+                if status.get('time'):
+                    created_at = status.get('time')
+        except BaseHTTPError as h:
             pass
 
-        node = Node(data["id"],
-                    data["name"],
+        extra = {}
+        extra['location'] = data.get('location','')
+        try:
+            extra['storageUri'] = data['properties']['diagnosticsProfile']['bootDiagnostics']['storageUri']
+        except:
+            pass
+        try:
+            extra['storageProfile'] = data['properties']['storageProfile']
+        except:
+            pass
+
+
+        extra['size'] = data['properties'].get('hardwareProfile', {}).get('vmSize')
+        extra['osProfile'] = data['properties'].get('osProfile')
+        extra['osDisk'] = data['properties'].get('storageProfile', {}).get('osDisk')
+        try:
+            extra['system_vhd'] = extra['osDisk']['vhd']['uri']
+        except:
+            pass
+        try:
+            # not sure if this is Linux/Windows or if other values exist
+            extra['os_type'] = extra['osDisk']['osType'].lower()
+        except:
+            extra['os_type'] = 'linux'
+            pass
+        try:
+            extra['adminUsername'] = extra['osProfile']['adminUsername']
+        except:
+            pass
+        try:
+            extra['image'] = extra['storageProfile']['imageReference']['offer']
+        except:
+            pass
+        for datadisk in extra['storageProfile']['dataDisks']:
+            try:
+                extra['disk-%s' % datadisk['name']] = "%sGB - %s" % (datadisk['diskSizeGB'], datadisk['vhd']['uri'])
+            except:
+                pass
+
+        extra["networkProfile"] = data['properties']["networkProfile"]["networkInterfaces"]
+
+        subscription = re.search(r"/subscriptions/(.*?)/resourceGroups", data['id'])
+        if subscription:
+            extra['subscription'] = subscription.group(1)
+
+        resource_group = re.search(r"/resourceGroups/(.*?)/providers", data['id'])
+        if resource_group:
+            extra['resource_group'] = resource_group.group(1)
+
+        extra['id'] = data["id"]
+        os_type = extra['os_type']
+        price = get_size_price(driver_type='compute', driver_name='azure_%s' % os_type,
+                               size_id=extra['size'])
+        cost_per_hour = None
+        if price:
+            location = extra.get('location', 'eastus')
+            location = locations_mapping.get(location, 'eastus')
+            cost_per_hour = price.get(location)
+        extra['cost_per_hour'] = cost_per_hour
+
+        node = Node(data['properties']['vmId'],
+                    data['name'],
                     state,
                     public_ips,
                     private_ips,
                     driver=self.connection.driver,
-                    extra=data)
-
+                    created_at=created_at,
+                    extra=extra)
         return node
 
     def _to_node_size(self, data):

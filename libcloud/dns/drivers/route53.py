@@ -38,7 +38,7 @@ from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.common.types import LibcloudError
-from libcloud.common.aws import AWSGenericResponse
+from libcloud.common.aws import AWSGenericResponse, AWSTokenConnection
 from libcloud.common.base import ConnectionUserAndKey
 
 
@@ -67,7 +67,7 @@ class Route53DNSResponse(AWSGenericResponse):
     }
 
 
-class Route53Connection(ConnectionUserAndKey):
+class BaseRoute53Connection(ConnectionUserAndKey):
     host = API_HOST
     responseCls = Route53DNSResponse
 
@@ -96,6 +96,10 @@ class Route53Connection(ConnectionUserAndKey):
         return b64_hmac.decode('utf-8')
 
 
+class Route53Connection(AWSTokenConnection, BaseRoute53Connection):
+    pass
+
+
 class Route53DNSDriver(DNSDriver):
     type = Provider.ROUTE53
     name = 'Route53 DNS'
@@ -114,6 +118,10 @@ class Route53DNSDriver(DNSDriver):
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
     }
+
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', None)
+        super(Route53DNSDriver, self).__init__(*args, **kwargs)
 
     def iterate_zones(self):
         return self._get_more('zones')
@@ -546,3 +554,8 @@ class Route53DNSDriver(DNSDriver):
             return items, last_key, exhausted
         else:
             return [], None, True
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(Route53DNSDriver, self)._ex_connection_class_kwargs()
+        kwargs['token'] = self.token
+        return kwargs
