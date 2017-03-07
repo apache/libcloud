@@ -286,6 +286,7 @@ class NodeState(Type):
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
     NORMAL = 'normal'
+    UPDATING = 'updating'
 
 
 class StorageVolumeState(Type):
@@ -302,6 +303,7 @@ class StorageVolumeState(Type):
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
     MIGRATING = 'migrating'
+    UPDATING = 'updating'
 
 
 class VolumeSnapshotState(Type):
@@ -314,6 +316,7 @@ class VolumeSnapshotState(Type):
     DELETING = 'deleting'
     RESTORING = 'restoring'
     UNKNOWN = 'unknown'
+    UPDATING = 'updating'
 
 
 class Architecture(object):
