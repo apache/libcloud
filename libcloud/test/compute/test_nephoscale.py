@@ -97,7 +97,7 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
 
     def test_rename_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.rename_node(node, 'new-name')
+        result = self.driver.ex_rename_node(node, 'new-name')
         self.assertTrue(result)
 
     def test_create_node(self):
@@ -130,11 +130,12 @@ class NephoscaleMockHttp(MockHttp):
         body = self.fixtures.load('list_sizes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _server(self, method, url, body, headers):
+        body = self.fixtures.load('list_nodes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _server_cloud(self, method, url, body, headers):
-        if method == 'POST':
-            body = self.fixtures.load('success_action.json')
-        else:
-            body = self.fixtures.load('list_nodes.json')
+        body = self.fixtures.load('success_action.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _image_server(self, method, url, body, headers):
