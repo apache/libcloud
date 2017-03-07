@@ -1108,8 +1108,11 @@ class AzureNodeDriver(NodeDriver):
 
         provisioning_state = properties.get('provisioningState', '').lower()
         disk_state = properties.get('diskState', '').lower()
-        if provisioning_state in ('creating', 'updating'):
+
+        if provisioning_state == 'creating':
             state = StorageVolumeState.CREATING
+        elif provisioning_state == 'updating':
+            state = StorageVolumeState.UPDATING
         elif provisioning_state == 'succeeded':
             if disk_state in ('attached', 'reserved', 'activesas'):
                 state = StorageVolumeState.INUSE
@@ -1174,8 +1177,10 @@ class AzureNodeDriver(NodeDriver):
             extra['volume_id'] = extra['source_id']
 
         provisioning_state = properties.get('provisioningState', '').lower()
-        if provisioning_state in ('creating', 'updating'):
+        if provisioning_state == 'creating':
             state = VolumeSnapshotState.CREATING
+        elif provisioning_state == 'updating':
+            state = VolumeSnapshotState.UPDATING
         elif provisioning_state == 'succeeded':
             state = VolumeSnapshotState.AVAILABLE
         elif provisioning_state == 'failed':
@@ -1884,7 +1889,7 @@ class AzureNodeDriver(NodeDriver):
                     state = NodeState.ERROR
                     break
                 elif status["code"] == "ProvisioningState/updating":
-                    state = NodeState.RECONFIGURING
+                    state = NodeState.UPDATING
                     break
                 elif status["code"] == "ProvisioningState/succeeded":
                     pass
