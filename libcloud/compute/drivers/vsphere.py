@@ -38,7 +38,6 @@ from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
 
 
-
 class VSphereNodeDriver(NodeDriver):
     name = 'VMware vSphere'
     website = 'http://www.vmware.com/products/vsphere/'
@@ -54,7 +53,6 @@ class VSphereNodeDriver(NodeDriver):
         """Initialize a connection by providing a hostname,
         username and password
         """
-        import pdb; pdb.set_trace()
         try:
             self.connection = connect.SmartConnect(host=host, user=username,
                                                    pwd=password)
@@ -62,9 +60,12 @@ class VSphereNodeDriver(NodeDriver):
         except Exception as exc:
             error_message = str(exc).lower()
             if 'incorrect user name' in error_message:
-                raise InvalidCredsError('Check your username and password are valid')
-            if 'connection refused' in error_message or 'is not a vim server' in error_message:
-                raise Exception('Check that the host provided is a vSphere installation')
+                raise InvalidCredsError('Check your username and '
+                                        'password are valid')
+            if 'connection refused' in error_message or 'is not a vim server' \
+                                                        in error_message:
+                raise Exception('Check that the host provided is a '
+                                'vSphere installation')
             if 'name or service not known' in error_message:
                 raise Exception('Check that the vSphere host is accessible')
             if 'certificate verify failed' in error_message:
@@ -74,23 +75,32 @@ class VSphereNodeDriver(NodeDriver):
                     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
                     context.verify_mode = ssl.CERT_NONE
                 except ImportError:
-                    raise ImportError('To use self signed certificates, please upgrade to python 2.7.11 and pyvmomi 6.0.0+')
+                    raise ImportError('To use self signed certificates, '
+                                      'please upgrade to python 2.7.11 and '
+                                      'pyvmomi 6.0.0+')
 
                 context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
                 context.verify_mode = ssl.CERT_NONE
                 try:
-                    self.connection = connect.SmartConnect(host=host, user=username,
-                                                           pwd=password, sslContext=context)
+                    self.connection = connect.SmartConnect(host=host,
+                                                           user=username,
+                                                           pwd=password,
+                                                           sslContext=context)
                     atexit.register(connect.Disconnect, self.connection)
                 except Exception as exc:
                     error_message = str(exc).lower()
                     if 'incorrect user name' in error_message:
-                        raise InvalidCredsError('Check your username and password are valid')
-                    if 'connection refused' in error_message or 'is not a vim server' in error_message:
-                        raise Exception('Check that the host provided is a vSphere installation')
+                        raise InvalidCredsError('Check your username and '
+                                                'password are valid')
+                    if 'connection refused' in error_message or \
+                            'is not a vim server' in error_message:
+                        raise Exception('Check that the host provided '
+                                        'is a vSphere installation')
                     if 'name or service not known' in error_message:
-                        raise Exception('Check that the vSphere host is accessible')
-                    raise Exception('Cannot connect to vSphere using self signed certs')
+                        raise Exception('Check that the vSphere host is '
+                                        'accessible')
+                    raise Exception('Cannot connect to vSphere using '
+                                    'self signed certs')
             else:
                 raise Exception('Cannot connect to vSphere')
 
@@ -136,8 +146,8 @@ class VSphereNodeDriver(NodeDriver):
 
     def _to_node(self, virtual_machine, depth=1):
         maxdepth = 10
-        # if this is a group it will have children. if it does, recurse into them
-        # and then return
+        # if this is a group it will have children.
+        # if it does, recurse into them and then return
         if hasattr(virtual_machine, 'childEntity'):
             if depth > maxdepth:
                 return
@@ -247,7 +257,8 @@ class VSphereNodeDriver(NodeDriver):
         """Searches VMs for a given uuid
         returns pyVmomi.VmomiSupport.vim.VirtualMachine
         """
-        vm = self.connection.content.searchIndex.FindByUuid(None, node.id, True, True)
+        vm = self.connection.content.searchIndex.FindByUuid(None, node.id,
+                                                            True, True)
         if not vm:
             raise Exception("Unable to locate VirtualMachine.")
         return vm
