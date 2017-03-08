@@ -1213,6 +1213,7 @@ class AzureNodeDriver(NodeDriver):
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):
+        created_at = None
         private_ips = []
         public_ips = []
         nics = data["properties"]["networkProfile"]["networkInterfaces"]
@@ -1240,7 +1241,8 @@ class AzureNodeDriver(NodeDriver):
             r = self.connection.request(action,
                                         params={"api-version": "2015-06-15"})
             for status in r.object["statuses"]:
-                if status["code"] in ["ProvisioningState/creating", "ProvisioningState/updating"]:
+                if status["code"] in ["ProvisioningState/creating",
+                                      "ProvisioningState/updating"]:
                     state = NodeState.PENDING
                     break
                 elif status["code"] == "ProvisioningState/deleting":
@@ -1275,6 +1277,7 @@ class AzureNodeDriver(NodeDriver):
                     public_ips,
                     private_ips,
                     driver=self.connection.driver,
+                    created_at=created_at,
                     extra=data)
 
         return node
