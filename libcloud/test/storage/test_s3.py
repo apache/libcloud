@@ -244,11 +244,34 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
 
     def _foo_bar_container_foo_test_stream_data_MULTIPART(self, method, url,
                                                           body, headers):
-        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
+        if method == 'POST':
+            if 'uploadId' in url:
+                # Complete multipart request
+                body = self.fixtures.load('complete_multipart.xml')
+                return (httplib.OK,
+                        body,
+                        headers,
+                        httplib.responses[httplib.OK])
+            else:
+                # Initiate multipart request
+                body = self.fixtures.load('initiate_multipart.xml')
+                return (httplib.OK,
+                        body,
+                        headers,
+                        httplib.responses[httplib.OK])
+        elif method == 'DELETE':
+            # Abort multipart request
+            return (httplib.NO_CONTENT,
+                    '',
+                    headers,
+                    httplib.responses[httplib.NO_CONTENT])
+        else:
+            # Upload chunk multipart request
+            headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+            return (httplib.OK,
+                    '',
+                    headers,
+                    httplib.responses[httplib.OK])
 
     def _foo_bar_container_LIST_MULTIPART(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
@@ -357,24 +380,6 @@ class S3MockRawResponse(MockRawResponse):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_stream_data_MULTIPART(self, method, url,
-                                                          body, headers):
-        headers = {}
-        # POST is done for initiating multipart upload
-        if method == 'POST':
-            body = self.fixtures.load('initiate_multipart.xml')
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-        else:
-            body = ''
-            headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
 
 
 class S3Tests(unittest.TestCase):
@@ -891,7 +896,6 @@ class S3Tests(unittest.TestCase):
         if not self.driver.supports_s3_multipart_upload:
             return
 
-        self.mock_raw_response_klass.type = 'MULTIPART'
         self.mock_response_klass.type = 'MULTIPART'
 
         def _faulty_iterator():
@@ -980,7 +984,7 @@ class S3APSETests(S3Tests):
 
 
 class S3APNETests(S3Tests):
-    driver_tyoe = S3APNEStorageDriver
+    driver_type = S3APNEStorageDriver
 
 
 if __name__ == '__main__':
