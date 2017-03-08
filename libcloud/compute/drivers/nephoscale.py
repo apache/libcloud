@@ -248,7 +248,7 @@ class NephoscaleNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`Node`
         """
         if baremetal:
-        # show cloud servers and dedicated servers as well
+            # show cloud servers and dedicated servers as well
             result = self.connection.request('/server/').object
         else:
             result = self.connection.request('/server/cloud/').object
@@ -563,17 +563,17 @@ get all keys call with no arguments')
                 'console_key': console_key,
                 'zone': zone
                 }
-        #cloudlet or baremetal
+        # cloudlet or baremetal
         if baremetal:
             element_uri = 'dedicated'
-            #not required
+            # not required
             data.pop('console_key')
         else:
             element_uri = 'cloud'
-        #Comma delimited list of IP addresses to associate with the server
-        #eg "ips": "208.166.64.4, 10.128.0.4".
-        #If ips are set, NephoScale need to have the network specified as well
-        #eg  'networks': '59887,59889'
+        # Comma delimited list of IP addresses to associate with the server
+        # eg "ips": "208.166.64.4, 10.128.0.4".
+        # If ips are set, NephoScale need to have the network specified as well
+        # eg  'networks': '59887,59889'
 
         if ips:
             if type(ips) == list:
@@ -647,7 +647,7 @@ get all keys call with no arguments')
         }
 
         billable_type = data.get('service_type', {}).get('billable_type')
-        #1 for cloud servers, 2 for dedicated
+        # 1 for cloud servers, 2 for dedicated
         if billable_type == 1:
             extra['tags'] = {'type': 'Cloudlet'}
         elif billable_type == 2:
