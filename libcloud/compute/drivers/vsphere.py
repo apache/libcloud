@@ -17,7 +17,6 @@
 VMware vSphere driver. Uses pyvmomi - https://github.com/vmware/pyvmomi
 Code inspired by https://github.com/vmware/pyvmomi-community-samples
 
-Author: Markos Gogoulos -  mgogoulos@mist.io
 """
 
 try:
