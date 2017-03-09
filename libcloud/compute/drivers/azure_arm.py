@@ -492,7 +492,7 @@ class AzureNodeDriver(NodeDriver):
             automatically manage the availability of disks to provide data
             redundancy and fault tolerance, without creating and managing
             storage accounts on your own. Managed disks may not be available
-            in all regions.
+            in all regions (default False).
         :type ex_use_managed_disks: ``bool``
 
         :param ex_storage_account_type: The Storage Account type,
@@ -772,21 +772,20 @@ class AzureNodeDriver(NodeDriver):
         """
         Create a new volume.
 
-        :param size: Size of volume in gigabytes (required)
+        :param size: Size of volume in gigabytes.
         :type size: ``int``
 
-        :param name: Name of the volume to be created
+        :param name: Name of the volume to be created.
         :type name: ``str``
 
-        :param location: Which data center to create a volume in.
+        :param location: Which data center to create a volume in. (required)
         :type location: :class:`NodeLocation`
 
-        :param snapshot: Snapshot from which to create the new
-            volume.  (optional)
+        :param snapshot: Snapshot from which to create the new volume.
         :type snapshot: :class:`VolumeSnapshot`
 
         :param ex_resource_group: The name of resource group in which to
-            create the volume.
+            create the volume. (required)
         :type ex_resource_group: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
@@ -872,7 +871,7 @@ class AzureNodeDriver(NodeDriver):
         )
         return [self._to_volume(volume) for volume in response.object['value']]
 
-    def attach_volume(self, node, volume, device=None, ex_lun=None):
+    def attach_volume(self, node, volume, ex_lun=None, **ex_kwargs):
         """
         Attach a managed volume to node.
 
@@ -881,9 +880,6 @@ class AzureNodeDriver(NodeDriver):
 
         :param volume: A volume to attach.
         :type volume: :class:`StorageVolume`
-
-        :param device: A node device to attach volume(not supported by Azure).
-        :type device: ``str``
 
         :param ex_lun: Specifies the logical unit number (LUN) location for
             the data drive in the virtual machine. Each data disk must have
@@ -989,14 +985,14 @@ class AzureNodeDriver(NodeDriver):
         :param volume: Instance of ``StorageVolume``.
         :type volume: :class`StorageVolume`
 
-        :param name: Name of snapshot (optional).
+        :param name: Name of snapshot. (required)
         :type name: ``str``
 
-        :param location: Which data center to create a volume in.
+        :param location: Which data center to create a volume in. (required)
         :type location: :class:`NodeLocation`
 
         :param ex_resource_group: The name of resource group in which to
-            create the snapshot.
+            create the snapshot. (required)
         :type ex_resource_group: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
@@ -1097,13 +1093,10 @@ class AzureNodeDriver(NodeDriver):
         :param volume_obj: A volume object from an azure response.
         :type volume_obj: ``dict``
 
-        :param name: An optional name for the volume. If not provided
-            then either tag with a key "name" will be used. (optional)
+        :param name: An optional name for the volume.
         :type name: ``str``
 
         :param ex_resource_group: An optional resource group for the volume.
-            If not provided then either tag with a key "resource_group"
-            will be used. (optional)
         :type ex_resource_group: ``str``
 
         :rtype: :class:`StorageVolume`
@@ -1156,7 +1149,7 @@ class AzureNodeDriver(NodeDriver):
             extra=extra
         )
 
-    def _to_snapshot(self, snapshot_obj, name=None,  ex_resource_group=None):
+    def _to_snapshot(self, snapshot_obj, name=None, ex_resource_group=None):
         """
         Parse the JSON element and return a VolumeSnapshot object.
 
@@ -1167,8 +1160,6 @@ class AzureNodeDriver(NodeDriver):
         :type name: ``str``
 
         :param ex_resource_group: An optional resource group for the volume.
-            If not provided then either tag with a key "resource_group"
-            will be used.
         :type ex_resource_group: ``str``
 
         :rtype: :class:`VolumeSnapshot`
