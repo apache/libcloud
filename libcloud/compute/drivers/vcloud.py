@@ -20,6 +20,15 @@ import sys
 import re
 import base64
 import os
+import time
+import multiprocessing.pool
+import json
+from xml.sax.saxutils import escape as sax_utils_escape
+
+from xml.etree import ElementTree as ET
+
+from xml.parsers.expat import ExpatError
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
@@ -28,21 +37,14 @@ from libcloud.utils.py3 import next
 
 urlparse = urlparse.urlparse
 
-import time
-
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
-from xml.parsers.expat import ExpatError
-
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.compute.providers import Provider
+from libcloud.compute.providers import Provider, get_driver
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation
 from libcloud.compute.base import NodeSize, NodeImage
+
+from libcloud.utils.networking import is_private_subnet
 
 """
 From vcloud api "The VirtualQuantity element defines the number of MB
@@ -50,10 +52,54 @@ of memory. This should be either 512 or a multiple of 1024 (1 GB)."
 """
 VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1, 9)]
 
+VM_SIZES = [
+  {'id': '1 core, 512Mb Ram',
+   'memory': 512,
+   'cpu': 1,
+  },
+  {'id': '1 core, 1024Mb Ram',
+   'memory': 1024,
+   'cpu': 1,
+  },
+  {'id': '2 core, 1024Mb Ram',
+   'memory': 1024,
+   'cpu': 2,
+  },
+  {'id': '1 core, 2048Mb Ram',
+   'memory': 2048,
+   'cpu': 1,
+  },
+  {'id': '2 core, 2048Mb Ram',
+   'memory': 2048,
+   'cpu': 2,
+  },
+  {'id': '2 core, 4096Mb Ram',
+   'memory': 4096,
+   'cpu': 2,
+  },
+  {'id': '4 core, 4096Mb Ram',
+   'memory': 4096,
+   'cpu': 4,
+  },
+  {'id': '4 core, 8192Mb Ram',
+   'memory': 8192,
+   'cpu': 4
+  },
+  {'id': '8 core, 8192Mb Ram',
+   'memory': 8192,
+   'cpu': 8
+  },
+  {'id': '8 core, 10240Mb Ram',
+   'memory': 10240,
+   'cpu': 8
+  },
+]
+
+
 # Default timeout (in seconds) for long running tasks
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
-DEFAULT_API_VERSION = '0.8'
+DEFAULT_API_VERSION = '5.1'
 
 """
 Valid vCloud API v1.5 input values.
@@ -73,6 +119,23 @@ def fixxpath(root, xpath):
 
 def get_url_path(url):
     return urlparse(url.strip()).path
+
+# Taken from https://github.com/cedadev/libcloud/blob/trunk/libcloud/compute/drivers/vcloud.py
+
+# Convert execute script into format compatible for dispatch over the REST API
+cust_script_char_conv = lambda script_str: script_str.\
+replace(os.linesep, '&#13;').\
+replace('"', '&quot;').\
+replace('%', '&#37;').\
+replace("'", '&apos;')
+# A fudge to allow for the fact that ElementTree.tostring will convert ampersand
+# characters previously set as part of the escape sequences set by
+# cust_script_char_conv(). This lambda correct these prior to dispatch
+cust_xml_char_conv_et_fix = lambda xml_str: xml_str.\
+replace('&amp;#13;', '&#13;').\
+replace('&amp;quot;', '&quot;').\
+replace('&amp;#37;', '&#37;').\
+replace('&amp;apos;', '&apos;')
 
 
 class Vdc(object):
@@ -305,6 +368,20 @@ class VCloudResponse(XmlResponse):
         return self.status in (httplib.OK, httplib.CREATED,
                                httplib.NO_CONTENT, httplib.ACCEPTED)
 
+    def parse_error(self):
+        error_msg = 'Unknown error'
+        try:
+            body = self.parse_body()
+            code = body.get('majorErrorCode')
+            message = body.get('message')
+            error_msg = '%s: %s' % (code, message)
+        except:
+            pass
+
+        raise Exception(error_msg)
+
+
+
 
 class VCloudConnection(ConnectionUserAndKey):
 
@@ -335,10 +412,12 @@ class VCloudConnection(ConnectionUserAndKey):
 
     def _get_auth_token(self):
         if not self.token:
-            self.connection.request(method='POST', url='/api/v0.8/login',
-                                    headers=self._get_auth_headers())
+            conn = self.conn_classes[self.secure](self.host,
+                                                  self.port)
+            conn.request(method='POST', url='/api/v0.8/login',
+                         headers=self._get_auth_headers())
 
-            resp = self.connection.getresponse()
+            resp = conn.getresponse()
             headers = dict(resp.getheaders())
             body = ET.XML(resp.read())
 
@@ -369,6 +448,9 @@ class VCloudNodeDriver(NodeDriver):
     connectionCls = VCloudConnection
     org = None
     _vdcs = None
+    # this is needed to keep information about port bindings and NAT
+    # for VMs
+    _networks = None
 
     NODE_STATE_MAP = {'0': NodeState.PENDING,
                       '1': NodeState.PENDING,
@@ -387,8 +469,6 @@ class VCloudNodeDriver(NodeDriver):
                 cls = VCloud_1_5_NodeDriver
             elif api_version == '5.1':
                 cls = VCloud_5_1_NodeDriver
-            elif api_version == '5.5':
-                cls = VCloud_5_5_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
@@ -556,6 +636,9 @@ class VCloudNodeDriver(NodeDriver):
         return res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]
 
     def list_nodes(self):
+        if not self._networks:
+            # via _networks we get nat rules and public ips of nodes
+            self.ex_list_networks()
         return self.ex_list_nodes()
 
     def ex_list_nodes(self, vdcs=None):
@@ -569,6 +652,9 @@ class VCloudNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`Node`
         """
+        #TODO: consider asking "/api/query?type=vm" for this
+        #this will return VMs with hrefs to query for more info
+
         if not vdcs:
             vdcs = self.vdcs
         if not isinstance(vdcs, (list, tuple)):
@@ -581,35 +667,65 @@ class VCloudNodeDriver(NodeDriver):
             )
             vapps = [
                 (i.get('name'), i.get('href'))
-                for i in elms if
-                i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml' and
-                i.get('name')
+                for i in elms
+                if i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml'
+                and i.get('name')
             ]
 
-            for vapp_name, vapp_href in vapps:
-                try:
-                    res = self.connection.request(
-                        get_url_path(vapp_href),
-                        headers={'Content-Type':
-                                 'application/vnd.vmware.vcloud.vApp+xml'}
-                    )
-                    nodes.append(self._to_node(res.object))
-                except Exception:
-                    # The vApp was probably removed since the previous vDC
-                    # query, ignore
-                    e = sys.exc_info()[1]
-                    if not (e.args[0].tag.endswith('Error') and
-                            e.args[0].get('minorErrorCode') ==
-                            'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
-                        raise
+            # first get a list of vapps
+            # then get VMs for each vapp
+            # use multiprocessing to query vapps on parallel
+            # for large number of VMs, if queried serially means that list_nodes
+            # could take up to minutes to return the whole list, since each request for VM info
+            # takes a few seconds
+            # Due to the fact that libcloud driver instance is not thread safe, we choose to
+            # to create a new driver instance inside each thread.
+            # http://ci.apache.org/projects/libcloud/docs/other/using-libcloud-in-multithreaded-and-async-environments.html
 
+            vapp_hrefs = [vapp_href for vapp_name, vapp_href in vapps]
+            def _list_one(vapp_href):
+                """since vdcs and token are both needed to make any request,
+                we can provide them on the new driver
+                the same applies for _networks
+                """
+                driver = get_driver(self.type)(self.key, self.secret, host=self.connection.host)
+                driver._vdcs = self.vdcs
+                driver._networks = self._networks
+                driver.connection.token = self.connection.token
+                try:
+                    return driver.ex_list_nodes_for_vapp(vapp_href)
+                except:
+                    return []
+            pool = multiprocessing.pool.ThreadPool(8)
+            results = pool.map(_list_one, vapp_hrefs)
+            pool.terminate()
+
+            for result in results:
+                nodes.extend(result)
         return nodes
 
-    def _to_size(self, ram):
+    def ex_list_nodes_for_vapp(self, vapp_href):
+        "return nodes for a vapp, provided it's href"
+        try:
+            res = self.connection.request(
+                get_url_path(vapp_href),
+                headers={'Content-Type':
+                         'application/vnd.vmware.vcloud.vApp+xml'}
+            )
+            #_to_node() returns vApp as Node, with VMs as extra
+            # we need Nodes to be actual VMs, so we pass the
+            # result of _to_node() to _to_nodes()
+            vapp_nodes = self._to_node(res.object)
+            return self._to_nodes(vapp_nodes)
+        except:
+            return []
+
+    def _to_size(self, size):
         ns = NodeSize(
-            id=None,
-            name="%s Ram" % ram,
-            ram=ram,
+            id=size.get('id'),
+            name=size.get('id'),
+            ram=size.get('memory'),
+            extra={'cpu': size.get('cpu')},
             disk=None,
             bandwidth=None,
             price=None,
@@ -618,8 +734,79 @@ class VCloudNodeDriver(NodeDriver):
         return ns
 
     def list_sizes(self, location=None):
-        sizes = [self._to_size(i) for i in VIRTUAL_MEMORY_VALS]
+        sizes = [self._to_size(size) for size in VM_SIZES]
         return sizes
+
+    def ex_list_networks(self):
+        """
+        List available networks
+
+        """
+        network_elements = []
+        for vdc in self.vdcs:
+            res = self.connection.request(get_url_path(vdc.id)).object
+            network_elements.extend(
+                [network
+                 for network in res.findall(
+                     fixxpath(res, 'AvailableNetworks/Network')
+                 )]
+            )
+        networks = []
+        for network in network_elements:
+            # avoid exception: Unable to perform this action. Contact your cloud administrator.
+            try:
+                network_object = self.connection.request(network.get('href')).object
+            except:
+                continue
+
+            #alloc_ips = network_object.findall(fixxpath(network_object, 'Configuration/IpScope/AllocatedIpAddresses'))
+            #ips = []
+            #for ip in alloc_ips:
+            #    ips = [ip.text for ip in ip.findall(fixxpath(network, "IpAddress"))]
+            alloc_ips = {}
+            nat_rules = network_object.findall(fixxpath(network_object, 'Configuration/Features/NatService/NatRule/PortForwardingRule'))
+            rules = {}
+            for nat_rule in nat_rules:
+                external_ip = nat_rule.find(fixxpath(nat_rule,'ExternalIpAddress'))
+                if external_ip is not None:
+                    external_ip = external_ip.text
+                external_port = nat_rule.find(fixxpath(nat_rule,'ExternalPort'))
+                if external_port is not None:
+                    external_port = external_port.text
+                internal_ip = nat_rule.find(fixxpath(nat_rule,'InternalIpAddress'))
+                if internal_ip is not None:
+                    internal_ip = internal_ip.text
+                internal_port = nat_rule.find(fixxpath(nat_rule,'InternalPort'))
+                if internal_port is not None:
+                    internal_port = internal_port.text
+                protocol = nat_rule.find(fixxpath(nat_rule,'Protocol'))
+                if protocol is not None:
+                    protocol = protocol.text
+
+                nat_rule_dict = {
+                    'IP': external_ip,
+                    'PublicPort': external_port,
+                    'PrivatePort': internal_port,
+                    'Type': protocol,
+                }
+                if rules.get(internal_ip):
+                    rules[internal_ip].append(nat_rule_dict)
+                else:
+                    rules[internal_ip] = [nat_rule_dict]
+
+            extra = {'href': network.get('href'),
+                     'nat_rules': rules
+            }
+
+            network = VCloudNetwork(id=network.get('name'),
+                                    name=network.get('name'),
+                                    driver=self,
+                                    extra=extra,
+                                    cidr='')
+
+            networks.append(network)
+        self._networks = networks
+        return networks
 
     def _get_catalogitems_hrefs(self, catalog):
         """Given a catalog href returns contained catalog item hrefs"""
@@ -650,32 +837,17 @@ class VCloudNodeDriver(NodeDriver):
         return res
 
     def list_images(self, location=None):
-        images = []
-        for vdc in self.vdcs:
-            res = self.connection.request(get_url_path(vdc.id)).object
-            res_ents = res.findall(fixxpath(
-                res, "ResourceEntities/ResourceEntity")
-            )
-            images += [
-                self._to_image(i)
-                for i in res_ents
-                if i.get('type') ==
-                'application/vnd.vmware.vcloud.vAppTemplate+xml'
-            ]
 
-        for catalog in self._get_catalog_hrefs():
-            for cat_item in self._get_catalogitems_hrefs(catalog):
-                res = self._get_catalogitem(cat_item)
-                res_ents = res.findall(fixxpath(res, 'Entity'))
-                images += [
-                    self._to_image(i)
-                    for i in res_ents
-                    if i.get('type') ==
-                    'application/vnd.vmware.vcloud.vAppTemplate+xml'
-                ]
+        images = []
+        #media_images = self.connection.request('/api/query?type=media&pageSize=500').object
+        app_images = self.connection.request('/api/query?type=vAppTemplate&pageSize=500').object
+        images.extend(app_images)
+        #images.extend(media_images)
+        images = [self._to_image(i) for i in images if i.get('name') and i.get('href')]
 
         def idfun(image):
             return image.id
+        images = sorted(images, key=lambda k: k.name)
 
         return self._uniquer(images, idfun)
 
@@ -829,10 +1001,12 @@ class VCloud_1_5_Connection(VCloudConnection):
     def _get_auth_token(self):
         if not self.token:
             # Log In
-            self.connection.request(method='POST', url='/api/sessions',
-                                    headers=self._get_auth_headers())
+            conn = self.conn_classes[self.secure](self.host,
+                                                  self.port)
+            conn.request(method='POST', url='/api/sessions',
+                         headers=self._get_auth_headers())
 
-            resp = self.connection.getresponse()
+            resp = conn.getresponse()
             headers = dict(resp.getheaders())
 
             # Set authorization token
@@ -850,11 +1024,9 @@ class VCloud_1_5_Connection(VCloudConnection):
                      'application/vnd.vmware.vcloud.orgList+xml')).get('href')
             )
 
-            if self.proxy_url is not None:
-                self.connection.set_http_proxy(self.proxy_url)
-            self.connection.request(method='GET', url=org_list_url,
-                                    headers=self.add_default_headers({}))
-            body = ET.XML(self.connection.getresponse().read())
+            conn.request(method='GET', url=org_list_url,
+                         headers=self.add_default_headers({}))
+            body = ET.XML(conn.getresponse().read())
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')
@@ -862,13 +1034,6 @@ class VCloud_1_5_Connection(VCloudConnection):
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/*+xml;version=1.5'
-        headers['x-vcloud-authorization'] = self.token
-        return headers
-
-
-class VCloud_5_5_Connection(VCloud_1_5_Connection):
-    def add_default_headers(self, headers):
-        headers['Accept'] = 'application/*+xml;version=5.5'
         headers['x-vcloud-authorization'] = self.token
         return headers
 
@@ -1009,51 +1174,32 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             # so catch this and move on.
             pass
 
-        res = self.connection.request(get_url_path(node.id), method='DELETE')
+        res = self.connection.request(get_url_path(node.extra.get('href')), method='DELETE')
         return res.status == httplib.ACCEPTED
 
     def reboot_node(self, node):
-        res = self.connection.request('%s/power/action/reset'
-                                      % get_url_path(node.id),
-                                      method='POST')
-        if res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]:
-            self._wait_for_task_completion(res.object.get('href'))
-            return True
-        else:
-            return False
+        return self._perform_power_operation(node, 'reboot')
 
-    def ex_deploy_node(self, node, ex_force_customization=False):
+    def ex_start_node(self, node):
+        return self._perform_power_operation(node, 'powerOn')
+
+    def ex_stop_node(self, node):
+        return self._perform_power_operation(node, 'shutdown')
+
+
+    def ex_deploy_node(self, node):
         """
         Deploys existing node. Equal to vApp "start" operation.
 
         :param  node: The node to be deployed
         :type   node: :class:`Node`
 
-        :param  ex_force_customization: Used to specify whether to force
-                                        customization on deployment,
-                                        if not set default value is False.
-        :type   ex_force_customization: ``bool``
-
         :rtype: :class:`Node`
         """
-        if ex_force_customization:
-            vms = self._get_vm_elements(node.id)
-            for vm in vms:
-                self._ex_deploy_node_or_vm(vm.get('href'),
-                                           ex_force_customization=True)
-        else:
-            self._ex_deploy_node_or_vm(node.id)
-
-        res = self.connection.request(get_url_path(node.id))
-        return self._to_node(res.object)
-
-    def _ex_deploy_node_or_vm(self, vapp_or_vm_path,
-                              ex_force_customization=False):
         data = {'powerOn': 'true',
-                'forceCustomization': str(ex_force_customization).lower(),
                 'xmlns': 'http://www.vmware.com/vcloud/v1.5'}
         deploy_xml = ET.Element('DeployVAppParams', data)
-        path = get_url_path(vapp_or_vm_path)
+        path = get_url_path(node.extra.get('href'))
         headers = {
             'Content-Type':
             'application/vnd.vmware.vcloud.deployVAppParams+xml'
@@ -1063,6 +1209,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                       method='POST',
                                       headers=headers)
         self._wait_for_task_completion(res.object.get('href'))
+        res = self.connection.request(get_url_path(node.extra.get('href')))
+        return self._to_node(res.object)
 
     def ex_undeploy_node(self, node):
         """
@@ -1086,7 +1234,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         try:
             res = self.connection.request(
-                '%s/action/undeploy' % get_url_path(node.id),
+                '%s/action/undeploy' % get_url_path(node.extra.get('href')),
                 data=ET.tostring(undeploy_xml),
                 method='POST',
                 headers=headers)
@@ -1095,13 +1243,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         except Exception:
             undeploy_power_action_xml.text = 'powerOff'
             res = self.connection.request(
-                '%s/action/undeploy' % get_url_path(node.id),
+                '%s/action/undeploy' % get_url_path(node.extra.get('href')),
                 data=ET.tostring(undeploy_xml),
                 method='POST',
                 headers=headers)
             self._wait_for_task_completion(res.object.get('href'))
 
-        res = self.connection.request(get_url_path(node.id))
+        res = self.connection.request(get_url_path(node.extra.get('href')))
         return self._to_node(res.object)
 
     def ex_power_off_node(self, node):
@@ -1154,11 +1302,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
     def _perform_power_operation(self, node, operation):
         res = self.connection.request(
-            '%s/power/action/%s' % (get_url_path(node.id), operation),
+            '%s/power/action/%s' % (get_url_path(node.extra.get('href')), operation),
             method='POST')
-        self._wait_for_task_completion(res.object.get('href'))
-        res = self.connection.request(get_url_path(node.id))
-        return self._to_node(res.object)
+        if res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]:
+            self._wait_for_task_completion(res.object.get('href'))
+            return True
+        else:
+            return False
+
 
     def ex_get_control_access(self, node):
         """
@@ -1170,7 +1321,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         :rtype: :class:`ControlAccess`
         """
         res = self.connection.request(
-            '%s/controlAccess' % get_url_path(node.id))
+            '%s/controlAccess' % get_url_path(node.extra.get('href')))
         everyone_access_level = None
         is_shared_elem = res.object.find(
             fixxpath(res.object, "IsSharedToEveryone"))
@@ -1244,7 +1395,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             'Content-Type': 'application/vnd.vmware.vcloud.controlAccess+xml'
         }
         self.connection.request(
-            '%s/action/controlAccess' % get_url_path(node.id),
+            '%s/action/controlAccess' % get_url_path(node.extra.get('href')),
             data=ET.tostring(xml),
             headers=headers,
             method='POST')
@@ -1257,7 +1408,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         :return: dictionary mapping metadata keys to metadata values
         :rtype: dictionary mapping ``str`` to ``str``
         """
-        res = self.connection.request('%s/metadata' % (get_url_path(node.id)))
+        res = self.connection.request('%s/metadata' % (get_url_path(node.extra.get('href'))))
         xpath = fixxpath(res.object, 'MetadataEntry')
         metadata_entries = res.object.findall(xpath)
         res_dict = {}
@@ -1295,7 +1446,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         # send it back to the server
         res = self.connection.request(
-            '%s/metadata' % get_url_path(node.id),
+            '%s/metadata' % get_url_path(node.extra.get('href')),
             data=ET.tostring(metadata_elem),
             headers={
                 'Content-Type': 'application/vnd.vmware.vcloud.metadata+xml'
@@ -1359,7 +1510,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 results.append(result)
         return results
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, image, size, **kwargs):
         """
         Creates and returns node. If the source image is:
           - vApp template - a new vApp is instantiated from template
@@ -1419,11 +1570,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                (started) after creation
         :type       ex_deploy: ``bool``
 
-        :keyword    ex_force_customization: Used to specify whether to force
-                                            customization on deployment,
-                                            if not set default value is False.
-        :type       ex_force_customization: ``bool``
-
         :keyword    ex_clone_timeout: timeout in seconds for clone/instantiate
                                       VM operation.
                                       Cloning might be a time consuming
@@ -1433,26 +1579,19 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                       Overrides the default task completion
                                       value.
         :type       ex_clone_timeout: ``int``
-
-        :keyword    ex_admin_password: set the node admin password explicitly.
-        :type       ex_admin_password: ``str``
         """
-        name = kwargs['name']
-        image = kwargs['image']
-        ex_vm_names = kwargs.get('ex_vm_names')
-        ex_vm_cpu = kwargs.get('ex_vm_cpu')
-        ex_vm_memory = kwargs.get('ex_vm_memory')
+        ex_vm_names = [name]
+        ex_vm_cpu = size.extra.get('cpu')
+        ex_vm_memory = size.extra.get('ram')
         ex_vm_script = kwargs.get('ex_vm_script')
         ex_vm_fence = kwargs.get('ex_vm_fence', None)
         ex_network = kwargs.get('ex_network', None)
         ex_vm_network = kwargs.get('ex_vm_network', None)
         ex_vm_ipmode = kwargs.get('ex_vm_ipmode', None)
         ex_deploy = kwargs.get('ex_deploy', True)
-        ex_force_customization = kwargs.get('ex_force_customization', False)
         ex_vdc = kwargs.get('ex_vdc', None)
         ex_clone_timeout = kwargs.get('ex_clone_timeout',
                                       DEFAULT_TASK_COMPLETION_TIMEOUT)
-        ex_admin_password = kwargs.get('ex_admin_password', None)
 
         self._validate_vm_names(ex_vm_names)
         self._validate_vm_cpu(ex_vm_cpu)
@@ -1460,7 +1599,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._validate_vm_fence(ex_vm_fence)
         self._validate_vm_ipmode(ex_vm_ipmode)
         ex_vm_script = self._validate_vm_script(ex_vm_script)
-
         # Some providers don't require a network link
         if ex_network:
             network_href = self._get_network_href(ex_network)
@@ -1489,19 +1627,17 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._change_vm_script(vapp_href, ex_vm_script)
         self._change_vm_ipmode(vapp_href, ex_vm_ipmode)
 
-        if ex_admin_password is not None:
-            self.ex_change_vm_admin_password(vapp_href, ex_admin_password)
-
         # Power on the VM.
         if ex_deploy:
-            res = self.connection.request(get_url_path(vapp_href))
-            node = self._to_node(res.object)
             # Retry 3 times: when instantiating large number of VMs at the same
             # time some may fail on resource allocation
             retry = 3
             while True:
                 try:
-                    self.ex_deploy_node(node, ex_force_customization)
+                    res = self.connection.request(
+                        '%s/power/action/powerOn' % get_url_path(vapp_href),
+                        method='POST')
+                    self._wait_for_task_completion(res.object.get('href'))
                     break
                 except Exception:
                     if retry <= 0:
@@ -1511,7 +1647,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         res = self.connection.request(get_url_path(vapp_href))
         node = self._to_node(res.object)
-        return node
+        #return node
+        return self._to_nodes(node)[0]
+
 
     def _instantiate_node(self, name, image, network_elem, vdc, vm_network,
                           vm_fence, instantiate_timeout):
@@ -1764,6 +1902,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 % vm_ipmode)
 
     def _change_vm_names(self, vapp_or_vm_id, vm_names):
+
         if vm_names is None:
             return
 
@@ -1918,10 +2057,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         vms = self._get_vm_elements(vapp_or_vm_id)
         try:
-            script = open(vm_script).read()
+            script = cust_script_char_conv(open(vm_script).read())
         except:
             return
-
         # ElementTree escapes script characters automatically. Escape
         # requirements:
         # http://www.vmware.com/support/vcd/doc/rest-api-doc-1.5-html/types/
@@ -1945,13 +2083,38 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 e = ET.Element(
                     '{http://www.vmware.com/vcloud/v1.5}CustomizationScript')
                 e.text = script
-                res.object.insert(i, e)
+                try:
+                    res.object.insert(i, e)
+                except TypeError:
+                    # *** TypeError: Argument 'element' has incorrect type (expected lxml.etree._Element, got Element)
+                    from lxml import etree as lxml_ET
+                    e = lxml_ET.Element(
+                        '{http://www.vmware.com/vcloud/v1.5}CustomizationScript')
+                    e.text = script
+                    res.object.insert(i, e)
 
             # Remove AdminPassword from customization section due to an API
             # quirk
             admin_pass = res.object.find(fixxpath(res.object, 'AdminPassword'))
             if admin_pass is not None:
                 res.object.remove(admin_pass)
+
+            # Taken from https://github.com/cedadev/libcloud
+            admin_password_enabled_elem = res.object.find(
+                                fixxpath(res.object, 'AdminPasswordEnabled'))
+            if admin_password_enabled_elem is not None:
+                admin_password_enabled_elem.text = 'false'
+
+            # Autologon must be set 0 if AutologonEnabled is set 'false'
+            admin_auto_logon_enabled_elem = res.object.find(
+                fixxpath(res.object, 'AdminAutoLogonEnabled'))
+
+            if (admin_auto_logon_enabled_elem is not None and
+            admin_auto_logon_enabled_elem.text.strip() == 'false'):
+                admin_auto_logon_count_elem = res.object.find(
+                    fixxpath(res.object, 'AdminAutoLogonCount'))
+                if admin_auto_logon_count_elem is not None:
+                    admin_auto_logon_count_elem.text = '0'
 
             # Update VM's GuestCustomizationSection
             headers = {
@@ -1960,7 +2123,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             }
             res = self.connection.request(
                 '%s/guestCustomizationSection' % get_url_path(vm.get('href')),
-                data=ET.tostring(res.object),
+                data=cust_xml_char_conv_et_fix(ET.tostring(res.object)),
                 method='PUT',
                 headers=headers
             )
@@ -1987,93 +2150,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
             res = self.connection.request(
                 '%s/networkConnectionSection' % get_url_path(vm.get('href')),
-                data=ET.tostring(res.object),
-                method='PUT',
-                headers=headers
-            )
-            self._wait_for_task_completion(res.object.get('href'))
-
-    def _update_or_insert_section(self, res, section, prev_section, text):
-        try:
-            res.object.find(
-                fixxpath(res.object, section)).text = text
-        except:
-            # "section" section does not exist, insert it just
-            # before "prev_section"
-            for i, e in enumerate(res.object):
-                tag = '{http://www.vmware.com/vcloud/v1.5}%s' % prev_section
-                if e.tag == tag:
-                    break
-            e = ET.Element(
-                '{http://www.vmware.com/vcloud/v1.5}%s' % section)
-            e.text = text
-            res.object.insert(i, e)
-        return res
-
-    def ex_change_vm_admin_password(self, vapp_or_vm_id, ex_admin_password):
-        """
-        Changes the admin (or root) password of VM or VMs under the vApp. If
-        the vapp_or_vm_id param represents a link to an vApp all VMs that
-        are attached to this vApp will be modified.
-
-        :keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a
-                                   vApp ID is used here all attached VMs
-                                   will be modified
-        :type       vapp_or_vm_id: ``str``
-
-        :keyword    ex_admin_password: admin password to be used.
-        :type       ex_admin_password: ``str``
-
-        :rtype: ``None``
-        """
-        if ex_admin_password is None:
-            return
-
-        vms = self._get_vm_elements(vapp_or_vm_id)
-        for vm in vms:
-            # Get GuestCustomizationSection
-            res = self.connection.request(
-                '%s/guestCustomizationSection' % get_url_path(vm.get('href')))
-
-            headers = {
-                'Content-Type':
-                'application/vnd.vmware.vcloud.guestCustomizationSection+xml'
-            }
-
-            # Fix API quirk.
-            # If AdminAutoLogonEnabled==False the guestCustomizationSection
-            # must have AdminAutoLogonCount==0, even though
-            # it might have AdminAutoLogonCount==1 when requesting it for
-            # the first time.
-            auto_logon = res.object.find(
-                fixxpath(res.object, "AdminAutoLogonEnabled"))
-            if auto_logon is not None and auto_logon.text == 'false':
-                self._update_or_insert_section(res,
-                                               "AdminAutoLogonCount",
-                                               "ResetPasswordRequired",
-                                               '0')
-
-            # If we are establishing a password we do not want it
-            # to be automatically chosen.
-            self._update_or_insert_section(res,
-                                           'AdminPasswordAuto',
-                                           'AdminPassword',
-                                           'false')
-
-            # API does not allow to set AdminPassword if
-            # AdminPasswordEnabled is not enabled.
-            self._update_or_insert_section(res,
-                                           'AdminPasswordEnabled',
-                                           'AdminPasswordAuto',
-                                           'true')
-
-            self._update_or_insert_section(res,
-                                           'AdminPassword',
-                                           'AdminAutoLogonEnabled',
-                                           ex_admin_password)
-
-            res = self.connection.request(
-                '%s/guestCustomizationSection' % get_url_path(vm.get('href')),
                 data=ET.tostring(res.object),
                 method='PUT',
                 headers=headers
@@ -2113,19 +2189,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return isinstance(node_or_image, Node)
 
     def _to_node(self, node_elm):
-        # Parse snapshots and VMs as extra
-        if node_elm.find(fixxpath(node_elm, "SnapshotSection")) is None:
-            snapshots = None
-        else:
-            snapshots = []
-            for snapshot_elem in node_elm.findall(
-                    fixxpath(node_elm, 'SnapshotSection/Snapshot')):
-                snapshots.append({
-                    "created": snapshot_elem.get("created"),
-                    "poweredOn": snapshot_elem.get("poweredOn"),
-                    "size": snapshot_elem.get("size"),
-                })
-
+        # Parse VMs as extra field
         vms = []
         for vm_elem in node_elm.findall(fixxpath(node_elm, 'Children/Vm')):
             public_ips = []
@@ -2136,14 +2200,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             for connection in vm_elem.findall(xpath):
                 ip = connection.find(fixxpath(connection, "IpAddress"))
                 if ip is not None:
-                    private_ips.append(ip.text)
+                    if is_private_subnet(ip.text):
+                        private_ips.append(ip.text)
+                    else:
+                        public_ips.append(ip.text)
                 external_ip = connection.find(
                     fixxpath(connection, "ExternalIpAddress"))
                 if external_ip is not None:
                     public_ips.append(external_ip.text)
-                elif ip is not None:
-                    public_ips.append(ip.text)
-
+            #FIXME: also cpu/memory
             xpath = ('{http://schemas.dmtf.org/ovf/envelope/1}'
                      'OperatingSystemSection')
             os_type_elem = vm_elem.find(xpath)
@@ -2152,6 +2217,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                     '{http://www.vmware.com/schema/ovf}osType')
             else:
                 os_type = None
+            if os_type:
+                if 'win' in os_type:
+                    os_type = 'windows'
             vm = {
                 'id': vm_elem.get('href'),
                 'name': vm_elem.get('name'),
@@ -2176,19 +2244,53 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                       'application/vnd.vmware.vcloud.vdc+xml')
         vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
 
-        extra = {'vdc': vdc.name, 'vms': vms}
-        if snapshots is not None:
-            extra['snapshots'] = snapshots
-
         node = Node(id=node_elm.get('href'),
                     name=node_elm.get('name'),
                     state=self.NODE_STATE_MAP[node_elm.get('status')],
                     public_ips=public_ips,
                     private_ips=private_ips,
                     driver=self.connection.driver,
-                    extra=extra)
+                    extra={'vdc': vdc.name, 'vms': vms})
         return node
 
+    def _to_nodes(self, vapp):
+        """_to_node() returns vApp with VMs as extra.
+        this breaks the naming conversion used with other libcloud
+        drivers. We need VMs returnes in list_nodes"""
+        nodes = []
+        for vm in vapp.extra.get('vms', []):
+            node_id = vm.get('id').rstrip('/').split('/')[-1] #more friendly id
+            node_extra = {'vdc': vapp.extra.get('vdc'),
+                          'os_type': vm.get('os_type'),
+                          'vapp': vapp.name,
+                          'href': vm.get('id') #keep this for actions
+            }
+            public_ips = vm.get('public_ips')
+            private_ips = vm.get('private_ips')
+            # if _networks exist, search for the VM private ips
+            # for nat rules
+            for network in self._networks:
+                for ip in private_ips:
+                    if network.extra.get('nat_rules').get(ip):
+                        nat_ips = network.extra.get('nat_rules').get(ip)
+                        node_extra['Nat_Rules'] = json.dumps(nat_ips)
+                        for nat_ip in nat_ips:
+                            ip = nat_ip.get('IP')
+                            if is_private_subnet(ip):
+                                if ip not in private_ips:
+                                    private_ips.append(ip)
+                            else:
+                                if ip not in public_ips:
+                                    public_ips.append(ip)
+            node = Node(id=node_id,
+                        name=vm.get('name'),
+                        state=vm.get('state'),
+                        public_ips=public_ips,
+                        private_ips=private_ips,
+                        driver=self.connection.driver,
+                        extra=node_extra)
+            nodes.append(node)
+        return nodes
     def _to_vdc(self, vdc_elm):
 
         def get_capacity_values(capacity_elm):
@@ -2228,115 +2330,19 @@ class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % (vm_memory))
 
+class VCloudNetwork(object):
+    """
+    A Virtual Network.
+    """
 
-class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
-    '''Use 5.5 Connection class to explicitly set 5.5 for the version in
-    Accept headers
-    '''
-    connectionCls = VCloud_5_5_Connection
+    def __init__(self, id, name, cidr, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
 
-    def ex_create_snapshot(self, node):
-        """
-        Creates new snapshot of a virtual machine or of all
-        the virtual machines in a vApp. Prior to creation of the new
-        snapshots, any existing user created snapshots associated
-        with the virtual machines are removed.
-
-        :param  node: node
-        :type   node: :class:`Node`
-
-        :rtype: :class:`Node`
-        """
-        snapshot_xml = ET.Element(
-            "CreateSnapshotParams",
-            {'memory': 'true',
-             'name': 'name',
-             'quiesce': 'true',
-             'xmlns': "http://www.vmware.com/vcloud/v1.5",
-             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
-        )
-        ET.SubElement(snapshot_xml, 'Description').text = 'Description'
-        content_type = 'application/vnd.vmware.vcloud.createSnapshotParams+xml'
-        headers = {
-            'Content-Type': content_type
-        }
-        return self._perform_snapshot_operation(node,
-                                                "createSnapshot",
-                                                snapshot_xml,
-                                                headers)
-
-    def ex_remove_snapshots(self, node):
-        """
-        Removes all user created snapshots for a vApp or virtual machine.
-
-        :param  node: node
-        :type   node: :class:`Node`
-
-        :rtype: :class:`Node`
-        """
-        return self._perform_snapshot_operation(node,
-                                                "removeAllSnapshots",
-                                                None,
-                                                None)
-
-    def ex_revert_to_snapshot(self, node):
-        """
-        Reverts a vApp or virtual machine to the current snapshot, if any.
-
-        :param  node: node
-        :type   node: :class:`Node`
-
-        :rtype: :class:`Node`
-        """
-        return self._perform_snapshot_operation(node,
-                                                "revertToCurrentSnapshot",
-                                                None,
-                                                None)
-
-    def _perform_snapshot_operation(self, node, operation, xml_data, headers):
-        res = self.connection.request(
-            '%s/action/%s' % (get_url_path(node.id), operation),
-            data=ET.tostring(xml_data) if xml_data else None,
-            method='POST',
-            headers=headers)
-        self._wait_for_task_completion(res.object.get('href'))
-        res = self.connection.request(get_url_path(node.id))
-        return self._to_node(res.object)
-
-    def ex_acquire_mks_ticket(self, vapp_or_vm_id, vm_num=0):
-        """
-        Retrieve a mks ticket that you can use to gain access to the console
-        of a running VM. If successful, returns a dict with the following
-        keys:
-
-          - host: host (or proxy) through which the console connection
-                is made
-          - vmx: a reference to the VMX file of the VM for which this
-               ticket was issued
-          - ticket: screen ticket to use to authenticate the client
-          - port: host port to be used for console access
-
-        :param  vapp_or_vm_id: vApp or VM ID you want to connect to.
-        :type   vapp_or_vm_id: ``str``
-
-        :param  vm_num: If a vApp ID is provided, vm_num is position in the
-                vApp VM list of the VM you want to get a screen ticket.
-                Default is 0.
-        :type   vm_num: ``int``
-
-        :rtype: ``dict``
-        """
-        vm = self._get_vm_elements(vapp_or_vm_id)[vm_num]
-        try:
-            res = self.connection.request('%s/screen/action/acquireMksTicket' %
-                                          (get_url_path(vm.get('href'))),
-                                          method='POST')
-            output = {
-                "host": res.object.find(fixxpath(res.object, 'Host')).text,
-                "vmx": res.object.find(fixxpath(res.object, 'Vmx')).text,
-                "ticket": res.object.find(fixxpath(res.object, 'Ticket')).text,
-                "port": res.object.find(fixxpath(res.object, 'Port')).text,
-            }
-            return output
-        except:
-            return None
+    def __repr__(self):
+        return '<VCloudNetwork id="%s" name="%s" cidr="%s">' % (self.id,
+                                                                    self.name,
+                                                                    self.cidr,)
