@@ -631,6 +631,10 @@ class Connection(object):
                                                            headers=headers,
                                                            stream=stream)
                 else:
+                    if self.driver.type == 'openstack':
+                        # OpenStack is not working, this is a temp hack
+                        prefix = 'https' if self.secure else 'http'
+                        self.connection.host = '%s://%s:%s' % (prefix, self.host, self.port)
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers, stream=stream)
         except socket.gaierror:
