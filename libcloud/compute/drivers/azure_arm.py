@@ -169,7 +169,6 @@ class AzureNodeDriver(NodeDriver):
     type = Provider.AZURE_ARM
     features = {'create_node': ['ssh_key', 'password']}
 
-
     # The API doesn't provide state or country information, so fill it in.
     # Information from https://azure.microsoft.com/en-us/regions/
     _location_to_country = {
@@ -397,7 +396,8 @@ class AzureNodeDriver(NodeDriver):
                     ex_nic=None,
                     ex_tags={},
                     ex_customdata="",
-                    ex_use_managed_disks=False):
+                    ex_use_managed_disks=False,
+                    ex_storage_account_type="Standard_LRS"):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -495,6 +495,10 @@ class AzureNodeDriver(NodeDriver):
             in all regions.
         :type ex_use_managed_disks: ``bool``
 
+        :param ex_storage_account_type: The Storage Account type,
+            ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
+        :type ex_storage_account_type: str
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
@@ -523,25 +527,25 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
-        n = 0
-        while True:
-            try:
-                instance_vhd = "https://%s.blob%s" \
-                               "/%s/%s-os_%i.vhd" \
-                               % (ex_storage_account,
-                                  self.connection.storage_suffix,
-                                  ex_blob_container,
-                                  name,
-                                  n)
-                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                break
-            except LibcloudError:
-                n += 1
+        def _get_instance_vhd():
+            n = 0
+            while True:
+                try:
+                    instance_vhd = "https://%s.blob.core.windows.net" \
+                                   "/%s/%s-os_%i.vhd" \
+                                   % (ex_storage_account,
+                                      ex_blob_container,
+                                      name,
+                                      n)
+                    self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+                    return instance_vhd
+                except LibcloudError:
+                    n += 1
 
         if isinstance(image, AzureVhdImage):
             storage_profile = {
                 "osDisk": {
-                    "name": "virtualmachine-osDisk",
+                    "name": name,
                     "osType": "linux",
                     "caching": "ReadWrite",
                     "createOption": "FromImage",
@@ -549,10 +553,14 @@ class AzureNodeDriver(NodeDriver):
                         "uri": image.id
                     },
                     "vhd": {
-                        "uri": instance_vhd
+                        "uri": _get_instance_vhd(),
                     }
                 }
             }
+            if ex_use_managed_disks:
+                raise LibcloudError(
+                    "Creating managed OS disk from %s image "
+                    "type is not supported." % type(image))
         elif isinstance(image, AzureImage):
             storage_profile = {
                 "imageReference": {
@@ -562,25 +570,24 @@ class AzureNodeDriver(NodeDriver):
                     "version": image.version
                 },
                 "osDisk": {
-                    "name": "virtualmachine-osDisk",
-                    "vhd": {
-                        "uri": instance_vhd
-                    },
+                    "name": name,
+                    "osType": "linux",
                     "caching": "ReadWrite",
                     "createOption": "FromImage"
                 }
             }
             if ex_use_managed_disks:
-                storage_profile["osDisk"] = {
-                    "name": name,
-                    "createOption": "FromImage",
-                    "caching": "ReadWrite",
+                storage_profile["osDisk"]["managedDisk"] = {
+                    "storageAccountType": ex_storage_account_type
+                }
+            else:
+                storage_profile["osDisk"]["vhd"] = {
+                    "uri": _get_instance_vhd()
                 }
         else:
             raise LibcloudError(
-                "Unknown image type %s,"
-                "expected one of AzureImage, AzureVhdImage",
-                type(image))
+                "Unknown image type %s, expected one of AzureImage, "
+                "AzureVhdImage." % type(image))
 
         data = {
             "id": target,
@@ -636,10 +643,11 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError(
                 "Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
-        r = self.connection.request(target,
-                                    params={"api-version": RESOURCE_API_VERSION},
-                                    data=data,
-                                    method="PUT")
+        r = self.connection.request(
+            target,
+            params={"api-version": RESOURCE_API_VERSION},
+            data=data,
+            method="PUT")
 
         node = self._to_node(r.object)
         node.size = size
