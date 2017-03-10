@@ -1074,7 +1074,9 @@ class AzureNodeDriver(NodeDriver):
         volume_name = volume_obj.get('name')
         extra = dict(volume_obj)
         properties = extra['properties']
-        size = int(properties['diskSizeGB'])
+        size = properties.get('diskSizeGB')
+        if size is not None:
+            size = int(size)
 
         provisioning_state = properties.get('provisioningState', '').lower()
         disk_state = properties.get('diskState', '').lower()
