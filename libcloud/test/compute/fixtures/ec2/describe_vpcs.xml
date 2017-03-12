@@ -1,4 +1,4 @@
-<DescribeVpcsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeVpcsResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
     <requestId>be8cfa34-0710-4895-941f-961c5738f8f8</requestId>
     <vpcSet>
         <item>
@@ -6,7 +6,7 @@
             <state>available</state>
             <cidrBlock>192.168.51.0/24</cidrBlock>
             <dhcpOptionsId>dopt-7eded312</dhcpOptionsId>
-            <tagSet></tagSet>
+            <tagSet/>
             <instanceTenancy>default</instanceTenancy>
             <isDefault>false</isDefault>
         </item>
