@@ -161,6 +161,13 @@ class AzureNodeDriver(NodeDriver):
         "australiasoutheast": "Victoria, Australia"
     }
 
+    SNAPSHOT_STATE_MAP = {
+        'creating': VolumeSnapshotState.CREATING,
+        'updating': VolumeSnapshotState.UPDATING,
+        'succeeded': VolumeSnapshotState.AVAILABLE,
+        'failed': VolumeSnapshotState.ERROR
+    }
+
     def __init__(self, tenant_id, subscription_id, key, secret,
                  secure=True, host=None, port=None,
                  api_version=None, region=None, **kwargs):
@@ -864,10 +871,11 @@ class AzureNodeDriver(NodeDriver):
         if ex_lun is None:
             # find the smallest unused logical unit number
             used_luns = [disk['lun'] for disk in disks]
-            for lun in range(0, 63):
-                if lun not in used_luns:
-                    ex_lun = lun
-                    break
+            free_luns = [lun for lun in range(0, 63) if lun not in used_luns]
+            if len(free_luns) > 0:
+                ex_lun = free_luns[0]
+            else:
+                raise LibcloudError("No LUN available to attach new disk.")
 
         disks.append({
             'lun': ex_lun,
@@ -906,21 +914,11 @@ class AzureNodeDriver(NodeDriver):
         disks = ex_node.extra['properties']['storageProfile']['dataDisks']
 
         # remove volume from `properties.storageProfile.dataDisks`
-        disk_index = None
-        for index, disk in enumerate(disks):
-            if 'managedDisk' in disk:
-                if volume.id == disk['managedDisk'].get('id'):
-                    disk_index = index
-            elif 'name' in disk:
-                if volume.name == disk['name']:
-                    disk_index = index
-        if disk_index is None:
-            raise LibcloudError((
-                "A disk with id {} does not found among managed disks "
-                "attached to an instance ({})."
-            ).format(volume.id, ex_node.id))
-        else:
-            del disks[disk_index]
+        disks[:] = [
+            disk for disk in disks if
+            disk.get('name') != volume.name and
+            disk.get('managedDisk', {}).get('id') != volume.id
+        ]
 
         self.connection.request(
             action,
@@ -1145,19 +1143,10 @@ class AzureNodeDriver(NodeDriver):
         extra['source_id'] = properties['creationData']['sourceUri']
         if '/providers/Microsoft.Compute/disks/' in extra['source_id']:
             extra['volume_id'] = extra['source_id']
-
-        provisioning_state = properties.get('provisioningState', '').lower()
-        if provisioning_state == 'creating':
-            state = VolumeSnapshotState.CREATING
-        elif provisioning_state == 'updating':
-            state = VolumeSnapshotState.UPDATING
-        elif provisioning_state == 'succeeded':
-            state = VolumeSnapshotState.AVAILABLE
-        elif provisioning_state == 'failed':
-            state = VolumeSnapshotState.ERROR
-        else:
-            state = VolumeSnapshotState.UNKNOWN
-
+        state = self.SNAPSHOT_STATE_MAP.get(
+            properties.get('provisioningState', '').lower(),
+            VolumeSnapshotState.UNKNOWN
+        )
         try:
             created_at = iso8601.parse_date(properties.get('timeCreated'))
         except (TypeError, ValueError, iso8601.ParseError):
@@ -1190,8 +1179,10 @@ class AzureNodeDriver(NodeDriver):
         """
         Delete a resource.
         """
+        if not isinstance(resource, basestring):
+            resource = resource.id
         self.connection.request(
-            resource.id,
+            resource,
             method='DELETE',
             params={
                 'api-version': RESOURCE_API_VERSION
@@ -1344,25 +1335,25 @@ class AzureNodeDriver(NodeDriver):
         return [AzureSubnet(net["id"], net["name"], net["properties"])
                 for net in r.object["value"]]
 
-    def ex_list_nics(self, ex_resource_group=None):
+    def ex_list_nics(self, resource_group=None):
         """
         List available virtual network interface controllers
         in a resource group
 
-        :param ex_resource_group: List NICS in a specific resource group
+        :param resource_group: List NICS in a specific resource group
             containing the NICs(optional).
-        :type ex_resource_group: ``str``
+        :type resource_group: ``str``
 
         :return: A list of NICs.
         :rtype: ``list`` of :class:`.AzureNic`
         """
-        if ex_resource_group is None:
+        if resource_group is None:
             action = "/subscriptions/%s/providers/Microsoft.Network" \
                      "/networkInterfaces" % self.subscription_id
         else:
             action = "/subscriptions/%s/resourceGroups/%s/providers" \
                      "/Microsoft.Network/networkInterfaces" % \
-                     (self.subscription_id, ex_resource_group)
+                     (self.subscription_id, resource_group)
         r = self.connection.request(
             action,
             params={"api-version": RESOURCE_API_VERSION})
