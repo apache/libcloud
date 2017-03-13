@@ -1,4 +1,4 @@
-<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
    <requestId>and4xcasi-35bd-4e3c-89ab-cb183</requestId>
    <snapshotSet>
       <item>
@@ -10,6 +10,8 @@
          <ownerId>1938218230</ownerId>
          <volumeSize>30</volumeSize>
          <description>Daily Backup</description>
+         <encrypted>true</encrypted>
+         <kmsKeyId>arn:aws:kms:us-east-1:123456789012:key/6876fb1b-example</kmsKeyId>
          <tagSet>
             <item>
                <key>Keyone</key>
@@ -28,6 +30,7 @@
          <ownerId>1938218230</ownerId>
          <volumeSize>15</volumeSize>
          <description>Weekly backup</description>
+         <encrypted>false</encrypted>
          <tagSet>
             <item>
                <key>Name</key>
@@ -50,6 +53,7 @@
          <ownerId>1938218231</ownerId>
          <volumeSize>15</volumeSize>
          <description>Weekly backup</description>
+         <encrypted>false</encrypted>
          <tagSet>
             <item>
                <key>Name</key>
