@@ -1,6 +1,6 @@
 import json
 
-from libcloud.compute.base import Node, NodeDriver
+from libcloud.compute.base import Node, NodeDriver, NodeImage
 from libcloud.common.onapp import OnAppConnection
 from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.providers import Provider
@@ -315,9 +315,36 @@ class OnAppNodeDriver(NodeDriver):
             nodes.append(self._to_node(vm["virtual_machine"]))
         return nodes
 
+    def list_images(self):
+        """
+        List all images
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        response = self.connection.request("/templates.json")
+        # return list(map(self._to_image, data['image_template']))
+        templates = []
+        for template in response.object:
+            templates.append(self._to_image(template["image_template"]))
+        return templates
+
     #
     # Helper methods
     #
+
+    def _to_image(self, template):
+        extra = {'distribution': template['operating_system_distro'],
+                 'operating_system': template['operating_system'],
+                 'operating_system_arch': template['operating_system_arch'],
+                 'allow_resize_without_reboot':
+                 template['allow_resize_without_reboot'],
+                 'allowed_hot_migrate': template['allowed_hot_migrate'],
+                 'allowed_swap': template['allowed_swap'],
+                 'min_disk_size': template['min_disk_size'],
+                 'min_memory_size': template['min_memory_size'],
+                 'created_at': template['created_at']}
+        return NodeImage(id=template['id'], name=template['label'],
+                         driver=self, extra=extra)
 
     def _to_node(self, data):
         identifier = data["identifier"]
