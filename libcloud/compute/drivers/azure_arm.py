@@ -775,7 +775,8 @@ class AzureNodeDriver(NodeDriver):
         return True
 
     def create_volume(self, size, name, location=None, snapshot=None,
-                      ex_resource_group=None, ex_tags=None):
+                      ex_resource_group=None, ex_account_type=None,
+                      ex_tags=None):
         """
         Create a new volume.
 
@@ -794,6 +795,10 @@ class AzureNodeDriver(NodeDriver):
         :param ex_resource_group: The name of resource group in which to
             create the volume. (required)
         :type ex_resource_group: ``str``
+
+        :param ex_account_type: The Storage Account type,
+            ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
+        :type ex_account_type: str
 
         :param ex_tags: Optional tags to associate with this resource.
         :type ex_tags: ``dict``
@@ -831,6 +836,8 @@ class AzureNodeDriver(NodeDriver):
                 'diskSizeGB': size
             }
         }
+        if ex_account_type is not None:
+            data['properties']['accountType'] = ex_account_type
 
         response = self.connection.request(
             action,
