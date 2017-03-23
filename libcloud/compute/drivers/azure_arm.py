@@ -1013,7 +1013,8 @@ class AzureNodeDriver(NodeDriver):
         }
 
         if public_ip:
-            data["properties"]["ipConfigurations"][0]["publicIPAddress"] = {
+            ip_config = data["properties"]["ipConfigurations"][0]
+            ip_config["properties"]["publicIPAddress"] = {
                 "id": public_ip.id
             }
 
