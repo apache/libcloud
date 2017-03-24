@@ -1,0 +1,38 @@
+{
+  "name": "test-node-1-nic",
+  "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/networkInterfaces/test-node-1-nic",
+  "etag": "W/\"5E19562E-8E84-493D-A29E-A84F5AC21D76\"",
+  "location": "eastus",
+  "tags": {},
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "AD512C3D-9A7B-4012-8C5D-227A9EA5E6F4",
+    "ipConfigurations": [
+      {
+        "name": "myip1",
+        "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/networkInterfaces/test-node-1-nic/ipConfigurations/myip1",
+        "etag": "W/\"5E19562E-8E84-493D-A29E-A84F5AC21D76\"",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "privateIPAddress": "10.0.0.1",
+          "privateIPAllocationMethod": "Dynamic",
+          "subnet": {
+            "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/virtualNetworks/000000/subnets/000000"
+          },
+          "primary": true
+        }
+      }
+    ],
+    "dnsSettings": {
+      "dnsServers": [],
+      "appliedDnsServers": []
+    },
+    "macAddress": "11-11-11-11-11-11",
+    "enableIPForwarding": false,
+    "primary": true,
+    "virtualMachine": {
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/virtualMachines/test-node-1"
+    }
+  },
+  "type": "Microsoft.Network/networkInterfaces"
+}
