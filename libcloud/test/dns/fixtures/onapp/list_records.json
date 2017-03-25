@@ -1,0 +1,65 @@
+{
+  "dns_zone": {
+    "id": 1,
+    "name": "example.com",
+    "user_id": 123,
+    "created_at": "2017-03-24T16:07:05.000+05:30",
+    "updated_at": "2017-03-24T16:07:05.000+05:30",
+    "cdn_reference": 12345678,
+    "records": {
+      "A": [
+        {
+          "dns_record": {
+            "name": "@",
+            "id": 111222,
+            "ttl": 3600,
+            "ip": "123.156.189.1",
+            "type": "A"
+          }
+        },
+        {
+        "dns_record": {
+          "name": "www",
+          "id": 111223,
+          "ttl": 3600,
+          "ip": "123.156.189.1",
+          "type": "A"
+          }
+        }
+      ],
+      "CNAME": [
+        {
+        "dns_record": {
+          "name": "mail",
+          "id": 111224,
+          "ttl": 3600,
+          "hostname": "examplemail.com",
+          "type": "CNAME"
+          }
+        }
+      ],
+      "MX": [
+        {
+        "dns_record": {
+          "priority": 20,
+          "name": "@",
+          "id": 111225,
+          "ttl": 3600,
+          "hostname": "mx.examplemail.com",
+          "type": "MX"
+          }
+        },
+        {
+        "dns_record": {
+          "priority": 10,
+          "name": "@",
+          "id": 111226,
+          "ttl": 3600,
+          "hostname": "mx2.examplemail.com",
+          "type": "MX"
+          }
+        }
+      ]
+    }
+  }
+}
