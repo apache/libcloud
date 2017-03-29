@@ -5753,7 +5753,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_modify_volume(self, volume, parameters):
         """
         Modify volume parameters.
-        A list of valid parameters can be found at  https://goo.gl/N0rPEQ
+        A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
         :param      Volume: Volume instance
         :type       Volume: :class:`Volume`
@@ -5775,6 +5775,57 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path,
                                            params=parameters.copy()).object
         return self._to_volume_modification(response)
+
+    def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None,
+                                          filters=None, next_token=None,
+                                          max_results=None):
+        """
+        Describes one or more of your volume modifications.
+
+        :param      dry_run: dry_run
+        :type       dry_run: ``bool``
+
+        :param      volume_ids: The volume_ids so that the response includes
+                             information for only said volumes
+        :type       volume_ids: ``dict``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain volumes
+        :type       filters: ``dict``
+
+        :param      max_results: The maximum number of items that can be
+                                 returned in a single page
+        :type       max_results: ``int``
+
+        :param      next_token: The nextToken value returned by a previous paginated request.
+        :type       next_token: ``string``
+
+        :return:  List of volume modification status objects
+        :rtype:   ``list`` of :class:`VolumeModification
+        """
+
+        if next_token:
+            raise NotImplementedError(
+                'volume_modifications next_token is not implemented')
+
+        params = {'Action': 'DescribeVolumesModifications'}
+
+        if dry_run:
+            params.update({'DryRun': dry_run})
+
+        if volume_ids:
+            params.update({'VolumeIds': volume_ids})
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        if max_results:
+            params.update({'MaxResults': max_results})
+
+        response = self.connection.request(self.path, params=params,
+                                           method='GET').object
+
+        return self._to_volume_modifications(response)
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
@@ -5903,6 +5954,11 @@ class BaseEC2NodeDriver(NodeDriver):
                              driver=self,
                              state=state,
                              extra=extra)
+
+    def _to_volume_modifications(self, object):
+        return [self._to_volume_modification(el) for el in object.findall(
+            fixxpath(xpath='volumeModificationSet/item', namespace=NAMESPACE))
+        ]
 
     def _to_volume_modification(self, element):
         """
