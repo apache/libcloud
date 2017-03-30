@@ -5684,7 +5684,7 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update({'DryRun': dry_run})
 
         if volume_ids:
-            params.update({'VolumeIds': volume_ids})
+            params.update(self._pathlist('VolumeId', volume_ids))
 
         if filters:
             params.update(self._build_filters(filters))
@@ -5835,9 +5835,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype:     :class:`EC2VolumeModification`
         """
-        params_element = element.find(
-            fixxpath(xpath='volumeModification', namespace=NAMESPACE))
-        params = self._get_extra_dict(params_element,
+        params = self._get_extra_dict(element,
                                       VOLUME_MODIFICATION_ATTRIBUTE_MAP)
 
         return EC2VolumeModification(**params)
