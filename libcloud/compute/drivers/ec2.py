@@ -5692,8 +5692,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if max_results:
             params.update({'MaxResults': max_results})
 
-        response = self.connection.request(self.path, params=params,
-                                           method='GET').object
+        response = self.connection.request(self.path, params=params).object
 
         return self._to_volume_modifications(response)
 
