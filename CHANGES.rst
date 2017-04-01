@@ -19,6 +19,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add support for forcing detachment of EBS volumes to EC2 driver
+  [GITHUB-1007]
+  (Sergey Babak)
+
 - Fix Public IP not assigned when creating NIC on Azure ARM
   [GITHUB-1013] [LIBCLOUD-906]
   (Simone Ripamonti)
