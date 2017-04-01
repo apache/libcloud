@@ -5,6 +5,13 @@
 Changes in latest version of Apache Libcloud
 --------------------------------------------
 
+Common
+~~~~~~
+
+- Change Cloudscale to cloudscale.ch.
+  [GITHUB-993]
+  (David Halter)
+
 Compute
 ~~~~~~~
 
