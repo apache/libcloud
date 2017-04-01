@@ -8,6 +8,10 @@ Changes in latest version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [EC2] Add method to modify snapshot attribute for EC2
+  [GITHUB-990]
+  (Sayan Chowdhury)
+
 - [Linode] Add start, stop instance methods and fix incorrect state TERMINATED to STOPPED
   [GITHUB-986]
   (Markos Gogoulos)
