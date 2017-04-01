@@ -322,7 +322,6 @@ class OnAppNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`NodeImage`
         """
         response = self.connection.request("/templates.json")
-        # return list(map(self._to_image, data['image_template']))
         templates = []
         for template in response.object:
             templates.append(self._to_image(template["image_template"]))
