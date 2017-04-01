@@ -19,6 +19,10 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Add r4 instance types for AWS
+  [GITHUB-997]
+  (Jens Deppe)
+
 - [EC2] support for AWS eu-west-2 and ca-central-1 regions
   [GITHUB-1009]
   (Marat Komarov)
