@@ -19,6 +19,10 @@ Common
 Compute
 ~~~~~~~
 
+- Fix Public IP not assigned when creating NIC on Azure ARM
+  [GITHUB-1013] [LIBCLOUD-906]
+  (Simone Ripamonti)
+
 - [ONAPP] Add list images support for OnApp driver
   [GITHUB-1011]
   (Tinu Cleatus)
