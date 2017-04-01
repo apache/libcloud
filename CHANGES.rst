@@ -8,6 +8,10 @@ Changes in latest version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [Linode] Add start, stop instance methods and fix incorrect state TERMINATED to STOPPED
+  [GITHUB-986]
+  (Markos Gogoulos)
+
 - [EC2] Add ENA support for EC2 compute images
   [GITHUB-983]
   (Alex Misstear)
