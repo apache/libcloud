@@ -328,7 +328,7 @@ INSTANCE_TYPES = {
         'id': 'p2.xlarge',
         'name': 'Cluster GPU P2 Large Instance',
         'ram': GiB(61),
-        'disk' : 4,
+        'disk': 4,
         'bandwidth': None
     },
     'p2.8xlarge': {
