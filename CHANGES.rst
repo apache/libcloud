@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+
+Changes in latest version of Apache Libcloud
+--------------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] allow delete instances from managed group
+  [GITHUB-975]
+  (@zacharya19)
+
 Changes Apache Libcloud 2.0.0rc1
 --------------------------------
 
