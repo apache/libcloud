@@ -317,6 +317,7 @@ class OnAppDNSDriver(DNSDriver):
             for item in data_type:
                 record = self._to_record(item, zone=zone)
                 records.append(record)
+        records.sort(key=lambda x: x.id, reverse=False)
         return records
 
     def _to_record(self, data, zone_id=None, zone=None):
