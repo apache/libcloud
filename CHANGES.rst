@@ -8,6 +8,10 @@ Changes in latest version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [EC2] Add ENA support for EC2 compute images
+  [GITHUB-983]
+  (Alex Misstear)
+
 - [Azure ARM] fix typeerror on ex_list_nics
   [GITHUB-979]
   (Choi Jongu)
