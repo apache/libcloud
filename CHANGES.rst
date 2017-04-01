@@ -19,6 +19,10 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] support for AWS eu-west-2 and ca-central-1 regions
+  [GITHUB-1009]
+  (Marat Komarov)
+
 - [EC2] Add P2 GPU instance types
   [GITHUB-996]
   (MJK)
