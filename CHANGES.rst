@@ -8,6 +8,10 @@ Changes in latest version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [Azure ARM] fix typeerror on ex_list_nics
+  [GITHUB-979]
+  (Choi Jongu)
+
 - [GCE] allow delete instances from managed group
   [GITHUB-975]
   (@zacharya19)
