@@ -437,7 +437,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             elif region_name == 'us-west-1':
                 self.assertEqual(len(sizes), 52)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 59)
+                self.assertEqual(len(sizes), 62)
             elif region_name == 'ap-southeast-1':
                 self.assertEqual(len(sizes), 51)
             elif region_name == 'ap-southeast-2':
@@ -558,7 +558,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               root_device_name='/dev/sda1',
                                               description='My Image',
                                               architecture='x86_64',
-                                              block_device_mapping=mapping)
+                                              block_device_mapping=mapping,
+                                              ena_support=True)
         self.assertEqual(image.id, 'ami-57c2fb3e')
 
     def test_ex_list_availability_zones(self):
@@ -931,6 +932,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         data = {'LaunchPermission.Add.1.Group': 'all'}
         resp = self.driver.ex_modify_image_attribute(image, data)
+        self.assertTrue(resp)
+
+    def test_ex_modify_snapshot_attribute(self):
+        snap = VolumeSnapshot(id='snap-1234567890abcdef0',
+                              size=10, driver=self.driver)
+
+        data = {'CreateVolumePermission.Add.1.Group': 'all'}
+        resp = self.driver.ex_modify_snapshot_attribute(snap, data)
         self.assertTrue(resp)
 
     def test_create_node_ex_security_groups(self):
@@ -1399,6 +1408,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _ModifyInstanceAttribute(self, method, url, body, headers):
         body = self.fixtures.load('modify_instance_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifySnapshotAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_snapshot_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _idempotent_CreateTags(self, method, url, body, headers):

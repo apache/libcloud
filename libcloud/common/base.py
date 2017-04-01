@@ -282,7 +282,7 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-        if response:
+        if response is not None:
             self.headers = lowercase_keys(dict(response.headers))
             self.error = response.reason
             self.status = response.status_code

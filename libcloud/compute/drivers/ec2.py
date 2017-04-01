@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+API_VERSION = '2016-11-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -323,6 +323,27 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 32
         }
+    },
+    'p2.xlarge': {
+        'id': 'p2.xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(61),
+        'disk' : 4,
+        'bandwidth': None
+    },
+    'p2.8xlarge': {
+        'id': 'p2.8xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(488),
+        'disk': 32,
+        'bandwidth': None
+    },
+    'p2.16xlarge': {
+        'id': 'p2.16xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(732),
+        'disk': 64,
+        'bandwidth': None
     },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
@@ -959,6 +980,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1922,6 +1946,9 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cc2.8xlarge',
             'm3.xlarge',
             'm3.2xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
@@ -1999,6 +2026,9 @@ OUTSCALE_INC_REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'nv1.small',
             'nv1.medium',
             'nv1.large',
@@ -2229,6 +2259,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'ramdisk_id': {
             'xpath': 'ramdiskId',
+            'transform_func': str
+        },
+        'ena_support': {
+            'xpath': 'enaSupport',
             'transform_func': str
         }
     },
@@ -3763,7 +3797,8 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
-                          ramdisk_id=None, virtualization_type=None):
+                          ramdisk_id=None, virtualization_type=None,
+                          ena_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -3803,6 +3838,10 @@ class BaseEC2NodeDriver(NodeDriver):
                                          or hvm (optional)
         :type       virtualization_type: ``str``
 
+        :param      ena_support: Enable enhanced networking with Elastic
+                                 Network Adapter for the AMI
+        :type       ena_support: ``bool``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -3833,6 +3872,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if virtualization_type is not None:
             params['VirtualizationType'] = virtualization_type
+
+        if ena_support is not None:
+            params['EnaSupport'] = ena_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
@@ -4913,6 +4955,30 @@ class BaseEC2NodeDriver(NodeDriver):
         attributes.update({'InstanceId': node.id})
 
         params = {'Action': 'ModifyInstanceAttribute'}
+        params.update(attributes)
+
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
+
+    def ex_modify_snapshot_attribute(self, snapshot, attributes):
+        """
+        Modify Snapshot attributes.
+
+        :param      snapshot: VolumeSnapshot instance
+        :type       snanpshot: :class:`VolumeSnapshot`
+
+        :param      attributes: Dictionary with snapshot attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = attributes or {}
+        attributes.update({'SnapshotId': snapshot.id})
+
+        params = {'Action': 'ModifySnapshotAttribute'}
         params.update(attributes)
 
         res = self.connection.request(self.path,

@@ -1,6 +1,56 @@
 ﻿Changelog
 =========
 
+
+Changes in latest version of Apache Libcloud
+--------------------------------------------
+
+Common
+~~~~~~
+
+- Change Cloudscale to cloudscale.ch.
+  [GITHUB-993]
+  (David Halter)
+
+- Explicitly check if response is None in RawResponse class
+  [GITHUB-1006] [LIBCLOUD-901]
+  (Richard Xia)
+
+Compute
+~~~~~~~
+
+- [EC2] Add P2 GPU instance types
+  [GITHUB-996]
+  (MJK)
+
+- [EC2] Add method to modify snapshot attribute for EC2
+  [GITHUB-990]
+  (Sayan Chowdhury)
+
+- [Linode] Add start, stop instance methods and fix incorrect state TERMINATED to STOPPED
+  [GITHUB-986]
+  (Markos Gogoulos)
+
+- [EC2] Add ENA support for EC2 compute images
+  [GITHUB-983]
+  (Alex Misstear)
+
+- [Azure ARM] fix typeerror on ex_list_nics
+  [GITHUB-979]
+  (Choi Jongu)
+
+- [GCE] allow delete instances from managed group
+  [GITHUB-975]
+  (@zacharya19)
+
+Storage
+~~~~~~~
+
+- Reintroduce S3 multipart upload support with signature v4
+  [GITHUB-1005] [LIBCLOUD-834]
+  (Alex Misstear)
+
+
 Changes Apache Libcloud 2.0.0rc1
 --------------------------------
 

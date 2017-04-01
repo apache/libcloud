@@ -1,4 +1,4 @@
-<DescribeSubnetsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeSubnetsResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>67bba371-8044-45a7-b4a3-d72fef8b96d8</requestId>
     <subnetSet>
         <item>

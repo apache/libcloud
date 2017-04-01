@@ -868,8 +868,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network" \
-                 "/networkInterfaces" % \
+        action = "/subscriptions/%s/resourceGroups/%s" \
+                 "/providers/Microsoft.Network/networkInterfaces" % \
                  (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})

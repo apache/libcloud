@@ -1,4 +1,4 @@
-<DescribeInternetGatewaysResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeInternetGatewaysResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>843ff26c-f1ac-48f5-93a6-fa28f8abd9dd</requestId>
     <internetGatewaySet>
         <item>
