@@ -12,6 +12,10 @@ Common
   [GITHUB-993]
   (David Halter)
 
+- Explicitly check if response is None in RawResponse class
+  [GITHUB-1006] [LIBCLOUD-901]
+  (Richard Xia)
+
 Compute
 ~~~~~~~
 
