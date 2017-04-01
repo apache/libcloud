@@ -15,6 +15,10 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Add P2 GPU instance types
+  [GITHUB-996]
+  (MJK)
+
 - [EC2] Add method to modify snapshot attribute for EC2
   [GITHUB-990]
   (Sayan Chowdhury)
