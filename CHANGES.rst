@@ -39,6 +39,14 @@ Compute
   [GITHUB-975]
   (@zacharya19)
 
+Storage
+~~~~~~~
+
+- Reintroduce S3 multipart upload support with signature v4
+  [GITHUB-1005] [LIBCLOUD-834]
+  (Alex Misstear)
+
+
 Changes Apache Libcloud 2.0.0rc1
 --------------------------------
 
