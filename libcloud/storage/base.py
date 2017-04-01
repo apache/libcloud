@@ -650,20 +650,14 @@ class StorageDriver(BaseDriver):
             return (hasher.hexdigest(), total_len)
         if not hasattr(stream, '__exit__'):
             for s in stream:
-                if isinstance(s, str):
-                    hasher.update(s)
-                else:
-                    hasher.update(s)
+                hasher.update(s)
                 total_len = total_len + len(s)
             return (hasher.hexdigest(), total_len)
         with stream:
             buf = stream.read(blocksize)
             while len(buf) > 0:
                 total_len = total_len + len(buf)
-                if isinstance(buf, str):
-                    hasher.update(buf)
-                else:
-                    hasher.update(buf)
+                hasher.update(buf)
                 buf = stream.read(blocksize)
         return (hasher.hexdigest(), total_len)
 

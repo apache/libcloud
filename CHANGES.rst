@@ -1,11 +1,73 @@
 ﻿Changelog
 =========
 
-Changes in current version of Apache Libcloud
----------------------------------------------
+
+Changes in latest version of Apache Libcloud
+--------------------------------------------
 
 Common
 ~~~~~~
+
+- Change Cloudscale to cloudscale.ch.
+  [GITHUB-993]
+  (David Halter)
+
+- Explicitly check if response is None in RawResponse class
+  [GITHUB-1006] [LIBCLOUD-901]
+  (Richard Xia)
+
+Compute
+~~~~~~~
+
+- [EC2] Add r4 instance types for AWS
+  [GITHUB-997]
+  (Jens Deppe)
+
+- [EC2] support for AWS eu-west-2 and ca-central-1 regions
+  [GITHUB-1009]
+  (Marat Komarov)
+
+- [EC2] Add P2 GPU instance types
+  [GITHUB-996]
+  (MJK)
+
+- [EC2] Add method to modify snapshot attribute for EC2
+  [GITHUB-990]
+  (Sayan Chowdhury)
+
+- [Linode] Add start, stop instance methods and fix incorrect state TERMINATED to STOPPED
+  [GITHUB-986]
+  (Markos Gogoulos)
+
+- [EC2] Add ENA support for EC2 compute images
+  [GITHUB-983]
+  (Alex Misstear)
+
+- [Azure ARM] fix typeerror on ex_list_nics
+  [GITHUB-979]
+  (Choi Jongu)
+
+- [GCE] allow delete instances from managed group
+  [GITHUB-975]
+  (@zacharya19)
+
+Storage
+~~~~~~~
+
+- Reintroduce S3 multipart upload support with signature v4
+  [GITHUB-1005] [LIBCLOUD-834]
+  (Alex Misstear)
+
+
+Changes Apache Libcloud 2.0.0rc1
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix DEBUG mode, also add support for using io.StringIO as the file handle when calling libcloud.enable_debug
+  [GITHUB-978, LIBCLOUD-887]
+  (Anthony Shaw)
 
 - Introduction of the requests package as the mechanism for making HTTP requests for all drivers
   [GITHUB-928]
@@ -19,12 +81,25 @@ Common
   [GITHUB-971]
   (Anthony Shaw)
 
+- Fix bug where instantiating a connection from URL and then requesting an action with a leading / would lead to
+  a malformed URL
+  [GITHUB-976]
+  (Anthony Shaw)
+
 Compute
 ~~~~~~~
+
+- Fix a bug in profitbricks driver where listing snapshots would request a malformed URL
+  [GITHUB-976]
+  (Anthony Shaw)
 
 - Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated
   [GITHUB-967]
   (Anthony Shaw)
+  
+- [google compute] Improve performance of list nodes by caching volume information.
+  (GITHUB-813, LIBCLOUD-826)
+  [Tom Melendez]
 
 Changes in Apache Libcloud 1.5.0
 --------------------------------
@@ -38,10 +113,6 @@ Common
 
 Compute
 ~~~~~~~
-
-- [google compute] Improve performance of list nodes by caching volume information.
-  (GITHUB-813, LIBCLOUD-826)
-  [Tom Melendez]
 
 - [azure] New method for accessing rate cards.
   [GITHUB-957]

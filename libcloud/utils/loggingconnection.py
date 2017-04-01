@@ -27,7 +27,7 @@ import os
 
 from libcloud.common.base import (LibcloudConnection,
                                   HttpLibResponseProxy)
-from libcloud.utils.py3 import u
+from libcloud.utils.py3 import _real_unicode as u
 
 from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.compression import decompress_data
@@ -42,7 +42,6 @@ class LoggingConnection(LibcloudConnection):
     """
 
     protocol = 'https'
-    port = None
 
     log = None
     http_proxy_used = False
@@ -133,24 +132,24 @@ class LoggingConnection(LibcloudConnection):
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])
-        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
-                                             self.port, url))])
+        cmd.extend([pquote("%s%s" % (self.host, url))])
         return " ".join(cmd)
 
     def getresponse(self):
         original_response = LibcloudConnection.getresponse(self)
         if self.log is not None:
             rv = self._log_response(HttpLibResponseProxy(original_response))
-            self.log.write(rv + "\n")
+            self.log.write(u(rv + "\n"))
             self.log.flush()
         return original_response
 
-    def request(self, method, url, body=None, headers=None):
+    def request(self, method, url, body=None, headers=None, **kwargs):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n" % id(self)
-            self.log.write(pre +
-                           self._log_curl(method, url, body, headers) + "\n")
+            self.log.write(u(pre +
+                             self._log_curl(method, url, body, headers) +
+                             "\n"))
             self.log.flush()
         return LibcloudConnection.request(self, method, url, body,
                                           headers)

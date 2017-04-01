@@ -34,7 +34,7 @@ rate_limit = None
 # set max port speed. If none set, the system sets port speed to unlimited
 
 node = driver.create_node(
-    ex_label=name,
+    name=name,
     ex_memory=memory,
     ex_cpus=cpus,
     ex_cpu_shares=cpu_shares,

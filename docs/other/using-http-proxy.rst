@@ -22,9 +22,9 @@ below:
 * By setting ``http_proxy`` environment variable (this setting is system /
   process wide)
 * By passing ``http_proxy`` argument to the
-  :class:`libcloud.common.base.LibcloudHTTPConnection` class constructor (this
+  :class:`libcloud.common.base.LibcloudConnection` class constructor (this
   setting is local to the connection instance)
-* By calling :meth:`libcloud.common.base.LibcloudHTTPConnection.set_http_proxy`
+* By calling :meth:`libcloud.common.base.LibcloudConnection.set_http_proxy`
   method (this setting is local to the connection instance)
 
 Known limitations

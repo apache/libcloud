@@ -3830,7 +3830,6 @@ class DimensionDataNodeDriver(NodeDriver):
 
         Create Node in MCP2 Data Center
 
-
         :keyword    name:   (required) String with a name for this new node
         :type       name:   ``str``
 

@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2013-10-15'
+API_VERSION = '2016-11-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -323,6 +323,27 @@ INSTANCE_TYPES = {
         'extra': {
             'cpu': 32
         }
+    },
+    'p2.xlarge': {
+        'id': 'p2.xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(61),
+        'disk': 4,
+        'bandwidth': None
+    },
+    'p2.8xlarge': {
+        'id': 'p2.8xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(488),
+        'disk': 32,
+        'bandwidth': None
+    },
+    'p2.16xlarge': {
+        'id': 'p2.16xlarge',
+        'name': 'Cluster GPU P2 Large Instance',
+        'ram': GiB(732),
+        'disk': 64,
+        'bandwidth': None
     },
     'cc1.4xlarge': {
         'id': 'cc1.4xlarge',
@@ -604,6 +625,66 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'r4.large': {
+        'id': 'r4.large',
+        'name': 'Memory Optimized Large instance',
+        'ram': GiB(15.25),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'r4.xlarge': {
+        'id': 'r4.xlarge',
+        'name': 'Memory Optimized Extra Large instance',
+        'ram': GiB(30.5),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'r4.2xlarge': {
+        'id': 'r4.2xlarge',
+        'name': 'Memory Optimized Double Extra Large instance',
+        'ram': GiB(61),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'r4.4xlarge': {
+        'id': 'r4.4xlarge',
+        'name': 'Memory Optimized Quadruple Extra Large instance',
+        'ram': GiB(122),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'r4.8xlarge': {
+        'id': 'r4.8xlarge',
+        'name': 'Memory Optimized Eight Extra Large instance',
+        'ram': GiB(244),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
+    },
+    'r4.16xlarge': {
+        'id': 'r4.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(488),
+        'disk': 0,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
     # Burstable Performance General Purpose
     't2.nano': {
         'id': 't2.nano',
@@ -725,6 +806,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -781,6 +868,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -844,6 +937,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -881,6 +980,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -906,6 +1008,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -968,6 +1076,76 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'x1.32xlarge'
+        ]
+    },
+    # EU (London) Region
+    'eu-west-2': {
+        'endpoint': 'ec2.eu-west-2.amazonaws.com',
+        'api_name': 'ec2_eu_west_london',
+        'country': 'United Kingdom',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'cg1.4xlarge',
+            'g2.2xlarge',
+            'g2.8xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1016,6 +1194,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1051,6 +1235,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
@@ -1112,6 +1302,12 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             'x1.32xlarge'
         ]
     },
@@ -1168,6 +1364,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1207,6 +1409,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1242,6 +1450,12 @@ REGION_DETAILS = {
             'm4.16xlarge',
             'c1.medium',
             'c1.xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1300,6 +1514,76 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'x1.32xlarge'
+        ]
+    },
+    # Canada (Central) Region
+    'ca-central-1': {
+        'endpoint': 'ec2.ca-central-1.amazonaws.com',
+        'api_name': 'ec2_ca_central_1',
+        'country': 'Canada',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'cg1.4xlarge',
+            'g2.2xlarge',
+            'g2.8xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -1356,6 +1640,12 @@ REGION_DETAILS = {
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -1784,6 +2074,9 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cc2.8xlarge',
             'm3.xlarge',
             'm3.2xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
@@ -1861,6 +2154,9 @@ OUTSCALE_INC_REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge',
             'nv1.small',
             'nv1.medium',
             'nv1.large',
@@ -2091,6 +2387,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'ramdisk_id': {
             'xpath': 'ramdiskId',
+            'transform_func': str
+        },
+        'ena_support': {
+            'xpath': 'enaSupport',
             'transform_func': str
         }
     },
@@ -3625,7 +3925,8 @@ class BaseEC2NodeDriver(NodeDriver):
     def ex_register_image(self, name, description=None, architecture=None,
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
-                          ramdisk_id=None, virtualization_type=None):
+                          ramdisk_id=None, virtualization_type=None,
+                          ena_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -3665,6 +3966,10 @@ class BaseEC2NodeDriver(NodeDriver):
                                          or hvm (optional)
         :type       virtualization_type: ``str``
 
+        :param      ena_support: Enable enhanced networking with Elastic
+                                 Network Adapter for the AMI
+        :type       ena_support: ``bool``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -3695,6 +4000,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if virtualization_type is not None:
             params['VirtualizationType'] = virtualization_type
+
+        if ena_support is not None:
+            params['EnaSupport'] = ena_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
@@ -4775,6 +5083,30 @@ class BaseEC2NodeDriver(NodeDriver):
         attributes.update({'InstanceId': node.id})
 
         params = {'Action': 'ModifyInstanceAttribute'}
+        params.update(attributes)
+
+        res = self.connection.request(self.path,
+                                      params=params.copy()).object
+
+        return self._get_boolean(res)
+
+    def ex_modify_snapshot_attribute(self, snapshot, attributes):
+        """
+        Modify Snapshot attributes.
+
+        :param      snapshot: VolumeSnapshot instance
+        :type       snanpshot: :class:`VolumeSnapshot`
+
+        :param      attributes: Dictionary with snapshot attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = attributes or {}
+        attributes.update({'SnapshotId': snapshot.id})
+
+        params = {'Action': 'ModifySnapshotAttribute'}
         params.update(attributes)
 
         res = self.connection.request(self.path,
