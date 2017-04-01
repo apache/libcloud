@@ -19,6 +19,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ONAPP] Add list images support for OnApp driver
+  [GITHUB-1011]
+  (Tinu Cleatus)
+
 - [EC2] Add r4 instance types for AWS
   [GITHUB-997]
   (Jens Deppe)
