@@ -42,7 +42,7 @@ class SignedHTTPSAdapter(HTTPAdapter):
     def __init__(self, cert_file, key_file):
         self.cert_file = cert_file
         self.key_file = key_file
-        super(SignedX509Adapter, self).__init__()
+        super(SignedHTTPSAdapter, self).__init__()
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
