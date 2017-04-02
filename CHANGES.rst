@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+Changes in latest version of Apache Libcloud
+--------------------------------------------
+
+Common
+~~~~~~
+
+- Added an integration test API and a test suite for validating functionality
+  without mocking any libcloud subsystems
+  [GITHUB-970]
+  (Anthony Shaw)
+
 
 Changes in Apache Libcloud 2.0.0rc2
 -----------------------------------
