@@ -22,7 +22,7 @@ from integration.config import EXPECTED_AUTH
 def secure(f):
     @wraps(f)
     def secure_route(*args, **kwargs):
-        if 'Authorization' not in request.headers.keys():
+        if 'Authorization' not in request.headers:
             raise Exception('Argghhhh')
         else:
             auth = request.headers['Authorization']
