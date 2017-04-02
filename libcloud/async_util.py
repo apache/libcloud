@@ -14,11 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import asyncio
-except ImportError:
-    HAS_ASYNC = False
-
+import asyncio
+import types
 
 class AsyncSession(object):
     def __init__(self, cls):
@@ -27,8 +24,19 @@ class AsyncSession(object):
         else:
             self.classes = [cls]
 
+        # Replace the list_node methods with an awaitable
+        for c in self.classes:
+            async def async_list_nodes(self):
+                return self._list_nodes()
+            c._list_nodes = c.list_nodes
+            c.list_nodes = types.MethodType(async_list_nodes, c)
+
     async def __aenter__(self):
-        await log('entering context')
+        print('entering context')
+        if len(self.classes) == 1:
+            return self.classes[0]
+        else:
+            return self.classes
 
     async def __aexit__(self, exc_type, exc, tb):
-        await log('exiting context')
+        print('exiting context')
