@@ -8,6 +8,11 @@ Changes in latest version of Apache Libcloud
 Common
 ~~~~~~
 
+- Fix CertificateConnection not correctly signing requests in 2.0rc1, impacted
+  Azure classic driver, OpenStack and Docker driver
+  [GITHUB-1015]
+  (Anthony Shaw)
+
 - Change Cloudscale to cloudscale.ch.
   [GITHUB-993]
   (David Halter)
