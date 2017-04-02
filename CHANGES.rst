@@ -24,6 +24,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Allow preemptible instances to be created
+  [GITHUB-954]
+  (John Baublitz)
+
 - Add support for forcing detachment of EBS volumes to EC2 driver
   [GITHUB-1007]
   (Sergey Babak)
