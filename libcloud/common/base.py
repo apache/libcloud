@@ -468,8 +468,6 @@ class Connection(object):
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
 
-        #  kwargs = {'host': host, 'port': int(port)}
-
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
         if self.timeout and not PY25:

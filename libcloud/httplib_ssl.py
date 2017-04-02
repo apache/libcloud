@@ -21,6 +21,8 @@ verification, depending on libcloud.security settings.
 import os
 import warnings
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
 import libcloud.security
 from libcloud.utils.py3 import urlparse, PY3
@@ -34,6 +36,59 @@ __all__ = [
 ALLOW_REDIRECTS = 1
 
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
+
+
+class SignedX509Adapter(HTTPAdapter):
+    def __init__(self, cert_file=None, key_file=None):
+        self.cert_file = cert_file
+        self.key_file = key_file
+
+    def init_poolmanager(self, *args, **kwargs):
+        self.tls_context = create_urllib3_context()
+        kwargs['ssl_context'] = self.tls_context
+        
+        has_sni = getattr(ssl, 'HAS_SNI', False)
+
+        if has_sni:
+            self.tls_context.verify_mode = ssl.CERT_REQUIRED
+
+            if self.cert_file and self.key_file:
+                self.tls_context.load_cert_chain(
+                    certfile=self.cert_file,
+                    keyfile=self.key_file,
+                    password=None)
+
+            if self.ca_cert:
+                self.tls_context.load_verify_locations(cafile=self.ca_cert)
+
+            try:
+                self.sock = self.tls_context.wrap_socket(
+                    sock,
+                    server_hostname=self.host,
+                )
+            except:
+                exc = sys.exc_info()[1]
+                exc = get_socket_error_exception(ssl_version=ssl_version,
+                                                 exc=exc)
+                raise exc
+        else:
+            # SNI support not available
+            try:
+                self.sock = ssl.wrap_socket(
+                    sock,
+                    self.key_file,
+                    self.cert_file,
+                    cert_reqs=ssl.CERT_REQUIRED,
+                    ca_certs=self.ca_cert,
+                    ssl_version=ssl_version
+                )
+            except:
+                exc = sys.exc_info()[1]
+                exc = get_socket_error_exception(ssl_version=ssl_version,
+                                                 exc=exc)
+                raise exc
+        
+        return super(HTTPAdapter, self).init_poolmanager(*args, **kwargs)
 
 
 class LibcloudBaseConnection(object):
@@ -139,6 +194,13 @@ class LibcloudBaseConnection(object):
             else:
                 self.ca_cert = libcloud.security.CA_CERTS_PATH
 
+    def _setup_signing(self, cert_file=None, key_file=None):
+        """
+        Setup request signing by mounting a signing
+        adapter to the session
+        """
+        self.session.mount("https", SignedX509Adapter(cert_file, key_file))
+
 
 class LibcloudConnection(LibcloudBaseConnection):
     timeout = None
@@ -158,9 +220,11 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         self._setup_verify()
         self._setup_ca_cert()
-
+        
         LibcloudBaseConnection.__init__(self)
-
+        
+        if 'cert_file' in kwargs or 'key_file' in kwargs:
+            self._setup_signing(**kwargs)
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
