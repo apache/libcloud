@@ -41,6 +41,7 @@ from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
@@ -378,7 +379,7 @@ class BaseS3StorageDriver(StorageDriver):
             container = Container(name=container_name, extra=None, driver=self)
             return container
         elif response.status == httplib.CONFLICT:
-            raise InvalidContainerNameError(
+            raise ContainerAlreadyExistsError(
                 value='Container with this name already exists. The name must '
                       'be unique among all the containers in the system',
                 container_name=container_name, driver=self)

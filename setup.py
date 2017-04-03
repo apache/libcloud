@@ -278,6 +278,7 @@ setup(
     package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
+    scripts=['libcloud/cli/cloud_storage'],
     cmdclass={
         'test': TestCommand,
         'apidocs': ApiDocsCommand,
