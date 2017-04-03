@@ -12,6 +12,12 @@ Common
   [GITHUB-970]
   (Anthony Shaw)
 
+Compute
+~~~~~~~
+
+- Outscale SAS doc improvements and logo update
+  [GITHUB-950]
+  (Javier M Mellid)
 
 Changes in Apache Libcloud 2.0.0rc2
 -----------------------------------
