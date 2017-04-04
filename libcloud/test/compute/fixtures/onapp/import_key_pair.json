@@ -1,0 +1,9 @@
+{
+  "ssh_key": {
+    "id": 3,
+    "user_id": 123,
+    "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8uuUq",
+    "created_at": "2017-03-22T19:11:32.000+05:30",
+    "updated_at": "2017-03-22T19:11:32.000+05:30"
+  }
+}
