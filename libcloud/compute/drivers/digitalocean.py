@@ -509,7 +509,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
     def _to_size(self, data):
         extra = {'vcpus': data['vcpus'],
-                 'regions': data['regions']}
+                 'regions': data['regions'],
+                 'price_monthly': data['price_monthly']}
         return NodeSize(id=data['slug'], name=data['slug'], ram=data['memory'],
                         disk=data['disk'], bandwidth=data['transfer'],
                         price=data['price_hourly'], driver=self, extra=extra)
