@@ -2392,6 +2392,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'ena_support': {
             'xpath': 'enaSupport',
             'transform_func': str
+        },
+        'sriov_net_support': {
+            'xpath': 'sriovNetSupport',
+            'transform_func': str
         }
     },
     'network': {
@@ -3928,7 +3932,7 @@ class BaseEC2NodeDriver(NodeDriver):
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
                           ramdisk_id=None, virtualization_type=None,
-                          ena_support=None):
+                          ena_support=None, sriov_net_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -3972,6 +3976,11 @@ class BaseEC2NodeDriver(NodeDriver):
                                  Network Adapter for the AMI
         :type       ena_support: ``bool``
 
+        :param      sriov_net_support: Set to "simple" to enable enhanced
+                                       networking with the Intel 82599 Virtual
+                                       Function interface
+        :type       sriov_net_support: ``str``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -4005,6 +4014,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if ena_support is not None:
             params['EnaSupport'] = ena_support
+
+        if sriov_net_support is not None:
+            params['SriovNetSupport'] = sriov_net_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
