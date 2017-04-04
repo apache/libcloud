@@ -713,7 +713,7 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 11
+            'cpu': 1
         }
     },
     't2.medium': {
