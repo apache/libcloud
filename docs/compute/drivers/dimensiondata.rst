@@ -66,3 +66,25 @@ API Docs
     :inherited-members:
 
 .. _`API`: http://cloud.dimensiondata.com/au/en/services/public-cloud/api
+
+
+Debugging Tips
+--------------
+
+**Problem description: XML parsing issue for python version 2.7.5**
+
+    *Example*::
+
+      ip_address_collection=ip_addr_collection, child_ip_address_lists=None)
+      File "/Users/andrewdas/Documents/Python/lib/python2.7/site-packages/libcloud/compute/drivers/dimensiondata.py", line 3185, in ex_edit_ip_address_list
+        'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
+      File "lxml.etree.pyx", line 2912, in lxml.etree.Element (src/lxml/lxml.etree.c:68681)
+      File "apihelpers.pxi", line 140, in lxml.etree._makeElement (src/lxml/lxml.etree.c:15242)
+      File "apihelpers.pxi", line 128, in lxml.etree._makeElement (src/lxml/lxml.etree.c:15125)
+      File "apihelpers.pxi", line 287, in lxml.etree._initNodeAttributes (src/lxml/lxml.etree.c:17012)
+      File "apihelpers.pxi", line 296, in lxml.etree._addAttributeToNode (src/lxml/lxml.etree.c:17180)
+      File "apihelpers.pxi", line 1583, in lxml.etree._attributeValidOrRaise (src/lxml/lxml.etree.c:29377)
+      ValueError: Invalid attribute name u'xmlns:xsi'
+
+    *Solution*:
+    - Upgrade to python version 2.7.12 and above

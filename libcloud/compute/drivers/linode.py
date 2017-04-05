@@ -433,7 +433,11 @@ class LinodeNodeDriver(NodeDriver):
             "LinodeID": node.id,
             "Label": name
         }
+<<<<<<< HEAD
         data = self.connection.request(API_ROOT, params=params)
+=======
+        self.connection.request(API_ROOT, params=params)
+>>>>>>> trunk
         return True
 
     def list_sizes(self, location=None):
