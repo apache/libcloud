@@ -136,7 +136,7 @@ class DockerContainerDriver(ContainerDriver):
     supports_clusters = False
     version = '1.24'
 
-    def __init__(self, key=None, secret=None, secure=False, host='localhost',
+    def __init__(self, key='', secret='', secure=False, host='localhost',
                  port=4243, key_file=None, cert_file=None):
         """
         :param    key: API key or username to used (required)
@@ -163,6 +163,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
+
         super(DockerContainerDriver, self).__init__(key=key, secret=secret,
                                                     secure=secure, host=host,
                                                     port=port,
@@ -192,7 +193,6 @@ class DockerContainerDriver(ContainerDriver):
             self.connection.secure = True
         else:
             self.connection.secure = secure
-
         self.connection.host = host
         self.connection.port = port
 
