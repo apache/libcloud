@@ -1,4 +1,4 @@
-<CreateKeyPairResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<CreateKeyPairResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
   <keyName>my-key-pair</keyName>
   <keyFingerprint>
      1f:51:ae:28:bf:89:e9:d8:1f:25:5d:37:2d:7d:b8:ca:9f:f5:f1:6f

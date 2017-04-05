@@ -1,4 +1,4 @@
-<DescribeVpcsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeVpcsResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>be8cfa34-0710-4895-941f-961c5738f8f8</requestId>
     <vpcSet>
         <item>

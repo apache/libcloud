@@ -282,7 +282,7 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-        if response:
+        if response is not None:
             self.headers = lowercase_keys(dict(response.headers))
             self.error = response.reason
             self.status = response.status_code
@@ -467,8 +467,6 @@ class Connection(object):
 
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
-
-        #  kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection

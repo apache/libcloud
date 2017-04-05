@@ -69,6 +69,18 @@ class OnAppNodeTestCase(LibcloudTestCase):
         self.assertEqual(1, len(private_ips))
         self.assertEqual('192.168.15.72', private_ips[0])
 
+    def test_list_images(self):
+        images = self.driver.list_images()
+        extra = images[0].extra
+
+        self.assertEqual(1, len(images))
+        self.assertEqual('CentOS 5.11 x64', images[0].name)
+        self.assertEqual('123456', images[0].id)
+
+        self.assertEqual(True, extra['allowed_swap'])
+        self.assertEqual(256, extra['min_memory_size'])
+        self.assertEqual('rhel', extra['distribution'])
+
 
 class OnAppMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('onapp')
@@ -87,6 +99,10 @@ class OnAppMockHttp(MockHttpTestCase):
             {},
             httplib.responses[httplib.NO_CONTENT]
         )
+
+    def _templates_json(self, method, url, body, headers):
+        body = self.fixtures.load('list_images.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
