@@ -851,7 +851,7 @@ class ECSDriver(NodeDriver):
         List security group attributes in the current region.
 
         :keyword group_id: security group id.
-        :type ex_filters: ``str``
+        :type group_id: ``str``
 
         :keyword nic_type: internet|intranet.
         :type nic_type: ``str``
@@ -908,7 +908,7 @@ class ECSDriver(NodeDriver):
         :type node: :class:`Node`
 
         :param group_id: security group id.
-        :type ex_filters: ``str``
+        :type group_id: ``str``
 
 
         :return: leave operation result.
