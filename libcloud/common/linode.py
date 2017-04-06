@@ -82,26 +82,8 @@ class LinodeResponse(JsonResponse):
 
         :keyword response: The raw response returned by urllib
         :return: parsed :class:`LinodeResponse`"""
-
-        self.connection = connection
-
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.status = response.status
-
-        # This attribute is set when using LoggingConnection.
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data:
-            # LoggingConnection already decompresses data so it can log it
-            # which means we don't need to decompress it here.
-            self.body = response._original_data
-        else:
-            self.body = self._decompress_response(body=response.read(),
-                                                  headers=self.headers)
-
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
+        self.errors = []
+        super(LinodeResponse, self).__init__(response, connection)
 
         self.invalid = LinodeException(0xFF,
                                        "Invalid JSON received from server")
