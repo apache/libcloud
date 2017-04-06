@@ -16,9 +16,6 @@
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b
-
 __all__ = [
     'API_HOST',
     'API_ROOT',
