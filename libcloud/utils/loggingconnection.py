@@ -30,7 +30,6 @@ from libcloud.common.base import (LibcloudConnection,
 from libcloud.utils.py3 import _real_unicode as u
 
 from libcloud.utils.misc import lowercase_keys
-from libcloud.utils.compression import decompress_data
 
 
 class LoggingConnection(LibcloudConnection):

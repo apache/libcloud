@@ -21,7 +21,6 @@ import requests_mock
 import libcloud
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.utils.py3 import b
 from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
