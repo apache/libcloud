@@ -880,7 +880,7 @@ class ECSDriver(NodeDriver):
         :type node: :class:`Node`
 
         :param group_id: security group id.
-        :type ex_filters: ``str``
+        :type group_id: ``str``
 
 
         :return: join operation result.
