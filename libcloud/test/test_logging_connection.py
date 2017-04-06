@@ -15,11 +15,13 @@
 
 import sys
 from io import StringIO
+import zlib
 import requests_mock
 
 import libcloud
 from libcloud.test import unittest
 from libcloud.common.base import Connection
+from libcloud.utils.py3 import b
 from libcloud.httplib_ssl import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
@@ -43,6 +45,21 @@ class TestLoggingConnection(unittest.TestCase):
             self.assertEqual(conn.connection.host, 'http://test.com')
             with requests_mock.mock() as m:
                 m.get('http://test.com/test', text='data')
+                conn.request('/test')
+            log = fh.getvalue()
+        self.assertTrue(isinstance(conn.connection, LoggingConnection))
+        self.assertIn('-i -X GET', log)
+        self.assertIn('data', log)
+
+    def test_debug_log_class_handles_request_with_compression(self):
+        with StringIO() as fh:
+            libcloud.enable_debug(fh)
+            conn = Connection(url='http://test.com/')
+            conn.connect()
+            self.assertEqual(conn.connection.host, 'http://test.com')
+            with requests_mock.mock() as m:
+                m.get('http://test.com/test', content=zlib.compress(b'test'),
+                      headers={'content-encoding': 'zlib'})
                 conn.request('/test')
             log = fh.getvalue()
         self.assertTrue(isinstance(conn.connection, LoggingConnection))
