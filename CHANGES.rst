@@ -1,11 +1,15 @@
 ﻿Changelog
 =========
 
-Changes in latest version of Apache Libcloud
---------------------------------------------
+Changes in Apache Libcloud 2.0.0rc2
+-----------------------------------
 
 Common
 ~~~~~~
+
+- Fix LIBCLOUD_DEBUG trying to decompress already decompressed responses
+  [LIBCLOUD-910]
+  (Anthony Shaw)
 
 - Added an integration test API and a test suite for validating functionality
   without mocking any libcloud subsystems
@@ -15,19 +19,6 @@ Common
 - Fix for Linode classes since 2.0x
   [GITHUB-1026]
   (Anthony Shaw)
-
-Compute
-~~~~~~~
-
-- Outscale SAS doc improvements and logo update
-  [GITHUB-950]
-  (Javier M Mellid)
-
-Changes in Apache Libcloud 2.0.0rc2
------------------------------------
-
-Common
-~~~~~~
 
 - Fix CertificateConnection not correctly signing requests in 2.0rc1, impacted
   Azure classic driver, OpenStack and Docker driver
@@ -44,6 +35,10 @@ Common
 
 Compute
 ~~~~~~~
+
+- Outscale SAS doc improvements and logo update
+  [GITHUB-950]
+  (Javier M Mellid)
 
 - [GCE] Allow preemptible instances to be created
   [GITHUB-954]
