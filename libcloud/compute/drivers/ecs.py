@@ -889,8 +889,8 @@ class ECSDriver(NodeDriver):
         if group_id is None:
             raise AttributeError('group_id is required')
 
-        if (node.state != NodeState.RUNNING) and \
-           (node.state != NodeState.STOPPED):
+        if node.state != NodeState.RUNNING and \
+           node.state != NodeState.STOPPED:
             raise LibcloudError('The node state with id % s need\
                                 be running or stopped .' % node.id)
 
@@ -917,8 +917,8 @@ class ECSDriver(NodeDriver):
         if group_id is None:
             raise AttributeError('group_id is required')
 
-        if (node.state != NodeState.RUNNING) and \
-           (node.state != NodeState.STOPPED):
+        if node.state != NodeState.RUNNING and \
+           node.state != NodeState.STOPPED:
             raise LibcloudError('The node state with id % s need\
                                 be running or stopped .' % node.id)
 
