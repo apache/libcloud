@@ -12,6 +12,10 @@ Common
   [GITHUB-970]
   (Anthony Shaw)
 
+- Fix for Linode classes since 2.0x
+  [GITHUB-1026]
+  (Anthony Shaw)
+
 Compute
 ~~~~~~~
 
