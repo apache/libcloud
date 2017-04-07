@@ -37,6 +37,7 @@ import requests
 import libcloud
 
 from libcloud.utils.py3 import PY25
+from libcloud.utils.py3 import SUPPORTS_AIO
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
@@ -46,7 +47,7 @@ from libcloud.utils.compression import decompress_data
 
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection, HttpLibResponseProxy
+from libcloud.connection import LibcloudConnection, HttpLibResponseProxy
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
@@ -737,6 +738,44 @@ class Connection(object):
             params.append(('cache-busting', cache_busting_value))
 
         return params
+
+if SUPPORTS_AIO:
+    from libcloud.connection_async import LibcloudAsyncConnection
+
+
+    class AsyncConnection(Connection):
+        conn_cls_async = LibcloudAsyncConnection
+    
+        def __init__(self, loop=None, *args, **kwargs):
+            self.connection = self.conn_cls_async(host=self.host, port=self.port)
+
+        async def request_async(self, action, params=None, data=None, headers=None,
+                          method='GET'):
+            """
+            :type action: ``str``
+            :param action: A path
+    
+            :type params: ``dict``
+            :param params: Optional mapping of additional parameters to send. If
+                None, leave as an empty ``dict``.
+    
+            :type data: ``unicode``
+            :param data: A body of data to send with the request.
+    
+            :type headers: ``dict``
+            :param headers: Extra headers to add to the request
+                None, leave as an empty ``dict``.
+    
+            :type method: ``str``
+            :param method: An HTTP method such as "GET" or "POST".
+
+            :return: An :class:`Response` instance.
+            :rtype: :class:`Response` instance
+            """
+            response = await request_async(self, method, url, body=None,
+                          headers=None, raw=False,
+                          stream=False)
+            return responseCls(connection=self, response=response)
 
 
 class PollingConnection(Connection):

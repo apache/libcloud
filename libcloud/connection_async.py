@@ -35,5 +35,8 @@ class LibcloudAsyncConnection(LibcloudConnection):
                             stream=False):
         url = urlparse.urljoin(self.host, url)
         async with aiohttp.ClientSession(loop=self.loop) as client:
-            async with client.get(url) as resp:
+            async with client.get(method.lower(), url,
+                                  data=body,
+                                  headers=headers,
+                                  allow_redirects=ALLOW_REDIRECTS) as resp:
                 return await resp
