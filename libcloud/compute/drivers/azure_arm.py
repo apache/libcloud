@@ -868,8 +868,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network" \
-                 "/networkInterfaces" % \
+        action = "/subscriptions/%s/resourceGroups/%s" \
+                 "/providers/Microsoft.Network/networkInterfaces" % \
                  (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -1013,7 +1013,8 @@ class AzureNodeDriver(NodeDriver):
         }
 
         if public_ip:
-            data["properties"]["ipConfigurations"][0]["publicIPAddress"] = {
+            ip_config = data["properties"]["ipConfigurations"][0]
+            ip_config["properties"]["publicIPAddress"] = {
                 "id": public_ip.id
             }
 

@@ -1,6 +1,106 @@
 ﻿Changelog
 =========
 
+Changes in latest version of Apache Libcloud
+--------------------------------------------
+
+Common
+~~~~~~
+
+- Added an integration test API and a test suite for validating functionality
+  without mocking any libcloud subsystems
+  [GITHUB-970]
+  (Anthony Shaw)
+
+- Fix for Linode classes since 2.0x
+  [GITHUB-1026]
+  (Anthony Shaw)
+
+Compute
+~~~~~~~
+
+- Outscale SAS doc improvements and logo update
+  [GITHUB-950]
+  (Javier M Mellid)
+
+Changes in Apache Libcloud 2.0.0rc2
+-----------------------------------
+
+Common
+~~~~~~
+
+- Fix CertificateConnection not correctly signing requests in 2.0rc1, impacted
+  Azure classic driver, OpenStack and Docker driver
+  [GITHUB-1015]
+  (Anthony Shaw)
+
+- Change Cloudscale to cloudscale.ch.
+  [GITHUB-993]
+  (David Halter)
+
+- Explicitly check if response is None in RawResponse class
+  [GITHUB-1006] [LIBCLOUD-901]
+  (Richard Xia)
+
+Compute
+~~~~~~~
+
+- [GCE] Allow preemptible instances to be created
+  [GITHUB-954]
+  (John Baublitz)
+
+- Add support for forcing detachment of EBS volumes to EC2 driver
+  [GITHUB-1007]
+  (Sergey Babak)
+
+- Fix Public IP not assigned when creating NIC on Azure ARM
+  [GITHUB-1013] [LIBCLOUD-906]
+  (Simone Ripamonti)
+
+- [ONAPP] Add list images support for OnApp driver
+  [GITHUB-1011]
+  (Tinu Cleatus)
+
+- [EC2] Add r4 instance types for AWS
+  [GITHUB-997]
+  (Jens Deppe)
+
+- [EC2] support for AWS eu-west-2 and ca-central-1 regions
+  [GITHUB-1009]
+  (Marat Komarov)
+
+- [EC2] Add P2 GPU instance types
+  [GITHUB-996]
+  (MJK)
+
+- [EC2] Add method to modify snapshot attribute for EC2
+  [GITHUB-990]
+  (Sayan Chowdhury)
+
+- [Linode] Add start, stop instance methods and fix incorrect state TERMINATED to STOPPED
+  [GITHUB-986]
+  (Markos Gogoulos)
+
+- [EC2] Add ENA support for EC2 compute images
+  [GITHUB-983]
+  (Alex Misstear)
+
+- [Azure ARM] fix typeerror on ex_list_nics
+  [GITHUB-979]
+  (Choi Jongu)
+
+- [GCE] allow delete instances from managed group
+  [GITHUB-975]
+  (@zacharya19)
+
+Storage
+~~~~~~~
+
+- Reintroduce S3 multipart upload support with signature v4
+  [GITHUB-1005] [LIBCLOUD-834]
+  (Alex Misstear)
+
+
 Changes Apache Libcloud 2.0.0rc1
 --------------------------------
 

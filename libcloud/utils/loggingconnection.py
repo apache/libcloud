@@ -30,7 +30,6 @@ from libcloud.common.base import (LibcloudConnection,
 from libcloud.utils.py3 import _real_unicode as u
 
 from libcloud.utils.misc import lowercase_keys
-from libcloud.utils.compression import decompress_data
 
 
 class LoggingConnection(LibcloudConnection):
@@ -62,13 +61,7 @@ class LoggingConnection(LibcloudConnection):
 
         headers = lowercase_keys(dict(r.getheaders()))
 
-        encoding = headers.get('content-encoding', None)
         content_type = headers.get('content-type', None)
-
-        if encoding in ['zlib', 'deflate']:
-            body = decompress_data('zlib', body)
-        elif encoding in ['gzip', 'x-gzip']:
-            body = decompress_data('gzip', body)
 
         pretty_print = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE',
                                       False)
