@@ -233,3 +233,6 @@ if PY27 or PY3:
     unittest2_required = False
 else:
     unittest2_required = True
+
+class DummyAsyncConnection(object):
+    pass

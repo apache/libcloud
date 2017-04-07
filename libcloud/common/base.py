@@ -739,6 +739,7 @@ class Connection(object):
 
         return params
 
+
 if SUPPORTS_AIO:
     from libcloud.connection_async import LibcloudAsyncConnection
 
@@ -747,7 +748,9 @@ if SUPPORTS_AIO:
         conn_cls_async = LibcloudAsyncConnection
     
         def __init__(self, loop=None, *args, **kwargs):
-            self.connection = self.conn_cls_async(host=self.host, port=self.port)
+            super(AsyncConnection, self).__init__(*args, **kwargs)
+            self.connection = self.conn_cls_async(host=self.host, port=self.port,
+                                                  loop=loop)
 
         async def request_async(self, action, params=None, data=None, headers=None,
                           method='GET'):
