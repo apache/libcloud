@@ -37,6 +37,7 @@ PY2_pre_26 = PY2 and sys.version_info < (2, 6)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
 PY3_pre_32 = PY3 and sys.version_info < (3, 2)
+PY3_pre_35 = PY3 and sys.version_info < (3, 5)
 
 PY2 = False
 PY25 = False
@@ -62,6 +63,8 @@ if sys.version_info >= (3, 0):
 
 if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
     PY32 = True
+
+SUPPORTS_AIO = not PY3_pre_35
 
 if PY2_pre_279 or PY3_pre_32:
     try:
@@ -230,3 +233,6 @@ if PY27 or PY3:
     unittest2_required = False
 else:
     unittest2_required = True
+
+class DummyAsyncConnection(object):
+    pass

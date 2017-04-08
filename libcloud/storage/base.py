@@ -25,7 +25,7 @@ import hashlib
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, SUPPORTS_AIO
 
 import libcloud.utils.files
 from libcloud.common.types import LibcloudError
@@ -673,3 +673,67 @@ class StorageDriver(BaseDriver):
                                (self.hash_type))
 
         return func
+
+
+if SUPPORTS_AIO:
+    class AsyncStorageDriver(BaseDriver):
+        """
+        A base StorageDriver to derive from.
+        """
+    
+        connectionCls = ConnectionUserAndKey
+        name = None
+        hash_type = 'md5'
+        supports_chunked_encoding = False
+    
+        # When strict mode is used, exception will be thrown if no content type is
+        # provided and none can be detected when uploading an object
+        strict_mode = False
+    
+        async def iterate_containers_async(self):
+            """
+            Return a generator of containers for the given account
+    
+            :return: A generator of Container instances.
+            :rtype: ``generator`` of :class:`Container`
+            """
+            raise NotImplementedError(
+                'iterate_containers not implemented for this driver')
+    
+        async def list_containers_async(self):
+            """
+            Return a list of containers.
+    
+            :return: A list of Container instances.
+            :rtype: ``list`` of :class:`Container`
+            """
+            return await list(self.iterate_containers_async())
+    
+        async def iterate_container_objects_async(self, container):
+            """
+            Return a generator of objects for the given container.
+    
+            :param container: Container instance
+            :type container: :class:`Container`
+    
+            :return: A generator of Object instances.
+            :rtype: ``generator`` of :class:`Object`
+            """
+            raise NotImplementedError(
+                'iterate_container_objects not implemented for this driver')
+    
+        async def list_container_objects_async(self, container):
+            """
+            Return a list of objects for the given container.
+    
+            :param container: Container instance.
+            :type container: :class:`Container`
+    
+            :return: A list of Object instances.
+            :rtype: ``list`` of :class:`Object`
+            """
+            return list(self.iterate_container_objects_async(container))
+else:
+    class AsyncStorageDriver(object):
+        def list_containers_async(self):
+            raise RuntimeError("Not supported in this version of Python")

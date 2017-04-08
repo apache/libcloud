@@ -30,6 +30,14 @@ from libcloud.storage.drivers.s3 import S3Response
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
+from libcloud.utils.py3 import SUPPORTS_AIO
+if SUPPORTS_AIO:
+    from libcloud.common.base import AsyncConnection
+else:
+    from libcloud.utils.py3 import DummyAsyncConnection as AsyncConnection
+from libcloud.storage.base import AsyncStorageDriver
+
+
 # Docs are a lie. Actual namespace returned is different that the one listed
 # in the docs.
 SIGNATURE_IDENTIFIER = 'GOOG1'
@@ -66,7 +74,7 @@ class ObjectPermissions(object):
     OWNER = 2
 
 
-class GoogleStorageConnection(ConnectionUserAndKey):
+class GoogleStorageConnection(ConnectionUserAndKey, AsyncConnection):
     """
     Represents a single connection to the Google storage API endpoint.
 
@@ -140,7 +148,7 @@ class GCSResponse(GoogleResponse):
     pass
 
 
-class GoogleStorageJSONConnection(GoogleStorageConnection):
+class GoogleStorageJSONConnection(GoogleStorageConnection, ):
     """
     Represents a single connection to the Google storage JSON API endpoint.
 
@@ -158,7 +166,7 @@ class GoogleStorageJSONConnection(GoogleStorageConnection):
         return headers
 
 
-class GoogleStorageDriver(BaseS3StorageDriver):
+class GoogleStorageDriver(BaseS3StorageDriver, AsyncStorageDriver):
     """
     Driver for Google Cloud Storage.
 
@@ -203,6 +211,17 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         self.json_connection = GoogleStorageJSONConnection(
             key, secret, **kwargs)
+
+    if SUPPORTS_AIO:
+        async def iterate_containers_async(self):
+            response = await self.connection.request_async('/')
+            if response.status == httplib.OK:
+                containers = self._to_containers(obj=response.object,
+                                                 xpath='Buckets/Bucket')
+                return containers
+    
+            raise LibcloudError('Unexpected status code: %s' % (response.status),
+                                driver=self)
 
     def _get_container_permissions(self, container_name):
         """
