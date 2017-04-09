@@ -27,8 +27,8 @@ HTTP redirects are allowed by default in 2.0. To disable redirects, set this glo
 
 .. code-block:: Python
 
-    import libcloud.httplib_ssl
-    libcloud.httplib_ssl.ALLOW_REDIRECTS = False
+    import libcloud.http
+    libcloud.http.ALLOW_REDIRECTS = False
 
 HTTP/HTTPS Proxies
 ~~~~~~~~~~~~~~~~~~

@@ -44,7 +44,7 @@ from libcloud.utils.py3 import urlencode
 from libcloud.utils.misc import lowercase_keys, retry
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection, HttpLibResponseProxy
+from libcloud.http import LibcloudConnection, HttpLibResponseProxy
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
