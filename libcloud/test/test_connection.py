@@ -25,9 +25,9 @@ import requests_mock
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection, CertificateConnection
-from libcloud.httplib_ssl import LibcloudBaseConnection
-from libcloud.httplib_ssl import LibcloudConnection
-from libcloud.httplib_ssl import SignedHTTPSAdapter
+from libcloud.http import LibcloudBaseConnection
+from libcloud.http import LibcloudConnection
+from libcloud.http import SignedHTTPSAdapter
 from libcloud.utils.misc import retry
 
 

@@ -65,3 +65,34 @@ driver.destroy_node(node)
 #
 for image in driver.list_images():
     print(image)
+
+#
+# List key pairs
+#
+for key_pair in driver.list_key_pairs():
+    print(key_pair)
+
+#
+# Get key pair
+#
+id = 2  # ID of key pair
+key_pair = driver.get_key_pair(id)
+print(key_pair)
+
+#
+# Import key pair from string
+#
+name = 'example'  # this param is unused
+key = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8uuUq...'
+key_pair = driver.import_key_pair_from_string(name, key)
+
+#
+# Import key pair from file
+#
+driver.import_key_pair_from_file('example', '~/.ssh/id_rsa.pub')
+
+#
+# Delete key pair
+#
+key_pair = driver.list_key_pairs()[0]
+driver.delete_key_pair(key_pair)

@@ -486,6 +486,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(images[0].extra['block_device_mapping']), 2)
         ephemeral = images[0].extra['block_device_mapping'][1]['virtual_name']
         self.assertEqual(ephemeral, 'ephemeral0')
+        billing_product1 = images[0].extra['billing_products'][0]
+        self.assertEqual(billing_product1, 'ab-5dh78019')
 
         location = '123456788908/Test Image 2'
         self.assertEqual(images[1].id, 'ami-85b2a8ae')
@@ -493,6 +495,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(images[1].extra['image_location'], location)
         self.assertEqual(images[1].extra['architecture'], 'x86_64')
         size = images[1].extra['block_device_mapping'][0]['ebs']['volume_size']
+        billing_product2 = images[1].extra['billing_products'][0]
+        self.assertEqual(billing_product2, 'as-6dr90319')
         self.assertEqual(size, 20)
 
     def test_list_images_with_image_ids(self):
@@ -513,6 +517,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'Test Image')
         self.assertEqual(image.extra['architecture'], 'x86_64')
         self.assertEqual(len(image.extra['block_device_mapping']), 2)
+        self.assertEqual(image.extra['billing_products'][0], 'ab-5dh78019')
 
     def test_copy_image(self):
         image = self.driver.list_images()[0]
@@ -559,7 +564,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               description='My Image',
                                               architecture='x86_64',
                                               block_device_mapping=mapping,
-                                              ena_support=True)
+                                              ena_support=True,
+                                              billing_products=['ab-5dh78019'],
+                                              sriov_net_support='simple')
         self.assertEqual(image.id, 'ami-57c2fb3e')
 
     def test_ex_list_availability_zones(self):
