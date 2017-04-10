@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add missing regions in AWS storage and compute drivers
+  [GITHUB-1019]
+  (Alex Misstear)
+
 - Add SR-IOV net support to images in EC2 compute driver
   [GITHUB-1020]
   (Alex Misstear)
