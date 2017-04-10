@@ -429,23 +429,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 55)
+                self.assertEqual(len(sizes), 61)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
                 self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 46)
+                self.assertEqual(len(sizes), 52)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 53)
+                self.assertEqual(len(sizes), 62)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 45)
+                self.assertEqual(len(sizes), 51)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 49)
+                self.assertEqual(len(sizes), 55)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 53)
+                self.assertEqual(len(sizes), 59)
             elif region_name == 'ap-south-1':
-                self.assertEqual(len(sizes), 29)
+                self.assertEqual(len(sizes), 35)
 
         self.driver.region_name = region_old
 
@@ -486,6 +486,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(images[0].extra['block_device_mapping']), 2)
         ephemeral = images[0].extra['block_device_mapping'][1]['virtual_name']
         self.assertEqual(ephemeral, 'ephemeral0')
+        billing_product1 = images[0].extra['billing_products'][0]
+        self.assertEqual(billing_product1, 'ab-5dh78019')
 
         location = '123456788908/Test Image 2'
         self.assertEqual(images[1].id, 'ami-85b2a8ae')
@@ -493,6 +495,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(images[1].extra['image_location'], location)
         self.assertEqual(images[1].extra['architecture'], 'x86_64')
         size = images[1].extra['block_device_mapping'][0]['ebs']['volume_size']
+        billing_product2 = images[1].extra['billing_products'][0]
+        self.assertEqual(billing_product2, 'as-6dr90319')
         self.assertEqual(size, 20)
 
     def test_list_images_with_image_ids(self):
@@ -513,6 +517,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name, 'Test Image')
         self.assertEqual(image.extra['architecture'], 'x86_64')
         self.assertEqual(len(image.extra['block_device_mapping']), 2)
+        self.assertEqual(image.extra['billing_products'][0], 'ab-5dh78019')
 
     def test_copy_image(self):
         image = self.driver.list_images()[0]
@@ -558,8 +563,40 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               root_device_name='/dev/sda1',
                                               description='My Image',
                                               architecture='x86_64',
-                                              block_device_mapping=mapping)
+                                              block_device_mapping=mapping,
+                                              ena_support=True,
+                                              billing_products=['ab-5dh78019'],
+                                              sriov_net_support='simple')
         self.assertEqual(image.id, 'ami-57c2fb3e')
+
+    def test_ex_import_snapshot(self):
+        disk_container = [{'Description': 'Dummy import snapshot task',
+                           'Format': 'raw',
+                           'UserBucket': {'S3Bucket': 'dummy-bucket', 'S3Key': 'dummy-key'}}]
+
+        snap = self.driver.ex_import_snapshot(disk_container=disk_container)
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_wait_for_import_snapshot_completion(self):
+        snap = self.driver._wait_for_import_snapshot_completion(
+            import_task_id='import-snap-fhdysyq6')
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_timeout_wait_for_import_snapshot_completion(self):
+        import_task_id = 'import-snap-fhdysyq6'
+        EC2MockHttp.type = 'timeout'
+        with self.assertRaises(Exception) as context:
+            self.driver._wait_for_import_snapshot_completion(
+                import_task_id=import_task_id, timeout=0.01, interval=0.001)
+        self.assertEqual('Timeout while waiting for import task Id %s'
+                         % import_task_id, str(context.exception))
+
+    def test_ex_describe_import_snapshot_tasks(self):
+        snap = self.driver.ex_describe_import_snapshot_tasks(
+            import_task_id='import-snap-fh7y6i6w<')
+
+        self.assertEqual(snap.snapshotId, 'snap-0ea83e8a87e138f39')
+        self.assertEqual(snap.status, 'completed')
 
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
@@ -933,6 +970,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_modify_image_attribute(image, data)
         self.assertTrue(resp)
 
+    def test_ex_modify_snapshot_attribute(self):
+        snap = VolumeSnapshot(id='snap-1234567890abcdef0',
+                              size=10, driver=self.driver)
+
+        data = {'CreateVolumePermission.Add.1.Group': 'all'}
+        resp = self.driver.ex_modify_snapshot_attribute(snap, data)
+        self.assertTrue(resp)
+
     def test_create_node_ex_security_groups(self):
         EC2MockHttp.type = 'ex_security_groups'
 
@@ -1255,6 +1300,18 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('register_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ImportSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load('import_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _timeout_DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks_active.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _ex_imageids_DescribeImages(self, method, url, body, headers):
         body = self.fixtures.load('describe_images_ex_imageids.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1399,6 +1456,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _ModifyInstanceAttribute(self, method, url, body, headers):
         body = self.fixtures.load('modify_instance_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifySnapshotAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_snapshot_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _idempotent_CreateTags(self, method, url, body, headers):

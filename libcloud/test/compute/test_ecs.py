@@ -528,6 +528,18 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('', sg.vpc_id)
         self.assertEqual('2015-06-26T08:35:30Z', sg.creation_time)
 
+    def test_ex_join_security_group(self):
+        ex_security_group_id_value = 'sg-28ou0f3xa'
+        result = self.driver.ex_join_security_group(self.fake_node,
+                                                    group_id=ex_security_group_id_value)
+        self.assertTrue(result)
+
+    def test_ex_leave_security_group(self):
+        ex_security_group_id_value = 'sg-28ou0f3xa'
+        result = self.driver.ex_leave_security_group(self.fake_node,
+                                                     group_id=ex_security_group_id_value)
+        self.assertTrue(result)
+
     def test_ex_list_security_groups_with_ex_filters(self):
         ECSMockHttp.type = 'list_sgs_filters'
         self.vpc_id = 'vpc1'
@@ -902,6 +914,14 @@ class ECSMockHttp(MockHttpTestCase):
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('describe_security_groups.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _JoinSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('join_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _LeaveSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('leave_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _list_sgs_filters_DescribeSecurityGroups(self, method, url, body,
                                                  headers):

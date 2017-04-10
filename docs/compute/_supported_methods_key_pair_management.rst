@@ -38,7 +38,7 @@ Provider                              list key pairs get key pair create key pai
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
 `NTTAmerica`_                         no             no           no              no                            no                          no             
-`OnApp`_                              no             no           no              no                            no                          no             
+`OnApp`_                              yes            yes          no              yes                           no                          yes            
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            

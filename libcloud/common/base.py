@@ -42,11 +42,9 @@ from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 
 from libcloud.utils.misc import lowercase_keys, retry
-from libcloud.utils.compression import decompress_data
-
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection, HttpLibResponseProxy
+from libcloud.http import LibcloudConnection, HttpLibResponseProxy
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
@@ -200,30 +198,6 @@ class Response(object):
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-    def _decompress_response(self, body, headers):
-        """
-        Decompress a response body if it is using deflate or gzip encoding.
-
-        :param body: Response body.
-        :type body: ``str``
-
-        :param headers: Response headers.
-        :type headers: ``dict``
-
-        :return: Decompressed response
-        :rtype: ``str``
-        """
-        encoding = headers.get('content-encoding', None)
-
-        if encoding in ['zlib', 'deflate']:
-            body = decompress_data('zlib', body)
-        elif encoding in ['gzip', 'x-gzip']:
-            body = decompress_data('gzip', body)
-        else:
-            body = body.strip()
-
-        return body
-
 
 class JsonResponse(Response):
     """
@@ -282,7 +256,7 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-        if response:
+        if response is not None:
             self.headers = lowercase_keys(dict(response.headers))
             self.error = response.reason
             self.status = response.status_code
@@ -467,8 +441,6 @@ class Connection(object):
 
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
-
-        #  kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection

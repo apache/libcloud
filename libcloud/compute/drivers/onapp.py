@@ -1,8 +1,10 @@
 import json
 
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.common.onapp import OnAppConnection
+from libcloud.utils.py3 import httplib
 from libcloud.utils.networking import is_private_subnet
+
+from libcloud.common.onapp import OnAppConnection
+from libcloud.compute.base import Node, NodeDriver, NodeImage, KeyPair
 from libcloud.compute.providers import Provider
 
 
@@ -315,9 +317,110 @@ class OnAppNodeDriver(NodeDriver):
             nodes.append(self._to_node(vm["virtual_machine"]))
         return nodes
 
+    def list_images(self):
+        """
+        List all images
+
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        response = self.connection.request("/templates.json")
+        templates = []
+        for template in response.object:
+            templates.append(self._to_image(template["image_template"]))
+        return templates
+
+    def list_key_pairs(self):
+        """
+        List all the available key pair objects.
+
+        :rtype: ``list`` of :class:`.KeyPair` objects
+        """
+        user_id = self.connection.request('/profile.json').object['user']['id']
+        response = self.connection.request('/users/%s/ssh_keys.json' % user_id)
+        ssh_keys = []
+        for ssh_key in response.object:
+            ssh_keys.append(self._to_key_pair(ssh_key['ssh_key']))
+        return ssh_keys
+
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: ID of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        user_id = self.connection.request('/profile.json').object['user']['id']
+        response = self.connection.request(
+            '/users/%s/ssh_keys/%s.json' % (user_id, name))
+        return self._to_key_pair(response.object['ssh_key'])
+
+    def import_key_pair_from_string(self, name, key_material):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name (unused).
+        :type name: ``str``
+
+        :param key_material: Public key material.
+        :type key_material: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        data = json.dumps({'key': key_material})
+        user_id = self.connection.request('/profile.json').object['user']['id']
+        response = self.connection.request(
+            '/users/%s/ssh_keys.json' % user_id,
+            data=data,
+            headers={
+                "Content-type": "application/json"},
+            method="POST")
+        return self._to_key_pair(response.object['ssh_key'])
+
+    def delete_key_pair(self, key):
+        """
+        Delete an existing key pair.
+
+        :param key_pair: Key pair object.
+        :type key_pair: :class:`.KeyPair`
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+        key_id = key.name
+        response = self.connection.request(
+            '/settings/ssh_keys/%s.json' % key_id,
+            method='DELETE')
+        return response.status == httplib.NO_CONTENT
+
     #
     # Helper methods
     #
+
+    def _to_key_pair(self, data):
+        extra = {'created_at': data['created_at'],
+                 'updated_at': data['updated_at']}
+        return KeyPair(name=data['id'],
+                       fingerprint=None,
+                       public_key=data['key'],
+                       private_key=None,
+                       driver=self,
+                       extra=extra)
+
+    def _to_image(self, template):
+        extra = {'distribution': template['operating_system_distro'],
+                 'operating_system': template['operating_system'],
+                 'operating_system_arch': template['operating_system_arch'],
+                 'allow_resize_without_reboot':
+                 template['allow_resize_without_reboot'],
+                 'allowed_hot_migrate': template['allowed_hot_migrate'],
+                 'allowed_swap': template['allowed_swap'],
+                 'min_disk_size': template['min_disk_size'],
+                 'min_memory_size': template['min_memory_size'],
+                 'created_at': template['created_at']}
+        return NodeImage(id=template['id'], name=template['label'],
+                         driver=self, extra=extra)
 
     def _to_node(self, data):
         identifier = data["identifier"]

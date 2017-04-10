@@ -2077,6 +2077,48 @@ class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
             network_adapter_name='E1000')
         self.assertTrue(success)
 
+    def test_ex_create_node_uncustomized_mcp2_using_vlan(self):
+        # Get VLAN
+        vlan = self.driver.ex_get_vlan('0e56433f-d808-4669-821d-812769517ff8')
+
+        # Create node using vlan instead of private IPv4
+        node = self.driver.ex_create_node_uncustomized(
+            name='test_server_05',
+            image='fake_customer_image',
+            ex_network_domain='fakenetworkdomain',
+            ex_is_started=False,
+            ex_description=None,
+            ex_cluster_id=None,
+            ex_cpu_specification=None,
+            ex_memory_gb=None,
+            ex_primary_nic_private_ipv4=None,
+            ex_primary_nic_vlan=vlan,
+            ex_primary_nic_network_adapter=None,
+            ex_additional_nics=None,
+            ex_disks=None,
+            ex_tagid_value_pairs=None,
+            ex_tagname_value_pairs=None)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+
+    def test_ex_create_node_uncustomized_mcp2_using_ipv4(self):
+        node = self.driver.ex_create_node_uncustomized(
+            name='test_server_05',
+            image='fake_customer_image',
+            ex_network_domain='fakenetworkdomain',
+            ex_is_started=False,
+            ex_description=None,
+            ex_cluster_id=None,
+            ex_cpu_specification=None,
+            ex_memory_gb=None,
+            ex_primary_nic_private_ipv4='10.0.0.1',
+            ex_primary_nic_vlan=None,
+            ex_primary_nic_network_adapter=None,
+            ex_additional_nics=None,
+            ex_disks=None,
+            ex_tagid_value_pairs=None,
+            ex_tagname_value_pairs=None)
+        self.assertEqual(node.id, 'e75ead52-692f-4314-8725-c8a4f4d13a87')
+
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
@@ -3352,6 +3394,13 @@ class DimensionDataMockHttp(StorageMockHttp, MockHttp):
             self, method, url, body, headers):
         body = self.fixtures.load(
             '2.4/change_nic_networkadapter_response.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_deployUncustomizedServer(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            '2.4/deploy_customised_server.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 

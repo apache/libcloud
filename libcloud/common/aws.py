@@ -322,9 +322,11 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
     def _get_payload_hash(self, method, data=None):
         if method in ('POST', 'PUT'):
             if data:
+                if hasattr(data, 'next') or hasattr(data, '__next__'):
+                    # File upload; don't try to read the entire payload
+                    return UNSIGNED_PAYLOAD
                 return _hash(data)
             else:
-                # When upload file, we can't know payload here even if given
                 return UNSIGNED_PAYLOAD
         else:
             return _hash('')

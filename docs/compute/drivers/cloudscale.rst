@@ -1,5 +1,5 @@
-Cloudscale Compute Driver Documentation
-=======================================
+cloudscale.ch Compute Driver Documentation
+==========================================
 
 `cloudscale.ch`_ is a public cloud provider based in Switzerland.
 
