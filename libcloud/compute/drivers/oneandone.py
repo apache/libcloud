@@ -199,44 +199,44 @@ class OneAndOneNodeDriver(NodeDriver):
         Creates a node.
 
         :param name: The name of the new node
-        :type ```str```
+        :type `str`
 
         :param image: Image from list_images
-        :rtype: ``NodeImage``
+        :rtype: image:
 
         :param ex_fixed_instance_size_id:
         Fixed instance size ID from list_sizes
         :rtype: ``str``
 
         :param location: 1&1 Data center Location
-        :type ```NodeLocation```
+        :type `NodeLocation`
 
         :param auth: SSH key or root password
         :type: :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
         :param ex_ip: IP address
-        :type ```str```
+        :type `str`
 
         :param ex_ssh_key: SSH Key
-        :type ```str```
+        :type `str`
 
         :param password: Password
-        :type ```str```
+        :type `str`
 
         :param ex_monitoring_policy_id:
-        :type ```str```
+        :type `str`
 
         :param ex_firewall_policy_id:
-        :type ```str```
+        :type `str`
 
         :param ex_loadbalancer_id:
-        :type ```str```
+        :type `str`
 
         :param ex_description:
-        :type ```str```
+        :type `str`
 
         :param ex_power_on:
-        :type ```bool```
+        :type `bool`
 
 
         :return:    Instance of class ``Node``
@@ -244,40 +244,40 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "name": name,
-            "appliance_id": image.id,
-            "hardware": {
-                "fixed_instance_size_id": ex_fixed_instance_size_id
+            'name': name,
+            'appliance_id': image.id,
+            'hardware': {
+                'fixed_instance_size_id': ex_fixed_instance_size_id
             },
         }
 
         if location is not None:
             body['datacenter_id'] = location.id
         if ex_power_on is not None:
-            body["power_on"] = ex_power_on
+            body['power_on'] = ex_power_on
 
         if ex_description is not None:
-            body["description"] = ex_description
+            body['description'] = ex_description
 
         if ex_firewall_policy_id is not None:
-            body["firewall_policy_id"] = ex_firewall_policy_id
+            body['firewall_policy_id'] = ex_firewall_policy_id
 
         if ex_monitoring_policy_id is not None:
-            body["monitoring_policy_id"] = ex_monitoring_policy_id
+            body['monitoring_policy_id'] = ex_monitoring_policy_id
 
         if ex_loadbalancer_id is not None:
-            body["loadbalancer_id"] = ex_loadbalancer_id
+            body['loadbalancer_id'] = ex_loadbalancer_id
 
         if auth is not None:
             if isinstance(auth, NodeAuthPassword):
-                body["password"] = auth.password
+                body['password'] = auth.password
             elif isinstance(auth, NodeAuthSSHKey):
-                body["rsa_key"] = auth.pubkey
+                body['rsa_key'] = auth.pubkey
         if ex_ip is not None:
-            body["ip_id"] = ex_ip
+            body['ip_id'] = ex_ip
 
         response = self.connection.request(
-            action="servers",
+            action='servers',
             data=body,
             method='POST',
         )
@@ -398,7 +398,7 @@ class OneAndOneNodeDriver(NodeDriver):
 
     def ex_modify_server_hardware(self, server_id,
                                   fixed_instance_size_id=None, vcore=None,
-                                  cores_per_processor=None, ram=None, ):
+                                  cores_per_processor=None, ram=None):
         """
         Modifies server's hardware
 
@@ -415,7 +415,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``int``
 
         :param ram: Amount of ram for the server
-        :rtype: ``int```
+        :rtype: ``int``
 
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
@@ -424,13 +424,13 @@ class OneAndOneNodeDriver(NodeDriver):
         body = {}
 
         if fixed_instance_size_id is not None:
-            body["firewall_policy_id"] = fixed_instance_size_id
+            body['firewall_policy_id'] = fixed_instance_size_id
         if vcore is not None:
-            body["vcore"] = vcore
+            body['vcore'] = vcore
         if cores_per_processor is not None:
-            body["cores_per_processor"] = cores_per_processor
+            body['cores_per_processor'] = cores_per_processor
         if ram is not None:
-            body["ram"] = ram
+            body['ram'] = ram
 
         response = self.connection.request(
             action='servers/%s/hardware' % server_id,
@@ -465,7 +465,7 @@ class OneAndOneNodeDriver(NodeDriver):
         body = {}
 
         if size is not None:
-            body[size] = size
+            body['size'] = size
 
             response = self.connection.request(
                 action='servers/%s/hardware/hdds/%s' % (server_id, hdd_id),
@@ -492,8 +492,8 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype:     :class: `Node`
         """
         body = {
-            "size": size,
-            "is_main": is_main
+            'size': size,
+            'is_main': is_main
         }
 
         response = self.connection.request(
@@ -574,8 +574,8 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         shutdown_body = {
-            "action": "POWER_OFF",
-            "method": method
+            'action': 'POWER_OFF',
+            'method': method
         }
         response = self.connection.request(
             action='servers/%s/status/action' % (server_id),
@@ -622,11 +622,11 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "id": image_id,
+            'id': image_id,
         }
 
         if password is not None:
-            body["password"] = password
+            body['password'] = password
 
         response = self.connection.request(
             action='servers/%s/image' % server_id,
@@ -691,7 +691,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "type": ip_type
+            'type': ip_type
         }
 
         response = self.connection.request(
@@ -789,7 +789,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``Node``
         """
         body = {
-            "id": firewall_id
+            'id': firewall_id
         }
         response = self.connection.request(
             action='/servers/%s/ips/%s/firewall_policy' % (server_id, ip_id),
@@ -811,17 +811,17 @@ class OneAndOneNodeDriver(NodeDriver):
         :param rules:
         :rtype 'dict':  [
                             {
-                            "protocol": "TCP",
-                            "port_from": 80,
-                            "port_to": 80,
-                            "source": "0.0.0.0"
+                            'protocol': 'TCP',
+                            'port_from': 80,
+                            'port_to': 80,
+                            'source': '0.0.0.0'
                             }
                         ]
 
         :return: 'dict' firewall policy
         """
         body = {
-            "name": name
+            'name': name
         }
 
         if description is not None:
@@ -832,7 +832,7 @@ class OneAndOneNodeDriver(NodeDriver):
                 'At least one firewall rule is required.'
             )
         else:
-            body["rules"] = rules
+            body['rules'] = rules
 
         response = self.connection.request(
             action='firewall_policies',
@@ -843,7 +843,7 @@ class OneAndOneNodeDriver(NodeDriver):
         return response.object
 
     def ex_list_firewall_policies(self):
-        """
+        '""
         List firewall policies
         :return: 'dict'
         """
@@ -900,9 +900,9 @@ class OneAndOneNodeDriver(NodeDriver):
 
     def ex_get_shared_storage(self, storage_id):
         """
-                Gets a shared storage
-                :return: 'dict'
-                """
+        Gets a shared storage
+        :return: 'dict'
+        """
         response = self.connection.request(
             action='shared_storages/%s' % (storage_id),
             method='GET'
@@ -922,9 +922,9 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "name": name,
-            "size": size,
-            "datacenter_id": datacenter_id
+            'name': name,
+            'size': size,
+            'datacenter_id': datacenter_id
         }
 
         if description is not None:
@@ -967,10 +967,10 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: 'dict'
         """
         body = {
-            "severs": [
+            'severs': [
                 {
-                    "id": server_id,
-                    "rights": rights
+                    'id': server_id,
+                    'rights': rights
                 }
             ]
         }
@@ -1040,18 +1040,18 @@ class OneAndOneNodeDriver(NodeDriver):
 
         :param rules: Load balancer rules
         :rtype: ``list`` of ``dict``
-            "rules": [
+            'rules': [
                 {
-                    "protocol": "TCP",
-                    "port_balancer": 80,
-                    "port_server": 80,
-                    "source": "0.0.0.0"
+                    'protocol': 'TCP',
+                    'port_balancer': 80,
+                    'port_server': 80,
+                    'source': '0.0.0.0'
                 },
                 {
-                    "protocol": "TCP",
-                    "port_balancer": 9999,
-                    "port_server": 8888,
-                    "source": "0.0.0.0"
+                    'protocol': 'TCP',
+                    'port_balancer': 9999,
+                    'port_server': 8888,
+                    'source': '0.0.0.0'
                 }
             ]
         :param persistence: Indictes if persistance is set
@@ -1080,8 +1080,8 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "name": name,
-            "method": method,
+            'name': name,
+            'method': method,
         }
 
         body['rules'] = []
@@ -1157,7 +1157,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         body = {
-            "server_ips": server_ips,
+            'server_ips': server_ips,
         }
 
         response = self.connection.request(
@@ -1214,7 +1214,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         body = {
-            "rules": [
+            'rules': [
                 {
                     'protocol': protocol,
                     'port_balancer': port_balancer,
@@ -1713,54 +1713,54 @@ class OneAndOneNodeDriver(NodeDriver):
         :param thresholds: Thresholds for the monitoring policy
         :rtype: ``dict``
         {
-           "cpu":{
-              "warning":{
-                 "value":90,
-                 "alert":false
+           'cpu':{
+              'warning':{
+                 'value':90,
+                 'alert':false
               },
-              "critical":{
-                 "value":95,
-                 "alert":false
+              'critical':{
+                 'value':95,
+                 'alert':false
               }
            },
-           "ram":{
-              "warning":{
-                 "value":90,
-                 "alert":false
+           'ram':{
+              'warning':{
+                 'value':90,
+                 'alert':false
               },
-              "critical":{
-                 "value":95,
-                 "alert":false
+              'critical':{
+                 'value':95,
+                 'alert':false
               }
            },
-           "disk":{
-              "warning":{
-                 "value":80,
-                 "alert":false
+           'disk':{
+              'warning':{
+                 'value':80,
+                 'alert':false
               },
-              "critical":{
-                 "value":90,
-                 "alert":false
+              'critical':{
+                 'value':90,
+                 'alert':false
               }
            },
-           "transfer":{
-              "warning":{
-                 "value":1000,
-                 "alert":false
+           'transfer':{
+              'warning':{
+                 'value':1000,
+                 'alert':false
               },
-              "critical":{
-                 "value":2000,
-                 "alert":false
+              'critical':{
+                 'value':2000,
+                 'alert':false
               }
            },
-           "internal_ping":{
-              "warning":{
-                 "value":50,
-                 "alert":false
+           'internal_ping':{
+              'warning':{
+                 'value':50,
+                 'alert':false
               },
-              "critical":{
-                 "value":100,
-                 "alert":false
+              'critical':{
+                 'value':100,
+                 'alert':false
               }
            }
         }
@@ -1768,10 +1768,10 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         [
            {
-              "protocol":"TCP",
-              "port":"22",
-              "alert_if":"RESPONDING",
-              "email_notification":true
+              'protocol':'TCP',
+              'port':'22',
+              'alert_if':'RESPONDING',
+              'email_notification':true
            }
         ]
 
@@ -1780,9 +1780,9 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         [
            {
-              "process":"test",
-              "alert_if":"NOT_RUNNING",
-              "email_notification":true
+              'process':'test',
+              'alert_if':'NOT_RUNNING',
+              'email_notification':true
            }
         ]
 
@@ -1966,17 +1966,17 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         [
            {
-              "protocol":"TCP",
-              "port":"80",
-              "alert_if":"RESPONDING",
-              "email_notification":true
+              'protocol':'TCP',
+              'port':'80',
+              'alert_if':'RESPONDING',
+              'email_notification':true
            }
         ]
         :return: Instance of a monitoring policy
         :rtype: ``dict``
         """
 
-        body = {"ports": ports}
+        body = {'ports': ports}
 
         response = self.connection.request(
             action='monitoring_policies/%s/ports' % policy_id,
@@ -2058,16 +2058,16 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``list`` of ``dict``
         [
           {
-            "process": "taskmmgr",
-            "alert_if": "RUNNING",
-            "email_notification": true
+            'process': 'taskmmgr',
+            'alert_if': 'RUNNING',
+            'email_notification': true
           }
         ]
         :return: Instance of a monitoring policy
         :rtype: ``dict``
-        """
+        '""
 
-        body = {"processes": processes}
+        body = {'processes': processes}
 
         response = self.connection.request(
             action='monitoring_policies/%s/processes' % policy_id,
@@ -2141,8 +2141,8 @@ class OneAndOneNodeDriver(NodeDriver):
         return response.object
 
     """
-        Private Functions
-        """
+    Private Functions
+    """
 
     def _to_images(self, object, image_type=None):
         if image_type is not None:
@@ -2169,20 +2169,17 @@ class OneAndOneNodeDriver(NodeDriver):
                          extra=extra)
 
     def _to_node_size(self, data):
-        """
-        Convert into NodeSize
-        """
         return NodeSize(
-            id=data["id"],
-            name=data["name"],
-            ram=data["hardware"]["ram"],
-            disk=data["hardware"]["hdds"][0]["size"],
+            id=data['id'],
+            name=data['name'],
+            ram=data['hardware']['ram'],
+            disk=data['hardware']['hdds'][0]['size'],
             bandwidth=None,
             price=None,
             driver=self.connection.driver,
             extra={
-                'vcores': data['hardware']["vcore"],
-                "cores_per_processor": data['hardware']['cores_per_processor']}
+                'vcores': data['hardware']['vcore'],
+                'cores_per_processor': data['hardware']['cores_per_processor']}
 
         )
 
@@ -2200,28 +2197,28 @@ class OneAndOneNodeDriver(NodeDriver):
 
     def _to_node(self, server):
         extra = {}
-        extra["datacenter"] = server['datacenter']
+        extra['datacenter'] = server['datacenter']
 
         if 'description' in server:
             extra['description'] = server['description']
         if 'status' in server:
-            extra["status"] = server["status"]
+            extra['status'] = server['status']
         if 'image' in server:
-            extra["image"] = server["image"]
+            extra['image'] = server['image']
         if 'hardware' in server:
-            extra["hardware"] = server["hardware"]
+            extra['hardware'] = server['hardware']
         if 'dvd' in server:
-            extra["dvd"] = server["dvd"]
+            extra['dvd'] = server['dvd']
         if 'snapshot' in server:
-            extra["snapshot"] = server["snapshot"]
+            extra['snapshot'] = server['snapshot']
         if 'ips' in server:
-            extra["ips"] = server["ips"]
+            extra['ips'] = server['ips']
         if 'alerts' in server:
-            extra["alerts"] = server["alerts"]
+            extra['alerts'] = server['alerts']
         if 'monitoring_policy' in server:
-            extra["monitoring_policy"] = server["monitoring_policy"]
+            extra['monitoring_policy'] = server['monitoring_policy']
         if 'private_networks' in server:
-            extra["private_networks"] = server["private_networks"]
+            extra['private_networks'] = server['private_networks']
 
         ips = []
 
