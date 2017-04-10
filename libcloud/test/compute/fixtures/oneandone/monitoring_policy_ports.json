@@ -1,0 +1,16 @@
+[
+  {
+    "id": "663D21E232530D79E4E584104C400EE4",
+    "protocol": "TCP",
+    "port": 22,
+    "alert_if": "RESPONDING",
+    "email_notifications": true
+  },
+  {
+    "id": "663D21E232530D79E4E584104C400AAA",
+    "protocol": "TCP",
+    "port": 80,
+    "alert_if": "NOT_RESPONDING",
+    "email_notifications": true
+  }
+]

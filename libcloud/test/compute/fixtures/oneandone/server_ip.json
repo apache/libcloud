@@ -1,0 +1,8 @@
+{
+  "id": "01D4A802798AB77AA72DA2D05E1379E1",
+  "ip": "10.5.135.140",
+  "type": "IPV4",
+  "reverse_dns": null,
+  "firewall_policy": null,
+  "load_balancers": []
+}

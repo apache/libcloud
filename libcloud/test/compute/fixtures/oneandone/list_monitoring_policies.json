@@ -1,0 +1,152 @@
+[
+  {
+    "id": "0F9A1604FC80EB625FC6AEE7394893BE",
+    "name": "Default Policy",
+    "description": "Default Policy Description",
+    "default": 1,
+    "state": "ACTIVE",
+    "creation_date": "2014-10-29T07:52:46+00:00",
+    "email": "",
+    "agent": false,
+    "servers": [
+      {
+        "id": "E83777750130E1111AA89623B9557CAF",
+        "name": "My Server 1"
+      },
+      {
+        "id": "CB22C6E0428239348A6B70BAE0D67E66",
+        "name": "My Server 2"
+      },
+      {
+        "id": "6AAA2BD60813F419DEC8D69C6E4F6477",
+        "name": "My Server 3"
+      }
+    ],
+    "thresholds": {
+      "cpu": {
+        "warning": {
+          "value": 90,
+          "alert": false
+        },
+        "critical": {
+          "value": 95,
+          "alert": false
+        }
+      },
+      "ram": {
+        "warning": {
+          "value": 90,
+          "alert": false
+        },
+        "critical": {
+          "value": 95,
+          "alert": false
+        }
+      },
+      "transfer": {
+        "warning": {
+          "value": 1000,
+          "alert": false
+        },
+        "critical": {
+          "value": 2000,
+          "alert": false
+        }
+      },
+      "internal_ping": {
+        "warning": {
+          "value": 50,
+          "alert": false
+        },
+        "critical": {
+          "value": 100,
+          "alert": false
+        }
+      }
+    },
+    "ports": [],
+    "processes": [],
+    "cloudpanel_id": "mo99AA4_1"
+  },
+  {
+    "id": "C81F17AF6F6F6717372B79A882B25E92",
+    "name": "My monitoring policy",
+    "description": null,
+    "default": 0,
+    "state": "ACTIVE",
+    "creation_date": "2015-02-26T07:23:42+00:00",
+    "email": "",
+    "agent": true,
+    "servers": [],
+    "thresholds": {
+      "cpu": {
+        "warning": {
+          "value": 90,
+          "alert": false
+        },
+        "critical": {
+          "value": 95,
+          "alert": false
+        }
+      },
+      "ram": {
+        "warning": {
+          "value": 90,
+          "alert": false
+        },
+        "critical": {
+          "value": 95,
+          "alert": false
+        }
+      },
+      "disk": {
+        "warning": {
+          "value": 80,
+          "alert": false
+        },
+        "critical": {
+          "value": 90,
+          "alert": false
+        }
+      },
+      "transfer": {
+        "warning": {
+          "value": 1000,
+          "alert": false
+        },
+        "critical": {
+          "value": 2000,
+          "alert": false
+        }
+      },
+      "internal_ping": {
+        "warning": {
+          "value": 50,
+          "alert": false
+        },
+        "critical": {
+          "value": 100,
+          "alert": false
+        }
+      }
+    },
+    "ports": [
+      {
+        "id": "5F67F2706335AF34FFCDF71E5AF08B2B",
+        "protocol": "TCP",
+        "port": "22",
+        "alert_when": false,
+        "alert": true
+      }
+    ],
+    "processes": [
+      {
+        "id": "13CF2BEADA60230C6241C81C248F3C4B",
+        "process": "test",
+        "alert_when": false,
+        "alert": true
+      }
+    ],
+    "cloudpanel_id": "mo99AA4_2"
+  }
+]
