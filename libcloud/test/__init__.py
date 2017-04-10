@@ -17,12 +17,15 @@ import sys
 import random
 import requests
 
+from libcloud.common.base import LibcloudConnection
 from libcloud.utils.py3 import PY2
 
 if PY2:
     from StringIO import StringIO
 else:
     from io import StringIO
+
+import requests_mock
 
 from libcloud.utils.py3 import (httplib, u)
 from libcloud.utils.py3 import urlparse
@@ -90,74 +93,6 @@ class BodyStream(StringIO):
         return StringIO.read(self)
 
 
-class MockResponse(object):
-    """
-    A mock HTTPResponse
-    """
-    headers = {}
-    body = ''
-    status = 0
-    reason = ''
-    version = 11
-    request = None
-
-    def __init__(self, status, body=None, headers=None, reason=None):
-        self.status = status
-        self.body = body
-        self.headers = headers or self.headers
-        self.reason = reason or self.reason
-        if self.body:
-            if not hasattr(self.body, '__next__'):
-                self.body_iter = iter(self.body)
-            else:
-                self.body_iter = self.body
-        else:
-            self.body_iter = iter('')
-        self._response = requests.Response()
-        self._response.raw = BodyStream(u(body))
-
-    def read(self, *args, **kwargs):
-        return self.body
-
-    def next(self, *args):
-        if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-            return self.body_iter.next()
-        else:
-            return next(self.body_iter)
-
-    def __next__(self):
-        return self.next()
-
-    def getheader(self, name, *args, **kwargs):
-        return self.headers.get(name, *args, **kwargs)
-
-    def getheaders(self):
-        return list(self.headers.items())
-
-    def iter_content(self, chunk_size):
-        def generator():
-            while True:
-                chunk = self.raw.read(chunk_size)
-                if not chunk:
-                    break
-                yield chunk
-        return generator()
-
-    def msg(self):
-        raise NotImplemented
-
-    @property
-    def status_code(self):
-        return self.status
-
-    def raise_for_status(self):
-        raise requests.exceptions.HTTPError(self.status)
-
-    @property
-    def text(self):
-        return self.body
-
-
 class BaseMockHttpObject(object):
     def _get_method_name(self, type, use_param, qs, path):
         path = path.split('?')[0]
@@ -176,94 +111,7 @@ class BaseMockHttpObject(object):
         return meth_name
 
 
-class MockRawResponse(BaseMockHttpObject):
-    """
-    Mock RawResponse object suitable for testing.
-    """
-
-    type = None
-    responseCls = MockResponse
-
-    def __init__(self, connection, response=None):
-        super(MockRawResponse, self).__init__()
-        self._data = []
-        self._current_item = 0
-        self._response = None
-        self._status = None
-        self._headers = None
-        self._reason = None
-        self.connection = connection
-        self.iter_content = self.next
-
-    def next(self, chunk_size=None):
-        if self._current_item == len(self._data):
-            raise StopIteration
-
-        value = self._data[self._current_item]
-        self._current_item += 1
-        return value
-
-    def __next__(self):
-        return self.next()
-
-    def _generate_random_data(self, size):
-        data = ''
-        current_size = 0
-        while current_size < size:
-            value = str(random.randint(0, 9))
-            value_size = len(value)
-            data += value
-            current_size += value_size
-
-        return data
-
-    @property
-    def response(self):
-        return self._get_response_if_not_available()
-
-    @property
-    def status(self):
-        self._get_response_if_not_available()
-        return self._status
-
-    @property
-    def status_code(self):
-        self._get_response_if_not_available()
-        return self._status
-
-    def success(self):
-        self._get_response_if_not_available()
-        return self._status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
-
-    @property
-    def headers(self):
-        self._get_response_if_not_available()
-        return self._headers
-
-    @property
-    def reason(self):
-        self._get_response_if_not_available()
-        return self._reason
-
-    def _get_response_if_not_available(self):
-        if not self._response:
-            meth_name = self._get_method_name(type=self.type,
-                                              use_param=False, qs=None,
-                                              path=self.connection.action)
-            meth = getattr(self, meth_name.replace('%', '_'))
-            result = meth(self.connection.method, None, None, None)
-            self._status, self._body, self._headers, self._reason = result
-            self._response = self.responseCls(self._status, self._body,
-                                              self._headers, self._reason)
-        return self._response
-
-    @property
-    def text(self):
-        self._get_response_if_not_available()
-        return self._body
-
-
-class MockHttp(BaseMockHttpObject):
+class MockHttp(BaseMockHttpObject, LibcloudConnection):
     """
     A mock HTTP client/server suitable for testing purposes. This replaces
     `HTTPConnection` by implementing its API and returning a mock response.
@@ -293,12 +141,6 @@ class MockHttp(BaseMockHttpObject):
     [('X-Foo', 'fail')]
 
     """
-    responseCls = MockResponse
-    rawResponseCls = MockRawResponse
-    host = None
-    port = None
-    response = None
-
     type = None
     use_param = None  # will use this param to namespace the request function
 
@@ -306,9 +148,6 @@ class MockHttp(BaseMockHttpObject):
 
     proxy_url = None
 
-    def __init__(self, host, port, *args, **kwargs):
-        self.host = host
-        self.port = port
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         # Find a method we can use for this request
@@ -326,23 +165,12 @@ class MockHttp(BaseMockHttpObject):
             self.test._add_visited_url(url=url)
             self.test._add_executed_mock_method(method_name=meth_name)
 
-        status, body, headers, reason = meth(method, url, body, headers)
-        self.response = self.responseCls(status, body, headers, reason)
+        r_status, r_body, r_headers, r_reason = meth(method, url, body, headers)
 
-    def getresponse(self):
-        return self.response
-
-    def connect(self):
-        """
-        Can't think of anything to mock here.
-        """
-        pass
-
-    def close(self):
-        pass
-
-    def set_http_proxy(self, proxy_url):
-        self.proxy_url = proxy_url
+        with requests_mock.mock() as m:
+            m.register_uri(method, url, text=r_body, reason=r_reason,
+                           headers=r_headers, status_code=r_status)
+            super(MockHttp, self).request(method, url, body, headers, raw, stream)
 
     # Mock request/response example
     def _example(self, method, url, body, headers):
