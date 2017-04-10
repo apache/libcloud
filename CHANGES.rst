@@ -34,6 +34,13 @@ Compute
   [GITHUB-1024]
   (Nirzari Iyer)
 
+DNS
+~~~
+
+- Add OnApp driver
+  [GITHUB-1017] [LIBCLOUD-907]
+  (Tinu Cleatus)
+
 Changes in Apache Libcloud 2.0.0rc2
 -----------------------------------
 

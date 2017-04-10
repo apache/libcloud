@@ -38,7 +38,7 @@ Provider                              list images get image create image delete 
 `NephoScale`_                         yes         no        no           no           no        
 `Nimbus`_                             yes         yes       yes          yes          yes       
 `NTTAmerica`_                         yes         no        no           no           no        
-`OnApp`_                              no          no        no           no           no        
+`OnApp`_                              yes         no        no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       

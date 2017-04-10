@@ -38,7 +38,7 @@ Provider                              list nodes create node reboot node destroy
 `NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
 `NTTAmerica`_                         yes        yes         yes         yes          yes         yes        yes        
-`OnApp`_                              yes        yes         no          yes          no          no         no         
+`OnApp`_                              yes        yes         no          yes          yes         no         no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
