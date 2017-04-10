@@ -1,6 +1,16 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Common
+~~~~~~
+
+- Rename libcloud.httplib_ssl to libcloud.http now that we don't use httplib
+  [GITHUB-1028]
+  (Anthony Shaw)
+
 Changes in Apache Libcloud 2.0.0rc2
 -----------------------------------
 
