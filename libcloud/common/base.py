@@ -486,7 +486,6 @@ class Connection(object):
 
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False, stream=False):
-
         """
         Request a given `action`.
 

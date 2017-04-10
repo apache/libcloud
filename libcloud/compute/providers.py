@@ -144,7 +144,7 @@ DRIVERS = {
     Provider.CLOUDSCALE:
     ('libcloud.compute.drivers.cloudscale', 'CloudscaleNodeDriver'),
     Provider.ONEANDONE:
-        ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
+    ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
 }
 
 
