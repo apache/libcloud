@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add price_monthly extra param to digitalocean sizes
+  [GITHUB-1021]
+  (Francisco Ros)
+
 - Add aliyun ecs instance join leave security group
   [GITHUB-992]
   (Jie Ren)
