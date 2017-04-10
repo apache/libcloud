@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add keypair management to OnApp driver
+  [GITHUB-1018]
+  (Tinu Cleatus)
+
 - Add missing regions in AWS storage and compute drivers
   [GITHUB-1019]
   (Alex Misstear)
