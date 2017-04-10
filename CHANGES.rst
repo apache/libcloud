@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add SR-IOV net support to images in EC2 compute driver
+  [GITHUB-1020]
+  (Alex Misstear)
+
 - Fix - update t2.small image size from 11 CPU to 1
   [GITHUB-1022]
   (Francisco Ros)
