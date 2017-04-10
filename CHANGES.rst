@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Fix Azure ARM driver condition for ex_list_publishers where location is specified
+  [GITHUB-1030]
+  (Joseph Hall)
+
 - Added Import Snapshot and Describe Import Snapshot to EC2 compute driver
   [GITHUB-1023]
   (Nirzari Iyer)
