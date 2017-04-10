@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Fix - update t2.small image size from 11 CPU to 1
+  [GITHUB-1022]
+  (Francisco Ros)
+
 - Added Billing Product for image in EC2 compute driver
   [GITHUB-1024]
   (Nirzari Iyer)
