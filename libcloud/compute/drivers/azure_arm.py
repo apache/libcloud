@@ -756,10 +756,11 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list``
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         action = "/subscriptions/%s/providers/Microsoft.Compute/" \
                  "locations/%s/publishers" \
