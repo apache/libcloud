@@ -11,6 +11,13 @@ Common
   [GITHUB-1028]
   (Anthony Shaw)
 
+Compute
+~~~~~~~
+
+- Added Billing Product for image in EC2 compute driver
+  [GITHUB-1024]
+  (Nirzari Iyer)
+
 Changes in Apache Libcloud 2.0.0rc2
 -----------------------------------
 
