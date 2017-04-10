@@ -843,7 +843,7 @@ class OneAndOneNodeDriver(NodeDriver):
         return response.object
 
     def ex_list_firewall_policies(self):
-        '""
+        """"
         List firewall policies
         :return: 'dict'
         """
