@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Add aliyun ecs instance join leave security group
+  [GITHUB-992]
+  (Jie Ren)
+
 - Add keypair management to OnApp driver
   [GITHUB-1018]
   (Tinu Cleatus)
