@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- Added Import Snapshot and Describe Import Snapshot to EC2 compute driver
+  [GITHUB-1023]
+  (Nirzari Iyer)
+
 - Add price_monthly extra param to digitalocean sizes
   [GITHUB-1021]
   (Francisco Ros)
