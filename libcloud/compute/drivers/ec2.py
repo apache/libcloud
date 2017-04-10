@@ -2874,20 +2874,11 @@ class EC2VolumeModification(object):
     If the volume has never been modified, some element values will be null.
     """
 
-    def __init__(self,
-            end_time=None,
-            modification_state=None,
-            original_iops=None,
-            original_size=None,
-            original_volume_type=None,
-            progress=None,
-            start_time=None,
-            status_message=None,
-            target_iops=None,
-            target_size=None,
-            target_volume_type=None,
-            volume_id=None,
-            ):
+    def __init__(self, end_time=None, modification_state=None,
+                 original_iops=None, original_size=None,
+                 original_volume_type=None, progress=None, start_time=None,
+                 status_message=None, target_iops=None, target_size=None,
+                 target_volume_type=None, volume_id=None):
         self.end_time = end_time
         self.modification_state = modification_state
         self.original_iops = original_iops
@@ -2900,6 +2891,18 @@ class EC2VolumeModification(object):
         self.target_size = target_size
         self.target_volume_type = target_volume_type
         self.volume_id = volume_id
+
+    def __repr__(self):
+        return (('<EC2VolumeModification: end_time=%s, modification_state=%s, '
+                 'original_iops=%s, original_size=%s, '
+                 'original_volume_type=%s, progress=%s, start_time=%s, '
+                 'status_message=%s, target_iops=%s, target_size=%s, '
+                 'target_volume_type=%s, volume_id=%s>')
+                % (self.end_time, self.modification_state, self.original_iops,
+                   self.original_size, self.original_volume_type,
+                   self.progress, self.start_time, self.status_message,
+                   self.target_iops, self.target_size, self.target_volume_type,
+                   self.volume_id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
