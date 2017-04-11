@@ -36,7 +36,8 @@ from libcloud.compute.drivers.opennebula import ACTION
 
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.common.types import InvalidCredsError
-from libcloud.test import MockResponse, MockHttp
+from libcloud.common.base import Response
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 
 from libcloud.test.secrets import OPENNEBULA_PARAMS
@@ -52,7 +53,7 @@ class OpenNebula_ResponseTests(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
     def test_unauthorized_response(self):
-        http_response = MockResponse(httplib.UNAUTHORIZED,
+        http_response = Response(httplib.UNAUTHORIZED,
                                      OpenNebula_ResponseTests.XML,
                                      headers={'content-type':
                                               'application/xml'})

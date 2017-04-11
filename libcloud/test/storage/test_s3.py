@@ -48,14 +48,14 @@ from libcloud.storage.drivers.s3 import S3APNEStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
 
-from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
 from libcloud.test import unittest
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
 
-class S3MockHttp(StorageMockHttp, MockHttpTestCase):
+class S3MockHttp(MockHttp):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
@@ -303,11 +303,6 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.NO_CONTENT])
 
-
-class S3MockRawResponse(MockRawResponse):
-
-    fixtures = StorageFileFixtures('s3')
-
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -386,7 +381,6 @@ class S3Tests(unittest.TestCase):
     driver_type = S3StorageDriver
     driver_args = STORAGE_S3_PARAMS
     mock_response_klass = S3MockHttp
-    mock_raw_response_klass = S3MockRawResponse
 
     @classmethod
     def create_driver(self):
@@ -394,10 +388,8 @@ class S3Tests(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_class = self.mock_response_klass
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
+
         self.mock_response_klass.type = None
-        self.mock_raw_response_klass.type = None
         self.driver = self.create_driver()
 
     def tearDown(self):

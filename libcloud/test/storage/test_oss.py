@@ -47,7 +47,7 @@ from libcloud.storage.drivers.oss import OSSConnection
 from libcloud.storage.drivers.oss import OSSStorageDriver
 from libcloud.storage.drivers.oss import CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
@@ -85,7 +85,7 @@ class ObjectTestCase(unittest.TestCase):
         self.assertTrue(obj.__repr__() is not None)
 
 
-class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
+class OSSMockHttp(MockHttp):
 
     fixtures = StorageFileFixtures('oss')
     base_headers = {}
@@ -309,11 +309,6 @@ class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-
-class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
-
-    fixtures = StorageFileFixtures('oss')
-
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -412,7 +407,6 @@ class OSSStorageDriverTestCase(unittest.TestCase):
     driver_type = OSSStorageDriver
     driver_args = STORAGE_OSS_PARAMS
     mock_response_klass = OSSMockHttp
-    mock_raw_response_klass = OSSMockRawResponse
 
     @classmethod
     def create_driver(self):
@@ -420,12 +414,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_class = self.mock_response_klass
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
         self.mock_response_klass.type = None
         self.mock_response_klass.test = self
-        self.mock_raw_response_klass.type = None
-        self.mock_raw_response_klass.test = self
         self.driver = self.create_driver()
 
     def tearDown(self):

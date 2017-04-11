@@ -39,13 +39,12 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
 
-from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 
 
-class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
+class AzureBlobsMockHttp(MockHttp):
 
     fixtures = StorageFileFixtures('azure_blobs')
     base_headers = {}
@@ -317,11 +316,6 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
                     headers,
                     httplib.responses[httplib.CREATED])
 
-
-class AzureBlobsMockRawResponse(MockRawResponse):
-
-    fixtures = StorageFileFixtures('azure_blobs')
-
     def _foo_bar_container_foo_test_upload_INVALID_HASH(self, method, url,
                                                         body, headers):
         body = ''
@@ -368,7 +362,6 @@ class AzureBlobsTests(unittest.TestCase):
     driver_type = AzureBlobsStorageDriver
     driver_args = STORAGE_AZURE_BLOBS_PARAMS
     mock_response_klass = AzureBlobsMockHttp
-    mock_raw_response_klass = AzureBlobsMockRawResponse
 
     @classmethod
     def create_driver(self):
@@ -376,10 +369,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_class = self.mock_response_klass
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
         self.mock_response_klass.type = None
-        self.mock_raw_response_klass.type = None
         self.driver = self.create_driver()
 
     def tearDown(self):
@@ -586,7 +576,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_invalid_file_size(self):
-        self.mock_raw_response_klass.type = 'INVALID_SIZE'
+        self.mock_response_klass.type = 'INVALID_SIZE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -600,7 +590,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_invalid_file_already_exists(self):
-        self.mock_raw_response_klass.type = 'INVALID_SIZE'
+        self.mock_response_klass.type = 'INVALID_SIZE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -649,7 +639,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_upload_object_invalid_md5(self):
         # Invalid md5 is returned by azure
-        self.mock_raw_response_klass.type = 'INVALID_HASH'
+        self.mock_response_klass.type = 'INVALID_HASH'
 
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)

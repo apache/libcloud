@@ -27,11 +27,10 @@ from libcloud.storage.base import StorageDriver
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE
 
 from libcloud.test import unittest
-from libcloud.test import StorageMockHttp
-from libcloud.test import MockRawResponse
+from libcloud.test import MockHttp
 
 
-class BaseMockRawResponse(MockRawResponse):
+class BaseMockRawResponse(MockHttp):
     def _(self, method, url, body, headers):
         body = 'ab'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -41,8 +40,7 @@ class BaseStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.send_called = 0
-        StorageDriver.connectionCls.conn_class = StorageMockHttp
-        StorageDriver.connectionCls.rawResponseCls = BaseMockRawResponse
+        StorageDriver.connectionCls.conn_class = BaseMockRawResponse
 
         self.driver1 = StorageDriver('username', 'key', host='localhost')
         self.driver1.supports_chunked_encoding = True

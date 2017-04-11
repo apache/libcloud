@@ -129,8 +129,8 @@ class MockHttp(LibcloudConnection):
     proxy_url = None
 
 
-    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
-        # Find a method we can use for this request
+    def _get_request(self, method, url, body=None, headers=None, raw=False, stream=False):
+         # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         _, _, path, _, query, _ = parsed
         qs = parse_qs(query)
@@ -145,12 +145,26 @@ class MockHttp(LibcloudConnection):
             self.test._add_visited_url(url=url)
             self.test._add_executed_mock_method(method_name=meth_name)
 
-        r_status, r_body, r_headers, r_reason = meth(method, url, body, headers)
+        return meth(method, url, body, headers)
+
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
+        r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
 
         with requests_mock.mock() as m:
             m.register_uri(method, url, text=r_body, reason=r_reason,
                            headers=r_headers, status_code=r_status)
             super(MockHttp, self).request(
+                method=method, url=url, body=body, headers=headers,
+                raw=raw, stream=stream)
+
+    def prepared_request(self, method, url, body=None,
+                         headers=None, raw=False, stream=False):
+        r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
+
+        with requests_mock.mock() as m:
+            m.register_uri(method, url, text=r_body, reason=r_reason,
+                           headers=r_headers, status_code=r_status)
+            super(MockHttp, self).prepared_request(
                 method=method, url=url, body=body, headers=headers,
                 raw=raw, stream=stream)
 
@@ -227,6 +241,8 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 class MockConnection(object):
     def __init__(self, action):
         self.action = action
+
+StorageMockHttp = MockHttp
 
 
 if __name__ == "__main__":

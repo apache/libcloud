@@ -33,7 +33,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
-from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import StorageFileFixtures
 
 
@@ -41,11 +41,9 @@ class AtmosTests(unittest.TestCase):
 
     def setUp(self):
         AtmosDriver.connectionCls.conn_class = AtmosMockHttp
-        AtmosDriver.connectionCls.rawResponseCls = AtmosMockRawResponse
         AtmosDriver.path = ''
         AtmosMockHttp.type = None
         AtmosMockHttp.upload_created = False
-        AtmosMockRawResponse.type = None
         self.driver = AtmosDriver('dummy', base64.b64encode(b('dummy')))
         self._remove_test_file()
 
@@ -247,7 +245,7 @@ class AtmosTests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_success_not_found(self):
-        AtmosMockRawResponse.type = 'NOT_FOUND'
+        AtmosMockHttp.type = 'NOT_FOUND'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
 
@@ -475,7 +473,7 @@ class AtmosTests(unittest.TestCase):
                              b(expected).decode('utf-8'))
 
 
-class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
+class AtmosMockHttp(MockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
     upload_created = False
     upload_stream_created = False
@@ -484,7 +482,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         unittest.TestCase.__init__(self)
 
         if kwargs.get('host', None) and kwargs.get('port', None):
-            StorageMockHttp.__init__(self, *args, **kwargs)
+            MockHttp.__init__(self, *args, **kwargs)
 
         self._upload_object_via_stream_first_request = True
 
@@ -749,10 +747,6 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
 
     def _rest_namespace_fbc_ftu(self, method, url, body, headers):
         return (httplib.CREATED, '', {}, httplib.responses[httplib.CREATED])
-
-
-class AtmosMockRawResponse(MockRawResponse):
-    fixtures = StorageFileFixtures('atmos')
 
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):

@@ -22,8 +22,7 @@ import mock
 from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
 from libcloud.utils.py3 import httplib
 from libcloud.test import unittest
-from libcloud.test import StorageMockHttp
-from libcloud.test import MockRawResponse
+from libcloud.test import MockHttp
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import StorageFileFixtures
 
@@ -40,10 +39,8 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         self.driver_klass.connectionCls.authCls = MockAuthConn()
         self.driver_klass.connectionCls.conn_class = \
             BackblazeB2MockHttp
-        self.driver_klass.connectionCls.rawResponseCls = \
-            BackblazeB2MockRawResponse
+
         BackblazeB2MockHttp.type = None
-        BackblazeB2MockRawResponse.type = None
         self.driver = self.driver_klass(*self.driver_args)
 
     def test_list_containers(self):
@@ -156,7 +153,7 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         self.assertEqual(url, 'https://podxxx.backblaze.com/b2api/v1/b2_upload_file/abcd/defg')
 
 
-class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
+class BackblazeB2MockHttp(MockHttp):
     fixtures = StorageFileFixtures('backblaze_b2')
 
     def _b2api_v1_b2_list_buckets(self, method, url, body, headers):
@@ -232,8 +229,6 @@ class BackblazeB2MockHttp(StorageMockHttp, MockHttpTestCase):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-
-class BackblazeB2MockRawResponse(MockRawResponse):
     def _file_test00001_2_txt(self, method, url, body, headers):
         # test_download_object
         if method == 'GET':
