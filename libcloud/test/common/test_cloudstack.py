@@ -129,7 +129,7 @@ class CloudStackMockHttp(MockHttpTestCase):
     ERROR_TEXT = 'ERROR TEXT'
 
     def _response(self, status, result, response):
-        return (status, json.dumps(result), result, response)
+        return (status, json.dumps(result), {}, response)
 
     def _check_request(self, url):
         url = urlparse.urlparse(url)
