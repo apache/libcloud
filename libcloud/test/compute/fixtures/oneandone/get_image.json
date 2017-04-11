@@ -1,0 +1,24 @@
+{
+  "id": "6E1F2C70CCD3EE44ED194F4FFC47C4C9",
+  "name": "w2012r2datacenter64min",
+  "available_datacenters": [
+    "81DEF28500FBC2A973FC0C620DF5B721",
+    "908DC2072407C94C8054610AD5A53B8C",
+    "4EFAD5836CE43ACA502FD5B99BEE44EF",
+    "5091F6D8CBFEF9C26ACE957C652D5D49"
+  ],
+  "os_family": "Windows",
+  "os": "Windows2012R2",
+  "os_version": "WindowsDatacenter",
+  "os_architecture": 64,
+  "os_image_type": "MINIMAL",
+  "type": "IMAGE",
+  "min_hdd_size": 40,
+  "licenses": [
+    {
+      "name": "Windows 2012 Standard"
+    }
+  ],
+  "version": null,
+  "categories": []
+}
