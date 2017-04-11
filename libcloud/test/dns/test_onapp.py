@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.dns.drivers.onapp import OnAppDNSDriver
 from libcloud.dns.types import RecordType
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_ONAPP
 from libcloud.utils.py3 import httplib
@@ -166,7 +166,7 @@ class OnAppDNSTests(LibcloudTestCase):
         self.assertTrue(status)
 
 
-class OnAppDNSMockHttp(MockHttpTestCase):
+class OnAppDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures('onapp')
 
     def _dns_zones_json(self, method, url, body, headers):

@@ -50,7 +50,7 @@ from libcloud.utils.py3 import b
 
 from libcloud.test import MockHttp # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
-from libcloud.test import unittest, make_response
+from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
@@ -321,7 +321,7 @@ class S3MockHttp(MockHttp):
 
     def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
         # test_download_object_success
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 headers,

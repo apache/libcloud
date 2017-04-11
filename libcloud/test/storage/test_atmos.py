@@ -33,7 +33,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures
 
 
@@ -750,13 +750,13 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
 
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object(
         self, method, url,
             body, headers):
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(

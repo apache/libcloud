@@ -47,7 +47,7 @@ from libcloud.storage.drivers.oss import OSSConnection
 from libcloud.storage.drivers.oss import OSSStorageDriver
 from libcloud.storage.drivers.oss import CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
@@ -327,7 +327,7 @@ class OSSMockHttp(MockHttp):
 
     def _foo_bar_object(self, method, url, body, headers):
         # test_download_object_success
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 headers,

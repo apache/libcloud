@@ -243,6 +243,17 @@ def make_response(status=200, headers={}, connection=None):
     response.headers = headers
     return Response(response, connection)
 
+
+def generate_random_data(size):
+    data = ''
+    current_size = 0
+    while current_size < size:
+        value = str(random.randint(0, 9))
+        value_size = len(value)
+        data += value
+        current_size += value_size
+    return data
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

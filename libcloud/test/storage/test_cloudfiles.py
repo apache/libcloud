@@ -41,7 +41,7 @@ from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
-from libcloud.test import unittest
+from libcloud.test import unittest, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
@@ -1195,7 +1195,7 @@ class CloudFilesMockHttp(MockHttp):
             self, method, url, body, headers):
 
         # test_download_object_success
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 self.base_headers,
@@ -1204,7 +1204,7 @@ class CloudFilesMockHttp(MockHttp):
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
             self, method, url, body, headers):
         # test_download_object_invalid_file_size
-        body = self._generate_random_data(100)
+        body = generate_random_data(100)
         return (httplib.OK, body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
