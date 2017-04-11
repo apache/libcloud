@@ -201,6 +201,9 @@ class LibcloudConnection(LibcloudBaseConnection):
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
         url = urlparse.urljoin(self.host, url)
+        # all headers should be strings
+        if 'Content-Length' in headers and isinstance(headers['Content-Length'], int):
+            headers['Content-Length'] = str(headers['Content-Length'])
         self.response = self.session.request(
             method=method.lower(),
             url=url,

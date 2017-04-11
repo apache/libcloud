@@ -16,7 +16,8 @@
 import sys
 import random
 import requests
-
+from libcloud.common.base import Response
+from libcloud.http import HttpLibResponseProxy
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2
 
@@ -196,15 +197,7 @@ class MockHttp(LibcloudConnection):
         return meth_name
 
 
-class MockHttpTestCase(MockHttp, unittest.TestCase):
-    # Same as the MockHttp class, but you can also use assertions in the
-    # classes which inherit from this one.
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self)
-
-        if kwargs.get('host', None) and kwargs.get('port', None):
-            MockHttp.__init__(self, *args, **kwargs)
-
+class MockHttpTestCase(unittest.TestCase):
     def runTest(self):
         pass
 
@@ -243,6 +236,12 @@ class MockConnection(object):
 
 StorageMockHttp = MockHttp
 
+
+def make_response(status=200, headers={}, connection=None):
+    response = requests.Response()
+    response.status_code = status
+    response.headers = headers
+    return Response(response, connection)
 
 if __name__ == "__main__":
     import doctest
