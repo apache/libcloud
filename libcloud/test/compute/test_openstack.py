@@ -46,7 +46,7 @@ from libcloud.compute.drivers.openstack import (
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
-from libcloud.common.base import Response as MockResponse
+from libcloud.common.base import Response
 from libcloud.test import MockHttpTestCase, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from libcloud.test.compute import TestCaseMixin
@@ -60,14 +60,14 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
     def test_simple_xml_content_type_handling(self):
-        http_response = MockResponse(
+        http_response = Response(
             200, OpenStack_1_0_ResponseTestCase.XML, headers={'content-type': 'application/xml'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
     def test_extended_xml_content_type_handling(self):
-        http_response = MockResponse(200,
+        http_response = Response(200,
                                      OpenStack_1_0_ResponseTestCase.XML,
                                      headers={'content-type': 'application/xml; charset=UTF-8'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
@@ -77,7 +77,7 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
     def test_non_xml_content_type_handling(self):
         RESPONSE_BODY = "Accepted"
 
-        http_response = MockResponse(
+        http_response = Response(
             202, RESPONSE_BODY, headers={'content-type': 'text/html'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 

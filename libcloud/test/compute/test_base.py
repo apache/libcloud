@@ -22,8 +22,6 @@ from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, Storage
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 from libcloud.compute.types import StorageVolumeState
 
-from libcloud.test import MockResponse           # pylint: disable-msg=E0611
-
 
 class FakeDriver(object):
     type = 0
@@ -44,9 +42,6 @@ class BaseTests(unittest.TestCase):
 
     def test_base_storage_volume(self):
         StorageVolume(id="0", name="0", size=10, driver=FakeDriver(), state=StorageVolumeState.AVAILABLE)
-
-    def test_base_response(self):
-        Response(MockResponse(status=200, body='foo'), ConnectionKey('foo'))
 
     def test_base_node_driver(self):
         NodeDriver('foo')

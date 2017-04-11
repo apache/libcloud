@@ -229,25 +229,6 @@ class MockConnection(object):
         self.action = action
 
 
-class StorageMockHttp(MockHttp):
-    def prepared_request(self, method, url, body=None, headers=None, raw=False,
-                         stream=False):
-        self.action = url
-        self.response = self.rawResponseCls(self)
-
-    def putrequest(self, method, action, skip_host=0, skip_accept_encoding=0):
-        pass
-
-    def putheader(self, key, value):
-        pass
-
-    def endheaders(self):
-        pass
-
-    def send(self, data):
-        pass
-
-
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
