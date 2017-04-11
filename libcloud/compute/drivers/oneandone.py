@@ -2065,7 +2065,7 @@ class OneAndOneNodeDriver(NodeDriver):
         ]
         :return: Instance of a monitoring policy
         :rtype: ``dict``
-        '""
+        """
 
         body = {'processes': processes}
 
