@@ -71,6 +71,20 @@ class AzureVhdImage(NodeImage):
                 % (self.id, self.name, self.location))
 
 
+class AzureResourceGroup(object):
+    """Represent an Azure resource group."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
+                % (self.id, self.name, self.location))
+
+
 class AzureNetwork(object):
     """Represent an Azure virtual network."""
 
@@ -822,6 +836,20 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
+
+    def ex_list_resource_groups(self):
+        """
+        List resource groups.
+
+        :return: A list of resource groups.
+        :rtype: ``list`` of :class:`.Azureresource_group`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
+        r = self.connection.request(action,
+                                    params={"api-version": "2016-09-01"})
+        return [AzureResourceGroup(net["id"], net["name"], net["location"],
+                             net["properties"]) for net in r.object["value"]]
 
     def ex_list_networks(self):
         """
