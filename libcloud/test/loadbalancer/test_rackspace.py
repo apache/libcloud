@@ -923,7 +923,7 @@ class RackspaceUKLBTests(RackspaceLBTests):
         self.driver.connection._populate_hosts_and_request_paths()
 
 
-class RackspaceLBMockHttp(MockHttp):
+class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 
@@ -1480,7 +1480,7 @@ class RackspaceLBMockHttp(MockHttp):
         raise NotImplementedError
 
 
-class RackspaceLBWithVIPMockHttp(MockHttp):
+class RackspaceLBWithVIPMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 
