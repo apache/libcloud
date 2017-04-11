@@ -17,7 +17,7 @@ import sys
 import random
 import requests
 
-from libcloud.common.base import LibcloudConnection
+from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2
 
 if PY2:
@@ -170,7 +170,9 @@ class MockHttp(BaseMockHttpObject, LibcloudConnection):
         with requests_mock.mock() as m:
             m.register_uri(method, url, text=r_body, reason=r_reason,
                            headers=r_headers, status_code=r_status)
-            super(MockHttp, self).request(method, url, body, headers, raw, stream)
+            super(MockHttp, self).request(
+                method=method, url=url, body=body, headers=headers,
+                raw=raw, stream=stream)
 
     # Mock request/response example
     def _example(self, method, url, body, headers):
