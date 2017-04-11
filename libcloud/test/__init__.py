@@ -93,25 +93,7 @@ class BodyStream(StringIO):
         return StringIO.read(self)
 
 
-class BaseMockHttpObject(object):
-    def _get_method_name(self, type, use_param, qs, path):
-        path = path.split('?')[0]
-        meth_name = path.replace('/', '_').replace('.', '_').replace('-', '_')
-
-        if type:
-            meth_name = '%s_%s' % (meth_name, self.type)
-
-        if use_param and use_param in qs:
-            param = qs[use_param][0].replace('.', '_').replace('-', '_')
-            meth_name = '%s_%s' % (meth_name, param)
-
-        if meth_name == '':
-            meth_name = 'root'
-
-        return meth_name
-
-
-class MockHttp(BaseMockHttpObject, LibcloudConnection):
+class MockHttp(LibcloudConnection):
     """
     A mock HTTP client/server suitable for testing purposes. This replaces
     `HTTPConnection` by implementing its API and returning a mock response.
@@ -143,16 +125,14 @@ class MockHttp(BaseMockHttpObject, LibcloudConnection):
     """
     type = None
     use_param = None  # will use this param to namespace the request function
-
     test = None  # TestCase instance which is using this mock
-
     proxy_url = None
 
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
-        scheme, netloc, path, params, query, fragment = parsed
+        _, _, path, _, query, _ = parsed
         qs = parse_qs(query)
         if path.endswith('/'):
             path = path[:-1]
@@ -185,6 +165,22 @@ class MockHttp(BaseMockHttpObject, LibcloudConnection):
     def _example_fail(self, method, url, body, headers):
         return (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
                 httplib.responses[httplib.FORBIDDEN])
+
+    def _get_method_name(self, type, use_param, qs, path):
+        path = path.split('?')[0]
+        meth_name = path.replace('/', '_').replace('.', '_').replace('-', '_')
+
+        if type:
+            meth_name = '%s_%s' % (meth_name, self.type)
+
+        if use_param and use_param in qs:
+            param = qs[use_param][0].replace('.', '_').replace('-', '_')
+            meth_name = '%s_%s' % (meth_name, param)
+
+        if meth_name == '':
+            meth_name = 'root'
+
+        return meth_name
 
 
 class MockHttpTestCase(MockHttp, unittest.TestCase):
