@@ -24,7 +24,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.cloudscale import CloudscaleNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import CLOUDSCALE_PARAMS
 
@@ -91,7 +91,7 @@ class CloudscaleTests(LibcloudTestCase):
         self.assertTrue(result)
 
 
-class CloudscaleMockHttp(MockHttpTestCase):
+class CloudscaleMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('cloudscale')
 
     def _v1_images(self, method, url, body, headers):

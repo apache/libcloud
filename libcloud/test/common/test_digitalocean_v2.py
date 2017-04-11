@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.digitalocean import DigitalOceanBaseDriver
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import FileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 from libcloud.utils.py3 import httplib
@@ -60,7 +60,7 @@ class DigitalOceanTests(LibcloudTestCase):
         self.assertEqual(actions[0]['status'], 'completed')
 
 
-class DigitalOceanMockHttp(MockHttpTestCase):
+class DigitalOceanMockHttp(MockHttp):
     fixtures = FileFixtures('common', 'digitalocean')
 
     response = {

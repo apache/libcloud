@@ -23,7 +23,7 @@ from libcloud.compute.base import Node, NodeAuthPassword, NodeImage, \
     NodeLocation, NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.drivers.ecs import ECSDriver
 from libcloud.compute.types import NodeState, StorageVolumeState
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import ECS_PARAMS
 from libcloud.utils.py3 import httplib
@@ -562,7 +562,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('cloud_ssd', zone.available_disk_categories[0])
 
 
-class ECSMockHttp(MockHttpTestCase):
+class ECSMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ecs')
 
     def _DescribeInstances(self, method, url, body, headers):

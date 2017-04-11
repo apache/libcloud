@@ -21,7 +21,7 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.elb import ElasticLBDriver
 from libcloud.loadbalancer.types import State
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.secrets import LB_ELB_PARAMS
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
@@ -177,7 +177,7 @@ class ElasticLBTests(unittest.TestCase):
                 listeners=[[1024, 65533, 'HTTP']]))
 
 
-class ElasticLBMockHttp(MockHttpTestCase):
+class ElasticLBMockHttp(MockHttp):
     fixtures = LoadBalancerFileFixtures('elb')
 
     def _2012_06_01_DescribeLoadBalancers(self, method, url, body, headers):

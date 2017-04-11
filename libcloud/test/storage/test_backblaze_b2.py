@@ -23,7 +23,6 @@ from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
 from libcloud.utils.py3 import httplib
 from libcloud.test import unittest
 from libcloud.test import MockHttp
-from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import StorageFileFixtures
 
 

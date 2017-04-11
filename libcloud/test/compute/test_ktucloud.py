@@ -27,7 +27,7 @@ except ImportError:
 
 from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -90,7 +90,7 @@ class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertTrue(check)
 
 
-class KTUCloudStackMockHttp(MockHttpTestCase):
+class KTUCloudStackMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ktucloud')
     fixture_tag = 'default'
 

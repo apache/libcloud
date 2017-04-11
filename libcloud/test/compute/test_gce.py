@@ -32,7 +32,7 @@ from libcloud.common.google import (GoogleBaseAuthConnection,
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -1942,7 +1942,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(zone_no_mw.time_until_mw, None)
 
 
-class GCEMockHttp(MockHttpTestCase):
+class GCEMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('gce')
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 

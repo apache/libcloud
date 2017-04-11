@@ -30,7 +30,7 @@ from libcloud.common.abiquo import ForbiddenError, get_href
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.base import NodeLocation, NodeImage
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
@@ -299,7 +299,7 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(href, '/admin/enterprises/1234')
 
 
-class AbiquoMockHttp(MockHttpTestCase):
+class AbiquoMockHttp(MockHttp):
 
     """
     Mock the functionallity of the remote Abiquo API.

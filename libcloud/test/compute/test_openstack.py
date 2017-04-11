@@ -47,7 +47,7 @@ from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
 from libcloud.common.base import Response
-from libcloud.test import MockHttpTestCase, XML_HEADERS
+from libcloud.test import MockHttp, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from libcloud.test.compute import TestCaseMixin
 
@@ -460,7 +460,7 @@ class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
             self.fail('Exception was not thrown')
 
 
-class OpenStackMockHttp(MockHttpTestCase):
+class OpenStackMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('openstack')
     auth_fixtures = OpenStackFixtures()
     json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
@@ -1564,7 +1564,7 @@ class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     driver_kwargs = {'ex_force_auth_version': '2.0'}
 
 
-class OpenStack_1_1_MockHttp(MockHttpTestCase):
+class OpenStack_1_1_MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('openstack_v1.1')
     auth_fixtures = OpenStackFixtures()
     json_content_headers = {'content-type': 'application/json; charset=UTF-8'}

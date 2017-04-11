@@ -29,7 +29,7 @@ from libcloud.utils.py3 import parse_qsl
 from libcloud.common.cloudstack import CloudStackConnection
 from libcloud.common.types import MalformedResponseError
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 
 
 async_delay = 0
@@ -124,7 +124,7 @@ class CloudStackCommonTest(unittest.TestCase):
             self.assertEqual(connection._make_signature(params), b(case[1]))
 
 
-class CloudStackMockHttp(MockHttpTestCase):
+class CloudStackMockHttp(MockHttp):
 
     ERROR_TEXT = 'ERROR TEXT'
 

@@ -35,7 +35,7 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 
 from libcloud.test import unittest
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -1266,7 +1266,7 @@ class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
             self.fail('url provided but driver raised an exception')
 
 
-class CloudStackMockHttp(MockHttpTestCase):
+class CloudStackMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('cloudstack')
     fixture_tag = 'default'
 

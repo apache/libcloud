@@ -24,7 +24,7 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.softlayer import SoftlayerLBDriver
 from libcloud.loadbalancer.types import State
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.secrets import SOFTLAYER_PARAMS
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
@@ -108,7 +108,7 @@ class SoftlayerLBTests(unittest.TestCase):
             lb_package, NodeLocation('dal05', None, None, None)))
 
 
-class SoftLayerMockHttp(MockHttpTestCase):
+class SoftLayerMockHttp(MockHttp):
     fixtures = LoadBalancerFileFixtures('softlayer')
 
     def _get_method_name(self, type, use_param, qs, path):

@@ -3,7 +3,7 @@ import sys
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.onapp import OnAppNodeDriver
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.test.secrets import ONAPP_PARAMS
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.utils.py3 import httplib
@@ -108,7 +108,7 @@ class OnAppNodeTestCase(LibcloudTestCase):
         self.assertTrue(response)
 
 
-class OnAppMockHttp(MockHttpTestCase):
+class OnAppMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('onapp')
 
     def _virtual_machines_json(self, method, url, body, headers):

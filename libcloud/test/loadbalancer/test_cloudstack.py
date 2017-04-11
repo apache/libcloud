@@ -15,7 +15,7 @@ from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
 from libcloud.test import unittest
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 
@@ -86,7 +86,7 @@ class CloudStackLBTests(unittest.TestCase):
             self.assertEqual(member.balancer, balancer)
 
 
-class CloudStackMockHttp(MockHttpTestCase):
+class CloudStackMockHttp(MockHttp):
     fixtures = LoadBalancerFileFixtures('cloudstack')
     fixture_tag = 'default'
 

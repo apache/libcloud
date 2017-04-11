@@ -35,7 +35,7 @@ from libcloud.compute.base import StorageVolume, VolumeSnapshot
 from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState, \
     VolumeSnapshotState
 
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -1253,7 +1253,7 @@ class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
 
 
-class EC2MockHttp(MockHttpTestCase):
+class EC2MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
