@@ -842,7 +842,7 @@ class AzureNodeDriver(NodeDriver):
         List resource groups.
 
         :return: A list of resource groups.
-        :rtype: ``list`` of :class:`.Azureresource_group`
+        :rtype: ``list`` of :class:`.AzureResourceGroup`
         """
 
         action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
