@@ -15,7 +15,6 @@
 """
 Abiquo Test Suite
 """
-import unittest
 import sys
 
 try:
@@ -34,18 +33,18 @@ from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
-
+class AbiquoNodeDriverTest(TestCaseMixin):
     """
     Abiquo Node Driver test suite
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Set up the driver with the main user
         """
         AbiquoNodeDriver.connectionCls.conn_class = AbiquoMockHttp
-        self.driver = AbiquoNodeDriver('son', 'goku',
+        cls.driver = AbiquoNodeDriver('son', 'goku',
                                        'http://dummy.host.com/api')
 
     def test_unauthorized_controlled(self):
