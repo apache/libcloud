@@ -46,7 +46,8 @@ from libcloud.compute.drivers.openstack import (
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
-from libcloud.test import MockResponse, MockHttpTestCase, XML_HEADERS
+from libcloud.common.base import Response as MockResponse
+from libcloud.test import MockHttpTestCase, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from libcloud.test.compute import TestCaseMixin
 
