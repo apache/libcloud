@@ -81,8 +81,9 @@ class AzureNetworkSecurityGroup(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>')
-                % (self.id, self.name, self.location))
+        return (
+            ('<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>')
+            % (self.id, self.name, self.location))
 
 
 class AzureNetwork(object):
@@ -888,10 +889,10 @@ class AzureNodeDriver(NodeDriver):
         data = {
             "location": location.id,
         }
-        r = self.connection.request(target,
-                                    params={"api-version": "2016-09-01"},
-                                    data=data,
-                                    method='PUT')
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='PUT')
 
     def ex_delete_network_security_group(self, name, resource_group,
                                          location=None):
@@ -921,10 +922,10 @@ class AzureNodeDriver(NodeDriver):
         data = {
             "location": location.id,
         }
-        r = self.connection.request(target,
-                                    params={"api-version": "2016-09-01"},
-                                    data=data,
-                                    method='DELETE')
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='DELETE')
 
     def ex_list_networks(self):
         """
