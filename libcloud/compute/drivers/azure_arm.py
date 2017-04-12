@@ -849,8 +849,8 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action,
                                     params={"api-version": "2016-09-01"})
         return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
-                                   grp["properties"]) for grp \
-                                   in r.object["value"]]
+                                   grp["properties"])
+                for grp in r.object["value"]]
 
     def ex_list_networks(self):
         """
