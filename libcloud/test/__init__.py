@@ -137,6 +137,7 @@ class MockHttp(LibcloudConnection):
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
             r_body = ''
+
         with requests_mock.mock() as m:
             m.register_uri(method, url, text=r_body, reason=r_reason,
                            headers=r_headers, status_code=r_status)

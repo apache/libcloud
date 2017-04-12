@@ -216,6 +216,9 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
+        # all headers should be strings
+        if 'Content-Length' in headers and isinstance(headers['Content-Length'], int):
+            headers['Content-Length'] = str(headers['Content-Length'])
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 

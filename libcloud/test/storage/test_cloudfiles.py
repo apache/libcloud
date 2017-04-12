@@ -40,7 +40,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
-from libcloud.test import unittest, generate_random_data
+from libcloud.test import unittest, generate_random_data, make_response
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
@@ -364,7 +364,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -386,7 +386,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 0,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -421,7 +421,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': 'blah blah'}
 
@@ -794,7 +794,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -920,9 +920,9 @@ class CloudFilesMockHttp(MockHttp):
             # get_meta_data
             body = self.fixtures.load('meta_data.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'x-account-container-count': 10,
-                            'x-account-object-count': 400,
-                            'x-account-bytes-used': 1234567
+            headers.update({'x-account-container-count': '10',
+                            'x-account-object-count': '400',
+                            'x-account-bytes-used': '1234567'
                             })
         elif method == 'POST':
             body = ''
@@ -969,8 +969,8 @@ class CloudFilesMockHttp(MockHttp):
             # get_container
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'x-container-object-count': 800,
-                            'x-container-bytes-used': 1234568
+            headers.update({'x-container-object-count': '800',
+                            'x-container-bytes-used': '1234568'
                             })
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
@@ -1011,7 +1011,7 @@ class CloudFilesMockHttp(MockHttp):
             # get_object
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'content-length': 555,
+            headers.update({'content-length': '555',
                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
                             'x-object-meta-foo-bar': 'test 1',
@@ -1026,7 +1026,7 @@ class CloudFilesMockHttp(MockHttp):
             # get_object_name_encoding
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'content-length': 555,
+            headers.update({'content-length': '555',
                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
                             'x-object-meta-foo-bar': 'test 1',
@@ -1040,7 +1040,7 @@ class CloudFilesMockHttp(MockHttp):
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load('list_container_objects_empty.json')
         headers = copy.deepcopy(self.base_headers)
-        headers.update({'content-length': 18,
+        headers.update({'content-length': '18',
                         'date': 'Mon, 28 Feb 2011 07:52:57 GMT'
                         })
         status_code = httplib.CREATED
@@ -1056,7 +1056,7 @@ class CloudFilesMockHttp(MockHttp):
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load('list_container_objects_empty.json')
         headers = copy.deepcopy(self.base_headers)
-        headers.update({'content-length': 18,
+        headers.update({'content-length': '18',
                         'date': 'Mon, 28 Feb 2011 07:52:57 GMT'
                         })
         status_code = httplib.CREATED
