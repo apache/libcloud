@@ -459,7 +459,7 @@ class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
             self.fail('Exception was not thrown')
 
 
-class OpenStackMockHttp(MockHttp):
+class OpenStackMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('openstack')
     auth_fixtures = OpenStackFixtures()
     json_content_headers = {'content-type': 'application/json; charset=UTF-8'}

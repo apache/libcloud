@@ -1266,7 +1266,7 @@ class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
             self.fail('url provided but driver raised an exception')
 
 
-class CloudStackMockHttp(MockHttp):
+class CloudStackMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('cloudstack')
     fixture_tag = 'default'
 
@@ -1305,7 +1305,7 @@ class CloudStackMockHttp(MockHttp):
         else:
             fixture = command + '_' + self.fixture_tag + '.json'
             body, obj = self._load_fixture(fixture)
-            return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _test_path_userdata(self, method, url, body, headers):
         if 'deployVirtualMachine' in url:
@@ -1315,7 +1315,7 @@ class CloudStackMockHttp(MockHttp):
     def _cmd_queryAsyncJobResult(self, jobid):
         fixture = 'queryAsyncJobResult' + '_' + str(jobid) + '.json'
         body, obj = self._load_fixture(fixture)
-        return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
