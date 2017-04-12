@@ -50,7 +50,7 @@ class FileFixtures(object):
             else:
                 with codecs.open(path, 'r', 'utf-8') as fh:
                     content = fh.read()
-                    return content
+                return content
         else:
             raise IOError(path)
 
