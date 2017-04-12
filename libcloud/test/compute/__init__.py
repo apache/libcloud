@@ -16,11 +16,9 @@
 from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 from libcloud.pricing import get_pricing
 from libcloud.test import unittest
-import pytest
 
 
-@pytest.mark.skipif(True, reason='this fails in pytest')
-class TestCaseMixin(unittest.TestCase):
+class TestCaseMixin():
     should_list_locations = True
     should_have_pricing = False
     should_list_volumes = False

@@ -272,7 +272,7 @@ class SLBDriverTestCases(unittest.TestCase):
                                                             self.cert_name))
 
 
-class SLBMockHttp(MockHttp):
+class SLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('slb')
 
     def _DescribeLoadBalancers(self, method, url, body, headers):

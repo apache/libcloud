@@ -103,32 +103,18 @@ class MockHttp(LibcloudConnection):
     Each of these mock methods should return a tuple of:
 
         (int status, str body, dict headers, str reason)
-
-    >>> mock = MockHttp('localhost', 8080)
-    >>> mock.request('GET', '/example/')
-    >>> response = mock.getresponse()
-    >>> response.body.read()
-    'Hello World!'
-    >>> response.status
-    200
-    >>> response.getheaders()
-    [('X-Foo', 'libcloud')]
-    >>> MockHttp.type = 'fail'
-    >>> mock.request('GET', '/example/')
-    >>> response = mock.getresponse()
-    >>> response.body.read()
-    'Oh Noes!'
-    >>> response.status
-    403
-    >>> response.getheaders()
-    [('X-Foo', 'fail')]
-
     """
     type = None
     use_param = None  # will use this param to namespace the request function
     test = None  # TestCase instance which is using this mock
     proxy_url = None
 
+    def __init__(self, *args, **kwargs):
+        # Load assertion methods into the class, incase people want to assert
+        # within a response
+        if isinstance(self, unittest.TestCase):
+            unittest.TestCase.__init__(self, '__init__')
+        super(MockHttp, self).__init__(*args, **kwargs)
 
     def _get_request(self, method, url, body=None, headers=None, raw=False, stream=False):
          # Find a method we can use for this request
@@ -150,8 +136,10 @@ class MockHttp(LibcloudConnection):
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
+        if r_body is None:
+            r_body = ''
         with requests_mock.mock() as m:
-            m.register_uri(method, url, text=r_body.replace('\n',' '), reason=r_reason,
+            m.register_uri(method, url, text=r_body, reason=r_reason,
                            headers=r_headers, status_code=r_status)
             super(MockHttp, self).request(
                 method=method, url=url, body=body, headers=headers,
@@ -196,11 +184,6 @@ class MockHttp(LibcloudConnection):
 
         return meth_name
 
-
-class MockHttpTestCase(unittest.TestCase):
-    def runTest(self):
-        pass
-
     def assertUrlContainsQueryParams(self, url, expected_params, strict=False):
         """
         Assert that provided url contains provided query parameters.
@@ -223,11 +206,11 @@ class MockHttpTestCase(unittest.TestCase):
         params = dict(parse_qsl(url))
 
         if strict:
-            self.assertDictEqual(params, expected_params)
+            assert params == expected_params
         else:
             for key, value in expected_params.items():
-                self.assertIn(key, params)
-                self.assertEqual(params[key], value)
+                assert key in params
+                assert params[key] == value
 
 
 class MockConnection(object):

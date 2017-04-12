@@ -271,8 +271,6 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=install_requires,
-    tests_require=['pytest'],
-    setup_requires=['pytest-runner'],
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',

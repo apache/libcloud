@@ -236,7 +236,6 @@ class XmlResponse(Response):
                 # lxml wants a bytes and tests are basically hard-coded to str
                 body = ET.XML(self.body.encode('utf-8'))
         except:
-            import pdb; pdb.set_trace()
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=self.connection.driver)

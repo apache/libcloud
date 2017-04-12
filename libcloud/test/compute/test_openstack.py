@@ -60,16 +60,16 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
     def test_simple_xml_content_type_handling(self):
-        http_response = Response(
-            200, OpenStack_1_0_ResponseTestCase.XML, headers={'content-type': 'application/xml'})
+        http_response = Response(200, 
+                                 OpenStack_1_0_ResponseTestCase.XML, headers={'content-type': 'application/xml'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
     def test_extended_xml_content_type_handling(self):
         http_response = Response(200,
-                                     OpenStack_1_0_ResponseTestCase.XML,
-                                     headers={'content-type': 'application/xml; charset=UTF-8'})
+                                 OpenStack_1_0_ResponseTestCase.XML,
+                                 headers={'content-type': 'application/xml; charset=UTF-8'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
@@ -77,15 +77,14 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
     def test_non_xml_content_type_handling(self):
         RESPONSE_BODY = "Accepted"
 
-        http_response = Response(
-            202, RESPONSE_BODY, headers={'content-type': 'text/html'})
+        http_response = Response(202, RESPONSE_BODY, headers={'content-type': 'text/html'})
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertEqual(
             body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
 
-class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
+class OpenStack_1_0_Tests(TestCaseMixin):
     should_list_locations = False
     should_list_volumes = False
 
