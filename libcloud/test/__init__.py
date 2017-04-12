@@ -116,7 +116,7 @@ class MockHttp(LibcloudConnection):
             unittest.TestCase.__init__(self, '__init__')
         super(MockHttp, self).__init__(*args, **kwargs)
 
-    def _get_request(self, method, url, body=None, headers=None, raw=False, stream=False):
+    def _get_request(self, method, url, body=None, headers=None):
          # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         _, _, path, _, query, _ = parsed
@@ -131,7 +131,6 @@ class MockHttp(LibcloudConnection):
         if self.test and isinstance(self.test, LibcloudTestCase):
             self.test._add_visited_url(url=url)
             self.test._add_executed_mock_method(method_name=meth_name)
-
         return meth(method, url, body, headers)
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):

@@ -86,7 +86,7 @@ class CloudStackLBTests(unittest.TestCase):
             self.assertEqual(member.balancer, balancer)
 
 
-class CloudStackMockHttp(MockHttp):
+class CloudStackMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('cloudstack')
     fixture_tag = 'default'
 

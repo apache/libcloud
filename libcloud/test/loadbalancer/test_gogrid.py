@@ -154,7 +154,7 @@ class GoGridTests(unittest.TestCase):
         self.assertTrue(ret2)
 
 
-class GoGridLBMockHttp(MockHttp):
+class GoGridLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')
 
     def _api_grid_loadbalancer_list(self, method, url, body, headers):

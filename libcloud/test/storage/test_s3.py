@@ -224,7 +224,7 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
+    def _foo_bar_container_foo_bar_object_DELETE(self, method, url, body, headers):
         # test_delete_object
         return (httplib.NO_CONTENT,
                 body,
@@ -947,6 +947,7 @@ class S3Tests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_delete_object_success(self):
+        self.mock_response_klass.type = 'DELETE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,

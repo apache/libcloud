@@ -124,7 +124,7 @@ class CloudStackCommonTest(unittest.TestCase):
             self.assertEqual(connection._make_signature(params), b(case[1]))
 
 
-class CloudStackMockHttp(MockHttp):
+class CloudStackMockHttp(MockHttp, unittest.TestCase):
 
     ERROR_TEXT = 'ERROR TEXT'
 
