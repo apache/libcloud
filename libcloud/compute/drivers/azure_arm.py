@@ -84,6 +84,20 @@ class AzureResourceGroup(object):
         return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
                 % (self.id, self.name, self.location))
 
+class AzureNetworkSecurityGroup(object):
+    """Represent an Azure network security group."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (
+            ('<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>')
+            % (self.id, self.name, self.location))
+
 
 class AzureNetwork(object):
     """Represent an Azure virtual network."""
@@ -851,6 +865,95 @@ class AzureNodeDriver(NodeDriver):
         return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
                                    grp["properties"])
                 for grp in r.object["value"]]
+
+    def ex_list_network_security_groups(self, resource_group):
+        """
+        List network security groups.
+
+        :param resource_group: List security groups in a specific resource
+        group.
+        :type resource_group: ``str``
+
+        :return: A list of network security groups.
+        :rtype: ``list`` of :class:`.AzureNetworkSecurityGroup`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
+                 "Microsoft.Network/networkSecurityGroups" \
+                 % (self.subscription_id, resource_group)
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+        return [AzureNetworkSecurityGroup(net["id"],
+                                          net["name"],
+                                          net["location"],
+                                          net["properties"])
+                for net in r.object["value"]]
+
+    def ex_create_network_security_group(self, name, resource_group,
+                                         location=None):
+        """
+        Update tags on any resource supporting tags.
+
+        :param name: Name of the network security group to create
+        :type name: ``str``
+
+        :param resource_group: The resource group to create the network
+        security group in
+        :type resource_group: ``str``
+
+        :param location: The location at which to create the network security
+        group (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+        """
+
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
+        target = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
+                 % (self.subscription_id, resource_group, name)
+        data = {
+            "location": location.id,
+        }
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='PUT')
+
+    def ex_delete_network_security_group(self, name, resource_group,
+                                         location=None):
+        """
+        Update tags on any resource supporting tags.
+
+        :param name: Name of the network security group to delete
+        :type name: ``str``
+
+        :param resource_group: The resource group to create the network
+        security group in
+        :type resource_group: ``str``
+
+        :param location: The location at which to create the network security
+        group (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+        """
+
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
+        target = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
+                 % (self.subscription_id, resource_group, name)
+        data = {
+            "location": location.id,
+        }
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='DELETE')
 
     def ex_list_networks(self):
         """
