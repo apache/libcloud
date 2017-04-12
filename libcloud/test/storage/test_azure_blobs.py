@@ -178,7 +178,7 @@ class AzureBlobsMockHttp(MockHttp):
         headers = {'content-type': 'application/zip',
                    'etag': '"e31208wqsdoj329jd"',
                    'x-amz-meta-rabbits': 'monkeys',
-                   'content-length': 12345,
+                   'content-length': '12345',
                    'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
                    }
 

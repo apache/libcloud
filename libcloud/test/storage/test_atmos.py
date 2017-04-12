@@ -33,7 +33,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
-from libcloud.test import MockHttp, generate_random_data
+from libcloud.test import MockHttp, generate_random_data, make_response
 from libcloud.test.file_fixtures import StorageFileFixtures
 
 
@@ -187,6 +187,7 @@ class AtmosTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_delete_object_success(self):
+        AtmosMockHttp.type = 'DELETE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -196,6 +197,7 @@ class AtmosTests(unittest.TestCase):
         self.assertTrue(status)
 
     def test_delete_object_escaped_success(self):
+        AtmosMockHttp.type = 'DELETE'
         container = Container(name='foo & bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo & bar_object', size=1000, hash=None, extra={},
@@ -291,7 +293,7 @@ class AtmosTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -633,11 +635,11 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
         return (httplib.NOT_FOUND, body, {},
                 httplib.responses[httplib.NOT_FOUND])
 
-    def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
-                                                         body, headers):
+    def _rest_namespace_foo_bar_container_foo_bar_object_DELETE(self, method, url,
+                                                                body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
-    def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object(
+    def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object_DELETE(
         self, method, url,
             body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
