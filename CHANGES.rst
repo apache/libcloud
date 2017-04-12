@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Add network security groups to azure ARM
+  [GITHUB-1033]
+  (Joseph Hall)
+
 - [ARM] Add the ability to list resource groups
   [GITHUB-1032]
   (Joseph Hall)
