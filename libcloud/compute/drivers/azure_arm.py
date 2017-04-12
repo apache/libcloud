@@ -848,8 +848,9 @@ class AzureNodeDriver(NodeDriver):
         action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2016-09-01"})
-        return [AzureResourceGroup(net["id"], net["name"], net["location"],
-                             net["properties"]) for net in r.object["value"]]
+        return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
+                                   grp["properties"]) for grp \
+                                   in r.object["value"]]
 
     def ex_list_networks(self):
         """
@@ -985,8 +986,7 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
-                                    method='PUT'
-                                    )
+                                    method='PUT')
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
@@ -1050,8 +1050,7 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
-                                    method='PUT'
-                                    )
+                                    method='PUT')
         return AzureNic(r.object["id"], r.object["name"], r.object["location"],
                         r.object["properties"])
 
