@@ -858,8 +858,8 @@ class AzureNodeDriver(NodeDriver):
         return [AzureNetworkSecurityGroup(net["id"],
                                           net["name"],
                                           net["location"],
-                                          net["properties"]) \
-                                          for net in r.object["value"]]
+                                          net["properties"])
+                for net in r.object["value"]]
 
     def ex_create_network_security_group(self, name, resource_group,
                                          location=None):
