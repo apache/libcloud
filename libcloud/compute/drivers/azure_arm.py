@@ -84,6 +84,7 @@ class AzureResourceGroup(object):
         return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
                 % (self.id, self.name, self.location))
 
+
 class AzureNetworkSecurityGroup(object):
     """Represent an Azure network security group."""
 
