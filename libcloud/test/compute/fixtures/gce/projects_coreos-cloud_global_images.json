@@ -1330,12 +1330,6 @@
    "guestOsFeatures": [
     {
       "type": "VIRTIO_SCSI_MULTIQUEUE"
-    },
-    {
-      "type": "WINDOWS"
-    },
-    {
-      "type": "MULTI_IP_SUBNET"
     }
    ],
    "sourceType": "RAW",
