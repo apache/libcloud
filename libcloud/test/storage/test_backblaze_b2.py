@@ -95,7 +95,6 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         container = self.driver.list_containers()[0]
         obj = self.driver.list_container_objects(container=container)[0]
         result = self.driver.download_object_as_stream(obj=obj)
-        result = result.body
         self.assertEqual(result, 'ab')
 
     def test_upload_object(self):
