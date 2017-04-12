@@ -25,6 +25,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GOOGLE] Remove validation checks for guestOsFeatures
+  [GITHUB-1034]
+  (Max Illfelder)
+
 - [VSPHERE] Fix issue with authentication methods crashing
   [GITHUB-1031]
   (Anthony Shaw)
