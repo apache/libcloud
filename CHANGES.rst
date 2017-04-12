@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Add the ability to list resource groups
+  [GITHUB-1032]
+  (Joseph Hall)
+
 - Add 1&1 compute driver
   [LIBCLOUD-911] [GITHUB-1029]
   (Jasmin Gacic)
