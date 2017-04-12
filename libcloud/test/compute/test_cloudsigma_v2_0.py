@@ -440,7 +440,7 @@ class CloudSigmaAPI20IndirectTestCase(CloudSigmaAPI20BaseTestCase,
     driver_kwargs = {'api_version': '2.0'}
 
 
-class CloudSigmaMockHttp(MockHttp):
+class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('cloudsigma_2_0')
 
     def _api_2_0_servers_detail_INVALID_CREDS(self, method, url, body, headers):

@@ -78,7 +78,7 @@ class AzureBlobsMockHttp(MockHttp):
 
     def _test_container_EMPTY(self, method, url, body, headers):
         if method == 'DELETE':
-            body = ''
+            body = u''
             return (httplib.ACCEPTED,
                     body,
                     self.base_headers,
