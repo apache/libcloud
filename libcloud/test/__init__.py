@@ -220,10 +220,11 @@ class MockConnection(object):
 StorageMockHttp = MockHttp
 
 
-def make_response(status=200, headers={}, connection=None):
+def make_response(status=200, headers={}, body=None, connection=None):
     response = requests.Response()
     response.status_code = status
     response.headers = headers
+    response.text = body
     return Response(response, connection)
 
 
