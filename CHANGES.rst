@@ -7,6 +7,12 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Refactor the test classes to use the full libcloud.http and libcloud.common.base modules, with Connection,
+  Response all used with requests_mock. This increases our test coverages and catches bugs in drivers' custom
+  parse_body and auth modules
+  [GITHUB-1031]
+  (Anthony Shaw)
+
 - Rename libcloud.httplib_ssl to libcloud.http now that we don't use httplib
   [GITHUB-1028]
   (Anthony Shaw)
