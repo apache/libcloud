@@ -15,7 +15,6 @@
 import sys
 import unittest
 
-from libcloud.common.base import Response
 from libcloud.common.base import Connection, ConnectionKey, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, StorageVolume

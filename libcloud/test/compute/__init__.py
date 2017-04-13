@@ -15,7 +15,6 @@
 
 from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 from libcloud.pricing import get_pricing
-from libcloud.test import unittest
 
 
 class TestCaseMixin():

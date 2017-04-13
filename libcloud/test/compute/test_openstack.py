@@ -38,7 +38,7 @@ from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVo
     VolumeSnapshotState
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
-    OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
+    OpenStack_1_0_NodeDriver,
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup,
     OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair
@@ -46,8 +46,7 @@ from libcloud.compute.drivers.openstack import (
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
-from libcloud.common.base import Response
-from libcloud.test import MockHttp, XML_HEADERS, make_response
+from libcloud.test import MockHttp, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from libcloud.test.compute import TestCaseMixin
 

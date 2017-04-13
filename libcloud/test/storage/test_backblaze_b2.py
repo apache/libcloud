@@ -158,10 +158,10 @@ class BackblazeB2MockHttp(MockHttp):
     def _b2api_v1_b2_authorize_account(self, method, url, body, headers):
         if method == 'GET':
             body = json.dumps({
-            'accountId': 'test',
-            'apiUrl': 'test',
-            'downloadUrl': 'test',
-            'authorizationToken': 'test'
+                'accountId': 'test',
+                'apiUrl': 'test',
+                'downloadUrl': 'test',
+                'authorizationToken': 'test'
             })
         else:
             raise AssertionError('Unsupported method')
@@ -240,13 +240,6 @@ class BackblazeB2MockHttp(MockHttp):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _file_test00001_2_txt(self, method, url, body, headers):
-        # test_download_object
-        if method == 'GET':
-            body = 'ab'
-        else:
-            raise AssertionError('Unsupported method')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

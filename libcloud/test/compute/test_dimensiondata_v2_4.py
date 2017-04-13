@@ -34,7 +34,6 @@ from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as Di
 from libcloud.compute.drivers.dimensiondata import DimensionDataNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 from libcloud.test import MockHttp, unittest
-from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 from libcloud.utils.xml import fixxpath, findtext, findall

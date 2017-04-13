@@ -240,7 +240,7 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_test_stream_data_multipart(self, method, url, body, headers):
+    def _foo_test_stream_data_multipart_HASH(self, method, url, body, headers):
         headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         TEST_UPLOAD_ID = '0004B9894A22E5B1888A1E29F8236E2D'
 
@@ -339,13 +339,6 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _foo_bar_object_not_found(self, method, url, body, headers):
-        # test_upload_object_not_found
-        return (httplib.NOT_FOUND,
-                body,
-                headers,
-                httplib.responses[httplib.NOT_FOUND])
 
     def _foo_test_upload_invalid_hash1(self, method, url, body, headers):
         body = ''

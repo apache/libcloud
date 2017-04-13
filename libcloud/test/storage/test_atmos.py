@@ -747,9 +747,6 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_fbc_ftu(self, method, url, body, headers):
-        return (httplib.CREATED, '', {}, httplib.responses[httplib.CREATED])
-
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):
         body = generate_random_data(1000)
@@ -760,14 +757,6 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             body, headers):
         body = generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(
-        self, method,
-        url, body,
-            headers):
-        body = self.fixtures.load('not_found.xml')
-        return (httplib.NOT_FOUND, body, {},
-                httplib.responses[httplib.NOT_FOUND])
 
     def _rest_namespace_fbc_ftu(self, method, url, body, headers):
         return (httplib.CREATED, '', {}, httplib.responses[httplib.CREATED])

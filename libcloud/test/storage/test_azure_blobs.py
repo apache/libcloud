@@ -39,7 +39,7 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
 
-from libcloud.test import MockHttp, generate_random_data # pylint: disable-msg=E0611
+from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 
@@ -324,17 +324,6 @@ class AzureBlobsMockHttp(MockHttp):
         headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
 
         # test_upload_object_invalid_hash1
-        return (httplib.CREATED,
-                body,
-                headers,
-                httplib.responses[httplib.CREATED])
-
-    def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
-        body = ''
-        headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
         return (httplib.CREATED,
                 body,
                 headers,

@@ -29,7 +29,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
-from libcloud.common.types import LibcloudError, MalformedResponseError
+from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Container, Object
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerDoesNotExistError
@@ -686,7 +686,7 @@ class CloudFilesTests(unittest.TestCase):
         ]
         logged_data = []
 
-        class InterceptResponse(CloudFilesMockRawResponse):
+        class InterceptResponse(MockHttp):
             def __init__(self, connection, response=None):
                 super(InterceptResponse, self).__init__(connection=connection,
                                                         response=response)
@@ -1109,17 +1109,6 @@ class CloudFilesMockHttp(MockHttp, unittest.TestCase):
                     body,
                     self.base_headers,
                     httplib.responses[httplib.OK])
-
-    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NOT_FOUND(
-            self, method, url, body, headers):
-
-        if method == 'DELETE':
-            # test_delete_object_success
-            body = self.fixtures.load('list_container_objects_empty.json')
-            headers = self.base_headers
-            status_code = httplib.NOT_FOUND
-
-        return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
         headers = {'etag': 'e2378cace8712661ce7beec3d9362ef6'}

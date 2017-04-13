@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import random
 import requests
 from libcloud.common.base import Response
-from libcloud.http import HttpLibResponseProxy
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2
 
@@ -28,7 +26,7 @@ else:
 
 import requests_mock
 
-from libcloud.utils.py3 import (httplib, u)
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
@@ -118,7 +116,7 @@ class MockHttp(LibcloudConnection):
         super(MockHttp, self).__init__(*args, **kwargs)
 
     def _get_request(self, method, url, body=None, headers=None):
-         # Find a method we can use for this request
+        # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         _, _, path, _, query, _ = parsed
         qs = parse_qs(query)

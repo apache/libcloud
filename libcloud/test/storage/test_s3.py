@@ -48,7 +48,7 @@ from libcloud.storage.drivers.s3 import S3APNEStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
 
-from libcloud.test import MockHttp # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
@@ -365,16 +365,6 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_test_stream_data(self, method, url, body,
-                                                headers):
-        # test_upload_object_via_stream
-        body = ''
-        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
 
 class S3Tests(unittest.TestCase):
     driver_type = S3StorageDriver
@@ -543,7 +533,7 @@ class S3Tests(unittest.TestCase):
 
         self.assertEqual(obj.name, 'test')
         self.assertEqual(obj.container.name, 'test2')
-        self.assertEqual(obj.size, '12345' )
+        self.assertEqual(obj.size, '12345')
         self.assertEqual(obj.hash, 'e31208wqsdoj329jd')
         self.assertEqual(obj.extra['last_modified'],
                          'Thu, 13 Sep 2012 07:13:22 GMT')
@@ -772,7 +762,7 @@ class S3Tests(unittest.TestCase):
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
             return {'response': make_response(200,
-                                             headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                                              headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
         self.mock_response_klass.type = None

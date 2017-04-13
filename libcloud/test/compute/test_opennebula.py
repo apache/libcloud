@@ -30,15 +30,11 @@ from libcloud.utils.py3 import httplib
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeState
 from libcloud.compute.drivers.opennebula import OpenNebulaNodeDriver
 from libcloud.compute.drivers.opennebula import OpenNebulaNetwork
-from libcloud.compute.drivers.opennebula import OpenNebulaResponse
 from libcloud.compute.drivers.opennebula import OpenNebulaNodeSize
 from libcloud.compute.drivers.opennebula import ACTION
 import libcloud.compute.drivers.opennebula
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import Response
 from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
 
 from libcloud.test.secrets import OPENNEBULA_PARAMS
 
