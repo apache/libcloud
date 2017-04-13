@@ -20,3 +20,6 @@ apache_libcloud.egg-info/
 .pydevproject
 .settings
 .DS_Store
+.eggs/
+.cache/
+.vscode/
