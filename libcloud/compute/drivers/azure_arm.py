@@ -67,8 +67,8 @@ class AzureVhdImage(NodeImage):
         super(AzureVhdImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
-        return (('<AzureVhdImage: id=%s, name=%s, location=%s>')
-                % (self.id, self.name, self.location))
+        return (('<AzureVhdImage: id=%s, name=%s>')
+                % (self.id, self.name))
 
 
 class AzureResourceGroup(object):
