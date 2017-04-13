@@ -1,0 +1,16 @@
+[
+  {
+    "id": "BCFAF421227674B2B324F779C1163ECB",
+    "protocol": "TCP",
+    "port_balancer": 80,
+    "port_server": 80,
+    "source": "0.0.0.0"
+  },
+  {
+    "id": "7390C04142800E006FF1B0132FFD8F9A",
+    "protocol": "TCP",
+    "port_balancer": 9999,
+    "port_server": 8888,
+    "source": "0.0.0.0"
+  }
+]

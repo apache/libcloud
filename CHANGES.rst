@@ -14,6 +14,18 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Add network security groups to azure ARM
+  [GITHUB-1033]
+  (Joseph Hall)
+
+- [ARM] Add the ability to list resource groups
+  [GITHUB-1032]
+  (Joseph Hall)
+
+- Add 1&1 compute driver
+  [LIBCLOUD-911] [GITHUB-1029]
+  (Jasmin Gacic)
+
 - Fix Azure ARM driver condition for ex_list_publishers where location is specified
   [GITHUB-1030]
   (Joseph Hall)
