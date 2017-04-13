@@ -12,7 +12,7 @@
 			<ProductCode></ProductCode>
 			<OSType>linux</OSType>
 			<Architecture>x86_64</Architecture>
-			<OSName>FreeBSD  10.1 64</OSName>
+			<OSName>FreeBSD  10.1 64位</OSName>
 			<DiskDeviceMappings>
 				<DiskDeviceMapping>
 					<ImportOSSObject></ImportOSSObject>

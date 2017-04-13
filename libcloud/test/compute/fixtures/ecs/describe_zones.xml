@@ -31,7 +31,7 @@
 				<InstanceTypes>ecs.s1.medium</InstanceTypes>
 			</AvailableInstanceTypes>
 			<ZoneId>cn-qingdao-b</ZoneId>
-			<LocalName>B</LocalName>
+			<LocalName>青岛可用区B</LocalName>
 			<AvailableDiskCategories>
 				<DiskCategories>cloud_ssd</DiskCategories>
 				<DiskCategories>ephemeral</DiskCategories>

@@ -427,7 +427,7 @@ class ECSDriverTestCase(LibcloudTestCase):
             'description': 'freebsd1001_64_20G_aliaegis_20150527.vhd',
             'size': 20,
             'image_owner_alias': 'system',
-            'os_name': 'FreeBSD  10.1 64',
+            'os_name': 'FreeBSD  10.1 64位',
             'product_code': '',
             'is_subscribed': False,
             'progress': '100%',
@@ -552,6 +552,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         zone = zones[0]
         self.assertEqual('cn-qingdao-b', zone.id)
         self.assertEqual(self.driver, zone.driver)
+        self.assertEqual('青岛可用区B', zone.name)
         self.assertIsNotNone(zone.available_resource_types)
         self.assertEqual('IoOptimized', zone.available_resource_types[0])
         self.assertIsNotNone(zone.available_instance_types)
