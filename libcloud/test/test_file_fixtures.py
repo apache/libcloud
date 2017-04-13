@@ -16,7 +16,7 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import u, httplib
+from libcloud.utils.py3 import httplib
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.common.base import Connection, Response, JsonResponse, XmlResponse
 from libcloud.test import MockHttp
@@ -48,17 +48,17 @@ class MockHttpFileFixturesTests(unittest.TestCase):
 
     def test_unicode_response(self):
         r = self.connection.request("/unicode")
-        self.assertEqual(r.parse_body(), u("Ś"))
+        self.assertEqual(r.parse_body(), u"Ś")
 
     def test_json_unicode_response(self):
         self.connection.responseCls = JsonResponse
         r = self.connection.request("/unicode/json")
-        self.assertEqual(r.object, {'test': u("Ś")})
+        self.assertEqual(r.object, {'test': u"Ś"})
 
     def test_xml_unicode_response(self):
         self.connection.responseCls = XmlResponse
         response = self.connection.request("/unicode/xml")
-        self.assertEqual(response.object.text, u("Ś"))
+        self.assertEqual(response.object.text, u"Ś")
 
 
 class TestMockHttp(MockHttp):
