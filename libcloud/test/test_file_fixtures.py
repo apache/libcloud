@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,6 +16,7 @@
 import sys
 import unittest
 
+from libcloud.utils.py3 import u
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
@@ -27,6 +29,11 @@ class FileFixturesTests(unittest.TestCase):
     def test_failure(self):
         f = ComputeFileFixtures('meta')
         self.assertRaises(IOError, f.load, 'nil')
+
+    def test_unicode(self):
+        f = ComputeFileFixtures('meta')
+        self.assertEqual(u"Ś", f.load('unicode.txt'))
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
