@@ -7,6 +7,11 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Fix Aliyun ECS, Load balancer and storage adapters when using unicode UTF-8 characters in the names of resources
+  in 2.0.0rc2 < it would fail as a MalformedResponseError, Python 2.7 element tree was raising a unicode error
+  [GITHUB-1032] [GITHUB-994]
+  (Anthony Shaw)
+
 - Refactor the test classes to use the full libcloud.http and libcloud.common.base modules, with Connection,
   Response all used with requests_mock. This increases our test coverages and catches bugs in drivers' custom
   parse_body and auth modules
@@ -19,6 +24,10 @@ Common
 
 Compute
 ~~~~~~~
+
+- [VSPHERE] Fix issue with authentication methods crashing
+  [GITHUB-1031]
+  (Anthony Shaw)
 
 - [ARM] Add network security groups to azure ARM
   [GITHUB-1033]
