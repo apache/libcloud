@@ -32,6 +32,7 @@ from libcloud.utils.py3 import (httplib, u)
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import parse_qsl
+from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import unittest2_required
 
 if unittest2_required:
@@ -138,7 +139,7 @@ class MockHttp(LibcloudConnection):
         if r_body is None:
             r_body = ''
         # this is to catch any special chars e.g. ~ in the request. URL
-        url = urlparse.quote(url)
+        url = urlquote(url)
 
         with requests_mock.mock() as m:
             m.register_uri(method, url, text=r_body, reason=r_reason,
