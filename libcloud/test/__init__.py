@@ -137,13 +137,20 @@ class MockHttp(LibcloudConnection):
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
             r_body = ''
+        # this is to catch any special chars e.g. ~ in the request. URL
+        url = urlparse.quote(url)
 
         with requests_mock.mock() as m:
             m.register_uri(method, url, text=r_body, reason=r_reason,
                            headers=r_headers, status_code=r_status)
-            super(MockHttp, self).request(
-                method=method, url=url, body=body, headers=headers,
-                raw=raw, stream=stream)
+            try:
+                super(MockHttp, self).request(
+                    method=method, url=url, body=body, headers=headers,
+                    raw=raw, stream=stream)
+            except requests_mock.exceptions.NoMockAddress as nma:
+                raise AttributeError("Failed to mock out URL {0} - {1}".format(
+                    url, nma.request.url
+                ))
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
