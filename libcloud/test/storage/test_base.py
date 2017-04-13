@@ -35,6 +35,10 @@ class BaseMockRawResponse(MockHttp):
         body = 'ab'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def root(self, method, url, body, headers):
+        body = 'ab'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class BaseStorageTests(unittest.TestCase):
 
