@@ -4,39 +4,39 @@
 	<Regions>
 		<Region>
 			<RegionId>ap-southeast-1</RegionId>
-			<LocalName>亚太（新加坡）</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-shenzhen</RegionId>
-			<LocalName>深圳</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-qingdao</RegionId>
-			<LocalName>青岛</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-beijing</RegionId>
-			<LocalName>北京</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-shanghai</RegionId>
-			<LocalName>上海</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>us-east-1</RegionId>
-			<LocalName>美东弗吉尼亚</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-hongkong</RegionId>
-			<LocalName>香港</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>cn-hangzhou</RegionId>
-			<LocalName>杭州</LocalName>
+			<LocalName></LocalName>
 		</Region>
 		<Region>
 			<RegionId>us-west-1</RegionId>
-			<LocalName>美国硅谷</LocalName>
+			<LocalName></LocalName>
 		</Region>
 	</Regions>
 </DescribeRegionsResponse>

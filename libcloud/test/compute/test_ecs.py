@@ -185,7 +185,6 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual(9, len(locations))
         location = locations[0]
         self.assertEqual('ap-southeast-1', location.id)
-        self.assertEqual('亚太（新加坡）', location.name)
         self.assertIsNone(location.country)
 
     def test_create_node_without_sg_id_exception(self):
@@ -428,7 +427,7 @@ class ECSDriverTestCase(LibcloudTestCase):
             'description': 'freebsd1001_64_20G_aliaegis_20150527.vhd',
             'size': 20,
             'image_owner_alias': 'system',
-            'os_name': 'FreeBSD  10.1 64位',
+            'os_name': 'FreeBSD  10.1 64',
             'product_code': '',
             'is_subscribed': False,
             'progress': '100%',
@@ -552,7 +551,6 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual(1, len(zones))
         zone = zones[0]
         self.assertEqual('cn-qingdao-b', zone.id)
-        self.assertEqual('青岛可用区B', zone.name)
         self.assertEqual(self.driver, zone.driver)
         self.assertIsNotNone(zone.available_resource_types)
         self.assertEqual('IoOptimized', zone.available_resource_types[0])
