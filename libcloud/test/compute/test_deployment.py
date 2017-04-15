@@ -94,6 +94,30 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node, sshd.run(node=self.node,
                                              client=MockClient(hostname='localhost')))
 
+    def test_ssh_key_deployment_weak_key_sizes(self):
+        fixtures = ComputeFileFixtures('ssh_keys')
+
+        key_files = [
+            {'file': 'id_rsa_1024b.pub', 'should_throw': True},
+            {'file': 'id_dsa.pub', 'should_throw': False},
+            {'file': 'id_ecdsa.pub', 'should_throw': False},
+            {'file': 'id_rsa_2048b.pub', 'should_throw': False}
+        ]
+
+        for item in key_files:
+            key_file = item['file']
+            should_throw = item['should_throw']
+            key = fixtures.load(key_file)
+
+            if should_throw:
+                expected_msg = 'considered weak'
+                self.assertRaisesRegexp(ValueError, expected_msg,
+                                        SSHKeyDeployment, key=key)
+
+                SSHKeyDeployment(key=key, allow_weak_keys=True)
+            else:
+                SSHKeyDeployment(key=key)
+
     def test_file_deployment(self):
         # use this file (__file__) for obtaining permissions
         target = os.path.join('/tmp', os.path.basename(__file__))

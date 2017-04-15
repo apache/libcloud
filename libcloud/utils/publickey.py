@@ -20,9 +20,11 @@ from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import bchr
 
 __all__ = [
+    'pycrypto_available',
     'get_pubkey_openssh_fingerprint',
     'get_pubkey_ssh2_fingerprint',
-    'get_pubkey_comment'
+    'get_pubkey_comment',
+    'get_pubkey_object'
 ]
 
 try:
@@ -68,3 +70,11 @@ def get_pubkey_comment(pubkey, default=None):
     if default:
         return default
     raise ValueError('Public key is not in a supported format')
+
+
+def get_pubkey_object(pubkey):
+    if not pycrypto_available:
+        raise RuntimeError('pycrypto is not available')
+
+    key = importKey(pubkey)
+    return key
