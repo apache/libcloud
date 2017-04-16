@@ -58,6 +58,9 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
     """
     chunk_size = chunk_size or CHUNK_SIZE
 
+    if isinstance(iterator, file) and iterator.tell():
+        iterator.seek(0, OS.SEEK_SET)
+        
     if isinstance(iterator, (file, httplib.HTTPResponse)):
         get_data = iterator.read
         args = (chunk_size, )
