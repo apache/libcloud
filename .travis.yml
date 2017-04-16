@@ -77,6 +77,9 @@ matrix:
     - env: ENV=3.5-lxml
       # Trigger ReadTheDocs build
 
+git:
+  depth: 10
+
 install:
   - pip install --upgrade "pip<8.0.0"
   - pip install "virtualenv<14.0.0"
