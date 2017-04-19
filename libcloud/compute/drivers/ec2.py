@@ -5800,7 +5800,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                  returned in a single page
         :type       max_results: ``int``
 
-        :param      next_token: The nextToken value returned by a previous paginated request.
+        :param      next_token: The nextToken value returned by a previous
+                                paginated request.
         :type       next_token: ``string``
 
         :return:  List of volume modification status objects
