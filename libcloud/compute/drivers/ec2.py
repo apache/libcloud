@@ -2583,11 +2583,11 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
     },
     'original_iops': {
         'xpath': 'originalIops',
-        'transform_func': str
+        'transform_func': int
     },
     'original_size': {
         'xpath': 'originalSize',
-        'transform_func': str
+        'transform_func': int
     },
     'original_volume_type': {
         'xpath': 'originalVolumeType',
@@ -2595,7 +2595,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
     },
     'progress': {
         'xpath': 'progress',
-        'transform_func': str
+        'transform_func': int
     },
     'start_time': {
         'xpath': 'startTime',
@@ -2607,11 +2607,11 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
     },
     'target_iops': {
         'xpath': 'targetIops',
-        'transform_func': str
+        'transform_func': int
     },
     'target_size': {
         'xpath': 'targetSize',
-        'transform_func': str
+        'transform_func': int
     },
     'target_volume_type': {
         'xpath': 'targetVolumeType',
