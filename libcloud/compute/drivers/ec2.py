@@ -5774,7 +5774,6 @@ class BaseEC2NodeDriver(NodeDriver):
             raise ValueError('Invalid volume type specified: %s' % volume_type)
 
         parameters.update({'Action': 'ModifyVolume', 'VolumeId': volume.id})
-
         response = self.connection.request(self.path,
                                            params=parameters.copy()).object
 
@@ -5782,8 +5781,7 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='volumeModification', namespace=NAMESPACE))[0])
 
     def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None,
-                                          filters=None, next_token=None,
-                                          max_results=None):
+                                          filters=None):
         """
         Describes one or more of your volume modifications.
 
@@ -5798,22 +5796,9 @@ class BaseEC2NodeDriver(NodeDriver):
                              information for only certain volumes
         :type       filters: ``dict``
 
-        :param      max_results: The maximum number of items that can be
-                                 returned in a single page
-        :type       max_results: ``int``
-
-        :param      next_token: The nextToken value returned by a previous
-                                paginated request.
-        :type       next_token: ``string``
-
         :return:  List of volume modification status objects
         :rtype:   ``list`` of :class:`VolumeModification
         """
-
-        if next_token:
-            raise NotImplementedError(
-                'volume_modifications next_token is not implemented')
-
         params = {'Action': 'DescribeVolumesModifications'}
 
         if dry_run:
@@ -5824,9 +5809,6 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if filters:
             params.update(self._build_filters(filters))
-
-        if max_results:
-            params.update({'MaxResults': max_results})
 
         response = self.connection.request(self.path, params=params).object
 
