@@ -5777,7 +5777,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path,
                                            params=parameters.copy()).object
-        return self._to_volume_modification(response)
+
+        return self._to_volume_modification(response.findall(
+            fixxpath(xpath='volumeModification', namespace=NAMESPACE))[0])
 
     def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None,
                                           filters=None, next_token=None,

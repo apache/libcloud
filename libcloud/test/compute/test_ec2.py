@@ -1187,6 +1187,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                   'Size': 2,
                   'Iops': 1000}
         volume_modification = self.driver.ex_modify_volume(volume, params)
+
         self.assertIsNone(volume_modification.end_time)
         self.assertEqual('modifying', volume_modification.modification_state)
         self.assertEqual(300, volume_modification.original_iops)

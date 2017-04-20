@@ -1,4 +1,4 @@
-<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
   <requestId>e385bd95-2cf3-4e7a-bd9f-62f1b8c2d8e9</requestId>
   <requesterId>ca28fb91-de6c-4cc5-a535-14f072941838</requesterId>
   <reservationId>r-47a5402e</reservationId>
