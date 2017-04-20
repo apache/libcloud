@@ -23,7 +23,7 @@ import time
 from libcloud.common.base import (ConnectionUserAndKey,
                                   JsonResponse,
                                   RawResponse)
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import basestring, urlencode
 
 

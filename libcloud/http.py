@@ -19,12 +19,13 @@ verification, depending on libcloud.security settings.
 """
 
 import os
-import socket
 import warnings
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
 import libcloud.security
-from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlparse, PY3
 
 
 __all__ = [
@@ -32,25 +33,23 @@ __all__ = [
     'LibcloudConnection'
 ]
 
+ALLOW_REDIRECTS = 1
+
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
 
-# Error message which is thrown when establishing SSL / TLS connection fails
-UNSUPPORTED_TLS_VERSION_ERROR_MSG = """
-Failed to establish SSL / TLS connection (%s). It is possible that the server \
-doesn't support requested SSL / TLS version (%s).
-For information on how to work around this issue, please see \
-https://libcloud.readthedocs.org/en/latest/other/\
-ssl-certificate-validation.html#changing-used-ssl-tls-version
-""".strip()
 
-# Maps ssl.PROTOCOL_* constant to the actual SSL / TLS version name
-SSL_CONSTANT_TO_TLS_VERSION_MAP = {
-    0: 'SSL v2',
-    2: 'SSLv3, TLS v1.0, TLS v1.1, TLS v1.2',
-    3: 'TLS v1.0',
-    4: 'TLS v1.1',
-    5: 'TLS v1.2'
-}
+class SignedHTTPSAdapter(HTTPAdapter):
+    def __init__(self, cert_file, key_file):
+        self.cert_file = cert_file
+        self.key_file = key_file
+        super(SignedHTTPSAdapter, self).__init__()
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block,
+            cert_file=self.cert_file,
+            key_file=self.key_file)
 
 
 class LibcloudBaseConnection(object):
@@ -156,6 +155,13 @@ class LibcloudBaseConnection(object):
             else:
                 self.ca_cert = libcloud.security.CA_CERTS_PATH
 
+    def _setup_signing(self, cert_file=None, key_file=None):
+        """
+        Setup request signing by mounting a signing
+        adapter to the session
+        """
+        self.session.mount('https://', SignedHTTPSAdapter(cert_file, key_file))
+
 
 class LibcloudConnection(LibcloudBaseConnection):
     timeout = None
@@ -178,24 +184,43 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         LibcloudBaseConnection.__init__(self)
 
+        if 'cert_file' in kwargs or 'key_file' in kwargs:
+            self._setup_signing(**kwargs)
+
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
 
+    @property
+    def verification(self):
+        """
+        The option for SSL verification given to underlying requests
+        """
+        return self.ca_cert if self.ca_cert is not None else self.verify
+
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
+        url = urlparse.urljoin(self.host, url)
+        # all headers should be strings
+        for header, value in headers.items():
+            if isinstance(headers[header], int):
+                headers[header] = str(value)
         self.response = self.session.request(
             method=method.lower(),
-            url=''.join([self.host, url]),
+            url=url,
             data=body,
             headers=headers,
-            allow_redirects=1,
+            allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
-            verify=self.ca_cert if self.ca_cert is not None else self.verify
+            verify=self.verification
         )
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
+        # all headers should be strings
+        for header, value in headers.items():
+            if isinstance(headers[header], int):
+                headers[header] = str(value)
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 
@@ -238,31 +263,45 @@ class LibcloudConnection(LibcloudBaseConnection):
         self.response.close()
 
 
-def get_socket_error_exception(ssl_version, exc):
+class HttpLibResponseProxy(object):
     """
-    Function which intercepts socket.error exceptions and re-throws an
-    exception with a more user-friendly message in case server doesn't support
-    requested SSL version.
+    Provides a proxy pattern around the :class:`requests.Reponse`
+    object to a :class:`httplib.HTTPResponse` object
     """
-    exc_msg = str(exc)
+    def __init__(self, response):
+        self._response = response
 
-    # Re-throw an exception with a more friendly error message
-    if 'connection reset by peer' in exc_msg.lower():
-        ssl_version_name = SSL_CONSTANT_TO_TLS_VERSION_MAP[ssl_version]
-        msg = (UNSUPPORTED_TLS_VERSION_ERROR_MSG %
-               (exc_msg, ssl_version_name))
+    def read(self, amt=None):
+        return self._response.text
 
-        # Note: In some cases arguments are (errno, message) and in
-        # other it's just (message,)
-        exc_args = getattr(exc, 'args', [])
-
-        if len(exc_args) == 2:
-            new_exc_args = [exc.args[0], msg]
+    def getheader(self, name, default=None):
+        """
+        Get the contents of the header name, or default
+        if there is no matching header.
+        """
+        if name in self._response.headers.keys():
+            return self._response.headers[name]
         else:
-            new_exc_args = [msg]
+            return default
 
-        new_exc = socket.error(*new_exc_args)
-        new_exc.original_exc = exc
-        return new_exc
-    else:
-        return exc
+    def getheaders(self):
+        """
+        Return a list of (header, value) tuples.
+        """
+        if PY3:
+            return list(self._response.headers.items())
+        else:
+            return self._response.headers.items()
+
+    @property
+    def status(self):
+        return self._response.status_code
+
+    @property
+    def reason(self):
+        return self._response.reason
+
+    @property
+    def version(self):
+        # requests doesn't expose this
+        return '11'

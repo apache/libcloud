@@ -23,7 +23,7 @@ from libcloud.dns.drivers.google import GoogleDNSDriver
 from libcloud.common.google import GoogleBaseAuthConnection
 
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_GOOGLE, DNS_KEYWORD_PARAMS_GOOGLE
 
@@ -120,7 +120,7 @@ class GoogleTests(GoogleTestCase):
         self.assertEqual(records['deletions'][0].type, 'A')
 
 
-class GoogleDNSMockHttp(MockHttpTestCase):
+class GoogleDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures('google')
 
     def _dns_v1_projects_project_name_managedZones(

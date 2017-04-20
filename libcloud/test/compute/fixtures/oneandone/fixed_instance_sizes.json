@@ -1,0 +1,70 @@
+[
+  {
+    "name": "M",
+    "id": "8C626C1A7005D0D1F527143C413D461E",
+    "hardware": {
+      "vcore": 1,
+      "cores_per_processor": 1,
+      "ram": 1,
+      "unit": "GB",
+      "hdds": [
+        {
+          "size": 40,
+          "unit": "GB",
+          "is_main": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "L",
+    "id": "8C626C1A7005D0D1F527143C413D461F",
+    "hardware": {
+      "vcore": 2,
+      "cores_per_processor": 1,
+      "ram": 2,
+      "unit": "GB",
+      "hdds": [
+        {
+          "size": 80,
+          "unit": "GiB",
+          "is_main": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "XL",
+    "id": "8C626C1A7005D0D1F527143C413D4620",
+    "hardware": {
+      "vcore": 2,
+      "cores_per_processor": 1,
+      "ram": 4,
+      "unit": "GB",
+      "hdds": [
+        {
+          "size": 120,
+          "unit": "GB",
+          "is_main": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "XXL",
+    "id": "8C626C1A7005D0D1F527143C413D4621",
+    "hardware": {
+      "vcore": 4,
+      "cores_per_processor": 1,
+      "ram": 8,
+      "unit": "GB",
+      "hdds": [
+        {
+          "size": 160,
+          "unit": "GiB",
+          "is_main": true
+        }
+      ]
+    }
+  }
+]

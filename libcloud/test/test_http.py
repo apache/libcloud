@@ -21,7 +21,7 @@ from mock import patch
 import libcloud.security
 
 from libcloud.utils.py3 import reload
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection
 
 from libcloud.test import unittest
 
@@ -58,7 +58,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
     def test_custom_ca_path_using_env_var_exist(self):
         # When setting a path we don't actually check that a valid CA file is
         # provided.
-        # This happens later in the code in httplib_ssl.connect method
+        # This happens later in the code in http.connect method
         file_path = os.path.abspath(__file__)
         os.environ['SSL_CERT_FILE'] = file_path
 

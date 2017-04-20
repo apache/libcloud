@@ -97,7 +97,7 @@ class LinodeNodeDriver(NodeDriver):
         (-1): NodeState.PENDING,    # Being Created
         0: NodeState.PENDING,     # Brand New
         1: NodeState.RUNNING,     # Running
-        2: NodeState.TERMINATED,  # Powered Off
+        2: NodeState.STOPPED,  # Powered Off
         3: NodeState.REBOOTING,   # Shutting Down
         4: NodeState.UNKNOWN      # Reserved
     }
@@ -117,6 +117,24 @@ class LinodeNodeDriver(NodeDriver):
         params = {"api_action": "linode.list"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_nodes(data)
+
+    def ex_start_node(self, node):
+        """
+        Boot the given Linode
+
+        """
+        params = {"api_action": "linode.boot", "LinodeID": node.id}
+        self.connection.request(API_ROOT, params=params)
+        return True
+
+    def ex_stop_node(self, node):
+        """
+        Shutdown the given Linode
+
+        """
+        params = {"api_action": "linode.shutdown", "LinodeID": node.id}
+        self.connection.request(API_ROOT, params=params)
+        return True
 
     def reboot_node(self, node):
         """
@@ -364,6 +382,10 @@ class LinodeNodeDriver(NodeDriver):
             "Comments": comments,
             "DiskList": disks
         }
+        if "ex_private" in kwargs and kwargs["ex_private"]:
+            params['helper_network'] = True
+            params['helper_distro'] = True
+
         data = self.connection.request(API_ROOT, params=params).objects[0]
         linode["config"] = data["ConfigID"]
 
@@ -387,6 +409,32 @@ class LinodeNodeDriver(NodeDriver):
             return node
 
         return None
+
+    def ex_resize_node(self, node, size):
+        """Resizes a Linode from one plan to another
+
+        Immediately shuts the Linode down, charges/credits the account,
+        and issue a migration to another host server.
+        Requires a size (numeric), which is the desired PlanID available from
+        avail.LinodePlans()
+        After resize is complete the node needs to be booted
+        """
+
+        params = {"api_action": "linode.resize", "LinodeID": node.id,
+                  "PlanID": size}
+        self.connection.request(API_ROOT, params=params)
+        return True
+
+    def ex_rename_node(self, node, name):
+        """Renames a node"""
+
+        params = {
+            "api_action": "linode.update",
+            "LinodeID": node.id,
+            "Label": name
+        }
+        self.connection.request(API_ROOT, params=params)
+        return True
 
     def list_sizes(self, location=None):
         """

@@ -33,7 +33,7 @@ from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
 from libcloud.common.types import LibcloudError
 
 from libcloud.test import unittest
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 from libcloud.test.file_fixtures import OpenStackFixtures
 
@@ -923,7 +923,7 @@ class RackspaceUKLBTests(RackspaceLBTests):
         self.driver.connection._populate_hosts_and_request_paths()
 
 
-class RackspaceLBMockHttp(MockHttpTestCase):
+class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 
@@ -1480,7 +1480,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         raise NotImplementedError
 
 
-class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
+class RackspaceLBWithVIPMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 

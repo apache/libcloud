@@ -1,0 +1,73 @@
+{
+  "name": "Monitoring Policy",
+  "description": "Monitoring Policy Description",
+  "email": "test@test.com",
+  "agent": false,
+  "thresholds": {
+    "disk": {
+      "warning": {
+        "value": 80,
+        "alert": false
+      },
+      "critical": {
+        "value": 90,
+        "alert": false
+      }
+    },
+    "transfer": {
+      "warning": {
+        "value": 1000,
+        "alert": false
+      },
+      "critical": {
+        "value": 2000,
+        "alert": false
+      }
+    },
+    "ram": {
+      "warning": {
+        "value": 90,
+        "alert": false
+      },
+      "critical": {
+        "value": 95,
+        "alert": false
+      }
+    },
+    "internal_ping": {
+      "warning": {
+        "value": 50,
+        "alert": false
+      },
+      "critical": {
+        "value": 100,
+        "alert": true
+      }
+    },
+    "cpu": {
+      "warning": {
+        "value": 90,
+        "alert": false
+      },
+      "critical": {
+        "value": 95,
+        "alert": false
+      }
+    }
+  },
+  "ports": [
+    {
+      "alert_if": "NOT_RESPONDING",
+      "email_notification": true,
+      "protocol": "TCP",
+      "port": 443
+    }
+  ],
+  "processes": [
+    {
+      "process": "httpdeamon",
+      "alert_if": "NOT_RUNNING",
+      "email_notification": false
+    }
+  ]
+}

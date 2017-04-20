@@ -1,0 +1,24 @@
+{
+  "id": "6AD2F180B7B666539EF75A02FE227084",
+  "size": 200,
+  "state": "ACTIVE",
+  "description": "My shared storage test description",
+  "datacenter": {
+    "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+    "location": "USA",
+    "country_code": "US"
+  },
+  "cloudpanel_id": "vid35780",
+  "size_used": "0.00",
+  "cifs_path": "vid50995.nas1.lanvid50995",
+  "nfs_path": "vid50995.nas1.lan/:vid50995",
+  "name": "My shared storage test",
+  "creation_date": "2015-05-06T08:33:25+00:00",
+  "servers": [
+    {
+      "id": "638ED28205B1AFD7ADEF569C725DD85F",
+      "name": "My server 1",
+      "rights": "RW"
+    }
+  ]
+}

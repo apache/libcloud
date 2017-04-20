@@ -203,11 +203,11 @@ class CloudscaleNodeDriver(NodeDriver):
 
     def _to_node(self, data):
         state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
-        extra_keys = ['volumes', 'interfaces', 'anti_affinity_with']
+        extra_keys_exclude = ['uuid', 'name', 'status', 'flavor', 'image']
         extra = {}
-        for key in extra_keys:
-            if key in data:
-                extra[key] = data[key]
+        for k, v in data.items():
+            if k not in extra_keys_exclude:
+                extra[k] = v
 
         public_ips = []
         private_ips = []

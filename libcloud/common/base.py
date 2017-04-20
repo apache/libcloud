@@ -42,11 +42,9 @@ from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 
 from libcloud.utils.misc import lowercase_keys, retry
-from libcloud.utils.compression import decompress_data
-
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection, HttpLibResponseProxy
 
 __all__ = [
     'RETRY_FAILED_HTTP_REQUESTS',
@@ -200,30 +198,6 @@ class Response(object):
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-    def _decompress_response(self, body, headers):
-        """
-        Decompress a response body if it is using deflate or gzip encoding.
-
-        :param body: Response body.
-        :type body: ``str``
-
-        :param headers: Response headers.
-        :type headers: ``dict``
-
-        :return: Decompressed response
-        :rtype: ``str``
-        """
-        encoding = headers.get('content-encoding', None)
-
-        if encoding in ['zlib', 'deflate']:
-            body = decompress_data('zlib', body)
-        elif encoding in ['gzip', 'x-gzip']:
-            body = decompress_data('gzip', body)
-        else:
-            body = body.strip()
-
-        return body
-
 
 class JsonResponse(Response):
     """
@@ -271,7 +245,6 @@ class XmlResponse(Response):
 
 
 class RawResponse(Response):
-
     def __init__(self, connection, response=None):
         """
         :param connection: Parent connection object.
@@ -283,7 +256,7 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-        if response:
+        if response is not None:
             self.headers = lowercase_keys(dict(response.headers))
             self.error = response.reason
             self.status = response.status_code
@@ -308,7 +281,8 @@ class RawResponse(Response):
     def response(self):
         if not self._response:
             response = self.connection.connection.getresponse()
-            self._response, self.body = response, response.text
+            self._response = HttpLibResponseProxy(response)
+            self.body = response.text
             if not self.success():
                 self.parse_error()
         return self._response
@@ -467,8 +441,6 @@ class Connection(object):
 
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
-
-        #  kwargs = {'host': host, 'port': int(port)}
 
         # Timeout is only supported in Python 2.6 and later
         # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
@@ -674,9 +646,12 @@ class Connection(object):
         return response
 
     def morph_action_hook(self, action):
-        if not action.startswith("/"):
-            action = "/" + action
-        return self.request_path + action
+        url = urlparse.urljoin(self.request_path.lstrip('/').rstrip('/') +
+                               '/', action.lstrip('/'))
+        if not url.startswith('/'):
+            return '/' + url
+        else:
+            return url
 
     def add_default_params(self, params):
         """

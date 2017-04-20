@@ -1,0 +1,59 @@
+[
+  {
+    "id": "569FA2EC06DD48C9E8635F3384A018DB",
+    "ip": "10.5.138.52",
+    "type": "IPV4",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "assigned_to": {
+      "id": "B23F1B4F84E983B4FEDD5459E877058A",
+      "name": "My load balancer",
+      "type": "LOAD_BALANCER"
+    },
+    "reverse_dns": null,
+    "is_dhcp": false,
+    "state": "ACTIVE",
+    "creation_date": "2015-03-03T11:12:10+00:00"
+  },
+  {
+    "id": "6F033A13C3EFCE0FB60783280A118D63",
+    "ip": "10.5.133.191",
+    "type": "IPV4",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "assigned_to": {
+      "id": "BDAF0EC6A36E9E554B80B7E7365821F5",
+      "name": "My Server 1",
+      "type": "SERVER"
+    },
+    "reverse_dns": null,
+    "is_dhcp": true,
+    "state": "ACTIVE",
+    "creation_date": "2015-05-04T07:21:37+00:00"
+  },
+  {
+    "id": "39C73A57B33DAF2F9FA1EBEA4C301FCF",
+    "ip": "10.5.138.81",
+    "type": "IPV4",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "assigned_to": {
+      "id": "B23F1B4F84E983B4FEDD5459E877058A",
+      "name": "My load balancer",
+      "type": "LOAD_BALANCER"
+    },
+    "reverse_dns": null,
+    "is_dhcp": false,
+    "state": "ACTIVE",
+    "creation_date": "2015-03-03T11:13:16+00:00"
+  }
+]

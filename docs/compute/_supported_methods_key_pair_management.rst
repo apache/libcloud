@@ -38,7 +38,8 @@ Provider                              list key pairs get key pair create key pai
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
 `NTTAmerica`_                         no             no           no              no                            no                          no             
-`OnApp`_                              no             no           no              no                            no                          no             
+`OnApp`_                              yes            yes          no              yes                           no                          yes            
+`1and1`_                              no             no           no              no                            no                          no             
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
@@ -97,6 +98,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
+.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com

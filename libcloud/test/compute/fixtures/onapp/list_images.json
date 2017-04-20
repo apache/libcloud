@@ -1,0 +1,47 @@
+[
+  {
+    "image_template": {
+      "allow_resize_without_reboot": true,
+      "allowed_hot_migrate": true,
+      "allowed_swap": true,
+      "application_server": false,
+      "backup_server_id": "",
+      "baremetal_server": true,
+      "cdn": false,
+      "checksum": "f3ea0b39051d9c5fef3f7661c6318111",
+      "created_at": "2015-03-12T19:56:02+05:30",
+      "disk_target_device": "--- xen: sda kvm: hd ",
+      "draas": false,
+      "ext4": false,
+      "file_name": "centos-5.11-x64-1.1-xen.kvm.kvm_virtio.tar.gz",
+      "id": 123456,
+      "initial_password": "Password1",
+      "initial_username": "root",
+      "label": "CentOS 5.11 x64",
+      "manager_id": "",
+      "min_disk_size": 5,
+      "min_memory_size": 256,
+      "operating_system": "linux",
+      "operating_system_arch": "x64",
+      "operating_system_distro": "rhel",
+      "operating_system_edition": "",
+      "operating_system_tail": "",
+      "parent_template_id": "",
+      "properties": "",
+      "remote_id": "",
+      "resize_without_reboot_policy": {},
+      "smart_server": true,
+      "state": "active",
+      "template_size": 323924,
+      "updated_at": "",
+      "user_id": "",
+      "version": "1.1",
+      "virtualization": [
+        "xen",
+        "kvm",
+        "kvm_virtio"
+      ],
+      "type": "ImageTemplate"
+    }
+  }
+]

@@ -52,6 +52,7 @@ class Provider(object):
     LUADNS = 'luadns'
     NFSN = 'nfsn'
     NSONE = 'nsone'
+    ONAPP = 'onapp'
     POINTDNS = 'pointdns'
     POWERDNS = 'powerdns'
     RACKSPACE = 'rackspace'

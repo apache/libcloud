@@ -21,10 +21,13 @@ import ssl
 
 from mock import Mock, patch
 
+import requests_mock
+
 from libcloud.test import unittest
-from libcloud.common.base import Connection
-from libcloud.httplib_ssl import LibcloudBaseConnection
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.common.base import Connection, CertificateConnection
+from libcloud.http import LibcloudBaseConnection
+from libcloud.http import LibcloudConnection
+from libcloud.http import SignedHTTPSAdapter
 from libcloud.utils.misc import retry
 
 
@@ -108,6 +111,55 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         conn = LibcloudConnection(host='localhost', port=80)
         self.assertEqual(conn.host, 'http://localhost')
+
+    def test_connection_url_merging(self):
+        """
+        Test that the connection class will parse URLs correctly
+        """
+        conn = Connection(url='http://test.com/')
+        conn.connect()
+        self.assertEqual(conn.connection.host, 'http://test.com')
+        with requests_mock.mock() as m:
+            m.get('http://test.com/test', text='data')
+            response = conn.request('/test')
+        self.assertEqual(response.body, 'data')
+
+    def test_morph_action_hook(self):
+        conn = Connection(url="http://test.com")
+
+        conn.request_path = ''
+        self.assertEqual(conn.morph_action_hook('/test'), '/test')
+        self.assertEqual(conn.morph_action_hook('test'), '/test')
+
+        conn.request_path = '/v1'
+        self.assertEqual(conn.morph_action_hook('/test'), '/v1/test')
+        self.assertEqual(conn.morph_action_hook('test'), '/v1/test')
+
+        conn.request_path = '/v1'
+        self.assertEqual(conn.morph_action_hook('/test'), '/v1/test')
+        self.assertEqual(conn.morph_action_hook('test'), '/v1/test')
+
+        conn.request_path = 'v1'
+        self.assertEqual(conn.morph_action_hook('/test'), '/v1/test')
+        self.assertEqual(conn.morph_action_hook('test'), '/v1/test')
+
+        conn.request_path = 'v1/'
+        self.assertEqual(conn.morph_action_hook('/test'), '/v1/test')
+        self.assertEqual(conn.morph_action_hook('test'), '/v1/test')
+
+    def test_connect_with_prefix(self):
+        """
+        Test that a connection with a base path (e.g. /v1/) will
+        add the base path to requests
+        """
+        conn = Connection(url='http://test.com/')
+        conn.connect()
+        conn.request_path = '/v1'
+        self.assertEqual(conn.connection.host, 'http://test.com')
+        with requests_mock.mock() as m:
+            m.get('http://test.com/v1/test', text='data')
+            response = conn.request('/test')
+        self.assertEqual(response.body, 'data')
 
     def test_secure_connection_unusual_port(self):
         """
@@ -311,6 +363,18 @@ class ConnectionClassTestCase(unittest.TestCase):
 
             self.assertGreater(mock_connect.call_count, 1,
                                'Retry logic failed')
+
+
+class CertificateConnectionClassTestCase(unittest.TestCase):
+    def setUp(self):
+        self.connection = CertificateConnection(cert_file='test.pem',
+                                                url='https://test.com/test')
+        self.connection.connect()
+
+    def test_adapter_internals(self):
+        adapter = self.connection.connection.session.adapters['https://']
+        self.assertTrue(isinstance(adapter, SignedHTTPSAdapter))
+        self.assertEqual(adapter.cert_file, 'test.pem')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

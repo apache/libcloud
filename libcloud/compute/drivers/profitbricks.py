@@ -127,7 +127,7 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         host and protocol components.
         '''
         if not with_full_url or with_full_url is False:
-            action = self.api_prefix + action
+            action = self.api_prefix + action.lstrip('/')
         else:
             action = action.replace(
                 'https://{host}'.format(host=self.host),

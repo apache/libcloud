@@ -1,4 +1,4 @@
-<DescribeNetworkInterfacesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
+<DescribeNetworkInterfacesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>e8fc6c0b-d6f8-4b85-aa29-e6a097eb4631</requestId>
     <networkInterfaceSet>
         <item>
