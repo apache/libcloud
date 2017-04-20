@@ -31,4 +31,5 @@ d = create_node(name='my-lc-node')
 d.addCallback(stop)
 d.addErrback(stop)
 
-reactor.run()
+reactor.run() 
+var message="Hello World"               
