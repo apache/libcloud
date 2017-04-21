@@ -649,6 +649,21 @@ class CloudStackCommonTestCase(TestCaseMixin):
         finally:
             del CloudStackMockHttp._cmd_listVirtualMachines
 
+    def test_list_nodes_location_filter(self):
+        def list_nodes_mock(self, **kwargs):
+            self.assertTrue('zoneid' in kwargs)
+            self.assertEqual('1', kwargs.get('zoneid'))
+
+            body, obj = self._load_fixture('listVirtualMachines_default.json')
+            return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+
+        CloudStackMockHttp._cmd_listVirtualMachines = list_nodes_mock
+        try:
+            location = NodeLocation(1, 'Sydney', 'Unknown', self.driver)
+            self.driver.list_nodes(location=location)
+        finally:
+            del CloudStackMockHttp._cmd_listVirtualMachines
+
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)
         self.assertEqual('test', node.name)
