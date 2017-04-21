@@ -27,6 +27,7 @@ except ImportError:
     import json
 
 from mock import Mock, patch
+import requests_mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
@@ -53,6 +54,28 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import OPENSTACK_PARAMS
 
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
+
+
+class OpenStackAuthTests(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_auth_host_passed(self):
+        forced_auth = 'http://x.y.z.y:5000'
+        d = OpenStack_1_0_NodeDriver(
+            'user', 'correct_password', 
+            ex_force_auth_version='2.0_password', 
+            ex_force_auth_url='http://x.y.z.y:5000', 
+            ex_tenant_name='admin')
+        self.assertEqual(d._ex_force_auth_url, forced_auth)
+        with requests_mock.Mocker() as mock:
+            body1 = "[]"
+            body2 = ComputeFileFixtures('openstack').load('_v2_0__auth.json')
+            mock.register_uri('GET', 'https://test_endpoint.com/v2/1337/servers/detail', text=body1,
+                              headers={'content-type': 'application/json; charset=UTF-8'})
+            mock.register_uri('POST', 'http://x.y.z.y:5000/v2.0/tokens', text=body2,
+                              headers={'content-type': 'application/json; charset=UTF-8'})
+            d.list_nodes()
 
 
 class OpenStack_1_0_Tests(TestCaseMixin):
