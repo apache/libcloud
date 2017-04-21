@@ -25,6 +25,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Add support for Azure Cloud Environments as well as Locations
+  [GITHUB-969]
+  (Peter Amstutz)
+
 - [EC2] Add support for ModifyVolume and DescribeVolumesModifications
   [GITHUB-1036]
   (Hennadii Stas)
