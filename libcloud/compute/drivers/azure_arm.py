@@ -1048,8 +1048,9 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network" \
-                 "/publicIPAddresses" % (self.subscription_id, resource_group)
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/publicIPAddresses" \
+                 % (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
