@@ -1,0 +1,15 @@
+<ModifyVolumeResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
+    <requestId>5jkdf074-37ed-4004-8671-a78ee82bf1cbEXAMPLE</requestId>
+    <volumeModification>
+        <targetIops>1000</targetIops>
+        <originalIops>300</originalIops>
+        <modificationState>modifying</modificationState>
+        <targetSize>2</targetSize>
+        <targetVolumeType>io1</targetVolumeType>
+        <volumeId>vol-10ae5e2b</volumeId>
+        <progress>0</progress>
+        <startTime>2017-01-19T23:58:04.922Z</startTime>
+        <originalSize>1</originalSize>
+        <originalVolumeType>gp2</originalVolumeType>
+    </volumeModification>
+</ModifyVolumeResponse>

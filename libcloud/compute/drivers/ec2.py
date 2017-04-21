@@ -79,7 +79,7 @@ __all__ = [
     'IdempotentParamError'
 ]
 
-API_VERSION = '2016-09-15'
+API_VERSION = '2016-11-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # Eucalyptus Constants
@@ -2559,7 +2559,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
         },
-        'type': {
+        'volume_type': {
             'xpath': 'volumeType',
             'transform_func': str
         }
@@ -2572,8 +2572,60 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     }
 }
 
+VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
+    'end_time': {
+        'xpath': 'endTime',
+        'transform_func': parse_date
+    },
+    'modification_state': {
+        'xpath': 'modificationState',
+        'transform_func': str
+    },
+    'original_iops': {
+        'xpath': 'originalIops',
+        'transform_func': int
+    },
+    'original_size': {
+        'xpath': 'originalSize',
+        'transform_func': int
+    },
+    'original_volume_type': {
+        'xpath': 'originalVolumeType',
+        'transform_func': str
+    },
+    'progress': {
+        'xpath': 'progress',
+        'transform_func': int
+    },
+    'start_time': {
+        'xpath': 'startTime',
+        'transform_func': parse_date
+    },
+    'status_message': {
+        'xpath': 'statusMessage',
+        'transform_func': str
+    },
+    'target_iops': {
+        'xpath': 'targetIops',
+        'transform_func': int
+    },
+    'target_size': {
+        'xpath': 'targetSize',
+        'transform_func': int
+    },
+    'target_volume_type': {
+        'xpath': 'targetVolumeType',
+        'transform_func': str
+    },
+    'volume_id': {
+        'xpath': 'volumeId',
+        'transform_func': str
+    }
+}
+
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
 VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
+VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -2941,6 +2993,44 @@ class EC2SubnetAssociation(object):
 
     def __repr__(self):
         return (('<EC2SubnetAssociation: id=%s>') % (self.id))
+
+
+class EC2VolumeModification(object):
+    """
+    Describes the modification status of an EBS volume.
+
+    If the volume has never been modified, some element values will be null.
+    """
+
+    def __init__(self, end_time=None, modification_state=None,
+                 original_iops=None, original_size=None,
+                 original_volume_type=None, progress=None, start_time=None,
+                 status_message=None, target_iops=None, target_size=None,
+                 target_volume_type=None, volume_id=None):
+        self.end_time = end_time
+        self.modification_state = modification_state
+        self.original_iops = original_iops
+        self.original_size = original_size
+        self.original_volume_type = original_volume_type
+        self.progress = progress
+        self.start_time = start_time
+        self.status_message = status_message
+        self.target_iops = target_iops
+        self.target_size = target_size
+        self.target_volume_type = target_volume_type
+        self.volume_id = volume_id
+
+    def __repr__(self):
+        return (('<EC2VolumeModification: end_time=%s, modification_state=%s, '
+                 'original_iops=%s, original_size=%s, '
+                 'original_volume_type=%s, progress=%s, start_time=%s, '
+                 'status_message=%s, target_iops=%s, target_size=%s, '
+                 'target_volume_type=%s, volume_id=%s>')
+                % (self.end_time, self.modification_state, self.original_iops,
+                   self.original_size, self.original_volume_type,
+                   self.progress, self.start_time, self.status_message,
+                   self.target_iops, self.target_size, self.target_volume_type,
+                   self.volume_id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -3403,13 +3493,12 @@ class BaseEC2NodeDriver(NodeDriver):
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-        valid_volume_types = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
         params = {
             'Action': 'CreateVolume',
             'Size': str(size)}
 
-        if ex_volume_type and ex_volume_type not in valid_volume_types:
+        if ex_volume_type and ex_volume_type not in VALID_VOLUME_TYPES:
             raise ValueError('Invalid volume type specified: %s' %
                              (ex_volume_type))
 
@@ -5664,6 +5753,67 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
+    def ex_modify_volume(self, volume, parameters):
+        """
+        Modify volume parameters.
+        A list of valid parameters can be found at https://goo.gl/N0rPEQ
+
+        :param      Volume: Volume instance
+        :type       Volume: :class:`Volume`
+
+        :param      parameters: Dictionary with updated volume parameters
+        :type       parameters: ``dict``
+
+        :return: Volume modification status object
+        :rtype: :class:`VolumeModification
+        """
+        parameters = parameters or {}
+
+        volume_type = parameters.get('VolumeType')
+        if volume_type and volume_type not in VALID_VOLUME_TYPES:
+            raise ValueError('Invalid volume type specified: %s' % volume_type)
+
+        parameters.update({'Action': 'ModifyVolume', 'VolumeId': volume.id})
+        response = self.connection.request(self.path,
+                                           params=parameters.copy()).object
+
+        return self._to_volume_modification(response.findall(
+            fixxpath(xpath='volumeModification', namespace=NAMESPACE))[0])
+
+    def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None,
+                                          filters=None):
+        """
+        Describes one or more of your volume modifications.
+
+        :param      dry_run: dry_run
+        :type       dry_run: ``bool``
+
+        :param      volume_ids: The volume_ids so that the response includes
+                             information for only said volumes
+        :type       volume_ids: ``dict``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain volumes
+        :type       filters: ``dict``
+
+        :return:  List of volume modification status objects
+        :rtype:   ``list`` of :class:`VolumeModification
+        """
+        params = {'Action': 'DescribeVolumesModifications'}
+
+        if dry_run:
+            params.update({'DryRun': dry_run})
+
+        if volume_ids:
+            params.update(self._pathlist('VolumeId', volume_ids))
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_volume_modifications(response)
+
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
         if hasattr(self, 'token') and self.token is not None:
@@ -5791,6 +5941,22 @@ class BaseEC2NodeDriver(NodeDriver):
                              driver=self,
                              state=state,
                              extra=extra)
+
+    def _to_volume_modifications(self, object):
+        return [self._to_volume_modification(el) for el in object.findall(
+            fixxpath(xpath='volumeModificationSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_volume_modification(self, element):
+        """
+        Parse the XML element and return a StorageVolume object.
+
+        :rtype:     :class:`EC2VolumeModification`
+        """
+        params = self._get_extra_dict(element,
+                                      VOLUME_MODIFICATION_ATTRIBUTE_MAP)
+
+        return EC2VolumeModification(**params)
 
     def _to_snapshots(self, response):
         return [self._to_snapshot(el) for el in response.findall(
