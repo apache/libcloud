@@ -25,6 +25,10 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Add support for ModifyVolume and DescribeVolumesModifications
+  [GITHUB-1036]
+  (Hennadii Stas)
+
 - [ARM] Fix string representation of the VhdImage type and fix listing of Public IP addresses
   [GITHUB-1035]
   (Anthony Shaw)
