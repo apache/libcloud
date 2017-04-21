@@ -69,7 +69,7 @@ class OpenStackAuthTests(unittest.TestCase):
             ex_force_auth_url='http://x.y.z.y:5000',
             ex_tenant_name='admin')
         self.assertEqual(d._ex_force_auth_url, forced_auth)
-        
+
         with requests_mock.Mocker() as mock:
             body2 = ComputeFileFixtures('openstack').load('_v2_0__auth.json')
 
