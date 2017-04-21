@@ -25,6 +25,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Fix string representation of the VhdImage type and fix listing of Public IP addresses
+  [GITHUB-1035]
+  (Anthony Shaw)
+
 - [GOOGLE] Remove validation checks for guestOsFeatures
   [GITHUB-1034]
   (Max Illfelder)
