@@ -69,15 +69,13 @@ class OpenStackAuthTests(unittest.TestCase):
             ex_force_auth_url='http://x.y.z.y:5000',
             ex_tenant_name='admin')
         self.assertEqual(d._ex_force_auth_url, forced_auth)
+        
         with requests_mock.Mocker() as mock:
-            body1 = ComputeFileFixtures('openstack').load('v1_slug_servers_ips.xml')
             body2 = ComputeFileFixtures('openstack').load('_v2_0__auth.json')
 
-            mock.register_uri('GET', 'https://test_endpoint.com/v2/1337/servers/test/ips', text=body1,
-                              headers={'content-type': 'application/xml; charset=UTF-8'})
             mock.register_uri('POST', 'http://x.y.z.y:5000/v2.0/tokens', text=body2,
                               headers={'content-type': 'application/json; charset=UTF-8'})
-            d.ex_list_ip_addresses('test')
+            d.connection._populate_hosts_and_request_paths()
             self.assertEqual(d.connection.host, 'test_endpoint.com')
 
 
