@@ -42,7 +42,8 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver,
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup,
     OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
-    OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair
+    OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
+    OpenStack_1_0_Connection
 )
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
@@ -58,7 +59,7 @@ BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
 
 class OpenStackAuthTests(unittest.TestCase):
     def setUp(self):
-        pass
+        OpenStack_1_0_NodeDriver.connectionCls = OpenStack_1_0_Connection
 
     def test_auth_host_passed(self):
         forced_auth = 'http://x.y.z.y:5000'
