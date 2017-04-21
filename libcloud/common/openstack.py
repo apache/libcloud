@@ -297,6 +297,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def _set_up_connection_info(self, url):
         result = self._tuple_from_url(url)
         (self.host, self.port, self.secure, self.request_path) = result
+        self.connect()
 
     def _populate_hosts_and_request_paths(self):
         """
