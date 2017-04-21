@@ -13,30 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import zlib
-import gzip
+import json
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import StringIO
+from bottle import route
 
-
-__all__ = [
-    'decompress_data'
-]
+from integration.api.data import NODES, REPORT_DATA
+from integration.api.util import secure
 
 
-def decompress_data(compression_type, data):
-    if compression_type == 'zlib':
-        return zlib.decompress(data)
-    elif compression_type == 'gzip':
-        # TODO: Should export BytesIO as StringIO in libcloud.utils.py3
-        if PY3:
-            from io import BytesIO
-            cls = BytesIO
-        else:
-            cls = StringIO
+@route('/compute/nodes', method='GET')
+@secure
+def list_nodes():
+    return json.dumps(NODES)
 
-        return gzip.GzipFile(fileobj=cls(data)).read()
-    else:
-        raise Exception('Invalid or onsupported compression type: %s' %
-                        (compression_type))
+
+@route('/compute/report_data', method='GET')
+@secure
+def ex_report_data():
+    return REPORT_DATA

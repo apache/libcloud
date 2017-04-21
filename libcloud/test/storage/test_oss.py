@@ -47,8 +47,7 @@ from libcloud.storage.drivers.oss import OSSConnection
 from libcloud.storage.drivers.oss import OSSStorageDriver
 from libcloud.storage.drivers.oss import CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp, generate_random_data, make_response  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
 
@@ -85,7 +84,7 @@ class ObjectTestCase(unittest.TestCase):
         self.assertTrue(obj.__repr__() is not None)
 
 
-class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
+class OSSMockHttp(MockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('oss')
     base_headers = {}
@@ -234,14 +233,14 @@ class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_object(self, method, url, body, headers):
+    def _foo_bar_object_delete(self, method, url, body, headers):
         # test_delete_object
         return (httplib.NO_CONTENT,
                 body,
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_test_stream_data_multipart(self, method, url, body, headers):
+    def _foo_test_stream_data_multipart_HASH(self, method, url, body, headers):
         headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         TEST_UPLOAD_ID = '0004B9894A22E5B1888A1E29F8236E2D'
 
@@ -309,11 +308,6 @@ class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-
-class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
-
-    fixtures = StorageFileFixtures('oss')
-
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -332,7 +326,7 @@ class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
 
     def _foo_bar_object(self, method, url, body, headers):
         # test_download_object_success
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 headers,
@@ -345,13 +339,6 @@ class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _foo_bar_object_not_found(self, method, url, body, headers):
-        # test_upload_object_not_found
-        return (httplib.NOT_FOUND,
-                body,
-                headers,
-                httplib.responses[httplib.NOT_FOUND])
 
     def _foo_test_upload_invalid_hash1(self, method, url, body, headers):
         body = ''
@@ -412,7 +399,6 @@ class OSSStorageDriverTestCase(unittest.TestCase):
     driver_type = OSSStorageDriver
     driver_args = STORAGE_OSS_PARAMS
     mock_response_klass = OSSMockHttp
-    mock_raw_response_klass = OSSMockRawResponse
 
     @classmethod
     def create_driver(self):
@@ -420,12 +406,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_class = self.mock_response_klass
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
         self.mock_response_klass.type = None
         self.mock_response_klass.test = self
-        self.mock_raw_response_klass.type = None
-        self.mock_raw_response_klass.test = self
         self.driver = self.create_driver()
 
     def tearDown(self):
@@ -609,7 +591,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_invalid_file_size(self):
-        self.mock_raw_response_klass.type = 'invalid_size'
+        self.mock_response_klass.type = 'invalid_size'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -623,7 +605,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_not_found(self):
-        self.mock_raw_response_klass.type = 'not_found'
+        self.mock_response_klass.type = 'not_found'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -653,11 +635,11 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(200, headers={'etag': '2345'}),
+            return {'response': make_response(200, headers={'etag': '2345'}),
                     'bytes_transferred': 1000,
                     'data_hash': 'hash343hhash89h932439jsaa89'}
 
-        self.mock_raw_response_klass.type = 'INVALID_HASH1'
+        self.mock_response_klass.type = 'INVALID_HASH1'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -681,8 +663,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(200,
-                                             headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(200,
+                                              headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
         self.mock_response_klass.type = None
@@ -707,7 +689,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -746,10 +728,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_empty_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -767,10 +747,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_small_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -788,10 +766,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_big_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -812,7 +788,6 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         if not self.driver.supports_multipart_upload:
             return
 
-        self.mock_raw_response_klass.type = 'MULTIPART'
         self.mock_response_klass.type = 'MULTIPART'
 
         def _faulty_iterator():
@@ -877,6 +852,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
                           obj=obj)
 
     def test_delete_object_success(self):
+        self.mock_response_klass.type = 'delete'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,

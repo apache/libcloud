@@ -21,7 +21,7 @@ from libcloud.dns.base import Record, Zone
 from libcloud.dns.types import RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_DURABLEDNS
 from libcloud.utils.py3 import httplib
@@ -431,7 +431,7 @@ class DurableDNSTests(LibcloudTestCase):
             self.fail('Exception was not thrown')
 
 
-class DurableDNSMockHttp(MockHttpTestCase):
+class DurableDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures('durabledns')
 
     def _services_dns_listZones_php(self, method, url, body, headers):

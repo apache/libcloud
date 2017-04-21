@@ -17,6 +17,7 @@
 from __future__ import with_statement
 
 import os
+import codecs
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import u
@@ -43,13 +44,13 @@ class FileFixtures(object):
         path = os.path.join(self.root, file)
         if os.path.exists(path):
             if PY3:
-                kwargs = {'encoding': 'utf-8'}
+                with open(path, 'r', encoding='utf-8') as fh:
+                    content = fh.read()
+                return u(content)
             else:
-                kwargs = {}
-
-            with open(path, 'r', **kwargs) as fh:
-                content = fh.read()
-            return u(content)
+                with codecs.open(path, 'r', 'utf-8') as fh:
+                    content = fh.read()
+                return content
         else:
             raise IOError(path)
 

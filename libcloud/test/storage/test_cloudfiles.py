@@ -29,7 +29,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
-from libcloud.common.types import LibcloudError, MalformedResponseError
+from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Container, Object
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerDoesNotExistError
@@ -39,9 +39,8 @@ from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 
-from libcloud.test import StorageMockHttp, MockRawResponse, MockResponse  # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
-from libcloud.test import unittest
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.test import unittest, generate_random_data, make_response
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
@@ -53,10 +52,7 @@ class CloudFilesTests(unittest.TestCase):
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_class = CloudFilesMockHttp
-        self.driver_klass.connectionCls.rawResponseCls = \
-            CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
-        CloudFilesMockRawResponse.type = None
 
         driver_kwargs = self.driver_kwargs.copy()
         driver_kwargs['region'] = self.region
@@ -322,7 +318,7 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_invalid_file_size(self):
-        CloudFilesMockRawResponse.type = 'INVALID_SIZE'
+        CloudFilesMockHttp.type = 'INVALID_SIZE'
         container = Container(name='foo_bar_container', extra={}, driver=self)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
@@ -335,7 +331,7 @@ class CloudFilesTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_success_not_found(self):
-        CloudFilesMockRawResponse.type = 'NOT_FOUND'
+        CloudFilesMockHttp.type = 'NOT_FOUND'
         container = Container(name='foo_bar_container', extra={}, driver=self)
 
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -368,7 +364,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -390,7 +386,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 0,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -420,12 +416,12 @@ class CloudFilesTests(unittest.TestCase):
         self.driver.connection.request = old_request
 
     def test_upload_object_invalid_hash(self):
-        CloudFilesMockRawResponse.type = 'INVALID_HASH'
+        CloudFilesMockHttp.type = 'INVALID_HASH'
 
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': 'blah blah'}
 
@@ -462,35 +458,6 @@ class CloudFilesTests(unittest.TestCase):
 
         self.assertEqual(obj.name, object_name)
         libcloud.utils.files.guess_file_mime_type = old_func
-
-    def test_upload_object_error(self):
-        def dummy_content_type(name):
-            return 'application/zip', None
-
-        def send(instance):
-            raise Exception('')
-
-        old_func1 = libcloud.utils.files.guess_file_mime_type
-        libcloud.utils.files.guess_file_mime_type = dummy_content_type
-        old_func2 = CloudFilesMockHttp.send
-        CloudFilesMockHttp.send = send
-
-        file_path = os.path.abspath(__file__)
-        container = Container(name='foo_bar_container', extra={}, driver=self)
-        object_name = 'foo_test_upload'
-        try:
-            self.driver.upload_object(
-                file_path=file_path,
-                container=container,
-                object_name=object_name)
-        except LibcloudError:
-            pass
-        else:
-            self.fail(
-                'Timeout while uploading but an exception was not thrown')
-        finally:
-            libcloud.utils.files.guess_file_mime_type = old_func1
-            CloudFilesMockHttp.send = old_func2
 
     def test_upload_object_inexistent_file(self):
         def dummy_content_type(name):
@@ -719,7 +686,7 @@ class CloudFilesTests(unittest.TestCase):
         ]
         logged_data = []
 
-        class InterceptResponse(CloudFilesMockRawResponse):
+        class InterceptResponse(MockHttp):
             def __init__(self, connection, response=None):
                 super(InterceptResponse, self).__init__(connection=connection,
                                                         response=response)
@@ -798,7 +765,7 @@ class CloudFilesTests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': MockResponse(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            return {'response': make_response(201, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -888,7 +855,7 @@ class CloudFilesDeprecatedUKTests(CloudFilesTests):
     region = 'lon'
 
 
-class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
+class CloudFilesMockHttp(MockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = {'content-type': 'application/json; charset=UTF-8'}
@@ -924,9 +891,9 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             # get_meta_data
             body = self.fixtures.load('meta_data.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'x-account-container-count': 10,
-                            'x-account-object-count': 400,
-                            'x-account-bytes-used': 1234567
+            headers.update({'x-account-container-count': '10',
+                            'x-account-object-count': '400',
+                            'x-account-bytes-used': '1234567'
                             })
         elif method == 'POST':
             body = ''
@@ -973,8 +940,8 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             # get_container
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'x-container-object-count': 800,
-                            'x-container-bytes-used': 1234568
+            headers.update({'x-container-object-count': '800',
+                            'x-container-bytes-used': '1234568'
                             })
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
@@ -1015,7 +982,7 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             # get_object
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'content-length': 555,
+            headers.update({'content-length': '555',
                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
                             'x-object-meta-foo-bar': 'test 1',
@@ -1030,7 +997,7 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             # get_object_name_encoding
             body = self.fixtures.load('list_container_objects_empty.json')
             status_code = httplib.NO_CONTENT
-            headers.update({'content-length': 555,
+            headers.update({'content-length': '555',
                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
                             'x-object-meta-foo-bar': 'test 1',
@@ -1044,7 +1011,7 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load('list_container_objects_empty.json')
         headers = copy.deepcopy(self.base_headers)
-        headers.update({'content-length': 18,
+        headers.update({'content-length': '18',
                         'date': 'Mon, 28 Feb 2011 07:52:57 GMT'
                         })
         status_code = httplib.CREATED
@@ -1060,7 +1027,7 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load('list_container_objects_empty.json')
         headers = copy.deepcopy(self.base_headers)
-        headers.update({'content-length': 18,
+        headers.update({'content-length': '18',
                         'date': 'Mon, 28 Feb 2011 07:52:57 GMT'
                         })
         status_code = httplib.CREATED
@@ -1135,24 +1102,13 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             body = self.fixtures.load('list_container_objects_empty.json')
             headers = self.base_headers
             status_code = httplib.NO_CONTENT
-        return (status_code, body, headers, httplib.responses[httplib.OK])
-
-    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NOT_FOUND(
-            self, method, url, body, headers):
-
-        if method == 'DELETE':
-            # test_delete_object_success
-            body = self.fixtures.load('list_container_objects_empty.json')
-            headers = self.base_headers
-            status_code = httplib.NOT_FOUND
-
-        return (status_code, body, headers, httplib.responses[httplib.OK])
-
-
-class CloudFilesMockRawResponse(MockRawResponse):
-
-    fixtures = StorageFileFixtures('cloudfiles')
-    base_headers = {'content-type': 'application/json; charset=UTF-8'}
+            return (status_code, body, headers, httplib.responses[httplib.OK])
+        elif method == 'GET':
+            body = generate_random_data(1000)
+            return (httplib.OK,
+                    body,
+                    self.base_headers,
+                    httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
         headers = {'etag': 'e2378cace8712661ce7beec3d9362ef6'}
@@ -1200,20 +1156,10 @@ class CloudFilesMockRawResponse(MockRawResponse):
         return (httplib.CREATED, body, headers,
                 httplib.responses[httplib.OK])
 
-    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(
-            self, method, url, body, headers):
-
-        # test_download_object_success
-        body = self._generate_random_data(1000)
-        return (httplib.OK,
-                body,
-                self.base_headers,
-                httplib.responses[httplib.OK])
-
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
             self, method, url, body, headers):
         # test_download_object_invalid_file_size
-        body = self._generate_random_data(100)
+        body = generate_random_data(100)
         return (httplib.OK, body,
                 self.base_headers,
                 httplib.responses[httplib.OK])

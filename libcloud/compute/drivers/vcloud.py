@@ -25,15 +25,11 @@ from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
+from libcloud.utils.py3 import ET
 
 urlparse = urlparse.urlparse
 
 import time
-
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
 
 from xml.parsers.expat import ExpatError
 
@@ -339,8 +335,8 @@ class VCloudConnection(ConnectionUserAndKey):
                                     headers=self._get_auth_headers())
 
             resp = self.connection.getresponse()
-            headers = dict(resp.getheaders())
-            body = ET.XML(resp.read())
+            headers = resp.headers
+            body = ET.XML(resp.text)
 
             try:
                 self.token = headers['set-cookie']
@@ -833,7 +829,7 @@ class VCloud_1_5_Connection(VCloudConnection):
                                     headers=self._get_auth_headers())
 
             resp = self.connection.getresponse()
-            headers = dict(resp.getheaders())
+            headers = resp.headers
 
             # Set authorization token
             try:
@@ -842,7 +838,7 @@ class VCloud_1_5_Connection(VCloudConnection):
                 raise InvalidCredsError()
 
             # Get the URL of the Organization
-            body = ET.XML(resp.read())
+            body = ET.XML(resp.text)
             self.org_name = body.get('org')
             org_list_url = get_url_path(
                 next((link for link in body.findall(fixxpath(body, 'Link'))
@@ -854,7 +850,7 @@ class VCloud_1_5_Connection(VCloudConnection):
                 self.connection.set_http_proxy(self.proxy_url)
             self.connection.request(method='GET', url=org_list_url,
                                     headers=self.add_default_headers({}))
-            body = ET.XML(self.connection.getresponse().read())
+            body = ET.XML(self.connection.getresponse().text)
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')

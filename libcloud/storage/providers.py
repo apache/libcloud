@@ -27,14 +27,24 @@ DRIVERS = {
     ('libcloud.storage.drivers.cloudfiles', 'OpenStackSwiftStorageDriver'),
     Provider.S3:
     ('libcloud.storage.drivers.s3', 'S3StorageDriver'),
+    Provider.S3_US_EAST2:
+    ('libcloud.storage.drivers.s3', 'S3USEast2StorageDriver'),
     Provider.S3_US_WEST:
     ('libcloud.storage.drivers.s3', 'S3USWestStorageDriver'),
     Provider.S3_US_WEST_OREGON:
     ('libcloud.storage.drivers.s3', 'S3USWestOregonStorageDriver'),
+    Provider.S3_US_GOV_WEST:
+    ('libcloud.storage.drivers.s3', 'S3USGovWestStorageDriver'),
     Provider.S3_CN_NORTH:
     ('libcloud.storage.drivers.s3', 'S3CNNorthStorageDriver'),
     Provider.S3_EU_WEST:
     ('libcloud.storage.drivers.s3', 'S3EUWestStorageDriver'),
+    Provider.S3_EU_WEST2:
+    ('libcloud.storage.drivers.s3', 'S3EUWest2StorageDriver'),
+    Provider.S3_EU_CENTRAL:
+    ('libcloud.storage.drivers.s3', 'S3EUCentralStorageDriver'),
+    Provider.S3_AP_SOUTH:
+    ('libcloud.storage.drivers.s3', 'S3APSouthStorageDriver'),
     Provider.S3_AP_SOUTHEAST:
     ('libcloud.storage.drivers.s3', 'S3APSEStorageDriver'),
     Provider.S3_AP_SOUTHEAST2:
@@ -47,6 +57,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.s3', 'S3APNE2StorageDriver'),
     Provider.S3_SA_EAST:
     ('libcloud.storage.drivers.s3', 'S3SAEastStorageDriver'),
+    Provider.S3_CA_CENTRAL:
+    ('libcloud.storage.drivers.s3', 'S3CACentralStorageDriver'),
     Provider.S3_RGW:
     ('libcloud.storage.drivers.rgw', 'S3RGWStorageDriver'),
     Provider.S3_RGW_OUTSCALE:

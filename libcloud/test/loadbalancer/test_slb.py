@@ -24,7 +24,7 @@ from libcloud.loadbalancer.drivers.slb import SLBDriver, \
     SLBLoadBalancerTcpListener, SLBLoadBalancerUdpListener
 from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.secrets import LB_SLB_PARAMS
 from libcloud.utils.py3 import httplib
 
@@ -272,7 +272,7 @@ class SLBDriverTestCases(unittest.TestCase):
                                                             self.cert_name))
 
 
-class SLBMockHttp(MockHttpTestCase):
+class SLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('slb')
 
     def _DescribeLoadBalancers(self, method, url, body, headers):

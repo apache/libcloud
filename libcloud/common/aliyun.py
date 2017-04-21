@@ -64,7 +64,10 @@ class AliyunXmlResponse(XmlResponse):
                 parser = ET.XMLParser(encoding='utf-8')
                 body = ET.XML(self.body.encode('utf-8'), parser=parser)
             else:
-                body = ET.XML(self.body)
+                try:
+                    body = ET.XML(self.body)
+                except ValueError:
+                    body = ET.XML(self.body.encode('utf-8'))
         except:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,

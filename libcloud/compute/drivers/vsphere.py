@@ -60,7 +60,7 @@ DEFAULT_CONNECTION_TIMEOUT = 5  # default connection timeout in seconds
 
 class VSphereConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, url=None, timeout=None):
+                 host=None, port=None, url=None, timeout=None, **kwargs):
         if host and url:
             raise ValueError('host and url arguments are mutually exclusive')
 
@@ -77,7 +77,8 @@ class VSphereConnection(ConnectionUserAndKey):
         super(VSphereConnection, self).__init__(user_id=user_id,
                                                 key=key, secure=secure,
                                                 host=host, port=port,
-                                                url=url, timeout=timeout)
+                                                url=url, timeout=timeout,
+                                                **kwargs)
 
     def connect(self):
         self.client = VIServer()
@@ -92,11 +93,12 @@ class VSphereConnection(ConnectionUserAndKey):
         except Exception:
             e = sys.exc_info()[1]
             message = e.message
+            if hasattr(e, 'strerror'):
+                message = e.strerror
             fault = getattr(e, 'fault', None)
 
             if fault == 'InvalidLoginFault':
                 raise InvalidCredsError(message)
-
             raise LibcloudError(value=message, driver=self.driver)
 
         atexit.register(self.disconnect)

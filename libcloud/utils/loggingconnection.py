@@ -23,20 +23,13 @@ except:
 from pipes import quote as pquote
 from xml.dom.minidom import parseString
 
-import sys
 import os
 
 from libcloud.common.base import (LibcloudConnection,
-                                  HTTPResponse)
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import u
-from libcloud.utils.py3 import b
-
+                                  HttpLibResponseProxy)
+from libcloud.utils.py3 import _real_unicode as u
 
 from libcloud.utils.misc import lowercase_keys
-from libcloud.utils.compression import decompress_data
 
 
 class LoggingConnection(LibcloudConnection):
@@ -48,7 +41,6 @@ class LoggingConnection(LibcloudConnection):
     """
 
     protocol = 'https'
-    port = None
 
     log = None
     http_proxy_used = False
@@ -67,69 +59,35 @@ class LoggingConnection(LibcloudConnection):
             ht += "%s: %s\r\n" % (h[0].title(), h[1])
         ht += "\r\n"
 
-        # this is evil. laugh with me. ha arharhrhahahaha
-        class fakesock(object):
-            def __init__(self, s):
-                self.s = s
-
-            def makefile(self, *args, **kwargs):
-                if PY3:
-                    from io import BytesIO
-                    cls = BytesIO
-                else:
-                    cls = StringIO
-
-                return cls(b(self.s))
-        rr = r
         headers = lowercase_keys(dict(r.getheaders()))
 
-        encoding = headers.get('content-encoding', None)
         content_type = headers.get('content-type', None)
-
-        if encoding in ['zlib', 'deflate']:
-            body = decompress_data('zlib', body)
-        elif encoding in ['gzip', 'x-gzip']:
-            body = decompress_data('gzip', body)
 
         pretty_print = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE',
                                       False)
 
-        if r.chunked:
-            ht += "%x\r\n" % (len(body))
-            ht += body.decode('utf-8')
-            ht += "\r\n0\r\n"
-        else:
-            if pretty_print and content_type == 'application/json':
-                try:
-                    body = json.loads(body.decode('utf-8'))
-                    body = json.dumps(body, sort_keys=True, indent=4)
-                except:
-                    # Invalid JSON or server is lying about content-type
-                    pass
-            elif pretty_print and content_type == 'text/xml':
-                try:
-                    elem = parseString(body.decode('utf-8'))
-                    body = elem.toprettyxml()
-                except Exception:
-                    # Invalid XML
-                    pass
+        if pretty_print and content_type == 'application/json':
+            try:
+                body = json.loads(body.decode('utf-8'))
+                body = json.dumps(body, sort_keys=True, indent=4)
+            except:
+                # Invalid JSON or server is lying about content-type
+                pass
+        elif pretty_print and content_type == 'text/xml':
+            try:
+                elem = parseString(body.decode('utf-8'))
+                body = elem.toprettyxml()
+            except Exception:
+                # Invalid XML
+                pass
 
-            ht += u(body)
+        ht += u(body)
 
-        if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
-            cls = HTTPResponse
-        else:
-            cls = httplib.HTTPResponse
-
-        rr = cls(sock=fakesock(ht), method=r._method,
-                 debuglevel=r.debuglevel)
-        rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
                % (id(self), id(r)))
 
-        rr._original_data = body
-        return (rr, rv)
+        return rv
 
     def _log_curl(self, method, url, body, headers):
         cmd = ["curl"]
@@ -167,24 +125,24 @@ class LoggingConnection(LibcloudConnection):
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])
-        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
-                                             self.port, url))])
+        cmd.extend([pquote("%s%s" % (self.host, url))])
         return " ".join(cmd)
 
     def getresponse(self):
-        r = LibcloudConnection.getresponse(self)
+        original_response = LibcloudConnection.getresponse(self)
         if self.log is not None:
-            r, rv = self._log_response(r)
-            self.log.write(rv + "\n")
+            rv = self._log_response(HttpLibResponseProxy(original_response))
+            self.log.write(u(rv + "\n"))
             self.log.flush()
-        return r
+        return original_response
 
-    def request(self, method, url, body=None, headers=None):
+    def request(self, method, url, body=None, headers=None, **kwargs):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n" % id(self)
-            self.log.write(pre +
-                           self._log_curl(method, url, body, headers) + "\n")
+            self.log.write(u(pre +
+                             self._log_curl(method, url, body, headers) +
+                             "\n"))
             self.log.flush()
         return LibcloudConnection.request(self, method, url, body,
                                           headers)
