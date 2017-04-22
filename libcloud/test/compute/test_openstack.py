@@ -33,6 +33,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import u
 
+from libcloud.common.base import LibcloudConnection
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
     LibcloudError
 from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVolumeState, \
@@ -60,6 +61,7 @@ BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
 class OpenStackAuthTests(unittest.TestCase):
     def setUp(self):
         OpenStack_1_0_NodeDriver.connectionCls = OpenStack_1_0_Connection
+        OpenStack_1_0_NodeDriver.connectionCls.conn_class = LibcloudConnection
 
     def test_auth_host_passed(self):
         forced_auth = 'http://x.y.z.y:5000'

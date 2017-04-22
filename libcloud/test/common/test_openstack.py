@@ -17,7 +17,7 @@ import sys
 import unittest
 
 from mock import Mock
-
+from libcloud.common.base import LibcloudConnection
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.utils.py3 import PY25
 
@@ -31,6 +31,9 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
                                                   ex_force_auth_url='https://127.0.0.1')
         self.connection.driver = Mock()
         self.connection.driver.name = 'OpenStackDriver'
+
+    def tearDown(self):
+        OpenStackBaseConnection.conn_class = LibcloudConnection
 
     def test_base_connection_timeout(self):
         self.connection.connect()
