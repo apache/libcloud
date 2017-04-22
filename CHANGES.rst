@@ -7,6 +7,11 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Fix OpenStack drivers not correctly setting URLs when used with identity API, would default to 127.0.0.1 and service
+  catalog URLs were not adhered to.
+  [GITHUB-1037, LIBCLOUD-912, LIBCLOUD-904]
+  (Anthony Shaw) 
+
 - Fix Aliyun ECS, Load balancer and storage adapters when using unicode UTF-8 characters in the names of resources
   in 2.0.0rc2 < it would fail as a MalformedResponseError, Python 2.7 element tree was raising a unicode error
   [GITHUB-1032] [GITHUB-994]
