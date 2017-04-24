@@ -16,7 +16,7 @@ Connecting to Azure
 -------------------
 
 To connect to Azure you need your tenant ID and subscription ID.  Using the
-Azure cross platform CLI, use ``azure account list`` to get these
+[Azure cross-platform CLI](https://github.com/Azure/azure-xplat-cli), use ``azure account list`` to get these
 values.
 
 Creating a Service Principal
@@ -28,7 +28,8 @@ https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenti
 .. sourcecode:: bash
 
   azure ad app create --name "<Your Application Display Name>" --home-page "<https://YourApplicationHomePage>" --identifier-uris "<https://YouApplicationUri>" --password <Your_Password>
-  azure ad sp create "<Application_Id>"
+  azure ad sp create --applicationId "<Application_Id>"
+  azure role assignment list
   azure role assignment create --objectId "<Object_Id>" -o Owner -c /subscriptions/{subscriptionId}/
 
 Instantiating a driver
