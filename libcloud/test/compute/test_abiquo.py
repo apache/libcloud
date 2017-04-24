@@ -29,7 +29,7 @@ from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class AbiquoNodeDriverTest(TestCaseMixin):
+class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
     """
     Abiquo Node Driver test suite
     """
