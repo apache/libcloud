@@ -24,9 +24,9 @@ try:
     if libcloud.utils.py3.DEFAULT_LXML:
         from lxml.etree import Element, SubElement
     else:
-        from xml.etree import Element, SubElement
+        from xml.etree.ElementTree import Element, SubElement
 except ImportError:
-    from xml.etree import Element, SubElement
+    from xml.etree.ElementTree import Element, SubElement
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
