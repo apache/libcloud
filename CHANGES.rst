@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Common
+~~~~~~
+
+- Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
+  issues with a number of drivers and etree is a standard package
+  [GITHUB-1038]
+  (Anthony Shaw)
+
 Changes in Apache Libcloud 2.0.0
 --------------------------------
 
