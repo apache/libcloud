@@ -16,26 +16,27 @@ Connecting to Azure
 -------------------
 
 To connect to Azure you need your tenant ID and subscription ID.  Using the
-[Azure cross-platform CLI](https://github.com/Azure/azure-xplat-cli), use ``azure account list`` to get these
+[Azure cross-platform CLI v2](https://github.com/Azure/azure-cli), use ``az account list`` to get these
 values.
 
 Creating a Service Principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following directions are based on
-https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/
-
 .. sourcecode:: bash
 
-  azure ad app create --name "<Your Application Display Name>" --home-page "<https://YourApplicationHomePage>" --identifier-uris "<https://YouApplicationUri>" --password <Your_Password>
-  azure ad sp create --applicationId "<Application_Id>"
-  azure role assignment list
+  az login
+  az account list # take note of "id", that's your $subscription_id
+  az ad sp create-for-rbac -p "$AZURE_KEY_FILE" --name "GlaucomaPrinciple" --password "$secret" --role 'API Management Service Contributor'
+
+Redundant rules: # TODO: Remove this
+
+  az ad app create --display-name $display_name --homepage "$homepage" --identifier-uris "$homepage" --password "$secret"
+  az ad sp create --id "$appId" # see output of^ for $appId
+  az role definition list
   azure role assignment create --objectId "<Object_Id>" -o Owner -c /subscriptions/{subscriptionId}/
 
 Instantiating a driver
 ~~~~~~~~~~~~~~~~~~~~~~
-
-Use <Application_Id> for "key" and the <Your_Password> for "secret".
 
 Once you have the tenant id, subscription id, application id ("key"), and
 password ("secret"), you can create an AzureNodeDriver:
