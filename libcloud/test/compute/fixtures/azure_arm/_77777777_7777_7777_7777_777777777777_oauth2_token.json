@@ -1,1 +1,13 @@
-{"expires_in":"3600","token_type":"Bearer","expires_on":"1111111111","not_before":"1111111111","resource":"https://management.core.windows.net/","access_token":"3333333333333333333333333333333333333333333333333333333"}
+{
+  "expiresIn": 3599,
+  "_authority": "https://login.microsoftonline.com/common",
+  "refreshToken": "555555555555555555555555555",
+  "tokenType": "Bearer",
+  "expiresOn": "2017-04-24T04:50:24.289Z",
+  "userId": "foo@bar.com",
+  "isMRRT": true,
+  "_clientId": "client-id-here",
+  "resource": "https://management.core.windows.net/",
+  "accessToken": "3333333333333333333333333333333333333333333333333333333",
+  "identityProvider": "live.com"
+}

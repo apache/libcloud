@@ -1,0 +1,90 @@
+[
+  {
+    "offer": "WindowsServer",
+    "publisher": "MicrosoftWindowsServer",
+    "sku": "2016-Datacenter",
+    "urn": "MicrosoftWindowsServer:WindowsServer:2016-Datacenter:latest",
+    "urnAlias": "Win2016Datacenter",
+    "version": "latest"
+  },
+  {
+    "offer": "WindowsServer",
+    "publisher": "MicrosoftWindowsServer",
+    "sku": "2012-R2-Datacenter",
+    "urn": "MicrosoftWindowsServer:WindowsServer:2012-R2-Datacenter:latest",
+    "urnAlias": "Win2012R2Datacenter",
+    "version": "latest"
+  },
+  {
+    "offer": "WindowsServer",
+    "publisher": "MicrosoftWindowsServer",
+    "sku": "2008-R2-SP1",
+    "urn": "MicrosoftWindowsServer:WindowsServer:2008-R2-SP1:latest",
+    "urnAlias": "Win2008R2SP1",
+    "version": "latest"
+  },
+  {
+    "offer": "WindowsServer",
+    "publisher": "MicrosoftWindowsServer",
+    "sku": "2012-Datacenter",
+    "urn": "MicrosoftWindowsServer:WindowsServer:2012-Datacenter:latest",
+    "urnAlias": "Win2012Datacenter",
+    "version": "latest"
+  },
+  {
+    "offer": "UbuntuServer",
+    "publisher": "Canonical",
+    "sku": "16.04-LTS",
+    "urn": "Canonical:UbuntuServer:16.04-LTS:latest",
+    "urnAlias": "UbuntuLTS",
+    "version": "latest"
+  },
+  {
+    "offer": "CentOS",
+    "publisher": "OpenLogic",
+    "sku": "7.3",
+    "urn": "OpenLogic:CentOS:7.3:latest",
+    "urnAlias": "CentOS",
+    "version": "latest"
+  },
+  {
+    "offer": "openSUSE-Leap",
+    "publisher": "SUSE",
+    "sku": "42.2",
+    "urn": "SUSE:openSUSE-Leap:42.2:latest",
+    "urnAlias": "openSUSE-Leap",
+    "version": "latest"
+  },
+  {
+    "offer": "RHEL",
+    "publisher": "RedHat",
+    "sku": "7.3",
+    "urn": "RedHat:RHEL:7.3:latest",
+    "urnAlias": "RHEL",
+    "version": "latest"
+  },
+  {
+    "offer": "SLES",
+    "publisher": "SUSE",
+    "sku": "12-SP2",
+    "urn": "SUSE:SLES:12-SP2:latest",
+    "urnAlias": "SLES",
+    "version": "latest"
+  },
+  {
+    "offer": "Debian",
+    "publisher": "credativ",
+    "sku": "8",
+    "urn": "credativ:Debian:8:latest",
+    "urnAlias": "Debian",
+    "version": "latest"
+  },
+  {
+    "offer": "CoreOS",
+    "publisher": "CoreOS",
+    "sku": "Stable",
+    "urn": "CoreOS:CoreOS:Stable:latest",
+    "urnAlias": "CoreOS",
+    "version": "latest"
+  }
+]
