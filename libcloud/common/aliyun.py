@@ -20,11 +20,7 @@ import sys
 import time
 import uuid
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import MalformedResponseError
 from libcloud.utils.py3 import b, u, urlquote, PY3

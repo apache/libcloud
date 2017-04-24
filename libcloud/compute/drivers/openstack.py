@@ -23,11 +23,6 @@ try:
 except ImportError:
     import json
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import warnings
 import base64
 
@@ -50,6 +45,7 @@ from libcloud.compute.types import NodeState, StorageVolumeState, Provider, \
     VolumeSnapshotState
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
+from libcloud.utils.py3 import ET
 
 __all__ = [
     'OpenStack_1_0_Response',

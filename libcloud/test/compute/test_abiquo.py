@@ -17,11 +17,7 @@ Abiquo Test Suite
 """
 import sys
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.abiquo import AbiquoNodeDriver

@@ -24,11 +24,7 @@ try:
 except ImportError:
     from unittest import mock
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
