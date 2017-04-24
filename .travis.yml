@@ -48,7 +48,8 @@ matrix:
   # For now allow failures of all the builds which use lxml
   allow_failures:
     - env: ENV=coverage
-    - env: ENV=pypy3
+    - env:
+      python: pypy3
       # Trigger ReadTheDocs build
 
 install:
