@@ -21,7 +21,7 @@ from hashlib import sha1
 
 import libcloud.utils.py3
 try:
-    if DEFAULT_LXML:
+    if libcloud.utils.py3.DEFAULT_LXML:
         from lxml.etree import Element, SubElement
     else:
         from xml.etree import Element, SubElement
