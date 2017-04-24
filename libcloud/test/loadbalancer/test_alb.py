@@ -20,7 +20,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.loadbalancer.drivers.alb import ApplicationLBDriver
 from libcloud.loadbalancer.types import State
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.secrets import LB_ALB_PARAMS
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
@@ -127,7 +127,7 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertTrue(('conditions' in listener_rules[0]), 'Rule is missing "conditions" field')
 
 
-class ApplicationLBMockHttp(MockHttpTestCase):
+class ApplicationLBMockHttp(MockHttp):
     fixtures = LoadBalancerFileFixtures('alb')
 
     def _2015_12_01_DescribeLoadBalancers(self, method, url, body, headers):

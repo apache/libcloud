@@ -1,0 +1,78 @@
+[
+  {
+    "id": "B23F1B4F84E983B4FEDD5459E877058A",
+    "name": "My load balancer",
+    "state": "CONFIGURING",
+    "creation_date": "2015-03-03T11:12:00+00:00",
+    "description": "My load balancer description",
+    "ip": "10.5.138.52",
+    "health_check_test": "TCP",
+    "health_check_interval": 40,
+    "health_check_path": null,
+    "health_check_path_parser": null,
+    "persistence": true,
+    "persistence_time": 1200,
+    "method": "ROUND_ROBIN",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "rules": [
+      {
+        "id": "D7A0A7C445D844848EBB439C28B46183",
+        "protocol": "TCP",
+        "port_balancer": 22,
+        "port_server": 22,
+        "source": "0.0.0.0"
+      },
+      {
+        "id": "9AE836CDE379EEB361287F07B3300F84",
+        "protocol": "TCP",
+        "port_balancer": 85,
+        "port_server": 85,
+        "source": "0.0.0.0"
+      }
+    ],
+    "server_ips": [],
+    "cloudpanel_id": "LB99AA4_1"
+  },
+  {
+    "id": "B23F1B4F84E983B4FEDD5459E877058B",
+    "name": "My Load Balancer II",
+    "state": "CONFIGURING",
+    "creation_date": "2015-03-03T11:12:00+00:00",
+    "description": "My load balancer II description",
+    "ip": "10.5.138.53",
+    "health_check_test": "TCP",
+    "health_check_interval": 40,
+    "health_check_path": null,
+    "health_check_path_parser": null,
+    "persistence": true,
+    "persistence_time": 1200,
+    "method": "ROUND_ROBIN",
+    "region": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "rules": [
+      {
+        "id": "D7A0A7C445D844848EBB439C28B46184",
+        "protocol": "TCP",
+        "port_balancer": 22,
+        "port_server": 22,
+        "source": "0.0.0.0"
+      },
+      {
+        "id": "9AE836CDE379EEB361287F07B3300F85",
+        "protocol": "TCP",
+        "port_balancer": 9999,
+        "port_server": 9999,
+        "source": "0.0.0.0"
+      }
+    ],
+    "server_ips": [],
+    "cloudpanel_id": "LB99AA4_1"
+  }
+]

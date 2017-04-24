@@ -38,7 +38,8 @@ Provider                              list images get image create image delete 
 `NephoScale`_                         yes         no        no           no           no        
 `Nimbus`_                             yes         yes       yes          yes          yes       
 `NTTAmerica`_                         yes         no        no           no           no        
-`OnApp`_                              no          no        no           no           no        
+`OnApp`_                              yes         no        no           no           no        
+`1and1`_                              yes         yes       no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       
@@ -97,6 +98,7 @@ Provider                              list images get image create image delete 
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
+.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com

@@ -22,12 +22,9 @@ import sys
 import base64
 import copy
 import warnings
+import time
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
@@ -67,6 +64,7 @@ __all__ = [
     'EC2NodeLocation',
     'EC2ReservedNode',
     'EC2SecurityGroup',
+    'EC2ImportSnapshotTask',
     'EC2PlacementGroup',
     'EC2Network',
     'EC2NetworkSubnet',
@@ -713,7 +711,7 @@ INSTANCE_TYPES = {
         'disk': 0,  # EBS Only
         'bandwidth': None,
         'extra': {
-            'cpu': 11
+            'cpu': 1
         }
     },
     't2.medium': {
@@ -734,6 +732,26 @@ INSTANCE_TYPES = {
         'bandwidth': None,
         'extra': {
             'cpu': 2
+        }
+    },
+    't2.xlarge': {
+        'id': 't2.xlarge',
+        'name': 'Burstable Performance Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    't2.2xlarge': {
+        'id': 't2.2xlarge',
+        'name': 'Burstable Performance Double Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS Only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
         }
     },
     'x1.32xlarge': {
@@ -886,7 +904,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-east-2.amazonaws.com',
         'api_name': 'ec2_us_east_ohio',
         'country': 'USA',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -1653,6 +1671,62 @@ REGION_DETAILS = {
             't2.large'
         ]
     },
+    # China (North) Region
+    'cn-north-1': {
+        'endpoint': 'ec2.cn-north-1.amazonaws.com.cn',
+        'api_name': 'ec2_cn_north',
+        'country': 'China',
+        'signature_version': '4',
+        'instance_types': [
+            't1.micro',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            't2.xlarge',
+            't2.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.10xlarge',
+            'm4.16xlarge',
+            'm3.medium',
+            'm3.large',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'm1.small',
+            'c4.large',
+            'c4.xlarge',
+            'c4.2xlarge',
+            'c4.4xlarge',
+            'c4.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
+            'r3.large',
+            'r3.xlarge',
+            'r3.2xlarge',
+            'r3.4xlarge',
+            'r3.8xlarge',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
+        ]
+    },
     'nimbus': {
         # Nimbus clouds have 3 EC2-style instance types but their particular
         # RAM allocations are configured by the admin
@@ -2392,6 +2466,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'ena_support': {
             'xpath': 'enaSupport',
             'transform_func': str
+        },
+        'sriov_net_support': {
+            'xpath': 'sriovNetSupport',
+            'transform_func': str
         }
     },
     'network': {
@@ -2731,7 +2809,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'attachmentSet/item/deleteOnTermination',
             'transform_func': str
         },
-        'type': {
+        'volume_type': {
             'xpath': 'volumeType',
             'transform_func': str
         }
@@ -2744,8 +2822,60 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     }
 }
 
+VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
+    'end_time': {
+        'xpath': 'endTime',
+        'transform_func': parse_date
+    },
+    'modification_state': {
+        'xpath': 'modificationState',
+        'transform_func': str
+    },
+    'original_iops': {
+        'xpath': 'originalIops',
+        'transform_func': int
+    },
+    'original_size': {
+        'xpath': 'originalSize',
+        'transform_func': int
+    },
+    'original_volume_type': {
+        'xpath': 'originalVolumeType',
+        'transform_func': str
+    },
+    'progress': {
+        'xpath': 'progress',
+        'transform_func': int
+    },
+    'start_time': {
+        'xpath': 'startTime',
+        'transform_func': parse_date
+    },
+    'status_message': {
+        'xpath': 'statusMessage',
+        'transform_func': str
+    },
+    'target_iops': {
+        'xpath': 'targetIops',
+        'transform_func': int
+    },
+    'target_size': {
+        'xpath': 'targetSize',
+        'transform_func': int
+    },
+    'target_volume_type': {
+        'xpath': 'targetVolumeType',
+        'transform_func': str
+    },
+    'volume_id': {
+        'xpath': 'volumeId',
+        'transform_func': str
+    }
+}
+
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
 VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
+VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -2870,6 +3000,22 @@ class EC2SecurityGroup(object):
     def __repr__(self):
         return (('<EC2SecurityGroup: id=%s, name=%s')
                 % (self.id, self.name))
+
+
+class EC2ImportSnapshotTask(object):
+    """
+    Represents information about a describe_import_snapshot_task.
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, status, snapshotId):
+        self.status = status
+        self.snapshotId = snapshotId
+
+    def __repr__(self):
+        return (('<EC2SecurityGroup: status=%s, snapshotId=%s')
+                % (self.status, self.snapshotId))
 
 
 class EC2PlacementGroup(object):
@@ -3113,6 +3259,44 @@ class EC2SubnetAssociation(object):
 
     def __repr__(self):
         return (('<EC2SubnetAssociation: id=%s>') % (self.id))
+
+
+class EC2VolumeModification(object):
+    """
+    Describes the modification status of an EBS volume.
+
+    If the volume has never been modified, some element values will be null.
+    """
+
+    def __init__(self, end_time=None, modification_state=None,
+                 original_iops=None, original_size=None,
+                 original_volume_type=None, progress=None, start_time=None,
+                 status_message=None, target_iops=None, target_size=None,
+                 target_volume_type=None, volume_id=None):
+        self.end_time = end_time
+        self.modification_state = modification_state
+        self.original_iops = original_iops
+        self.original_size = original_size
+        self.original_volume_type = original_volume_type
+        self.progress = progress
+        self.start_time = start_time
+        self.status_message = status_message
+        self.target_iops = target_iops
+        self.target_size = target_size
+        self.target_volume_type = target_volume_type
+        self.volume_id = volume_id
+
+    def __repr__(self):
+        return (('<EC2VolumeModification: end_time=%s, modification_state=%s, '
+                 'original_iops=%s, original_size=%s, '
+                 'original_volume_type=%s, progress=%s, start_time=%s, '
+                 'status_message=%s, target_iops=%s, target_size=%s, '
+                 'target_volume_type=%s, volume_id=%s>')
+                % (self.end_time, self.modification_state, self.original_iops,
+                   self.original_size, self.original_volume_type,
+                   self.progress, self.start_time, self.status_message,
+                   self.target_iops, self.target_size, self.target_volume_type,
+                   self.volume_id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -3575,13 +3759,12 @@ class BaseEC2NodeDriver(NodeDriver):
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-        valid_volume_types = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
         params = {
             'Action': 'CreateVolume',
             'Size': str(size)}
 
-        if ex_volume_type and ex_volume_type not in valid_volume_types:
+        if ex_volume_type and ex_volume_type not in VALID_VOLUME_TYPES:
             raise ValueError('Invalid volume type specified: %s' %
                              (ex_volume_type))
 
@@ -3906,6 +4089,138 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    def ex_import_snapshot(self, client_data=None,
+                           client_token=None, description=None,
+                           disk_container=None, dry_run=None, role_name=None):
+        """
+        Imports a disk into an EBS snapshot. More information can be found
+        at https://goo.gl/sbXkYA.
+
+        :param  client_data: Describes the client specific data (optional)
+        :type   client_data: ``dict``
+
+        :param  client_token: The token to enable idempotency for VM
+                import requests.(optional)
+        :type   client_token: ``str``
+
+        :param  description: The description string for the
+                             import snapshot task.(optional)
+        :type   description: ``str``
+
+        :param  disk_container:The disk container object for the
+                              import snapshot request.
+        :type   disk_container:``dict``
+
+        :param  dry_run: Checks whether you have the permission for
+                        the action, without actually making the request,
+                        and provides an error response.(optional)
+        :type   dry_run: ``bool``
+
+        :param  role_name: The name of the role to use when not using the
+                          default role, 'vmimport'.(optional)
+        :type   role_name: ``str``
+
+        :rtype: :class: ``VolumeSnapshot``
+        """
+
+        params = {'Action': 'ImportSnapshot'}
+
+        if client_data is not None:
+            params.update(self._get_client_date_params(client_data))
+
+        if client_token is not None:
+            params['ClientToken'] = client_token
+
+        if description is not None:
+            params['Description'] = description
+
+        if disk_container is not None:
+            params.update(self._get_disk_container_params(disk_container))
+
+        if dry_run is not None:
+            params['DryRun'] = dry_run
+
+        if role_name is not None:
+            params['RoleName'] = role_name
+
+        importSnapshot = self.connection.request(self.path,
+                                                 params=params).object
+
+        importTaskId = findtext(element=importSnapshot,
+                                xpath='importTaskId',
+                                namespace=NAMESPACE)
+
+        volumeSnapshot = self._wait_for_import_snapshot_completion(
+            import_task_id=importTaskId, timeout=1800, interval=15)
+
+        return volumeSnapshot
+
+    def _wait_for_import_snapshot_completion(self,
+                                             import_task_id,
+                                             timeout=1800,
+                                             interval=15):
+        """
+        It waits for import snapshot to be completed
+
+        :param import_task_id: Import task Id for the
+                               current Import Snapshot Task
+        :type import_task_id: ``str``
+
+        :param timeout: Timeout value for snapshot generation
+        :type timeout: ``float``
+
+        :param interval: Time interval for repetative describe
+                         import snapshot tasks requests
+        :type interval: ``float``
+
+        :rtype: :class:``VolumeSnapshot``
+        """
+        start_time = time.time()
+        snapshotId = None
+        while snapshotId is None:
+            if (time.time() - start_time >= timeout):
+                raise Exception('Timeout while waiting '
+                                'for import task Id %s'
+                                % import_task_id)
+            res = self.ex_describe_import_snapshot_tasks(import_task_id)
+            snapshotId = res.snapshotId
+
+            if snapshotId is None:
+                time.sleep(interval)
+
+        volumeSnapshot = VolumeSnapshot(snapshotId, driver=self)
+        return volumeSnapshot
+
+    def ex_describe_import_snapshot_tasks(self, import_task_id, dry_run=None):
+        """
+        Describes your import snapshot tasks. More information can be found
+        at https://goo.gl/CI0MdS.
+
+        :param import_task_id: Import task Id for the current
+                               Import Snapshot Task
+        :type import_task_id: ``str``
+
+        :param  dry_run: Checks whether you have the permission for
+                        the action, without actually making the request,
+                        and provides an error response.(optional)
+        :type   dry_run: ``bool``
+
+        :rtype: :class:``DescribeImportSnapshotTasks Object``
+
+        """
+        params = {'Action': 'DescribeImportSnapshotTasks'}
+
+        if dry_run is not None:
+            params['DryRun'] = dry_run
+
+        # This can be extended for multiple import snapshot tasks
+        params['ImportTaskId.1'] = import_task_id
+
+        res = self._to_import_snapshot_task(
+            self.connection.request(self.path, params=params).object
+        )
+        return res
+
     def ex_list_placement_groups(self, names=None):
         """
         A list of placement groups.
@@ -3928,7 +4243,8 @@ class BaseEC2NodeDriver(NodeDriver):
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
                           ramdisk_id=None, virtualization_type=None,
-                          ena_support=None):
+                          ena_support=None, billing_products=None,
+                          sriov_net_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -3972,6 +4288,14 @@ class BaseEC2NodeDriver(NodeDriver):
                                  Network Adapter for the AMI
         :type       ena_support: ``bool``
 
+        :param      billing_products: The billing product codes
+        :type       billing_products: ''list''
+
+        :param      sriov_net_support: Set to "simple" to enable enhanced
+                                       networking with the Intel 82599 Virtual
+                                       Function interface
+        :type       sriov_net_support: ``str``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -4005,6 +4329,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if ena_support is not None:
             params['EnaSupport'] = ena_support
+
+        if billing_products is not None:
+            params.update(self._get_billing_product_params(
+                          billing_products))
+
+        if sriov_net_support is not None:
+            params['SriovNetSupport'] = sriov_net_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
@@ -5870,6 +6201,67 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
+    def ex_modify_volume(self, volume, parameters):
+        """
+        Modify volume parameters.
+        A list of valid parameters can be found at https://goo.gl/N0rPEQ
+
+        :param      Volume: Volume instance
+        :type       Volume: :class:`Volume`
+
+        :param      parameters: Dictionary with updated volume parameters
+        :type       parameters: ``dict``
+
+        :return: Volume modification status object
+        :rtype: :class:`VolumeModification
+        """
+        parameters = parameters or {}
+
+        volume_type = parameters.get('VolumeType')
+        if volume_type and volume_type not in VALID_VOLUME_TYPES:
+            raise ValueError('Invalid volume type specified: %s' % volume_type)
+
+        parameters.update({'Action': 'ModifyVolume', 'VolumeId': volume.id})
+        response = self.connection.request(self.path,
+                                           params=parameters.copy()).object
+
+        return self._to_volume_modification(response.findall(
+            fixxpath(xpath='volumeModification', namespace=NAMESPACE))[0])
+
+    def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None,
+                                          filters=None):
+        """
+        Describes one or more of your volume modifications.
+
+        :param      dry_run: dry_run
+        :type       dry_run: ``bool``
+
+        :param      volume_ids: The volume_ids so that the response includes
+                             information for only said volumes
+        :type       volume_ids: ``dict``
+
+        :param      filters: The filters so that the response includes
+                             information for only certain volumes
+        :type       filters: ``dict``
+
+        :return:  List of volume modification status objects
+        :rtype:   ``list`` of :class:`VolumeModification
+        """
+        params = {'Action': 'DescribeVolumesModifications'}
+
+        if dry_run:
+            params.update({'DryRun': dry_run})
+
+        if volume_ids:
+            params.update(self._pathlist('VolumeId', volume_ids))
+
+        if filters:
+            params.update(self._build_filters(filters))
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_volume_modifications(response)
+
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
         if hasattr(self, 'token') and self.token is not None:
@@ -5944,6 +6336,13 @@ class BaseEC2NodeDriver(NodeDriver):
         # Build block device mapping
         block_device_mapping = self._to_device_mappings(element)
 
+        billing_products = []
+        for p in findall(element=element,
+                         xpath="billingProducts/item/billingProduct",
+                         namespace=NAMESPACE):
+
+            billing_products.append(p.text)
+
         # Get our tags
         tags = self._get_resource_tags(element)
 
@@ -5954,7 +6353,7 @@ class BaseEC2NodeDriver(NodeDriver):
         # Add our tags and block device mapping
         extra['tags'] = tags
         extra['block_device_mapping'] = block_device_mapping
-
+        extra['billing_products'] = billing_products
         return NodeImage(id=id, name=name, driver=self, extra=extra)
 
     def _to_volume(self, element, name=None):
@@ -5998,6 +6397,22 @@ class BaseEC2NodeDriver(NodeDriver):
                              state=state,
                              extra=extra)
 
+    def _to_volume_modifications(self, object):
+        return [self._to_volume_modification(el) for el in object.findall(
+            fixxpath(xpath='volumeModificationSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_volume_modification(self, element):
+        """
+        Parse the XML element and return a StorageVolume object.
+
+        :rtype:     :class:`EC2VolumeModification`
+        """
+        params = self._get_extra_dict(element,
+                                      VOLUME_MODIFICATION_ATTRIBUTE_MAP)
+
+        return EC2VolumeModification(**params)
+
     def _to_snapshots(self, response):
         return [self._to_snapshot(el) for el in response.findall(
             fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
@@ -6039,6 +6454,19 @@ class BaseEC2NodeDriver(NodeDriver):
                               created=created,
                               state=state,
                               name=name)
+
+    def _to_import_snapshot_task(self, element):
+        status = findtext(element=element, xpath='importSnapshotTaskSet/item/'
+                          'snapshotTaskDetail/status', namespace=NAMESPACE)
+
+        if status != 'completed':
+            snapshotId = None
+        else:
+            xpath = 'importSnapshotTaskSet/item/snapshotTaskDetail/snapshotId'
+            snapshotId = findtext(element=element, xpath=xpath,
+                                  namespace=NAMESPACE)
+
+        return EC2ImportSnapshotTask(status, snapshotId=snapshotId)
 
     def _to_key_pairs(self, elems):
         key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
@@ -6694,6 +7122,92 @@ class BaseEC2NodeDriver(NodeDriver):
                     for key, value in v.items():
                         params['BlockDeviceMapping.%d.%s.%s'
                                % (idx, k, key)] = str(value)
+        return params
+
+    def _get_billing_product_params(self, billing_products):
+        """
+        Return a list of dictionaries with valid param for billing product.
+
+        :param      billing_product: List of billing code values(str)
+        :type       billing product: ``list``
+
+        :return:    Dictionary representation of the billing product codes
+        :rtype:     ``dict``
+        """
+
+        if not isinstance(billing_products, (list, tuple)):
+            raise AttributeError(
+                'billing_products not list or tuple')
+
+        params = {}
+
+        for idx, v in enumerate(billing_products):
+            idx += 1  # We want 1-based indexes
+            params['BillingProduct.%d' % (idx)] = str(v)
+
+    def _get_disk_container_params(self, disk_container):
+        """
+        Return a list of dictionaries with query parameters for
+        a valid disk container.
+
+        :param      disk_container: List of dictionaries with
+                                    disk_container details
+        :type       disk_container: ``list`` or ``dict``
+
+        :return:    Dictionary representation of the disk_container
+        :rtype:     ``dict``
+        """
+
+        if not isinstance(disk_container, (list, tuple)):
+            raise AttributeError('disk_container not list or tuple')
+
+        params = {}
+
+        for idx, content in enumerate(disk_container):
+            idx += 1  # We want 1-based indexes
+            if not isinstance(content, dict):
+                raise AttributeError(
+                    'content %s in disk_container not a dict' % content)
+
+            for k, v in content.items():
+                if not isinstance(v, dict):
+                    params['DiskContainer.%s' % (k)] = str(v)
+
+                else:
+                    for key, value in v.items():
+                        params['DiskContainer.%s.%s'
+                               % (k, key)] = str(value)
+
+        return params
+
+    def _get_client_data_params(self, client_data):
+        """
+        Return a dictionary with query parameters for
+        a valid client data.
+
+        :param      client_data: List of dictionaries with the disk
+                                 upload details
+        :type       client_data: ``dict``
+
+        :return:    Dictionary representation of the client data
+        :rtype:     ``dict``
+        """
+
+        if not isinstance(client_data, (list, tuple)):
+            raise AttributeError('client_data not list or tuple')
+
+        params = {}
+
+        for idx, content in enumerate(client_data):
+            idx += 1  # We want 1-based indexes
+            if not isinstance(content, dict):
+                raise AttributeError(
+                    'content %s in client_data'
+                    'not a dict' % content)
+
+            for k, v in content.items():
+                params['ClientData.%s' % (k)] = str(v)
+
         return params
 
     def _get_common_security_group_params(self, group_id, protocol,

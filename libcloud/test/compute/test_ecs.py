@@ -23,7 +23,7 @@ from libcloud.compute.base import Node, NodeAuthPassword, NodeImage, \
     NodeLocation, NodeSize, StorageVolume, VolumeSnapshot
 from libcloud.compute.drivers.ecs import ECSDriver
 from libcloud.compute.types import NodeState, StorageVolumeState
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import ECS_PARAMS
 from libcloud.utils.py3 import httplib
@@ -185,7 +185,6 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual(9, len(locations))
         location = locations[0]
         self.assertEqual('ap-southeast-1', location.id)
-        self.assertEqual('亚太（新加坡）', location.name)
         self.assertIsNone(location.country)
 
     def test_create_node_without_sg_id_exception(self):
@@ -528,6 +527,18 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('', sg.vpc_id)
         self.assertEqual('2015-06-26T08:35:30Z', sg.creation_time)
 
+    def test_ex_join_security_group(self):
+        ex_security_group_id_value = 'sg-28ou0f3xa'
+        result = self.driver.ex_join_security_group(self.fake_node,
+                                                    group_id=ex_security_group_id_value)
+        self.assertTrue(result)
+
+    def test_ex_leave_security_group(self):
+        ex_security_group_id_value = 'sg-28ou0f3xa'
+        result = self.driver.ex_leave_security_group(self.fake_node,
+                                                     group_id=ex_security_group_id_value)
+        self.assertTrue(result)
+
     def test_ex_list_security_groups_with_ex_filters(self):
         ECSMockHttp.type = 'list_sgs_filters'
         self.vpc_id = 'vpc1'
@@ -540,8 +551,8 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual(1, len(zones))
         zone = zones[0]
         self.assertEqual('cn-qingdao-b', zone.id)
-        self.assertEqual('青岛可用区B', zone.name)
         self.assertEqual(self.driver, zone.driver)
+        self.assertEqual('青岛可用区B', zone.name)
         self.assertIsNotNone(zone.available_resource_types)
         self.assertEqual('IoOptimized', zone.available_resource_types[0])
         self.assertIsNotNone(zone.available_instance_types)
@@ -550,7 +561,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('cloud_ssd', zone.available_disk_categories[0])
 
 
-class ECSMockHttp(MockHttpTestCase):
+class ECSMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ecs')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -902,6 +913,14 @@ class ECSMockHttp(MockHttpTestCase):
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('describe_security_groups.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
+
+    def _JoinSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('join_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _LeaveSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('leave_security_group_by_id.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _list_sgs_filters_DescribeSecurityGroups(self, method, url, body,
                                                  headers):

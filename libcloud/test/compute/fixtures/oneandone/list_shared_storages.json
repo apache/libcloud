@@ -1,0 +1,64 @@
+[
+  {
+    "id": "6AD2F180B7B666539EF75A02FE227084",
+    "size": 200,
+    "state": "ACTIVE",
+    "description": "My shared storage test description",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "cloudpanel_id": "vid35780",
+    "size_used": "0.00",
+    "cifs_path": "vid50995.nas1.lanvid50995",
+    "nfs_path": "vid50995.nas1.lan/:vid50995",
+    "name": "My shared storage test",
+    "creation_date": "2015-05-06T08:33:25+00:00",
+    "servers": [
+      {
+        "id": "638ED28205B1AFD7ADEF569C725DD85F",
+        "name": "My server 1",
+        "rights": "RW"
+      }
+    ]
+  },
+  {
+    "id": "4406CE4723BB441C7956E25C51CE8C1B",
+    "size": 50,
+    "state": "ACTIVE",
+    "description": "My shared storage description",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "cloudpanel_id": "vid30534",
+    "size_used": "0.00",
+    "cifs_path": "vid50995.nas1.lanvid50995",
+    "nfs_path": "vid50995.nas1.lan/:vid50995",
+    "name": "My shared storage",
+    "creation_date": "2015-03-17T11:57:48+00:00",
+    "servers": [
+    ]
+  },
+  {
+    "id": "1A5418172DD3BD39F8010A6633F1018A",
+    "size": 250,
+    "state": "ACTIVE",
+    "description": null,
+    "cloudpanel_id": "vid19857",
+    "datacenter": {
+      "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+      "location": "USA",
+      "country_code": "US"
+    },
+    "size_used": "0.00",
+    "cifs_path": "vid50995.nas1.lanvid50995",
+    "nfs_path": "vid50995.nas1.lan/:vid50995",
+    "name": "My shared storage 2",
+    "creation_date": "2015-05-05T09:36:31+00:00",
+    "servers": [
+    ]
+  }
+]

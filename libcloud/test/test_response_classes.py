@@ -21,7 +21,7 @@ import requests_mock
 
 from libcloud.common.base import XmlResponse, JsonResponse, Connection
 from libcloud.common.types import MalformedResponseError
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection
 
 
 class ResponseClassesTests(unittest.TestCase):

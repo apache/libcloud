@@ -1,0 +1,15 @@
+{
+  "id": "44972922D045B9648118AA80FF2A51C9",
+  "ip": "10.4.140.155",
+  "type": "IPV4",
+  "datacenter": {
+    "id": "D0F6D8C8ED29D3036F94C27BBB7BAD36",
+    "location": "USA",
+    "country_code": "US"
+  },
+  "assigned_to": null,
+  "reverse_dns": "example.com",
+  "is_dhcp": false,
+  "state": "ACTIVE",
+  "creation_date": "2015-05-06T08:17:33+00:00"
+}

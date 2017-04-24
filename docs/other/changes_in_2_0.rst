@@ -1,5 +1,5 @@
-Changes in Apache Libcloud v2.0.0RC1
-====================================
+Changes in Apache Libcloud v2.0
+===============================
 
 Replacement of httplib with `requests`
 --------------------------------------
@@ -7,7 +7,7 @@ Replacement of httplib with `requests`
 Apache Libcloud supports Python 2.6, 2.7 - 3.3 and beyond. To achieve this a package was written within the
 Libcloud library to create a generic HTTP client for Python 2 and 3. This package has a custom implementation of a certificate store, searching and TLS preference configuration. One of the first errors to greet new users of Libcloud would be "No CA Certificates were found in CA_CERTS_PATH."... 
 
-In 2.0.0RC1 this implementation has been replaced with the `requests` package, and SSL verification should work against any publically signed HTTPS endpoint by default, without having to provide a CA cert store.
+In 2.0 this implementation has been replaced with the `requests` package, and SSL verification should work against any publically signed HTTPS endpoint by default, without having to provide a CA cert store.
 
 Other changes include:
 
@@ -23,12 +23,12 @@ Other changes include:
 Allow redirects is enabled by default
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-HTTP redirects are allowed by default in 2.0.0RC1. To disable redirects, set this global variable to False.
+HTTP redirects are allowed by default in 2.0. To disable redirects, set this global variable to False.
 
 .. code-block:: Python
 
-    import libcloud.httplib_ssl
-    libcloud.httplib_ssl.ALLOW_REDIRECTS = False
+    import libcloud.http
+    libcloud.http.ALLOW_REDIRECTS = False
 
 HTTP/HTTPS Proxies
 ~~~~~~~~~~~~~~~~~~
@@ -49,14 +49,14 @@ variable will make a global change.
 Adding support for Python 3.6 and deprecation of Python 3.2
 -----------------------------------------------------------
 
-In Apache Libcloud 2.0.0RC1, Python 3.6 is `now supported <https://github.com/apache/libcloud/pull/965>`_ as a primary distribution.
+In Apache Libcloud 2.0.0, Python 3.6 is `now supported <https://github.com/apache/libcloud/pull/965>`_ as a primary distribution.
 
 Python 3.2 support has been dropped in this release and users should either upgrade to 3.3 or a newer version of Python.
 
 SSL CA certificates are now bundled with the package
 ----------------------------------------------------
 
-In Apache Libcloud 2.0.0RC1, the `Mozilla Trusted Root Store <https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt>`_ is bundled with the package, as part of the `requests` package bundle.
+In Apache Libcloud 2.0.0, the `Mozilla Trusted Root Store <https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt>`_ is bundled with the package, as part of the `requests` package bundle.
 This means that users no longer have to set the path to a CA file either via installing the certifi package, downloading a PEM file or providing a directory in an environment variable.
 All connections in Libcloud will assume HTTPS by default, now with 2.0.0, if those HTTPS endpoints have a signed certificate with a trusted CA authority, they will work with Libcloud by default.
 
@@ -103,7 +103,7 @@ class instances, LibcloudHttpConnection and LibcloudHttpsConnection, stored as a
       print(timeit.timeit("test()", setup="from __main__ import test", number=5))
       
 
-This simple test shows a 10% performance improvement between Libcloud 1.5.0 and 2.0.0RC1.
+This simple test shows a 10% performance improvement between Libcloud 1.5.0 and 2.0.0.
 
 Changes to the storage API
 --------------------------

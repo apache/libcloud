@@ -30,7 +30,7 @@ from libcloud.common.digitalocean import DigitalOcean_v1_Error
 from libcloud.compute.base import NodeImage
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v1_PARAMS
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
@@ -273,7 +273,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertTrue(result)
 
 
-class DigitalOceanMockHttp(MockHttpTestCase):
+class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
 
     def _v2_regions(self, method, url, body, headers):

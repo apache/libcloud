@@ -1,11 +1,130 @@
 ﻿Changelog
 =========
 
-Changes in latest version of Apache Libcloud
---------------------------------------------
+Changes in current version of Apache Libcloud
+---------------------------------------------
 
 Common
 ~~~~~~
+
+- Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
+  issues with a number of drivers and etree is a standard package
+  [GITHUB-1038]
+  (Anthony Shaw)
+
+Changes in Apache Libcloud 2.0.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix OpenStack drivers not correctly setting URLs when used with identity API, would default to 127.0.0.1 and service
+  catalog URLs were not adhered to.
+  [GITHUB-1037, LIBCLOUD-912, LIBCLOUD-904]
+  (Anthony Shaw) 
+
+- Fix Aliyun ECS, Load balancer and storage adapters when using unicode UTF-8 characters in the names of resources
+  in 2.0.0rc2 < it would fail as a MalformedResponseError, Python 2.7 element tree was raising a unicode error
+  [GITHUB-1032] [GITHUB-994]
+  (Anthony Shaw)
+
+- Refactor the test classes to use the full libcloud.http and libcloud.common.base modules, with Connection,
+  Response all used with requests_mock. This increases our test coverages and catches bugs in drivers' custom
+  parse_body and auth modules
+  [GITHUB-1031]
+  (Anthony Shaw)
+
+- Rename libcloud.httplib_ssl to libcloud.http now that we don't use httplib
+  [GITHUB-1028]
+  (Anthony Shaw)
+
+Compute
+~~~~~~~
+
+- [ARM] Add support for Azure Cloud Environments as well as Locations
+  [GITHUB-969]
+  (Peter Amstutz)
+
+- [EC2] Add support for ModifyVolume and DescribeVolumesModifications
+  [GITHUB-1036]
+  (Hennadii Stas)
+
+- [ARM] Fix string representation of the VhdImage type and fix listing of Public IP addresses
+  [GITHUB-1035]
+  (Anthony Shaw)
+
+- [GOOGLE] Remove validation checks for guestOsFeatures
+  [GITHUB-1034]
+  (Max Illfelder)
+
+- [VSPHERE] Fix issue with authentication methods crashing
+  [GITHUB-1031]
+  (Anthony Shaw)
+
+- [ARM] Add network security groups to azure ARM
+  [GITHUB-1033]
+  (Joseph Hall)
+
+- [ARM] Add the ability to list resource groups
+  [GITHUB-1032]
+  (Joseph Hall)
+
+- Add 1&1 compute driver
+  [LIBCLOUD-911] [GITHUB-1029]
+  (Jasmin Gacic)
+
+- Fix Azure ARM driver condition for ex_list_publishers where location is specified
+  [GITHUB-1030]
+  (Joseph Hall)
+
+- Added Import Snapshot and Describe Import Snapshot to EC2 compute driver
+  [GITHUB-1023]
+  (Nirzari Iyer)
+
+- Add price_monthly extra param to digitalocean sizes
+  [GITHUB-1021]
+  (Francisco Ros)
+
+- Add aliyun ecs instance join leave security group
+  [GITHUB-992]
+  (Jie Ren)
+
+- Add keypair management to OnApp driver
+  [GITHUB-1018]
+  (Tinu Cleatus)
+
+- Add missing regions in AWS storage and compute drivers
+  [GITHUB-1019]
+  (Alex Misstear)
+
+- Add SR-IOV net support to images in EC2 compute driver
+  [GITHUB-1020]
+  (Alex Misstear)
+
+- Fix - update t2.small image size from 11 CPU to 1
+  [GITHUB-1022]
+  (Francisco Ros)
+
+- Added Billing Product for image in EC2 compute driver
+  [GITHUB-1024]
+  (Nirzari Iyer)
+
+DNS
+~~~
+
+- Add OnApp driver
+  [GITHUB-1017] [LIBCLOUD-907]
+  (Tinu Cleatus)
+
+Changes in Apache Libcloud 2.0.0rc2
+-----------------------------------
+
+Common
+~~~~~~
+
+- Fix LIBCLOUD_DEBUG trying to decompress already decompressed responses
+  [LIBCLOUD-910]
+  (Anthony Shaw)
 
 - Added an integration test API and a test suite for validating functionality
   without mocking any libcloud subsystems
@@ -15,19 +134,6 @@ Common
 - Fix for Linode classes since 2.0x
   [GITHUB-1026]
   (Anthony Shaw)
-
-Compute
-~~~~~~~
-
-- Outscale SAS doc improvements and logo update
-  [GITHUB-950]
-  (Javier M Mellid)
-
-Changes in Apache Libcloud 2.0.0rc2
------------------------------------
-
-Common
-~~~~~~
 
 - Fix CertificateConnection not correctly signing requests in 2.0rc1, impacted
   Azure classic driver, OpenStack and Docker driver
@@ -44,6 +150,10 @@ Common
 
 Compute
 ~~~~~~~
+
+- Outscale SAS doc improvements and logo update
+  [GITHUB-950]
+  (Javier M Mellid)
 
 - [GCE] Allow preemptible instances to be created
   [GITHUB-954]
@@ -107,39 +217,44 @@ Changes Apache Libcloud 2.0.0rc1
 Common
 ~~~~~~
 
-- Fix DEBUG mode, also add support for using io.StringIO as the file handle when calling libcloud.enable_debug
-  [GITHUB-978, LIBCLOUD-887]
-  (Anthony Shaw)
+- Fix DEBUG mode, also add support for using io.StringIO as the file handle
+  when calling libcloud.enable_debug.
+  (GITHUB-978, LIBCLOUD-887)
+  [Anthony Shaw]
 
-- Introduction of the requests package as the mechanism for making HTTP requests for all drivers
-  [GITHUB-928]
-  (Anthony Shaw)
+- Introduction of the requests package as the mechanism for making HTTP
+  requests for all drivers.
+  (GITHUB-928)
+  [Anthony Shaw]
 
-- Fix bug where custom port and secure flag would not get propagated to connection class
-  [GITHUB-972]
-  (Anthony Shaw)
+- Fix bug where custom port and secure flag would not get propagated to
+  connection class.
+  (GITHUB-972)
+  [Anthony Shaw]
 
-- Fix bug where custom port would not get propagated to connection
-  [GITHUB-971]
-  (Anthony Shaw)
+- Fix bug where custom port would not get propagated to connection.
+  (GITHUB-971)
+  [Anthony Shaw]
 
-- Fix bug where instantiating a connection from URL and then requesting an action with a leading / would lead to
-  a malformed URL
-  [GITHUB-976]
-  (Anthony Shaw)
+- Fix bug where instantiating a connection from URL and then requesting an
+  action with a leading / would lead to a malformed URL.
+  (GITHUB-976)
+  [Anthony Shaw]
 
 Compute
 ~~~~~~~
 
-- Fix a bug in profitbricks driver where listing snapshots would request a malformed URL
+- Fix a bug in profitbricks driver where listing snapshots would request a
+  malformed URL.
   [GITHUB-976]
   (Anthony Shaw)
 
-- Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated
-  [GITHUB-967]
-  (Anthony Shaw)
-  
-- [google compute] Improve performance of list nodes by caching volume information.
+- Fix LIBCLOUD-806 bug where vsphere driver cannot be instantiated.
+  (GITHUB-967)
+  [Anthony Shaw]
+
+- [google compute] Improve performance of list nodes by caching volume
+  information.
   (GITHUB-813, LIBCLOUD-826)
   [Tom Melendez]
 
@@ -150,34 +265,36 @@ Common
 ~~~~~~
 
 - Set Dimension Data compute, backup and load balancer to default to 2.4 API.
-  [GITHUB-961]
+  (GITHUB-961)
   [Samuel Chong]
 
 Compute
 ~~~~~~~
 
 - [azure] New method for accessing rate cards.
-  [GITHUB-957]
-  (Soren L. Hansen)
+  (GITHUB-957)
+  [Soren L. Hansen]
 
 - [gce] Allow multiple preemptible instances to be created.
-  [GITHUB-954]
-  (John Baublitz)
+  (GITHUB-954)
+  [John Baublitz]
 
 - [openstack] Add new Connection class to support VOMS proxys to keystone
   servers.
-  [GITHUB-959]
-  (micafer)
+  (GITHUB-959)
+  [micafer]
 
 - [outscale] Added support for changed API for describing quotas.
-  [GITHUB-960]
-  (Javier M. Mellid)
+  (GITHUB-960)
+  [Javier M. Mellid]
 
 - [ec2] Added m4 instances to us-gov and brazil, added m4.16xlarge to all.
-  [GITHUB-964]
-  (Matthew Tyas)
+  (GITHUB-964)
+  [Matthew Tyas]
 
-- Added new CloudScale.ch driver
+- Add new CloudScale.ch driver
+  (GITHUB-951)
+  [Dave Halter]
 
 - [google compute] Bug fix for ex_create_multiple_nodes Google Cloud disk auto
   delete.
@@ -208,8 +325,8 @@ Container
 - [rancher] The scheme (secure) and port no longer need to be explicitly
   specified, allowing a user to simply copy in the string provided to them
   from Rancher.
-  [GITHUB-958]
-  (Matthew Ellison)
+  (GITHUB-958)
+  [Matthew Ellison]
 
 Changes in Apache Libcloud 1.4.0
 --------------------------------
@@ -284,7 +401,7 @@ Compute
   [Anthony Monthe]
 
 - [GCE] Support for HTTP(S) proxies with BackendServices.
-  (GITHUB-856
+  (GITHUB-856)
   [Tom Melendez]
 
 Container
@@ -340,7 +457,7 @@ General
   [Michael Calmer]
 
 - Deprecate DigitalOcean v1 API support in favour of v2 API.
-  (GITHUB-889)(GITHUB-892)
+  (GITHUB-889, GITHUB-892)
   [Andrew Starr-Bochicchio]
 
 - Deprecate RunAbove cloud drivers in favour of new OVH cloud driver.
@@ -384,11 +501,13 @@ Compute
 
 - Added `ex_stop_node` to the OpenStack driver.
   (GITHUB-865)
+  [Allard Hoeve]
 
 - When creating volume snapshot, the arguments `name` and `description` are
   truely optional when working with newer OpenStack versions. The OpenStack
   driver will now only post thost arguments if they are non-`NoneType`.
   (GITHUB-866)
+  [Allard Hoeve]
 
 - StorageVolumeSnapshot now has an attribute `name` that has the name of the
   snapshot if the provider supports it. This used to be `.extra['name']`, but
@@ -703,7 +822,6 @@ Storage
 - Add support for AWS signature v4 to the Outscale storage driver.
   (GITHUB-736)
   [Javier M. Mellid]
-
 
 - Add new S3 RGW storage driver.
   (GITHUB-786, GITHUB-792)

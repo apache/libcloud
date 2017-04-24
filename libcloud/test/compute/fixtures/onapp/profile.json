@@ -1,0 +1,12 @@
+{
+  "user": {
+    "id": 123,
+    "identifier": "abcdef123345",
+    "email": "abc@example.com",
+    "first_name": "John",
+    "last_name": "Smith",
+    "status": "active",
+    "created_at": "2017-03-22T20:39:36.000+07:00",
+    "updated_at": "2017-03-22T20:39:36.000+07:00"
+  }
+}

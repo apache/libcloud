@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.backup.base import BackupDriver, BackupTarget, BackupTargetJob
 from libcloud.backup.types import BackupTargetType
 from libcloud.backup.types import Provider

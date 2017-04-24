@@ -1,0 +1,17 @@
+<DescribeImportSnapshotTasksResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
+    <requestId>a8c44ac4-8e63-46e9-b8b2-8c72ce3d9b18</requestId>
+    <importSnapshotTaskSet>
+        <item>
+            <importTaskId>import-snap-fh7y6i6w</importTaskId>
+            <snapshotTaskDetail>
+                <format>RAW</format>
+                <diskImageSize>1.073741824E10</diskImageSize>
+                <userBucket>
+                    <s3Bucket>dummy-bucket</s3Bucket>
+                    <s3Key>dummy-key</s3Key>
+                </userBucket>
+                <status>active</status>
+            </snapshotTaskDetail>
+        </item>
+    </importSnapshotTaskSet>
+</DescribeImportSnapshotTasksResponse>

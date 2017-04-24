@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.dns.drivers.digitalocean import DigitalOceanDNSDriver
 from libcloud.dns.types import RecordType
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 from libcloud.utils.py3 import httplib
@@ -93,7 +93,7 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         self.assertTrue(self.driver.delete_record(record))
 
 
-class DigitalOceanDNSMockHttp(MockHttpTestCase):
+class DigitalOceanDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures('digitalocean')
 
     response_map = {

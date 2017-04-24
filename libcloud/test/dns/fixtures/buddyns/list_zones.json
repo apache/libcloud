@@ -14,5 +14,5 @@
     "master" : "154.15.200.6",
     "serial" : 1383743519,
     "status": "google.de/status/",
-    "delegation": "/api/v2/zone/bücher.de/delegation/"
+    "delegation": "/api/v2/zone/b?cher.de/delegation/"
  } ]
