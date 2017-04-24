@@ -20,10 +20,13 @@ import time
 from hashlib import sha1
 
 import libcloud.utils.py3
-if libcloud.utils.py3.DEFAULT_LXML:
-    from lxml.etree import Element, SubElement
-else:
-    from xml.etree.ElementTree import Element, SubElement
+try:
+    if DEFAULT_LXML:
+        from lxml.etree import Element, SubElement
+    else:
+        from xml.etree import Element, SubElement
+except ImportError:
+    from xml.etree import Element, SubElement
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
