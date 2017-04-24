@@ -64,7 +64,7 @@ class GoogleStorageMockHttp(S3MockHttp):
             'content-type': 'application/zip',
             'etag': '"e31208wqsdoj329jd"',
             'x-goog-meta-rabbits': 'monkeys',
-            'content-length': 12345,
+            'content-length': '12345',
             'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
         }
 

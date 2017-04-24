@@ -35,7 +35,7 @@ from libcloud.compute.base import StorageVolume, VolumeSnapshot
 from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState, \
     VolumeSnapshotState
 
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -568,6 +568,35 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               billing_products=['ab-5dh78019'],
                                               sriov_net_support='simple')
         self.assertEqual(image.id, 'ami-57c2fb3e')
+
+    def test_ex_import_snapshot(self):
+        disk_container = [{'Description': 'Dummy import snapshot task',
+                           'Format': 'raw',
+                           'UserBucket': {'S3Bucket': 'dummy-bucket', 'S3Key': 'dummy-key'}}]
+
+        snap = self.driver.ex_import_snapshot(disk_container=disk_container)
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_wait_for_import_snapshot_completion(self):
+        snap = self.driver._wait_for_import_snapshot_completion(
+            import_task_id='import-snap-fhdysyq6')
+        self.assertEqual(snap.id, 'snap-0ea83e8a87e138f39')
+
+    def test_timeout_wait_for_import_snapshot_completion(self):
+        import_task_id = 'import-snap-fhdysyq6'
+        EC2MockHttp.type = 'timeout'
+        with self.assertRaises(Exception) as context:
+            self.driver._wait_for_import_snapshot_completion(
+                import_task_id=import_task_id, timeout=0.01, interval=0.001)
+        self.assertEqual('Timeout while waiting for import task Id %s'
+                         % import_task_id, str(context.exception))
+
+    def test_ex_describe_import_snapshot_tasks(self):
+        snap = self.driver.ex_describe_import_snapshot_tasks(
+            import_task_id='import-snap-fh7y6i6w<')
+
+        self.assertEqual(snap.snapshotId, 'snap-0ea83e8a87e138f39')
+        self.assertEqual(snap.status, 'completed')
 
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
@@ -1195,6 +1224,55 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_detach_internet_gateway(gateway, network)
         self.assertTrue(resp)
 
+    def test_ex_modify_volume(self):
+        volume = self.driver.list_volumes()[0]
+        assert volume.id == 'vol-10ae5e2b'
+
+        params = {'VolumeType': 'io1',
+                  'Size': 2,
+                  'Iops': 1000}
+        volume_modification = self.driver.ex_modify_volume(volume, params)
+
+        self.assertIsNone(volume_modification.end_time)
+        self.assertEqual('modifying', volume_modification.modification_state)
+        self.assertEqual(300, volume_modification.original_iops)
+        self.assertEqual(1, volume_modification.original_size)
+        self.assertEqual('gp2', volume_modification.original_volume_type)
+        self.assertEqual(0, volume_modification.progress)
+        self.assertIsNone(volume_modification.status_message)
+        self.assertEqual(1000, volume_modification.target_iops)
+        self.assertEqual(2, volume_modification.target_size)
+        self.assertEqual('io1', volume_modification.target_volume_type)
+        self.assertEqual('vol-10ae5e2b', volume_modification.volume_id)
+
+    def test_ex_describe_volumes_modifications(self):
+        modifications = self.driver.ex_describe_volumes_modifications()
+
+        self.assertEqual(len(modifications), 2)
+
+        self.assertIsNone(modifications[0].end_time)
+        self.assertEqual('optimizing', modifications[0].modification_state)
+        self.assertEqual(100, modifications[0].original_iops)
+        self.assertEqual(10, modifications[0].original_size)
+        self.assertEqual('gp2', modifications[0].original_volume_type)
+        self.assertEqual(3, modifications[0].progress)
+        self.assertIsNone(modifications[0].status_message)
+        self.assertEqual(10000, modifications[0].target_iops)
+        self.assertEqual(2000, modifications[0].target_size)
+        self.assertEqual('io1', modifications[0].target_volume_type)
+        self.assertEqual('vol-06397e7a0eEXAMPLE', modifications[0].volume_id)
+
+        self.assertEqual('completed', modifications[1].modification_state)
+        self.assertEqual(100, modifications[1].original_iops)
+        self.assertEqual(8, modifications[1].original_size)
+        self.assertEqual('gp2', modifications[1].original_volume_type)
+        self.assertEqual(100, modifications[1].progress)
+        self.assertIsNone(modifications[1].status_message)
+        self.assertEqual(10000, modifications[1].target_iops)
+        self.assertEqual(200, modifications[1].target_size)
+        self.assertEqual('io1', modifications[1].target_volume_type)
+        self.assertEqual('vol-bEXAMPLE', modifications[1].volume_id)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -1224,7 +1302,7 @@ class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
 
 
-class EC2MockHttp(MockHttpTestCase):
+class EC2MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -1269,6 +1347,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _RegisterImages(self, method, url, body, headers):
         body = self.fixtures.load('register_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ImportSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load('import_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _timeout_DescribeImportSnapshotTasks(self, method, url, body, headers):
+        body = self.fixtures.load('describe_import_snapshot_tasks_active.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_imageids_DescribeImages(self, method, url, body, headers):
@@ -1598,6 +1688,14 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribePlacementGroups(self, method, url, body, headers):
         body = self.fixtures.load('describe_placement_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifyVolume(self, method, url, body, headers):
+        body = self.fixtures.load('modify_volume.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeVolumesModifications(self, method, url, body, headers):
+        body = self.fixtures.load('describe_volumes_modifications.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

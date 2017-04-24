@@ -17,11 +17,7 @@
 Common utilities for OpenStack
 """
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.base import ConnectionUserAndKey, Response
@@ -297,6 +293,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def _set_up_connection_info(self, url):
         result = self._tuple_from_url(url)
         (self.host, self.port, self.secure, self.request_path) = result
+        self.connect()
 
     def _populate_hosts_and_request_paths(self):
         """

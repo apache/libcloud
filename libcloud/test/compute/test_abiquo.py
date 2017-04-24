@@ -15,14 +15,9 @@
 """
 Abiquo Test Suite
 """
-import unittest
 import sys
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.abiquo import AbiquoNodeDriver
@@ -30,23 +25,23 @@ from libcloud.common.abiquo import ForbiddenError, get_href
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.base import NodeLocation, NodeImage
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
-
+class AbiquoNodeDriverTest(TestCaseMixin):
     """
     Abiquo Node Driver test suite
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Set up the driver with the main user
         """
         AbiquoNodeDriver.connectionCls.conn_class = AbiquoMockHttp
-        self.driver = AbiquoNodeDriver('son', 'goku',
-                                       'http://dummy.host.com/api')
+        cls.driver = AbiquoNodeDriver('son', 'goku',
+                                      'http://dummy.host.com/api')
 
     def test_unauthorized_controlled(self):
         """
@@ -299,7 +294,7 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(href, '/admin/enterprises/1234')
 
 
-class AbiquoMockHttp(MockHttpTestCase):
+class AbiquoMockHttp(MockHttp):
 
     """
     Mock the functionallity of the remote Abiquo API.

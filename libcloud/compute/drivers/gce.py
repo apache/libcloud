@@ -1745,8 +1745,6 @@ class GCENodeDriver(NodeDriver):
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
-    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
-                         'MULTI_IP_SUBNET']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
@@ -3234,10 +3232,7 @@ class GCENodeDriver(NodeDriver):
         :type     family: ``str``
 
         :keyword  guest_os_features: Features of the guest operating system,
-                                     valid for bootable images only. Possible
-                                     values include \'VIRTIO_SCSI_MULTIQUEUE\',
-                                     \'WINDOWS\', \'MULTI_IP_SUBNET\' if
-                                     specified.
+                                     valid for bootable images only.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
@@ -3271,12 +3266,10 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('Source must be instance of StorageVolume or URI')
         if guest_os_features:
             image_data['guestOsFeatures'] = []
+            if isinstance(guest_os_features, str):
+                guest_os_features = [guest_os_features]
             for feature in guest_os_features:
-                if feature in self.GUEST_OS_FEATURES:
-                    image_data['guestOsFeatures'].append({'type': feature})
-                else:
-                    raise ValueError('Features must be one of %s' %
-                                     ','.join(self.GUEST_OS_FEATURES))
+                image_data['guestOsFeatures'].append({'type': feature})
         request = '/global/images'
 
         try:
@@ -3335,12 +3328,10 @@ class GCENodeDriver(NodeDriver):
 
         if guest_os_features:
             image_data['guestOsFeatures'] = []
+            if isinstance(guest_os_features, str):
+                guest_os_features = [guest_os_features]
             for feature in guest_os_features:
-                if feature in self.GUEST_OS_FEATURES:
-                    image_data['guestOsFeatures'].append({'type': feature})
-                else:
-                    raise ValueError('Features must be one of %s' %
-                                     ','.join(self.GUEST_OS_FEATURES))
+                image_data['guestOsFeatures'].append({'type': feature})
 
         request = '/global/images'
         self.connection.async_request(request, method='POST', data=image_data)

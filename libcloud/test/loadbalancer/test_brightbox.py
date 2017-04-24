@@ -21,7 +21,7 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.brightbox import BrightboxLBDriver
 from libcloud.loadbalancer.types import State
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.secrets import LB_BRIGHTBOX_PARAMS
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
@@ -92,7 +92,7 @@ class BrightboxLBTests(unittest.TestCase):
         self.assertTrue(balancer.detach_member(member))
 
 
-class BrightboxLBMockHttp(MockHttpTestCase):
+class BrightboxLBMockHttp(MockHttp):
     fixtures = LoadBalancerFileFixtures('brightbox')
 
     def _token(self, method, url, body, headers):

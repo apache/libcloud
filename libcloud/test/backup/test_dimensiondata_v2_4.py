@@ -13,14 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import sys
 from libcloud.utils.py3 import httplib
-
+from libcloud.utils.py3 import ET
 from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.types import InvalidCredsError
 from libcloud.backup.base import BackupTargetJob
@@ -28,13 +23,12 @@ from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as D
 from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.backup import TestCaseMixin
 from libcloud.test.file_fixtures import BackupFileFixtures
 
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
 
 
-class DimensionData_v2_4_Tests(unittest.TestCase, TestCaseMixin):
+class DimensionData_v2_4_Tests(unittest.TestCase):
 
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.4'

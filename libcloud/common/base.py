@@ -21,11 +21,7 @@ import copy
 import binascii
 import time
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 
 try:
     import simplejson as json

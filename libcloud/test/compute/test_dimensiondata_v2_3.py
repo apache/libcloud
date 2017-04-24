@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import sys
 from types import GeneratorType
 from libcloud.utils.py3 import httplib
@@ -33,7 +28,8 @@ from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.drivers.dimensiondata import DimensionDataNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.test import MockHttp, unittest, MockRawResponse, StorageMockHttp
+from libcloud.utils.py3 import ET
+from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
@@ -45,8 +41,6 @@ class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         DimensionData.connectionCls.active_api_version = '2.3'
         DimensionData.connectionCls.conn_class = DimensionDataMockHttp
-        DimensionData.connectionCls.rawResponseCls = \
-            DimensionDataMockRawResponse
         DimensionDataMockHttp.type = None
         self.driver = DimensionData(*DIMENSIONDATA_PARAMS)
 
@@ -2034,7 +2028,8 @@ class InvalidRequestError(Exception):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
 
 
-class DimensionDataMockRawResponse(MockRawResponse):
+class DimensionDataMockHttp(MockHttp):
+
     fixtures = ComputeFileFixtures('dimensiondata')
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(self, method, url, body, headers):
@@ -2054,11 +2049,6 @@ class DimensionDataMockRawResponse(MockRawResponse):
             'audit_log.csv'
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
-
-
-class DimensionDataMockHttp(StorageMockHttp, MockHttp):
-
-    fixtures = ComputeFileFixtures('dimensiondata')
 
     def _oec_0_9_myaccount_UNAUTHORIZED(self, method, url, body, headers):
         return (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])

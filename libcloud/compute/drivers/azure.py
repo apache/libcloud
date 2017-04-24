@@ -29,6 +29,7 @@ import multiprocessing.pool
 
 from libcloud.utils.py3 import urlquote as url_quote
 from libcloud.utils.py3 import urlunquote as url_unquote
+from libcloud.utils.py3 import ET
 from libcloud.common.azure import AzureServiceManagementConnection
 from libcloud.compute.providers import Provider, get_driver
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize

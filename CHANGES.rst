@@ -7,12 +7,79 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
+  issues with a number of drivers and etree is a standard package
+  [GITHUB-1038]
+  (Anthony Shaw)
+
+Changes in Apache Libcloud 2.0.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix OpenStack drivers not correctly setting URLs when used with identity API, would default to 127.0.0.1 and service
+  catalog URLs were not adhered to.
+  [GITHUB-1037, LIBCLOUD-912, LIBCLOUD-904]
+  (Anthony Shaw) 
+
+- Fix Aliyun ECS, Load balancer and storage adapters when using unicode UTF-8 characters in the names of resources
+  in 2.0.0rc2 < it would fail as a MalformedResponseError, Python 2.7 element tree was raising a unicode error
+  [GITHUB-1032] [GITHUB-994]
+  (Anthony Shaw)
+
+- Refactor the test classes to use the full libcloud.http and libcloud.common.base modules, with Connection,
+  Response all used with requests_mock. This increases our test coverages and catches bugs in drivers' custom
+  parse_body and auth modules
+  [GITHUB-1031]
+  (Anthony Shaw)
+
 - Rename libcloud.httplib_ssl to libcloud.http now that we don't use httplib
   [GITHUB-1028]
   (Anthony Shaw)
 
 Compute
 ~~~~~~~
+
+- [ARM] Add support for Azure Cloud Environments as well as Locations
+  [GITHUB-969]
+  (Peter Amstutz)
+
+- [EC2] Add support for ModifyVolume and DescribeVolumesModifications
+  [GITHUB-1036]
+  (Hennadii Stas)
+
+- [ARM] Fix string representation of the VhdImage type and fix listing of Public IP addresses
+  [GITHUB-1035]
+  (Anthony Shaw)
+
+- [GOOGLE] Remove validation checks for guestOsFeatures
+  [GITHUB-1034]
+  (Max Illfelder)
+
+- [VSPHERE] Fix issue with authentication methods crashing
+  [GITHUB-1031]
+  (Anthony Shaw)
+
+- [ARM] Add network security groups to azure ARM
+  [GITHUB-1033]
+  (Joseph Hall)
+
+- [ARM] Add the ability to list resource groups
+  [GITHUB-1032]
+  (Joseph Hall)
+
+- Add 1&1 compute driver
+  [LIBCLOUD-911] [GITHUB-1029]
+  (Jasmin Gacic)
+
+- Fix Azure ARM driver condition for ex_list_publishers where location is specified
+  [GITHUB-1030]
+  (Joseph Hall)
+
+- Added Import Snapshot and Describe Import Snapshot to EC2 compute driver
+  [GITHUB-1023]
+  (Nirzari Iyer)
 
 - Add price_monthly extra param to digitalocean sizes
   [GITHUB-1021]

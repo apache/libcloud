@@ -19,8 +19,12 @@ import time
 
 from hashlib import sha1
 
+import libcloud.utils.py3
 try:
-    from lxml.etree import Element, SubElement
+    if libcloud.utils.py3.DEFAULT_LXML:
+        from lxml.etree import Element, SubElement
+    else:
+        from xml.etree.ElementTree import Element, SubElement
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 

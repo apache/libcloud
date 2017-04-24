@@ -24,7 +24,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.vultr import VultrNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import VULTR_PARAMS
 
@@ -109,7 +109,7 @@ class VultrTests(LibcloudTestCase):
         self.assertTrue(res)
 
 
-class VultrMockHttp(MockHttpTestCase):
+class VultrMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('vultr')
 
     def _v1_regions_list(self, method, url, body, headers):
