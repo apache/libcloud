@@ -1790,7 +1790,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            GoogleOAuth2Credential.default_credential_file + '.' + self.project
+            GoogleOAuth2Credential.default_credential_file + '.' + user_id + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
