@@ -1413,14 +1413,16 @@ class AzureNodeDriver(NodeDriver):
     def _to_node_size(self, data):
         return NodeSize(id=data['name'],
                         name=data['name'],
-                        ram=data.get('memoryInMB', data['memoryInMb']),
+                        ram=data['memoryInMB'] if 'memoryInMB' in data else data['memoryInMb'],
                         # convert to disk from MB to GB
-                        disk=data.get('resourceDiskSizeInMB', data['resourceDiskSizeInMb']) / 1024,
+                        disk=data['resourceDiskSizeInMB']
+                        if 'resourceDiskSizeInMB' in data else data['resourceDiskSizeInMb'] / 1024,
                         bandwidth=0,
                         price=0,
                         driver=self.connection.driver,
                         extra={'numberOfCores': data['numberOfCores'],
-                               'osDiskSizeInMB': data.get('osDiskSizeInMB', data['osDiskSizeInMb']),
+                               'osDiskSizeInMB': data['osDiskSizeInMB']
+                               if 'osDiskSizeInMB' in data else data['osDiskSizeInMb'],
                                'maxDataDiskCount': data['maxDataDiskCount']})
 
     def _to_nic(self, data):

@@ -25,8 +25,7 @@ Creating a Service Principal
 .. sourcecode:: bash
 
   az login
-  az account list # take note of "id", that's your $subscription_id
-  az ad sp create-for-rbac -p "$AZURE_KEY_FILE" --name "GlaucomaPrinciple" --password "$secret" --role 'API Management Service Contributor'
+  az ad sp create-for-rbac -p "$AZURE_KEY_FILE" --name "$display_name" --password "$secret" --role 'API Management Service Contributor' --expanded-view
 
 Redundant rules: # TODO: Remove this
 
@@ -38,7 +37,7 @@ Redundant rules: # TODO: Remove this
 Instantiating a driver
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have the tenant id, subscription id, application id ("key"), and
+Once you have the tenant id, subscription id, application id ("client"), and
 password ("secret"), you can create an AzureNodeDriver:
 
 .. literalinclude:: /examples/compute/azure_arm/instantiate.py

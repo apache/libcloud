@@ -213,8 +213,8 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         conn.request('POST', '/%s/oauth2/token' % self.tenant_id,
                      params, headers)
         js = AzureAuthJsonResponse(conn.getresponse(), conn)
-        self.access_token = js.object.get('access_token', js.object['accessToken'])
-        d = js.object.get('expires_on', js.object['expiresOn']).replace('Z', '')
+        self.access_token = js.object['access_token'] if 'access_token' in js.object else js.object['accessToken']
+        d = (js.object['expires_on'] if 'expires_on' in js.object else js.object['expiresOn']).replace('Z', '', 1)
         try:
             self.expires_on = datetime.fromtimestamp(int(d))
         except ValueError:
