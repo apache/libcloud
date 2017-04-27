@@ -41,6 +41,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GOOGLE] Fix call to GCENodeDriver._ex_populate_volume_dict
+  [GITHUB-1046]
+  (Francisco Ros)
+
 - [ARM] Add support for Azure Cloud Environments as well as Locations
   [GITHUB-969]
   (Peter Amstutz)
