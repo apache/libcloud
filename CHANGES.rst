@@ -41,6 +41,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GOOGLE] Add test to check that can create a GCE volume at a given location
+  [GITHUB-1048]
+  (Francisco Ros)
+
 - [GOOGLE] Fix GCENodeDriver.ex_get_volume() when zone param is of class GCEZone or NodeLocation
   [GITHUB-1047]
   (Francisco Ros)

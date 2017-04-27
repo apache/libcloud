@@ -1317,6 +1317,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertRaises(ValueError, self.driver.create_volume, size,
                           volume_name, image=image, ex_image_family='coreos')
 
+    def test_create_volume_location(self):
+        volume_name = 'lcdisk'
+        size = 10
+        zone = self.driver.zone
+        volume = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
         volume = self.driver.ex_get_volume('lcdisk')
