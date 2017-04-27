@@ -7098,7 +7098,8 @@ class GCENodeDriver(NodeDriver):
             self._ex_populate_volume_dict()
 
         try:
-            zone = zone.name  # if zone is of class GCEZone or NodeLocation, get name instead
+            # if zone is of class GCEZone or NodeLocation, get name instead
+            zone = zone.name
         except AttributeError:
             pass
 
