@@ -91,8 +91,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_get_volume(self):
         volume_name = 'lcdisk'
+        volume = self.driver.ex_get_volume(volume_name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location(self):
+        volume_name = 'lcdisk'
         location = self.driver.zone
         volume = self.driver.ex_get_volume(volume_name, zone=location)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location_name(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location.name)
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
 
