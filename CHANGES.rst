@@ -41,6 +41,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GOOGLE] Fix GCENodeDriver.ex_get_volume() when zone param is of class GCEZone or NodeLocation
+  [GITHUB-1047]
+  (Francisco Ros)
+
 - [GOOGLE] Fix call to GCENodeDriver._ex_populate_volume_dict
   [GITHUB-1046]
   (Francisco Ros)

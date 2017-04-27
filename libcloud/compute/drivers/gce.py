@@ -7097,6 +7097,12 @@ class GCENodeDriver(NodeDriver):
             # Make the API call and build volume dictionary
             self._ex_populate_volume_dict()
 
+        try:
+            # if zone is of class GCEZone or NodeLocation, get name instead
+            zone = zone.name
+        except AttributeError:
+            pass
+
         return self._ex_lookup_volume(name, zone)
 
     def ex_get_region(self, name):

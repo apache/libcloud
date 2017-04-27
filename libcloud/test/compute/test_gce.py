@@ -89,6 +89,26 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         region2 = self.driver._get_region_from_zone(zone2)
         self.assertEqual(region2.name, expected_region2)
 
+    def test_get_volume(self):
+        volume_name = 'lcdisk'
+        volume = self.driver.ex_get_volume(volume_name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location_name(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location.name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
     def test_find_zone_or_region(self):
         zone1 = self.driver._find_zone_or_region('libcloud-demo-np-node',
                                                  'instances')
