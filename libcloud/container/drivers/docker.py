@@ -55,7 +55,7 @@ class DockerResponse(JsonResponse):
             content_type = self.headers.get('content-type', 'application/json')
             if content_type == 'application/json' or content_type == '':
                 if self.headers.get('transfer-encoding') == 'chunked' and \
-                        'create?fromImage' in self.request.url:
+                        'fromImage' in self.request.url:
                     body = [json.loads(chunk) for chunk in
                             self.body.strip().replace('\r', '').split('\n')]
                 else:
