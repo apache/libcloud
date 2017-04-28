@@ -643,6 +643,8 @@ class DockerContainerDriver(ContainerDriver):
             state = ContainerState.STOPPED
         elif status.startswith('Up '):
             state = ContainerState.RUNNING
+        elif 'running' in status:
+            state = ContainerState.RUNNING
         else:
             state = ContainerState.STOPPED
         image = data.get('Image')
