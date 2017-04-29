@@ -47,17 +47,17 @@ class VultrTests(LibcloudTestCase):
 
     def test_list_sizes_success(self):
         sizes = self.driver.list_sizes()
-        self.assertTrue(len(sizes) == 22)
+        self.assertTrue(len(sizes) == 17)
 
         size = sizes[0]
         self.assertTrue(size.id is not None)
-        self.assertEqual(size.name, '512 MB RAM,160 GB SATA,1.00 TB BW')
-        self.assertEqual(size.ram, 512)
+        self.assertEqual(size.name, '8192 MB RAM,110 GB SSD,10.00 TB BW')
+        self.assertEqual(size.ram, 8192)
 
-        size = sizes[21]
+        size = sizes[16]
         self.assertTrue(size.id is not None)
-        self.assertEqual(size.name, '65536 MB RAM,800 GB SSD,9.00 TB BW')
-        self.assertEqual(size.ram, 65536)
+        self.assertEqual(size.name, '4096 MB RAM,1000 GB SATA,5.00 TB BW')
+        self.assertEqual(size.ram, 4096)
 
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
