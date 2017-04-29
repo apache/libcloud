@@ -12,6 +12,13 @@ Common
   [GITHUB-1038]
   (Anthony Shaw)
 
+Compute
+~~~~~~~
+
+- [VULTR] Extend extra dict of Vultr sizes to include additional fields (plan_type and available_locations)
+  [GITHUB-1044]
+  (Francisco Ros)
+
 Container
 ~~~~~~~~~
 
