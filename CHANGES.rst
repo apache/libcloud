@@ -12,6 +12,13 @@ Common
   [GITHUB-1038]
   (Anthony Shaw)
 
+Container
+~~~~~~~~~
+
+- [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
+  [GITHUB-1043]
+  (@johnnyWalnut)
+
 Changes in Apache Libcloud 2.0.0
 --------------------------------
 
