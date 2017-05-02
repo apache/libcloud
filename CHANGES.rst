@@ -28,6 +28,9 @@ Compute
 - [ARM] Fix checking for "location is None" in several functions (LIBCLOUD-926, GITHUB-1098)
   [Sameh Elsharkawy]
 
+- [ARM] Fix error when using SSH key auth with Python 3 (GITHUB-1098)
+  [Sameh Elsharkawy]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
