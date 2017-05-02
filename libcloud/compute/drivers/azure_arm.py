@@ -910,10 +910,11 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
@@ -943,10 +944,11 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
@@ -1076,10 +1078,11 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureIPAddress`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/publicIPAddresses/%s" \
