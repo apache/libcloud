@@ -85,13 +85,14 @@ class HostVirtualNodeDriver(NodeDriver):
     def list_locations(self):
         result = self.connection.request(API_ROOT + '/cloud/locations/').object
         locations = []
-        for dc in result:
+        for k in result:
+            dc = result[k]
             locations.append(NodeLocation(
                 dc["id"],
                 dc["name"],
                 dc["name"].split(',')[1].replace(" ", ""),  # country
                 self))
-        return locations
+        return sorted(locations, key=lambda x: int(x.id))
 
     def list_sizes(self, location=None):
         params = {}
