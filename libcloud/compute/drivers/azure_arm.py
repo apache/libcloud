@@ -40,6 +40,7 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
+NIC_API_VERSION = '2017-03-01'
 
 
 class AzureImage(NodeImage):
@@ -1495,8 +1496,7 @@ class AzureNodeDriver(NodeDriver):
             action = "/subscriptions/%s/resourceGroups/%s/providers" \
                      "/Microsoft.Network/networkInterfaces" % \
                      (self.subscription_id, resource_group)
-        r = self.connection.request(action,
-                                    params={"api-version": RESOURCE_API_VERSION})
+        r = self.connection.request(action, params={"api-version": NIC_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1643,7 +1643,7 @@ class AzureNodeDriver(NodeDriver):
             }
 
         r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
+                                    params={"api-version": NIC_API_VERSION},
                                     data=data,
                                     method='PUT')
         return AzureNic(r.object["id"], r.object["name"], r.object["location"],
