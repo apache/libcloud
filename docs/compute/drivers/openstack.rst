@@ -45,6 +45,10 @@ Available arguments:
     and API key
   * ``2.0_password`` - authenticate against keystone with a username and
     password
+  * ``2.0_voms`` - 2.0 VOMS key
+  * ``3.x_password`` - 3.x keystone password
+  * ``3.x_oidc_access_token`` - OIDC access token
+
 
   Unless you are working with a very old version of OpenStack you will either
   want to use ``2.0_apikey`` or ``2.0_password``.
