@@ -15,6 +15,10 @@ Common
   [GITHUB-1038]
   (Anthony Shaw)
 
+- Switch RawResponse class to use content body instead of text body, up to 10x performance improvement for methods like StorageDriver.download_object
+  [GITHUB-1053]
+  (Quentin Pradet)
+
 Compute
 ~~~~~~~
 
