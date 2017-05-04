@@ -81,7 +81,7 @@ class OpenStackAuthTests(unittest.TestCase):
             self.assertEqual(d.connection.host, 'test_endpoint.com')
 
 
-class OpenStack_1_0_Tests(TestCaseMixin):
+class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
     should_list_locations = False
     should_list_volumes = False
 
