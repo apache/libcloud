@@ -7,6 +7,9 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Use PyTest as the unit testing runner
+  (Anthony Shaw)
+
 - Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
   issues with a number of drivers and etree is a standard package
   [GITHUB-1038]
@@ -14,6 +17,10 @@ Common
 
 Compute
 ~~~~~~~
+
+- [EC2] Add i3 instance types for AWS
+  [GITHUB-1038]
+  (Stephen Mullins)
 
 - [VULTR] Extend extra dict of Vultr sizes to include additional fields (plan_type and available_locations)
   [GITHUB-1044]
