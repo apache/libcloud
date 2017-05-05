@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Fix bug in utils.decorators wrap exception method, used by vsphere driver
+  [GITHUB-1054]
+  (Anthony Shaw)
+
 - Use PyTest as the unit testing runner
   (Anthony Shaw)
 
@@ -22,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
+  [GITHUB-1054]
+  (Anthony Shaw)
+
 - [EC2] Add i3 instance types for AWS
   [GITHUB-1038]
   (Stephen Mullins)
@@ -32,6 +40,10 @@ Compute
 
 Container
 ~~~~~~~~~
+
+- [KUBERNETES] Fix get_container method responding with None
+  [GITHUB-1054]
+  (Anthony Shaw)
 
 - [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
   [GITHUB-1043]
