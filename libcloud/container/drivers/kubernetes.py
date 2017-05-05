@@ -390,16 +390,6 @@ class KubernetesContainerDriver(ContainerDriver):
             driver=self.connection.driver,
             extra={'phase': status['phase']})
 
-    def _get_api_version(self):
-        """
-        Get the docker API version information
-        """
-        result = self.connection.request('/version').object
-        result = result or {}
-        api_version = result.get('ApiVersion')
-
-        return api_version
-
 
 def ts_to_str(timestamp):
     """
