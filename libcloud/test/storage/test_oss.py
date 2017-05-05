@@ -24,14 +24,11 @@ try:
 except ImportError:
     from unittest import mock
 
-from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import PY3
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerError
@@ -235,7 +232,7 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-  
+
     def _list_multipart(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
         query = parse_qs(query_string)

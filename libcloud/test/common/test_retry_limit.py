@@ -43,7 +43,7 @@ class FailedRequestRetryTestCase(unittest.TestCase):
                 con.request('/')
             except socket.gaierror:
                 pass
- 
+
     def test_retry_connection_ssl_error(self):
         conn = Connection(timeout=1, retry_delay=0.1)
 
