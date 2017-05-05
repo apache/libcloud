@@ -21,7 +21,7 @@ import codecs
 import unittest
 import warnings
 import os.path
-
+import requests_mock
 from itertools import chain
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
@@ -46,6 +46,7 @@ from libcloud.utils.networking import is_valid_ip_address
 from libcloud.utils.networking import join_ipv4_segments
 from libcloud.utils.networking import increment_ipv4_segments
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
+from libcloud.utils.connection import get_response_object
 from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.dummy import DummyIterator
 
@@ -392,6 +393,13 @@ def test_decorator():
 
     with pytest.raises(LibcloudError):
         foo()
+
+
+def test_get_response_object():
+    with requests_mock.mock() as m:
+        m.get('http://test.com/test', text='data')
+        response = get_response_object('http://test.com/test')
+        assert response.body == 'data'
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
