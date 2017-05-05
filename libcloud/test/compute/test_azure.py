@@ -19,7 +19,6 @@ import sys
 import libcloud.security
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
-from libcloud.compute.drivers.azure import AZURE_SERVICE_MANAGEMENT_HOST
 
 from libcloud.test import unittest
 from libcloud.test import LibcloudTestCase
