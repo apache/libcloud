@@ -11,19 +11,22 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
+# limitations under the License.
 
-from __future__ import with_statement
+import unittest
+import base64
 
-import sys
+from libcloud.utils.py3 import b
+from libcloud.storage.drivers.ninefold import NinefoldStorageDriver
+from libcloud.test.storage.test_atmos import AtmosMockHttp, AtmosTests
 
-from libcloud.test import unittest
-from libcloud.container.base import ContainerDriver
 
+class NinefoldTests(AtmosTests, unittest.TestCase):
 
-class BaseTestCase(unittest.TestCase):
     def setUp(self):
-        self.driver = ContainerDriver('none', 'none')
-
-
-if __name__ == '__main__':
-    sys.exit(unittest.main())
+        NinefoldStorageDriver.connectionCls.conn_class = AtmosMockHttp
+        NinefoldStorageDriver.path = ''
+        AtmosMockHttp.type = None
+        AtmosMockHttp.upload_created = False
+        self.driver = NinefoldStorageDriver('dummy', base64.b64encode(b('dummy')))
+        self._remove_test_file()
