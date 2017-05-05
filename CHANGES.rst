@@ -37,6 +37,13 @@ Container
   [GITHUB-1043]
   (@johnnyWalnut)
 
+Storage
+~~~~~~~
+
+- [S3] Fix raise in s3.upload_object_via_stream
+  [LIBCLOUD-914, GITHUB-1055]
+  (Quentin Pradet)
+
 Changes in Apache Libcloud 2.0.0
 --------------------------------
 
