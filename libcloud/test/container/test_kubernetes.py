@@ -81,14 +81,6 @@ class KubernetesContainerDriverTestCase(unittest.TestCase):
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
 
-    def _version(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('version.json')
-        else:
-            raise AssertionError('Unsupported method')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _api_v1_pods(
             self, method, url, body, headers):
         if method == 'GET':
