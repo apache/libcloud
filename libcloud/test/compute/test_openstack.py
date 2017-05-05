@@ -61,7 +61,6 @@ BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
 
 
 def test_driver_instantiation_invalid_auth():
-    forced_auth = 'http://x.y.z.y:5000'
     with pytest.raises(LibcloudError):
         d = OpenStackNodeDriver(
             'user', 'correct_password',
