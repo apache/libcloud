@@ -510,7 +510,7 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
             raise NotImplementedError()
         # this is currently used for deletion of an image
         # as such it should not accept GET/POST
-        return(httplib.NO_CONTENT, "", "", httplib.responses[httplib.NO_CONTENT])
+        return(httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":
