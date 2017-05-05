@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import sys
+import pytest
 import socket
 import codecs
 import unittest
@@ -44,6 +45,8 @@ from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
 from libcloud.utils.networking import join_ipv4_segments
 from libcloud.utils.networking import increment_ipv4_segments
+from libcloud.utils.decorators import wrap_non_libcloud_exceptions
+from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.dummy import DummyIterator
 
 
@@ -380,6 +383,15 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             result = join_ipv4_segments(segments=result)
             self.assertEqual(result, incremented_ip)
 
+
+def test_decorator():
+
+    @wrap_non_libcloud_exceptions
+    def foo():
+        raise Exception("bork")
+
+    with pytest.raises(LibcloudError):
+        foo()
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
