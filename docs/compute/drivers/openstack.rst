@@ -13,6 +13,32 @@ Among many other private clouds, it also powers Rackspace's Public Cloud.
 
 .. _connecting-to-openstack-installation:
 
+Selecting the Nova API version
+------------------------------
+
+Along with your connection criteria, you can specify the Nova version with `api_version`, 
+currently supported versions of Nova are:
+
+- 1.0
+- 1.1
+- 2.0
+- 2.1 (v12)
+- 2.2 (v13)
+
+.. code-block:: python
+
+  from libcloud.compute.providers import get_driver
+  from libcloud.compute.types import Provider
+
+  Openstack = get_driver(Provider.OPENSTACK)
+
+  con = Openstack(
+      'admin', 'password',
+      ex_force_base_url='http://23.12.198.36:8774/v2.1',
+      api_version='2.0',
+      ex_tenant_name='demo')
+
+
 Connecting to the OpenStack installation
 ----------------------------------------
 
