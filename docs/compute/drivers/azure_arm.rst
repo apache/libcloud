@@ -27,9 +27,9 @@ https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenti
 
 .. sourcecode:: bash
 
-  azure ad app create --name "<Your Application Display Name>" --home-page "<https://YourApplicationHomePage>" --identifier-uris "<https://YouApplicationUri>" --password <Your_Password>
-  azure ad sp create "<Application_Id>"
-  azure role assignment create --objectId "<Object_Id>" -o Owner -c /subscriptions/{subscriptionId}/
+  azure ad app create --display-name "<Your Application Display Name>" --homepage "<https://YourApplicationHomePage>" --identifier-uris "<https://YouApplicationUri>" --password <Your_Password>
+  azure ad sp create --id "<Application_Id>"
+  azure role assignment create --assignee "<Object_Id>" --role Owner --scope /subscriptions/{subscriptionId}/
 
 Instantiating a driver
 ~~~~~~~~~~~~~~~~~~~~~~
