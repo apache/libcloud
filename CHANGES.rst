@@ -7,10 +7,54 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- Fix bug in utils.decorators wrap exception method, used by vsphere driver
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- Use PyTest as the unit testing runner
+  (Anthony Shaw)
+
 - Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
   issues with a number of drivers and etree is a standard package
   [GITHUB-1038]
   (Anthony Shaw)
+
+- Switch RawResponse class to use content body instead of text body, up to 10x performance improvement for methods like StorageDriver.download_object
+  [GITHUB-1053]
+  (Quentin Pradet)
+
+Compute
+~~~~~~~
+
+- Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- [EC2] Add i3 instance types for AWS
+  [GITHUB-1038]
+  (Stephen Mullins)
+
+- [VULTR] Extend extra dict of Vultr sizes to include additional fields (plan_type and available_locations)
+  [GITHUB-1044]
+  (Francisco Ros)
+
+Container
+~~~~~~~~~
+
+- [KUBERNETES] Fix get_container method responding with None
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
+  [GITHUB-1043]
+  (@johnnyWalnut)
+
+Storage
+~~~~~~~
+
+- [S3] Fix raise in s3.upload_object_via_stream
+  [LIBCLOUD-914, GITHUB-1055]
+  (Quentin Pradet)
 
 Changes in Apache Libcloud 2.0.0
 --------------------------------
@@ -40,6 +84,18 @@ Common
 
 Compute
 ~~~~~~~
+
+- [GOOGLE] Add test to check that can create a GCE volume at a given location
+  [GITHUB-1048]
+  (Francisco Ros)
+
+- [GOOGLE] Fix GCENodeDriver.ex_get_volume() when zone param is of class GCEZone or NodeLocation
+  [GITHUB-1047]
+  (Francisco Ros)
+
+- [GOOGLE] Fix call to GCENodeDriver._ex_populate_volume_dict
+  [GITHUB-1046]
+  (Francisco Ros)
 
 - [ARM] Add support for Azure Cloud Environments as well as Locations
   [GITHUB-969]

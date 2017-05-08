@@ -1,4 +1,3 @@
-#!/bin/sh
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,15 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-cd ..
+import unittest
 
-VERSION=`python setup.py --version`
+from libcloud.compute.drivers.medone import MedOneNodeDriver
+from libcloud.test.compute.test_dimensiondata_v2_3 import DimensionDataMockHttp, DimensionData_v2_3_Tests
 
-cd dist
 
-echo "Uploading packages"
-ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+class MedOneTests(DimensionData_v2_3_Tests, unittest.TestCase):
 
-twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+    def setUp(self):
+        MedOneNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
+        MedOneNodeDriver.connectionCls.active_api_version = '2.3'
+        DimensionDataMockHttp.type = None
+        self.driver = MedOneNodeDriver('user', 'password')

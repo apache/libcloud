@@ -278,7 +278,7 @@ class RawResponse(Response):
         if not self._response:
             response = self.connection.connection.getresponse()
             self._response = HttpLibResponseProxy(response)
-            self.body = response.text
+            self.body = response.content
             if not self.success():
                 self.parse_error()
         return self._response

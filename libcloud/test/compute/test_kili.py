@@ -1,4 +1,3 @@
-#!/bin/sh
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,15 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-cd ..
+import unittest
 
-VERSION=`python setup.py --version`
+from libcloud.compute.drivers.kili import KiliCloudNodeDriver, ENDPOINT_ARGS
+from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests
 
-cd dist
 
-echo "Uploading packages"
-ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+def _ex_connection_class_kwargs(self):
+    kwargs = self.openstack_connection_kwargs()
+    kwargs['get_endpoint_args'] = ENDPOINT_ARGS
+    # Remove keystone from the URL path so that the openstack base tests work
+    kwargs['ex_force_auth_url'] = 'https://api.kili.io/v2.0/tokens'
+    kwargs['ex_tenant_name'] = self.tenant_name
 
-twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+    return kwargs
+
+KiliCloudNodeDriver._ex_connection_class_kwargs = _ex_connection_class_kwargs
+
+
+class KiliCloudNodeDriverTests(OpenStack_1_1_Tests, unittest.TestCase):
+    driver_klass = KiliCloudNodeDriver
+    driver_type = KiliCloudNodeDriver

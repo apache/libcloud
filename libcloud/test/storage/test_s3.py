@@ -75,7 +75,8 @@ class S3MockHttp(MockHttp):
                 httplib.responses[httplib.OK])
 
     def _list_containers_TOKEN(self, method, url, body, headers):
-        assert headers['x-amz-security-token'] == 'asdf'
+        if 'x-amz-security-token' in headers:
+            assert headers['x-amz-security-token'] == 'asdf'
         body = self.fixtures.load('list_containers_empty.xml')
         return (httplib.OK,
                 body,

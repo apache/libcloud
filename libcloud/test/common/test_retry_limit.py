@@ -32,9 +32,6 @@ SIMPLE_RESPONSE_STATUS = ('HTTP/1.1', 429, 'CONFLICT')
 @patch('os.environ', {'LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS': True})
 class FailedRequestRetryTestCase(unittest.TestCase):
 
-    def _raise_socket_error(self):
-        raise socket.gaierror('')
-
     def test_retry_connection(self):
         con = Connection(timeout=1, retry_delay=0.1)
         con.connection = Mock()
@@ -46,8 +43,6 @@ class FailedRequestRetryTestCase(unittest.TestCase):
                 con.request('/')
             except socket.gaierror:
                 pass
-            except Exception:
-                self.fail('Failed to raise socket exception')
 
     def test_retry_connection_ssl_error(self):
         conn = Connection(timeout=1, retry_delay=0.1)

@@ -54,7 +54,8 @@ class DockerResponse(JsonResponse):
             # an error, but response status could still be 200
             content_type = self.headers.get('content-type', 'application/json')
             if content_type == 'application/json' or content_type == '':
-                if self.headers.get('transfer-encoding') == 'chunked':
+                if self.headers.get('transfer-encoding') == 'chunked' and \
+                        'fromImage' in self.request.url:
                     body = [json.loads(chunk) for chunk in
                             self.body.strip().replace('\r', '').split('\n')]
                 else:
