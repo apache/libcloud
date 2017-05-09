@@ -51,7 +51,7 @@ class BaseEC2Tests(LibcloudTestCase):
 
     def test_instantiate_driver_valid_regions(self):
         regions = REGION_DETAILS.keys()
-        regions = [d for d in regions if d != 'nimbus']
+        regions = [d for d in regions if d != 'nimbus' and d != 'cn-north-1']
 
         region_endpoints = [
             EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
