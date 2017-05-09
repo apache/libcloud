@@ -123,7 +123,7 @@ REGION_NAME_MAP = {
     'us-west-1': 'ec2_us_west',
     'us-west-2': 'ec2_us_west_oregon',
     'eu-west-1': 'ec2_eu_west',
-    'eu-west-2': 'ec2_eu_west_2',
+    'eu-west-2': 'ec2_eu_west_london',
     'eu-ireland': 'ec2_eu_west',
     'eu-central-1': 'ec2_eu_central',
     'ca-central-1': 'ec2_ca_central',
