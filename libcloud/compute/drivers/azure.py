@@ -1535,7 +1535,7 @@ class AzureNodeDriver(NodeDriver):
     def _perform_request(self, request):
         try:
             response = self.connection.request(
-                        action="https://%s%s" % (request.host, request.path),
+                        action=request.path,
                         data=request.body, headers=request.headers,
                         method=request.method)
             if response.status == 307:
