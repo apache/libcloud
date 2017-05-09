@@ -126,7 +126,7 @@ REGION_NAME_MAP = {
     'eu-west-2': 'ec2_eu_west_london',
     'eu-ireland': 'ec2_eu_west',
     'eu-central-1': 'ec2_eu_central',
-    'ca-central-1': 'ec2_ca_central',
+    'ca-central-1': 'ec2_ca_central_1',
     'apac-sin': 'ec2_ap_southeast',
     'ap-southeast-1': 'ec2_ap_southeast',
     'apac-syd': 'ec2_ap_southeast_2',
