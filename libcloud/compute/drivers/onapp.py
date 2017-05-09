@@ -241,6 +241,7 @@ class OnAppNodeDriver(NodeDriver):
 
     def __init__(self, key=None, secret=None,
                  host='onapp.com', port=443,
+                 verify=True
                  ):
         """
         :param key: username
@@ -281,6 +282,9 @@ class OnAppNodeDriver(NodeDriver):
         except:
             raise Exception("Make sure onapp host is accessible and port "
                             "%s is open" % port)
+        # do not verify SSL certificate
+        if not verify:
+            self.connection.connection.ca_cert = False
 
     def create_node(self, name, ex_memory, ex_cpus, ex_cpu_shares,
                     ex_hostname, ex_template_id, ex_primary_disk_size,
