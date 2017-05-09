@@ -253,6 +253,14 @@ class OnAppNodeDriver(NodeDriver):
 
         secure = False if host.startswith('http://') else True
         port = 80 if host.startswith('http://') else 443
+
+        # strip the prefix
+        prefixes = ['http://', 'https://']
+        for prefix in prefixes:
+            if host.startswith(prefix):
+                host = host.replace(prefix, '')
+        host = host.split('/')[0]
+
         super(OnAppNodeDriver, self).__init__(key=key,
                                               secret=secret,
                                               host=host,
@@ -261,12 +269,6 @@ class OnAppNodeDriver(NodeDriver):
 
         self.connection.secure = secure
 
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.replace(prefix, '')
-        host = host.split('/')[0]
 
         self.connection.host = host
         self.connection.port = port
