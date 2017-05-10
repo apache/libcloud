@@ -1,0 +1,7 @@
+[
+  {
+    "location": "eastus",
+    "name": "voipnow",
+    "id": "/Subscriptions/35867a13-9915-428e-a146-97f3039bba98/Providers/Microsoft.Compute/Locations/eastus/Publishers/4psa/ArtifactTypes/VMImage/Offers/voipnow"
+  }
+]

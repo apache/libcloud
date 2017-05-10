@@ -1,0 +1,12 @@
+[
+  {
+    "location": "eastus",
+    "name": "a10-lightning-adc",
+    "id": "/Subscriptions/35867a13-9915-428e-a146-97f3039bba98/Providers/Microsoft.Compute/Locations/eastus/Publishers/a10networks/ArtifactTypes/VMImage/Offers/a10-lightning-adc"
+  },
+  {
+    "location": "eastus",
+    "name": "a10-vthunder-adc",
+    "id": "/Subscriptions/35867a13-9915-428e-a146-97f3039bba98/Providers/Microsoft.Compute/Locations/eastus/Publishers/a10networks/ArtifactTypes/VMImage/Offers/a10-vthunder-adc"
+  }
+]

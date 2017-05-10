@@ -215,7 +215,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.NodeLocation`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Compute" % (
+        action = "/Subscriptions/%s/Providers/Microsoft.Compute" % (
             self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-01-01"})
@@ -244,8 +244,8 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
         action = \
-            "/subscriptions/%s/providers/Microsoft" \
-            ".Compute/locations/%s/vmSizes" \
+            "/Subscriptions/%s/Providers/Microsoft" \
+            ".Compute/Locations/%s/vmSizes" \
             % (self.subscription_id, location.id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -289,8 +289,8 @@ class AzureNodeDriver(NodeDriver):
                 publishers = self.ex_list_publishers(loc)
             else:
                 publishers = [(
-                    "/subscriptions/%s/providers/Microsoft"
-                    ".Compute/locations/%s/publishers/%s" %
+                    "/Subscriptions/%s/Providers/Microsoft"
+                    ".Compute/Locations/%s/publishers/%s" %
                     (self.subscription_id, loc.id, ex_publisher),
                     ex_publisher)]
 
@@ -364,11 +364,11 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if ex_resource_group:
-            action = "/subscriptions/%s/resourceGroups/%s/" \
+            action = "/Subscriptions/%s/resourceGroups/%s/" \
                      "providers/Microsoft.Compute/virtualMachines" \
                      % (self.subscription_id, ex_resource_group)
         else:
-            action = "/subscriptions/%s/providers/Microsoft.Compute/" \
+            action = "/Subscriptions/%s/Providers/Microsoft.Compute/" \
                      "virtualMachines" \
                      % (self.subscription_id)
         r = self.connection.request(action,
@@ -494,7 +494,7 @@ class AzureNodeDriver(NodeDriver):
             if ex_subnet is None:
                 ex_subnet = "default"
 
-            subnet_id = "/subscriptions/%s/resourceGroups/%s/providers" \
+            subnet_id = "/Subscriptions/%s/resourceGroups/%s/providers" \
                         "/Microsoft.Network/virtualnetworks/%s/subnets/%s" % \
                         (self.subscription_id, ex_resource_group,
                          ex_network, ex_subnet)
@@ -506,7 +506,7 @@ class AzureNodeDriver(NodeDriver):
 
         auth = self._get_and_check_auth(auth)
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers" \
+        target = "/Subscriptions/%s/resourceGroups/%s/providers" \
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
@@ -764,7 +764,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Commerce/" \
+        action = "/Subscriptions/%s/Providers/Microsoft.Commerce/" \
                  "RateCard" % (self.subscription_id,)
         params = {"api-version": "2016-08-31-preview",
                   "$filter": "OfferDurableId eq 'MS-AZR-%s' and "
@@ -794,7 +794,7 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        action = "/subscriptions/%s/providers/Microsoft.Compute/" \
+        action = "/Subscriptions/%s/Providers/Microsoft.Compute/" \
                  "locations/%s/publishers" \
                  % (self.subscription_id, location.id)
         r = self.connection.request(action,
@@ -813,7 +813,8 @@ class AzureNodeDriver(NodeDriver):
         ("offer id", "offer name")
         :rtype: ``list``
         """
-
+        if isinstance(publisher, tuple):
+            publisher = publisher[0]
         action = "%s/artifacttypes/vmimage/offers" % (publisher)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -831,7 +832,8 @@ class AzureNodeDriver(NodeDriver):
         ("sku id", "sku name")
         :rtype: ``list``
         """
-
+        if isinstance(offer, tuple):
+            offer = offer[0]
         action = "%s/skus" % (offer)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -849,8 +851,9 @@ class AzureNodeDriver(NodeDriver):
         ("version id", "version name")
         :rtype: ``list``
         """
-
-        action = "%s/versions" % (sku)
+        if isinstance(sku, tuple):
+            sku = sku[0]
+        action = "%s/Versions" % (sku)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
@@ -863,7 +866,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureResourceGroup`
         """
 
-        action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
+        action = "/Subscriptions/%s/ResourceGroups" % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2016-09-01"})
         return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
@@ -881,8 +884,10 @@ class AzureNodeDriver(NodeDriver):
         :return: A list of network security groups.
         :rtype: ``list`` of :class:`.AzureNetworkSecurityGroup`
         """
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
 
-        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
+        action = "/Subscriptions/%s/resourceGroups/%s/Providers/" \
                  "Microsoft.Network/networkSecurityGroups" \
                  % (self.subscription_id, resource_group)
         r = self.connection.request(action,
@@ -909,13 +914,14 @@ class AzureNodeDriver(NodeDriver):
         group (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
         """
-
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
         if location is None and self.default_location:
             location = self.default_location
         else:
             raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
+        target = "/Subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
                  % (self.subscription_id, resource_group, name)
         data = {
@@ -942,13 +948,14 @@ class AzureNodeDriver(NodeDriver):
         group (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
         """
-
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
         if location is None and self.default_location:
             location = self.default_location
         else:
             raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
+        target = "/Subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
                  % (self.subscription_id, resource_group, name)
         data = {
@@ -967,7 +974,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNetwork`
         """
 
-        action = "/subscriptions/%s/providers/" \
+        action = "/Subscriptions/%s/Providers/" \
                  "Microsoft.Network/virtualnetworks" \
                  % (self.subscription_id)
         r = self.connection.request(action,
@@ -1005,8 +1012,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s" \
-                 "/providers/Microsoft.Network/networkInterfaces" % \
+        action = "/Subscriptions/%s/resourceGroups/%s" \
+                 "/Providers/Microsoft.Network/networkInterfaces" % \
                  (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -1050,8 +1057,9 @@ class AzureNodeDriver(NodeDriver):
         :return: List of public ip objects
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
-
-        action = "/subscriptions/%s/resourceGroups/%s/" \
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
+        action = "/Subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/publicIPAddresses" \
                  % (self.subscription_id, resource_group)
         r = self.connection.request(action,
@@ -1075,13 +1083,14 @@ class AzureNodeDriver(NodeDriver):
         :return: The newly created public ip object
         :rtype: :class:`.AzureIPAddress`
         """
-
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
         if location is None and self.default_location:
             location = self.default_location
         else:
             raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
+        target = "/Subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/publicIPAddresses/%s" \
                  % (self.subscription_id, resource_group, name)
         data = {
@@ -1122,14 +1131,15 @@ class AzureNodeDriver(NodeDriver):
         :return: The newly created NIC
         :rtype: :class:`.AzureNic`
         """
-
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
         if location is None:
             if self.default_location:
                 location = self.default_location
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers" \
+        target = "/Subscriptions/%s/resourceGroups/%s/providers" \
                  "/Microsoft.Network/networkInterfaces/%s" \
                  % (self.subscription_id, resource_group, name)
 
@@ -1243,8 +1253,9 @@ class AzureNodeDriver(NodeDriver):
         :return: The account keys, in the form `{"key1": "XXX", "key2": "YYY"}`
         :rtype: ``.dict``
         """
-
-        action = "/subscriptions/%s/resourceGroups/%s/" \
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
+        action = "/Subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Storage/storageAccounts/%s/listKeys" \
                  % (self.subscription_id,
                     resource_group,

@@ -95,9 +95,61 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
     def test_offers(self):
         publishers = self.driver.ex_list_publishers()
-        offers = self.driver.ex_list_offers(publishers[0])
-        _, names, _ = zip(*offers)
+        offers = self.driver.ex_list_offers(publishers[0][0])
+        _, names = zip(*offers)
         assert "voipnow" in names
+
+    def test_offers_as_tuple(self):
+        publishers = self.driver.ex_list_publishers()
+        offers = self.driver.ex_list_offers(publishers[0])
+        _, names = zip(*offers)
+        assert "voipnow" in names
+
+    def test_list_skus(self):
+        publishers = self.driver.ex_list_publishers()
+        offers = self.driver.ex_list_offers(publishers[0])
+        skus = self.driver.ex_list_skus(offers[0][0])
+        _, names = zip(*skus)
+        assert "vnp360-single" in names
+
+    def test_list_skus_as_tuple(self):
+        publishers = self.driver.ex_list_publishers()
+        offers = self.driver.ex_list_offers(publishers[0])
+        skus = self.driver.ex_list_skus(offers[0])
+        _, names = zip(*skus)
+        assert "vnp360-single" in names
+
+    def test_list_image_versions(self):
+        publishers = self.driver.ex_list_publishers()
+        offers = self.driver.ex_list_offers(publishers[0])
+        skus = self.driver.ex_list_skus(offers[0])
+        image_versions = self.driver.ex_list_image_versions(skus[0][0])
+        _, names = zip(*image_versions)
+        assert "3.6.0" in names
+
+    def test_list_image_versions_as_tuple(self):
+        publishers = self.driver.ex_list_publishers()
+        offers = self.driver.ex_list_offers(publishers[0])
+        skus = self.driver.ex_list_skus(offers[0])
+        image_versions = self.driver.ex_list_image_versions(skus[0])
+        _, names = zip(*image_versions)
+        assert "3.6.0" in names
+
+    def test_list_resource_groups(self):
+        resource_groups = self.driver.ex_list_resource_groups()
+        test_group = resource_groups[2]
+        assert test_group.id == '/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/salt-dev-master'
+        assert test_group.name == 'salt-dev-master'
+
+    def test_ex_list_network_security_groups(self):
+        resource_groups = self.driver.ex_list_resource_groups()
+        net_groups = self.driver.ex_list_network_security_groups(resource_groups[2].name)
+        assert len(net_groups) == 0
+
+    def test_ex_list_network_security_groups_obj(self):
+        resource_groups = self.driver.ex_list_resource_groups()
+        net_groups = self.driver.ex_list_network_security_groups(resource_groups[2])
+        assert len(net_groups) == 0
 
 
 class AzureMockHttp(MockHttp):
