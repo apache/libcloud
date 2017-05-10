@@ -147,6 +147,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
         assert len(net_groups) == 0
 
     def test_ex_list_network_security_groups_obj(self):
+        """
+        Test that you can send an AzureResourceGroup instance instead of the name
+        """
         resource_groups = self.driver.ex_list_resource_groups()
         net_groups = self.driver.ex_list_network_security_groups(resource_groups[2])
         assert len(net_groups) == 0
