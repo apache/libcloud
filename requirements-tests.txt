@@ -7,4 +7,5 @@ coveralls
 coverage<4.0
 requests
 requests_mock
+requests_staticmock
 pytest

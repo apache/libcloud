@@ -1,0 +1,40 @@
+{
+  "vmAgent": {
+    "vmAgentVersion": "Unknown",
+    "statuses": [
+      {
+        "code": "ProvisioningState/Unavailable",
+        "level": "Warning",
+        "displayStatus": "Not Ready",
+        "message": "VM Agent is unresponsive.",
+        "time": "2017-05-10T00:27:05+00:00"
+      }
+    ]
+  },
+  "disks": [
+    {
+      "name": "vmtest1",
+      "statuses": [
+        {
+          "code": "ProvisioningState/succeeded",
+          "level": "Info",
+          "displayStatus": "Provisioning succeeded",
+          "time": "2017-04-24T09:31:47.1038307+00:00"
+        }
+      ]
+    }
+  ],
+  "statuses": [
+    {
+      "code": "ProvisioningState/succeeded",
+      "level": "Info",
+      "displayStatus": "Provisioning succeeded",
+      "time": "2017-04-24T09:31:47.1038307+00:00"
+    },
+    {
+      "code": "PowerState/deallocated",
+      "level": "Info",
+      "displayStatus": "VM deallocated"
+    }
+  ]
+}

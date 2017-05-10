@@ -1,0 +1,16 @@
+{
+  "name": "vmtest1-ip",
+  "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/publicIPAddresses/vmtest1-ip",
+  "etag": "W/\"1de748fe-29b8-468e-95bb-23c133905dc3\"",
+  "location": "australiaeast",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "8b8309f7-74a2-44c4-8609-1e896f237461",
+    "publicIPAllocationMethod": "Dynamic",
+    "idleTimeoutInMinutes": 4,
+    "ipConfiguration": {
+      "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vmtest1757/ipConfigurations/ipconfig1"
+    }
+  },
+  "type": "Microsoft.Network/publicIPAddresses"
+}

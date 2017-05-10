@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import random
+import os.path
 import requests
 from libcloud.common.base import Response
 from libcloud.http import LibcloudConnection
@@ -25,7 +26,9 @@ else:
     from io import StringIO
 
 import requests_mock
+import requests_staticmock
 
+from libcloud.test.file_fixtures import FIXTURES_ROOT
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
@@ -107,12 +110,18 @@ class MockHttp(LibcloudConnection):
     use_param = None  # will use this param to namespace the request function
     test = None  # TestCase instance which is using this mock
     proxy_url = None
+    mode = 'mock'
 
     def __init__(self, *args, **kwargs):
         # Load assertion methods into the class, incase people want to assert
         # within a response
         if isinstance(self, unittest.TestCase):
             unittest.TestCase.__init__(self, '__init__')
+        if self.mode == 'static':
+            script_dir = os.path.abspath(os.path.split(__file__)[0])
+            fixtures_type, fixture_folder = self.fixtures
+            self.root = os.path.join(script_dir, FIXTURES_ROOT[fixtures_type],
+                                     fixture_folder)
         super(MockHttp, self).__init__(*args, **kwargs)
 
     def _get_request(self, method, url, body=None, headers=None):
@@ -133,23 +142,31 @@ class MockHttp(LibcloudConnection):
         return meth(method, url, body, headers)
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
-        r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
-        if r_body is None:
-            r_body = ''
-        # this is to catch any special chars e.g. ~ in the request. URL
-        url = urlquote(url)
-
-        with requests_mock.mock() as m:
-            m.register_uri(method, url, text=r_body, reason=r_reason,
-                           headers=r_headers, status_code=r_status)
-            try:
+        if self.mode == 'mock':
+            r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
+            if r_body is None:
+                r_body = ''
+            # this is to catch any special chars e.g. ~ in the request. URL
+            url = urlquote(url)
+            with requests_mock.mock() as m:
+                m.register_uri(method, url, text=r_body, reason=r_reason,
+                               headers=r_headers, status_code=r_status)
+                try:
+                    super(MockHttp, self).request(
+                        method=method, url=url, body=body, headers=headers,
+                        raw=raw, stream=stream)
+                except requests_mock.exceptions.NoMockAddress as nma:
+                    raise AttributeError("Failed to mock out URL {0} - {1}".format(
+                        url, nma.request.url
+                    ))
+        elif self.mode == 'static':
+            print(url)
+            with requests_staticmock.mock_session_with_fixtures(self.session,
+                                                                self.root,
+                                                                self.base_url):
                 super(MockHttp, self).request(
                     method=method, url=url, body=body, headers=headers,
                     raw=raw, stream=stream)
-            except requests_mock.exceptions.NoMockAddress as nma:
-                raise AttributeError("Failed to mock out URL {0} - {1}".format(
-                    url, nma.request.url
-                ))
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):

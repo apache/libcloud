@@ -1,0 +1,45 @@
+{
+  "value": [
+    {
+      "properties": {
+        "vmId": "20cbcb12-9b75-4828-8bd9-cbbfe0c9747c",
+        "hardwareProfile": {
+          "vmSize": "Standard_DS1_v2"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "osType": "Windows",
+            "name": "vmtest1",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "https://anthonyshaw.blob.core.windows.net/vhds/vmtest120170402092159.vhd"
+            },
+            "caching": "ReadWrite"
+          },
+          "dataDisks": []
+        },
+        "osProfile": {
+          "computerName": "vmtest1",
+          "adminUsername": "anthony.shaw",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": []
+        },
+        "networkProfile": {"networkInterfaces":[{"id":"/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vmtest1757"}]},
+        "provisioningState": "Succeeded"
+      },
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "australiaeast",
+      "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/TEST/providers/Microsoft.Compute/virtualMachines/vmtest1",
+      "name": "vmtest1"
+    }
+  ]
+}

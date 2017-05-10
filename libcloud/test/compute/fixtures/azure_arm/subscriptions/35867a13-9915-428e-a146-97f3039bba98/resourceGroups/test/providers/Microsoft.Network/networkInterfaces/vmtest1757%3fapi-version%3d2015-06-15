@@ -1,0 +1,43 @@
+{
+  "name": "vmtest1757",
+  "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vmtest1757",
+  "etag": "W/\"9992c564-f4f0-4eac-813e-d6ac038c1369\"",
+  "location": "australiaeast",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "1f11ac8a-a5b0-4ac6-8e48-0eb15dca95ce",
+    "ipConfigurations": [
+      {
+        "name": "ipconfig1",
+        "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vmtest1757/ipConfigurations/ipconfig1",
+        "etag": "W/\"9992c564-f4f0-4eac-813e-d6ac038c1369\"",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "privateIPAddress": "10.0.0.4",
+          "privateIPAllocationMethod": "Dynamic",
+          "publicIPAddress": {
+            "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/publicIPAddresses/vmtest1-ip"
+          },
+          "subnet": {
+            "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/virtualNetworks/test-vnet/subnets/default"
+          },
+          "primary": true
+        }
+      }
+    ],
+    "dnsSettings": {
+      "dnsServers": [],
+      "appliedDnsServers": []
+    },
+    "macAddress": "00-0D-3A-D1-3E-BF",
+    "enableIPForwarding": false,
+    "networkSecurityGroup": {
+      "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/vmtest1-nsg"
+    },
+    "primary": true,
+    "virtualMachine": {
+      "id": "/subscriptions/35867a13-9915-428e-a146-97f3039bba98/resourceGroups/TEST/providers/Microsoft.Compute/virtualMachines/vmtest1"
+    }
+  },
+  "type": "Microsoft.Network/networkInterfaces"
+}
