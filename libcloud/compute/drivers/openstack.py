@@ -1576,6 +1576,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
 
+    def ex_rename_node(self, node, name):
+        return self.ex_update_node(node, name=name)
+
     def _to_networks(self, obj):
         networks = obj['networks']
         return [self._to_network(network) for network in networks]
