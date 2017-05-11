@@ -412,14 +412,12 @@ class VCloudConnection(ConnectionUserAndKey):
 
     def _get_auth_token(self):
         if not self.token:
-            conn = self.conn_classes[self.secure](self.host,
-                                                  self.port)
-            conn.request(method='POST', url='/api/v0.8/login',
-                         headers=self._get_auth_headers())
+            self.connection.request(method='POST', url='/api/v0.8/login',
+                                    headers=self._get_auth_headers())
 
-            resp = conn.getresponse()
-            headers = dict(resp.getheaders())
-            body = ET.XML(resp.read())
+            resp = self.connection.getresponse()
+            headers = resp.headers
+            body = ET.XML(resp.text)
 
             try:
                 self.token = headers['set-cookie']
@@ -755,7 +753,7 @@ class VCloudNodeDriver(NodeDriver):
         for network in network_elements:
             # avoid exception: Unable to perform this action. Contact your cloud administrator.
             try:
-                network_object = self.connection.request(network.get('href')).object
+                network_object = self.connection.request(get_url_path(network.get('href'))).object
             except:
                 continue
 
@@ -1001,13 +999,11 @@ class VCloud_1_5_Connection(VCloudConnection):
     def _get_auth_token(self):
         if not self.token:
             # Log In
-            conn = self.conn_classes[self.secure](self.host,
-                                                  self.port)
-            conn.request(method='POST', url='/api/sessions',
-                         headers=self._get_auth_headers())
+            self.connection.request(method='POST', url='/api/sessions',
+                                    headers=self._get_auth_headers())
 
-            resp = conn.getresponse()
-            headers = dict(resp.getheaders())
+            resp = self.connection.getresponse()
+            headers = resp.headers
 
             # Set authorization token
             try:
@@ -1016,7 +1012,7 @@ class VCloud_1_5_Connection(VCloudConnection):
                 raise InvalidCredsError()
 
             # Get the URL of the Organization
-            body = ET.XML(resp.read())
+            body = ET.XML(resp.text)
             self.org_name = body.get('org')
             org_list_url = get_url_path(
                 next((link for link in body.findall(fixxpath(body, 'Link'))
@@ -1024,9 +1020,11 @@ class VCloud_1_5_Connection(VCloudConnection):
                      'application/vnd.vmware.vcloud.orgList+xml')).get('href')
             )
 
-            conn.request(method='GET', url=org_list_url,
-                         headers=self.add_default_headers({}))
-            body = ET.XML(conn.getresponse().read())
+            if self.proxy_url is not None:
+                self.connection.set_http_proxy(self.proxy_url)
+            self.connection.request(method='GET', url=org_list_url,
+                                    headers=self.add_default_headers({}))
+            body = ET.XML(self.connection.getresponse().text)
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')
