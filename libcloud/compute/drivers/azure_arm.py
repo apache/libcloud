@@ -21,6 +21,7 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 
 import base64
 import binascii
+import uuid
 import os
 import time
 
@@ -778,7 +779,7 @@ class AzureNodeDriver(NodeDriver):
                       ex_resource_group=None, ex_account_type=None,
                       ex_tags=None):
         """
-        Create a new volume.
+        Create a new managed volume.
 
         :param size: Size of volume in gigabytes.
         :type size: ``int``
@@ -798,7 +799,7 @@ class AzureNodeDriver(NodeDriver):
 
         :param ex_account_type: The Storage Account type,
             ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
-        :type ex_account_type: str
+        :type ex_account_type: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
         :type ex_tags: ``dict``
@@ -885,7 +886,7 @@ class AzureNodeDriver(NodeDriver):
         )
         return [self._to_volume(volume) for volume in response.object['value']]
 
-    def attach_volume(self, node, volume, ex_lun=None, **ex_kwargs):
+    def attach_volume(self, node, volume, ex_lun=None, ex_vhd_uri=None, **ex_kwargs):
         """
         Attach a managed volume to node.
 
@@ -899,6 +900,10 @@ class AzureNodeDriver(NodeDriver):
             the data drive in the virtual machine. Each data disk must have
             a unique LUN.
         :type ex_lun: ``int``
+
+        :param ex_vhd_uri: Attach old-style un-managed disk from VHD
+            blob. (optional)
+        :type ex_vhd_uri: ``str``
 
         :rtype: ``bool``
         """
@@ -915,14 +920,26 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise LibcloudError("No LUN available to attach new disk.")
 
-        disks.append({
-            'lun': ex_lun,
-            'createOption': 'attach',
-            'managedDisk': {
-                'id': volume.id
+        if ex_vhd_uri is not None:
+            # attach new or existing unmanaged disk
+            resource_group = node.id.split('/')[4]
+            is_vhd_exists = self._ex_is_vhd_exists(resource_group, ex_vhd_uri)
+            new_disk = {
+                'lun': ex_lun,
+                'name': 'unmanaged-vol-{}'.format(str(uuid.uuid4())[0:8]),
+                'createOption': 'attach' if is_vhd_exists else 'empty',
+                'vhd': {'uri': ex_vhd_uri},
+                'diskSizeGB': volume.size
             }
-        })
+        else:
+            # attach existing managed disk
+            new_disk = {
+                'lun': ex_lun,
+                'createOption': 'attach',
+                'managedDisk': {'id': volume.id}
+            }
 
+        disks.append(new_disk)
         self.connection.request(
             action,
             method='PUT',
@@ -1842,6 +1859,18 @@ class AzureNodeDriver(NodeDriver):
             return True
         except ObjectDoesNotExistError:
             return True
+
+    def _ex_is_vhd_exists(self, resource_group, uri):
+        try:
+            storage_account, blob_container, blob = _split_blob_uri(uri)
+            keys = self.ex_get_storage_account_keys(
+                resource_group, storage_account)
+            blob_driver = AzureBlobsStorageDriver(
+                storage_account, keys['key1'])
+            blob_driver.get_object(blob_container, blob)
+            return True
+        except ObjectDoesNotExistError:
+            return False
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
