@@ -966,19 +966,29 @@ class AzureNodeDriver(NodeDriver):
                                 data=data,
                                 method='DELETE')
 
-    def ex_list_networks(self):
+    def ex_list_networks(self, resource_group=None):
         """
         List virtual networks.
+
+        :param resource_group: List Virtual Networks in a specific
+        resource group.
+        :type resource_group: ``str`` or :class:`AzureResourceGroup`
 
         :return: A list of virtual networks.
         :rtype: ``list`` of :class:`.AzureNetwork`
         """
-
-        action = "/Subscriptions/%s/Providers/" \
-                 "Microsoft.Network/virtualnetworks" \
-                 % (self.subscription_id)
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
+        if resource_group is not None:
+            action = "/Subscriptions/%s/resourceGroups/%s/providers/" \
+                    "Microsoft.Network/virtualnetworks" \
+                    % (self.subscription_id, resource_group)
+        else:
+            action = "/Subscriptions/%s/Providers/" \
+                    "Microsoft.Network/virtualnetworks" \
+                    % (self.subscription_id)
         r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+                                    params={"api-version": "2017-03-01"})
         return [AzureNetwork(net["id"], net["name"], net["location"],
                              net["properties"]) for net in r.object["value"]]
 
@@ -1006,12 +1016,13 @@ class AzureNodeDriver(NodeDriver):
 
         :param resource_group: List NICS in a specific resource group
         containing the NICs.
-        :type resource_group: ``str``
+        :type resource_group: ``str`` or :class:`AzureResourceGroup`
 
         :return: A list of NICs.
         :rtype: ``list`` of :class:`.AzureNic`
         """
-
+        if isinstance(resource_group, AzureResourceGroup):
+            resource_group = resource_group.name
         action = "/Subscriptions/%s/resourceGroups/%s" \
                  "/Providers/Microsoft.Network/networkInterfaces" % \
                  (self.subscription_id, resource_group)
@@ -1047,23 +1058,28 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_ip_address(r.object)
 
-    def ex_list_public_ips(self, resource_group):
+    def ex_list_public_ips(self, resource_group=None):
         """
         List public IP resources.
 
         :param resource_group: List public IPs in a specific resource group.
-        :type resource_group: ``str``
+        :type resource_group: ``str`` or :class:`AzureResourceGroup`
 
         :return: List of public ip objects
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
         if isinstance(resource_group, AzureResourceGroup):
             resource_group = resource_group.name
-        action = "/Subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/publicIPAddresses" \
-                 % (self.subscription_id, resource_group)
+        if resource_group is not None:
+            action = "/Subscriptions/%s/resourceGroups/%s/providers/" \
+                    "Microsoft.Network/publicIPAddresses" \
+                    % (self.subscription_id, resource_group)
+        else:
+            action = "/Subscriptions/%s/Providers/" \
+                    "Microsoft.Network/publicIPAddresses" \
+                    % (self.subscription_id)
         r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+                                    params={"api-version": "2017-03-01"})
         return [self._to_ip_address(net) for net in r.object["value"]]
 
     def ex_create_public_ip(self, name, resource_group, location=None):
@@ -1074,7 +1090,7 @@ class AzureNodeDriver(NodeDriver):
         :type name: ``str``
 
         :param resource_group: The resource group to create the public IP
-        :type resource_group: ``str``
+        :type resource_group: ``str`` or :class:`AzureResourceGroup`
 
         :param location: The location at which to create the public IP
         (if None, use default location specified as 'region' in __init__)
@@ -1118,7 +1134,7 @@ class AzureNodeDriver(NodeDriver):
         :type subnet: :class:`.AzureSubnet`
 
         :param resource_group: The resource group to create the NIC
-        :type resource_group: ``str``
+        :type resource_group: ``str`` or :class:`AzureResourceGroup`
 
         :param location: The location at which to create the NIC
         (if None, use default location specified as 'region' in __init__)
