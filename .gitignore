@@ -23,3 +23,12 @@ apache_libcloud.egg-info/
 .eggs/
 .cache/
 .vscode/
+bin/
+geckodriver.log
+include/
+lib/
+libcloud/utils/escape.py~45101531e327bae25bd29bf7e2fa2c9796e71d27
+libcloud/utils/escape.py~HEAD
+local/
+share/
+
