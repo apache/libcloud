@@ -3608,13 +3608,16 @@ class BaseEC2NodeDriver(NodeDriver):
                     )
         return locations
 
-    def list_volumes(self, node=None):
+    def list_volumes(self, node=None, ex_volume_ids=None):
         params = {
             'Action': 'DescribeVolumes',
         }
         if node:
             filters = {'attachment.instance-id': node.id}
             params.update(self._build_filters(filters))
+
+        if ex_volume_ids:
+            params.update(self._pathlist('VolumeId', ex_volume_ids))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
