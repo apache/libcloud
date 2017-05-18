@@ -1513,6 +1513,48 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_nic(r.object)
 
+    def ex_get_node(self, id):
+        """
+        Fetch information about a node.
+
+        :param id: The complete resource path to the node resource.
+        :type id: ``str``
+
+        :return: The Node object
+        :rtype: :class:`.Node`
+        """
+
+        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        return self._to_node(r.object)
+
+    def ex_get_volume(self, id):
+        """
+        Fetch information about a volume.
+
+        :param id: The complete resource path to the volume resource.
+        :type id: ``str``
+
+        :return: The StorageVolume object
+        :rtype: :class:`.StorageVolume`
+        """
+
+        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        return self._to_volume(r.object)
+
+    def ex_get_snapshot(self, id):
+        """
+        Fetch information about a snapshot.
+
+        :param id: The complete resource path to the snapshot resource.
+        :type id: ``str``
+
+        :return: The VolumeSnapshot object
+        :rtype: :class:`.VolumeSnapshot`
+        """
+
+        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        return self._to_snapshot(r.object)
+
     def ex_get_public_ip(self, id):
         """
         Fetch information about a public IP resource.
