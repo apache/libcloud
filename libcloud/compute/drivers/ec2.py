@@ -6356,8 +6356,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify volume parameters.
         A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
-        :param      Volume: Volume instance
-        :type       Volume: :class:`Volume`
+        :param      volume: Volume instance
+        :type       volume: :class:`Volume`
 
         :param      parameters: Dictionary with updated volume parameters
         :type       parameters: ``dict``
