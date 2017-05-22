@@ -3608,13 +3608,16 @@ class BaseEC2NodeDriver(NodeDriver):
                     )
         return locations
 
-    def list_volumes(self, node=None):
+    def list_volumes(self, node=None, ex_volume_ids=None):
         params = {
             'Action': 'DescribeVolumes',
         }
         if node:
             filters = {'attachment.instance-id': node.id}
             params.update(self._build_filters(filters))
+
+        if ex_volume_ids:
+            params.update(self._pathlist('VolumeId', ex_volume_ids))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
@@ -6338,8 +6341,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify volume parameters.
         A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
-        :param      Volume: Volume instance
-        :type       Volume: :class:`Volume`
+        :param      volume: Volume instance
+        :type       volume: :class:`Volume`
 
         :param      parameters: Dictionary with updated volume parameters
         :type       parameters: ``dict``
