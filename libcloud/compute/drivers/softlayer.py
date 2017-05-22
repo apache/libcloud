@@ -57,7 +57,7 @@ DATACENTERS = {
 NODE_STATE_MAP = {
     'RUNNING': NodeState.RUNNING,
     'ACTIVE': NodeState.RUNNING,
-    'HALTED': NodeState.UNKNOWN,
+    'HALTED': NodeState.STOPPED,
     'PAUSED': NodeState.UNKNOWN,
     'INITIATING': NodeState.PENDING,
     'DEPLOY': NodeState.PENDING,
@@ -211,6 +211,7 @@ class SoftLayerNodeDriver(NodeDriver):
         # When machine is launching it gets state halted
         # we change this to pending
         if bare_metal:
+            createDate = host.get('provisionDate', None)
             try:
                 state = NODE_STATE_MAP.get(str(host['hardwareStatusId']),
                                            NodeState.UNKNOWN)
