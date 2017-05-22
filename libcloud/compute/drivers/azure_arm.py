@@ -1544,7 +1544,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.Node`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_node(r.object)
 
     def ex_get_volume(self, id):
@@ -1558,7 +1559,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.StorageVolume`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_volume(r.object)
 
     def ex_get_snapshot(self, id):
@@ -1572,7 +1574,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.VolumeSnapshot`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_snapshot(r.object)
 
     def ex_get_public_ip(self, id):
