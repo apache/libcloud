@@ -4943,7 +4943,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      to_port: The end of the port range to open
         :type       to_port: ``int``
 
-        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :param      cidr_ips: The list of IP ranges to allow traffic for.
         :type       cidr_ips: ``list``
 
         :param      group_pairs: Source user/group pairs to allow traffic for.
@@ -4954,8 +4954,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
                     [{'group_name': 'default', 'user_id': '1234567890'}]
 
-                    VPC Example: Allow access from any system associated with
-                    security group sg-47ad482e on your own account
+                    VPC example: To allow access from any system associated
+                    with security group sg-47ad482e on your own account
 
                     [{'group_id': ' sg-47ad482e'}]
         :type       group_pairs: ``list`` of ``dict``
