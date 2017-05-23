@@ -1,26 +1,22 @@
-Joyent Triton Container Driver Documentation
+Google Container Driver Documentation
 ============================================
 
-`Joyent Triton`_ is a Docker hosting service, provided by service provider Joyent.
-Docker-native tools and elastic hosts make deploying on Triton as easy as running Docker on your laptop.
+`Google Container Platform`_ is a Docker hosting service, provided by Google.
+Docker-native tools and elastic hosts make deploying on Google Cloud as easy as running Docker on your laptop.
 There is no special software to install or configure.
 Mix Docker containers with container-native Linux to extend the benefits of containerization to legacy applications and stateful services.
 
-.. figure:: /_static/images/provider_logos/triton.png
-    :align: center
-    :width: 300
-    :target: http://joyent.com/
 
 Instantiating the driver
 ------------------------
 
 Download the script::
 
-    curl -O https://raw.githubusercontent.com/joyent/sdc-docker/master/tools/sdc-docker-setup.sh
+    ****
 
 Now execute the script, substituting the correct values::
 
-    bash sdc-docker-setup.sh <CLOUDAPI_URL> <ACCOUNT_USERNAME> ~/.ssh/<PRIVATE_KEY_FILE>
+    ****
 
 This should output something similar to the following::
 
@@ -32,7 +28,7 @@ This should output something similar to the following::
     If you have a pass phrase on your key, the openssl command will
     prompt you for your pass phrase now and again later.
 
-    Verifying CloudAPI access.
+    Verifying GoogleCloudAPI access.
     CloudAPI access verified.
 
     Generating client certificate from SSH private key.
@@ -56,9 +52,7 @@ This should output something similar to the following::
 API Docs
 --------
 
-.. autoclass:: libcloud.container.drivers.joyent.JoyentContainerDriver
+.. autoclass:: libcloud.container.drivers.joyent.GoogleContainerDriver
     :members:
     :inherited-members:
 
-
-.. _`Joyent Triton`: https://www.joyent.com/blog/understanding-triton-containers

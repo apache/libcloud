@@ -1,7 +1,10 @@
 from libcloud.common.google import GoogleOAuth2Credential
 
+from libcloud.container.drivers.docker import (DockerContainerDriver,
+                                               DockerConnection)
 
-class GKENodeDriver(NodeDriver):
+
+class GKEContainerDriver(DockerContainerDriver):
     """
     GCE Node Driver class.
 
@@ -13,7 +16,7 @@ class GKENodeDriver(NodeDriver):
     objects/strings).  In most cases, passing strings instead of objects will
     result in additional GKE API calls.
     """
-    connectionCls = GKEConnection
+    connectionCls = DockerConnection
     api_name = 'google'
     name = "Google Container Engine"
     type = Provider.GKE
@@ -29,38 +32,8 @@ class GKENodeDriver(NodeDriver):
     # node in a 'terminated' state.
     # For more details, please see GCE's docs,
     # https://cloud.google.com/compute/docs/instances#checkmachinestatus
-    NODE_STATE_MAP = {
-        "PROVISIONING": NodeState.PENDING,
-        "STAGING": NodeState.PENDING,
-        "RUNNING": NodeState.RUNNING,
-        "STOPPING": NodeState.PENDING,
-        "TERMINATED": NodeState.STOPPED,
-        "UNKNOWN": NodeState.UNKNOWN
-    }
 
     AUTH_URL = "https://www.googleapis.com/auth/"
-    SA_SCOPES_MAP = {
-        # list derived from 'gcloud compute instances create --help'
-        "bigquery": "bigquery",
-        "cloud-platform": "cloud-platform",
-        "compute-ro": "compute.readonly",
-        "compute-rw": "compute",
-        "datastore": "datastore",
-        "logging-write": "logging.write",
-        "monitoring": "monitoring",
-        "monitoring-write": "monitoring.write",
-        "service-control": "servicecontrol",
-        "service-management": "service.management",
-        "sql": "sqlservice",
-        "sql-admin": "sqlservice.admin",
-        "storage-full": "devstorage.full_control",
-        "storage-ro": "devstorage.read_only",
-        "storage-rw": "devstorage.read_write",
-        "taskqueue": "taskqueue",
-        "useraccounts-ro": "cloud.useraccounts.readonly",
-        "useraccounts-rw": "cloud.useraccounts",
-        "userinfo-email": "userinfo.email"
-    }
 
     IMAGE_PROJECTS = {
         "centos-cloud": ["centos"],
@@ -123,11 +96,9 @@ class GKENodeDriver(NodeDriver):
         self.credential_file = credential_file or \
             GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
-        super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
+        super(GKEContainerDriver, self).__init__(user_id, key, **kwargs)
 
-        # Cache Zone and Region information to reduce API calls and
-        # increase speed
-        self.base_path = '/%s/projects/%s' % (API_VERSION,
+        self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                       self.project)
         self.zone_list = self.ex_list_zones()
         self.zone_dict = {}
@@ -151,3 +122,35 @@ class GKENodeDriver(NodeDriver):
         # Volume details are looked up in this name-zone dict.
         # It is populated if the volume name is not found or the dict is empty.
         self._ex_volume_dict = {}
+
+    def list_images(self, ex_project=None, ex_include_deprecated=False):
+        """
+        Return a list of image objects. If no project is specified, a list of
+        all non-deprecated global and vendor images images is returned. By
+        default, only non-deprecated images are returned.
+
+        :keyword  ex_project: Optional alternate project name.
+        :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
+
+        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
+                                         be returned.
+        :type     ex_include_deprecated: ``bool``
+
+        :return:  List of GCENodeImage objects
+        :rtype:   ``list`` of :class:`GCENodeImage`
+        """
+        dep = ex_include_deprecated
+        if ex_project is not None:
+            return self.ex_list_project_images(ex_project=ex_project,
+                                               ex_include_deprecated=dep)
+        image_list = self.ex_list_project_images(ex_project=None,
+                                                 ex_include_deprecated=dep)
+        for img_proj in list(self.IMAGE_PROJECTS.keys()):
+            try:
+                image_list.extend(
+                    self.ex_list_project_images(ex_project=img_proj,
+                                                ex_include_deprecated=dep))
+            except:
+                # do not break if an OS type is invalid
+                pass
+        return image_list
