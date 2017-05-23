@@ -57,6 +57,15 @@ class VultrConnection(ConnectionKey):
 
     host = 'api.vultr.com'
     responseCls = VultrResponse
+    unauthenticated_endpoints = {  # {path: actions}
+        '/v1/app/list': ['GET'],
+        '/v1/os/list': ['GET'],
+        '/v1/plans/list': ['GET'],
+        '/v1/plans/list_vc2': ['GET'],
+        '/v1/plans/list_vdc2': ['GET'],
+        '/v1/regions/availability': ['GET'],
+        '/v1/regions/list': ['GET']
+    }
 
     def add_default_headers(self, headers):
         """
@@ -66,7 +75,8 @@ class VultrConnection(ConnectionKey):
         :rtype: dict
         """
 
-        headers.update({'API-Key': self.key})
+        if self.require_api_key():
+            headers.update({'API-Key': self.key})
         return headers
 
     def encode_data(self, data):
@@ -78,6 +88,20 @@ class VultrConnection(ConnectionKey):
     def post(self, url, data):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         return self.request(url, data=data, headers=headers, method='POST')
+
+    def require_api_key(self):
+        """
+        Check whether this call (method + action) must be authenticated.
+
+        :return: True if ``API-Key`` header required, False otherwise.
+        :rtype: bool
+        """
+
+        try:
+            return self.method \
+                   not in self.unauthenticated_endpoints[self.action]
+        except KeyError:
+            return True
 
 
 class VultrNodeDriver(NodeDriver):
