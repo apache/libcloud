@@ -37,6 +37,10 @@ class VultrTests(LibcloudTestCase):
         VultrMockHttp.type = None
         self.driver = VultrNodeDriver(*VULTR_PARAMS)
 
+    def test_list_images_dont_require_api_key(self):
+        self.driver.list_images()
+        self.assertFalse(self.driver.connection.require_api_key())
+
     def test_list_images_success(self):
         images = self.driver.list_images()
         self.assertTrue(len(images) >= 1)
@@ -66,6 +70,10 @@ class VultrTests(LibcloudTestCase):
         location = locations[0]
         self.assertEqual(location.id, '1')
         self.assertEqual(location.name, 'New Jersey')
+
+    def test_list_nodes_require_api_key(self):
+        self.driver.list_nodes()
+        self.assertTrue(self.driver.connection.require_api_key())
 
     def test_list_nodes_success(self):
         nodes = self.driver.list_nodes()
