@@ -58,15 +58,16 @@ class VultrConnection(ConnectionKey):
     host = 'api.vultr.com'
     responseCls = VultrResponse
 
-    def add_default_params(self, params):
+    def add_default_headers(self, headers):
         """
-        Add parameters that are necessary for every request
+        Adds ``API-Key`` default header.
 
-        This method add ``api_key`` to
-        the request.
+        :return: Updated headers.
+        :rtype: dict
         """
-        params['api_key'] = self.key
-        return params
+
+        headers.update({'API-Key': self.key})
+        return headers
 
     def encode_data(self, data):
         return urlencode(data)
