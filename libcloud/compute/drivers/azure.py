@@ -26,6 +26,7 @@ import base64
 import os
 import binascii
 import multiprocessing.pool
+import requests
 
 from libcloud.utils.py3 import urlquote as url_quote
 from libcloud.utils.py3 import urlunquote as url_unquote
@@ -44,6 +45,7 @@ from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
 from httplib import (HTTPSConnection)
 from libcloud.compute.drivers.azure_arm import locations_mapping
+from libcloud.common.types import InvalidCredsError
 
 if sys.version_info < (3,):
     _unicode_type = unicode
@@ -1538,14 +1540,16 @@ class AzureNodeDriver(NodeDriver):
                         action=request.path,
                         data=request.body, headers=request.headers,
                         method=request.method)
-            if response.status == 307:
-                #handle 307 responses
-                response = self.connection.request(
-                            action=response.headers.get('location'),
-                            data=request.body, headers=request.headers,
-                            method=request.method)
-        except Exception as e:
-            raise Exception(e)
+        except requests.exceptions.SSLError:
+            raise InvalidCredsError('Please provide a valid SSL certificate')
+        except:
+            raise
+        if response.status == 307:
+            #handle 307 responses
+            response = self.connection.request(
+                        action=response.headers.get('location'),
+                        data=request.body, headers=request.headers,
+                        method=request.method)
         return response
 
     def _update_request_uri_query(self, request):
@@ -1624,7 +1628,7 @@ class AzureNodeDriver(NodeDriver):
         parse the xml and fill all the data into a class of return_type
         '''
         try:
-            doc = minidom.parseString(respbody)
+            doc = minidom.parseString(respbody.encode('utf-8'))
         except:
             return ''
         return_obj = return_type()
