@@ -900,7 +900,7 @@ class AzureNodeDriver(NodeDriver):
             a unique LUN.
         :type ex_lun: ``int``
 
-        :param ex_vhd_uri: Attach old-style un-managed disk from VHD
+        :param ex_vhd_uri: Attach old-style unmanaged disk from VHD
             blob. (optional)
         :type ex_vhd_uri: ``str``
 
@@ -929,15 +929,16 @@ class AzureNodeDriver(NodeDriver):
                     "'ex_vhd_resource_group' of the VHD blob is not specified.")
 
             # attach new or existing unmanaged disk
-            is_vhd_exists = self._ex_is_vhd_exists(
+            vhd_exists = self._ex_vhd_exists(
                 ex_vhd_resource_group,
                 ex_vhd_uri)
             new_disk = {
                 'lun': ex_lun,
                 'name': 'unmanaged-vol-{}'.format(str(uuid.uuid4())[0:8]),
-                'createOption': 'attach' if is_vhd_exists else 'empty',
+                'createOption': 'attach' if vhd_exists else 'empty',
                 'vhd': {'uri': ex_vhd_uri},
-                'diskSizeGB': volume.size}
+                'diskSizeGB': volume.size
+            }
         else:
             # attach existing managed disk
             new_disk = {
@@ -1906,7 +1907,7 @@ class AzureNodeDriver(NodeDriver):
         except ObjectDoesNotExistError:
             return True
 
-    def _ex_is_vhd_exists(self, resource_group, vhd_uri):
+    def _ex_vhd_exists(self, resource_group, vhd_uri):
         """
         Check if VHD by given ``vhd_uri`` exists
 
