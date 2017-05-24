@@ -17,6 +17,7 @@ import base64
 import datetime
 import shlex
 import re
+import os
 
 try:
     import simplejson as json
@@ -98,7 +99,35 @@ class DockerException(Exception):
 class DockerConnection(ConnectionUserAndKey):
 
     responseCls = DockerResponse
-    timeout = 60
+
+    def __init__(self, key, secret, secure=False,
+                 host='localhost',
+                 port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
+        if key:
+            self.timeout = 60  # TODO i am not this is necessary, exists
+            # from default
+
+        super(DockerConnection, self).__init__(key, secret, secure=secure,
+                                               host=host, port=port, **kwargs)
+
+        if key_file:
+            keypath = os.path.expanduser(key_file)
+            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+            if not is_file_path:
+                raise InvalidCredsError(
+                    'You need an key PEM file to authenticate with '
+                    'Docker tls. This can be found in the server.'
+                )
+            self.key_file = key_file
+
+            certpath = os.path.expanduser(cert_file)
+            is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
+            if not is_file_path:
+                raise InvalidCredsError(
+                    'You need an certificate PEM file to authenticate with '
+                    'Docker tls. This can be found in the server.'
+                )
+            self.cert_file = cert_file
 
     def add_default_headers(self, headers):
         """
@@ -138,7 +167,7 @@ class DockerContainerDriver(ContainerDriver):
     version = '1.24'
 
     def __init__(self, key='', secret='', secure=False, host='localhost',
-                 port=4243, key_file=None, cert_file=None):
+                 port=4243, key_file=None, cert_file=None, ca_cert=None):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -161,6 +190,9 @@ class DockerContainerDriver(ContainerDriver):
 
         :param    cert_file: Path to public key for TLS connection (optional)
         :type     cert_file: ``str``
+
+        :param    ca_cert: Path to ca_cert for TLS connection (optional)
+        :type     ca_cert: ``str``
 
         :return: ``None``
         """
@@ -189,9 +221,9 @@ class DockerContainerDriver(ContainerDriver):
                 raise Exception(
                     'Needs both private key file and '
                     'certificate file for tls authentication')
-            self.connection.key_file = key_file
-            self.connection.cert_file = cert_file
-            self.connection.secure = True
+            if ca_cert:
+                # maybe add here a check
+                self.connection.connection.ca_cert = ca_cert
         else:
             self.connection.secure = secure
         self.connection.host = host
@@ -427,6 +459,7 @@ class DockerContainerDriver(ContainerDriver):
         # TODO docstring
         # starting container with non-empty request body
         # was deprecated since v1.10 and removed in v1.12
+
         if float(self._get_api_version()) > 1.22:
             result = self.connection.request(
                 '/v%s/containers/%s/start' %
@@ -644,6 +677,8 @@ class DockerContainerDriver(ContainerDriver):
         if 'Exited' in status:
             state = ContainerState.STOPPED
         elif status.startswith('Up '):
+            state = ContainerState.RUNNING
+        elif 'running' in status:
             state = ContainerState.RUNNING
         else:
             state = ContainerState.STOPPED
