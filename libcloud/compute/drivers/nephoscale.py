@@ -41,7 +41,7 @@ API_HOST = 'api.nephoscale.com'
 
 NODE_STATE_MAP = {
     'on': NodeState.RUNNING,
-    'off': NodeState.UNKNOWN,
+    'off': NodeState.STOPPED,
     'unknown': NodeState.UNKNOWN,
 }
 
@@ -643,9 +643,9 @@ get all keys call with no arguments')
             'network_ports': data.get('network_ports'),
             'is_console_enabled': data.get('is_console_enabled'),
             'service_type': data.get('service_type', {}).get('friendly_name'),
+            'size_id': data.get('service_type', {}).get('id'),
             'hostname': data.get('hostname')
         }
-
         billable_type = data.get('service_type', {}).get('billable_type')
         # 1 for cloud servers, 2 for dedicated
         if billable_type == 1:
