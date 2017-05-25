@@ -1,4 +1,3 @@
-#!/bin/sh
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,15 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-cd ..
+import unittest
 
-VERSION=`python setup.py --version`
+from libcloud.storage.drivers.auroraobjects import AuroraObjectsStorageDriver
+from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
 
-cd dist
 
-echo "Uploading packages"
-ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+class AuroraObjectsTests(S3Tests, unittest.TestCase):
+    driver_type = AuroraObjectsStorageDriver
 
-twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+    def setUp(self):
+        AuroraObjectsStorageDriver.connectionCls.conn_class = S3MockHttp
+        S3MockHttp.type = None
+        self.driver = self.create_driver()

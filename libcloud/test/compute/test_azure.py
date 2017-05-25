@@ -19,7 +19,6 @@ import sys
 import libcloud.security
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
-from libcloud.compute.drivers.azure import AZURE_SERVICE_MANAGEMENT_HOST
 
 from libcloud.test import unittest
 from libcloud.test import LibcloudTestCase
@@ -385,43 +384,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         )
         self.assertIsNotNone(result)
 
-    @unittest.skip(reason="test fails as of 2.0.0rc2, see GITHUB-1031")
-    def test_create_node_and_deployment_second_node_307_response(self):
-        kwargs = {
-            "ex_storage_service_name": "mtlytics",
-            "ex_deployment_name": "dcoddkinztest04",
-            "ex_deployment_slot": "Production",
-            "ex_admin_user_id": "azurecoder"
-        }
-
-        auth = NodeAuthPassword("Pa55w0rd", False)
-        kwargs["auth"] = auth
-
-        kwargs["size"] = NodeSize(
-            id="ExtraSmall",
-            name="ExtraSmall",
-            ram=1024,
-            disk="30gb",
-            bandwidth=0,
-            price=0,
-            driver=self.driver
-        )
-        kwargs["image"] = NodeImage(
-            id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415",
-            name="FakeImage",
-            driver=self.driver,
-            extra={
-                'vm_image': False
-            }
-        )
-        kwargs["name"] = "dcoddkinztest04"
-
-        with self.assertRaises(LibcloudError):
-            self.driver.create_node(
-                ex_cloud_service_name="testdcabc3",
-                **kwargs
-            )
-
 
 class AzureMockHttp(MockHttp):
 
@@ -545,9 +507,6 @@ class AzureMockHttp(MockHttp):
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234(self, method, url, body, headers):
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234.xml')
-
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc(self, method, url, body, headers):
@@ -558,8 +517,6 @@ class AzureMockHttp(MockHttp):
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments.xml')
 
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
@@ -576,64 +533,9 @@ class AzureMockHttp(MockHttp):
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments(self, method, url, body, headers):
-
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments.xml')
-
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
-        headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
-        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3(self, method, url, body, headers):
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
-
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deploymentslots_Production(self, method, url, body, headers):
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
-
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deploymentslots_Production(self, method, url, body, headers):
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
-
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deployments(self, method, url, body, headers):
-        if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments.xml')
-
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc3_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
-        redirect_host = "ussouth.management.core.windows.net"
-
-        if not getattr(AzureMockHttp, "in_redirect", False):
-            setattr(AzureMockHttp, "in_redirect", True)
-            headers["Location"] = url.replace(AZURE_SERVICE_MANAGEMENT_HOST, redirect_host)
-            return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
-        else:
-            delattr(AzureMockHttp, "in_redirect")
-            if redirect_host not in url:
-                if AZURE_SERVICE_MANAGEMENT_HOST in url:
-                    return (httplib.TEMPORARY_REDIRECT, None, headers, httplib.responses[httplib.TEMPORARY_REDIRECT])
-                else:
-                    return (httplib.REQUEST_TIMEOUT, None, None, httplib.responses[httplib.REQUEST_TIMEOUT])
-
-            if method == "GET":
-                body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
-
-            return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(self, method, url, body, headers):
 

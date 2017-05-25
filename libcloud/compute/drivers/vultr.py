@@ -326,7 +326,8 @@ class VultrNodeDriver(NodeDriver):
             'vcpu_count': int(data['vcpu_count']),
             'plan_type': data.get('plan_type'),
             'windows': data.get('windows'),
-            'deprecated': data.get('deprecated')
+            'deprecated': data.get('deprecated'),
+            'available_locations': data.get('available_locations')
         }
         ram = int(data['ram'])
         disk = int(data['disk'])
