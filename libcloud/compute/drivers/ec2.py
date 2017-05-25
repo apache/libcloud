@@ -961,7 +961,7 @@ REGION_DETAILS = {
         'endpoint': 'ec2.us-east-2.amazonaws.com',
         'api_name': 'ec2_us_east_ohio',
         'country': 'USA',
-        'signature_version': '2',
+        'signature_version': '4',
         'instance_types': [
             't1.micro',
             'm1.small',
