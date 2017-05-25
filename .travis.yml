@@ -50,6 +50,8 @@ matrix:
     - env: ENV=coverage
     - env:
       python: pypy3
+    - env:
+      python: pypy
       # Trigger ReadTheDocs build
 
 install:
