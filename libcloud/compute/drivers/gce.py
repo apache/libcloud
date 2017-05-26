@@ -7915,8 +7915,6 @@ class GCENodeDriver(NodeDriver):
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
-        except ResourceNotFoundError:
-            return
         if response['status'] == 'DONE':
             status['node_response'] = None
             if error:
