@@ -699,20 +699,20 @@ class DockerContainerDriver(ContainerDriver):
                 name = data.get('Id')
         state = data.get('State')
         if isinstance(state, dict):
-            status = data.get(
-                'Status',
-                state.get('Status')
-                if state is not None else None)
+            if state.get('Running'):
+                state = ContainerState.RUNNING
+            else:
+                state = ContainerState.STOPPED
         else:
             status = data.get('Status')
-        if 'Exited' in status:
-            state = ContainerState.STOPPED
-        elif status.startswith('Up '):
-            state = ContainerState.RUNNING
-        elif 'running' in status:
-            state = ContainerState.RUNNING
-        else:
-            state = ContainerState.STOPPED
+            if 'Exited' in status:
+                state = ContainerState.STOPPED
+            elif status.startswith('Up '):
+                state = ContainerState.RUNNING
+            elif 'running' in status:
+                state = ContainerState.RUNNING
+            else:
+                state = ContainerState.STOPPED
         image = data.get('Image')
         ports = data.get('Ports', [])
         created = data.get('Created')
