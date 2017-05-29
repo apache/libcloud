@@ -885,7 +885,7 @@ class AzureNodeDriver(NodeDriver):
         return [self._to_volume(volume) for volume in response.object['value']]
 
     def attach_volume(self, node, volume, ex_lun=None,
-                      ex_vhd_uri=None, ex_vhd_resource_group=None, **ex_kwargs):
+                      ex_vhd_uri=None, ex_vhd_new=False, **ex_kwargs):
         """
         Attach a volume to node.
 
@@ -904,9 +904,9 @@ class AzureNodeDriver(NodeDriver):
             blob. (optional)
         :type ex_vhd_uri: ``str``
 
-        :param ex_vhd_resource_group: Storage account resource group name.
-            (required for ``ex_vhd_uri``)
-        :type ex_vhd_resource_group: ``str``
+        :param ex_vhd_new: Create a new VHD blob for unmanaged disk.
+            (optional)
+        :type ex_vhd_new: ``bool``
 
         :rtype: ``bool``
         """
@@ -924,20 +924,12 @@ class AzureNodeDriver(NodeDriver):
                 raise LibcloudError("No LUN available to attach new disk.")
 
         if ex_vhd_uri is not None:
-            if ex_vhd_resource_group is None:
-                raise AttributeError(
-                    "'ex_vhd_resource_group' of the VHD blob is not specified.")
-
-            # attach new or existing unmanaged disk
-            vhd_exists = self._ex_vhd_exists(
-                ex_vhd_resource_group,
-                ex_vhd_uri)
             new_disk = {
+                'name': volume.name,
+                'diskSizeGB': volume.size,
                 'lun': ex_lun,
-                'name': 'unmanaged-vol-{}'.format(str(uuid.uuid4())[0:8]),
-                'createOption': 'attach' if vhd_exists else 'empty',
+                'createOption': 'empty' if ex_vhd_new else 'attach',
                 'vhd': {'uri': ex_vhd_uri},
-                'diskSizeGB': volume.size
             }
         else:
             # attach existing managed disk
@@ -1906,29 +1898,6 @@ class AzureNodeDriver(NodeDriver):
             return True
         except ObjectDoesNotExistError:
             return True
-
-    def _ex_vhd_exists(self, resource_group, vhd_uri):
-        """
-        Check if VHD by given ``vhd_uri`` exists
-
-        :param resource_group: Storage account resource group name.
-        :type: ``str``
-
-        :param vhd_uri: Virtual hard disk's uri.
-        :type: ``str``
-
-        :rtype: ``bool``
-        """
-        try:
-            storage_account, blob_container, blob = _split_blob_uri(vhd_uri)
-            keys = self.ex_get_storage_account_keys(
-                resource_group, storage_account)
-            blob_driver = AzureBlobsStorageDriver(
-                storage_account, keys['key1'])
-            blob_driver.get_object(blob_container, blob)
-            return True
-        except ObjectDoesNotExistError:
-            return False
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
