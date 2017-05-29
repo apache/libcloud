@@ -42,6 +42,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
         self.region = kwargs.pop('region', None)
         self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
         super(KiliCloudConnection, self).__init__(*args, **kwargs)
+        self._auth_version = KiliCloudConnection._auth_version
 
     def get_endpoint(self):
         if not self.get_endpoint_args:

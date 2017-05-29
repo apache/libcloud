@@ -1,4 +1,3 @@
-#!/bin/sh
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,15 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-cd ..
+import unittest
 
-VERSION=`python setup.py --version`
+from libcloud.compute.drivers.cloudwatt import CloudwattNodeDriver
+from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests
 
-cd dist
 
-echo "Uploading packages"
-ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+class CloudwattNodeDriverTests(OpenStack_1_1_Tests, unittest.TestCase):
+    driver_klass = CloudwattNodeDriver
+    driver_type = CloudwattNodeDriver
 
-twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+    # These tests dont work because cloudwatt doesn't pass,
+    # auth tokens- hide them from the base class
+    def test_ex_force_auth_token_passed_to_connection(self):
+        pass
+
+    def test_auth_token_without_base_url_raises_exception(self):
+        pass

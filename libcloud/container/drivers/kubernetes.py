@@ -182,12 +182,9 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        # result = self.connection.request(ROOT_URL + "v1/nodes/%s" %
-        #                                  id).object
-
-        # TODO: Fixme
-        # return self._to_container(result)
-        return None
+        containers = self.list_containers()
+        match = [container for container in containers if container.id == id]
+        return match[0]
 
     def list_clusters(self):
         """
@@ -389,16 +386,6 @@ class KubernetesContainerDriver(ContainerDriver):
             name=metadata['name'],
             driver=self.connection.driver,
             extra={'phase': status['phase']})
-
-    def _get_api_version(self):
-        """
-        Get the docker API version information
-        """
-        result = self.connection.request('/version').object
-        result = result or {}
-        api_version = result.get('ApiVersion')
-
-        return api_version
 
 
 def ts_to_str(timestamp):

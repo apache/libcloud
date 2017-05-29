@@ -412,6 +412,8 @@ class VCloudConnection(ConnectionUserAndKey):
 
     def _get_auth_token(self):
         if not self.token:
+            # do not verify ssl certificate
+            self.connection.ca_cert = False
             self.connection.request(method='POST', url='/api/v0.8/login',
                                     headers=self._get_auth_headers())
 
@@ -601,7 +603,7 @@ class VCloudNodeDriver(NodeDriver):
             status = res.object.get('status')
 
     def destroy_node(self, node):
-        node_path = get_url_path(node.id)
+        node_path = get_url_path(node.extra.get('href'))
         # blindly poweroff node, it will throw an exception if already off
         try:
             res = self.connection.request('%s/power/action/poweroff'
@@ -629,7 +631,7 @@ class VCloudNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         res = self.connection.request('%s/power/action/reset'
-                                      % get_url_path(node.id),
+                                      % get_url_path(node.extra.get('href')),
                                       method='POST')
         return res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]
 
@@ -686,7 +688,7 @@ class VCloudNodeDriver(NodeDriver):
                 we can provide them on the new driver
                 the same applies for _networks
                 """
-                driver = get_driver(self.type)(self.key, self.secret, host=self.connection.host)
+                driver = get_driver(self.type)(self.key, self.secret, host=self.connection.host, port=self.connection.port)
                 driver._vdcs = self.vdcs
                 driver._networks = self._networks
                 driver.connection.token = self.connection.token
@@ -998,6 +1000,8 @@ class VCloud_1_5_Connection(VCloudConnection):
 
     def _get_auth_token(self):
         if not self.token:
+            # do not verify ssl certificate
+            self.connection.ca_cert = False
             # Log In
             self.connection.request(method='POST', url='/api/sessions',
                                     headers=self._get_auth_headers())

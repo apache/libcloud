@@ -7097,6 +7097,12 @@ class GCENodeDriver(NodeDriver):
             # Make the API call and build volume dictionary
             self._ex_populate_volume_dict()
 
+        try:
+            # if zone is of class GCEZone or NodeLocation, get name instead
+            zone = zone.name
+        except AttributeError:
+            pass
+
         return self._ex_lookup_volume(name, zone)
 
     def ex_get_region(self, name):
@@ -7393,7 +7399,7 @@ class GCENodeDriver(NodeDriver):
         if volume_name not in self._ex_volume_dict:
             # Possibly added through another thread/process, so re-populate
             # _volume_dict and try again.  If still not found, raise exception.
-            self._ex_populate_dict()
+            self._ex_populate_volume_dict()
             if volume_name not in self._ex_volume_dict:
                 raise ResourceNotFoundError(
                     'Volume name: \'%s\' not found. Zone: %s' % (

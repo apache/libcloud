@@ -20,9 +20,14 @@ import re
 import sys
 import unittest
 
+from io import BytesIO
+
 import email.utils
+import pytest
 
 from libcloud.common.google import GoogleAuthType
+from libcloud.common.types import InvalidCredsError
+from libcloud.storage.base import Container
 from libcloud.storage.drivers import google_storage
 from libcloud.test import StorageMockHttp
 from libcloud.test.common.test_google import GoogleTestCase
@@ -69,6 +74,12 @@ class GoogleStorageMockHttp(S3MockHttp):
         }
 
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _container_path_UNAUTHORIZED(self, method, url, body, headers):
+        return (httplib.UNAUTHORIZED,
+                '',
+                self.base_headers,
+                httplib.responses[httplib.OK])
 
 
 class GoogleStorageJSONMockHttp(StorageMockHttp):
@@ -469,6 +480,14 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         mock_request.assert_called_once_with(
             url, method='POST',
             data=json.dumps({'role': 'OWNER', 'entity': 'user-foo@foo.com'}))
+
+    def test_invalid_credentials_on_upload(self):
+        self.mock_response_klass.type = 'UNAUTHORIZED'
+        container = Container(name='container', driver=self.driver, extra={})
+        with pytest.raises(InvalidCredsError):
+            self.driver.upload_object_via_stream(
+                BytesIO(b' '), container, 'path')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

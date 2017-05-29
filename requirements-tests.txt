@@ -7,3 +7,4 @@ coveralls
 coverage<4.0
 requests
 requests_mock
+pytest
