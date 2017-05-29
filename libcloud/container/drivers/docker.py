@@ -221,7 +221,8 @@ class DockerContainerDriver(ContainerDriver):
                                                     port=port,
                                                     key_file=key_file,
                                                     cert_file=cert_file)
-
+        # set API version
+        self.version = self._get_api_version()
         if host.startswith('https://'):
             secure = True
 
