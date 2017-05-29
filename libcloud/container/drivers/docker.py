@@ -149,6 +149,15 @@ class DockertlsConnection(KeyCertificateConnection):
                 )
             self.cert_file = cert_file
 
+    def add_default_headers(self, headers):
+        """
+        Add parameters that are necessary for every request
+        If user and password are specified, include a base http auth
+        header
+        """
+        headers['Content-Type'] = 'application/json'
+        return headers
+
 
 class DockerContainerDriver(ContainerDriver):
     """
