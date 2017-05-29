@@ -28,6 +28,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.base import KeyCertificateConnection
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.container.base import (Container, ContainerDriver,
@@ -99,17 +100,36 @@ class DockerException(Exception):
 class DockerConnection(ConnectionUserAndKey):
 
     responseCls = DockerResponse
+    timeout = 60
+
+    def add_default_headers(self, headers):
+        """
+        Add parameters that are necessary for every request
+        If user and password are specified, include a base http auth
+        header
+        """
+        headers['Content-Type'] = 'application/json'
+        if self.user_id and self.key:
+            user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
+            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
+        return headers
+
+
+class DockertlsConnection(KeyCertificateConnection):
+
+    responseCls = DockerResponse
 
     def __init__(self, key, secret, secure=False,
                  host='localhost',
                  port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
-        if key:
-            self.timeout = 60  # TODO i am not this is necessary, exists
-            # from default
 
-        super(DockerConnection, self).__init__(key, secret, secure=secure,
-                                               host=host, port=port, **kwargs)
-
+        super(DockertlsConnection, self).__init__(key_file=key_file,
+                                                  cert_file=cert_file,
+                                                  secure=secure, host=host,
+                                                  port=port, url=None,
+                                                  proxy_url=None,
+                                                  timeout=None, backoff=None,
+                                                  retry_delay=None)
         if key_file:
             keypath = os.path.expanduser(key_file)
             is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
@@ -128,18 +148,6 @@ class DockerConnection(ConnectionUserAndKey):
                     'Docker tls. This can be found in the server.'
                 )
             self.cert_file = cert_file
-
-    def add_default_headers(self, headers):
-        """
-        Add parameters that are necessary for every request
-        If user and password are specified, include a base http auth
-        header
-        """
-        headers['Content-Type'] = 'application/json'
-        if self.user_id and self.key:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
-        return headers
 
 
 class DockerContainerDriver(ContainerDriver):
@@ -162,7 +170,7 @@ class DockerContainerDriver(ContainerDriver):
     type = Provider.DOCKER
     name = 'Docker'
     website = 'http://docker.io'
-    connectionCls = DockerConnection
+    connectionCls = DockertlsConnection
     supports_clusters = False
     version = '1.24'
 
@@ -191,17 +199,20 @@ class DockerContainerDriver(ContainerDriver):
         :param    cert_file: Path to public key for TLS connection (optional)
         :type     cert_file: ``str``
 
-        :param    ca_cert: Path to ca_cert for TLS connection (optional)
-        :type     ca_cert: ``str``
-
         :return: ``None``
         """
-
-        super(DockerContainerDriver, self).__init__(key=key, secret=secret,
+        if key:
+            self.connectionCls = DockerConnection
+        else:
+            self.key_file = key_file
+            self.cert_file = cert_file
+        super(DockerContainerDriver, self).__init__(key=key,
+                                                    secret=secret,
                                                     secure=secure, host=host,
                                                     port=port,
                                                     key_file=key_file,
                                                     cert_file=cert_file)
+
         if host.startswith('https://'):
             secure = True
 
@@ -221,13 +232,21 @@ class DockerContainerDriver(ContainerDriver):
                 raise Exception(
                     'Needs both private key file and '
                     'certificate file for tls authentication')
+
             if ca_cert:
-                # maybe add here a check
                 self.connection.connection.ca_cert = ca_cert
-        else:
-            self.connection.secure = secure
+
+        self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = {}
+        if hasattr(self, 'key_file'):
+            kwargs['key_file'] = self.key_file
+        if hasattr(self, 'cert_file'):
+            kwargs['cert_file'] = self.cert_file
+        return kwargs
 
     def install_image(self, path):
         """
@@ -726,6 +745,54 @@ class DockerContainerDriver(ContainerDriver):
         api_version = result.get('ApiVersion')
 
         return api_version
+    
+    def inspect_node(self, container):
+        """
+        Inspect a container
+        """
+        result = self.connection.request(
+            "/containers/%s/json" % container.id).object
+
+        name = result.get('Name').strip('/')
+        if result['State']['Running']:
+            state = ContainerState.RUNNING
+        else:
+            state = ContainerState.STOPPED
+
+        extra = {
+            'image': result.get('Image'),
+            'volumes': result.get('Volumes'),
+            'env': result.get('Config', {}).get('Env'),
+            'ports': result.get('ExposedPorts'),
+            'network_settings': result.get('NetworkSettings', {}),
+            'exit_code': result['State'].get("ExitCode")
+        }
+
+        node_id = result.get('Id')
+        if not node_id:
+            node_id = result.get('ID', '')
+        public_ips = [self.connection.host] if is_public(
+            self.connection.host) else []
+        private_ips = [self.connection.host] if not public_ips else []
+
+        ips = []
+        ports = result.get('Ports', [])
+        if ports is not None:
+            for port in ports:
+                if port.get('IP') is not None:
+                    ips.append(port.get('IP'))
+
+        contnr = (Container(id=node_id,
+                            name=name,
+                            image=result.get('Image'),
+                            state=state,
+                            ip_addresses=ips,
+                            driver=self.connection.driver,
+                            extra=extra))
+        contnr.public_ips = public_ips
+        contnr.private_ips = private_ips
+        contnr.size = None
+        return contnr
 
 
 def ts_to_str(timestamp):
@@ -735,3 +802,16 @@ def ts_to_str(timestamp):
     date = datetime.datetime.fromtimestamp(timestamp)
     date_string = date.strftime("%d/%m/%Y %H:%M %Z")
     return date_string
+
+
+def is_private(hostname):
+    import socket
+    from libcloud.utils.networking import is_private_subnet, is_public_subnet
+    hostname = socket.gethostbyname(hostname)
+    if is_private_subnet(hostname):
+        return True
+    return False
+
+
+def is_public(hostname):
+    return not is_private(hostname=hostname)
