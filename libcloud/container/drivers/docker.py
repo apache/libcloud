@@ -745,7 +745,7 @@ class DockerContainerDriver(ContainerDriver):
         api_version = result.get('ApiVersion')
 
         return api_version
-    
+
     def inspect_node(self, container):
         """
         Inspect a container
