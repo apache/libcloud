@@ -215,14 +215,7 @@ class DockerContainerDriver(ContainerDriver):
         else:
             self.key_file = key_file
             self.cert_file = cert_file
-        super(DockerContainerDriver, self).__init__(key=key,
-                                                    secret=secret,
-                                                    secure=secure, host=host,
-                                                    port=port,
-                                                    key_file=key_file,
-                                                    cert_file=cert_file)
-        # set API version
-        self.version = self._get_api_version()
+
         if host.startswith('https://'):
             secure = True
 
@@ -231,6 +224,15 @@ class DockerContainerDriver(ContainerDriver):
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.strip(prefix)
+
+        super(DockerContainerDriver, self).__init__(key=key,
+                                                    secret=secret,
+                                                    secure=secure, host=host,
+                                                    port=port,
+                                                    key_file=key_file,
+                                                    cert_file=cert_file)
+        # set API version
+        self.version = self._get_api_version()
 
         if key_file or cert_file:
             # docker tls authentication-
@@ -448,7 +450,7 @@ class DockerContainerDriver(ContainerDriver):
 
         data = json.dumps(payload)
         if start:
-            if float(self._get_api_version()) > 1.22:
+            if float(self.version) > 1.22:
                 result = self.connection.request(
                     '/v%s/containers/%s/start' %
                     (self.version, id_),
@@ -489,7 +491,7 @@ class DockerContainerDriver(ContainerDriver):
         # starting container with non-empty request body
         # was deprecated since v1.10 and removed in v1.12
 
-        if float(self._get_api_version()) > 1.22:
+        if float(self.version) > 1.22:
             result = self.connection.request(
                 '/v%s/containers/%s/start' %
                 (self.version, container.id),
@@ -616,7 +618,7 @@ class DockerContainerDriver(ContainerDriver):
         payload = {}
         data = json.dumps(payload)
 
-        if float(self._get_api_version()) > 1.10:
+        if float(self.version) > 1.10:
             result = self.connection.request(
                 "/v%s/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
                 (self.version, container.id, str(stream))).object
