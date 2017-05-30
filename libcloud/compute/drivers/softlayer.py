@@ -24,6 +24,7 @@ except ImportError:
     crypto = False
 
 from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException
+from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage, KeyPair
@@ -431,6 +432,24 @@ class SoftLayerNodeDriver(NodeDriver):
             'SoftLayer_Virtual_Guest', 'getCreateObjectOptions'
         ).object
         return [self._to_image(i) for i in result['operatingSystems']]
+
+    def get_image(self, image_id):
+        """
+        Gets an image based on an image_id.
+
+        :param image_id: Image identifier
+        :type image_id: ``str``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+
+        """
+        images = self.list_images()
+        images = [image for image in images if image.id == image_id]
+        if len(images) < 1:
+            raise LibcloudError('could not find the image with id %s' % image_id)
+        image = images[0]
+        return image
 
     def _to_size(self, id, size):
         return NodeSize(
