@@ -231,8 +231,6 @@ class DockerContainerDriver(ContainerDriver):
                                                     port=port,
                                                     key_file=key_file,
                                                     cert_file=cert_file)
-        # set API version
-        self.version = self._get_api_version()
 
         if key_file or cert_file:
             # docker tls authentication-
@@ -245,12 +243,17 @@ class DockerContainerDriver(ContainerDriver):
                     'Needs both private key file and '
                     'certificate file for tls authentication')
 
-            if ca_cert:
-                self.connection.connection.ca_cert = ca_cert
+        if ca_cert:
+            self.connection.connection.ca_cert = ca_cert
+        else:
+            self.connection.connection.ca_cert = False
 
         self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
+
+        # set API version
+        self.version = self._get_api_version()
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
