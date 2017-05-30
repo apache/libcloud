@@ -246,6 +246,7 @@ class DockerContainerDriver(ContainerDriver):
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
         else:
+            # do not verify SSL certificate
             self.connection.connection.ca_cert = False
 
         self.connection.secure = secure
