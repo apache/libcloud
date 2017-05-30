@@ -18,6 +18,7 @@ import datetime
 import shlex
 import re
 import os
+import socket
 
 try:
     import simplejson as json
@@ -225,6 +226,15 @@ class DockerContainerDriver(ContainerDriver):
             if host.startswith(prefix):
                 host = host.strip(prefix)
 
+        try:
+            socket.setdefaulttimeout(15)
+            so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            so.connect((host, int(port)))
+            so.close()
+        except:
+            raise Exception("Make sure host is accessible "
+                            "and docker port is specified")
+
         super(DockerContainerDriver, self).__init__(key=key,
                                                     secret=secret,
                                                     secure=secure, host=host,
@@ -252,6 +262,7 @@ class DockerContainerDriver(ContainerDriver):
         self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
+
 
         # set API version
         self.version = self._get_api_version()
@@ -821,7 +832,6 @@ def ts_to_str(timestamp):
 
 
 def is_private(hostname):
-    import socket
     from libcloud.utils.networking import is_private_subnet, is_public_subnet
     hostname = socket.gethostbyname(hostname)
     if is_private_subnet(hostname):
