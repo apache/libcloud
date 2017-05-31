@@ -798,16 +798,22 @@ class DockerContainerDriver(ContainerDriver):
         node_id = result.get('Id')
         if not node_id:
             node_id = result.get('ID', '')
-        public_ips = [self.connection.host] if is_public(
-            self.connection.host) else []
-        private_ips = [self.connection.host] if not public_ips else []
+
+        host = self.connection.host
+        for prefix in ['https://', 'http://']:
+            host = host.replace(prefix, '')
+
+        host = host.split('/')[0]
+        host = host.split(':')[0]
+
+        public_ips = [host] if is_public(host) else []
+        private_ips = [host] if not public_ips else []
 
         ips = []
         ports = result.get('Ports', [])
-        if ports is not None:
-            for port in ports:
-                if port.get('IP') is not None:
-                    ips.append(port.get('IP'))
+        for port in ports:
+            if port.get('IP') is not None:
+                ips.append(port.get('IP'))
 
         contnr = (Container(id=node_id,
                             name=name,
