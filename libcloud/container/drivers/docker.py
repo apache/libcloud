@@ -213,6 +213,8 @@ class DockerContainerDriver(ContainerDriver):
         """
         if key_file:
             self.connectionCls = DockertlsConnection
+            self.key_file = key_file
+            self.cert_file = cert_file
 
         if host.startswith('https://'):
             secure = True
@@ -250,8 +252,6 @@ class DockerContainerDriver(ContainerDriver):
         self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
-
-
         # set API version
         self.version = self._get_api_version()
 
