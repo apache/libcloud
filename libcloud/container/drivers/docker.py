@@ -180,7 +180,7 @@ class DockerContainerDriver(ContainerDriver):
     type = Provider.DOCKER
     name = 'Docker'
     website = 'http://docker.io'
-    connectionCls = DockertlsConnection
+    connectionCls = DockerConnection
     supports_clusters = False
     version = '1.24'
 
@@ -211,11 +211,8 @@ class DockerContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
-        if key:
-            self.connectionCls = DockerConnection
-        else:
-            self.key_file = key_file
-            self.cert_file = cert_file
+        if key_file:
+            self.connectionCls = DockertlsConnection
 
         if host.startswith('https://'):
             secure = True
