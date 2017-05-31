@@ -885,7 +885,7 @@ class AzureNodeDriver(NodeDriver):
         return [self._to_volume(volume) for volume in response.object['value']]
 
     def attach_volume(self, node, volume, ex_lun=None,
-                      ex_vhd_uri=None, ex_vhd_new=False, **ex_kwargs):
+                      ex_vhd_uri=None, ex_vhd_create=False, **ex_kwargs):
         """
         Attach a volume to node.
 
@@ -904,9 +904,9 @@ class AzureNodeDriver(NodeDriver):
             blob. (optional)
         :type ex_vhd_uri: ``str``
 
-        :param ex_vhd_new: Create a new VHD blob for unmanaged disk.
+        :param ex_vhd_create: Create a new VHD blob for unmanaged disk.
             (optional)
-        :type ex_vhd_new: ``bool``
+        :type ex_vhd_create: ``bool``
 
         :rtype: ``bool``
         """
@@ -928,7 +928,7 @@ class AzureNodeDriver(NodeDriver):
                 'name': volume.name,
                 'diskSizeGB': volume.size,
                 'lun': ex_lun,
-                'createOption': 'empty' if ex_vhd_new else 'attach',
+                'createOption': 'empty' if ex_vhd_create else 'attach',
                 'vhd': {'uri': ex_vhd_uri},
             }
         else:
