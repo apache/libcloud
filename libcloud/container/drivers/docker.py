@@ -180,7 +180,7 @@ class DockerContainerDriver(ContainerDriver):
     type = Provider.DOCKER
     name = 'Docker'
     website = 'http://docker.io'
-    connectionCls = DockertlsConnection
+    connectionCls = DockerConnection
     supports_clusters = False
     version = '1.24'
 
@@ -211,11 +211,8 @@ class DockerContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
-        if key:
-            self.connectionCls = DockerConnection
-        else:
-            self.key_file = key_file
-            self.cert_file = cert_file
+        if key_file:
+            self.connectionCls = DockertlsConnection
 
         if host.startswith('https://'):
             secure = True
@@ -225,15 +222,6 @@ class DockerContainerDriver(ContainerDriver):
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.strip(prefix)
-
-        try:
-            socket.setdefaulttimeout(15)
-            so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            so.connect((host, int(port)))
-            so.close()
-        except:
-            raise Exception("Make sure host is accessible "
-                            "and docker port is specified")
 
         super(DockerContainerDriver, self).__init__(key=key,
                                                     secret=secret,
