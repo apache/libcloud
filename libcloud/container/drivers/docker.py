@@ -18,7 +18,6 @@ import datetime
 import shlex
 import re
 import os
-import socket
 
 try:
     import simplejson as json
@@ -493,7 +492,6 @@ class DockerContainerDriver(ContainerDriver):
         # TODO docstring
         # starting container with non-empty request body
         # was deprecated since v1.10 and removed in v1.12
-
         if float(self.version) > 1.22:
             result = self.connection.request(
                 '/v%s/containers/%s/start' %
@@ -761,60 +759,6 @@ class DockerContainerDriver(ContainerDriver):
 
         return api_version
 
-    def inspect_node(self, container):
-        """
-        Inspect a container
-        """
-        result = self.connection.request(
-            "/containers/%s/json" % container.id).object
-
-        name = result.get('Name').strip('/')
-        if result['State']['Running']:
-            state = ContainerState.RUNNING
-        else:
-            state = ContainerState.STOPPED
-
-        extra = {
-            'image': result.get('Image'),
-            'volumes': result.get('Volumes'),
-            'env': result.get('Config', {}).get('Env'),
-            'ports': result.get('ExposedPorts'),
-            'network_settings': result.get('NetworkSettings', {}),
-            'exit_code': result['State'].get("ExitCode")
-        }
-
-        node_id = result.get('Id')
-        if not node_id:
-            node_id = result.get('ID', '')
-
-        host = self.connection.host
-        for prefix in ['https://', 'http://']:
-            host = host.replace(prefix, '')
-
-        host = host.split('/')[0]
-        host = host.split(':')[0]
-
-        public_ips = [host] if is_public(host) else []
-        private_ips = [host] if not public_ips else []
-
-        ips = []
-        ports = result.get('Ports', [])
-        for port in ports:
-            if port.get('IP') is not None:
-                ips.append(port.get('IP'))
-
-        contnr = (Container(id=node_id,
-                            name=name,
-                            image=result.get('Image'),
-                            state=state,
-                            ip_addresses=ips,
-                            driver=self.connection.driver,
-                            extra=extra))
-        contnr.public_ips = public_ips
-        contnr.private_ips = private_ips
-        contnr.size = None
-        return contnr
-
 
 def ts_to_str(timestamp):
     """
@@ -823,15 +767,3 @@ def ts_to_str(timestamp):
     date = datetime.datetime.fromtimestamp(timestamp)
     date_string = date.strftime("%d/%m/%Y %H:%M %Z")
     return date_string
-
-
-def is_private(hostname):
-    from libcloud.utils.networking import is_private_subnet, is_public_subnet
-    hostname = socket.gethostbyname(hostname)
-    if is_private_subnet(hostname):
-        return True
-    return False
-
-
-def is_public(hostname):
-    return not is_private(hostname=hostname)
