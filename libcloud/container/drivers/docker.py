@@ -214,6 +214,7 @@ class DockerContainerDriver(ContainerDriver):
             self.connectionCls = DockertlsConnection
             self.key_file = key_file
             self.cert_file = cert_file
+            secure = True
 
         if host.startswith('https://'):
             secure = True
