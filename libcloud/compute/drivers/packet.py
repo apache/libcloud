@@ -41,9 +41,11 @@ class PacketResponse(JsonResponse):
             body = self.parse_body()
             if 'message' in body:
                 error = '%s (code: %s)' % (body.get('message'), self.status)
+            elif 'errors' in body:
+                error = body.get('errors')
             else:
                 error = body
-            return error
+            raise Exception(error)
 
     def success(self):
         return self.status in self.valid_response_codes
