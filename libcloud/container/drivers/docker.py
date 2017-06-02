@@ -180,7 +180,7 @@ class DockerContainerDriver(ContainerDriver):
     version = '1.24'
 
     def __init__(self, key='', secret='', secure=False, host='localhost',
-                 port=4243, key_file=None, cert_file=None):
+                 port=4243, key_file=None, cert_file=None, ca_cert=None):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -237,11 +237,12 @@ class DockerContainerDriver(ContainerDriver):
                 raise Exception(
                     'Needs both private key file and '
                     'certificate file for tls authentication')
-            self.connection.key_file = key_file
-            self.connection.cert_file = cert_file
-            self.connection.secure = True
+
+        if ca_cert:
+            self.connection.connection.ca_cert = ca_cert
         else:
-            self.connection.secure = secure
+            # do not verify SSL certificate
+            self.connection.connection.ca_cert = False
 
         self.connection.secure = secure
         self.connection.host = host
