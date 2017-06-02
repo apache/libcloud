@@ -247,6 +247,8 @@ class DockerContainerDriver(ContainerDriver):
         self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
+        # set API version
+        self.version = self._get_api_version()
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
