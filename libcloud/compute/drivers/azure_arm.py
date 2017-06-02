@@ -21,6 +21,7 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 
 import base64
 import binascii
+import uuid
 import os
 import time
 
@@ -776,7 +777,7 @@ class AzureNodeDriver(NodeDriver):
                       ex_resource_group=None, ex_account_type=None,
                       ex_tags=None):
         """
-        Create a new volume.
+        Create a new managed volume.
 
         :param size: Size of volume in gigabytes.
         :type size: ``int``
@@ -796,7 +797,7 @@ class AzureNodeDriver(NodeDriver):
 
         :param ex_account_type: The Storage Account type,
             ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
-        :type ex_account_type: str
+        :type ex_account_type: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
         :type ex_tags: ``dict``
@@ -883,9 +884,10 @@ class AzureNodeDriver(NodeDriver):
         )
         return [self._to_volume(volume) for volume in response.object['value']]
 
-    def attach_volume(self, node, volume, ex_lun=None, **ex_kwargs):
+    def attach_volume(self, node, volume, ex_lun=None,
+                      ex_vhd_uri=None, ex_vhd_create=False, **ex_kwargs):
         """
-        Attach a managed volume to node.
+        Attach a volume to node.
 
         :param node: A node to attach volume.
         :type node: :class:`Node`
@@ -897,6 +899,14 @@ class AzureNodeDriver(NodeDriver):
             the data drive in the virtual machine. Each data disk must have
             a unique LUN.
         :type ex_lun: ``int``
+
+        :param ex_vhd_uri: Attach old-style unmanaged disk from VHD
+            blob. (optional)
+        :type ex_vhd_uri: ``str``
+
+        :param ex_vhd_create: Create a new VHD blob for unmanaged disk.
+            (optional)
+        :type ex_vhd_create: ``bool``
 
         :rtype: ``bool``
         """
@@ -913,14 +923,22 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise LibcloudError("No LUN available to attach new disk.")
 
-        disks.append({
-            'lun': ex_lun,
-            'createOption': 'attach',
-            'managedDisk': {
-                'id': volume.id
+        if ex_vhd_uri is not None:
+            new_disk = {
+                'name': volume.name,
+                'diskSizeGB': volume.size,
+                'lun': ex_lun,
+                'createOption': 'empty' if ex_vhd_create else 'attach',
+                'vhd': {'uri': ex_vhd_uri},
             }
-        })
+        else:
+            # attach existing managed disk
+            new_disk = {
+                'lun': ex_lun,
+                'createOption': 'attach',
+                'managedDisk': {'id': volume.id}}
 
+        disks.append(new_disk)
         self.connection.request(
             action,
             method='PUT',
@@ -934,8 +952,7 @@ class AzureNodeDriver(NodeDriver):
                     }
                 },
                 'location': location
-            }
-        )
+            })
         return True
 
     def detach_volume(self, volume, ex_node=None):
@@ -1524,7 +1541,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.Node`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_node(r.object)
 
     def ex_get_volume(self, id):
@@ -1538,7 +1556,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.StorageVolume`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_volume(r.object)
 
     def ex_get_snapshot(self, id):
@@ -1552,7 +1571,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.VolumeSnapshot`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(
+            id, params={"api-version": RESOURCE_API_VERSION})
         return self._to_snapshot(r.object)
 
     def ex_get_public_ip(self, id):
@@ -1979,8 +1999,8 @@ class AzureNodeDriver(NodeDriver):
 
 
 def _split_blob_uri(uri):
-    uri = uri.split("/")
-    storageAccount = uri[2].split(".")[0]
-    blobContainer = uri[3]
-    blob = '/'.join(uri[4:])
-    return (storageAccount, blobContainer, blob)
+    uri = uri.split('/')
+    storage_account = uri[2].split('.')[0]
+    blob_container = uri[3]
+    blob_name = '/'.join(uri[4:])
+    return storage_account, blob_container, blob_name
