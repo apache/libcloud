@@ -17,6 +17,7 @@ import base64
 import datetime
 import shlex
 import re
+import os
 
 try:
     import simplejson as json
@@ -27,6 +28,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.base import KeyCertificateConnection
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.container.base import (Container, ContainerDriver,
@@ -113,6 +115,46 @@ class DockerConnection(ConnectionUserAndKey):
         return headers
 
 
+class DockertlsConnection(KeyCertificateConnection):
+
+    responseCls = DockerResponse
+
+    def __init__(self, key, secret, secure=True,
+                 host='localhost',
+                 port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
+
+        super(DockertlsConnection, self).__init__(key_file=key_file,
+                                                  cert_file=cert_file,
+                                                  secure=secure, host=host,
+                                                  port=port, url=None,
+                                                  proxy_url=None,
+                                                  timeout=None, backoff=None,
+                                                  retry_delay=None)
+        if key_file:
+            keypath = os.path.expanduser(key_file)
+            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+            if not is_file_path:
+                raise InvalidCredsError(
+                    'You need an key PEM file to authenticate with '
+                    'Docker tls. This can be found in the server.'
+                )
+            self.key_file = key_file
+
+            certpath = os.path.expanduser(cert_file)
+            is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
+            if not is_file_path:
+                raise InvalidCredsError(
+                    'You need an certificate PEM file to authenticate with '
+                    'Docker tls. This can be found in the server.'
+                )
+            self.cert_file = cert_file
+
+    def add_default_headers(self, headers):
+
+        headers['Content-Type'] = 'application/json'
+        return headers
+
+
 class DockerContainerDriver(ContainerDriver):
     """
     Docker container driver class.
@@ -164,11 +206,12 @@ class DockerContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
-        super(DockerContainerDriver, self).__init__(key=key, secret=secret,
-                                                    secure=secure, host=host,
-                                                    port=port,
-                                                    key_file=key_file,
-                                                    cert_file=cert_file)
+        if key_file:
+            self.connectionCls = DockertlsConnection
+            self.key_file = key_file
+            self.cert_file = cert_file
+            secure = True
+
         if host.startswith('https://'):
             secure = True
 
@@ -177,6 +220,12 @@ class DockerContainerDriver(ContainerDriver):
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.strip(prefix)
+
+        super(DockerContainerDriver, self).__init__(key=key, secret=secret,
+                                                    secure=secure, host=host,
+                                                    port=port,
+                                                    key_file=key_file,
+                                                    cert_file=cert_file)
 
         if key_file or cert_file:
             # docker tls authentication-
@@ -194,8 +243,17 @@ class DockerContainerDriver(ContainerDriver):
         else:
             self.connection.secure = secure
 
+        self.connection.secure = secure
         self.connection.host = host
         self.connection.port = port
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = {}
+        if hasattr(self, 'key_file'):
+            kwargs['key_file'] = self.key_file
+        if hasattr(self, 'cert_file'):
+            kwargs['cert_file'] = self.cert_file
+        return kwargs
 
     def install_image(self, path):
         """
