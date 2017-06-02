@@ -871,7 +871,7 @@ class KeyCertificateConnection(CertificateConnection):
     argument.
     """
 
-    key_file=None
+    key_file = None
 
     def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
                  url=None, proxy_url=None, timeout=None, backoff=None,
