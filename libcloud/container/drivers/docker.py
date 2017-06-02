@@ -179,7 +179,7 @@ class DockerContainerDriver(ContainerDriver):
     supports_clusters = False
     version = '1.24'
 
-    def __init__(self, key=None, secret=None, secure=False, host='localhost',
+    def __init__(self, key='', secret='', secure=False, host='localhost',
                  port=4243, key_file=None, cert_file=None):
         """
         :param    key: API key or username to used (required)
