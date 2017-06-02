@@ -240,6 +240,9 @@ class DockerContainerDriver(ContainerDriver):
 
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
+        elif hasattr(self.connection.connection, 'ca_cert'):
+            # already set by libcloud.security.CA_CERTS_PATH
+            pass
         else:
             # do not verify SSL certificate
             self.connection.connection.ca_cert = False
