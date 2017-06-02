@@ -119,7 +119,7 @@ class DockertlsConnection(KeyCertificateConnection):
 
     responseCls = DockerResponse
 
-    def __init__(self, key, secret, secure=False,
+    def __init__(self, key, secret, secure=True,
                  host='localhost',
                  port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
 
@@ -141,7 +141,8 @@ class DockertlsConnection(KeyCertificateConnection):
             self.key_file = key_file
 
             certpath = os.path.expanduser(cert_file)
-            is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
+            is_file_path = os.path.exists(
+                certpath) and os.path.isfile(certpath)
             if not is_file_path:
                 raise InvalidCredsError(
                     'You need an certificate PEM file to authenticate with '
