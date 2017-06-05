@@ -17,7 +17,7 @@ import sys
 import unittest
 
 from mock import Mock
-
+from libcloud.common.base import LibcloudConnection
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.utils.py3 import PY25
 
@@ -32,12 +32,15 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
         self.connection.driver = Mock()
         self.connection.driver.name = 'OpenStackDriver'
 
+    def tearDown(self):
+        OpenStackBaseConnection.conn_class = LibcloudConnection
+
     def test_base_connection_timeout(self):
         self.connection.connect()
         self.assertEqual(self.connection.timeout, self.timeout)
         if PY25:
             self.connection.conn_class.assert_called_with(host='127.0.0.1',
-                                                               port=443)
+                                                          port=443)
         else:
             self.connection.conn_class.assert_called_with(host='127.0.0.1',
                                                           secure=1,

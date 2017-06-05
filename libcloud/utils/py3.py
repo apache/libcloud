@@ -25,8 +25,13 @@ from __future__ import absolute_import
 import sys
 import types
 
+DEFAULT_LXML = False
+
 try:
-    from lxml import etree as ET
+    if DEFAULT_LXML:
+        from lxml import etree as ET
+    else:
+        from xml.etree import ElementTree as ET
 except ImportError:
     from xml.etree import ElementTree as ET
 

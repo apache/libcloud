@@ -1,4 +1,4 @@
-<DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
+<DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>766b978a-f574-4c8d-a974-57547a8c304e</requestId>
     <volumeSet>
         <item>
@@ -9,7 +9,6 @@
             <status>available</status>
             <createTime>2013-10-09T05:41:37.000Z</createTime>
             <attachmentSet/>
-            <encrypted>true</encrypted>
         </item>
         <item>
             <volumeId>vol-v24bfh75</volumeId>
@@ -19,7 +18,6 @@
             <status>in-use</status>
             <createTime>2013-10-08T19:36:49.000Z</createTime>
             <attachmentSet/>
-            <encrypted>false</encrypted>
         </item>
         <item>
             <volumeId>vol-b6c851ec</volumeId>
@@ -39,7 +37,6 @@
                 </item>
             </attachmentSet>
             <volumeType>standard</volumeType>
-            <encrypted>false</encrypted>
         </item>
     </volumeSet>
 </DescribeVolumesResponse>

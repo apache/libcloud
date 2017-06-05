@@ -39,13 +39,12 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
 
-from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 
 
-class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
+class AzureBlobsMockHttp(MockHttp):
 
     fixtures = StorageFileFixtures('azure_blobs')
     base_headers = {}
@@ -79,7 +78,7 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
 
     def _test_container_EMPTY(self, method, url, body, headers):
         if method == 'DELETE':
-            body = ''
+            body = u''
             return (httplib.ACCEPTED,
                     body,
                     self.base_headers,
@@ -161,7 +160,7 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
 
         headers['etag'] = '0x8CFB877BB56A6FB'
         headers['last-modified'] = 'Fri, 04 Jan 2013 09:48:06 GMT'
-        headers['content-length'] = 12345
+        headers['content-length'] = '12345'
         headers['content-type'] = 'application/zip'
         headers['x-ms-blob-type'] = 'Block'
         headers['x-ms-lease-status'] = 'unlocked'
@@ -179,7 +178,7 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
         headers = {'content-type': 'application/zip',
                    'etag': '"e31208wqsdoj329jd"',
                    'x-amz-meta-rabbits': 'monkeys',
-                   'content-length': 12345,
+                   'content-length': '12345',
                    'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
                    }
 
@@ -239,7 +238,7 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.NOT_FOUND])
 
-    def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
+    def _foo_bar_container_foo_bar_object_DELETE(self, method, url, body, headers):
         # test_delete_object
         return (httplib.ACCEPTED,
                 body,
@@ -317,11 +316,6 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
                     headers,
                     httplib.responses[httplib.CREATED])
 
-
-class AzureBlobsMockRawResponse(MockRawResponse):
-
-    fixtures = StorageFileFixtures('azure_blobs')
-
     def _foo_bar_container_foo_test_upload_INVALID_HASH(self, method, url,
                                                         body, headers):
         body = ''
@@ -335,20 +329,9 @@ class AzureBlobsMockRawResponse(MockRawResponse):
                 headers,
                 httplib.responses[httplib.CREATED])
 
-    def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
-        body = ''
-        headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
-        return (httplib.CREATED,
-                body,
-                headers,
-                httplib.responses[httplib.CREATED])
-
     def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
         # test_upload_object_invalid_file_size
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 headers,
@@ -368,7 +351,6 @@ class AzureBlobsTests(unittest.TestCase):
     driver_type = AzureBlobsStorageDriver
     driver_args = STORAGE_AZURE_BLOBS_PARAMS
     mock_response_klass = AzureBlobsMockHttp
-    mock_raw_response_klass = AzureBlobsMockRawResponse
 
     @classmethod
     def create_driver(self):
@@ -376,10 +358,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_class = self.mock_response_klass
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
         self.mock_response_klass.type = None
-        self.mock_raw_response_klass.type = None
         self.driver = self.create_driver()
 
     def tearDown(self):
@@ -586,7 +565,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_invalid_file_size(self):
-        self.mock_raw_response_klass.type = 'INVALID_SIZE'
+        self.mock_response_klass.type = 'INVALID_SIZE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -600,7 +579,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_invalid_file_already_exists(self):
-        self.mock_raw_response_klass.type = 'INVALID_SIZE'
+        self.mock_response_klass.type = 'INVALID_SIZE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -649,7 +628,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_upload_object_invalid_md5(self):
         # Invalid md5 is returned by azure
-        self.mock_raw_response_klass.type = 'INVALID_HASH'
+        self.mock_response_klass.type = 'INVALID_HASH'
 
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
@@ -925,6 +904,7 @@ class AzureBlobsTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_delete_object_success(self):
+        self.mock_response_klass.type = 'DELETE'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,

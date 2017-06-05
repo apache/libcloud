@@ -300,7 +300,11 @@ class VultrNodeDriver(NodeDriver):
                             country=data['country'], driver=self)
 
     def _to_size(self, data):
-        extra = {'vcpu_count': int(data['vcpu_count'])}
+        extra = {
+            'vcpu_count': int(data['vcpu_count']),
+            'plan_type': data['plan_type'],
+            'available_locations': data['available_locations']
+        }
         ram = int(data['ram'])
         disk = int(data['disk'])
         bandwidth = float(data['bandwidth'])

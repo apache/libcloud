@@ -26,7 +26,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.connection import get_response_object
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection
 
 __all__ = [
     'OvhResponse',

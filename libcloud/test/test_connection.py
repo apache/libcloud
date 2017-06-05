@@ -24,9 +24,10 @@ from mock import Mock, patch
 import requests_mock
 
 from libcloud.test import unittest
-from libcloud.common.base import Connection
-from libcloud.httplib_ssl import LibcloudBaseConnection
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.common.base import Connection, CertificateConnection
+from libcloud.http import LibcloudBaseConnection
+from libcloud.http import LibcloudConnection
+from libcloud.http import SignedHTTPSAdapter
 from libcloud.utils.misc import retry
 
 
@@ -362,6 +363,18 @@ class ConnectionClassTestCase(unittest.TestCase):
 
             self.assertGreater(mock_connect.call_count, 1,
                                'Retry logic failed')
+
+
+class CertificateConnectionClassTestCase(unittest.TestCase):
+    def setUp(self):
+        self.connection = CertificateConnection(cert_file='test.pem',
+                                                url='https://test.com/test')
+        self.connection.connect()
+
+    def test_adapter_internals(self):
+        adapter = self.connection.connection.session.adapters['https://']
+        self.assertTrue(isinstance(adapter, SignedHTTPSAdapter))
+        self.assertEqual(adapter.cert_file, 'test.pem')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

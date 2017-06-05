@@ -15,7 +15,7 @@
 
 import unittest
 import sys
-
+import pytest
 try:
     import Crypto
     Crypto
@@ -158,6 +158,7 @@ class SoftLayerTests(unittest.TestCase):
         self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair,
                           name='test-key-pair')
 
+    @pytest.mark.skip(reason="no way of currently testing this")
     def test_create_key_pair(self):
         if crypto:
             key_pair = self.driver.create_key_pair(name='my-key-pair')

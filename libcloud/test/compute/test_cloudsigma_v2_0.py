@@ -29,7 +29,7 @@ from libcloud.compute.drivers.cloudsigma import CloudSigmaError
 from libcloud.compute.types import NodeState
 
 from libcloud.test import unittest
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
@@ -440,7 +440,7 @@ class CloudSigmaAPI20IndirectTestCase(CloudSigmaAPI20BaseTestCase,
     driver_kwargs = {'api_version': '2.0'}
 
 
-class CloudSigmaMockHttp(MockHttpTestCase):
+class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('cloudsigma_2_0')
 
     def _api_2_0_servers_detail_INVALID_CREDS(self, method, url, body, headers):

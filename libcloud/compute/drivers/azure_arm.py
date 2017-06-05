@@ -61,14 +61,44 @@ class AzureVhdImage(NodeImage):
     """Represents a VHD node image that an Azure VM can boot from."""
 
     def __init__(self, storage_account, blob_container, name, driver):
-        urn = "https://%s.blob.core.windows.net/%s/%s" % (storage_account,
-                                                          blob_container,
-                                                          name)
+        urn = "https://%s.blob%s/%s/%s" % (storage_account,
+                                           driver.connection.storage_suffix,
+                                           blob_container,
+                                           name)
         super(AzureVhdImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
-        return (('<AzureVhdImage: id=%s, name=%s, location=%s>')
+        return (('<AzureVhdImage: id=%s, name=%s>')
+                % (self.id, self.name))
+
+
+class AzureResourceGroup(object):
+    """Represent an Azure resource group."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
                 % (self.id, self.name, self.location))
+
+
+class AzureNetworkSecurityGroup(object):
+    """Represent an Azure network security group."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (
+            ('<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>')
+            % (self.id, self.name, self.location))
 
 
 class AzureNetwork(object):
@@ -161,6 +191,7 @@ class AzureNodeDriver(NodeDriver):
                  api_version=None, region=None, **kwargs):
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
+        self.cloud_environment = kwargs.get("cloud_environment")
         super(AzureNodeDriver, self).__init__(key=key, secret=secret,
                                               secure=secure,
                                               host=host, port=port,
@@ -482,9 +513,10 @@ class AzureNodeDriver(NodeDriver):
         n = 0
         while True:
             try:
-                instance_vhd = "https://%s.blob.core.windows.net" \
+                instance_vhd = "https://%s.blob%s" \
                                "/%s/%s-os_%i.vhd" \
                                % (ex_storage_account,
+                                  self.connection.storage_suffix,
                                   ex_blob_container,
                                   name,
                                   n)
@@ -756,10 +788,11 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list``
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         action = "/subscriptions/%s/providers/Microsoft.Compute/" \
                  "locations/%s/publishers" \
@@ -822,6 +855,110 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
 
+    def ex_list_resource_groups(self):
+        """
+        List resource groups.
+
+        :return: A list of resource groups.
+        :rtype: ``list`` of :class:`.AzureResourceGroup`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
+        r = self.connection.request(action,
+                                    params={"api-version": "2016-09-01"})
+        return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
+                                   grp["properties"])
+                for grp in r.object["value"]]
+
+    def ex_list_network_security_groups(self, resource_group):
+        """
+        List network security groups.
+
+        :param resource_group: List security groups in a specific resource
+        group.
+        :type resource_group: ``str``
+
+        :return: A list of network security groups.
+        :rtype: ``list`` of :class:`.AzureNetworkSecurityGroup`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
+                 "Microsoft.Network/networkSecurityGroups" \
+                 % (self.subscription_id, resource_group)
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+        return [AzureNetworkSecurityGroup(net["id"],
+                                          net["name"],
+                                          net["location"],
+                                          net["properties"])
+                for net in r.object["value"]]
+
+    def ex_create_network_security_group(self, name, resource_group,
+                                         location=None):
+        """
+        Update tags on any resource supporting tags.
+
+        :param name: Name of the network security group to create
+        :type name: ``str``
+
+        :param resource_group: The resource group to create the network
+        security group in
+        :type resource_group: ``str``
+
+        :param location: The location at which to create the network security
+        group (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+        """
+
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
+        target = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
+                 % (self.subscription_id, resource_group, name)
+        data = {
+            "location": location.id,
+        }
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='PUT')
+
+    def ex_delete_network_security_group(self, name, resource_group,
+                                         location=None):
+        """
+        Update tags on any resource supporting tags.
+
+        :param name: Name of the network security group to delete
+        :type name: ``str``
+
+        :param resource_group: The resource group to create the network
+        security group in
+        :type resource_group: ``str``
+
+        :param location: The location at which to create the network security
+        group (if None, use default location specified as 'region' in __init__)
+        :type location: :class:`.NodeLocation`
+        """
+
+        if location is None and self.default_location:
+            location = self.default_location
+        else:
+            raise ValueError("location is required.")
+
+        target = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
+                 % (self.subscription_id, resource_group, name)
+        data = {
+            "location": location.id,
+        }
+        self.connection.request(target,
+                                params={"api-version": "2016-09-01"},
+                                data=data,
+                                method='DELETE')
+
     def ex_list_networks(self):
         """
         List virtual networks.
@@ -868,8 +1005,8 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network" \
-                 "/networkInterfaces" % \
+        action = "/subscriptions/%s/resourceGroups/%s" \
+                 "/providers/Microsoft.Network/networkInterfaces" % \
                  (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
@@ -914,8 +1051,9 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Network" \
-                 "/publicIPAddresses" % (self.subscription_id, resource_group)
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/publicIPAddresses" \
+                 % (self.subscription_id, resource_group)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
@@ -956,8 +1094,7 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
-                                    method='PUT'
-                                    )
+                                    method='PUT')
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
@@ -1013,15 +1150,15 @@ class AzureNodeDriver(NodeDriver):
         }
 
         if public_ip:
-            data["properties"]["ipConfigurations"][0]["publicIPAddress"] = {
+            ip_config = data["properties"]["ipConfigurations"][0]
+            ip_config["properties"]["publicIPAddress"] = {
                 "id": public_ip.id
             }
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
-                                    method='PUT'
-                                    )
+                                    method='PUT')
         return AzureNic(r.object["id"], r.object["name"], r.object["location"],
                         r.object["properties"])
 
@@ -1203,8 +1340,11 @@ class AzureNodeDriver(NodeDriver):
             (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
             keys = self.ex_get_storage_account_keys(resource_group,
                                                     storageAccount)
-            blobdriver = AzureBlobsStorageDriver(storageAccount,
-                                                 keys["key1"])
+            blobdriver = AzureBlobsStorageDriver(
+                storageAccount,
+                keys["key1"],
+                host="%s.blob%s" % (storageAccount,
+                                    self.connection.storage_suffix))
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
@@ -1215,6 +1355,7 @@ class AzureNodeDriver(NodeDriver):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
         kwargs['tenant_id'] = self.tenant_id
         kwargs['subscription_id'] = self.subscription_id
+        kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):

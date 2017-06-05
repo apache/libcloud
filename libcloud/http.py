@@ -21,6 +21,8 @@ verification, depending on libcloud.security settings.
 import os
 import warnings
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
 import libcloud.security
 from libcloud.utils.py3 import urlparse, PY3
@@ -34,6 +36,20 @@ __all__ = [
 ALLOW_REDIRECTS = 1
 
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
+
+
+class SignedHTTPSAdapter(HTTPAdapter):
+    def __init__(self, cert_file, key_file):
+        self.cert_file = cert_file
+        self.key_file = key_file
+        super(SignedHTTPSAdapter, self).__init__()
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block,
+            cert_file=self.cert_file,
+            key_file=self.key_file)
 
 
 class LibcloudBaseConnection(object):
@@ -139,6 +155,13 @@ class LibcloudBaseConnection(object):
             else:
                 self.ca_cert = libcloud.security.CA_CERTS_PATH
 
+    def _setup_signing(self, cert_file=None, key_file=None):
+        """
+        Setup request signing by mounting a signing
+        adapter to the session
+        """
+        self.session.mount('https://', SignedHTTPSAdapter(cert_file, key_file))
+
 
 class LibcloudConnection(LibcloudBaseConnection):
     timeout = None
@@ -161,6 +184,9 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         LibcloudBaseConnection.__init__(self)
 
+        if 'cert_file' in kwargs or 'key_file' in kwargs:
+            self._setup_signing(**kwargs)
+
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
         self.session.timeout = kwargs.get('timeout', 60)
@@ -175,6 +201,10 @@ class LibcloudConnection(LibcloudBaseConnection):
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
         url = urlparse.urljoin(self.host, url)
+        # all headers should be strings
+        for header, value in headers.items():
+            if isinstance(headers[header], int):
+                headers[header] = str(value)
         self.response = self.session.request(
             method=method.lower(),
             url=url,
@@ -187,6 +217,10 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
+        # all headers should be strings
+        for header, value in headers.items():
+            if isinstance(headers[header], int):
+                headers[header] = str(value)
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 

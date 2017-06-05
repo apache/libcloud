@@ -1,21 +1,21 @@
-<DescribeTagsResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
+<DescribeTagsResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>fa7e0e44-df5e-49a0-98d7-5d4d19a29f95</requestId>
     <tagSet>
         <item>
             <resourceId>i-4382922a</resourceId>
-            <resourceType>instance</resourceType>
+         <resourceType>instance</resourceType>
             <key>tag</key>
             <value>test one</value>
         </item>
         <item>
             <resourceId>i-4382922a</resourceId>
-            <resourceType>instance</resourceType>
+         <resourceType>instance</resourceType>
             <key>owner</key>
             <value>libcloud</value>
         </item>
         <item>
             <resourceId>i-4382922a</resourceId>
-            <resourceType>instance</resourceType>
+         <resourceType>instance</resourceType>
             <key>stack</key>
             <value>Production</value>
         </item>

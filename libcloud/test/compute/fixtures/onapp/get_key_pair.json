@@ -1,0 +1,9 @@
+{
+  "ssh_key": {
+    "id": 1,
+    "user_id": 123,
+    "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8uuUqh0cXhx5s9AxlQHCWzQoS9w0qy/WN/I/CZuy4p+mQYhOYSqBi/aqf4/wySyOtzez785IGBriX24zk6vMcfSuB7wgHzCGZ433zAkdZu39nPPpCo3WWZmJ3GKYjEN+yNJNG8kR3OW3N0mRSId3ebFZoLUafli8sSt6XeXHgeLPfEvbpiEdKxHskRsZHP8JoM2tQD9Ms5/9KPbbhg4geeu9FO28kozacBdyQMS1db+45b9xz0L9GPYO0NasESq9cC4BvlhPvAFHDT1kio6DjjhZ5kUK7OcmRK+8/Jk+9cTSj9MzVMCwRni3HyA37/Mu4qBpDkR9sPwgJ9G/UY7ZP John@Johns-MacBook-Pro",
+    "created_at": "2017-03-22T19:11:32.000+05:30",
+    "updated_at": "2017-03-22T19:11:32.000+05:30"
+  }
+}

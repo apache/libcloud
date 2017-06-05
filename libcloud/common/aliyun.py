@@ -20,11 +20,7 @@ import sys
 import time
 import uuid
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import MalformedResponseError
 from libcloud.utils.py3 import b, u, urlquote, PY3
@@ -64,7 +60,10 @@ class AliyunXmlResponse(XmlResponse):
                 parser = ET.XMLParser(encoding='utf-8')
                 body = ET.XML(self.body.encode('utf-8'), parser=parser)
             else:
-                body = ET.XML(self.body)
+                try:
+                    body = ET.XML(self.body)
+                except ValueError:
+                    body = ET.XML(self.body.encode('utf-8'))
         except:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,

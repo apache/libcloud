@@ -15,12 +15,13 @@
 
 import sys
 from io import StringIO
+import zlib
 import requests_mock
 
 import libcloud
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.httplib_ssl import LibcloudConnection
+from libcloud.http import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
 
@@ -48,6 +49,21 @@ class TestLoggingConnection(unittest.TestCase):
         self.assertTrue(isinstance(conn.connection, LoggingConnection))
         self.assertIn('-i -X GET', log)
         self.assertIn('data', log)
+
+    def test_debug_log_class_handles_request_with_compression(self):
+        request = zlib.compress(b'data')
+        with StringIO() as fh:
+            libcloud.enable_debug(fh)
+            conn = Connection(url='http://test.com/')
+            conn.connect()
+            self.assertEqual(conn.connection.host, 'http://test.com')
+            with requests_mock.mock() as m:
+                m.get('http://test.com/test', content=request,
+                      headers={'content-encoding': 'zlib'})
+                conn.request('/test')
+            log = fh.getvalue()
+        self.assertTrue(isinstance(conn.connection, LoggingConnection))
+        self.assertIn('-i -X GET', log)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

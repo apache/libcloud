@@ -32,7 +32,7 @@ from libcloud.common.google import (GoogleBaseAuthConnection,
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -88,6 +88,26 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         expected_region2 = 'europe-west1'
         region2 = self.driver._get_region_from_zone(zone2)
         self.assertEqual(region2.name, expected_region2)
+
+    def test_get_volume(self):
+        volume_name = 'lcdisk'
+        volume = self.driver.ex_get_volume(volume_name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location_name(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location.name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
 
     def test_find_zone_or_region(self):
         zone1 = self.driver._find_zone_or_region('libcloud-demo-np-node',
@@ -740,12 +760,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         description = 'CoreOS beta 522.3.0'
         name = 'coreos'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
-                             'MULTI_IP_SUBNET']
-        expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'},
-            {'type': 'MULTI_IP_SUBNET'},
-        ]
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
+        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         mock_request = mock.Mock()
         mock_request.side_effect = self.driver.connection.async_request
         self.driver.connection.async_request = mock_request
@@ -772,12 +788,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
         description = 'CoreOS beta 522.3.0'
         family = 'coreos'
-        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS',
-                             'MULTI_IP_SUBNET']
-        expected_features = [
-            {'type': 'VIRTIO_SCSI_MULTIQUEUE'}, {'type': 'WINDOWS'},
-            {'type': 'MULTI_IP_SUBNET'},
-        ]
+        guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
+        expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         image = self.driver.ex_copy_image(name, url, description=description,
                                           family=family,
                                           guest_os_features=guest_os_features)
@@ -1304,6 +1316,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.create_volume, size,
                           volume_name, image=image, ex_image_family='coreos')
+
+    def test_create_volume_location(self):
+        volume_name = 'lcdisk'
+        size = 10
+        zone = self.driver.zone
+        volume = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
 
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
@@ -1942,7 +1962,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(zone_no_mw.time_until_mw, None)
 
 
-class GCEMockHttp(MockHttpTestCase):
+class GCEMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('gce')
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 

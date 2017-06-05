@@ -31,11 +31,7 @@ from datetime import datetime
 from xml.dom import minidom
 from xml.sax.saxutils import escape as xml_escape
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.azure import AzureServiceManagementConnection
 from libcloud.common.azure import AzureRedirectException
 from libcloud.compute.providers import Provider

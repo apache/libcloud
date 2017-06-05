@@ -1,4 +1,4 @@
-<CreateNetworkInterfaceResponse xmlns="http://ec2.amazonaws.com/doc/2016-09-15/">
+<CreateNetworkInterfaceResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>ca764ebe-8abc-4d37-9995-b9e88c086fa8</requestId>
     <networkInterface>
         <networkInterfaceId>eni-2b36086d</networkInterfaceId>
@@ -23,7 +23,6 @@
         <privateIpAddressesSet>
             <item>
                 <privateIpAddress>172.16.4.144</privateIpAddress>
-                <privateDnsName>ip-172-16-4-144.ap-southeast-1.compute.internal</privateDnsName>
                 <primary>true</primary>
             </item>
         </privateIpAddressesSet>
