@@ -1,10 +1,10 @@
 from libcloud.common.google import GoogleOAuth2Credential
 
-from libcloud.container.drivers.docker import (DockerContainerDriver,
-                                               DockerConnection)
+from libcloud.container.drivers.kuebernetes import DockerContainerDriver,
+                                               KubernetesConnection
 
 
-class GKEContainerDriver(DockerContainerDriver):
+class GKEContainerDriver(KubernetesContainerDriver):
     """
     GCE Node Driver class.
 
@@ -16,7 +16,7 @@ class GKEContainerDriver(DockerContainerDriver):
     objects/strings).  In most cases, passing strings instead of objects will
     result in additional GKE API calls.
     """
-    connectionCls = DockerConnection
+    connectionCls = KubernetesConnection
     api_name = 'google'
     name = "Google Container Engine"
     type = Provider.GKE
