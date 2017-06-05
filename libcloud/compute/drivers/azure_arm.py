@@ -21,7 +21,6 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 
 import base64
 import binascii
-import uuid
 import os
 import time
 
