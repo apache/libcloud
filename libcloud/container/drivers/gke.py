@@ -1,7 +1,8 @@
 from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.container.providers import Provider
+from libcloud.container.drivers.kubernetes import KubernetesConnection, KubernetesContainerDriver
 
-from libcloud.container.drivers.kuebernetes import DockerContainerDriver,
-                                               KubernetesConnection
+API_VERSION = 'v1'
 
 
 class GKEContainerDriver(KubernetesContainerDriver):
@@ -21,6 +22,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
     name = "Google Container Engine"
     type = Provider.GKE
     website = 'https://container.googleapis.com'
+    supports_clusters = True
 
     # Google Compute Engine node states are mapped to Libcloud node states
     # per the following dict. GCE does not have an actual 'stopped' state
@@ -35,23 +37,10 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
     AUTH_URL = "https://www.googleapis.com/auth/"
 
-    IMAGE_PROJECTS = {
-        "centos-cloud": ["centos"],
-        "coreos-cloud": ["coreos"],
-        "debian-cloud": ["debian", "backports"],
-        "gce-nvme": ["nvme-backports"],
-        "google-containers": ["container-vm"],
-        "opensuse-cloud": ["opensuse"],
-        "rhel-cloud": ["rhel"],
-        "suse-cloud": ["sles", "suse"],
-        "ubuntu-os-cloud": ["ubuntu"],
-        "windows-cloud": ["windows"],
-    }
-
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
-                 auth_type=None, scopes=None, credential_file=None, **kwargs):
+                 auth_type=None, scopes=None, credential_file=None, host=None, port=443, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -89,68 +78,27 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if not project:
             raise ValueError('Project name must be specified using '
                              '"project" keyword.')
-
+        if host is None:
+            host = GKEContainerDriver.website
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
             GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
-        super(GKEContainerDriver, self).__init__(user_id, key, **kwargs)
+        super(GKEContainerDriver, self).__init__(user_id, key, host=host, port=port, **kwargs)
 
-        self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
+        self.base_path = '/%s/projects/%s' % (API_VERSION,
                                                       self.project)
-        self.zone_list = self.ex_list_zones()
-        self.zone_dict = {}
-        for zone in self.zone_list:
-            self.zone_dict[zone.name] = zone
-        if datacenter:
-            self.zone = self.ex_get_zone(datacenter)
-        else:
-            self.zone = None
+        self.website = GKEContainerDriver.website
 
-        self.region_list = self.ex_list_regions()
-        self.region_dict = {}
-        for region in self.region_list:
-            self.region_dict[region.name] = region
-
-        if self.zone:
-            self.region = self._get_region_from_zone(self.zone)
-        else:
-            self.region = None
-
-        # Volume details are looked up in this name-zone dict.
-        # It is populated if the volume name is not found or the dict is empty.
-        self._ex_volume_dict = {}
-
-    def list_images(self, ex_project=None, ex_include_deprecated=False):
+    def list_clusters(self, zone=None):
         """
-        Return a list of image objects. If no project is specified, a list of
-        all non-deprecated global and vendor images images is returned. By
-        default, only non-deprecated images are returned.
-
-        :keyword  ex_project: Optional alternate project name.
-        :type     ex_project: ``str``, ``list`` of ``str``, or ``None``
-
-        :keyword  ex_include_deprecated: If True, even DEPRECATED images will
-                                         be returned.
-        :type     ex_include_deprecated: ``bool``
-
-        :return:  List of GCENodeImage objects
-        :rtype:   ``list`` of :class:`GCENodeImage`
         """
-        dep = ex_include_deprecated
-        if ex_project is not None:
-            return self.ex_list_project_images(ex_project=ex_project,
-                                               ex_include_deprecated=dep)
-        image_list = self.ex_list_project_images(ex_project=None,
-                                                 ex_include_deprecated=dep)
-        for img_proj in list(self.IMAGE_PROJECTS.keys()):
-            try:
-                image_list.extend(
-                    self.ex_list_project_images(ex_project=img_proj,
-                                                ex_include_deprecated=dep))
-            except:
-                # do not break if an OS type is invalid
-                pass
-        return image_list
+        request = "/zones/%s/clusters" % (zone)
+        if zone is None:
+            request = "/zones/clusters"
+        # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
+        print(self.website+self.base_path+request)
+        response = self.connection.request(self.base_path + request, method='GET').object
+        print(response)
