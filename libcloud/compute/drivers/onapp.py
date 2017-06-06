@@ -270,7 +270,6 @@ class OnAppNodeDriver(NodeDriver):
 
         self.connection.secure = secure
 
-
         self.connection.host = host
         self.connection.port = port
 
@@ -350,10 +349,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         result = self.connection.request(action, method="POST")
-        if result.status == 201:
-            return True
-        else:
-            return False
+        return True if result.status == 201 else False
 
     def ex_stop_node(self, node):
         """
@@ -363,10 +359,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         result = self.connection.request(action, method="POST")
-        if result.status == 201:
-            return True
-        else:
-            return False
+        return True if result.status == 201 else False
 
     def ex_suspend_node(self, node):
         """
@@ -376,10 +369,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         result = self.connection.request(action, method="POST")
-        if result.status == 201:
-            return True
-        else:
-            return False
+        return True if result.status == 201 else False
 
     def ex_resume_node(self, node):
         """
@@ -396,10 +386,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         result = self.connection.request(action, method="POST")
-        if result.status == 201:
-            return True
-        else:
-            return False
+        return True if result.status == 201 else False
 
     def destroy_node(self,
                      node,

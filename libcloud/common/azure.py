@@ -65,7 +65,7 @@ class AzureResponse(XmlResponse):
         try:
             # Azure does give some meaningful errors, but is inconsistent
             # Some APIs respond with an XML error. Others just dump HTML
-            if isinstance(self.body, (str, unicode)):
+            if isinstance(self.body, basestring):
                 error_msg = self.body
                 if 'server failed to authenticate the request' in self.body:
                     error_msg = 'Please check your credentials are valid'
