@@ -123,25 +123,28 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
+        print(key, secret)
         super(KubernetesContainerDriver, self).__init__(key=key, secret=secret,
                                                         secure=secure,
                                                         host=host,
                                                         port=port)
-        if host.startswith('https://'):
-            secure = True
 
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.strip(prefix)
+        if host is not None:
+            if host.startswith('https://'):
+                secure = True
+
+            # strip the prefix
+            prefixes = ['http://', 'https://']
+            for prefix in prefixes:
+                if host.startswith(prefix):
+                    host = host.strip(prefix)
+
+            self.connection.host = host
+            self.connection.port = port
 
         self.connection.secure = secure
         self.connection.key = key
         self.connection.secret = secret
-
-        self.connection.host = host
-        self.connection.port = port
 
     def list_containers(self, image=None, all=True):
         """
