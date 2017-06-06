@@ -688,7 +688,9 @@ class VCloudNodeDriver(NodeDriver):
                 we can provide them on the new driver
                 the same applies for _networks
                 """
-                driver = get_driver(self.type)(self.key, self.secret, host=self.connection.host, port=self.connection.port)
+                driver = get_driver(self.type)(self.key, self.secret,
+                                               host=self.connection.host,
+                                               port=self.connection.port)
                 driver._vdcs = self.vdcs
                 driver._networks = self._networks
                 driver.connection.token = self.connection.token
@@ -764,19 +766,26 @@ class VCloudNodeDriver(NodeDriver):
             #for ip in alloc_ips:
             #    ips = [ip.text for ip in ip.findall(fixxpath(network, "IpAddress"))]
             alloc_ips = {}
-            nat_rules = network_object.findall(fixxpath(network_object, 'Configuration/Features/NatService/NatRule/PortForwardingRule'))
+            nat_rules = network_object.findall(
+                fixxpath(network_object,
+                         'Configuration/Features/NatService/'
+                         'NatRule/PortForwardingRule'))
             rules = {}
             for nat_rule in nat_rules:
-                external_ip = nat_rule.find(fixxpath(nat_rule,'ExternalIpAddress'))
+                external_ip = nat_rule.find(fixxpath(nat_rule,
+                                                     'ExternalIpAddress'))
                 if external_ip is not None:
                     external_ip = external_ip.text
-                external_port = nat_rule.find(fixxpath(nat_rule,'ExternalPort'))
+                external_port = nat_rule.find(fixxpath(nat_rule,
+                                                       'ExternalPort'))
                 if external_port is not None:
                     external_port = external_port.text
-                internal_ip = nat_rule.find(fixxpath(nat_rule,'InternalIpAddress'))
+                internal_ip = nat_rule.find(fixxpath(nat_rule,
+                                                     'InternalIpAddress'))
                 if internal_ip is not None:
                     internal_ip = internal_ip.text
-                internal_port = nat_rule.find(fixxpath(nat_rule,'InternalPort'))
+                internal_port = nat_rule.find(fixxpath(nat_rule,
+                                                       'InternalPort'))
                 if internal_port is not None:
                     internal_port = internal_port.text
                 protocol = nat_rule.find(fixxpath(nat_rule,'Protocol'))
@@ -795,8 +804,7 @@ class VCloudNodeDriver(NodeDriver):
                     rules[internal_ip] = [nat_rule_dict]
 
             extra = {'href': network.get('href'),
-                     'nat_rules': rules
-            }
+                     'nat_rules': rules}
 
             network = VCloudNetwork(id=network.get('name'),
                                     name=network.get('name'),
@@ -2332,6 +2340,7 @@ class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % (vm_memory))
 
+
 class VCloudNetwork(object):
     """
     A Virtual Network.
@@ -2346,5 +2355,5 @@ class VCloudNetwork(object):
 
     def __repr__(self):
         return '<VCloudNetwork id="%s" name="%s" cidr="%s">' % (self.id,
-                                                                    self.name,
-                                                                    self.cidr,)
+                                                                self.name,
+                                                                self.cidr,)

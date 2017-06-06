@@ -576,7 +576,7 @@ get all keys call with no arguments')
         # eg  'networks': '59887,59889'
 
         if ips:
-            if type(ips) == list:
+            if isinstance(ips, list):
                 ips = ','.join(ips)
             data['ips'] = ips
 

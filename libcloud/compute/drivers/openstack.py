@@ -1693,8 +1693,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return [self._to_network(network) for network in networks]
 
     def _to_network(self, obj):
-        return OpenStackNetwork(id=obj.pop('id'), name=obj.pop('name'), status=obj.pop('status'),
-                                subnets=obj.pop('subnets', []), router_external=obj.pop("router:external", False),
+        return OpenStackNetwork(id=obj.pop('id'), name=obj.pop('name'),
+                                status=obj.pop('status'),
+                                subnets=obj.pop('subnets', []),
+                                router_external=obj.pop(
+                                    "router:external", False),
                                 extra=obj)
 
     def _to_subnets(self, obj_subnets):
@@ -1702,20 +1705,27 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return [self._to_subnet(subnet) for subnet in subnets]
 
     def _to_subnet(self, obj):
-        return OpenStackSubnet(id=obj.pop('id'), name=obj.pop('name'), network_id=obj.pop('network_id'),
+        return OpenStackSubnet(id=obj.pop('id'), name=obj.pop('name'),
+                               network_id=obj.pop('network_id'),
                                enable_dhcp=obj.pop('enable_dhcp', False),
                                dns_nameservers=obj.pop('dns_nameservers', []),
-                               allocation_pools=obj.pop('allocation_pools', []), gateway_ip=obj.pop('gateway_ip', ''),
-                               cidr=obj.pop('cidr', ''), ip_version=obj.pop('ip_version', 4), extra=obj)
+                               allocation_pools=obj.pop(
+                                   'allocation_pools', []),
+                               gateway_ip=obj.pop('gateway_ip', ''),
+                               cidr=obj.pop('cidr', ''),
+                               ip_version=obj.pop('ip_version', 4), extra=obj)
 
     def _to_routers(self, obj_routers):
         routers = obj_routers['routers']
         return [self._to_router(router) for router in routers]
 
     def _to_router(self, obj):
-        return OpenStackRouter(id=obj.pop('id'), name=obj.pop('name'), status=obj.pop('status'),
-                               external_gateway_info=obj.pop('external_gateway_info', {}),
-                               admin_state_up=obj.pop('admin_state_up', False), extra=obj)
+        return OpenStackRouter(id=obj.pop('id'), name=obj.pop('name'),
+                               status=obj.pop('status'),
+                               external_gateway_info=obj.pop(
+                                   'external_gateway_info', {}),
+                               admin_state_up=obj.pop('admin_state_up', False),
+                               extra=obj)
 
     def ex_list_nova_networks(self):
         """
@@ -1734,8 +1744,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: ``list`` of `OpenStackNeutronNetwork`
         """
 
-        networks = self.connection.request(self._neutron_networks_url_prefix).object
-        # subnets = self.connection.request(self._neutron_subnets_url_prefix).object
+        networks = self.connection.request(
+            self._neutron_networks_url_prefix).object
+        # subnets = self.connection.request(
+        # self._neutron_subnets_url_prefix).object
 
         return self._to_networks(networks)
 
@@ -2570,7 +2582,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
         floating_ips = self.ex_list_floating_ips()
-        ip_obj, = [x for x in floating_ips if x.ip_address == ip]
+        ip_obj = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
     @_neutron_endpoint
@@ -2583,7 +2595,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 }
         }
 
-        resp = self.connection.request('/v2.0/floatingips', method='POST', data=data).object
+        resp = self.connection.request('/v2.0/floatingips', method='POST',
+                                       data=data).object
 
         return self._to_floating_ip(resp['floatingip'])
 
@@ -2597,7 +2610,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/v2.0/floatingips/%s' % floating_ip_id, method='DELETE')
+        resp = self.connection.request(
+            '/v2.0/floatingips/%s' % floating_ip_id, method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     @_neutron_endpoint

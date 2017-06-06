@@ -425,10 +425,7 @@ class OnAppNodeDriver(NodeDriver):
             identifier=node.id)
 
         result = self.connection.request(action, method="POST")
-        if result.status == 201:
-            return True
-        else:
-            return False
+        return True if result.status == 201 else False
 
     def list_nodes(self):
         """
