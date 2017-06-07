@@ -129,7 +129,7 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
             self._service_region = None
 
     def get_endpoint(self, *args, **kwargs):
-        if '2.0' in self._auth_version:
+        if ('2.0' in self._auth_version) or ('3.x' in self._auth_version):
             endpoint = self.service_catalog.get_endpoint(
                 service_type=self._service_type,
                 name=self._service_name,
@@ -137,6 +137,8 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoint = self.service_catalog.get_endpoint(
                 name=self._service_name, region=self._service_region)
+        else:                                                                                                                                                                                                                                
+            endpoint = None  
 
         if endpoint:
             return endpoint.url
