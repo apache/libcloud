@@ -8201,7 +8201,7 @@ class OutscaleINCNodeDriver(OutscaleNodeDriver):
 
 class EFSConnection(SignedAWSConnection):
     """
-    Represents a single connection to the EC2 Endpoint.
+    Represents a single connection to the Amazon EFS endpoint.
     """
 
     version = DEFAULT_EFS_API_VERSION
