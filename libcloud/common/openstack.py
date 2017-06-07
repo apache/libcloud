@@ -358,7 +358,11 @@ class OpenStackResponse(Response):
 
         if self.has_content_type('application/xml'):
             try:
-                return ET.XML(self.body)
+                try:
+                    return ET.XML(self.body)
+                except ValueError:
+                    # lxml wants a bytes and tests are basically hard-coded to str
+                    return ET.XML(self.body.encode('utf-8'))
             except:
                 raise MalformedResponseError(
                     'Failed to parse XML',
