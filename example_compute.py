@@ -28,8 +28,8 @@ print(nodes)
 # [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
 # <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
 
-# grab the node named "test"
+# to grab the node named "test"
 node = [n for n in nodes if n.name == 'test'][0]
 
-# reboot "test"
+# node.reboot() for rebooting the "test"
 node.reboot()
