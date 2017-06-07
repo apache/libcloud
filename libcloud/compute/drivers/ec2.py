@@ -8205,7 +8205,7 @@ class EFSConnection(SignedAWSConnection):
     """
 
     version = DEFAULT_EFS_API_VERSION
-    host = EFS_NAMESPACE
+    host = None
     responseCls = AWSJsonResponse
     service_name = 'elasticfilesystem'
 
@@ -8227,7 +8227,7 @@ class EFSDriver(BaseDriver):
 
     def __init__(self, *args, **kwargs):
         self.region_name = kwargs.get('region', 'us-east-1')
-        self.connectionCls.host = self.connectionCls.host % self.region_name
+        self.connectionCls.host = EFS_NAMESPACE % self.region_name
         super(EFSDriver, self).__init__(*args, **kwargs)
 
     def describe_mount_targets(self, file_system_id=None,
