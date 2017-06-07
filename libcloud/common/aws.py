@@ -99,7 +99,7 @@ class AWSGenericResponse(AWSBaseResponse):
                 raise InvalidCredsError(self.body)
 
         try:
-            body = ET.XML(self.body)
+            body = self.parse_body()
         except Exception:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,

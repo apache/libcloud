@@ -3036,7 +3036,7 @@ class EC2Response(AWSBaseResponse):
             raise InvalidCredsError(msg)
 
         try:
-            body = ET.XML(self.body)
+            body = self.parse_body()
         except:
             raise MalformedResponseError("Failed to parse XML",
                                          body=self.body, driver=EC2NodeDriver)
