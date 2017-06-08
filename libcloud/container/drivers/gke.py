@@ -34,7 +34,7 @@ class GKEConnection(GoogleBaseConnection):
     [<GCEUrlMap id="..." name="cli-map">, <GCEUrlMap id="..." name="lc-map">]
     [<GCEUrlMap id="..." name="web-map">]
     """
-    host = 'www.googleapis.com'
+    host = 'container.googleapis.com'
     responseCls = GKEResponse
 
     def __init__(self, user_id, key, secure, auth_type=None,
@@ -85,7 +85,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
     website = 'https://container.googleapis.com'
     supports_clusters = True
 
-    AUTH_URL = "https://www.googleapis.com/auth/"
+    AUTH_URL = "https://www.googleapis.com/auth/cloudplatform"
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
 
@@ -156,6 +156,6 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if zone is None:
             request = "/zones/clusters"
         # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
-        print(self.website+self.base_path+request)
-        response = self.connection.request(self.base_path + request, method='GET').object
+        print(self.website+self.base_path)
+        response = self.connection.request(request, method='GET').object
         print(response)
