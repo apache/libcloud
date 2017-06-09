@@ -13,12 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import requests
 import unittest
 import sys
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 
 import mock
+import requests_mock
 
 from libcloud.common.base import LazyObject
+from libcloud.common.base import XmlResponse
 from libcloud.test import LibcloudTestCase
 
 
@@ -53,6 +60,26 @@ class LazyObjectTest(LibcloudTestCase):
         wrapped_lazy_obj = object.__getattribute__(a, '_lazy_obj')
         self.assertEqual(a.z, 'baz')
         self.assertEqual(wrapped_lazy_obj.z, 'baz')
+
+
+class XmlResponseTest(unittest.TestCase):
+    def test_lxml_from_unicode_with_encoding_declaration(self):
+        if etree is None:
+            return
+        connection = mock.Mock()
+        response_text = u'<?xml version="1.0" encoding="UTF-8"?>\n<Response>' \
+            '<Errors><Error><Code>InvalidSnapshot.NotFound</Code><Message>' \
+            'Snapshot does not exist</Message></Error></Errors><RequestID>' \
+            'd65ede94-44d9-40c4-992b-23aafd611797</RequestID></Response>'
+        with requests_mock.Mocker() as m:
+            m.get('https://127.0.0.1',
+                  text=response_text,
+                  headers={'content-type': 'application/xml'})
+            response = XmlResponse(requests.get('https://127.0.0.1'),
+                                   connection)
+            body = response.parse_body()
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, etree._Element)
 
 
 if __name__ == '__main__':
