@@ -13,12 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import requests
 import sys
 import unittest
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 
 from mock import Mock
+import requests_mock
+
 from libcloud.common.base import LibcloudConnection
 from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackResponse
 from libcloud.utils.py3 import PY25
 
 
@@ -46,6 +54,35 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
                                                           secure=1,
                                                           port=443,
                                                           timeout=10)
+
+
+class OpenStackResponseTest(unittest.TestCase):
+    def test_lxml_from_unicode_with_encoding_declaration(self):
+        if etree is None:
+            return
+        connection = Mock()
+        response_text = u'''<?xml version="1.0" encoding="UTF-8"?>
+<account name="AUTH_73f0aa26640f4971864919d0eb0f0880">
+    <container>
+        <name>janeausten</name>
+        <count>2</count>
+        <bytes>33</bytes>
+    </container>
+    <container>
+        <name>marktwain</name>
+        <count>1</count>
+        <bytes>14</bytes>
+    </container>
+</account>'''
+        with requests_mock.Mocker() as m:
+            m.get('https://127.0.0.1',
+                  text=response_text,
+                  headers={'content-type': 'application/xml'})
+            response = OpenStackResponse(requests.get('https://127.0.0.1'),
+                                         connection)
+            body = response.parse_body()
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, etree._Element)
 
 
 if __name__ == '__main__':
