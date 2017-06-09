@@ -399,9 +399,9 @@ class AWSJsonResponse(JsonResponse):
     """
     def parse_error(self):
         response = json.loads(self.body)
-        code = response['__type']
-        message = response.get('Message', response['message'])
-        return ('%s: %s' % (code, message))
+        code = response.get('ErrorCode') or response['__type']
+        message = response.get('Message') or response['message']
+        return '%s: %s' % (code, message)
 
 
 def _sign(key, msg, hex=False):

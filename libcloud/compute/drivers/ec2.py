@@ -17,6 +17,7 @@
 Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
+import os
 import re
 import sys
 import base64
@@ -35,14 +36,15 @@ from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
-from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
+from libcloud.common.aws import AWSBaseResponse, AWSJsonResponse, \
+    SignedAWSConnection
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair
+from libcloud.compute.base import KeyPair, BaseDriver
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
     StorageVolumeState, VolumeSnapshotState
 
@@ -55,6 +57,8 @@ __all__ = [
     'OUTSCALE_INC_REGION_DETAILS',
     'DEFAULT_EUCA_API_VERSION',
     'EUCA_NAMESPACE',
+    'DEFAULT_EFS_API_VERSION',
+    'EFS_NAMESPACE',
 
     'EC2NodeDriver',
     'BaseEC2NodeDriver',
@@ -64,6 +68,8 @@ __all__ = [
 
     'OutscaleSASNodeDriver',
     'OutscaleINCNodeDriver',
+
+    'EFSDriver',
 
     'EC2NodeLocation',
     'EC2ReservedNode',
@@ -91,6 +97,11 @@ EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 # Outscale Constants
 DEFAULT_OUTSCALE_API_VERSION = '2016-04-01'
 OUTSCALE_NAMESPACE = 'http://api.outscale.com/wsdl/fcuext/2014-04-15/'
+
+# EFS Constants
+DEFAULT_EFS_API_VERSION = '2015-02-01'
+EFS_NAMESPACE = 'elasticfilesystem.%s.amazonaws.com'
+
 
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
@@ -8186,3 +8197,72 @@ class OutscaleINCNodeDriver(OutscaleNodeDriver):
             key=key, secret=secret, secure=secure, host=host, port=port,
             region=region, region_details=OUTSCALE_INC_REGION_DETAILS,
             **kwargs)
+
+
+class EFSConnection(SignedAWSConnection):
+    """
+    Represents a single connection to the Amazon EFS endpoint.
+    """
+
+    version = DEFAULT_EFS_API_VERSION
+    host = None
+    responseCls = AWSJsonResponse
+    service_name = 'elasticfilesystem'
+
+    def request(self, action, **kwargs):
+        action = os.path.join(self.version, action)
+        return super(EFSConnection, self).request(action, **kwargs)
+
+
+class EFSDriver(BaseDriver):
+    """
+    Implements Amazon Elastic File System API.
+
+    https://docs.aws.amazon.com/efs/latest/ug/api-reference.html
+    """
+
+    connectionCls = EFSConnection
+    name = 'Amazon EFS'
+    signature_version = '4'
+
+    def __init__(self, *args, **kwargs):
+        self.region_name = kwargs.get('region', 'us-east-1')
+        self.connectionCls.host = EFS_NAMESPACE % self.region_name
+        super(EFSDriver, self).__init__(*args, **kwargs)
+
+    def describe_mount_targets(self, file_system_id=None,
+                               mount_target_id=None):
+        """
+        Returns the descriptions of all the current mount
+        targets, or a specific mount target, for a file system.
+
+        :param file_system_id: ID of the file system whose mount
+            targets you want to list. It must be specified
+            if ``mount_target_id`` is not specified. (optional)
+        :type file_system_id: ``str``
+
+        :param mount_target_id: ID of the mount target that you want
+            to have described. It must be specified if ``file_system_id``
+            is not specified. (optional)
+        :type mount_target_id: ``str``
+
+        :return: Returns the file system's mount targets as an array.
+        :rtype: list[dict]
+        """
+        if file_system_id is None and mount_target_id is None:
+            raise AttributeError(
+                "file_system_id or mount_target_id must be specified.")
+
+        params = {}
+        if file_system_id is not None:
+            params['FileSystemId'] = file_system_id
+        if mount_target_id is not None:
+            params['MountTargetId'] = mount_target_id
+
+        return self.connection.request(
+            'mount-targets', params=params).object['MountTargets']
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(EFSDriver, self)._ex_connection_class_kwargs()
+        kwargs['signature_version'] = self.signature_version
+        return kwargs
