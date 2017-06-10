@@ -46,6 +46,18 @@ class GKEConnection(GoogleBaseConnection):
         self.request_path = '%s/projects/%s' % (API_VERSION, project)
         self.gce_params = None
 
+    def pre_connect_hook(self, params, headers):
+        """
+        Update URL parameters with values from self.gce_params.
+
+        @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
+        """
+        params, headers = super(GKEConnection, self).pre_connect_hook(params,
+                                                                      headers)
+        if self.gce_params:
+            params.update(self.gce_params)
+        return params, headers
+
     def request(self, *args, **kwargs):
         """
         Perform request then do GCE-specific processing of URL params.
@@ -85,7 +97,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
     website = 'https://container.googleapis.com'
     supports_clusters = True
 
-    AUTH_URL = "https://www.googleapis.com/auth/cloudplatform"
+    AUTH_URL = "https://container.googleapis.com/auth/"
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
 
@@ -155,6 +167,15 @@ class GKEContainerDriver(KubernetesContainerDriver):
         request = "/zones/%s/clusters" % (zone)
         if zone is None:
             request = "/zones/clusters"
+        # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
+        print(self.website+self.base_path)
+        response = self.connection.request(request, method='GET').object
+        print(response)
+
+    def get_server_config(self, zone=None):
+        """
+        """
+        request = "/zones/%s/serverconfig" % (zone)
         # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
         print(self.website+self.base_path)
         response = self.connection.request(request, method='GET').object
