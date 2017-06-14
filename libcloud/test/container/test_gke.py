@@ -13,26 +13,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.test import unittest
+import datetime
+import mock
+import sys
+import unittest
 
-from libcloud.container.drivers.gke import GKEContainerDriver
-from libcloud.test.secrets import CONTAINER_PARAMS_DOCKER
+from libcloud.utils.py3 import httplib
+from libcloud.compute.drivers.gce import (
+    GCENodeDriver, API_VERSION, timestamp_to_datetime, GCEAddress, GCEBackend,
+    GCEBackendService, GCEFirewall, GCEForwardingRule, GCEHealthCheck,
+    GCENetwork, GCENodeImage, GCERoute, GCERegion, GCETargetHttpProxy,
+    GCEUrlMap, GCEZone, GCESubnetwork)
+from libcloud.common.google import (GoogleBaseAuthConnection,
+                                    ResourceNotFoundError, ResourceExistsError,
+                                    GoogleBaseError)
+from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
+from libcloud.compute.base import Node, StorageVolume
+
+from libcloud.test import MockHttp
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.file_fixtures import ComputeFileFixtures
+
+from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
 
-from libcloud.test.container.test_kubernetes import KubernetesContainerDriverTestCase, KubernetesMockHttp
-
-
-class GKEContainerDriverTestCase(KubernetesContainerDriverTestCase, unittest.TestCase):
+class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
+    """
+    Google Compute Engine Test Class.
+    """
+    # Mock out a few specific calls that interact with the user, system or
+    # environment.
+    GCEZone._now = lambda x: datetime.datetime(2013, 6, 26, 19, 0, 0)
+    datacenter = 'us-central1-a'
 
     def setUp(self):
-        # Create a test driver for each version
-        versions = ('linux_124', 'mac_124')
-        self.drivers = []
-        for version in versions:
-            GKEContainerDriver.connectionCls.conn_class = \
-                KubernetesMockHttp
-            KubernetesMockHttp.type = None
-            KubernetesMockHttp.use_param = 'a'
-            driver = GKEContainerDriver(*CONTAINER_PARAMS_DOCKER)
-            driver.version = version
-            self.drivers.append(driver)
+        GCEMockHttp.test = self
+        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
+        GCEMockHttp.type = None
+        kwargs = GCE_KEYWORD_PARAMS.copy()
+        kwargs['auth_type'] = 'IA'
+        kwargs['datacenter'] = self.datacenter
+        self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
+
+    def test_default_scopes(self):
+        self.assertEqual(self.driver.scopes, None)
