@@ -1,6 +1,6 @@
 from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.container.providers import Provider
-from libcloud.container.drivers.kubernetes import KubernetesConnection, KubernetesContainerDriver
+from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 API_VERSION = 'v1'
@@ -39,7 +39,6 @@ class GKEConnection(GoogleBaseConnection):
 
     def __init__(self, user_id, key, secure, auth_type=None,
                  credential_file=None, project=None, **kwargs):
-        print("GKE CONNECTION", "auth_type", auth_type, "cred", credential_file)
         super(GKEConnection, self).__init__(
             user_id, key, secure=secure, auth_type=auth_type,
             credential_file=credential_file, **kwargs)
@@ -167,16 +166,13 @@ class GKEContainerDriver(KubernetesContainerDriver):
         request = "/zones/%s/clusters" % (zone)
         if zone is None:
             request = "/zones/clusters"
-        # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
-        print(self.website+self.base_path)
+
         response = self.connection.request(request, method='GET').object
-        print(response)
 
     def get_server_config(self, zone=None):
         """
         """
         request = "/zones/%s/serverconfig" % (zone)
-        # https://container.googleapis.com/v1/projects/{projectId}/zones/{zone}/clusters
-        print(self.website+self.base_path)
+
         response = self.connection.request(request, method='GET').object
-        print(response)
+        return response
