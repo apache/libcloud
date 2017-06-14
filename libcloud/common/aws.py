@@ -27,7 +27,7 @@ except ImportError:
 
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.types import InvalidCredsError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
 

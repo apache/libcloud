@@ -24,7 +24,6 @@ import copy
 import warnings
 import time
 
-from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
@@ -33,8 +32,7 @@ from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
-from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
-                                   LibcloudError)
+from libcloud.common.types import (InvalidCredsError, LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
