@@ -25,7 +25,6 @@ try:
 except ImportError:
     import json
 
-from libcloud.utils.py3 import ET
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
@@ -94,12 +93,7 @@ class AWSGenericResponse(AWSBaseResponse):
             else:
                 raise InvalidCredsError(self.body)
 
-        try:
-            body = self.parse_body()
-        except Exception:
-            raise MalformedResponseError('Failed to parse XML',
-                                         body=self.body,
-                                         driver=self.connection.driver)
+        body = self.parse_body()
 
         if self.xpath:
             errs = findall(element=body, xpath=self.xpath,

@@ -3053,11 +3053,7 @@ class EC2Response(AWSBaseResponse):
         if self.status == 403 and self.body[:len(msg)] == msg:
             raise InvalidCredsError(msg)
 
-        try:
-            body = self.parse_body()
-        except:
-            raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body, driver=EC2NodeDriver)
+        body = self.parse_body()
 
         for err in body.findall('Errors/Error'):
             code, message = err.getchildren()

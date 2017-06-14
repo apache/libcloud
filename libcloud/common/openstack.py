@@ -361,7 +361,7 @@ class OpenStackResponse(Response):
                 try:
                     return ET.XML(self.body)
                 except ValueError:
-                    # lxml wants a bytes and tests are basically hard-coded to str
+                    # lxml wants bytes
                     return ET.XML(self.body.encode('utf-8'))
             except:
                 raise MalformedResponseError(
