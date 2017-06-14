@@ -15,24 +15,24 @@
 
 from libcloud.test import unittest
 
-from libcloud.container.drivers.gke import GoogleContainerDriver
+from libcloud.container.drivers.gke import GKEContainerDriver
 from libcloud.test.secrets import CONTAINER_PARAMS_DOCKER
 
 
-from libcloud.test.container.test_docker import DockerContainerDriverTestCase, DockerMockHttp
+from libcloud.test.container.test_kubernetes import KubernetesContainerDriverTestCase, KubernetesMockHttp
 
 
-class JoyentContainerDriverTestCase(DockerContainerDriverTestCase, unittest.TestCase):
+class GKEContainerDriverTestCase(KubernetesContainerDriverTestCase, unittest.TestCase):
 
     def setUp(self):
         # Create a test driver for each version
         versions = ('linux_124', 'mac_124')
         self.drivers = []
         for version in versions:
-            JoyentContainerDriver.connectionCls.conn_class = \
-                DockerMockHttp
+            GKEContainerDriver.connectionCls.conn_class = \
+                KubernetesMockHttp
             DockerMockHttp.type = None
             DockerMockHttp.use_param = 'a'
-            driver = JoyentContainerDriver(*CONTAINER_PARAMS_DOCKER)
+            driver = GKEContainerDriver(*CONTAINER_PARAMS_DOCKER)
             driver.version = version
             self.drivers.append(driver)
