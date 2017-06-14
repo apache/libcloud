@@ -31,8 +31,8 @@ class GKEContainerDriverTestCase(KubernetesContainerDriverTestCase, unittest.Tes
         for version in versions:
             GKEContainerDriver.connectionCls.conn_class = \
                 KubernetesMockHttp
-            DockerMockHttp.type = None
-            DockerMockHttp.use_param = 'a'
+            KubernetesMockHttp.type = None
+            KubernetesMockHttp.use_param = 'a'
             driver = GKEContainerDriver(*CONTAINER_PARAMS_DOCKER)
             driver.version = version
             self.drivers.append(driver)

@@ -81,13 +81,13 @@ class GKEContainerDriver(KubernetesContainerDriver):
     """
     GCE Node Driver class.
 
-    This is the primary driver for interacting with Google Container Engine.  It
-    contains all of the standard libcloud methods, plus additional ex_* methods
-    for more features.
+    This is the primary driver for interacting with Google Container
+    Engine. It contains all of the standard libcloud methods,
+    plus additional ex_* methods for more features.
 
     Note that many methods allow either objects or strings (or lists of
-    objects/strings).  In most cases, passing strings instead of objects will
-    result in additional GKE API calls.
+    objects/strings).  In most cases, passing strings instead of objects
+    will result in additional GKE API calls.
     """
     connectionCls = GKEConnection
     api_name = 'google'
@@ -101,7 +101,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
-                 auth_type=None, scopes=None, credential_file=None, host=None, port=443, **kwargs):
+                 auth_type=None, scopes=None, credential_file=None,
+                 host=None, port=443, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -147,11 +148,11 @@ class GKEContainerDriver(KubernetesContainerDriver):
         self.credential_file = credential_file or \
             GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
-        super(GKEContainerDriver, self).__init__(user_id, key, secure=True, host=None,
-                 port=None, **kwargs)
+        super(GKEContainerDriver, self).__init__(user_id, key,
+                                                 secure=True, host=None,
+                                                 port=None, **kwargs)
 
-        self.base_path = '/%s/projects/%s' % (API_VERSION,
-                                                      self.project)
+        self.base_path = '/%s/projects/%s' % (API_VERSION, self.project)
         self.website = GKEContainerDriver.website
 
     def _ex_connection_class_kwargs(self):
@@ -168,6 +169,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
             request = "/zones/clusters"
 
         response = self.connection.request(request, method='GET').object
+        return response
 
     def get_server_config(self, zone=None):
         """
