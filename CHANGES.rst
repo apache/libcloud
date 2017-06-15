@@ -18,6 +18,9 @@ Compute
 
 - [GCE] Support GCE node labels. (GITHUB-1115) [@maxlip]
 
+- [GCE] Fix `GCEList` pagination. (GITHUB-1095)
+  [Yap Sok Ann]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
