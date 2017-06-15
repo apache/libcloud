@@ -7584,10 +7584,10 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images_pages = self.ex_list(
+        project_images_list = self.ex_list(
             self.list_images, ex_project=project, ex_include_deprecated=True)
         partial_match = []
-        for page in project_images_pages:
+        for page in project_images_list.page():
             for image in page:
                 if image.name == partial_name:
                     return image
