@@ -426,7 +426,7 @@ class DockerContainerDriver(ContainerDriver):
         result = self.connection.request(
             '/v%s/containers/%s/start' %
             (self.version, container.id),
-            method='POST', data=data)
+            method='POST', data=None)
         if result.status in VALID_RESPONSE_CODES:
             return self.get_container(container.id)
         else:
