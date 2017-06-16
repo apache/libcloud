@@ -24,6 +24,7 @@ more information, please refer to the official documentation.
 import os
 import sys
 import atexit
+import ssl
 
 try:
     import pysphere
@@ -46,6 +47,7 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import NodeLocation
 from libcloud.compute.base import NodeImage
 from libcloud.compute.base import Node
+from libcloud.compute.base import StorageVolume
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
 
@@ -81,6 +83,11 @@ class VSphereConnection(ConnectionUserAndKey):
                                                 **kwargs)
 
     def connect(self):
+        # SSL_VERIFY_ERROR fix
+        # https://gist.github.com/gkhays/2e1c06e1bfee95cb8f705f82ba8e48fe
+        default_context = ssl._create_default_https_context
+        ssl._create_default_https_context = ssl._create_unverified_context
+
         self.client = VIServer()
 
         trace_file = os.environ.get('LIBCLOUD_DEBUG', None)
@@ -170,13 +177,11 @@ class VSphereNodeDriver(NodeDriver):
 
         return locations
 
-    @wrap_non_libcloud_exceptions
     def list_images(self):
         """
         List available images (templates).
         """
         server = self.connection.client
-
         names = ['name', 'config.uuid', 'config.template']
         properties = server._retrieve_properties_traversal(
             property_names=names,
@@ -201,16 +206,28 @@ class VSphereNodeDriver(NodeDriver):
                 image = NodeImage(id=id, name=name, driver=self)
                 images.append(image)
 
-            return images
+        return images
 
-    @wrap_non_libcloud_exceptions
-    def list_nodes(self):
-        vm_paths = self.connection.client.get_registered_vms()
+    def list_nodes(self, datacenter=None, cluster=None, resource_pool=None):
+        vm_paths = self.connection.client.get_registered_vms(datacenter=datacenter,
+            cluster=cluster,
+            resource_pool=resource_pool)
         nodes = self._to_nodes(vm_paths=vm_paths)
 
         return nodes
 
-    @wrap_non_libcloud_exceptions
+    def list_volumes(self, node=None):
+        disks = []
+        if node:
+            for disk in node.extra['disks']:
+                disks.append(self._to_volume(disk))
+        else:
+            nodes = self.list_nodes()
+            for node in nodes:
+                for disk in node.extra['disks']:
+                    disks.append(self._to_volume(disk))
+        return disks
+
     @wrap_non_libcloud_exceptions
     def ex_clone_node(self, node, name, power_on=True, template=False):
         """
@@ -459,7 +476,13 @@ class VSphereNodeDriver(NodeDriver):
     def _to_nodes(self, vm_paths):
         nodes = []
         for vm_path in vm_paths:
-            vm = self.connection.client.get_vm_by_path(vm_path)
+            try:
+                vm = self.connection.client.get_vm_by_path(vm_path)
+            except Exception as e:
+                if 'Could not find a VM with path' in e.message:
+                    pass
+                else:
+                    raise
             node = self._to_node(vm=vm)
             nodes.append(node)
 
@@ -474,7 +497,8 @@ class VSphereNodeDriver(NodeDriver):
         uuid = vm.properties.config.uuid
         instance_uuid = vm.properties.config.instanceUuid
 
-        id = uuid
+        # id = uuid
+        id = vm._mor
         name = properties['name']
         public_ips = []
         private_ips = []
@@ -482,7 +506,10 @@ class VSphereNodeDriver(NodeDriver):
         state = self.NODE_STATE_MAP.get(status, NodeState.UNKNOWN)
         ip_address = properties.get('ip_address', None)
         net = properties.get('net', [])
-        resource_pool_id = str(vm.properties.resourcePool._obj)
+        if hasattr(vm.properties, "resourcePool"):
+            resource_pool_id = str(vm.properties.resourcePool._obj)
+        else:
+            resource_pool_id = None
 
         try:
             operating_system = vm.properties.summary.guest.guestFullName,
@@ -508,7 +535,7 @@ class VSphereNodeDriver(NodeDriver):
         }
 
         # Add primary IP
-        if ip_address:
+        if ip_address and not ":" in ip_address:
             if is_public_subnet(ip_address):
                 public_ips.append(ip_address)
             else:
@@ -518,16 +545,17 @@ class VSphereNodeDriver(NodeDriver):
         for nic in net:
             ip_addresses = nic['ip_addresses']
             for ip_address in ip_addresses:
-                try:
-                    is_public = is_public_subnet(ip_address)
-                except Exception:
-                    # TODO: Better support for IPv6
-                    is_public = False
+                if not ":" in ip_address:
+                    try:
+                        is_public = is_public_subnet(ip_address)
+                    except Exception:
+                        # TODO: Better support for IPv6
+                        is_public = False
 
-                if is_public:
-                    public_ips.append(ip_address)
-                else:
-                    private_ips.append(ip_address)
+                    if is_public:
+                        public_ips.append(ip_address)
+                    else:
+                        private_ips.append(ip_address)
 
         # Remove duplicate IPs
         public_ips = list(set(public_ips))
@@ -548,6 +576,25 @@ class VSphereNodeDriver(NodeDriver):
         }
 
         return kwargs
+
+    def _to_volume(self, disk):
+        """
+        Parse the XML element and return a StorageVolume object.
+
+        :param      name: An optional name for the volume. If not provided
+                          then either tag with a key "Name" or volume ID
+                          will be used (which ever is available first in that
+                          order).
+        :type       name: ``str``
+
+        :rtype:     :class:`StorageVolume`
+        """
+        return StorageVolume(id=disk['device']['key'],
+                             name=disk['label'],
+                             size=int(disk['capacity']),
+                             driver=self,
+                             state='active',
+                             extra=disk)
 
 
 class VSphere_5_5_NodeDriver(VSphereNodeDriver):
