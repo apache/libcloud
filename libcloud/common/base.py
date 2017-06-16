@@ -889,7 +889,7 @@ class BaseDriver(object):
     Base driver class from which other classes can inherit from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=None, **kwargs):

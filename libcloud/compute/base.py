@@ -34,7 +34,7 @@ from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
     DeploymentError
 from libcloud.compute.ssh import SSHClient
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
 from libcloud.compute.ssh import have_paramiko
@@ -656,7 +656,7 @@ class NodeDriver(BaseDriver):
 
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
     name = None
     type = None
     port = None
