@@ -35,9 +35,9 @@ from libcloud.compute.base import Node, StorageVolume
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.test.file_fixtures import ContainerFileFixtures
 
-from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
+from libcloud.test.secrets import GKE_PARAMS, GKE_KEYWORD_PARAMS
 
 
 class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
@@ -50,10 +50,10 @@ class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
     datacenter = 'us-central1-a'
 
     def setUp(self):
-        GCEMockHttp.test = self
-        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GKEMockHttp.test = self
+        GKEContainerDriver.connectionCls.conn_class = GCEMockHttp
         GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
-        GCEMockHttp.type = None
+        GKEMockHttp.type = None
         kwargs = GCE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'
         kwargs['datacenter'] = self.datacenter
@@ -61,3 +61,23 @@ class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
 
     def test_default_scopes(self):
         self.assertEqual(self.driver.scopes, None)
+
+
+class GCEMockHttp(MockHttp):
+    fixtures = ContainerFileFixtures('gce')
+    json_hdr = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _get_method_name(self, type, use_param, qs, path):
+        api_path = '/container/%s' % API_VERSION
+        project_path = '/projects/%s' % GKE_KEYWORD_PARAMS['project']
+        path = path.replace(api_path, '')
+        # This replace is separate, since there is a call with a different
+        # project name
+        path = path.replace(project_path, '')
+        # The path to get project information is the base path, so use a fake
+        # '/project' path instead
+        if not path:
+            path = '/project'
+        method_name = super(GKEMockHttp, self)._get_method_name(
+            type, use_param, qs, path)
+        return method_name
