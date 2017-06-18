@@ -19,7 +19,7 @@ Tests for Google Container Engine Driver
 import sys
 import unittest
 
-# from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib
 from libcloud.container.drivers.gke import GKEContainerDriver, API_VERSION
 from libcloud.common.google import (GoogleBaseAuthConnection)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
@@ -62,7 +62,7 @@ class GKEMockHttp(MockHttp):
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 
     def _get_method_name(self, type, use_param, qs, path):
-        api_path = '%s' % API_VERSION
+        api_path = '/%s' % API_VERSION
         project_path = '/projects/%s' % GKE_KEYWORD_PARAMS['project']
         path = path.replace(api_path, '')
         # This replace is separate, since there is a call with a different

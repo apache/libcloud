@@ -42,24 +42,24 @@ class GKEConnection(GoogleBaseConnection):
         super(GKEConnection, self).__init__(
             user_id, key, secure=secure, auth_type=auth_type,
             credential_file=credential_file, **kwargs)
-        self.request_path = '%s/projects/%s' % (API_VERSION, project)
-        self.gce_params = None
+        self.request_path = '/%s/projects/%s' % (API_VERSION, project)
+        self.gke_params = None
 
     def pre_connect_hook(self, params, headers):
         """
-        Update URL parameters with values from self.gce_params.
+        Update URL parameters with values from self.gke_params.
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
         params, headers = super(GKEConnection, self).pre_connect_hook(params,
                                                                       headers)
-        if self.gce_params:
+        if self.gke_params:
             params.update(self.gce_params)
         return params, headers
 
     def request(self, *args, **kwargs):
         """
-        Perform request then do GCE-specific processing of URL params.
+        Perform request then do GKE-specific processing of URL params.
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
@@ -67,12 +67,12 @@ class GKEConnection(GoogleBaseConnection):
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
-        if self.gce_params:
+        if self.gke_params:
             if 'nextPageToken' in response.object:
-                self.gce_params['pageToken'] = response.object['nextPageToken']
-            elif 'pageToken' in self.gce_params:
-                del self.gce_params['pageToken']
-            self.gce_params = None
+                self.gke_params['pageToken'] = response.object['nextPageToken']
+            elif 'pageToken' in self.gke_params:
+                del self.gke_params['pageToken']
+            self.gke_params = None
 
         return response
 
@@ -179,7 +179,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         if zone is None:
             zone = self.zone
-        request = "/zones/%s/serverconfig" % (self.zone)
+        request = "/zones/%s/serverconfig" % (zone)
 
         response = self.connection.request(request, method='GET').object
         return response
