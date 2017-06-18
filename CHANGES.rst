@@ -26,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- Handle [VULTR] API rate limiting
+  [GITHUB-1058]
+  (Francisco Ros)
+
 - Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
   [GITHUB-1054]
   (Anthony Shaw)
