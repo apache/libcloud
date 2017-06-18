@@ -145,6 +145,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
+        self.zone = None
+        if datacenter is not None:
+            self.zone = datacenter
         self.credential_file = credential_file or \
             GoogleOAuth2Credential.default_credential_file + '.' + self.project
 
@@ -161,7 +164,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 'scopes': self.scopes,
                 'credential_file': self.credential_file}
 
-    def list_clusters(self, zone=None):
+    def list_images(self, zone=None):
         """
         """
         request = "/zones/%s/clusters" % (zone)
@@ -174,7 +177,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
     def get_server_config(self, zone=None):
         """
         """
-        request = "/zones/%s/serverconfig" % (zone)
+        if zone is None:
+            zone = self.zone
+        request = "/zones/%s/serverconfig" % (self.zone)
 
         response = self.connection.request(request, method='GET').object
         return response
