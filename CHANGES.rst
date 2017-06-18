@@ -26,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Fix method for create instance properties, it previously ignored the disk type parameter and defaulted to pd-standard.
+  [GITHUB-1064]
+  (Evan Carter)
+
 - Fix missing return data from EC2 billing product methods
   [GITHUB-1062]
   (Alex Misstear)
