@@ -14,25 +14,11 @@ class GKEConnection(GoogleBaseConnection):
     """
     Connection class for the GKE driver.
 
-    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
-      1. modify request_path for GCE URI.
+    GKEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+      1. modify request_path for GKE URI.
       2. Implement gce_params functionality described below.
       3. Add request_aggregated_items method for making aggregated API calls.
 
-    If the parameter gce_params is set to a dict prior to calling request(),
-    the URL parameters will be updated to include those key/values FOR A
-    SINGLE REQUEST. If the response contains a nextPageToken,
-    gce_params['pageToken'] will be set to its value. This can be used to
-    implement paging in list:
-
-    >>> params, more_results = {'maxResults': 2}, True
-    >>> while more_results:
-    ...     driver.connection.gce_params=params
-    ...     driver.ex_list_urlmaps()
-    ...     more_results = 'pageToken' in params
-    ...
-    [<GCEUrlMap id="..." name="cli-map">, <GCEUrlMap id="..." name="lc-map">]
-    [<GCEUrlMap id="..." name="web-map">]
     """
     host = 'container.googleapis.com'
     responseCls = GKEResponse
@@ -79,7 +65,7 @@ class GKEConnection(GoogleBaseConnection):
 
 class GKEContainerDriver(KubernetesContainerDriver):
     """
-    GCE Node Driver class.
+    GKE Container Driver class.
 
     This is the primary driver for interacting with Google Container
     Engine. It contains all of the standard libcloud methods,
@@ -117,16 +103,16 @@ class GKEContainerDriver(KubernetesContainerDriver):
                               operations.
         :type     datacenter: ``str``
 
-        :keyword  project: Your GCE project name. (required)
+        :keyword  project: Your GKE project name. (required)
         :type     project: ``str``
 
-        :keyword  auth_type: Accepted values are "SA" or "IA" or "GCE"
+        :keyword  auth_type: Accepted values are "SA" or "IA" or "GKE"
                              ("Service Account" or "Installed Application" or
-                             "GCE" if libcloud is being used on a GCE instance
+                             "GKE" if libcloud is being used on a GKE instance
                              with service account enabled).
                              If not supplied, auth_type will be guessed based
                              on value of user_id or if the code is being
-                             executed in a GCE instance.
+                             executed in a GKE instance.
         :type     auth_type: ``str``
 
         :keyword  scopes: List of authorization URLs. Default is empty and
@@ -134,7 +120,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     scopes: ``list``
 
         :keyword  credential_file: Path to file for caching authentication
-                                   information used by GCEConnection.
+                                   information used by GKEConnection.
         :type     credential_file: ``str``
         """
         if not project:
