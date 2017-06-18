@@ -52,13 +52,16 @@ class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
     def test_list_images_response(self):
         pass
 
+    def test_server_config(self):
+        zones = self.driver.get_server_config()
+        print(zones)
+
 
 class GKEMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('gke')
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 
     def _get_method_name(self, type, use_param, qs, path):
-        print("GKEMOCKHTTP", type, use_param, qs, path)
         api_path = '%s' % API_VERSION
         project_path = '/projects/%s' % GKE_KEYWORD_PARAMS['project']
         path = path.replace(api_path, '')
@@ -73,6 +76,11 @@ class GKEMockHttp(MockHttp):
         method_name = super(GKEMockHttp, self)._get_method_name(
             type, use_param, qs, path)
         return method_name
+
+    def _zones_us_central1_a_serverconfig(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instance_serverconfig.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
