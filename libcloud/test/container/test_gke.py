@@ -16,18 +16,13 @@
 Tests for Google Container Engine Driver
 """
 
-import datetime
-import mock
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
+# from libcloud.utils.py3 import httplib
 from libcloud.container.drivers.gke import GKEContainerDriver, API_VERSION
-from libcloud.common.google import (GoogleBaseAuthConnection,
-                                    ResourceNotFoundError, ResourceExistsError,
-                                    GoogleBaseError)
+from libcloud.common.google import (GoogleBaseAuthConnection)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
-from libcloud.compute.base import Node, StorageVolume
 
 from libcloud.test import MockHttp
 from libcloud.test.container import TestCaseMixin
