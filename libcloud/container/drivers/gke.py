@@ -54,7 +54,7 @@ class GKEConnection(GoogleBaseConnection):
         params, headers = super(GKEConnection, self).pre_connect_hook(params,
                                                                       headers)
         if self.gke_params:
-            params.update(self.gce_params)
+            params.update(self.gke_params)
         return params, headers
 
     def request(self, *args, **kwargs):
