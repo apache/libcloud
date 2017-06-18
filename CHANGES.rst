@@ -26,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GANDI] Fixes the location name in image and instance type classes
+  [GITHUB-1065]
+  (Sayoun)
+
 - [GCE] Fix method for create instance properties, it previously ignored the disk type parameter and defaulted to pd-standard.
   [GITHUB-1064]
   (Evan Carter)
