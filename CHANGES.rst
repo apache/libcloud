@@ -26,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- Fix missing return data from EC2 billing product methods
+  [GITHUB-1062]
+  (Alex Misstear)
+
 - Handle [VULTR] API rate limiting
   [GITHUB-1058]
   (Francisco Ros)
