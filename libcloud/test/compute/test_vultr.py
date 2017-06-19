@@ -22,6 +22,8 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 
+from libcloud.common.types import ServiceUnavailableError
+
 from libcloud.compute.drivers.vultr import VultrNodeDriver
 
 from libcloud.test import LibcloudTestCase, MockHttp
@@ -36,6 +38,10 @@ class VultrTests(LibcloudTestCase):
         VultrNodeDriver.connectionCls.conn_class = VultrMockHttp
         VultrMockHttp.type = None
         self.driver = VultrNodeDriver(*VULTR_PARAMS)
+
+    def test_list_images_dont_require_api_key(self):
+        self.driver.list_images()
+        self.assertFalse(self.driver.connection.require_api_key())
 
     def test_list_images_success(self):
         images = self.driver.list_images()
@@ -66,6 +72,10 @@ class VultrTests(LibcloudTestCase):
         location = locations[0]
         self.assertEqual(location.id, '1')
         self.assertEqual(location.name, 'New Jersey')
+
+    def test_list_nodes_require_api_key(self):
+        self.driver.list_nodes()
+        self.assertTrue(self.driver.connection.require_api_key())
 
     def test_list_nodes_success(self):
         nodes = self.driver.list_nodes()
@@ -108,6 +118,10 @@ class VultrTests(LibcloudTestCase):
         res = self.driver.delete_key_pair(key_pair)
         self.assertTrue(res)
 
+    def test_rate_limit(self):
+        VultrMockHttp.type = 'SERVICE_UNAVAILABLE'
+        self.assertRaises(ServiceUnavailableError, self.driver.list_nodes)
+
 
 class VultrMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('vultr')
@@ -127,6 +141,11 @@ class VultrMockHttp(MockHttp):
     def _v1_server_list(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_server_list_SERVICE_UNAVAILABLE(self, method, url, body, headers):
+        body = self.fixtures.load('error_rate_limit.txt')
+        return (httplib.SERVICE_UNAVAILABLE, body, {},
+                httplib.responses[httplib.SERVICE_UNAVAILABLE])
 
     def _v1_server_create(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')

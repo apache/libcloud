@@ -20,6 +20,10 @@
                                     <value><int>1</int></value>
                                 </member>
                                 <member>
+                                    <name>dc_code</name>
+                                    <value><string>FR-SD2</string></value>
+                                </member>
+                                <member>
                                     <name>name</name>
                                     <value><string>Equinix Paris</string></value>
                                 </member>
@@ -34,6 +38,10 @@
                                 <member>
                                     <name>iso</name>
                                     <value><string>US</string></value>
+                                </member>
+                                <member>
+                                    <name>dc_code</name>
+                                    <value><string>US-BA1</string></value>
                                 </member>
                                 <member>
                                     <name>id</name>

@@ -26,6 +26,22 @@ Common
 Compute
 ~~~~~~~
 
+- [GANDI] Fixes the location name in image and instance type classes
+  [GITHUB-1065]
+  (Sayoun)
+
+- [GCE] Fix method for create instance properties, it previously ignored the disk type parameter and defaulted to pd-standard.
+  [GITHUB-1064]
+  (Evan Carter)
+
+- Fix missing return data from EC2 billing product methods
+  [GITHUB-1062]
+  (Alex Misstear)
+
+- Handle [VULTR] API rate limiting
+  [GITHUB-1058]
+  (Francisco Ros)
+
 - Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
   [GITHUB-1054]
   (Anthony Shaw)
@@ -44,6 +60,10 @@ Container
 - [KUBERNETES] Fix get_container method responding with None
   [GITHUB-1054]
   (Anthony Shaw)
+
+- [DOCKER] Fix for start_container method
+  [GITHUB-1049]
+  (@johnnyWalnut)
 
 - [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
   [GITHUB-1043]

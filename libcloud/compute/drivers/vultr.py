@@ -17,15 +17,56 @@ Vultr Driver
 """
 
 import time
+from functools import update_wrapper
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState
-from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.common.types import InvalidCredsError
+from libcloud.common.types import LibcloudError
+from libcloud.common.types import ServiceUnavailableError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
+
+
+class rate_limited:
+    """
+    Decorator for retrying Vultr calls that are rate-limited.
+
+    :param int sleep: Seconds to sleep after being rate-limited.
+    :param int retries: Number of retries.
+    """
+
+    def __init__(self, sleep=1, retries=1):
+        self.sleep = sleep
+        self.retries = retries
+
+    def __call__(self, call):
+        """
+        Run ``call`` method until it's not rate-limited.
+
+        The method is invoked while it returns 503 Service Unavailable or the
+        allowed number of retries is reached.
+
+        :param callable call: Method to be decorated.
+        """
+
+        def wrapper(*args, **kwargs):
+            last_exception = None
+
+            for i in range(self.retries + 1):
+                try:
+                    return call(*args, **kwargs)
+                except ServiceUnavailableError as e:
+                    last_exception = e
+                    time.sleep(self.sleep)  # hit by rate limit, let's sleep
+
+            raise last_exception
+
+        update_wrapper(wrapper, call)
+        return wrapper
 
 
 class VultrResponse(JsonResponse):
@@ -35,6 +76,8 @@ class VultrResponse(JsonResponse):
             return body
         elif self.status == httplib.FORBIDDEN:
             raise InvalidCredsError(self.body)
+        elif self.status == httplib.SERVICE_UNAVAILABLE:
+            raise ServiceUnavailableError(self.body)
         else:
             raise LibcloudError(self.body)
 
@@ -57,26 +100,53 @@ class VultrConnection(ConnectionKey):
 
     host = 'api.vultr.com'
     responseCls = VultrResponse
+    unauthenticated_endpoints = {  # {action: methods}
+        '/v1/app/list': ['GET'],
+        '/v1/os/list': ['GET'],
+        '/v1/plans/list': ['GET'],
+        '/v1/plans/list_vc2': ['GET'],
+        '/v1/plans/list_vdc2': ['GET'],
+        '/v1/regions/availability': ['GET'],
+        '/v1/regions/list': ['GET']
+    }
 
-    def add_default_params(self, params):
+    def add_default_headers(self, headers):
         """
-        Add parameters that are necessary for every request
+        Adds ``API-Key`` default header.
 
-        This method add ``api_key`` to
-        the request.
+        :return: Updated headers.
+        :rtype: dict
         """
-        params['api_key'] = self.key
-        return params
+
+        if self.require_api_key():
+            headers.update({'API-Key': self.key})
+        return headers
 
     def encode_data(self, data):
         return urlencode(data)
 
+    @rate_limited()
     def get(self, url):
         return self.request(url)
 
+    @rate_limited()
     def post(self, url, data):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         return self.request(url, data=data, headers=headers, method='POST')
+
+    def require_api_key(self):
+        """
+        Check whether this call (method + action) must be authenticated.
+
+        :return: True if ``API-Key`` header required, False otherwise.
+        :rtype: bool
+        """
+
+        try:
+            return self.method \
+                not in self.unauthenticated_endpoints[self.action]
+        except KeyError:
+            return True
 
 
 class VultrNodeDriver(NodeDriver):
