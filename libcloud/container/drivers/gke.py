@@ -14,7 +14,7 @@ class GKEConnection(GoogleBaseConnection):
     """
     Connection class for the GKE driver.
 
-    GKEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+    GKEConnection extends :class:`google.GoogleBaseConnection` for 3 reasons:
       1. modify request_path for GKE URI.
       2. Implement gce_params functionality described below.
       3. Add request_aggregated_items method for making aggregated API calls.
@@ -84,8 +84,6 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
     AUTH_URL = "https://container.googleapis.com/auth/"
 
-    BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
-
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None,
                  host=None, port=443, **kwargs):
@@ -150,8 +148,13 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 'scopes': self.scopes,
                 'credential_file': self.credential_file}
 
-    def list_images(self, zone=None):
+    def list_clusters(self, ex_zone=None):
         """
+        Return a list of cluster information in the current zone or all zones.
+
+        :keyword  ex_zone:  Optional zone name or None
+        :type     ex_zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
         """
         request = "/zones/%s/clusters" % (zone)
         if zone is None:
@@ -160,8 +163,13 @@ class GKEContainerDriver(KubernetesContainerDriver):
         response = self.connection.request(request, method='GET').object
         return response
 
-    def get_server_config(self, zone=None):
+    def get_server_config(self, ex_zone=None):
         """
+        Return configuration info about the Container Engine service.
+
+        :keyword  ex_zone:  Optional zone name or None
+        :type     ex_zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
         """
         if zone is None:
             zone = self.zone

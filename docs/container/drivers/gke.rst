@@ -21,7 +21,7 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 API Docs
 --------
 
-.. autoclass:: libcloud.container.drivers.joyent.GKEContainerDriver
+.. autoclass:: libcloud.container.drivers.gke.GKEContainerDriver
     :members:
     :inherited-members:
 

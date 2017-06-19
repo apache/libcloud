@@ -69,7 +69,7 @@ class GCEConnection(GoogleBaseConnection):
     """
     Connection class for the GCE driver.
 
-    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 3 reasons:
       1. modify request_path for GCE URI.
       2. Implement gce_params functionality described below.
       3. Add request_aggregated_items method for making aggregated API calls.
@@ -2750,6 +2750,7 @@ class GCENodeDriver(NodeDriver):
         :return: A list of zone objects.
         :rtype: ``list`` of :class:`GCEZone`
         """
+        print("WHEN DO WE DO THIS")
         list_zones = []
         request = '/zones'
         response = self.connection.request(request, method='GET').object
