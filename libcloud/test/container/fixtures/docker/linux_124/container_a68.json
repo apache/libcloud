@@ -6,7 +6,7 @@
     "None"
   ],
   "State": {
-    "Status": "exited",
+    "Status": "running",
     "Running": false,
     "Paused": false,
     "Restarting": false,

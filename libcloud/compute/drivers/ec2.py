@@ -7295,6 +7295,8 @@ class BaseEC2NodeDriver(NodeDriver):
             idx += 1  # We want 1-based indexes
             params['BillingProduct.%d' % (idx)] = str(v)
 
+        return params
+
     def _get_disk_container_params(self, disk_container):
         """
         Return a list of dictionaries with query parameters for

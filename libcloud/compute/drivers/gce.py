@@ -3999,7 +3999,7 @@ class GCENodeDriver(NodeDriver):
 
         properties = self._create_instance_properties(
             name, node_size=size, source=source, image=image,
-            disk_type='pd-standard', disk_auto_delete=True,
+            disk_type=disk_type, disk_auto_delete=True,
             external_ip=external_ip, network=network, subnetwork=subnetwork,
             can_ip_forward=can_ip_forward, service_accounts=service_accounts,
             on_host_maintenance=on_host_maintenance,
@@ -7915,8 +7915,6 @@ class GCENodeDriver(NodeDriver):
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
-        except ResourceNotFoundError:
-            return
         if response['status'] == 'DONE':
             status['node_response'] = None
             if error:
