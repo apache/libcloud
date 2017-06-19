@@ -123,7 +123,6 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :return: ``None``
         """
-        print(key, secret)
         super(KubernetesContainerDriver, self).__init__(key=key, secret=secret,
                                                         secure=secure,
                                                         host=host,

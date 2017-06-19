@@ -50,11 +50,13 @@ class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
         self.driver = GKEContainerDriver(*GKE_PARAMS, **kwargs)
 
     def test_list_images_response(self):
-        pass
+        config = self.driver.list_clusters(ex_zone="us-central1-a")
+        assert "zone" in config
+        assert config.zone = "us-central1-a"
 
     def test_server_config(self):
-        zones = self.driver.get_server_config()
-        print(zones)
+        config = self.driver.get_server_config()
+        assert "validImageTypes" in config
 
 
 class GKEMockHttp(MockHttp):
@@ -81,6 +83,12 @@ class GKEMockHttp(MockHttp):
         body = self.fixtures.load(
             'zones_us-central1-a_instance_serverconfig.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_clusters(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_list.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
