@@ -237,7 +237,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['block_device_mapping'][0]['device_name'], '/dev/sda1')
         self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['volume_id'], 'vol-5e312311')
         self.assertTrue(node.extra['block_device_mapping'][0]['ebs']['delete'])
-
+        self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['status'], 'attached')
+        self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['attach_time'],
+                         datetime(2013, 4, 9, 18, 1, 1, tzinfo=UTC))
         self.assertEqual(public_ips[0], '1.2.3.4')
 
         nodes = self.driver.list_nodes(ex_node_ids=['i-4382922a',
