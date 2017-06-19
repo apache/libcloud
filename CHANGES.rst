@@ -61,6 +61,10 @@ Container
   [GITHUB-1054]
   (Anthony Shaw)
 
+- [DOCKER] Fix for start_container method
+  [GITHUB-1049]
+  (@johnnyWalnut)
+
 - [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
   [GITHUB-1043]
   (@johnnyWalnut)
