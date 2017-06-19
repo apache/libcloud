@@ -2506,7 +2506,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'ebs/attachTime',
             'transform_func': parse_date
         },
-        'delete_on_termination': {
+        'delete': {
             'xpath': 'ebs/deleteOnTermination',
             'transform_func': str
         },
