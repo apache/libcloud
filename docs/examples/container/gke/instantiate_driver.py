@@ -6,4 +6,4 @@ cls = get_driver(Provider.GKE)
 conn = cls('testaccount-XXX@testproject.iam.gserviceaccount.com',
            'libcloud.json', project='testproject')
 
-conn.list_images()
+conn.list_clusters()

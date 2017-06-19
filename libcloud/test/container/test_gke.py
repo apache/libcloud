@@ -72,7 +72,6 @@ class GKEMockHttp(MockHttp):
         path = path.replace(project_path, '')
         # The path to get project information is the base path, so use a fake
         # '/project' path instead
-        print("path", path)
         if not path:
             path = '/project'
         method_name = super(GKEMockHttp, self)._get_method_name(
