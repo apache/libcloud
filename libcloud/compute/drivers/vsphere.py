@@ -540,6 +540,7 @@ class VSphereNodeDriver(NodeDriver):
             ip_addresses = nic['ip_addresses']
             for ip_address in ip_addresses:
                 if ":" in ip_address:
+                    # TODO: add support for ipv6 in is_private_subnet()
                     continue
                 is_public = is_public_subnet(ip_address)
 
