@@ -529,7 +529,7 @@ class VSphereNodeDriver(NodeDriver):
         }
 
         # Add primary IP
-        if ip_address and not ":" in ip_address:
+        if ip_address and ":" not in ip_address:
             if is_public_subnet(ip_address):
                 public_ips.append(ip_address)
             else:
