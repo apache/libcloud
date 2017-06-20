@@ -208,25 +208,22 @@ class VSphereNodeDriver(NodeDriver):
 
         return images
 
-    def list_nodes(self, datacenter=None, cluster=None, resource_pool=None):
-        vm_paths = self.connection.client.get_registered_vms(datacenter=datacenter,
-            cluster=cluster,
-            resource_pool=resource_pool)
+    def list_nodes(self, ex_datacenter=None, ex_cluster=None, ex_resource_pool=None):
+        vm_paths = self.connection.client.get_registered_vms(datacenter=ex_datacenter,
+            cluster=ex_cluster,
+            resource_pool=ex_resource_pool)
         nodes = self._to_nodes(vm_paths=vm_paths)
 
         return nodes
 
     def list_volumes(self, node=None):
-        disks = []
-        if node:
-            for disk in node.extra['disks']:
-                disks.append(self._to_volume(disk))
-        else:
-            nodes = self.list_nodes()
-            for node in nodes:
-                for disk in node.extra['disks']:
-                    disks.append(self._to_volume(disk))
-        return disks
+        nodes = [node] if node else self.list_nodes()
+        volumes = []
+
+        for node in nodes:
+            volumes.extend([self._to_volume(disk) for disk in node.extra['disks']])
+
+        return volumes
 
     @wrap_non_libcloud_exceptions
     def ex_clone_node(self, node, name, power_on=True, template=False):
@@ -479,9 +476,7 @@ class VSphereNodeDriver(NodeDriver):
             try:
                 vm = self.connection.client.get_vm_by_path(vm_path)
             except Exception as e:
-                if 'Could not find a VM with path' in e.message:
-                    pass
-                else:
+                if 'Could not find a VM with path' not in e.message:
                     raise
             node = self._to_node(vm=vm)
             nodes.append(node)
@@ -497,7 +492,6 @@ class VSphereNodeDriver(NodeDriver):
         uuid = vm.properties.config.uuid
         instance_uuid = vm.properties.config.instanceUuid
 
-        # id = uuid
         id = vm._mor
         name = properties['name']
         public_ips = []
@@ -545,17 +539,14 @@ class VSphereNodeDriver(NodeDriver):
         for nic in net:
             ip_addresses = nic['ip_addresses']
             for ip_address in ip_addresses:
-                if not ":" in ip_address:
-                    try:
-                        is_public = is_public_subnet(ip_address)
-                    except Exception:
-                        # TODO: Better support for IPv6
-                        is_public = False
+                if ":" in ip_address:
+                    continue
+                is_public = is_public_subnet(ip_address)
 
-                    if is_public:
-                        public_ips.append(ip_address)
-                    else:
-                        private_ips.append(ip_address)
+                if is_public:
+                    public_ips.append(ip_address)
+                else:
+                    private_ips.append(ip_address)
 
         # Remove duplicate IPs
         public_ips = list(set(public_ips))
@@ -593,7 +584,6 @@ class VSphereNodeDriver(NodeDriver):
                              name=disk['label'],
                              size=int(disk['capacity']),
                              driver=self,
-                             state='active',
                              extra=disk)
 
 
