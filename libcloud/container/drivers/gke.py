@@ -156,8 +156,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
         """
-        request = "/zones/%s/clusters" % (zone)
-        if zone is None:
+        request = "/zones/%s/clusters" % (ex_zone)
+        if ex_zone is None:
             request = "/zones/clusters"
 
         response = self.connection.request(request, method='GET').object
@@ -171,9 +171,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
         """
-        if zone is None:
-            zone = self.zone
-        request = "/zones/%s/serverconfig" % (zone)
+        if ex_zone is None:
+            ex_zone = self.zone
+        request = "/zones/%s/serverconfig" % (ex_zone)
 
         response = self.connection.request(request, method='GET').object
         return response
