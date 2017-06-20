@@ -208,8 +208,10 @@ class VSphereNodeDriver(NodeDriver):
 
         return images
 
-    def list_nodes(self, ex_datacenter=None, ex_cluster=None, ex_resource_pool=None):
-        vm_paths = self.connection.client.get_registered_vms(datacenter=ex_datacenter,
+    def list_nodes(self, ex_datacenter=None, ex_cluster=None,
+                   ex_resource_pool=None):
+        vm_paths = self.connection.client.get_registered_vms(
+            datacenter=ex_datacenter,
             cluster=ex_cluster,
             resource_pool=ex_resource_pool)
         nodes = self._to_nodes(vm_paths=vm_paths)
@@ -476,7 +478,7 @@ class VSphereNodeDriver(NodeDriver):
             try:
                 vm = self.connection.client.get_vm_by_path(vm_path)
             except Exception as e:
-                if 'Could not find a VM with path' not in e.message:
+                if 'Could not find a VM with path' not in str(e):
                     raise
             node = self._to_node(vm=vm)
             nodes.append(node)
