@@ -2750,7 +2750,6 @@ class GCENodeDriver(NodeDriver):
         :return: A list of zone objects.
         :rtype: ``list`` of :class:`GCEZone`
         """
-        print("WHEN DO WE DO THIS")
         list_zones = []
         request = '/zones'
         response = self.connection.request(request, method='GET').object
