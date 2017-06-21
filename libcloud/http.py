@@ -100,7 +100,8 @@ class LibcloudBaseConnection(object):
         self.http_proxy_used = True
 
         self.session.proxies = {
-            self.proxy_scheme: proxy_url
+            'http': proxy_url,
+            'https': proxy_url
         }
 
     def _parse_proxy_url(self, proxy_url):
