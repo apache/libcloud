@@ -41,7 +41,7 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
-NIC_API_VERSION = '2017-03-01'
+NIC_API_VERSION = '2016-09-01'
 
 
 class AzureImage(NodeImage):
@@ -739,7 +739,7 @@ class AzureNodeDriver(NodeDriver):
                     try:
                         self.connection.request(
                             nic["id"],
-                            params={"api-version": RESOURCE_API_VERSION},
+                            params={"api-version": NIC_API_VERSION},
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
@@ -1527,7 +1527,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureNic`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(id, params={"api-version": NIC_API_VERSION})
         return self._to_nic(r.object)
 
     def ex_get_node(self, id):
@@ -1900,8 +1900,8 @@ class AzureNodeDriver(NodeDriver):
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
-        except ObjectDoesNotExistError:
-            return True
+        except LibcloudError:
+            return False
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
