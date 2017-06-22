@@ -51,8 +51,8 @@ class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
 
     def test_list_images_response(self):
         config = self.driver.list_clusters(ex_zone="us-central1-a")
-        assert "zone" in config
-        assert config.zone == "us-central1-a"
+        assert "clusters" in config
+        assert config["clusters"][0]["zone"] == "us-central1-a"
 
     def test_server_config(self):
         config = self.driver.get_server_config()
