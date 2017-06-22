@@ -6950,7 +6950,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
@@ -6988,7 +6988,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
