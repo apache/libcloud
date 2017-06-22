@@ -130,6 +130,7 @@ class AWSGenericResponse(AWSBaseResponse):
 
 
 class AWSTokenConnection(ConnectionUserAndKey):
+
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, url=None, timeout=None, proxy_url=None,
                  token=None, retry_delay=None, backoff=None):
