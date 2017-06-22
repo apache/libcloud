@@ -57,6 +57,10 @@ Compute
 Container
 ~~~~~~~~~
 
+- New driver for Google Container Engine
+  [GITHUB-1059]
+  (Andy Maheshwari)
+
 - [KUBERNETES] Fix get_container method responding with None
   [GITHUB-1054]
   (Anthony Shaw)
