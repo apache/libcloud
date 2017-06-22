@@ -318,7 +318,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            cdn_request=True)
 
         if response.status == httplib.NO_CONTENT:
-            if ssl_uri == True:
+            if ssl_uri:
                 cdn_url = response.headers['x-cdn-ssl-uri']
             else:
                 cdn_url = response.headers['x-cdn-uri']
