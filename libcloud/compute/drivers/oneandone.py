@@ -2249,7 +2249,6 @@ class OneAndOneNodeDriver(NodeDriver):
             if i == retries:
                 raise Exception('Retries count reached')
 
-
     def _list_fixed_instances(self):
         response = self.connection.request(
             action='/servers/fixed_instance_sizes',
