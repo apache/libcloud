@@ -26,6 +26,11 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Fix node's Block Device Mapping was parsed from incorrect mapping.
+  EbsInstanceBlockDevice is different from EbsBlockDevice.
+  [GITHUB-1075]
+  (Gennadiy Stas)
+
 - [GANDI] Fixes the location name in image and instance type classes
   [GITHUB-1065]
   (Sayoun)
