@@ -410,18 +410,27 @@ class OpenStackResponse(Response):
 
 class OpenStackDriverMixin(object):
 
-    def __init__(self, *args, **kwargs):
-        self._ex_force_base_url = kwargs.get('ex_force_base_url', None)
-        self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
-        self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
-        self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
-        self._ex_token_scope = kwargs.get('ex_token_scope', None)
-        self._ex_domain_name = kwargs.get('ex_domain_name', None)
-        self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
-        self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
-        self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
-        self._ex_force_service_region = kwargs.get('ex_force_service_region',
-                                                   None)
+    def __init__(self,
+                 ex_force_base_url=None,
+                 ex_force_auth_url=None,
+                 ex_force_auth_version=None,
+                 ex_force_auth_token=None,
+                 ex_token_scope=OpenStackIdentityTokenScope.PROJECT,
+                 ex_domain_name='Default',
+                 ex_tenant_name=None,
+                 ex_force_service_type=None,
+                 ex_force_service_name=None,
+                 ex_force_service_region=None, *args, **kwargs):
+        self._ex_force_base_url = ex_force_base_url
+        self._ex_force_auth_url = ex_force_auth_url
+        self._ex_force_auth_version = ex_force_auth_version
+        self._ex_force_auth_token = ex_force_auth_token
+        self._ex_token_scope = ex_token_scope
+        self._ex_domain_name = ex_domain_name
+        self._ex_tenant_name = ex_tenant_name
+        self._ex_force_service_type = ex_force_service_type
+        self._ex_force_service_name = ex_force_service_name
+        self._ex_force_service_region = ex_force_service_region
 
     def openstack_connection_kwargs(self):
         """
