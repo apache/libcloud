@@ -3480,7 +3480,8 @@ class GCENodeDriver(NodeDriver):
         :type   priority: ``int``
 
         :param  network: The network the route belongs to. Can be either the
-                         full URL of the network or a libcloud object.
+                         full URL of the network, the name of the network  or
+                         a libcloud object.
         :type   network: ``str`` or ``GCENetwork``
 
         :param  tags: List of instance-tags for routing, empty for all nodes
