@@ -26,6 +26,11 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Add loadBalancingScheme parameter for
+ ex_create_forwarding_rule method in GCE driver.
+  [GITHUB-1079]
+  (@sT331h0rs3)
+
 - [GCE] Fix error codes not being parsed in certain scenarios
   [GITHUB-1074, LIBCLOUD-925]
   (micafer)
