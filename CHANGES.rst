@@ -26,6 +26,10 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Fix error codes not being parsed in certain scenarios
+  [GITHUB-1074, LIBCLOUD-925]
+  (micafer)
+
 - [EC2] Fix node's Block Device Mapping was parsed from incorrect mapping.
   EbsInstanceBlockDevice is different from EbsBlockDevice.
   [GITHUB-1075]
