@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- [AWS] Update prices and fix some region names
+  [GITHUB-1056]
+  (Francisco Ros)
+
 - Fix bug in utils.decorators wrap exception method, used by vsphere driver
   [GITHUB-1054]
   (Anthony Shaw)
