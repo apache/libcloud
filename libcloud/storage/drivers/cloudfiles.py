@@ -137,8 +137,8 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoint = self.service_catalog.get_endpoint(
                 name=self._service_name, region=self._service_region)
-        else:                                                                                                                                                                                                                                
-            endpoint = None  
+        else:
+            endpoint = None
 
         if endpoint:
             return endpoint.url
