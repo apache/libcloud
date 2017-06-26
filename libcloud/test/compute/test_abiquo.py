@@ -17,11 +17,7 @@ Abiquo Test Suite
 """
 import sys
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.abiquo import AbiquoNodeDriver
@@ -33,7 +29,7 @@ from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class AbiquoNodeDriverTest(TestCaseMixin):
+class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
     """
     Abiquo Node Driver test suite
     """

@@ -54,7 +54,8 @@ class DockerResponse(JsonResponse):
             # an error, but response status could still be 200
             content_type = self.headers.get('content-type', 'application/json')
             if content_type == 'application/json' or content_type == '':
-                if self.headers.get('transfer-encoding') == 'chunked':
+                if self.headers.get('transfer-encoding') == 'chunked' and \
+                        'fromImage' in self.request.url:
                     body = [json.loads(chunk) for chunk in
                             self.body.strip().replace('\r', '').split('\n')]
                 else:
@@ -386,10 +387,16 @@ class DockerContainerDriver(ContainerDriver):
 
         data = json.dumps(payload)
         if start:
-            result = self.connection.request(
-                '/v%s/containers/%s/start' %
-                (self.version, id_), data=data,
-                method='POST')
+            if float(self._get_api_version()) > 1.22:
+                result = self.connection.request(
+                    '/v%s/containers/%s/start' %
+                    (self.version, id_),
+                    method='POST')
+            else:
+                result = self.connection.request(
+                    '/v%s/containers/%s/start' %
+                    (self.version, id_), data=data,
+                    method='POST')
 
         return self.get_container(id_)
 
@@ -417,15 +424,22 @@ class DockerContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container`
         """
-        payload = {
-            'Binds': [],
-            'PublishAllPorts': True,
-        }
-        data = json.dumps(payload)
-        result = self.connection.request(
-            '/v%s/containers/%s/start' %
-            (self.version, container.id),
-            method='POST', data=data)
+        if float(self._get_api_version()) > 1.22:
+            result = self.connection.request(
+                '/v%s/containers/%s/start' %
+                (self.version, container.id),
+                method='POST')
+        else:
+            payload = {
+                'Binds': [],
+                'PublishAllPorts': True,
+            }
+            data = json.dumps(payload)
+            result = self.connection.request(
+                '/v%s/containers/%s/start' %
+                (self.version, container.id),
+                method='POST', data=data)
+
         if result.status in VALID_RESPONSE_CODES:
             return self.get_container(container.id)
         else:
@@ -628,6 +642,8 @@ class DockerContainerDriver(ContainerDriver):
         if 'Exited' in status:
             state = ContainerState.STOPPED
         elif status.startswith('Up '):
+            state = ContainerState.RUNNING
+        elif 'running' in status:
             state = ContainerState.RUNNING
         else:
             state = ContainerState.STOPPED

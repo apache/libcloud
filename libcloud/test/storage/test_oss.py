@@ -24,18 +24,11 @@ try:
 except ImportError:
     from unittest import mock
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import PY3
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerError
@@ -240,60 +233,6 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_test_stream_data_multipart_HASH(self, method, url, body, headers):
-        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-        TEST_UPLOAD_ID = '0004B9894A22E5B1888A1E29F8236E2D'
-
-        query_string = urlparse.urlsplit(url).query
-        query = parse_qs(query_string)
-
-        if not query.get('uploadId', False):
-            self.fail('Request doesnt contain uploadId query parameter')
-
-        upload_id = query['uploadId'][0]
-        if upload_id != TEST_UPLOAD_ID:
-            self.fail('first uploadId doesnt match')
-
-        if method == 'PUT':
-            # PUT is used for uploading the part. part number is mandatory
-            if not query.get('partNumber', False):
-                self.fail('Request is missing partNumber query parameter')
-
-            body = ''
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-
-        elif method == 'DELETE':
-            # DELETE is done for aborting the upload
-            body = ''
-            return (httplib.NO_CONTENT,
-                    body,
-                    headers,
-                    httplib.responses[httplib.NO_CONTENT])
-
-        else:
-            commit = ET.fromstring(body)
-            count = 0
-
-            for part in commit.findall('Part'):
-                count += 1
-                part_no = part.find('PartNumber').text
-                etag = part.find('ETag').text
-
-                self.assertEqual(part_no, str(count))
-                self.assertEqual(etag, headers['etag'])
-
-            # Make sure that manifest contains at least one part
-            self.assertTrue(count >= 1)
-
-            body = self.fixtures.load('complete_multipart_upload.xml')
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-
     def _list_multipart(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
         query = parse_qs(query_string)
@@ -307,22 +246,6 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def parse_body(self):
-        if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body
-
-        try:
-            if PY3:
-                parser = ET.XMLParser(encoding='utf-8')
-                body = ET.XML(self.body.encode('utf-8'), parser=parser)
-            else:
-                body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body,
-                                         driver=self.connection.driver)
-        return body
 
     def _foo_bar_object(self, method, url, body, headers):
         # test_download_object_success
@@ -340,59 +263,14 @@ class OSSMockHttp(MockHttp, unittest.TestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_test_upload_invalid_hash1(self, method, url, body, headers):
-        body = ''
+    def _foo_test_stream_data_multipart(self, method, url, body, headers):
         headers = {}
-        headers['etag'] = '"foobar"'
-        # test_upload_object_invalid_hash1
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
-        body = ''
-        headers = {'etag': '"0CC175B9C0F1B6A831C399E269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_upload_acl(self, method, url, body, headers):
-        # test_upload_object_with_acl
-        body = ''
-        headers = {'etag': '"0CC175B9C0F1B6A831C399E269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_stream_data(self, method, url, body, headers):
-        # test_upload_object_via_stream
         body = ''
         headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         return (httplib.OK,
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _foo_test_stream_data_multipart(self, method, url, body, headers):
-        headers = {}
-        # POST is done for initiating multipart upload
-        if method == 'POST':
-            body = self.fixtures.load('initiate_multipart_upload.xml')
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-        else:
-            body = ''
-            headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
 
 
 class OSSStorageDriverTestCase(unittest.TestCase):

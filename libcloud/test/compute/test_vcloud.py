@@ -16,13 +16,8 @@
 import sys
 import unittest
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 from libcloud.utils.py3 import httplib, b
-
+from libcloud.utils.py3 import ET
 from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
 from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
 from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver

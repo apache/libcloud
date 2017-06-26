@@ -25,11 +25,7 @@ import copy
 import warnings
 import time
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
@@ -547,6 +543,66 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'i3.large': {
+        'id': 'i3.large',
+        'name': 'High I/O Instances',
+        'ram': GiB(15.25),
+        'disk': 1 * 475,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'i3.xlarge': {
+        'id': 'i3.xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(30.5),
+        'disk': 1 * 950,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'i3.2xlarge': {
+        'id': 'i3.2xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(61),
+        'disk': 1 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'i3.4xlarge': {
+        'id': 'i3.4xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(122),
+        'disk': 2 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'i3.8xlarge': {
+        'id': 'i3.8xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(244),
+        'disk': 4 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
+    },
+    'i3.16xlarge': {
+        'id': 'i3.16xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(488),
+        'disk': 8 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
     'd2.xlarge': {
         'id': 'd2.xlarge',
         'name': 'Dense Storage Optimized Extra Large Instance',
@@ -830,6 +886,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -896,6 +958,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -961,6 +1029,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1032,6 +1106,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1100,6 +1180,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1170,6 +1256,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1282,6 +1374,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1342,6 +1440,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1390,6 +1494,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1452,6 +1562,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1497,6 +1613,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1602,6 +1724,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1671,6 +1799,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1796,6 +1930,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -1868,6 +2008,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
         ]
     },
     'nimbus': {
@@ -3035,7 +3181,9 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
+VALID_EC2_REGIONS = [
+    r for r in VALID_EC2_REGIONS if r != 'nimbus' and r != 'cn-north-1'
+]
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
@@ -7332,6 +7480,8 @@ class BaseEC2NodeDriver(NodeDriver):
         for idx, v in enumerate(billing_products):
             idx += 1  # We want 1-based indexes
             params['BillingProduct.%d' % (idx)] = str(v)
+
+        return params
 
     def _get_disk_container_params(self, disk_container):
         """

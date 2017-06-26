@@ -27,7 +27,7 @@ from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
-from libcloud.compute.drivers.ec2 import REGION_DETAILS
+from libcloud.compute.drivers.ec2 import REGION_DETAILS, VALID_EC2_REGIONS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -51,7 +51,7 @@ class BaseEC2Tests(LibcloudTestCase):
 
     def test_instantiate_driver_valid_regions(self):
         regions = REGION_DETAILS.keys()
-        regions = [d for d in regions if d != 'nimbus']
+        regions = [d for d in regions if d != 'nimbus' and d != 'cn-north-1']
 
         region_endpoints = [
             EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
@@ -70,6 +70,19 @@ class BaseEC2Tests(LibcloudTestCase):
                 pass
             else:
                 self.fail('Invalid region, but exception was not thrown')
+
+    def test_list_sizes_valid_regions(self):
+        unsupported_regions = list()
+
+        for region in VALID_EC2_REGIONS:
+            driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+            try:
+                driver.list_sizes()
+            except:
+                unsupported_regions.append(region)
+
+        if unsupported_regions:
+            self.fail('Cannot list sizes from ec2 regions: %s' % unsupported_regions)
 
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
@@ -431,23 +444,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 61)
+                self.assertEqual(len(sizes), 67)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
                 self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 52)
+                self.assertEqual(len(sizes), 58)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 62)
+                self.assertEqual(len(sizes), 68)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 51)
+                self.assertEqual(len(sizes), 57)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 55)
+                self.assertEqual(len(sizes), 61)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 59)
+                self.assertEqual(len(sizes), 65)
             elif region_name == 'ap-south-1':
-                self.assertEqual(len(sizes), 35)
+                self.assertEqual(len(sizes), 41)
 
         self.driver.region_name = region_old
 

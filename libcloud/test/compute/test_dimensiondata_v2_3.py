@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import sys
 from types import GeneratorType
 from libcloud.utils.py3 import httplib
@@ -33,6 +28,7 @@ from libcloud.common.dimensiondata import TYPES_URN
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 from libcloud.compute.drivers.dimensiondata import DimensionDataNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
+from libcloud.utils.py3 import ET
 from libcloud.test import MockHttp, unittest
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures

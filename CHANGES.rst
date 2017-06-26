@@ -7,6 +7,108 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- [AWS] Update prices and fix some region names
+  [GITHUB-1056]
+  (Francisco Ros)
+
+- Fix bug in utils.decorators wrap exception method, used by vsphere driver
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- Use PyTest as the unit testing runner
+  (Anthony Shaw)
+
+- Use of LXML is now disabled by defalt, use libcloud.utils.py3.DEFAULT_LXML = True to reenable. LXML has compatibility 
+  issues with a number of drivers and etree is a standard package
+  [GITHUB-1038]
+  (Anthony Shaw)
+
+- Switch RawResponse class to use content body instead of text body, up to 10x performance improvement for methods like StorageDriver.download_object
+  [GITHUB-1053]
+  (Quentin Pradet)
+
+Compute
+~~~~~~~
+
+- [GCE] Add loadBalancingScheme parameter for
+ ex_create_forwarding_rule method in GCE driver.
+  [GITHUB-1079]
+  (@sT331h0rs3)
+
+- [GCE] Fix error codes not being parsed in certain scenarios
+  [GITHUB-1074, LIBCLOUD-925]
+  (micafer)
+
+- [EC2] Fix node's Block Device Mapping was parsed from incorrect mapping.
+  EbsInstanceBlockDevice is different from EbsBlockDevice.
+  [GITHUB-1075]
+  (Gennadiy Stas)
+
+- [GANDI] Fixes the location name in image and instance type classes
+  [GITHUB-1065]
+  (Sayoun)
+
+- [GCE] Fix method for create instance properties, it previously ignored the disk type parameter and defaulted to pd-standard.
+  [GITHUB-1064]
+  (Evan Carter)
+
+- Fix missing return data from EC2 billing product methods
+  [GITHUB-1062]
+  (Alex Misstear)
+
+- Handle [VULTR] API rate limiting
+  [GITHUB-1058]
+  (Francisco Ros)
+
+- Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- [EC2] Add i3 instance types for AWS
+  [GITHUB-1038]
+  (Stephen Mullins)
+
+- [VULTR] Extend extra dict of Vultr sizes to include additional fields (plan_type and available_locations)
+  [GITHUB-1044]
+  (Francisco Ros)
+
+Container
+~~~~~~~~~
+
+- New driver for Google Container Engine
+  [GITHUB-1059]
+  (Andy Maheshwari)
+
+- [KUBERNETES] Fix get_container method responding with None
+  [GITHUB-1054]
+  (Anthony Shaw)
+
+- [DOCKER] Fix for start_container method
+  [GITHUB-1049]
+  (@johnnyWalnut)
+
+- [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
+  [GITHUB-1043]
+  (@johnnyWalnut)
+
+Storage
+~~~~~~~
+
+- [S3] Fix raise in s3.upload_object_via_stream
+  [LIBCLOUD-914, GITHUB-1055]
+  (Quentin Pradet)
+
+Changes in Apache Libcloud 2.0.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix OpenStack drivers not correctly setting URLs when used with identity API, would default to 127.0.0.1 and service
+  catalog URLs were not adhered to.
+  [GITHUB-1037, LIBCLOUD-912, LIBCLOUD-904]
+  (Anthony Shaw) 
+
 - Fix Aliyun ECS, Load balancer and storage adapters when using unicode UTF-8 characters in the names of resources
   in 2.0.0rc2 < it would fail as a MalformedResponseError, Python 2.7 element tree was raising a unicode error
   [GITHUB-1032] [GITHUB-994]
@@ -24,6 +126,22 @@ Common
 
 Compute
 ~~~~~~~
+
+- [GOOGLE] Add test to check that can create a GCE volume at a given location
+  [GITHUB-1048]
+  (Francisco Ros)
+
+- [GOOGLE] Fix GCENodeDriver.ex_get_volume() when zone param is of class GCEZone or NodeLocation
+  [GITHUB-1047]
+  (Francisco Ros)
+
+- [GOOGLE] Fix call to GCENodeDriver._ex_populate_volume_dict
+  [GITHUB-1046]
+  (Francisco Ros)
+
+- [ARM] Add support for Azure Cloud Environments as well as Locations
+  [GITHUB-969]
+  (Peter Amstutz)
 
 - [EC2] Add support for ModifyVolume and DescribeVolumesModifications
   [GITHUB-1036]
