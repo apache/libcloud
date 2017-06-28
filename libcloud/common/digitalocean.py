@@ -20,7 +20,7 @@ Common settings and connection objects for DigitalOcean Cloud
 from libcloud.utils.py3 import httplib, parse_qs, urlparse
 
 from libcloud.common.base import BaseDriver
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 
@@ -67,7 +67,7 @@ class DigitalOcean_v2_Response(JsonResponse):
         return self.status in self.valid_response_codes
 
 
-class DigitalOcean_v2_Connection(ConnectionKey):
+class DigitalOcean_v2_Connection(ConnectionUserAndKey):
     """
     Connection class for the DigitalOcean (v2) driver.
     """

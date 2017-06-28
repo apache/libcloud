@@ -889,7 +889,7 @@ class BaseDriver(object):
     Base driver class from which other classes can inherit from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=None, **kwargs):
@@ -926,8 +926,13 @@ class BaseDriver(object):
         self.secure = secure
         args = [self.key]
 
-        if self.secret is not None:
-            args.append(self.secret)
+        try:
+            if secret is not None or \
+               issubclass(self.connectionCls, ConnectionUserAndKey):
+                args.append(self.secret)
+        except TypeError:
+            if secret is not None:
+                args.append(self.secret)
 
         args.append(secure)
 
