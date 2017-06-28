@@ -72,6 +72,8 @@ AZURE_LEASE_PERIOD = 60
 
 AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
 
+BLOB_API_VERSION = '2015-07-08'
+
 
 class AzureBlobLease(object):
     """
@@ -159,6 +161,8 @@ class AzureBlobsConnection(AzureConnection):
     """
     Represents a single connection to Azure Blobs
     """
+
+    version = BLOB_API_VERSION
 
 
 class AzureBlobsStorageDriver(StorageDriver):
