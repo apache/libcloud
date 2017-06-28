@@ -27,7 +27,7 @@ from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
-from libcloud.compute.drivers.ec2 import REGION_DETAILS
+from libcloud.compute.drivers.ec2 import REGION_DETAILS, VALID_EC2_REGIONS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -51,7 +51,7 @@ class BaseEC2Tests(LibcloudTestCase):
 
     def test_instantiate_driver_valid_regions(self):
         regions = REGION_DETAILS.keys()
-        regions = [d for d in regions if d != 'nimbus']
+        regions = [d for d in regions if d != 'nimbus' and d != 'cn-north-1']
 
         region_endpoints = [
             EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
@@ -70,6 +70,19 @@ class BaseEC2Tests(LibcloudTestCase):
                 pass
             else:
                 self.fail('Invalid region, but exception was not thrown')
+
+    def test_list_sizes_valid_regions(self):
+        unsupported_regions = list()
+
+        for region in VALID_EC2_REGIONS:
+            driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+            try:
+                driver.list_sizes()
+            except:
+                unsupported_regions.append(region)
+
+        if unsupported_regions:
+            self.fail('Cannot list sizes from ec2 regions: %s' % unsupported_regions)
 
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
@@ -237,7 +250,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['block_device_mapping'][0]['device_name'], '/dev/sda1')
         self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['volume_id'], 'vol-5e312311')
         self.assertTrue(node.extra['block_device_mapping'][0]['ebs']['delete'])
-
+        self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['status'], 'attached')
+        self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['attach_time'],
+                         datetime(2013, 4, 9, 18, 1, 1, tzinfo=UTC))
         self.assertEqual(public_ips[0], '1.2.3.4')
 
         nodes = self.driver.list_nodes(ex_node_ids=['i-4382922a',
