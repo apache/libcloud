@@ -2508,6 +2508,24 @@ OUTSCALE_INC_REGION_DETAILS = {
 Define the extra dictionary for specific resources
 """
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'ebs_instance_block_device': {
+        'attach_time': {
+            'xpath': 'ebs/attachTime',
+            'transform_func': parse_date
+        },
+        'delete': {
+            'xpath': 'ebs/deleteOnTermination',
+            'transform_func': str
+        },
+        'status': {
+            'xpath': 'ebs/status',
+            'transform_func': str
+        },
+        'volume_id': {
+            'xpath': 'ebs/volumeId',
+            'transform_func': str
+        }
+    },
     'ebs_volume': {
         'snapshot_id': {
             'xpath': 'ebs/snapshotId',
@@ -3024,7 +3042,9 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
+VALID_EC2_REGIONS = [
+    r for r in VALID_EC2_REGIONS if r != 'nimbus' and r != 'cn-north-1'
+]
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
@@ -6462,7 +6482,8 @@ class BaseEC2NodeDriver(NodeDriver):
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
 
         # Add additional properties to our extra dictionary
-        extra['block_device_mapping'] = self._to_device_mappings(element)
+        extra['block_device_mapping'] = self._to_instance_device_mappings(
+            element)
         extra['groups'] = self._get_security_groups(element)
         extra['network_interfaces'] = self._to_interfaces(element)
         extra['product_codes'] = product_codes
@@ -6988,6 +7009,29 @@ class BaseEC2NodeDriver(NodeDriver):
         if mapping['virtual_name'] is None:
             mapping['ebs'] = self._get_extra_dict(
                 element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
+
+        return mapping
+
+    def _to_instance_device_mappings(self, object):
+        return [self._to_instance_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_instance_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at https://goo.gl/OGK88a.
+
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+        mapping['ebs'] = self._get_extra_dict(
+            element,
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_instance_block_device'])
 
         return mapping
 

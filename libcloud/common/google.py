@@ -220,7 +220,9 @@ class GoogleResponse(JsonResponse):
             code = err.get('code')
             message = err.get('message')
         else:
-            code = err.get('reason', None)
+            code = None
+            if 'reason' in err:
+                code = err.get('reason')
             message = body.get('error_description', err)
 
         return (code, message)
