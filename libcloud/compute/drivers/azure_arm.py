@@ -1900,8 +1900,8 @@ class AzureNodeDriver(NodeDriver):
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
-        except LibcloudError:
-            return False
+        except ObjectDoesNotExistError:
+            return True
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()

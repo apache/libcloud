@@ -36,7 +36,7 @@ from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
 # Azure API version
-API_VERSION = '2012-02-12'
+API_VERSION = '2015-07-08'
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
@@ -114,6 +114,7 @@ class AzureConnection(ConnectionUserAndKey):
     rawResponseCls = AzureRawResponse
     skip_host = False
     skip_accept_encoding = False
+    version = API_VERSION
 
     def add_default_params(self, params):
         return params
@@ -123,7 +124,7 @@ class AzureConnection(ConnectionUserAndKey):
 
         # We have to add a date header in GMT
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
-        headers['x-ms-version'] = API_VERSION
+        headers['x-ms-version'] = self.version
 
         # Add the authorization header
         headers['Authorization'] = self._get_azure_auth_signature(
